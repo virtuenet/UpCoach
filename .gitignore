@@ -1,0 +1,111 @@
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dependencies
+node_modules/
+*/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+.next/
+*/build/
+*/dist/
+*/.next/
+coverage/
+*/coverage/
+
+# Flutter/Dart
+mobile-app/.dart_tool/
+mobile-app/.flutter-plugins
+mobile-app/.flutter-plugins-dependencies
+mobile-app/.packages
+mobile-app/.pub-cache/
+mobile-app/.pub/
+mobile-app/build/
+mobile-app/ios/Pods/
+mobile-app/ios/Runner.xcworkspace/
+mobile-app/ios/Flutter/flutter_export_environment.sh
+mobile-app/android/.gradle/
+mobile-app/android/captures/
+mobile-app/android/gradlew
+mobile-app/android/gradlew.bat
+mobile-app/android/local.properties
+mobile-app/android/app/src/main/java/io/flutter/plugins/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Test coverage
+coverage/
+*.lcov
+.nyc_output
+
+# Test results
+test-results/
+playwright-report/
+*.xml
+
+# Docker
+docker-compose.override.yml
+
+# Backup files
+*.backup
+*.bak
+backups/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Credentials
+credentials/
+*.pem
+*.key
+*.p12
+*.jks
+google-credentials.json
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache
+.cache/
+*.cache
+.parcel-cache/ 

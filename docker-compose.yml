@@ -1,0 +1,223 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: upcoach-db
+    environment:
+      POSTGRES_USER: ${DB_USER:-upcoach}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-upcoach_secure_pass}
+      POSTGRES_DB: ${DB_NAME:-upcoach_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-upcoach}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Supabase Auth Service
+  supabase-auth:
+    image: supabase/gotrue:latest
+    container_name: upcoach-auth
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      GOTRUE_DB_DATABASE_URL: postgresql://${DB_USER:-upcoach}:${DB_PASSWORD:-upcoach_secure_pass}@postgres:5432/${DB_NAME:-upcoach_db}
+      GOTRUE_SITE_URL: ${SITE_URL:-http://localhost:3000}
+      GOTRUE_URI_ALLOW_LIST: ${ALLOWED_URLS:-http://localhost:*}
+      GOTRUE_JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-token-with-at-least-32-characters}
+      GOTRUE_JWT_EXP: 3600
+      GOTRUE_EXTERNAL_GOOGLE_ENABLED: true
+      GOTRUE_EXTERNAL_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOTRUE_EXTERNAL_GOOGLE_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:9999/auth/v1/callback}
+    ports:
+      - "9999:9999"
+
+  # Supabase Storage Service
+  supabase-storage:
+    image: supabase/storage-api:latest
+    container_name: upcoach-storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ANON_KEY: ${SUPABASE_ANON_KEY}
+      SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
+      DATABASE_URL: postgresql://${DB_USER:-upcoach}:${DB_PASSWORD:-upcoach_secure_pass}@postgres:5432/${DB_NAME:-upcoach_db}
+      PGRST_JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-token-with-at-least-32-characters}
+      FILE_SIZE_LIMIT: 52428800
+      STORAGE_BACKEND: file
+      FILE_STORAGE_BACKEND_PATH: /var/lib/storage
+    volumes:
+      - storage_data:/var/lib/storage
+    ports:
+      - "5000:5000"
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: upcoach-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Landing Page
+  landing-page:
+    build:
+      context: ./landing-page
+      dockerfile: Dockerfile
+    container_name: upcoach-landing
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_URL:-http://localhost:8000}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./landing-page:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - postgres
+      - supabase-auth
+
+  # Admin Panel
+  admin-panel:
+    build:
+      context: ./admin-panel
+      dockerfile: Dockerfile
+    container_name: upcoach-admin
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      VITE_SUPABASE_URL: ${SUPABASE_URL:-http://localhost:8000}
+      VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      VITE_API_URL: ${API_URL:-http://localhost:8080}
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./admin-panel:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+      - supabase-auth
+
+  # CMS Panel
+  cms-panel:
+    build:
+      context: ./cms-panel
+      dockerfile: Dockerfile
+    container_name: upcoach-cms
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      VITE_SUPABASE_URL: ${SUPABASE_URL:-http://localhost:8000}
+      VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      VITE_API_URL: ${API_URL:-http://localhost:8080}
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./cms-panel:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+      - supabase-auth
+
+  # Backend API (Optional - for custom endpoints)
+  backend-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: upcoach-api
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      DATABASE_URL: postgresql://${DB_USER:-upcoach}:${DB_PASSWORD:-upcoach_secure_pass}@postgres:5432/${DB_NAME:-upcoach_db}
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-token-with-at-least-32-characters}
+      REDIS_URL: redis://redis:6379
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GOOGLE_APPLICATION_CREDENTIALS: /app/google-credentials.json
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./credentials/google-credentials.json:/app/google-credentials.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Playwright for E2E testing
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.40.0-focal
+    container_name: upcoach-playwright
+    volumes:
+      - ./tests/e2e:/tests
+      - ./test-results:/test-results
+    environment:
+      BASE_URL: http://landing-page:3000
+      ADMIN_URL: http://admin-panel:3001
+      CMS_URL: http://cms-panel:3002
+    depends_on:
+      - landing-page
+      - admin-panel
+      - cms-panel
+    profiles:
+      - testing
+
+  # Flutter Test Container
+  flutter-test:
+    build:
+      context: ./mobile-app
+      dockerfile: Dockerfile.test
+    container_name: upcoach-flutter-test
+    volumes:
+      - ./mobile-app:/app
+      - ./test-results/flutter:/test-results
+    profiles:
+      - testing
+
+  # Mailhog for email testing
+  mailhog:
+    image: mailhog/mailhog
+    container_name: upcoach-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    profiles:
+      - development
+
+  # PgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: upcoach-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@upcoach.ai}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    profiles:
+      - development
+
+volumes:
+  postgres_data:
+  storage_data:
+  redis_data:
+
+networks:
+  default:
+    name: upcoach-network 
