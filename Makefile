@@ -201,12 +201,12 @@ status: ## Check status of all services
 .PHONY: health
 health: ## Check health of all services
 	@echo "Checking service health..."
-	@curl -f http://localhost:3000/api/health || echo "Landing page is down"
-	@curl -f http://localhost:3001/api/health || echo "Admin panel is down"
-	@curl -f http://localhost:3002/api/health || echo "CMS panel is down"
-	@curl -f http://localhost:8080/api/health || echo "Backend API is down"
+	@curl -f http://localhost:8005/api/health || echo "Landing page is down"
+	@curl -f http://localhost:8006/api/health || echo "Admin panel is down"
+	@curl -f http://localhost:8007/api/health || echo "CMS panel is down"
+	@curl -f http://localhost:8000/api/health || echo "Backend API is down"
 
 .PHONY: metrics
 metrics: ## View service metrics
 	@echo "Opening monitoring dashboard..."
-	@open http://localhost:3000/metrics 
+	@open http://localhost:8005/metrics 

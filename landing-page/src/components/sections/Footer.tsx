@@ -1,38 +1,113 @@
+'use client';
+
+import Link from 'next/link';
+import { Twitter, Linkedin, Youtube, Mail } from 'lucide-react';
+
+const footerLinks = {
+  Product: [
+    { name: 'Features', href: '#features' },
+    { name: 'How it Works', href: '#how-it-works' },
+    { name: 'Pricing', href: '#pricing' },
+    { name: 'Demo', href: '#demo' }
+  ],
+  Company: [
+    { name: 'About Us', href: '/about' },
+    { name: 'Careers', href: '/careers' },
+    { name: 'Blog', href: '/blog' },
+    { name: 'Press', href: '/press' }
+  ],
+  Support: [
+    { name: 'Help Center', href: '/help' },
+    { name: 'Contact Us', href: '/contact' },
+    { name: 'API Documentation', href: '/api-docs' },
+    { name: 'Status', href: '/status' }
+  ],
+  Legal: [
+    { name: 'Privacy Policy', href: '/privacy' },
+    { name: 'Terms of Service', href: '/terms' },
+    { name: 'Cookie Policy', href: '/cookies' },
+    { name: 'Security', href: '/security' }
+  ]
+};
+
+const socialLinks = [
+  { name: 'Twitter', icon: Twitter, href: 'https://twitter.com/upcoach' },
+  { name: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com/company/upcoach' },
+  { name: 'YouTube', icon: Youtube, href: 'https://youtube.com/@upcoach' },
+  { name: 'Email', icon: Mail, href: 'mailto:hello@upcoach.ai' }
+];
+
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300 py-12">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <h3 className="text-white font-bold text-lg mb-4">UpCoach</h3>
-            <p className="text-sm">AI-powered personal coaching platform for professional growth.</p>
+    <footer className="bg-gray-900 text-gray-300">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-8">
+          {/* Logo and description */}
+          <div className="col-span-2">
+            <div className="mb-4">
+              <h3 className="text-2xl font-bold text-white">UpCoach</h3>
+              <p className="text-purple-400 text-sm">AI-Powered Coaching</p>
+            </div>
+            <p className="text-gray-400 mb-6 max-w-sm">
+              Transform your professional development with personalized AI coaching that helps you achieve your goals faster.
+            </p>
+            <div className="flex space-x-4">
+              {socialLinks.map((social) => {
+                const Icon = social.icon;
+                return (
+                  <a
+                    key={social.name}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-white transition-colors"
+                    aria-label={social.name}
+                  >
+                    <Icon className="w-5 h-5" />
+                  </a>
+                );
+              })}
+            </div>
           </div>
-          <div>
-            <h4 className="text-white font-semibold mb-4">Product</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#features" className="hover:text-white">Features</a></li>
-              <li><a href="#pricing" className="hover:text-white">Pricing</a></li>
-              <li><a href="#demo" className="hover:text-white">Demo</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-white font-semibold mb-4">Company</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="/about" className="hover:text-white">About</a></li>
-              <li><a href="/blog" className="hover:text-white">Blog</a></li>
-              <li><a href="/careers" className="hover:text-white">Careers</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-white font-semibold mb-4">Legal</h4>
-            <ul className="space-y-2 text-sm">
-              <li><a href="/privacy" className="hover:text-white">Privacy Policy</a></li>
-              <li><a href="/terms" className="hover:text-white">Terms of Service</a></li>
-            </ul>
-          </div>
+          
+          {/* Links sections */}
+          {Object.entries(footerLinks).map(([category, links]) => (
+            <div key={category}>
+              <h4 className="font-semibold text-white mb-4">{category}</h4>
+              <ul className="space-y-2">
+                {links.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      className="text-gray-400 hover:text-white transition-colors text-sm"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm">
-          <p>&copy; 2024 UpCoach. All rights reserved.</p>
+        
+        {/* Bottom section */}
+        <div className="border-t border-gray-800 mt-12 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <p className="text-gray-400 text-sm mb-4 md:mb-0">
+              © 2024 UpCoach. All rights reserved.
+            </p>
+            <div className="flex space-x-6 text-sm">
+              <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">
+                Privacy
+              </Link>
+              <Link href="/terms" className="text-gray-400 hover:text-white transition-colors">
+                Terms
+              </Link>
+              <Link href="/cookies" className="text-gray-400 hover:text-white transition-colors">
+                Cookies
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
