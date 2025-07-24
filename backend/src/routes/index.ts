@@ -5,6 +5,8 @@ import taskRoutes from './tasks';
 import goalRoutes from './goals';
 import moodRoutes from './mood';
 import chatRoutes from './chat';
+import cmsRoutes from './cms';
+import financialRoutes from './financial';
 import { authMiddleware } from '../middleware/auth';
 
 export const setupRoutes = (app: Application): void => {
@@ -19,6 +21,12 @@ export const setupRoutes = (app: Application): void => {
   app.use(`${apiPrefix}/goals`, authMiddleware, goalRoutes);
   app.use(`${apiPrefix}/mood`, authMiddleware, moodRoutes);
   app.use(`${apiPrefix}/chat`, authMiddleware, chatRoutes);
+  
+  // CMS routes (mixed public and protected)
+  app.use(`${apiPrefix}/cms`, cmsRoutes);
+  
+  // Financial routes (protected)
+  app.use(`${apiPrefix}/financial`, authMiddleware, financialRoutes);
 
   // API info endpoint
   app.get(`${apiPrefix}`, (req, res) => {

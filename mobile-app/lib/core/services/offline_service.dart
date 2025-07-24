@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import '../constants/app_constants.dart';
 
 class OfflineService {
   static final OfflineService _instance = OfflineService._internal();

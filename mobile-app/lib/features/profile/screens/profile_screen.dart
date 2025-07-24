@@ -13,7 +13,6 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileState = ref.watch(profileProvider);
-    final authState = ref.watch(authProvider);
     final user = profileState.user;
 
     if (user == null) {

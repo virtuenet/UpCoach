@@ -26,6 +26,10 @@ const envSchema = z.object({
   OPENAI_API_KEY: z.string().min(1, 'OpenAI API key is required'),
   OPENAI_MODEL: z.string().default('gpt-3.5-turbo'),
   
+  // Claude Configuration
+  CLAUDE_API_KEY: z.string().optional(),
+  CLAUDE_MODEL: z.string().default('claude-3-sonnet-20240229'),
+  
   // Supabase Configuration (if using Supabase for auth/storage)
   SUPABASE_URL: z.string().optional(),
   SUPABASE_ANON_KEY: z.string().optional(),
@@ -98,6 +102,12 @@ export const config = {
     model: env.OPENAI_MODEL,
   },
   
+  // Claude
+  claude: {
+    apiKey: env.CLAUDE_API_KEY,
+    model: env.CLAUDE_MODEL,
+  },
+  
   // Supabase
   supabase: {
     url: env.SUPABASE_URL,
@@ -150,6 +160,7 @@ export const config = {
     enableEmail: !!(env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS),
     enableAnalytics: !!env.ANALYTICS_API_KEY,
     enableSupabase: !!(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY),
+    enableClaude: !!env.CLAUDE_API_KEY,
   },
 } as const;
 

@@ -12,6 +12,7 @@ import { setupRoutes } from './routes';
 import { errorMiddleware } from './middleware/errorHandler';
 import { notFoundHandler } from './middleware/notFoundHandler';
 import { logger } from './utils/logger';
+import { SchedulerService } from './services/SchedulerService';
 
 // Extend Express Request interface
 declare global {
@@ -206,64 +207,28 @@ async function testRedisConnection(): Promise<boolean> {
   }
 }
 
-// Database initialization and server startup
-async function startServer() {
+// Initialize services
+async function initializeServices() {
   try {
-    logger.info('Starting UpCoach Backend Server...');
-    
     // Initialize database
-    logger.info('Initializing database...');
     await initializeDatabase();
-    logger.info('Database initialized successfully');
     
-    // Test Redis connection
-    logger.info('Testing Redis connection...');
-    await redis.ping();
-    logger.info('Redis connection successful');
+    // Initialize scheduler service
+    SchedulerService.initialize();
     
-    // Start server
-    const server = app.listen(PORT, () => {
-      logger.info(`🚀 UpCoach Backend Server running on port ${PORT}`);
-      logger.info(`📊 API Documentation: http://localhost:${PORT}/api`);
-      logger.info(`💚 Health Check: http://localhost:${PORT}/health`);
-      logger.info(`🌍 Environment: ${config.env}`);
-      logger.info(`🔒 CORS Origins: ${config.corsOrigins.join(', ')}`);
-      logger.info(`📝 Features enabled:`, config.features);
-    });
-
-    // Graceful shutdown handling
-    const gracefulShutdown = (signal: string) => {
-      logger.info(`${signal} received, shutting down gracefully`);
-      server.close(async () => {
-        try {
-          logger.info('Closing database connections...');
-          // Add database cleanup here when implemented
-          
-          logger.info('Closing Redis connection...');
-          await redis.quit();
-          
-          logger.info('Server shut down complete');
-          process.exit(0);
-        } catch (error) {
-          logger.error('Error during graceful shutdown:', error);
-          process.exit(1);
-        }
-      });
-    };
-
-    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-
-    return server;
+    console.log('All services initialized successfully');
   } catch (error) {
-    logger.error('Failed to start server:', error);
+    console.error('Failed to initialize services:', error);
     process.exit(1);
   }
 }
 
-// Start the server
-if (require.main === module) {
-  startServer();
-}
+// Start server
+app.listen(PORT, async () => {
+  console.log(`Server is running on port ${PORT}`);
+  
+  // Initialize services after server starts
+  await initializeServices();
+});
 
 export default app; 

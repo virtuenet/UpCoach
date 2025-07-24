@@ -1,5 +1,5 @@
 import { DataTypes, Model, Optional } from 'sequelize';
-import { sequelize } from '../../config/database';
+import { sequelize } from '../index';
 
 export interface CustomizationSettings {
   voiceSettings?: {
@@ -279,14 +279,16 @@ class UserAvatarPreference extends Model<UserAvatarPreferenceAttributes, UserAva
 
     // Based on personality compatibility
     if (userProfile) {
-      const compatibleAvatars = await sequelize.models.Avatar.findByPersonalityType(
-        userProfile.traits
+      // Get compatible avatars using the Avatar model's methods
+      const { Avatar } = sequelize.models;
+      const compatibleAvatars = await (Avatar as any).findByPersonalityType(
+        (userProfile as any).traits
       );
       
-      compatibleAvatars.slice(0, 2).forEach(avatar => {
+      compatibleAvatars.slice(0, 2).forEach((avatar: any) => {
         if (!userHistory.some(h => h.avatarId === avatar.id)) {
           suggestions.push(avatar.id);
-          reasons.push(`Highly compatible with your ${userProfile.getDominantTrait()} personality`);
+          reasons.push(`Highly compatible with your personality traits`);
         }
       });
     }
@@ -418,7 +420,7 @@ UserAvatarPreference.init(
       type: DataTypes.DATE,
       allowNull: false,
     },
-  },
+  } as any,
   {
     sequelize,
     modelName: 'UserAvatarPreference',

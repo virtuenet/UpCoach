@@ -1,57 +1,77 @@
-import { useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
-import { useAuthStore } from './stores/authStore'
-import Layout from './components/Layout'
-import LoginPage from './pages/LoginPage'
-import DashboardPage from './pages/DashboardPage'
-import UsersPage from './pages/UsersPage'
-import TasksPage from './pages/TasksPage'
-import GoalsPage from './pages/GoalsPage'
-import MoodPage from './pages/MoodPage'
-import ChatPage from './pages/ChatPage'
-import SettingsPage from './pages/SettingsPage'
-import LoadingSpinner from './components/LoadingSpinner'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import Layout from './components/Layout';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import UsersPage from './pages/UsersPage';
+import ChatPage from './pages/ChatPage';
+import GoalsPage from './pages/GoalsPage';
+import TasksPage from './pages/TasksPage';
+import MoodPage from './pages/MoodPage';
+import SettingsPage from './pages/SettingsPage';
+import FinancialDashboardPage from './pages/FinancialDashboardPage';
+import CostTrackingPage from './pages/CostTrackingPage';
+import SubscriptionsPage from './pages/SubscriptionsPage';
+import ReportsPage from './pages/ReportsPage';
+import CMSPage from './pages/CMSPage';
+import ContentEditorPage from './pages/ContentEditorPage';
+import { useAuthStore } from './stores/authStore';
 
 function App() {
-  const { user, isLoading, checkAuth } = useAuthStore()
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    checkAuth()
-  }, [checkAuth])
+    // Check if user is logged in on app start
+    const checkAuth = async () => {
+      try {
+        await useAuthStore.getState().checkAuth();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    checkAuth();
+  }, []);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
-    )
-  }
-
-  if (!user) {
-    return (
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    )
+    );
   }
 
   return (
-    <Layout>
+    <Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/users" element={<UsersPage />} />
-        <Route path="/tasks" element={<TasksPage />} />
-        <Route path="/goals" element={<GoalsPage />} />
-        <Route path="/mood" element={<MoodPage />} />
-        <Route path="/chat" element={<ChatPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/login" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/login" element={<LoginPage />} />
+        
+        {/* Protected routes */}
+        <Route element={<Layout />}>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/users" element={<UsersPage />} />
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/goals" element={<GoalsPage />} />
+          <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/moods" element={<MoodPage />} />
+          
+          {/* Financial pages */}
+          <Route path="/financial" element={<FinancialDashboardPage />} />
+          <Route path="/financial/costs" element={<CostTrackingPage />} />
+          <Route path="/financial/subscriptions" element={<SubscriptionsPage />} />
+          <Route path="/financial/reports" element={<ReportsPage />} />
+          
+          {/* CMS pages */}
+          <Route path="/cms" element={<CMSPage />} />
+          <Route path="/cms/content/new" element={<ContentEditorPage />} />
+          <Route path="/cms/content/:id" element={<ContentEditorPage />} />
+          <Route path="/cms/content/:id/edit" element={<ContentEditorPage />} />
+          
+          <Route path="/settings" element={<SettingsPage />} />
+        </Route>
       </Routes>
-    </Layout>
-  )
+    </Router>
+  );
 }
 
-export default App 
+export default App; 

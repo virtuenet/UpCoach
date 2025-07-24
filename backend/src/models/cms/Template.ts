@@ -1,4 +1,4 @@
-import { DataTypes, Model, Optional } from 'sequelize';
+import { DataTypes, Model, Optional, Op } from 'sequelize';
 import { sequelize } from '../index';
 
 export interface TemplateAttributes {
@@ -105,10 +105,10 @@ export class Template extends Model<TemplateAttributes, TemplateCreationAttribut
   static async searchTemplates(query: string, category?: string): Promise<Template[]> {
     const whereClause: any = {
       isActive: true,
-      [Template.sequelize!.Op.or]: [
-        { name: { [Template.sequelize!.Op.iLike]: `%${query}%` } },
-        { description: { [Template.sequelize!.Op.iLike]: `%${query}%` } },
-        { tags: { [Template.sequelize!.Op.overlap]: [query] } },
+      [Op.or]: [
+        { name: { [Op.iLike]: `%${query}%` } },
+        { description: { [Op.iLike]: `%${query}%` } },
+        { tags: { [Op.overlap]: [query] } },
       ],
     };
 

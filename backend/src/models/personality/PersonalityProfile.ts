@@ -1,5 +1,5 @@
 import { DataTypes, Model, Optional } from 'sequelize';
-import { sequelize } from '../../config/database';
+import { sequelize } from '../index';
 
 export interface PersonalityTraits {
   openness: number;        // 0-100 scale
@@ -114,7 +114,7 @@ class PersonalityProfile extends Model<PersonalityProfileAttributes, Personality
 
   public getRecommendedAvatar(): string {
     // Logic to recommend avatar based on personality
-    const { extraversion, agreeableness, conscientiousness, openness } = this.traits;
+    const { extraversion, agreeableness, conscientiousness, openness, neuroticism } = this.traits;
     
     if (extraversion > 70 && agreeableness > 60) {
       return 'energetic-mentor';
@@ -459,7 +459,7 @@ PersonalityProfile.init(
       defaultValue: true,
       allowNull: false,
     },
-  },
+  } as any,
   {
     sequelize,
     modelName: 'PersonalityProfile',

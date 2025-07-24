@@ -1,4 +1,4 @@
-import { DataTypes, Model, Optional } from 'sequelize';
+import { DataTypes, Model, Optional, Op } from 'sequelize';
 import { sequelize } from '../index';
 
 // Article interface
@@ -98,7 +98,7 @@ export class Article extends Model<ArticleAttributes, ArticleCreationAttributes>
     let slug = baseSlug;
     let counter = 1;
     
-    while (await Article.findOne({ where: { slug, id: { [sequelize.Op.ne]: this.id } } })) {
+    while (await Article.findOne({ where: { slug, id: { [Op.ne]: this.id } } })) {
       slug = `${baseSlug}-${counter}`;
       counter++;
     }
@@ -161,10 +161,10 @@ export class Article extends Model<ArticleAttributes, ArticleCreationAttributes>
     const whereClause: any = {};
 
     if (query) {
-      whereClause[sequelize.Op.or] = [
-        { title: { [sequelize.Op.iLike]: `%${query}%` } },
-        { content: { [sequelize.Op.iLike]: `%${query}%` } },
-        { excerpt: { [sequelize.Op.iLike]: `%${query}%` } },
+      whereClause[Op.or] = [
+        { title: { [Op.iLike]: `%${query}%` } },
+        { content: { [Op.iLike]: `%${query}%` } },
+        { excerpt: { [Op.iLike]: `%${query}%` } },
       ];
     }
 
@@ -221,7 +221,7 @@ export class Article extends Model<ArticleAttributes, ArticleCreationAttributes>
       where: {
         status: 'draft',
         'publishingSchedule.scheduledPublishAt': {
-          [sequelize.Op.lte]: new Date()
+          [Op.lte]: new Date()
         },
         'publishingSchedule.autoPublish': true
       }

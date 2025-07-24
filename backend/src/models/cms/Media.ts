@@ -1,4 +1,4 @@
-import { DataTypes, Model, Optional } from 'sequelize';
+import { DataTypes, Model, Optional, Op } from 'sequelize';
 import { sequelize } from '../index';
 
 // Media interface
@@ -146,7 +146,7 @@ export class Media extends Model<MediaAttributes, MediaCreationAttributes> imple
   static async getByType(mimeType: string): Promise<Media[]> {
     return Media.findAll({
       where: { 
-        mimeType: { [sequelize.Op.like]: `${mimeType}%` }
+        mimeType: { [Op.like]: `${mimeType}%` }
       },
       order: [['createdAt', 'DESC']],
     });
@@ -161,16 +161,16 @@ export class Media extends Model<MediaAttributes, MediaCreationAttributes> imple
     const whereClause: any = {};
 
     if (query) {
-      whereClause[sequelize.Op.or] = [
-        { originalName: { [sequelize.Op.iLike]: `%${query}%` } },
-        { alt: { [sequelize.Op.iLike]: `%${query}%` } },
-        { caption: { [sequelize.Op.iLike]: `%${query}%` } },
-        { tags: { [sequelize.Op.contains]: [query] } },
+      whereClause[Op.or] = [
+        { originalName: { [Op.iLike]: `%${query}%` } },
+        { alt: { [Op.iLike]: `%${query}%` } },
+        { caption: { [Op.iLike]: `%${query}%` } },
+        { tags: { [Op.contains]: [query] } },
       ];
     }
 
     if (filters.type) {
-      whereClause.mimeType = { [sequelize.Op.like]: `${filters.type}%` };
+      whereClause.mimeType = { [Op.like]: `${filters.type}%` };
     }
 
     if (filters.folder !== undefined) {
@@ -182,7 +182,7 @@ export class Media extends Model<MediaAttributes, MediaCreationAttributes> imple
     }
 
     if (filters.tags && filters.tags.length > 0) {
-      whereClause.tags = { [sequelize.Op.overlap]: filters.tags };
+      whereClause.tags = { [Op.overlap]: filters.tags };
     }
 
     return Media.findAll({
@@ -211,7 +211,7 @@ export class Media extends Model<MediaAttributes, MediaCreationAttributes> imple
     const result = await Media.findAll({
       attributes: ['folder'],
       where: {
-        folder: { [sequelize.Op.ne]: null }
+        folder: { [Op.ne]: null }
       },
       group: ['folder'],
       raw: true,
@@ -255,7 +255,7 @@ export class Media extends Model<MediaAttributes, MediaCreationAttributes> imple
     const unusedMedia = await Media.findAll({
       where: {
         'usage.totalUsageCount': 0,
-        createdAt: { [sequelize.Op.lt]: cutoffDate }
+        createdAt: { [Op.lt]: cutoffDate }
       }
     });
 

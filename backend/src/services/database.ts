@@ -119,7 +119,7 @@ export class DatabaseService {
   }
 
   // Helper methods for common database operations
-  public async findOne<T = any>(
+  public async findOne<T extends QueryResultRow = any>(
     table: string,
     conditions: Record<string, any>,
     columns: string[] = ['*']
@@ -141,7 +141,7 @@ export class DatabaseService {
     return result.rows[0] || null;
   }
 
-  public async findMany<T = any>(
+  public async findMany<T extends QueryResultRow = any>(
     table: string,
     conditions: Record<string, any> = {},
     options: {
@@ -180,7 +180,7 @@ export class DatabaseService {
     return result.rows;
   }
 
-  public async insert<T = any>(
+  public async insert<T extends QueryResultRow = any>(
     table: string,
     data: Record<string, any>,
     returning: string[] = ['*']
@@ -199,7 +199,7 @@ export class DatabaseService {
     return result.rows[0];
   }
 
-  public async update<T = any>(
+  public async update<T extends QueryResultRow = any>(
     table: string,
     data: Record<string, any>,
     conditions: Record<string, any>,

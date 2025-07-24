@@ -1,74 +1,77 @@
-import { Pool, Client, PoolClient } from 'pg';
-import { config } from './environment';
-import { logger } from '../utils/logger';
+import { Sequelize } from 'sequelize';
+import dotenv from 'dotenv';
+import path from 'path';
 
-// Database connection pool
-let pool: Pool;
+dotenv.config();
 
-// Database configuration
+const env = process.env.NODE_ENV || 'development';
+
 const dbConfig = {
-  connectionString: config.databaseUrl,
-  max: 20, // Maximum number of clients in the pool
-  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 5000, // Return an error after 5 seconds if connection could not be established
-  statement_timeout: 30000, // Close queries after 30 seconds
-  query_timeout: 30000,
-  // SSL configuration for production
-  ssl: config.env === 'production' ? { rejectUnauthorized: false } : false,
+  development: {
+    username: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'password',
+    database: process.env.DB_NAME || 'upcoach_dev',
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432'),
+    dialect: 'postgres' as const,
+    logging: false,
+  },
+  test: {
+    username: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'password',
+    database: process.env.DB_TEST_NAME || 'upcoach_test',
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432'),
+    dialect: 'postgres' as const,
+    logging: false,
+  },
+  production: {
+    username: process.env.DB_USER!,
+    password: process.env.DB_PASSWORD!,
+    database: process.env.DB_NAME!,
+    host: process.env.DB_HOST!,
+    port: parseInt(process.env.DB_PORT || '5432'),
+    dialect: 'postgres' as const,
+    logging: false,
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000,
+    },
+  },
 };
 
-/**
- * Initialize database connection pool
- */
+const config = dbConfig[env as keyof typeof dbConfig];
+
+export const sequelize = new Sequelize({
+  ...config
+});
+
+// Initialize database connection
 export async function initializeDatabase(): Promise<void> {
   try {
-    logger.info('Initializing database connection...');
+    await sequelize.authenticate();
+    console.log('Database connection established successfully.');
     
-    pool = new Pool(dbConfig);
-
-    // Set up event handlers
-    pool.on('connect', (client) => {
-      logger.debug('New database client connected');
-    });
-
-    pool.on('error', (err, client) => {
-      logger.error('Unexpected database client error:', err);
-    });
-
-    pool.on('remove', (client) => {
-      logger.debug('Database client removed from pool');
-    });
-
-    // Test the connection
-    const client = await pool.connect();
-    try {
-      const result = await client.query('SELECT NOW() as current_time, version() as version');
-      logger.info('Database connected successfully:', {
-        time: result.rows[0].current_time,
-        version: result.rows[0].version.split(' ')[0] + ' ' + result.rows[0].version.split(' ')[1],
-      });
-    } finally {
-      client.release();
+    // Sync models with database
+    if (env === 'development') {
+      await sequelize.sync({ alter: true });
+      console.log('Database models synchronized.');
     }
-
-    logger.info('Database initialization completed');
   } catch (error) {
-    logger.error('Database initialization failed:', error);
-    throw new Error(`Database connection failed: ${error}`);
+    console.error('Unable to connect to the database:', error);
+    throw error;
   }
 }
 
-/**
- * Close database connection pool
- */
+// Close database connection
 export async function closeDatabase(): Promise<void> {
   try {
-    if (pool) {
-      await pool.end();
-      logger.info('Database connection pool closed');
-    }
+    await sequelize.close();
+    console.log('Database connection closed.');
   } catch (error) {
-    logger.error('Error closing database pool:', error);
+    console.error('Error closing database connection:', error);
     throw error;
   }
 }
@@ -78,24 +81,22 @@ export async function closeDatabase(): Promise<void> {
  */
 export async function query(text: string, params?: any[]): Promise<any> {
   try {
-    const client = await pool.connect();
-    try {
-      const start = Date.now();
-      const result = await client.query(text, params);
-      const duration = Date.now() - start;
-      
-      logger.debug('Executed query', {
-        text: text.substring(0, 100) + (text.length > 100 ? '...' : ''),
-        duration: `${duration}ms`,
-        rows: result.rowCount,
-      });
-      
-      return result;
-    } finally {
-      client.release();
-    }
+    const start = Date.now();
+    const [results, metadata] = await sequelize.query(text, {
+      replacements: params,
+      raw: true
+    });
+    const duration = Date.now() - start;
+    
+    console.log('Executed query', {
+      text: text.substring(0, 100) + (text.length > 100 ? '...' : ''),
+      duration: `${duration}ms`,
+      rows: Array.isArray(results) ? results.length : 0,
+    });
+    
+    return { rows: results, rowCount: Array.isArray(results) ? results.length : 0 };
   } catch (error) {
-    logger.error('Database query error:', {
+    console.error('Database query error:', {
       query: text.substring(0, 100) + (text.length > 100 ? '...' : ''),
       error: error instanceof Error ? error.message : String(error),
       params: params ? params.length : 0,
@@ -108,36 +109,34 @@ export async function query(text: string, params?: any[]): Promise<any> {
  * Execute queries within a transaction
  */
 export async function transaction<T>(
-  callback: (client: PoolClient) => Promise<T>
+  callback: (transaction: any) => Promise<T>
 ): Promise<T> {
-  const client = await pool.connect();
+  const t = await sequelize.transaction();
   
   try {
-    await client.query('BEGIN');
-    logger.debug('Transaction started');
+    console.log('Transaction started');
     
-    const result = await callback(client);
+    const result = await callback(t);
     
-    await client.query('COMMIT');
-    logger.debug('Transaction committed');
+    await t.commit();
+    console.log('Transaction committed');
     
     return result;
   } catch (error) {
-    await client.query('ROLLBACK');
-    logger.debug('Transaction rolled back');
+    await t.rollback();
+    console.log('Transaction rolled back');
     
-    logger.error('Transaction error:', error);
+    console.error('Transaction error:', error);
     throw error;
-  } finally {
-    client.release();
   }
 }
 
 /**
  * Get a database client from the pool (for advanced usage)
  */
-export async function getClient(): Promise<PoolClient> {
-  return await pool.connect();
+export async function getClient(): Promise<any> {
+  // In Sequelize, we return the sequelize instance itself
+  return sequelize;
 }
 
 /**
@@ -148,7 +147,7 @@ export async function healthCheck(): Promise<boolean> {
     const result = await query('SELECT 1 as health');
     return result.rows[0]?.health === 1;
   } catch (error) {
-    logger.error('Database health check failed:', error);
+    console.error('Database health check failed:', error);
     return false;
   }
 }
@@ -157,14 +156,12 @@ export async function healthCheck(): Promise<boolean> {
  * Get database pool stats
  */
 export function getPoolStats() {
-  if (!pool) {
-    return null;
-  }
-  
+  // Sequelize doesn't expose pool stats directly in the same way
+  // Return basic connection info
   return {
-    totalCount: pool.totalCount,
-    idleCount: pool.idleCount,
-    waitingCount: pool.waitingCount,
+    dialect: sequelize.getDialect(),
+    database: sequelize.getDatabaseName(),
+    connected: sequelize.authenticate().then(() => true).catch(() => false)
   };
 }
 
@@ -301,9 +298,6 @@ export const db = {
     return parseInt(result.rows[0].count);
   }
 };
-
-// Export the pool for advanced usage
-export { pool };
 
 // Handle graceful shutdown
 process.on('SIGINT', async () => {

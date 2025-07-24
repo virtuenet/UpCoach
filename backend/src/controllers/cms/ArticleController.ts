@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { Article, Category, ContentAnalytics } from '../../models';
 import { validationResult } from 'express-validator';
+import { Op } from 'sequelize';
 
 /**
  * ArticleController
@@ -40,10 +41,10 @@ export class ArticleController {
       }
 
       if (search) {
-        whereClause[Article.sequelize!.Op.or] = [
-          { title: { [Article.sequelize!.Op.iLike]: `%${search}%` } },
-          { content: { [Article.sequelize!.Op.iLike]: `%${search}%` } },
-          { excerpt: { [Article.sequelize!.Op.iLike]: `%${search}%` } },
+        whereClause[Op.or] = [
+          { title: { [Op.iLike]: `%${search}%` } },
+          { content: { [Op.iLike]: `%${search}%` } },
+          { excerpt: { [Op.iLike]: `%${search}%` } },
         ];
       }
 
@@ -130,7 +131,7 @@ export class ArticleController {
           contentType: 'article',
           contentId: article.id,
           userId: req.user?.id || null,
-          sessionId: req.session?.id || 'anonymous',
+          sessionId: req.headers['x-session-id'] as string || 'anonymous',
           event: 'view',
           metadata: {
             referrer: req.get('Referrer'),

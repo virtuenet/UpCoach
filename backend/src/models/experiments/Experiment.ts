@@ -1,5 +1,5 @@
 import { DataTypes, Model, Optional } from 'sequelize';
-import { sequelize } from '../../config/database';
+import { sequelize } from '../index';
 
 export interface ExperimentAttributes {
   id: string;
@@ -47,7 +47,7 @@ export interface SegmentRule {
   value: any;
 }
 
-interface ExperimentCreationAttributes extends Optional<ExperimentAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
+interface ExperimentCreationAttributes extends Optional<ExperimentAttributes, 'id' | 'createdAt' | 'updatedAt' | 'endDate'> {}
 
 class Experiment extends Model<ExperimentAttributes, ExperimentCreationAttributes> implements ExperimentAttributes {
   public id!: string;
@@ -155,7 +155,7 @@ Experiment.init(
       type: DataTypes.DATE,
       allowNull: true,
       validate: {
-        isAfterStartDate(value: Date) {
+        isAfterStartDate(this: any, value: Date) {
           if (value && value <= this.startDate) {
             throw new Error('End date must be after start date');
           }
@@ -195,7 +195,7 @@ Experiment.init(
       type: DataTypes.UUID,
       allowNull: false,
     },
-  },
+  } as any,
   {
     sequelize,
     modelName: 'Experiment',

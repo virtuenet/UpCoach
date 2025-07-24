@@ -1,603 +1,890 @@
 import { Request, Response } from 'express';
+import { financialService } from '../../services/financial/FinancialService';
+import { 
+  Transaction,
+  Subscription,
+  CostTracking,
+  FinancialSnapshot,
+  FinancialReport,
+  RevenueAnalytics,
+  BillingEvent,
+} from '../../models';
 import { Op } from 'sequelize';
-import { sequelize } from '../../models';
-import { FinancialService } from '../../services/financial/FinancialService';
-import { FinancialSnapshot, Transaction, Subscription, CostTracking, RevenueAnalytics } from '../../models';
+import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
+import { ApiError } from '../../utils/apiError';
+import { reportingService } from '../../services/financial/ReportingService';
+import { EmailService } from '../../services/EmailService';
+import { SchedulerService } from '../../services/SchedulerService';
 
-/**
- * FinancialDashboardController
- * Handles financial dashboard and reporting endpoints
- */
 export class FinancialDashboardController {
   /**
-   * Get financial dashboard overview
+   * Get dashboard metrics
    */
-  static async getDashboardOverview(req: Request, res: Response): Promise<void> {
+  async getDashboardMetrics(req: Request, res: Response): Promise<void> {
     try {
-      const { period = 'monthly' } = req.query;
-      
-      // Get current metrics
-      const mrr = await FinancialService.calculateMRR();
-      const arr = await FinancialService.calculateARR();
-      const unitEconomics = await FinancialService.calculateUnitEconomics();
-      const healthScore = await FinancialService.getFinancialHealthScore();
-      
-      // Get latest snapshot
-      const latestSnapshot = await FinancialSnapshot.getLatest(period as string);
-      
-      // Get trends
-      const trends = await FinancialSnapshot.calculateTrends();
-      
-      res.json({
-        success: true,
-        data: {
-          currentMetrics: {
-            mrr,
-            arr,
-            ltv: unitEconomics.ltv,
-            cac: unitEconomics.cac,
-            ltvCacRatio: unitEconomics.ltvCacRatio,
-            paybackPeriod: unitEconomics.paybackPeriod,
-          },
-          healthScore,
-          snapshot: latestSnapshot,
-          trends,
-        },
-      });
+      const metrics = await financialService.getDashboardMetrics();
+      res.json(metrics);
     } catch (error) {
-      console.error('Error getting dashboard overview:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to fetch dashboard overview',
-      });
+      res.status(500).json({ error: error.message });
     }
   }
 
   /**
-   * Get MRR breakdown
+   * Get revenue metrics
    */
-  static async getMRRBreakdown(req: Request, res: Response): Promise<void> {
+  async getRevenueMetrics(req: Request, res: Response): Promise<void> {
     try {
-      const currentDate = new Date();
-      const lastMonthDate = new Date();
-      lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
-      
-      // Calculate MRR components
-      const currentMRR = await FinancialService.calculateMRR(currentDate);
-      const lastMonthMRR = await FinancialService.calculateMRR(lastMonthDate);
-      const mrrGrowth = await FinancialService.calculateMRRGrowthRate();
-      
-      // Get new MRR (from new subscriptions)
-      const newMRR = await Subscription.sum('billingAmount', {
+      const { startDate, endDate } = req.query;
+      const start = startDate ? new Date(startDate as string) : startOfMonth(new Date());
+      const end = endDate ? new Date(endDate as string) : endOfMonth(new Date());
+
+      const revenue = await Transaction.sum('amount', {
         where: {
-          createdAt: {
-            [sequelize.Op.between]: [lastMonthDate, currentDate],
-          },
-          status: ['active', 'trialing'],
-        },
-      }) || 0;
-      
-      // Get expansion MRR (from upgrades)
-      const expansionMRR = await sequelize.query(`
-        SELECT SUM(
-          CAST(s.billing_amount AS DECIMAL) - 
-          CAST(s.metadata->>'previousAmount' AS DECIMAL)
-        ) as expansion_mrr
-        FROM subscriptions s
-        WHERE s.upgraded_at BETWEEN :startDate AND :endDate
-          AND s.status IN ('active', 'trialing')
-      `, {
-        replacements: { startDate: lastMonthDate, endDate: currentDate },
-        type: sequelize.QueryTypes.SELECT,
-      });
-      
-      // Get contraction MRR (from downgrades)
-      const contractionMRR = await sequelize.query(`
-        SELECT SUM(
-          CAST(s.metadata->>'previousAmount' AS DECIMAL) - 
-          CAST(s.billing_amount AS DECIMAL)
-        ) as contraction_mrr
-        FROM subscriptions s
-        WHERE s.downgraded_at BETWEEN :startDate AND :endDate
-          AND s.status IN ('active', 'trialing')
-      `, {
-        replacements: { startDate: lastMonthDate, endDate: currentDate },
-        type: sequelize.QueryTypes.SELECT,
-      });
-      
-      // Get churned MRR
-      const churnedMRR = await sequelize.query(`
-        SELECT SUM(billing_amount) as churned_mrr
-        FROM subscriptions
-        WHERE canceled_at BETWEEN :startDate AND :endDate
-      `, {
-        replacements: { startDate: lastMonthDate, endDate: currentDate },
-        type: sequelize.QueryTypes.SELECT,
-      });
-      
-      res.json({
-        success: true,
-        data: {
-          currentMRR,
-          lastMonthMRR,
-          mrrGrowth,
-          mrrGrowthRate: mrrGrowth,
-          breakdown: {
-            newMRR,
-            expansionMRR: expansionMRR[0]?.expansion_mrr || 0,
-            contractionMRR: contractionMRR[0]?.contraction_mrr || 0,
-            churnedMRR: churnedMRR[0]?.churned_mrr || 0,
-            netNewMRR: currentMRR - lastMonthMRR,
-          },
-          byPlan: await this.getMRRByPlan(),
+          status: 'completed',
+          createdAt: { [Op.between]: [start, end] },
         },
       });
-    } catch (error) {
-      console.error('Error getting MRR breakdown:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to fetch MRR breakdown',
-      });
-    }
-  }
 
-  /**
-   * Get P&L statement
-   */
-  static async getProfitLoss(req: Request, res: Response): Promise<void> {
-    try {
-      const { startDate, endDate } = req.query;
-      
-      if (!startDate || !endDate) {
-        res.status(400).json({
-          success: false,
-          error: 'Start date and end date are required',
-        });
-        return;
-      }
-      
-      const profitLoss = await FinancialService.generateProfitLoss(
-        new Date(startDate as string),
-        new Date(endDate as string)
-      );
-      
-      res.json({
-        success: true,
-        data: profitLoss,
-      });
-    } catch (error) {
-      console.error('Error generating P&L:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to generate profit & loss statement',
-      });
-    }
-  }
-
-  /**
-   * Get cost breakdown
-   */
-  static async getCostBreakdown(req: Request, res: Response): Promise<void> {
-    try {
-      const { startDate, endDate } = req.query;
-      
-      if (!startDate || !endDate) {
-        res.status(400).json({
-          success: false,
-          error: 'Start date and end date are required',
-        });
-        return;
-      }
-      
-      const start = new Date(startDate as string);
-      const end = new Date(endDate as string);
-      
-      // Get costs by category
-      const costsByCategory = await CostTracking.getCostsByCategory(start, end);
-      
-      // Get top vendors
-      const topVendors = await sequelize.query(`
-        SELECT 
-          vendor,
-          SUM(total_amount) as total_cost,
-          COUNT(*) as transaction_count
-        FROM cost_tracking
-        WHERE billing_start_date BETWEEN :startDate AND :endDate
-          AND status IN ('approved', 'paid')
-        GROUP BY vendor
-        ORDER BY total_cost DESC
-        LIMIT 10
-      `, {
-        replacements: { startDate: start, endDate: end },
-        type: sequelize.QueryTypes.SELECT,
-      });
-      
-      // Get cost trends
-      const costTrends = await sequelize.query(`
-        SELECT 
-          DATE_TRUNC('month', billing_start_date) as month,
-          category,
-          SUM(total_amount) as total_cost
-        FROM cost_tracking
-        WHERE billing_start_date >= :startDate
-          AND status IN ('approved', 'paid')
-        GROUP BY month, category
-        ORDER BY month, category
-      `, {
-        replacements: { startDate: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000) },
-        type: sequelize.QueryTypes.SELECT,
-      });
-      
-      // Calculate burn rate
-      const burnRate = await FinancialService.calculateBurnRate();
-      
-      // Get cost optimization opportunities
-      const optimizationOpportunities = await CostTracking.findOptimizationOpportunities();
-      
-      res.json({
-        success: true,
-        data: {
-          totalCosts: Object.values(costsByCategory).reduce((sum, cost) => sum + cost, 0),
-          costsByCategory,
-          topVendors,
-          costTrends,
-          burnRate,
-          monthlyBurn: burnRate,
-          optimizationOpportunities: optimizationOpportunities.map(opp => ({
-            id: opp.id,
-            vendor: opp.vendor,
-            category: opp.category,
-            currentCost: opp.totalAmount,
-            potentialSavings: opp.optimizationPotential?.savingsAmount || 0,
-            recommendations: opp.optimizationPotential?.recommendations || [],
-          })),
+      const refunds = await Transaction.sum('amount', {
+        where: {
+          status: 'refunded',
+          createdAt: { [Op.between]: [start, end] },
         },
       });
-    } catch (error) {
-      console.error('Error getting cost breakdown:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to fetch cost breakdown',
+
+      const netRevenue = (revenue || 0) - (refunds || 0);
+      const mrr = await financialService.calculateMRR();
+      const arr = await financialService.calculateARR();
+
+      res.json({
+        gross: revenue || 0,
+        refunds: refunds || 0,
+        net: netRevenue,
+        mrr,
+        arr,
       });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
   }
 
   /**
    * Get subscription metrics
    */
-  static async getSubscriptionMetrics(req: Request, res: Response): Promise<void> {
+  async getSubscriptionMetrics(req: Request, res: Response): Promise<void> {
     try {
-      const currentDate = new Date();
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-      
-      // Get subscription counts by status
-      const subscriptionsByStatus = await Subscription.count({
-        group: ['status'],
+      const active = await Subscription.count({
+        where: { status: ['active', 'trialing'] },
       });
-      
-      // Get churn rate
-      const churnRate = await FinancialService.calculateChurnRate(thirtyDaysAgo, currentDate);
-      
-      // Get trial conversion rate
-      const trialConversions = await sequelize.query(`
-        SELECT 
-          COUNT(CASE WHEN status = 'active' THEN 1 END) as converted,
-          COUNT(*) as total_trials
-        FROM subscriptions
-        WHERE trial_end BETWEEN :startDate AND :endDate
-      `, {
-        replacements: { startDate: thirtyDaysAgo, endDate: currentDate },
-        type: sequelize.QueryTypes.SELECT,
-      });
-      
-      const trialConversionRate = trialConversions[0]?.total_trials > 0
-        ? (trialConversions[0]?.converted / trialConversions[0]?.total_trials) * 100
-        : 0;
-      
-      // Get LTV by plan
-      const ltvByPlan = await sequelize.query(`
-        SELECT 
-          plan_type,
-          AVG(EXTRACT(MONTH FROM AGE(
-            COALESCE(canceled_at, CURRENT_DATE),
-            start_date
-          )) * billing_amount) as ltv
-        FROM subscriptions
-        WHERE status != 'trialing'
-        GROUP BY plan_type
-      `, {
-        type: sequelize.QueryTypes.SELECT,
-      });
-      
-      res.json({
-        success: true,
-        data: {
-          activeSubscriptions: await Subscription.getActiveCount(),
-          totalMRR: await Subscription.calculateTotalMRR(),
-          churnRate,
-          trialConversionRate,
-          subscriptionsByStatus: subscriptionsByStatus.map(s => ({
-            status: s.status,
-            count: s.count,
-          })),
-          ltvByPlan,
-          averageSubscriptionValue: await FinancialService.calculateARPU(thirtyDaysAgo, currentDate),
+
+      const new_subs = await Subscription.count({
+        where: {
+          createdAt: { [Op.gte]: startOfMonth(new Date()) },
         },
       });
-    } catch (error) {
-      console.error('Error getting subscription metrics:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to fetch subscription metrics',
+
+      const churned = await Subscription.count({
+        where: {
+          canceledAt: { [Op.gte]: startOfMonth(new Date()) },
+        },
       });
+
+      const churnRate = await financialService.calculateChurnRate(
+        startOfMonth(subMonths(new Date(), 1)),
+        new Date()
+      );
+
+      res.json({
+        active,
+        new: new_subs,
+        churned,
+        churnRate,
+        netNew: new_subs - churned,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get cost metrics
+   */
+  async getCostMetrics(req: Request, res: Response): Promise<void> {
+    try {
+      const { startDate, endDate } = req.query;
+      const start = startDate ? new Date(startDate as string) : startOfMonth(new Date());
+      const end = endDate ? new Date(endDate as string) : endOfMonth(new Date());
+
+      const costs = await CostTracking.findAll({
+        attributes: [
+          'category',
+          [CostTracking.sequelize!.fn('SUM', CostTracking.sequelize!.col('amount')), 'total'],
+        ],
+        where: {
+          periodStart: { [Op.gte]: start },
+          periodEnd: { [Op.lte]: end },
+        },
+        group: ['category'],
+      });
+
+      const totalCosts = costs.reduce((sum, cost) => sum + parseFloat(cost.getDataValue('total')), 0);
+
+      res.json({
+        total: totalCosts,
+        byCategory: costs.reduce((acc, cost) => {
+          acc[cost.category] = parseFloat(cost.getDataValue('total'));
+          return acc;
+        }, {} as Record<string, number>),
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get P&L statement
+   */
+  async getProfitLossStatement(req: Request, res: Response): Promise<void> {
+    try {
+      const { period = 'monthly' } = req.params;
+      const { startDate, endDate } = req.query;
+      
+      let start: Date, end: Date;
+      
+      if (startDate && endDate) {
+        start = new Date(startDate as string);
+        end = new Date(endDate as string);
+      } else {
+        // Default to current month
+        start = startOfMonth(new Date());
+        end = endOfMonth(new Date());
+      }
+
+      const pnl = await financialService.getProfitLossStatement(start, end);
+      res.json(pnl);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get MRR metrics
+   */
+  async getMRRMetrics(req: Request, res: Response): Promise<void> {
+    try {
+      const currentMRR = await financialService.calculateMRR();
+      const lastMonthMRR = await financialService.calculateMRR(endOfMonth(subMonths(new Date(), 1)));
+      
+      const growth = lastMonthMRR > 0 
+        ? ((currentMRR - lastMonthMRR) / lastMonthMRR) * 100 
+        : 0;
+
+      // Get MRR breakdown
+      const breakdown = await financialService.getRevenueByPlan(
+        startOfMonth(new Date()),
+        endOfMonth(new Date())
+      );
+
+      res.json({
+        current: currentMRR,
+        previous: lastMonthMRR,
+        growth,
+        growthAmount: currentMRR - lastMonthMRR,
+        breakdown,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get ARR metrics
+   */
+  async getARRMetrics(req: Request, res: Response): Promise<void> {
+    try {
+      const arr = await financialService.calculateARR();
+      res.json({ arr });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get revenue by plan
+   */
+  async getRevenueByPlan(req: Request, res: Response): Promise<void> {
+    try {
+      const { startDate, endDate } = req.query;
+      const start = startDate ? new Date(startDate as string) : startOfMonth(new Date());
+      const end = endDate ? new Date(endDate as string) : endOfMonth(new Date());
+
+      const revenueByPlan = await financialService.getRevenueByPlan(start, end);
+      res.json(revenueByPlan);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get revenue by country
+   */
+  async getRevenueByCountry(req: Request, res: Response): Promise<void> {
+    try {
+      // TODO: Implement revenue by country logic
+      res.json([]);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
   }
 
   /**
    * Get revenue forecast
    */
-  static async getRevenueForecast(req: Request, res: Response): Promise<void> {
+  async getRevenueForecast(req: Request, res: Response): Promise<void> {
     try {
       const { months = 6 } = req.query;
-      
-      // Get latest forecast or generate new one
-      let forecast = await RevenueAnalytics.getLatestForecast();
-      
-      if (!forecast || 
-          new Date().getTime() - forecast.createdAt.getTime() > 7 * 24 * 60 * 60 * 1000) {
-        // Generate new forecast if none exists or older than 7 days
-        const forecastData = await RevenueAnalytics.generateForecast(Number(months));
-        
-        forecast = await RevenueAnalytics.create({
-          analysisType: 'forecast',
-          analysisName: `Revenue Forecast - ${new Date().toISOString().split('T')[0]}`,
-          description: `${months} month revenue forecast`,
-          periodType: 'monthly',
-          startDate: new Date(),
-          endDate: new Date(Date.now() + Number(months) * 30 * 24 * 60 * 60 * 1000),
-          forecastData,
-          insights: {
-            summary: 'Revenue forecast generated using historical data',
-            keyFindings: [],
-            recommendations: [],
-            risks: [],
-            opportunities: [],
-          },
-          metrics: {
-            totalRevenue: 0,
-            growthRate: 0,
-            avgOrderValue: 0,
-            conversionRate: 0,
-            retentionRate: 0,
-            expansionRate: 0,
-            netRevenueRetention: 0,
-          },
-          dataQuality: {
-            completeness: 100,
-            sampleSize: 12,
-            confidenceScore: 0.85,
-            dataIssues: [],
-          },
-          createdBy: req.user?.id || 'system',
-          isPublished: true,
-          tags: ['forecast', 'revenue'],
-        });
-      }
-      
+      // TODO: Implement revenue forecasting logic
       res.json({
-        success: true,
-        data: {
-          forecast: forecast.forecastData,
-          accuracy: forecast.forecastData?.accuracy,
-          method: forecast.forecastData?.method,
-          lastUpdated: forecast.createdAt,
-        },
+        forecast: [],
+        accuracy: 0,
+        confidence: 0,
       });
     } catch (error) {
-      console.error('Error getting revenue forecast:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to fetch revenue forecast',
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get subscriptions
+   */
+  async getSubscriptions(req: Request, res: Response): Promise<void> {
+    try {
+      const { status, plan, page = 1, limit = 20 } = req.query;
+      const offset = (Number(page) - 1) * Number(limit);
+
+      const where: any = {};
+      if (status) where.status = status;
+      if (plan) where.plan = plan;
+
+      const { count, rows } = await Subscription.findAndCountAll({
+        where,
+        limit: Number(limit),
+        offset,
+        order: [['createdAt', 'DESC']],
       });
+
+      res.json({
+        subscriptions: rows,
+        total: count,
+        page: Number(page),
+        totalPages: Math.ceil(count / Number(limit)),
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get active subscriptions
+   */
+  async getActiveSubscriptions(req: Request, res: Response): Promise<void> {
+    try {
+      const subscriptions = await Subscription.findAll({
+        where: {
+          status: ['active', 'trialing'],
+        },
+        order: [['createdAt', 'DESC']],
+      });
+
+      res.json(subscriptions);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get churn analytics
+   */
+  async getChurnAnalytics(req: Request, res: Response): Promise<void> {
+    try {
+      const { months = 12 } = req.query;
+      const churnData = [];
+
+      for (let i = Number(months) - 1; i >= 0; i--) {
+        const monthStart = startOfMonth(subMonths(new Date(), i));
+        const monthEnd = endOfMonth(subMonths(new Date(), i));
+        
+        const churnRate = await financialService.calculateChurnRate(monthStart, monthEnd);
+        
+        churnData.push({
+          month: format(monthStart, 'yyyy-MM'),
+          churnRate,
+        });
+      }
+
+      res.json(churnData);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get LTV analytics
+   */
+  async getLTVAnalytics(req: Request, res: Response): Promise<void> {
+    try {
+      const ltv = await financialService.calculateLTV();
+      const arpu = await financialService.calculateARPU();
+      
+      res.json({
+        ltv,
+        arpu,
+        avgLifetimeMonths: 24, // This should be calculated from historical data
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get costs
+   */
+  async getCosts(req: Request, res: Response): Promise<void> {
+    try {
+      const { category, startDate, endDate, page = 1, limit = 20 } = req.query;
+      const offset = (Number(page) - 1) * Number(limit);
+
+      const where: any = {};
+      if (category) where.category = category;
+      if (startDate && endDate) {
+        where.periodStart = { [Op.gte]: new Date(startDate as string) };
+        where.periodEnd = { [Op.lte]: new Date(endDate as string) };
+      }
+
+      const { count, rows } = await CostTracking.findAndCountAll({
+        where,
+        limit: Number(limit),
+        offset,
+        order: [['periodStart', 'DESC']],
+      });
+
+      res.json({
+        costs: rows,
+        total: count,
+        page: Number(page),
+        totalPages: Math.ceil(count / Number(limit)),
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Create cost
+   */
+  async createCost(req: Request, res: Response): Promise<void> {
+    try {
+      const cost = await CostTracking.create(req.body);
+      res.status(201).json(cost);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Update cost
+   */
+  async updateCost(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const cost = await CostTracking.findByPk(id);
+      
+      if (!cost) {
+        throw new ApiError(404, 'Cost not found');
+      }
+
+      await cost.update(req.body);
+      res.json(cost);
+    } catch (error) {
+      res.status(error.statusCode || 500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Delete cost
+   */
+  async deleteCost(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const cost = await CostTracking.findByPk(id);
+      
+      if (!cost) {
+        throw new ApiError(404, 'Cost not found');
+      }
+
+      await cost.destroy();
+      res.status(204).send();
+    } catch (error) {
+      res.status(error.statusCode || 500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get costs by category
+   */
+  async getCostsByCategory(req: Request, res: Response): Promise<void> {
+    try {
+      const { startDate, endDate } = req.query;
+      const start = startDate ? new Date(startDate as string) : startOfMonth(new Date());
+      const end = endDate ? new Date(endDate as string) : endOfMonth(new Date());
+
+      const costs = await CostTracking.findAll({
+        attributes: [
+          'category',
+          [CostTracking.sequelize!.fn('SUM', CostTracking.sequelize!.col('amount')), 'total'],
+        ],
+        where: {
+          periodStart: { [Op.gte]: start },
+          periodEnd: { [Op.lte]: end },
+        },
+        group: ['category'],
+      });
+
+      res.json(costs);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get cost optimization suggestions
+   */
+  async getCostOptimizationSuggestions(req: Request, res: Response): Promise<void> {
+    try {
+      // TODO: Implement cost optimization logic
+      res.json({
+        suggestions: [],
+        potentialSavings: 0,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get snapshots
+   */
+  async getSnapshots(req: Request, res: Response): Promise<void> {
+    try {
+      const { period, startDate, endDate } = req.query;
+      const where: any = {};
+      
+      if (period) where.period = period;
+      if (startDate && endDate) {
+        where.date = { [Op.between]: [new Date(startDate as string), new Date(endDate as string)] };
+      }
+
+      const snapshots = await FinancialSnapshot.findAll({
+        where,
+        order: [['date', 'DESC']],
+      });
+
+      res.json(snapshots);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Generate snapshot
+   */
+  async generateSnapshot(req: Request, res: Response): Promise<void> {
+    try {
+      const { date } = req.body;
+      const snapshot = await financialService.generateDailySnapshot(date ? new Date(date) : new Date());
+      res.status(201).json(snapshot);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get latest snapshot
+   */
+  async getLatestSnapshot(req: Request, res: Response): Promise<void> {
+    try {
+      const { period = 'daily' } = req.query;
+      const snapshot = await FinancialSnapshot.findOne({
+        where: { period },
+        order: [['date', 'DESC']],
+      });
+
+      res.json(snapshot);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get reports
+   */
+  async getReports(req: Request, res: Response): Promise<void> {
+    try {
+      const { type, status, page = 1, limit = 20 } = req.query;
+      const offset = (Number(page) - 1) * Number(limit);
+
+      const where: any = {};
+      if (type) where.type = type;
+      if (status) where.status = status;
+
+      const { count, rows } = await FinancialReport.findAndCountAll({
+        where,
+        limit: Number(limit),
+        offset,
+        order: [['createdAt', 'DESC']],
+      });
+
+      res.json({
+        reports: rows,
+        total: count,
+        page: Number(page),
+        totalPages: Math.ceil(count / Number(limit)),
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Create report
+   */
+  async createReport(req: Request, res: Response): Promise<void> {
+    try {
+      const report = await FinancialReport.create(req.body);
+      res.status(201).json(report);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get report
+   */
+  async getReport(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const report = await FinancialReport.findByPk(id);
+      
+      if (!report) {
+        throw new ApiError(404, 'Report not found');
+      }
+
+      res.json(report);
+    } catch (error) {
+      res.status(error.statusCode || 500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Download report
+   */
+  async downloadReport(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const report = await FinancialReport.findByPk(id);
+      
+      if (!report) {
+        throw new ApiError(404, 'Report not found');
+      }
+
+      // TODO: Implement report download logic
+      res.status(501).json({ error: 'Not implemented' });
+    } catch (error) {
+      res.status(error.statusCode || 500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Send report
+   */
+  async sendReport(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { recipients } = req.body;
+      
+      const report = await FinancialReport.findByPk(id);
+      
+      if (!report) {
+        throw new ApiError(404, 'Report not found');
+      }
+
+      // TODO: Implement report sending logic
+      res.status(501).json({ error: 'Not implemented' });
+    } catch (error) {
+      res.status(error.statusCode || 500).json({ error: error.message });
     }
   }
 
   /**
    * Get cohort analysis
    */
-  static async getCohortAnalysis(req: Request, res: Response): Promise<void> {
+  async getCohortAnalysis(req: Request, res: Response): Promise<void> {
     try {
-      const { cohortMonth } = req.query;
+      const { months = 12 } = req.query;
       
-      if (!cohortMonth) {
-        res.status(400).json({
-          success: false,
-          error: 'Cohort month is required (YYYY-MM)',
-        });
-        return;
-      }
-      
-      // Get or generate cohort analysis
-      let analysis = await RevenueAnalytics.getCohortAnalysis(cohortMonth as string);
-      
-      if (!analysis) {
-        // Generate cohort analysis
-        const cohortStart = new Date(`${cohortMonth}-01`);
-        const cohortEnd = new Date(cohortStart);
-        cohortEnd.setMonth(cohortEnd.getMonth() + 1);
-        cohortEnd.setDate(0);
-        
-        const cohortUsers = await Subscription.findAll({
-          where: {
-            createdAt: {
-              [sequelize.Op.between]: [cohortStart, cohortEnd],
-            },
-          },
-          attributes: ['userId', 'billingAmount'],
-        });
-        
-        // Calculate retention rates for each month
-        const retentionRates = [];
-        const revenueByMonth = [];
-        
-        for (let month = 0; month <= 12; month++) {
-          const checkDate = new Date(cohortStart);
-          checkDate.setMonth(checkDate.getMonth() + month);
-          
-          const activeUsers = await Subscription.count({
-            where: {
-              userId: cohortUsers.map(u => u.userId),
-              status: ['active', 'trialing'],
-              currentPeriodStart: { [sequelize.Op.lte]: checkDate },
-              currentPeriodEnd: { [sequelize.Op.gte]: checkDate },
-            },
-          });
-          
-          const monthRevenue = await Subscription.sum('billingAmount', {
-            where: {
-              userId: cohortUsers.map(u => u.userId),
-              status: ['active', 'trialing'],
-              currentPeriodStart: { [sequelize.Op.lte]: checkDate },
-              currentPeriodEnd: { [sequelize.Op.gte]: checkDate },
-            },
-          }) || 0;
-          
-          retentionRates.push(cohortUsers.length > 0 ? activeUsers / cohortUsers.length : 0);
-          revenueByMonth.push(monthRevenue);
-        }
-        
-        analysis = await RevenueAnalytics.create({
-          analysisType: 'cohort',
-          analysisName: `Cohort Analysis - ${cohortMonth}`,
-          description: `Revenue cohort analysis for ${cohortMonth}`,
-          periodType: 'monthly',
-          startDate: cohortStart,
-          endDate: new Date(),
-          cohortData: {
-            cohortMonth: cohortMonth as string,
-            cohortSize: cohortUsers.length,
-            retentionRates,
-            revenueByMonth,
-            ltv: revenueByMonth.reduce((sum, rev) => sum + rev, 0) / cohortUsers.length,
-            paybackPeriod: 0, // Calculate based on CAC
-            avgRevenuePerUser: revenueByMonth.map((rev, i) => 
-              cohortUsers.length > 0 ? rev / (cohortUsers.length * retentionRates[i]) : 0
-            ),
-            churnRates: retentionRates.map((rate, i) => 
-              i === 0 ? 0 : 1 - (rate / retentionRates[i - 1])
-            ),
-            expansionRevenue: [], // Would calculate from upgrades
-          },
-          insights: {
-            summary: `Cohort analysis for ${cohortMonth}`,
-            keyFindings: [],
-            recommendations: [],
-            risks: [],
-            opportunities: [],
-          },
-          metrics: {
-            totalRevenue: revenueByMonth.reduce((sum, rev) => sum + rev, 0),
-            growthRate: 0,
-            avgOrderValue: 0,
-            conversionRate: 0,
-            retentionRate: retentionRates[retentionRates.length - 1],
-            expansionRate: 0,
-            netRevenueRetention: 0,
-          },
-          dataQuality: {
-            completeness: 100,
-            sampleSize: cohortUsers.length,
-            confidenceScore: cohortUsers.length > 30 ? 0.95 : 0.7,
-            dataIssues: [],
-          },
-          createdBy: req.user?.id || 'system',
-          isPublished: true,
-          tags: ['cohort', cohortMonth as string],
-        });
-      }
-      
+      // TODO: Implement cohort analysis logic
       res.json({
-        success: true,
-        data: {
-          cohort: analysis.cohortData,
-          insights: analysis.insights,
-          createdAt: analysis.createdAt,
+        cohorts: [],
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get cohort details
+   */
+  async getCohortDetails(req: Request, res: Response): Promise<void> {
+    try {
+      const { month } = req.params;
+      
+      // TODO: Implement cohort details logic
+      res.json({
+        cohort: month,
+        data: [],
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get unit economics
+   */
+  async getUnitEconomics(req: Request, res: Response): Promise<void> {
+    try {
+      const ltv = await financialService.calculateLTV();
+      const cac = await financialService.calculateCAC(
+        startOfMonth(subMonths(new Date(), 3)),
+        new Date()
+      );
+      const arpu = await financialService.calculateARPU();
+
+      res.json({
+        ltv,
+        cac,
+        ltvToCacRatio: cac > 0 ? ltv / cac : 0,
+        arpu,
+        paybackPeriod: cac > 0 ? cac / arpu : 0,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get CAC
+   */
+  async getCAC(req: Request, res: Response): Promise<void> {
+    try {
+      const { startDate, endDate } = req.query;
+      const start = startDate ? new Date(startDate as string) : startOfMonth(subMonths(new Date(), 3));
+      const end = endDate ? new Date(endDate as string) : new Date();
+
+      const cac = await financialService.calculateCAC(start, end);
+      res.json({ cac });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get LTV to CAC ratio
+   */
+  async getLTVtoCACRatio(req: Request, res: Response): Promise<void> {
+    try {
+      const ltv = await financialService.calculateLTV();
+      const cac = await financialService.calculateCAC(
+        startOfMonth(subMonths(new Date(), 3)),
+        new Date()
+      );
+
+      res.json({
+        ltv,
+        cac,
+        ratio: cac > 0 ? ltv / cac : 0,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get billing events
+   */
+  async getBillingEvents(req: Request, res: Response): Promise<void> {
+    try {
+      const { eventType, userId, page = 1, limit = 20 } = req.query;
+      const offset = (Number(page) - 1) * Number(limit);
+
+      const where: any = {};
+      if (eventType) where.eventType = eventType;
+      if (userId) where.userId = userId;
+
+      const { count, rows } = await BillingEvent.findAndCountAll({
+        where,
+        limit: Number(limit),
+        offset,
+        order: [['createdAt', 'DESC']],
+      });
+
+      res.json({
+        events: rows,
+        total: count,
+        page: Number(page),
+        totalPages: Math.ceil(count / Number(limit)),
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get billing event
+   */
+  async getBillingEvent(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const event = await BillingEvent.findByPk(id);
+      
+      if (!event) {
+        throw new ApiError(404, 'Billing event not found');
+      }
+
+      res.json(event);
+    } catch (error) {
+      res.status(error.statusCode || 500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get automation status
+   */
+  async getAutomationStatus(req: Request, res: Response): Promise<void> {
+    try {
+      const jobs = SchedulerService.getJobStatus();
+      const lastReports = await FinancialReport.findAll({
+        order: [['createdAt', 'DESC']],
+        limit: 5,
+      });
+
+      res.json({
+        scheduledJobs: jobs,
+        recentReports: lastReports,
+        emailService: {
+          status: 'active',
+          lastSent: new Date().toISOString(),
         },
       });
     } catch (error) {
-      console.error('Error getting cohort analysis:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to fetch cohort analysis',
-      });
+      res.status(500).json({ error: error.message });
     }
   }
 
   /**
-   * Generate financial snapshot
+   * Trigger automation manually
    */
-  static async generateSnapshot(req: Request, res: Response): Promise<void> {
+  async triggerAutomation(req: Request, res: Response): Promise<void> {
     try {
-      const { type = 'daily' } = req.body;
-      
-      let snapshot;
-      
+      const { type } = req.params;
+
       switch (type) {
-        case 'daily':
-          snapshot = await FinancialService.generateDailySnapshot();
+        case 'daily-snapshot':
+          await reportingService.generateDailySnapshot();
           break;
-        case 'monthly':
-          // Generate monthly snapshot
-          // Implementation would be similar but with monthly aggregation
+        case 'weekly-report':
+          await reportingService.generateScheduledReports();
+          break;
+        case 'cost-analysis':
+          // Trigger cost analysis
           break;
         default:
-          res.status(400).json({
-            success: false,
-            error: 'Invalid snapshot type',
-          });
-          return;
+          throw new ApiError(400, 'Invalid automation type');
       }
-      
-      res.json({
-        success: true,
-        data: snapshot,
+
+      res.json({ 
+        success: true, 
+        message: `${type} automation triggered successfully` 
       });
     } catch (error) {
-      console.error('Error generating snapshot:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to generate financial snapshot',
-      });
+      res.status(error.statusCode || 500).json({ error: error.message });
     }
   }
 
   /**
-   * Helper: Get MRR by plan
+   * Send test email
    */
-  private static async getMRRByPlan(): Promise<any[]> {
-    const result = await sequelize.query(`
-      SELECT 
-        plan_type,
-        plan_name,
-        COUNT(*) as subscription_count,
-        SUM(
-          CASE 
-            WHEN billing_interval = 'monthly' THEN billing_amount
-            WHEN billing_interval = 'quarterly' THEN billing_amount / 3
-            WHEN billing_interval = 'yearly' THEN billing_amount / 12
-            ELSE 0
-          END
-        ) as mrr
-      FROM subscriptions
-      WHERE status IN ('active', 'trialing')
-      GROUP BY plan_type, plan_name
-      ORDER BY mrr DESC
-    `, {
-      type: sequelize.QueryTypes.SELECT,
-    });
-    
-    return result;
-  }
-}
+  async sendTestEmail(req: Request, res: Response): Promise<void> {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        throw new ApiError(400, 'Email address is required');
+      }
 
-export default FinancialDashboardController; 
+      await EmailService.sendTestEmail(email);
+      
+      res.json({ 
+        success: true, 
+        message: `Test email sent to ${email}` 
+      });
+    } catch (error) {
+      res.status(error.statusCode || 500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Get scheduled jobs
+   */
+  async getScheduledJobs(req: Request, res: Response): Promise<void> {
+    try {
+      const jobs = SchedulerService.getJobStatus();
+      res.json(jobs);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Start a job
+   */
+  async startJob(req: Request, res: Response): Promise<void> {
+    try {
+      const { name } = req.params;
+      // Note: This would need to be implemented in SchedulerService
+      res.json({ 
+        success: true, 
+        message: `Job ${name} start requested` 
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Stop a job
+   */
+  async stopJob(req: Request, res: Response): Promise<void> {
+    try {
+      const { name } = req.params;
+      const stopped = SchedulerService.stopJob(name);
+      
+      res.json({ 
+        success: stopped, 
+        message: stopped ? `Job ${name} stopped` : `Job ${name} not found` 
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+} 

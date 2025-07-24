@@ -1,14 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_constants.dart';
-import '../../features/auth/providers/auth_provider.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
   
   late final Dio _dio;
-  Ref? _ref;
 
   ApiService._internal() {
     _dio = Dio();
@@ -22,9 +20,7 @@ class ApiService {
     _dio.interceptors.add(_LoggingInterceptor());
   }
 
-  void setRef(Ref ref) {
-    _ref = ref;
-  }
+
 
   Dio get dio => _dio;
 
@@ -242,7 +238,5 @@ class ApiError {
 
 // Provider for ApiService
 final apiServiceProvider = Provider<ApiService>((ref) {
-  final apiService = ApiService();
-  apiService.setRef(ref);
-  return apiService;
+  return ApiService();
 }); 

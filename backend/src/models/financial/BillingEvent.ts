@@ -1,321 +1,140 @@
-import { Model, DataTypes, Optional } from 'sequelize';
+import { Model, DataTypes, Optional, Association } from 'sequelize';
 import { sequelize } from '../index';
+import { User } from '../User';
+import { Subscription } from './Subscription';
+import { Transaction } from './Transaction';
 
-/**
- * BillingEvent Model
- * Comprehensive audit trail for all billing-related events
- */
+export enum BillingEventType {
+  SUBSCRIPTION_CREATED = 'subscription_created',
+  SUBSCRIPTION_UPDATED = 'subscription_updated',
+  SUBSCRIPTION_CANCELED = 'subscription_canceled',
+  SUBSCRIPTION_REACTIVATED = 'subscription_reactivated',
+  PAYMENT_SUCCEEDED = 'payment_succeeded',
+  PAYMENT_FAILED = 'payment_failed',
+  PAYMENT_RETRY = 'payment_retry',
+  REFUND_ISSUED = 'refund_issued',
+  CHARGEBACK_CREATED = 'chargeback_created',
+  TRIAL_STARTED = 'trial_started',
+  TRIAL_ENDED = 'trial_ended',
+  PLAN_CHANGED = 'plan_changed',
+  DISCOUNT_APPLIED = 'discount_applied',
+  DISCOUNT_REMOVED = 'discount_removed',
+  INVOICE_CREATED = 'invoice_created',
+  INVOICE_SENT = 'invoice_sent',
+  INVOICE_PAID = 'invoice_paid',
+  CREDIT_APPLIED = 'credit_applied',
+  DUNNING_STARTED = 'dunning_started',
+  DUNNING_RESOLVED = 'dunning_resolved',
+}
+
+export enum BillingEventSource {
+  STRIPE_WEBHOOK = 'stripe_webhook',
+  ADMIN_ACTION = 'admin_action',
+  SYSTEM_AUTOMATION = 'system_automation',
+  USER_ACTION = 'user_action',
+  API_CALL = 'api_call',
+}
 
 export interface BillingEventAttributes {
   id: string;
-  
-  // Event Information
-  eventType: 'subscription_created' | 'subscription_updated' | 'subscription_cancelled' |
-            'payment_succeeded' | 'payment_failed' | 'payment_refunded' |
-            'invoice_created' | 'invoice_paid' | 'invoice_failed' |
-            'trial_started' | 'trial_ended' | 'trial_converted' |
-            'plan_upgraded' | 'plan_downgraded' | 'plan_changed' |
-            'discount_applied' | 'discount_removed' | 'promo_code_used' |
-            'payment_method_added' | 'payment_method_removed' | 'payment_method_updated' |
-            'chargeback_created' | 'chargeback_lost' | 'chargeback_won' |
-            'dunning_started' | 'dunning_attempt' | 'dunning_recovered' | 'dunning_failed';
-  
-  // Related Entities
-  userId?: string;
+  eventType: BillingEventType;
+  source: BillingEventSource;
+  userId: string;
   subscriptionId?: string;
   transactionId?: string;
-  invoiceId?: string;
-  
-  // Event Details
-  eventData: {
-    // Common fields
-    amount?: number;
-    currency?: string;
-    description?: string;
-    
-    // Subscription events
-    oldPlan?: string;
-    newPlan?: string;
-    oldAmount?: number;
-    newAmount?: number;
-    
-    // Payment events
-    paymentMethod?: string;
-    failureReason?: string;
-    failureCode?: string;
-    retryAttempt?: number;
-    
-    // Invoice events
-    invoiceNumber?: string;
-    dueDate?: Date;
-    
-    // Trial events
-    trialDays?: number;
-    conversionProbability?: number;
-    
-    // Discount events
-    discountType?: 'percentage' | 'fixed';
-    discountValue?: number;
-    promoCode?: string;
-    
-    // Chargeback events
-    chargebackReason?: string;
-    disputeAmount?: number;
-    
-    // Custom data
-    metadata?: Record<string, any>;
-  };
-  
-  // Source Information
-  source: 'system' | 'api' | 'webhook' | 'admin' | 'automated' | 'manual';
-  sourceIp?: string;
+  stripeEventId?: string;
+  description: string;
+  amount?: number;
+  currency?: string;
+  previousValue?: string;
+  newValue?: string;
+  eventData?: any;
+  ipAddress?: string;
   userAgent?: string;
-  
-  // Webhook Information (if from payment provider)
-  webhookId?: string;
-  webhookProvider?: 'stripe' | 'paypal' | 'square' | 'other';
-  webhookSignature?: string;
-  webhookVerified: boolean;
-  
-  // Processing Information
+  performedBy?: string;
+  isProcessed: boolean;
   processedAt?: Date;
-  processingDuration?: number; // in milliseconds
-  processingStatus: 'pending' | 'processing' | 'completed' | 'failed' | 'ignored';
   processingError?: string;
-  
-  // Side Effects
-  sideEffects: {
-    emailsSent?: string[];
-    notificationsSent?: string[];
-    webhooksTriggered?: string[];
-    actionsPerformed?: string[];
-  };
-  
-  // Impact Analysis
-  impact: {
-    mrrChange?: number;
-    revenueImpact?: number;
-    userStatusChange?: string;
-    riskScoreChange?: number;
-  };
-  
-  // Compliance & Audit
-  compliance: {
-    gdprCompliant?: boolean;
-    pciCompliant?: boolean;
-    dataRetentionDays?: number;
-    auditRequired?: boolean;
-  };
-  
-  // Related Events
-  parentEventId?: string;
-  childEventIds: string[];
-  
-  // Metadata
-  environment: 'development' | 'staging' | 'production';
-  version: string;
-  tags: string[];
-  
-  // Timestamps
-  eventTimestamp: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  retryCount: number;
+  metadata?: any;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-export interface BillingEventCreationAttributes extends Optional<BillingEventAttributes, 
-  'id' | 'userId' | 'subscriptionId' | 'transactionId' | 'invoiceId' | 'sourceIp' | 
-  'userAgent' | 'webhookId' | 'webhookProvider' | 'webhookSignature' | 'processedAt' |
-  'processingDuration' | 'processingError' | 'parentEventId' | 'createdAt' | 'updatedAt'> {}
+export interface BillingEventCreationAttributes extends Optional<BillingEventAttributes, 'id' | 'subscriptionId' | 'transactionId' | 'stripeEventId' | 'amount' | 'currency' | 'previousValue' | 'newValue' | 'eventData' | 'ipAddress' | 'userAgent' | 'performedBy' | 'isProcessed' | 'processedAt' | 'processingError' | 'retryCount' | 'metadata' | 'createdAt' | 'updatedAt'> {}
 
-export class BillingEvent extends Model<BillingEventAttributes, BillingEventCreationAttributes> 
-  implements BillingEventAttributes {
-  
+export class BillingEvent extends Model<BillingEventAttributes, BillingEventCreationAttributes> implements BillingEventAttributes {
   public id!: string;
-  
-  public eventType!: 'subscription_created' | 'subscription_updated' | 'subscription_cancelled' |
-                    'payment_succeeded' | 'payment_failed' | 'payment_refunded' |
-                    'invoice_created' | 'invoice_paid' | 'invoice_failed' |
-                    'trial_started' | 'trial_ended' | 'trial_converted' |
-                    'plan_upgraded' | 'plan_downgraded' | 'plan_changed' |
-                    'discount_applied' | 'discount_removed' | 'promo_code_used' |
-                    'payment_method_added' | 'payment_method_removed' | 'payment_method_updated' |
-                    'chargeback_created' | 'chargeback_lost' | 'chargeback_won' |
-                    'dunning_started' | 'dunning_attempt' | 'dunning_recovered' | 'dunning_failed';
-  
-  public userId?: string;
+  public eventType!: BillingEventType;
+  public source!: BillingEventSource;
+  public userId!: string;
   public subscriptionId?: string;
   public transactionId?: string;
-  public invoiceId?: string;
-  
-  public eventData!: {
-    amount?: number;
-    currency?: string;
-    description?: string;
-    oldPlan?: string;
-    newPlan?: string;
-    oldAmount?: number;
-    newAmount?: number;
-    paymentMethod?: string;
-    failureReason?: string;
-    failureCode?: string;
-    retryAttempt?: number;
-    invoiceNumber?: string;
-    dueDate?: Date;
-    trialDays?: number;
-    conversionProbability?: number;
-    discountType?: 'percentage' | 'fixed';
-    discountValue?: number;
-    promoCode?: string;
-    chargebackReason?: string;
-    disputeAmount?: number;
-    metadata?: Record<string, any>;
-  };
-  
-  public source!: 'system' | 'api' | 'webhook' | 'admin' | 'automated' | 'manual';
-  public sourceIp?: string;
+  public stripeEventId?: string;
+  public description!: string;
+  public amount?: number;
+  public currency?: string;
+  public previousValue?: string;
+  public newValue?: string;
+  public eventData?: any;
+  public ipAddress?: string;
   public userAgent?: string;
-  
-  public webhookId?: string;
-  public webhookProvider?: 'stripe' | 'paypal' | 'square' | 'other';
-  public webhookSignature?: string;
-  public webhookVerified!: boolean;
-  
+  public performedBy?: string;
+  public isProcessed!: boolean;
   public processedAt?: Date;
-  public processingDuration?: number;
-  public processingStatus!: 'pending' | 'processing' | 'completed' | 'failed' | 'ignored';
   public processingError?: string;
-  
-  public sideEffects!: {
-    emailsSent?: string[];
-    notificationsSent?: string[];
-    webhooksTriggered?: string[];
-    actionsPerformed?: string[];
-  };
-  
-  public impact!: {
-    mrrChange?: number;
-    revenueImpact?: number;
-    userStatusChange?: string;
-    riskScoreChange?: number;
-  };
-  
-  public compliance!: {
-    gdprCompliant?: boolean;
-    pciCompliant?: boolean;
-    dataRetentionDays?: number;
-    auditRequired?: boolean;
-  };
-  
-  public parentEventId?: string;
-  public childEventIds!: string[];
-  
-  public environment!: 'development' | 'staging' | 'production';
-  public version!: string;
-  public tags!: string[];
-  
-  public eventTimestamp!: Date;
+  public retryCount!: number;
+  public metadata?: any;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
-  /**
-   * Check if event is revenue impacting
-   */
-  public isRevenueImpacting(): boolean {
-    const revenueEvents = [
-      'subscription_created', 'subscription_cancelled',
-      'payment_succeeded', 'payment_refunded',
-      'plan_upgraded', 'plan_downgraded',
-      'trial_converted', 'chargeback_lost'
-    ];
-    
-    return revenueEvents.includes(this.eventType);
+  // Associations
+  public readonly user?: User;
+  public readonly subscription?: Subscription;
+  public readonly transaction?: Transaction;
+
+  public static associations: {
+    user: Association<BillingEvent, User>;
+    subscription: Association<BillingEvent, Subscription>;
+    transaction: Association<BillingEvent, Transaction>;
+  };
+
+  // Calculated properties
+  get isMonetaryEvent(): boolean {
+    return [
+      BillingEventType.PAYMENT_SUCCEEDED,
+      BillingEventType.PAYMENT_FAILED,
+      BillingEventType.REFUND_ISSUED,
+      BillingEventType.CHARGEBACK_CREATED,
+      BillingEventType.CREDIT_APPLIED,
+    ].includes(this.eventType);
   }
 
-  /**
-   * Check if event requires immediate attention
-   */
-  public requiresAttention(): boolean {
-    const criticalEvents = [
-      'payment_failed', 'chargeback_created',
-      'dunning_failed', 'subscription_cancelled'
-    ];
-    
-    return criticalEvents.includes(this.eventType) || 
-           this.processingStatus === 'failed';
+  get requiresAction(): boolean {
+    return [
+      BillingEventType.PAYMENT_FAILED,
+      BillingEventType.CHARGEBACK_CREATED,
+      BillingEventType.DUNNING_STARTED,
+    ].includes(this.eventType) && !this.isProcessed;
   }
 
-  /**
-   * Get event severity level
-   */
-  public getSeverity(): 'low' | 'medium' | 'high' | 'critical' {
-    if (this.eventType.includes('failed') || this.eventType.includes('chargeback')) {
-      return 'critical';
+  get severity(): 'low' | 'medium' | 'high' | 'critical' {
+    switch (this.eventType) {
+      case BillingEventType.PAYMENT_FAILED:
+      case BillingEventType.CHARGEBACK_CREATED:
+        return 'high';
+      case BillingEventType.SUBSCRIPTION_CANCELED:
+      case BillingEventType.DUNNING_STARTED:
+        return 'medium';
+      default:
+        return 'low';
     }
-    if (this.eventType.includes('cancelled') || this.eventType.includes('downgraded')) {
-      return 'high';
-    }
-    if (this.eventType.includes('created') || this.eventType.includes('upgraded')) {
-      return 'low';
-    }
-    return 'medium';
   }
 
-  /**
-   * Static method to get failed payment events
-   */
-  static async getFailedPayments(days: number = 7): Promise<BillingEvent[]> {
-    const since = new Date();
-    since.setDate(since.getDate() - days);
-    
-    return this.findAll({
-      where: {
-        eventType: 'payment_failed',
-        eventTimestamp: {
-          [sequelize.Op.gte]: since,
-        },
-      },
-      order: [['eventTimestamp', 'DESC']],
-    });
-  }
-
-  /**
-   * Static method to get revenue impact for a period
-   */
-  static async getRevenueImpact(startDate: Date, endDate: Date): Promise<number> {
-    const result = await this.findOne({
-      attributes: [
-        [sequelize.fn('SUM', sequelize.literal("(impact->>'revenueImpact')::numeric")), 'totalImpact'],
-      ],
-      where: {
-        eventTimestamp: {
-          [sequelize.Op.between]: [startDate, endDate],
-        },
-      },
-    });
-    
-    return parseFloat(result?.get('totalImpact') as string || '0');
-  }
-
-  /**
-   * Static method to get event timeline for a user
-   */
-  static async getUserTimeline(userId: string): Promise<BillingEvent[]> {
-    return this.findAll({
-      where: { userId },
-      order: [['eventTimestamp', 'DESC']],
-      limit: 100,
-    });
-  }
-
-  /**
-   * Static method for webhook deduplication
-   */
-  static async isDuplicateWebhook(webhookId: string): Promise<boolean> {
-    const existing = await this.findOne({
-      where: { webhookId },
-    });
-    
-    return !!existing;
+  public static associate(models: any) {
+    BillingEvent.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+    BillingEvent.belongsTo(models.Subscription, { foreignKey: 'subscriptionId', as: 'subscription' });
+    BillingEvent.belongsTo(models.Transaction, { foreignKey: 'transactionId', as: 'transaction' });
   }
 }
 
@@ -327,22 +146,16 @@ BillingEvent.init(
       primaryKey: true,
     },
     eventType: {
-      type: DataTypes.ENUM(
-        'subscription_created', 'subscription_updated', 'subscription_cancelled',
-        'payment_succeeded', 'payment_failed', 'payment_refunded',
-        'invoice_created', 'invoice_paid', 'invoice_failed',
-        'trial_started', 'trial_ended', 'trial_converted',
-        'plan_upgraded', 'plan_downgraded', 'plan_changed',
-        'discount_applied', 'discount_removed', 'promo_code_used',
-        'payment_method_added', 'payment_method_removed', 'payment_method_updated',
-        'chargeback_created', 'chargeback_lost', 'chargeback_won',
-        'dunning_started', 'dunning_attempt', 'dunning_recovered', 'dunning_failed'
-      ),
+      type: DataTypes.ENUM(...Object.values(BillingEventType)),
+      allowNull: false,
+    },
+    source: {
+      type: DataTypes.ENUM(...Object.values(BillingEventSource)),
       allowNull: false,
     },
     userId: {
       type: DataTypes.UUID,
-      allowNull: true,
+      allowNull: false,
       references: {
         model: 'users',
         key: 'id',
@@ -364,41 +177,47 @@ BillingEvent.init(
         key: 'id',
       },
     },
-    invoiceId: {
+    stripeEventId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    amount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+    },
+    currency: {
+      type: DataTypes.STRING(3),
+      allowNull: true,
+    },
+    previousValue: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    newValue: {
       type: DataTypes.STRING,
       allowNull: true,
     },
     eventData: {
       type: DataTypes.JSONB,
-      allowNull: false,
-      defaultValue: {},
+      allowNull: true,
     },
-    source: {
-      type: DataTypes.ENUM('system', 'api', 'webhook', 'admin', 'automated', 'manual'),
-      allowNull: false,
-    },
-    sourceIp: {
-      type: DataTypes.INET,
+    ipAddress: {
+      type: DataTypes.STRING,
       allowNull: true,
     },
     userAgent: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    webhookId: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      unique: true,
-    },
-    webhookProvider: {
-      type: DataTypes.ENUM('stripe', 'paypal', 'square', 'other'),
-      allowNull: true,
-    },
-    webhookSignature: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    webhookVerified: {
+    performedBy: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    isProcessed: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false,
@@ -407,123 +226,30 @@ BillingEvent.init(
       type: DataTypes.DATE,
       allowNull: true,
     },
-    processingDuration: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      comment: 'Processing time in milliseconds',
-    },
-    processingStatus: {
-      type: DataTypes.ENUM('pending', 'processing', 'completed', 'failed', 'ignored'),
-      allowNull: false,
-      defaultValue: 'pending',
-    },
     processingError: {
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    sideEffects: {
-      type: DataTypes.JSONB,
+    retryCount: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: {},
+      defaultValue: 0,
     },
-    impact: {
+    metadata: {
       type: DataTypes.JSONB,
-      allowNull: false,
-      defaultValue: {},
-    },
-    compliance: {
-      type: DataTypes.JSONB,
-      allowNull: false,
-      defaultValue: {
-        gdprCompliant: true,
-        pciCompliant: true,
-        dataRetentionDays: 2555, // 7 years
-        auditRequired: false,
-      },
-    },
-    parentEventId: {
-      type: DataTypes.UUID,
       allowNull: true,
-      references: {
-        model: 'billing_events',
-        key: 'id',
-      },
-    },
-    childEventIds: {
-      type: DataTypes.ARRAY(DataTypes.UUID),
-      allowNull: false,
-      defaultValue: [],
-    },
-    environment: {
-      type: DataTypes.ENUM('development', 'staging', 'production'),
-      allowNull: false,
-    },
-    version: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      defaultValue: '1.0.0',
-    },
-    tags: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      allowNull: false,
-      defaultValue: [],
-    },
-    eventTimestamp: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
     },
   },
   {
     sequelize,
-    tableName: 'billing_events',
     modelName: 'BillingEvent',
+    tableName: 'billing_events',
     timestamps: true,
     indexes: [
-      {
-        fields: ['eventType'],
-        name: 'idx_billing_events_type',
-      },
-      {
-        fields: ['userId'],
-        name: 'idx_billing_events_user',
-      },
-      {
-        fields: ['subscriptionId'],
-        name: 'idx_billing_events_subscription',
-      },
-      {
-        fields: ['transactionId'],
-        name: 'idx_billing_events_transaction',
-      },
-      {
-        fields: ['processingStatus'],
-        name: 'idx_billing_events_status',
-      },
-      {
-        fields: ['eventTimestamp'],
-        name: 'idx_billing_events_timestamp',
-      },
-      {
-        fields: ['webhookId'],
-        name: 'idx_billing_events_webhook',
-        unique: true,
-      },
-      {
-        fields: ['source'],
-        name: 'idx_billing_events_source',
-      },
-      {
-        fields: ['parentEventId'],
-        name: 'idx_billing_events_parent',
-      },
-      {
-        fields: ['tags'],
-        using: 'GIN',
-        name: 'idx_billing_events_tags',
-      },
+      { fields: ['eventType'] },
+      { fields: ['source'] },
+      { fields: ['userId'] },
+      { fields: ['subscriptionId'] },
     ],
   }
 );
-
-export default BillingEvent; 

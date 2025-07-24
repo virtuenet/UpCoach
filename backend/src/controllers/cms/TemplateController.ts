@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { Template } from '../../models';
+import { Op } from 'sequelize';
 import { validationResult } from 'express-validator';
 
 /**
@@ -39,20 +40,20 @@ export class TemplateController {
       }
 
       if (search) {
-        whereClause[Template.sequelize!.Op.or] = [
-          { name: { [Template.sequelize!.Op.iLike]: `%${search}%` } },
-          { description: { [Template.sequelize!.Op.iLike]: `%${search}%` } },
+        whereClause[Op.or] = [
+          { name: { [Op.iLike]: `%${search}%` } },
+          { description: { [Op.iLike]: `%${search}%` } },
         ];
       }
 
       if (tags) {
         const tagArray = (tags as string).split(',').map(tag => tag.trim());
-        whereClause.tags = { [Template.sequelize!.Op.overlap]: tagArray };
+        whereClause.tags = { [Op.overlap]: tagArray };
       }
 
       // Filter by ownership and public templates
       if (includePublic === 'true') {
-        whereClause[Template.sequelize!.Op.or] = [
+        whereClause[Op.or] = [
           { createdById: req.user!.id },
           { isPublic: true },
         ];

@@ -134,8 +134,8 @@ class ExperimentEvent extends Model<ExperimentEventAttributes, ExperimentEventCr
     return {
       count: countResult,
       uniqueUsers: uniqueUsersResult,
-      averageValue: valueResult[0]?.averageValue ? parseFloat(valueResult[0].averageValue as string) : undefined,
-      totalValue: valueResult[0]?.totalValue ? parseFloat(valueResult[0].totalValue as string) : undefined,
+      averageValue: valueResult[0] && 'averageValue' in valueResult[0] ? parseFloat(valueResult[0]['averageValue'] as string) : undefined,
+      totalValue: valueResult[0] && 'totalValue' in valueResult[0] ? parseFloat(valueResult[0]['totalValue'] as string) : undefined,
     };
   }
 

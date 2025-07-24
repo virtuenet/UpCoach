@@ -203,7 +203,14 @@ export class PersonalityService {
     traits: PersonalityTraits,
     profile: PersonalityProfile
   ): Promise<{ avatar: Avatar; compatibilityScore: number; reasons: string[] }[]> {
-    const avatarRecommendations = await Avatar.getRecommendedAvatars(traits, 5);
+    const traitRecord: Record<string, number> = {
+      openness: traits.openness,
+      conscientiousness: traits.conscientiousness,
+      extraversion: traits.extraversion,
+      agreeableness: traits.agreeableness,
+      neuroticism: traits.neuroticism,
+    };
+    const avatarRecommendations = await Avatar.getRecommendedAvatars(traitRecord, 5);
     
     return avatarRecommendations.map(({ avatar, compatibilityScore }) => ({
       avatar,
@@ -422,7 +429,14 @@ export class PersonalityService {
     if (profile) {
       const avatar = await Avatar.findByPk(avatarId);
       if (avatar) {
-        const compatibilityScore = avatar.calculateCompatibilityScore(profile.traits);
+        const traitRecord: Record<string, number> = {
+          openness: profile.traits.openness,
+          conscientiousness: profile.traits.conscientiousness,
+          extraversion: profile.traits.extraversion,
+          agreeableness: profile.traits.agreeableness,
+          neuroticism: profile.traits.neuroticism,
+        };
+        const compatibilityScore = avatar.calculateCompatibilityScore(traitRecord);
         preference.compatibilityScore = compatibilityScore;
         await preference.save();
       }

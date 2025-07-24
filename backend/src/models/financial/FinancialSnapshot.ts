@@ -1,507 +1,388 @@
-import { Model, DataTypes, Optional } from 'sequelize';
-import { sequelize } from '../index';
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  CreatedAt,
+  UpdatedAt,
+  Index,
+} from 'sequelize-typescript';
 
-/**
- * FinancialSnapshot Model
- * Stores daily and monthly financial summaries for quick reporting
- */
+export enum SnapshotPeriod {
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+  QUARTERLY = 'quarterly',
+  YEARLY = 'yearly',
+}
 
-export interface FinancialSnapshotAttributes {
-  id: string;
-  
-  // Snapshot Period
-  snapshotType: 'daily' | 'monthly' | 'quarterly' | 'yearly';
-  snapshotDate: Date;
-  periodStart: Date;
-  periodEnd: Date;
-  
+@Table({
+  tableName: 'financial_snapshots',
+  timestamps: true,
+  indexes: [
+    {
+      unique: true,
+      fields: ['date', 'period'],
+    },
+  ],
+})
+export class FinancialSnapshot extends Model {
+  @Column({
+    type: DataType.UUID,
+    defaultValue: DataType.UUIDV4,
+    primaryKey: true,
+  })
+  id!: string;
+
+  @Column({
+    type: DataType.DATEONLY,
+    allowNull: false,
+  })
+  @Index
+  date!: Date;
+
+  @Column({
+    type: DataType.ENUM(...Object.values(SnapshotPeriod)),
+    allowNull: false,
+  })
+  @Index
+  period!: SnapshotPeriod;
+
   // Revenue Metrics
-  revenue: {
-    newRevenue: number;
-    recurringRevenue: number;
-    expansionRevenue: number;
-    contractionRevenue: number;
-    churnedRevenue: number;
-    totalRevenue: number;
-    netRevenue: number; // After refunds
-    
-    // By Plan Type
-    revenueByPlan: Record<string, number>;
-    
-    // By Payment Method
-    revenueByPaymentMethod: Record<string, number>;
-    
-    // Geographic Distribution
-    revenueByCountry: Record<string, number>;
-  };
-  
-  // Subscription Metrics
-  subscriptions: {
-    newSubscriptions: number;
-    activeSubscriptions: number;
-    trialingSubscriptions: number;
-    canceledSubscriptions: number;
-    pausedSubscriptions: number;
-    reactivatedSubscriptions: number;
-    
-    // By Plan
-    subscriptionsByPlan: Record<string, number>;
-    
-    // Trial Conversions
-    trialConversions: number;
-    trialConversionRate: number;
-    
-    // Upgrades/Downgrades
-    upgrades: number;
-    downgrades: number;
-  };
-  
-  // Financial Metrics
-  metrics: {
-    mrr: number; // Monthly Recurring Revenue
-    arr: number; // Annual Recurring Revenue
-    arpu: number; // Average Revenue Per User
-    ltv: number; // Lifetime Value
-    cac: number; // Customer Acquisition Cost
-    
-    // Growth Metrics
-    mrrGrowthRate: number;
-    mrrChurnRate: number;
-    netMrrChurn: number;
-    grossMrrChurn: number;
-    
-    // Unit Economics
-    grossMargin: number;
-    grossMarginPercentage: number;
-    paybackPeriod: number; // in months
-    ltvCacRatio: number;
-  };
-  
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  revenue!: number;
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  recurringRevenue!: number;
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  oneTimeRevenue!: number;
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  mrr!: number; // Monthly Recurring Revenue
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  arr!: number; // Annual Recurring Revenue
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  newMrr!: number;
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  expansionMrr!: number;
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  contractionMrr!: number;
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  churnedMrr!: number;
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  netMrrGrowth!: number;
+
   // Cost Metrics
-  costs: {
-    infrastructureCosts: number;
-    apiServicesCosts: number;
-    personnelCosts: number;
-    marketingCosts: number;
-    developmentCosts: number;
-    supportCosts: number;
-    otherCosts: number;
-    totalCosts: number;
-    
-    // Cost Breakdown
-    costsByCategory: Record<string, number>;
-    costsByVendor: Record<string, number>;
-    
-    // Cost Per User
-    costPerUser: number;
-    costPerActiveUser: number;
-  };
-  
-  // P&L Summary
-  profitLoss: {
-    grossRevenue: number;
-    netRevenue: number;
-    totalCosts: number;
-    grossProfit: number;
-    grossProfitMargin: number;
-    operatingExpenses: number;
-    ebitda: number;
-    netProfit: number;
-    netProfitMargin: number;
-  };
-  
-  // Cash Flow
-  cashFlow: {
-    startingBalance: number;
-    cashInflow: number;
-    cashOutflow: number;
-    netCashFlow: number;
-    endingBalance: number;
-    runway: number; // months of runway
-  };
-  
-  // User Metrics
-  userMetrics: {
-    totalUsers: number;
-    activeUsers: number;
-    newUsers: number;
-    churnedUsers: number;
-    retentionRate: number;
-    
-    // Engagement
-    avgSessionsPerUser: number;
-    avgSessionDuration: number;
-    dailyActiveUsers: number;
-    monthlyActiveUsers: number;
-  };
-  
-  // Comparison to Previous Period
-  comparison?: {
-    revenueChange: number;
-    revenueChangePercent: number;
-    mrrChange: number;
-    mrrChangePercent: number;
-    userChange: number;
-    userChangePercent: number;
-    costChange: number;
-    costChangePercent: number;
-  };
-  
-  // Data Quality
-  dataQuality: {
-    completeness: number; // 0-100%
-    accuracy: number; // 0-100%
-    lastUpdated: Date;
-    dataIssues: string[];
-  };
-  
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  totalCosts!: number;
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  infrastructureCosts!: number;
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  apiCosts!: number;
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  personnelCosts!: number;
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  marketingCosts!: number;
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  operationalCosts!: number;
+
+  // Profit Metrics
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  grossProfit!: number;
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  netProfit!: number;
+
+  @Column({
+    type: DataType.DECIMAL(5, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  grossMargin!: number;
+
+  @Column({
+    type: DataType.DECIMAL(5, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  netMargin!: number;
+
+  // Customer Metrics
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  totalCustomers!: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  activeCustomers!: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  newCustomers!: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  churnedCustomers!: number;
+
+  @Column({
+    type: DataType.DECIMAL(5, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  churnRate!: number;
+
+  @Column({
+    type: DataType.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  avgRevenuePerUser!: number;
+
+  @Column({
+    type: DataType.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  customerAcquisitionCost!: number;
+
+  @Column({
+    type: DataType.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  customerLifetimeValue!: number;
+
+  // Subscription Metrics
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  totalSubscriptions!: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  newSubscriptions!: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  canceledSubscriptions!: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  trialSubscriptions!: number;
+
+  @Column({
+    type: DataType.DECIMAL(5, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  trialConversionRate!: number;
+
+  // Transaction Metrics
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  totalTransactions!: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  successfulTransactions!: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  failedTransactions!: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  refundedTransactions!: number;
+
+  @Column({
+    type: DataType.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  refundAmount!: number;
+
+  // Unit Economics
+  @Column({
+    type: DataType.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  costPerUser!: number;
+
+  @Column({
+    type: DataType.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  revenuePerUser!: number;
+
+  @Column({
+    type: DataType.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  profitPerUser!: number;
+
+  @Column({
+    type: DataType.DECIMAL(5, 2),
+    allowNull: false,
+    defaultValue: 0,
+  })
+  ltvToCacRatio!: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  paybackPeriodDays!: number;
+
   // Metadata
-  calculatedBy: string;
-  calculatedAt: Date;
-  isFinalized: boolean;
-  notes?: string;
-  
-  // Timestamps
-  createdAt: Date;
-  updatedAt: Date;
-}
+  @Column({
+    type: DataType.JSONB,
+    allowNull: true,
+  })
+  metadata?: any;
 
-export interface FinancialSnapshotCreationAttributes extends Optional<FinancialSnapshotAttributes, 
-  'id' | 'comparison' | 'notes' | 'createdAt' | 'updatedAt'> {}
+  @CreatedAt
+  createdAt!: Date;
 
-export class FinancialSnapshot extends Model<FinancialSnapshotAttributes, FinancialSnapshotCreationAttributes> 
-  implements FinancialSnapshotAttributes {
-  
-  public id!: string;
-  
-  public snapshotType!: 'daily' | 'monthly' | 'quarterly' | 'yearly';
-  public snapshotDate!: Date;
-  public periodStart!: Date;
-  public periodEnd!: Date;
-  
-  public revenue!: {
-    newRevenue: number;
-    recurringRevenue: number;
-    expansionRevenue: number;
-    contractionRevenue: number;
-    churnedRevenue: number;
-    totalRevenue: number;
-    netRevenue: number;
-    revenueByPlan: Record<string, number>;
-    revenueByPaymentMethod: Record<string, number>;
-    revenueByCountry: Record<string, number>;
-  };
-  
-  public subscriptions!: {
-    newSubscriptions: number;
-    activeSubscriptions: number;
-    trialingSubscriptions: number;
-    canceledSubscriptions: number;
-    pausedSubscriptions: number;
-    reactivatedSubscriptions: number;
-    subscriptionsByPlan: Record<string, number>;
-    trialConversions: number;
-    trialConversionRate: number;
-    upgrades: number;
-    downgrades: number;
-  };
-  
-  public metrics!: {
-    mrr: number;
-    arr: number;
-    arpu: number;
-    ltv: number;
-    cac: number;
-    mrrGrowthRate: number;
-    mrrChurnRate: number;
-    netMrrChurn: number;
-    grossMrrChurn: number;
-    grossMargin: number;
-    grossMarginPercentage: number;
-    paybackPeriod: number;
-    ltvCacRatio: number;
-  };
-  
-  public costs!: {
-    infrastructureCosts: number;
-    apiServicesCosts: number;
-    personnelCosts: number;
-    marketingCosts: number;
-    developmentCosts: number;
-    supportCosts: number;
-    otherCosts: number;
-    totalCosts: number;
-    costsByCategory: Record<string, number>;
-    costsByVendor: Record<string, number>;
-    costPerUser: number;
-    costPerActiveUser: number;
-  };
-  
-  public profitLoss!: {
-    grossRevenue: number;
-    netRevenue: number;
-    totalCosts: number;
-    grossProfit: number;
-    grossProfitMargin: number;
-    operatingExpenses: number;
-    ebitda: number;
-    netProfit: number;
-    netProfitMargin: number;
-  };
-  
-  public cashFlow!: {
-    startingBalance: number;
-    cashInflow: number;
-    cashOutflow: number;
-    netCashFlow: number;
-    endingBalance: number;
-    runway: number;
-  };
-  
-  public userMetrics!: {
-    totalUsers: number;
-    activeUsers: number;
-    newUsers: number;
-    churnedUsers: number;
-    retentionRate: number;
-    avgSessionsPerUser: number;
-    avgSessionDuration: number;
-    dailyActiveUsers: number;
-    monthlyActiveUsers: number;
-  };
-  
-  public comparison?: {
-    revenueChange: number;
-    revenueChangePercent: number;
-    mrrChange: number;
-    mrrChangePercent: number;
-    userChange: number;
-    userChangePercent: number;
-    costChange: number;
-    costChangePercent: number;
-  };
-  
-  public dataQuality!: {
-    completeness: number;
-    accuracy: number;
-    lastUpdated: Date;
-    dataIssues: string[];
-  };
-  
-  public calculatedBy!: string;
-  public calculatedAt!: Date;
-  public isFinalized!: boolean;
-  public notes?: string;
-  
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  @UpdatedAt
+  updatedAt!: Date;
 
-  /**
-   * Check if snapshot is healthy (positive metrics)
-   */
-  public isHealthy(): boolean {
-    return (
-      this.metrics.mrrGrowthRate > 0 &&
-      this.metrics.netMrrChurn < 5 &&
-      this.profitLoss.grossMargin > 0 &&
-      this.cashFlow.runway > 12
-    );
+  // Calculated properties
+  get mrrGrowthRate(): number {
+    if (this.mrr === 0) return 0;
+    return (this.netMrrGrowth / this.mrr) * 100;
   }
 
-  /**
-   * Get burn multiple (efficiency metric)
-   */
-  public getBurnMultiple(): number {
-    const netNewArr = this.metrics.arr * (this.metrics.mrrGrowthRate / 100);
-    const netBurn = this.cashFlow.cashOutflow - this.cashFlow.cashInflow;
-    
-    if (netNewArr === 0) return Infinity;
-    return netBurn / netNewArr;
+  get operatingMargin(): number {
+    if (this.revenue === 0) return 0;
+    return ((this.revenue - this.operationalCosts) / this.revenue) * 100;
   }
 
-  /**
-   * Calculate Rule of 40 score
-   */
-  public getRuleOf40Score(): number {
-    const growthRate = this.metrics.mrrGrowthRate;
-    const profitMargin = this.profitLoss.netProfitMargin;
-    return growthRate + profitMargin;
+  get isHealthy(): boolean {
+    return this.netProfit > 0 && 
+           this.churnRate < 10 && 
+           this.ltvToCacRatio > 3;
   }
-
-  /**
-   * Static method to get latest snapshot
-   */
-  static async getLatest(type: string): Promise<FinancialSnapshot | null> {
-    return this.findOne({
-      where: {
-        snapshotType: type,
-        isFinalized: true,
-      },
-      order: [['snapshotDate', 'DESC']],
-    });
-  }
-
-  /**
-   * Static method to get snapshots for a period
-   */
-  static async getForPeriod(
-    startDate: Date,
-    endDate: Date,
-    type: string
-  ): Promise<FinancialSnapshot[]> {
-    return this.findAll({
-      where: {
-        snapshotType: type,
-        snapshotDate: {
-          [sequelize.Op.between]: [startDate, endDate],
-        },
-        isFinalized: true,
-      },
-      order: [['snapshotDate', 'ASC']],
-    });
-  }
-
-  /**
-   * Static method to calculate trends
-   */
-  static async calculateTrends(periods: number = 12): Promise<any> {
-    const snapshots = await this.findAll({
-      where: {
-        snapshotType: 'monthly',
-        isFinalized: true,
-      },
-      order: [['snapshotDate', 'DESC']],
-      limit: periods,
-    });
-    
-    if (snapshots.length < 2) return null;
-    
-    // Calculate various trends
-    const trends = {
-      mrrTrend: snapshots.map(s => ({ date: s.snapshotDate, value: s.metrics.mrr })),
-      revenueTrend: snapshots.map(s => ({ date: s.snapshotDate, value: s.revenue.totalRevenue })),
-      userTrend: snapshots.map(s => ({ date: s.snapshotDate, value: s.userMetrics.activeUsers })),
-      marginTrend: snapshots.map(s => ({ date: s.snapshotDate, value: s.profitLoss.grossMarginPercentage })),
-    };
-    
-    return trends;
-  }
-}
-
-FinancialSnapshot.init(
-  {
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
-    },
-    snapshotType: {
-      type: DataTypes.ENUM('daily', 'monthly', 'quarterly', 'yearly'),
-      allowNull: false,
-    },
-    snapshotDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    periodStart: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    periodEnd: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    revenue: {
-      type: DataTypes.JSONB,
-      allowNull: false,
-    },
-    subscriptions: {
-      type: DataTypes.JSONB,
-      allowNull: false,
-    },
-    metrics: {
-      type: DataTypes.JSONB,
-      allowNull: false,
-    },
-    costs: {
-      type: DataTypes.JSONB,
-      allowNull: false,
-    },
-    profitLoss: {
-      type: DataTypes.JSONB,
-      allowNull: false,
-    },
-    cashFlow: {
-      type: DataTypes.JSONB,
-      allowNull: false,
-    },
-    userMetrics: {
-      type: DataTypes.JSONB,
-      allowNull: false,
-    },
-    comparison: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-    dataQuality: {
-      type: DataTypes.JSONB,
-      allowNull: false,
-    },
-    calculatedBy: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    calculatedAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    isFinalized: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
-    },
-    notes: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-  },
-  {
-    sequelize,
-    tableName: 'financial_snapshots',
-    modelName: 'FinancialSnapshot',
-    timestamps: true,
-    indexes: [
-      {
-        unique: true,
-        fields: ['snapshotType', 'snapshotDate'],
-        name: 'idx_financial_snapshots_unique',
-      },
-      {
-        fields: ['snapshotType'],
-        name: 'idx_financial_snapshots_type',
-      },
-      {
-        fields: ['snapshotDate'],
-        name: 'idx_financial_snapshots_date',
-      },
-      {
-        fields: ['isFinalized'],
-        name: 'idx_financial_snapshots_finalized',
-      },
-      {
-        fields: ['periodStart', 'periodEnd'],
-        name: 'idx_financial_snapshots_period',
-      },
-      {
-        fields: [sequelize.literal("(metrics->>'mrr')::numeric")],
-        name: 'idx_financial_snapshots_mrr',
-      },
-      {
-        fields: [sequelize.literal("(revenue->>'totalRevenue')::numeric")],
-        name: 'idx_financial_snapshots_revenue',
-      },
-    ],
-  }
-);
-
-export default FinancialSnapshot; 
+} 

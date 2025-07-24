@@ -1,4 +1,4 @@
-import { DataTypes, Model, Optional } from 'sequelize';
+import { DataTypes, Model, Optional, Op } from 'sequelize';
 import { sequelize } from '../index';
 
 // Category interface
@@ -68,7 +68,7 @@ export class Category extends Model<CategoryAttributes, CategoryCreationAttribut
     let slug = baseSlug;
     let counter = 1;
     
-    while (await Category.findOne({ where: { slug, id: { [sequelize.Op.ne]: this.id } } })) {
+    while (await Category.findOne({ where: { slug, id: { [Op.ne]: this.id } } })) {
       slug = `${baseSlug}-${counter}`;
       counter++;
     }
@@ -218,9 +218,9 @@ export class Category extends Model<CategoryAttributes, CategoryCreationAttribut
     return Category.findAll({
       where: {
         isActive: true,
-        [sequelize.Op.or]: [
-          { name: { [sequelize.Op.iLike]: `%${query}%` } },
-          { description: { [sequelize.Op.iLike]: `%${query}%` } },
+        [Op.or]: [
+          { name: { [Op.iLike]: `%${query}%` } },
+          { description: { [Op.iLike]: `%${query}%` } },
         ],
       },
       order: [['name', 'ASC']],

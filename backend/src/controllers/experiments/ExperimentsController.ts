@@ -46,8 +46,8 @@ export class ExperimentsController {
         targetMetric,
         successCriteria,
         segmentation,
-        createdBy: req.user.id,
-        updatedBy: req.user.id,
+        createdBy: req.user!.id,
+        updatedBy: req.user!.id,
         status: 'draft',
       });
 
@@ -158,7 +158,7 @@ export class ExperimentsController {
       }
 
       const { id } = req.params;
-      const updateData = { ...req.body, updatedBy: req.user.id };
+      const updateData = { ...req.body, updatedBy: req.user!.id };
 
       const experiment = await Experiment.findByPk(id);
       if (!experiment) {
@@ -231,7 +231,7 @@ export class ExperimentsController {
       await experiment.update({
         status: 'active',
         startDate: new Date(),
-        updatedBy: req.user.id,
+        updatedBy: req.user!.id,
       });
 
       res.json({
@@ -275,7 +275,7 @@ export class ExperimentsController {
       await experiment.update({
         status: 'completed',
         endDate: new Date(),
-        updatedBy: req.user.id,
+        updatedBy: req.user!.id,
       });
 
       res.json({
@@ -298,7 +298,7 @@ export class ExperimentsController {
   async getVariant(req: Request, res: Response): Promise<void> {
     try {
       const { experimentId } = req.params;
-      const userId = req.user.id;
+      const userId = req.user!.id;
       const context = req.body.context || {};
 
       const variant = await this.abTestingService.getVariant(userId, experimentId, context);
@@ -323,7 +323,7 @@ export class ExperimentsController {
     try {
       const { experimentId } = req.params;
       const { eventType, eventValue, properties } = req.body;
-      const userId = req.user.id;
+      const userId = req.user!.id;
 
       const success = await this.abTestingService.trackConversion(
         userId,

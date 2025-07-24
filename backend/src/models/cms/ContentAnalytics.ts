@@ -1,4 +1,4 @@
-import { DataTypes, Model, Optional } from 'sequelize';
+import { DataTypes, Model, Optional, Op, QueryTypes } from 'sequelize';
 import { sequelize } from '../index';
 
 // ContentAnalytics interface
@@ -61,7 +61,7 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
         contentType,
         contentId,
         event: 'view',
-        timestamp: { [sequelize.Op.gte]: startDate }
+        timestamp: { [Op.gte]: startDate }
       }
     });
   }
@@ -84,7 +84,7 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
       LIMIT :limit
     `, {
       replacements: { contentType, limit },
-      type: sequelize.QueryTypes.SELECT,
+      type: QueryTypes.SELECT,
     });
 
     return result as any[];
@@ -208,7 +208,7 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
       LIMIT 20
     `, {
       replacements: { startDate },
-      type: sequelize.QueryTypes.SELECT,
+      type: QueryTypes.SELECT,
     });
 
     return result as any[];
@@ -263,8 +263,8 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
       where: {
         event: 'view',
         timestamp: {
-          [sequelize.Op.gte]: startDate,
-          [sequelize.Op.lt]: endDate,
+          [Op.gte]: startDate,
+          [Op.lt]: endDate,
         }
       },
       attributes: ['userId', 'sessionId', 'metadata'],

@@ -1,85 +1,280 @@
-import axios from 'axios';
+import { apiClient } from '../api/client';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7000/api';
+export interface DashboardMetrics {
+  revenue: {
+    mrr: number;
+    mrrGrowth: number;
+    arr: number;
+    totalRevenue: number;
+  };
+  subscriptions: {
+    active: number;
+    new: number;
+    churned: number;
+    churnRate: number;
+    netNew: number;
+  };
+  unitEconomics: {
+    ltv: number;
+    cac: number;
+    ltvToCacRatio: number;
+    arpu: number;
+  };
+  costs: {
+    total: number;
+    burnRate: number;
+    runway: number;
+  };
+  profitLoss: {
+    revenue: number;
+    costs: number;
+    grossProfit: number;
+    margin: number;
+  };
+}
 
-const apiClient = axios.create({
-  baseURL: `${API_BASE_URL}/admin/finance`,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+export interface ProfitLossStatement {
+  revenue: {
+    gross: number;
+    refunds: number;
+    net: number;
+  };
+  costs: {
+    directCosts: number;
+    operatingExpenses: number;
+    byCategory: Record<string, number>;
+    total: number;
+  };
+  profit: {
+    gross: number;
+    grossMargin: number;
+    operating: number;
+    operatingMargin: number;
+    net: number;
+    netMargin: number;
+  };
+}
 
-// Add auth token to requests
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('authToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+export interface CostTracking {
+  id: string;
+  category: string;
+  type: string;
+  provider?: string;
+  name: string;
+  description?: string;
+  amount: number;
+  currency: string;
+  periodStart: string;
+  periodEnd: string;
+  quantity?: number;
+  unit?: string;
+  unitCost?: number;
+  isRecurring: boolean;
+  isApproved: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
-// Handle auth errors
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('authToken');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
+export interface FinancialSnapshot {
+  id: string;
+  date: string;
+  period: string;
+  revenue: number;
+  recurringRevenue: number;
+  mrr: number;
+  arr: number;
+  totalCosts: number;
+  grossProfit: number;
+  netProfit: number;
+  grossMargin: number;
+  netMargin: number;
+  activeCustomers: number;
+  churnRate: number;
+  avgRevenuePerUser: number;
+  customerAcquisitionCost: number;
+  customerLifetimeValue: number;
+  ltvToCacRatio: number;
+}
 
 export const financialApi = {
   // Dashboard
-  getDashboard: async (period: string = 'monthly') => {
-    const response = await apiClient.get('/dashboard', { params: { period } });
-    return response.data.data;
+  async getDashboardMetrics(): Promise<DashboardMetrics> {
+    const response = await apiClient.get('/financial/dashboard');
+    return response.data;
   },
 
-  // MRR
-  getMRRBreakdown: async () => {
-    const response = await apiClient.get('/mrr');
-    return response.data.data;
-  },
-
-  // P&L
-  getProfitLoss: async (startDate: string, endDate: string) => {
-    const response = await apiClient.get('/profit-loss', {
+  async getRevenueMetrics(startDate?: string, endDate?: string) {
+    const response = await apiClient.get('/financial/dashboard/revenue', {
       params: { startDate, endDate },
     });
-    return response.data.data;
+    return response.data;
   },
 
-  // Costs
-  getCostBreakdown: async (startDate: string, endDate: string) => {
-    const response = await apiClient.get('/costs', {
+  async getSubscriptionMetrics() {
+    const response = await apiClient.get('/financial/dashboard/subscriptions');
+    return response.data;
+  },
+
+  async getCostMetrics(startDate?: string, endDate?: string) {
+    const response = await apiClient.get('/financial/dashboard/costs', {
       params: { startDate, endDate },
     });
-    return response.data.data;
+    return response.data;
   },
 
-  // Subscriptions
-  getSubscriptionMetrics: async () => {
-    const response = await apiClient.get('/subscriptions');
-    return response.data.data;
+  // P&L Statement
+  async getProfitLossStatement(startDate?: string, endDate?: string): Promise<ProfitLossStatement> {
+    const response = await apiClient.get('/financial/pnl', {
+      params: { startDate, endDate },
+    });
+    return response.data;
   },
 
-  // Forecast
-  getRevenueForecast: async (months: number = 6) => {
-    const response = await apiClient.get('/forecast', { params: { months } });
-    return response.data.data;
+  // Revenue Analytics
+  async getMRRMetrics() {
+    const response = await apiClient.get('/financial/revenue/mrr');
+    return response.data;
   },
 
-  // Cohort Analysis
-  getCohortAnalysis: async (cohortMonth: string) => {
-    const response = await apiClient.get('/cohort', { params: { cohortMonth } });
-    return response.data.data;
+  async getARRMetrics() {
+    const response = await apiClient.get('/financial/revenue/arr');
+    return response.data;
   },
 
-  // Generate Snapshot
-  generateSnapshot: async (type: string = 'daily') => {
-    const response = await apiClient.post('/snapshot', { type });
-    return response.data.data;
+  async getRevenueByPlan(startDate?: string, endDate?: string) {
+    const response = await apiClient.get('/financial/revenue/by-plan', {
+      params: { startDate, endDate },
+    });
+    return response.data;
   },
-}; 
+
+  async getRevenueForecast(months: number = 6) {
+    const response = await apiClient.get('/financial/revenue/forecast', {
+      params: { months },
+    });
+    return response.data;
+  },
+
+  // Subscription Analytics
+  async getSubscriptions(params?: {
+    status?: string;
+    plan?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const response = await apiClient.get('/financial/subscriptions', { params });
+    return response.data;
+  },
+
+  async getActiveSubscriptions() {
+    const response = await apiClient.get('/financial/subscriptions/active');
+    return response.data;
+  },
+
+  async getChurnAnalytics(months: number = 12) {
+    const response = await apiClient.get('/financial/subscriptions/churn', {
+      params: { months },
+    });
+    return response.data;
+  },
+
+  async getLTVAnalytics() {
+    const response = await apiClient.get('/financial/subscriptions/ltv');
+    return response.data;
+  },
+
+  // Cost Tracking
+  async getCosts(params?: {
+    category?: string;
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const response = await apiClient.get('/financial/costs', { params });
+    return response.data;
+  },
+
+  async createCost(data: Partial<CostTracking>) {
+    const response = await apiClient.post('/financial/costs', data);
+    return response.data;
+  },
+
+  async updateCost(id: string, data: Partial<CostTracking>) {
+    const response = await apiClient.put(`/financial/costs/${id}`, data);
+    return response.data;
+  },
+
+  async deleteCost(id: string) {
+    await apiClient.delete(`/financial/costs/${id}`);
+  },
+
+  async getCostsByCategory(startDate?: string, endDate?: string) {
+    const response = await apiClient.get('/financial/costs/by-category', {
+      params: { startDate, endDate },
+    });
+    return response.data;
+  },
+
+  async getCostOptimizationSuggestions() {
+    const response = await apiClient.get('/financial/costs/optimization');
+    return response.data;
+  },
+
+  // Financial Snapshots
+  async getSnapshots(params?: {
+    period?: string;
+    startDate?: string;
+    endDate?: string;
+  }) {
+    const response = await apiClient.get('/financial/snapshots', { params });
+    return response.data;
+  },
+
+  async generateSnapshot(date?: string) {
+    const response = await apiClient.post('/financial/snapshots/generate', { date });
+    return response.data;
+  },
+
+  async getLatestSnapshot(period: string = 'daily') {
+    const response = await apiClient.get('/financial/snapshots/latest', {
+      params: { period },
+    });
+    return response.data;
+  },
+
+  // Reports
+  async getReports(params?: { type?: string; status?: string; limit?: number }) {
+    const queryParams = new URLSearchParams();
+    if (params?.type) queryParams.append('type', params.type);
+    if (params?.status) queryParams.append('status', params.status);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+    const response = await apiClient.get(`/financial/reports?${queryParams}`);
+    return response.data;
+  },
+
+  async createReport(data: any) {
+    const response = await apiClient.post('/financial/reports', data);
+    return response.data;
+  },
+
+  async getReport(reportId: string) {
+    const response = await apiClient.get(`/financial/reports/${reportId}`);
+    return response.data;
+  },
+
+  async downloadReport(reportId: string) {
+    const response = await apiClient.get(`/financial/reports/${reportId}/download`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  async sendReport(id: string, recipients: { email?: string[]; slack?: string[] }) {
+    const response = await apiClient.post(`/api/financial/reports/${id}/send`, {
+      recipients
+    });
+    return response.data;
+  }
+};

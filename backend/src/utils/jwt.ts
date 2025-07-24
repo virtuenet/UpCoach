@@ -15,14 +15,14 @@ export function generateAccessToken(payload: JwtPayload): string {
   return jwt.sign(payload, JWT_SECRET, {
     expiresIn: JWT_EXPIRES_IN,
     issuer: 'upcoach-api'
-  });
+  } as any);
 }
 
 export function generateRefreshToken(payload: JwtPayload): string {
   return jwt.sign(payload, JWT_SECRET, {
     expiresIn: JWT_REFRESH_EXPIRES_IN,
     issuer: 'upcoach-api'
-  });
+  } as any);
 }
 
 export function verifyToken(token: string): JwtPayload {

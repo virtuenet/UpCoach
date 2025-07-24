@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { getPool } from '../config/database';
-import { getRedis } from '../config/redis';
+import { sequelize } from '../models';
+import { redis } from '../services/redis';
 
 const router = Router();
 
@@ -18,8 +18,7 @@ router.get('/', async (_req, res) => {
 
   try {
     // Check database
-    const pool = getPool();
-    await pool.query('SELECT 1');
+    await sequelize.authenticate();
     health.services.database = 'up';
   } catch (error) {
     health.services.database = 'down';
@@ -28,7 +27,6 @@ router.get('/', async (_req, res) => {
 
   try {
     // Check Redis
-    const redis = getRedis();
     await redis.ping();
     health.services.redis = 'up';
   } catch (error) {

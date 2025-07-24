@@ -11,12 +11,6 @@ class RedisService {
       url: config.redisUrl,
       socket: {
         connectTimeout: 5000,
-        lazyConnect: true,
-      },
-      retry_strategy: (times) => {
-        const delay = Math.min(times * 50, 2000);
-        logger.warn(`Redis connection attempt ${times}, retrying in ${delay}ms`);
-        return delay;
       },
     });
 

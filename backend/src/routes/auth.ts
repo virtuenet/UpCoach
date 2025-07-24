@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { asyncHandler } from '../middleware/errorHandler';
 import { ApiError } from '../utils/apiError';
@@ -38,7 +38,7 @@ const changePasswordSchema = z.object({
 });
 
 // Register endpoint
-router.post('/register', asyncHandler(async (req, res) => {
+router.post('/register', asyncHandler(async (req: Request, res: Response) => {
   const validatedData = registerSchema.parse(req.body);
 
   // Validate password strength
@@ -74,7 +74,7 @@ router.post('/register', asyncHandler(async (req, res) => {
 }));
 
 // Login endpoint
-router.post('/login', asyncHandler(async (req, res) => {
+router.post('/login', asyncHandler(async (req: Request, res: Response) => {
   const validatedData = loginSchema.parse(req.body);
 
   // Verify user credentials
@@ -109,7 +109,7 @@ router.post('/login', asyncHandler(async (req, res) => {
 }));
 
 // Refresh token endpoint
-router.post('/refresh', asyncHandler(async (req, res) => {
+router.post('/refresh', asyncHandler(async (req: Request, res: Response) => {
   const { refreshToken } = refreshTokenSchema.parse(req.body);
 
   // Verify refresh token
@@ -148,7 +148,7 @@ router.post('/refresh', asyncHandler(async (req, res) => {
 }));
 
 // Logout endpoint
-router.post('/logout', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.post('/logout', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const authHeader = req.headers.authorization;
   
@@ -171,7 +171,7 @@ router.post('/logout', authMiddleware, asyncHandler(async (req: AuthenticatedReq
 }));
 
 // Change password endpoint
-router.post('/change-password', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.post('/change-password', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const validatedData = changePasswordSchema.parse(req.body);
 
@@ -202,7 +202,7 @@ router.post('/change-password', authMiddleware, asyncHandler(async (req: Authent
 }));
 
 // Verify token endpoint (for client-side token validation)
-router.get('/verify', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/verify', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const user = await UserService.findById(req.user!.id);
   
   if (!user) {
@@ -219,7 +219,7 @@ router.get('/verify', authMiddleware, asyncHandler(async (req: AuthenticatedRequ
 }));
 
 // Get current user profile (alternative to /users/profile)
-router.get('/profile', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/profile', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const userProfile = await UserService.getProfile(userId);
   
@@ -236,7 +236,7 @@ router.get('/profile', authMiddleware, asyncHandler(async (req: AuthenticatedReq
 }));
 
 // Logout from all devices
-router.post('/logout-all', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.post('/logout-all', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
 
   // Remove all refresh tokens for this user

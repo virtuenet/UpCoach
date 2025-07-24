@@ -1,5 +1,5 @@
 import { DataTypes, Model, Optional } from 'sequelize';
-import { sequelize } from '../../config/database';
+import { sequelize } from '../index';
 
 export interface AvatarPersonality {
   recommendedFor: {
@@ -480,7 +480,7 @@ class Avatar extends Model<AvatarAttributes, AvatarCreationAttributes> implement
     for (const avatarData of defaultAvatars) {
       await this.findOrCreate({
         where: { name: avatarData.name },
-        defaults: avatarData,
+        defaults: avatarData as any,
       });
     }
   }
@@ -545,7 +545,7 @@ Avatar.init(
       type: DataTypes.UUID,
       allowNull: false,
     },
-  },
+  } as any,
   {
     sequelize,
     modelName: 'Avatar',

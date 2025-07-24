@@ -1,4 +1,4 @@
-import { DataTypes, Model, Optional } from 'sequelize';
+import { DataTypes, Model, Optional, Op } from 'sequelize';
 import { sequelize } from '../index';
 
 // Course interface
@@ -125,7 +125,7 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
     let slug = baseSlug;
     let counter = 1;
     
-    while (await Course.findOne({ where: { slug, id: { [sequelize.Op.ne]: this.id } } })) {
+    while (await Course.findOne({ where: { slug, id: { [Op.ne]: this.id } } })) {
       slug = `${baseSlug}-${counter}`;
       counter++;
     }
@@ -136,12 +136,12 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
   public async updateMetadata(): Promise<void> {
     // Would typically fetch lessons and calculate these values
     // For now, using mock calculations
-    const lessons = []; // await this.getLessons();
+    const lessons: { duration?: number }[] = []; // await this.getLessons();
     
     this.metadata = {
       ...this.metadata,
       lessonsCount: lessons.length,
-      totalDuration: lessons.reduce((sum: number, lesson: any) => sum + (lesson.duration || 0), 0),
+      totalDuration: lessons.reduce((sum: number, lesson) => sum + (lesson.duration || 0), 0),
       lastContentUpdate: new Date(),
     };
     
@@ -219,7 +219,7 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
     return Course.findAll({
       where: { 
         status: 'published',
-        'analytics.averageRating': { [sequelize.Op.gte]: 4.0 }
+        'analytics.averageRating': { [Op.gte]: 4.0 }
       },
       order: [['analytics.averageRating', 'DESC']],
       limit: 10,
@@ -252,10 +252,10 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
     const whereClause: any = { status: 'published' };
 
     if (query) {
-      whereClause[sequelize.Op.or] = [
-        { title: { [sequelize.Op.iLike]: `%${query}%` } },
-        { description: { [sequelize.Op.iLike]: `%${query}%` } },
-        { tags: { [sequelize.Op.contains]: [query] } },
+      whereClause[Op.or] = [
+        { title: { [Op.iLike]: `%${query}%` } },
+        { description: { [Op.iLike]: `%${query}%` } },
+        { tags: { [Op.contains]: [query] } },
       ];
     }
 
@@ -269,13 +269,13 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
 
     if (filters.priceRange) {
       whereClause.price = {
-        [sequelize.Op.between]: [filters.priceRange.min, filters.priceRange.max]
+        [Op.between]: [filters.priceRange.min, filters.priceRange.max]
       };
     }
 
     if (filters.rating) {
       whereClause['analytics.averageRating'] = {
-        [sequelize.Op.gte]: filters.rating
+        [Op.gte]: filters.rating
       };
     }
 
@@ -290,7 +290,7 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
     return Course.findAll({
       where: { 
         status: 'published',
-        'analytics.averageRating': { [sequelize.Op.gte]: 4.0 }
+        'analytics.averageRating': { [Op.gte]: 4.0 }
       },
       order: [
         ['analytics.totalEnrollments', 'DESC'],

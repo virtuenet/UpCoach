@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op, QueryTypes } from 'sequelize';
 import { sequelize, CostTracking } from '../../models';
 
 /**
@@ -23,7 +23,22 @@ export class CostAnalyticsService {
     }) || 0;
 
     // Get costs by category
-    const costsByCategory = await CostTracking.getCostsByCategory(startDate, endDate);
+    const categoryCosts = await CostTracking.findAll({
+      attributes: [
+        'category',
+        [sequelize.fn('SUM', sequelize.col('totalAmount')), 'total'],
+      ],
+      where: {
+        billingStartDate: { [Op.between]: [startDate, endDate] },
+        status: ['approved', 'paid'],
+      },
+      group: ['category'],
+    });
+    
+    const costsByCategory: Record<string, number> = {};
+    categoryCosts.forEach((cost: any) => {
+      costsByCategory[cost.category] = parseFloat(cost.get('total'));
+    });
 
     // Get user counts (simplified - would query actual user models)
     const totalUsers = 1000; // Mock data
@@ -219,7 +234,7 @@ export class CostAnalyticsService {
       ORDER BY month, category
     `, {
       replacements: { startDate: historicalStartDate },
-      type: sequelize.QueryTypes.SELECT,
+      type: QueryTypes.SELECT,
     });
 
     const forecastPeriods: any[] = [];
@@ -424,7 +439,7 @@ export class CostAnalyticsService {
       ORDER BY month
     `, {
       replacements: { startDate },
-      type: sequelize.QueryTypes.SELECT,
+      type: QueryTypes.SELECT,
     });
 
     // Process trends data

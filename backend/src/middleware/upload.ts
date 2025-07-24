@@ -66,9 +66,9 @@ export const uploadMiddleware = multer({
   storage,
   fileFilter: (req, file, callback) => {
     // First check file type
-    fileFilter(req, file, (error, result) => {
+    fileFilter(req, file, (error: any) => {
       if (error) {
-        callback(error);
+        callback(error as any);
         return;
       }
       

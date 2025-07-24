@@ -16,7 +16,7 @@ export const validateRequest = (
       success: false,
       error: 'Validation failed',
       errors: errors.array().map(err => ({
-        field: err.param,
+        field: (err as any).param || (err as any).path || 'unknown',
         message: err.msg,
       })),
     });

@@ -1,5 +1,60 @@
 import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
+import { User } from './User';
+import { Goal } from './Goal';
+import { Task } from './Task';
+import { Mood } from './Mood';
+import { Chat } from './Chat';
+import { ChatMessage } from './ChatMessage';
+import { PersonalityProfile } from './personality/PersonalityProfile';
+import { Avatar } from './personality/Avatar';
+import { UserAvatarPreference } from './personality/UserAvatarPreference';
+import { KpiTracker } from './analytics/KpiTracker';
+import { UserAnalytics } from './analytics/UserAnalytics';
+import { CoachMemory } from './coaching/CoachMemory';
+import { Article } from './cms/Article';
+import { Category } from './cms/Category';
+import { Comment } from './cms/Comment';
+import { ContentAnalytics } from './cms/ContentAnalytics';
+import { Course } from './cms/Course';
+import { Media } from './cms/Media';
+import { Template } from './cms/Template';
+import { Content } from './cms/Content';
+import { ContentCategory } from './cms/ContentCategory';
+import { ContentTag } from './cms/ContentTag';
+import { ContentMedia } from './cms/ContentMedia';
+import { Experiment } from './experiments/Experiment';
+import { ExperimentAssignment } from './experiments/ExperimentAssignment';
+import { ExperimentEvent } from './experiments/ExperimentEvent';
+import { 
+  Transaction,
+  TransactionStatus,
+  TransactionType,
+  PaymentMethod
+} from './financial/Transaction';
+import { 
+  Subscription,
+  SubscriptionStatus,
+  SubscriptionPlan,
+  BillingInterval
+} from './financial/Subscription';
+import { CostTracking } from './financial/CostTracking';
+import { 
+  FinancialSnapshot,
+  SnapshotPeriod
+} from './financial/FinancialSnapshot';
+import { 
+  BillingEvent,
+  BillingEventType,
+  BillingEventSource
+} from './financial/BillingEvent';
+import { 
+  FinancialReport,
+  ReportType,
+  ReportStatus,
+  ReportFormat
+} from './financial/FinancialReport';
+import { RevenueAnalytics } from './financial/RevenueAnalytics';
 
 // Load environment variables
 dotenv.config();
@@ -20,6 +75,35 @@ export const sequelize = new Sequelize(
 );
 
 // Import models
+export {
+  // Core Models
+  User,
+  Goal,
+  Task,
+  Mood,
+  Chat,
+  ChatMessage,
+  // Financial Models
+  Transaction,
+  TransactionStatus,
+  TransactionType,
+  PaymentMethod,
+  Subscription,
+  SubscriptionStatus,
+  SubscriptionPlan,
+  BillingInterval,
+  CostTracking,
+  FinancialSnapshot,
+  SnapshotPeriod,
+  BillingEvent,
+  BillingEventType,
+  BillingEventSource,
+  FinancialReport,
+  ReportType,
+  ReportStatus,
+  ReportFormat,
+  RevenueAnalytics,
+};
 export { Experiment } from './experiments/Experiment';
 export { ExperimentAssignment } from './experiments/ExperimentAssignment';
 export { ExperimentEvent } from './experiments/ExperimentEvent';
@@ -30,21 +114,17 @@ export { CoachMemory } from './coaching/CoachMemory';
 export { UserAnalytics } from './analytics/UserAnalytics';
 export { KpiTracker } from './analytics/KpiTracker';
 
-// Financial models
-export { Transaction } from './financial/Transaction';
-export { Subscription } from './financial/Subscription';
-export { CostTracking } from './financial/CostTracking';
-export { FinancialSnapshot } from './financial/FinancialSnapshot';
-export { RevenueAnalytics } from './financial/RevenueAnalytics';
-export { BillingEvent } from './financial/BillingEvent';
-export { FinancialReport } from './financial/FinancialReport';
-
 // CMS models
 export { Article } from './cms/Article';
 export { Course } from './cms/Course';
 export { Category } from './cms/Category';
 export { Media } from './cms/Media';
 export { ContentAnalytics } from './cms/ContentAnalytics';
+export { Content } from './cms/Content';
+export { ContentCategory } from './cms/ContentCategory';
+export { ContentTag } from './cms/ContentTag';
+export { ContentMedia } from './cms/ContentMedia';
+export { Template } from './cms/Template';
 
 // Define associations
 export function defineAssociations() {

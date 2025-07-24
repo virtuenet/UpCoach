@@ -1,4 +1,4 @@
-import { DataTypes, Model, Optional } from 'sequelize';
+import { DataTypes, Model, Optional, Op } from 'sequelize';
 import { sequelize } from '../index';
 
 export interface CommentAttributes {
@@ -98,7 +98,7 @@ export class Comment extends Model<CommentAttributes, CommentCreationAttributes>
     return await Comment.findAll({
       where: {
         threadId,
-        status: { [Comment.sequelize!.Op.ne]: 'deleted' },
+        status: { [Op.ne]: 'deleted' },
       },
       order: [['createdAt', 'ASC']],
     });
@@ -112,7 +112,7 @@ export class Comment extends Model<CommentAttributes, CommentCreationAttributes>
     const whereClause: any = {
       contentType,
       contentId,
-      status: { [Comment.sequelize!.Op.ne]: 'deleted' },
+      status: { [Op.ne]: 'deleted' },
       parentId: null, // Only get top-level comments, replies will be nested
     };
 
@@ -134,7 +134,7 @@ export class Comment extends Model<CommentAttributes, CommentCreationAttributes>
           where: {
             threadId: comment.threadId,
             parentId: comment.id,
-            status: { [Comment.sequelize!.Op.ne]: 'deleted' },
+            status: { [Op.ne]: 'deleted' },
           },
           order: [['createdAt', 'ASC']],
         });
@@ -143,13 +143,13 @@ export class Comment extends Model<CommentAttributes, CommentCreationAttributes>
     );
 
     return {
-      comments: commentsWithReplies,
+      comments: commentsWithReplies as unknown as Comment[],
       total: count,
     };
   }
 
   static async createThread(data: {
-    contentType: string;
+    contentType: 'article' | 'course' | 'template';
     contentId: string;
     authorId: string;
     content: string;
@@ -248,7 +248,7 @@ export class Comment extends Model<CommentAttributes, CommentCreationAttributes>
   }> {
     const [total, unresolved, suggestions, approvals, revisionRequests] = await Promise.all([
       Comment.count({
-        where: { contentType, contentId, status: { [Comment.sequelize!.Op.ne]: 'deleted' } }
+        where: { contentType, contentId, status: { [Op.ne]: 'deleted' } }
       }),
       Comment.count({
         where: { contentType, contentId, isResolved: false, status: 'active' }

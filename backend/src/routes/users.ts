@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { z } from 'zod';
 import { asyncHandler } from '../middleware/errorHandler';
 import { ApiError } from '../utils/apiError';
@@ -17,7 +17,7 @@ const updateProfileSchema = z.object({
 });
 
 // Get current user profile
-router.get('/profile', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/profile', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const userProfile = await UserService.getProfile(userId);
   
@@ -34,7 +34,7 @@ router.get('/profile', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Update current user profile
-router.put('/profile', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.put('/profile', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const validatedData = updateProfileSchema.parse(req.body);
 
@@ -56,7 +56,7 @@ router.put('/profile', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Get user statistics
-router.get('/statistics', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/statistics', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const statistics = await UserService.getUserStatistics(userId);
 
@@ -69,7 +69,7 @@ router.get('/statistics', asyncHandler(async (req: AuthenticatedRequest, res) =>
 }));
 
 // Deactivate current user account
-router.delete('/account', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.delete('/account', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   
   await UserService.deactivate(userId);
@@ -83,7 +83,7 @@ router.delete('/account', asyncHandler(async (req: AuthenticatedRequest, res) =>
 }));
 
 // Admin routes - require admin role
-router.get('/all', requireRole('admin'), asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/all', requireRole(['admin']), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   // This would require implementing a method to list all users
   // For now, we'll return a placeholder
   res.json({
@@ -102,7 +102,7 @@ router.get('/all', requireRole('admin'), asyncHandler(async (req: AuthenticatedR
 }));
 
 // Admin route to get any user by ID
-router.get('/:id', requireRole('admin'), asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/:id', requireRole(['admin']), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
   const user = await UserService.findById(id);
   
@@ -119,7 +119,7 @@ router.get('/:id', requireRole('admin'), asyncHandler(async (req: AuthenticatedR
 }));
 
 // Admin route to deactivate any user
-router.delete('/:id', requireRole('admin'), asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.delete('/:id', requireRole(['admin']), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
   
   // Prevent admin from deactivating themselves

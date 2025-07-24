@@ -1,539 +1,384 @@
 import { Request, Response } from 'express';
-import { Media } from '../../models';
-import { validationResult } from 'express-validator';
+import { ContentMedia } from '../../models/cms/ContentMedia';
+import { User } from '../../models/User';
+import { Content } from '../../models/cms/Content';
+import { Op } from 'sequelize';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
 import sharp from 'sharp';
-import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 
-/**
- * MediaController
- * Handles file uploads, media management, and organization
- */
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: async (req, file, cb) => {
+    const uploadDir = path.join(process.cwd(), 'uploads', 'media');
+    await fs.mkdir(uploadDir, { recursive: true });
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = crypto.randomBytes(6).toString('hex');
+    const ext = path.extname(file.originalname);
+    const name = path.basename(file.originalname, ext);
+    const safeName = name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+    cb(null, `${safeName}-${uniqueSuffix}${ext}`);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB max file size
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'video/mp4',
+      'video/webm',
+      'audio/mpeg',
+      'audio/mp3',
+      'audio/wav',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type'));
+    }
+  }
+});
+
 export class MediaController {
-  /**
-   * Upload files to media library
-   */
-  static async uploadFiles(req: Request, res: Response): Promise<void> {
+  // Upload single file
+  static uploadSingle = upload.single('file');
+
+  // Upload multiple files
+  static uploadMultiple = upload.array('files', 10);
+
+  // Process uploaded file
+  static async processUpload(req: Request, res: Response) {
     try {
-      const files = req.files as Express.Multer.File[];
-      if (!files || files.length === 0) {
-        res.status(400).json({
-          success: false,
-          message: 'No files uploaded',
-        });
-        return;
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
       }
 
-      const { folder = null, alt = '', caption = '', tags = '' } = req.body;
-      const uploadedMedia: any[] = [];
+      const file = req.file;
+      const { contentId, alt, caption, credit } = req.body;
 
-      for (const file of files) {
+      // Determine media type
+      let mediaType: 'image' | 'video' | 'audio' | 'document' | 'other' = 'other';
+      if (file.mimetype.startsWith('image/')) mediaType = 'image';
+      else if (file.mimetype.startsWith('video/')) mediaType = 'video';
+      else if (file.mimetype.startsWith('audio/')) mediaType = 'audio';
+      else if (file.mimetype.includes('pdf') || file.mimetype.includes('document')) mediaType = 'document';
+
+      // Process image files
+      let width, height, thumbnailUrl;
+      if (mediaType === 'image') {
         try {
-          // Generate unique filename
-          const fileExtension = path.extname(file.originalname);
-          const filename = `${uuidv4()}${fileExtension}`;
-          const uploadPath = path.join(process.cwd(), 'uploads', filename);
+          const metadata = await sharp(file.path).metadata();
+          width = metadata.width;
+          height = metadata.height;
 
-          // Ensure uploads directory exists
-          await fs.mkdir(path.dirname(uploadPath), { recursive: true });
-
-          // Move file to uploads directory
-          await fs.writeFile(uploadPath, file.buffer);
-
-          let thumbnailUrl = null;
-          let metadata: any = {
-            originalName: file.originalname,
-            encoding: file.encoding,
-          };
-
-          // Process image files
-          if (file.mimetype.startsWith('image/')) {
-            try {
-              const imageInfo = await sharp(file.buffer).metadata();
-              metadata = {
-                ...metadata,
-                width: imageInfo.width,
-                height: imageInfo.height,
-                format: imageInfo.format,
-                space: imageInfo.space,
-                channels: imageInfo.channels,
-                density: imageInfo.density,
-              };
-
-              // Create thumbnail for images
-              const thumbnailFilename = `thumb_${filename}`;
-              const thumbnailPath = path.join(process.cwd(), 'uploads', 'thumbnails', thumbnailFilename);
-              
-              await fs.mkdir(path.dirname(thumbnailPath), { recursive: true });
-              await sharp(file.buffer)
-                .resize(300, 300, { 
-                  fit: 'inside', 
-                  withoutEnlargement: true 
-                })
-                .jpeg({ quality: 80 })
-                .toFile(thumbnailPath);
-
-              thumbnailUrl = `/uploads/thumbnails/${thumbnailFilename}`;
-
-              // Create additional sizes for responsive images
-              const sizes = [
-                { name: 'small', width: 400 },
-                { name: 'medium', width: 800 },
-                { name: 'large', width: 1200 },
-              ];
-
-              const processedVersions: any = {};
-              for (const size of sizes) {
-                const sizedFilename = `${size.name}_${filename}`;
-                const sizedPath = path.join(process.cwd(), 'uploads', 'sizes', sizedFilename);
-                
-                await fs.mkdir(path.dirname(sizedPath), { recursive: true });
-                await sharp(file.buffer)
-                  .resize(size.width, null, { 
-                    fit: 'inside', 
-                    withoutEnlargement: true 
-                  })
-                  .jpeg({ quality: 85 })
-                  .toFile(sizedPath);
-
-                processedVersions[size.name] = `/uploads/sizes/${sizedFilename}`;
-              }
-
-              metadata.processedVersions = processedVersions;
-            } catch (imageError) {
-              console.error('Error processing image:', imageError);
-            }
-          }
-
-          // Handle video files
-          if (file.mimetype.startsWith('video/')) {
-            // Video processing would go here (ffmpeg, etc.)
-            metadata.duration = 0; // Placeholder
-          }
-
-          // Parse tags
-          const tagArray = tags ? tags.split(',').map((tag: string) => tag.trim()).filter(Boolean) : [];
-
-          // Create media record
-          const media = await Media.create({
-            filename,
-            originalName: file.originalname,
-            mimeType: file.mimetype,
-            fileSize: file.size,
-            url: `/uploads/${filename}`,
-            thumbnailUrl,
-            alt: alt || null,
-            caption: caption || null,
-            uploadedById: req.user!.id,
-            folder: folder || null,
-            tags: tagArray,
-            metadata,
-            usage: {
-              usedInArticles: [],
-              usedInCourses: [],
-              totalUsageCount: 0,
-              lastUsedAt: null,
-            },
-            status: 'ready',
-            isPublic: false,
-          });
-
-          uploadedMedia.push(media);
-        } catch (fileError) {
-          console.error(`Error processing file ${file.originalname}:`, fileError);
-          // Continue with other files
+          // Generate thumbnail
+          const thumbnailPath = file.path.replace(/(\.[^.]+)$/, '-thumb$1');
+          await sharp(file.path)
+            .resize(300, 300, { fit: 'cover' })
+            .jpeg({ quality: 80 })
+            .toFile(thumbnailPath);
+          
+          thumbnailUrl = `/uploads/media/${path.basename(thumbnailPath)}`;
+        } catch (error) {
+          console.error('Error processing image:', error);
         }
       }
 
-      res.status(201).json({
-        success: true,
-        data: uploadedMedia,
-        message: `${uploadedMedia.length} file(s) uploaded successfully`,
+      // Create media record
+      const media = await ContentMedia.create({
+        contentId,
+        type: mediaType,
+        url: `/uploads/media/${file.filename}`,
+        thumbnailUrl,
+        filename: file.filename,
+        originalFilename: file.originalname,
+        mimeType: file.mimetype,
+        size: file.size,
+        width,
+        height,
+        metadata: {
+          alt,
+          caption,
+          credit,
+        },
+        uploadedBy: req.user!.id,
+        isPublic: true,
       });
+
+      res.json(media);
     } catch (error) {
-      console.error('Error uploading files:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to upload files',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
-      });
+      console.error('Error processing upload:', error);
+      res.status(500).json({ error: 'Failed to process upload' });
     }
   }
 
-  /**
-   * Get media library with filtering and pagination
-   */
-  static async getMediaLibrary(req: Request, res: Response): Promise<void> {
+  // Process multiple uploads
+  static async processMultipleUploads(req: Request, res: Response) {
+    try {
+      if (!req.files || !Array.isArray(req.files)) {
+        return res.status(400).json({ error: 'No files uploaded' });
+      }
+
+      const { contentId } = req.body;
+      const mediaItems = [];
+
+      for (const file of req.files) {
+        let mediaType: 'image' | 'video' | 'audio' | 'document' | 'other' = 'other';
+        if (file.mimetype.startsWith('image/')) mediaType = 'image';
+        else if (file.mimetype.startsWith('video/')) mediaType = 'video';
+        else if (file.mimetype.startsWith('audio/')) mediaType = 'audio';
+        else if (file.mimetype.includes('pdf') || file.mimetype.includes('document')) mediaType = 'document';
+
+        let width, height, thumbnailUrl;
+        if (mediaType === 'image') {
+          try {
+            const metadata = await sharp(file.path).metadata();
+            width = metadata.width;
+            height = metadata.height;
+
+            const thumbnailPath = file.path.replace(/(\.[^.]+)$/, '-thumb$1');
+            await sharp(file.path)
+              .resize(300, 300, { fit: 'cover' })
+              .jpeg({ quality: 80 })
+              .toFile(thumbnailPath);
+            
+            thumbnailUrl = `/uploads/media/${path.basename(thumbnailPath)}`;
+          } catch (error) {
+            console.error('Error processing image:', error);
+          }
+        }
+
+        const media = await ContentMedia.create({
+          contentId,
+          type: mediaType,
+          url: `/uploads/media/${file.filename}`,
+          thumbnailUrl,
+          filename: file.filename,
+          originalFilename: file.originalname,
+          mimeType: file.mimetype,
+          size: file.size,
+          width,
+          height,
+          uploadedBy: req.user!.id,
+          isPublic: true,
+        });
+
+        mediaItems.push(media);
+      }
+
+      res.json(mediaItems);
+    } catch (error) {
+      console.error('Error processing multiple uploads:', error);
+      res.status(500).json({ error: 'Failed to process uploads' });
+    }
+  }
+
+  // Get all media with filters
+  static async getAll(req: Request, res: Response) {
     try {
       const {
         page = 1,
         limit = 20,
         type,
-        folder,
+        contentId,
+        uploadedBy,
         search,
-        tags,
         sortBy = 'createdAt',
-        sortOrder = 'DESC',
+        sortOrder = 'DESC'
       } = req.query;
 
       const offset = (Number(page) - 1) * Number(limit);
-      const whereClause: any = {};
-
-      // Apply filters
-      if (type) {
-        whereClause.mimeType = { [Media.sequelize!.Op.like]: `${type}%` };
-      }
-
-      if (folder !== undefined) {
-        whereClause.folder = folder === 'null' ? null : folder;
-      }
-
+      
+      const where: any = {};
+      
+      if (type) where.type = type;
+      if (contentId) where.contentId = contentId;
+      if (uploadedBy) where.uploadedBy = uploadedBy;
+      
       if (search) {
-        whereClause[Media.sequelize!.Op.or] = [
-          { originalName: { [Media.sequelize!.Op.iLike]: `%${search}%` } },
-          { alt: { [Media.sequelize!.Op.iLike]: `%${search}%` } },
-          { caption: { [Media.sequelize!.Op.iLike]: `%${search}%` } },
+        where[Op.or] = [
+          { filename: { [Op.iLike]: `%${search}%` } },
+          { originalFilename: { [Op.iLike]: `%${search}%` } },
+          { 'metadata.alt': { [Op.iLike]: `%${search}%` } },
+          { 'metadata.caption': { [Op.iLike]: `%${search}%` } }
         ];
       }
 
-      if (tags) {
-        const tagArray = (tags as string).split(',').map(tag => tag.trim());
-        whereClause.tags = { [Media.sequelize!.Op.overlap]: tagArray };
-      }
-
-      const media = await Media.findAndCountAll({
-        where: whereClause,
+      const { rows: media, count } = await ContentMedia.findAndCountAll({
+        where,
         order: [[sortBy as string, sortOrder as string]],
         limit: Number(limit),
         offset,
+        include: [
+          {
+            model: User,
+            as: 'uploader',
+            attributes: ['id', 'name', 'email', 'avatar']
+          }
+        ]
       });
 
       res.json({
-        success: true,
-        data: media.rows,
+        media,
         pagination: {
-          currentPage: Number(page),
-          totalPages: Math.ceil(media.count / Number(limit)),
-          totalItems: media.count,
-          itemsPerPage: Number(limit),
-        },
+          page: Number(page),
+          limit: Number(limit),
+          total: count,
+          totalPages: Math.ceil(count / Number(limit))
+        }
       });
     } catch (error) {
       console.error('Error fetching media:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch media',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
-      });
+      res.status(500).json({ error: 'Failed to fetch media' });
     }
   }
 
-  /**
-   * Get a single media item
-   */
-  static async getMedia(req: Request, res: Response): Promise<void> {
+  // Get single media item
+  static async getOne(req: Request, res: Response) {
     try {
       const { id } = req.params;
 
-      const media = await Media.findByPk(id);
+      const media = await ContentMedia.findByPk(id, {
+        include: [
+          {
+            model: User,
+            as: 'uploader',
+            attributes: ['id', 'name', 'email', 'avatar']
+          },
+          {
+            model: Content,
+            as: 'content',
+            attributes: ['id', 'title', 'slug']
+          }
+        ]
+      });
+
       if (!media) {
-        res.status(404).json({
-          success: false,
-          message: 'Media not found',
-        });
-        return;
+        return res.status(404).json({ error: 'Media not found' });
       }
 
-      res.json({
-        success: true,
-        data: media,
-      });
+      res.json(media);
     } catch (error) {
       console.error('Error fetching media:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch media',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
-      });
+      res.status(500).json({ error: 'Failed to fetch media' });
     }
   }
 
-  /**
-   * Update media metadata
-   */
-  static async updateMedia(req: Request, res: Response): Promise<void> {
+  // Update media metadata
+  static async update(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { alt, caption, tags, folder, isPublic } = req.body;
+      const { metadata, isPublic } = req.body;
 
-      const media = await Media.findByPk(id);
+      const media = await ContentMedia.findByPk(id);
       if (!media) {
-        res.status(404).json({
-          success: false,
-          message: 'Media not found',
-        });
-        return;
+        return res.status(404).json({ error: 'Media not found' });
       }
 
-      // Check if user can edit this media
-      if (media.uploadedById !== req.user!.id && req.user!.role !== 'admin') {
-        res.status(403).json({
-          success: false,
-          message: 'Not authorized to edit this media',
-        });
-        return;
+      // Check permissions
+      if (media.uploadedBy !== req.user!.id && req.user!.role !== 'admin') {
+        return res.status(403).json({ error: 'Unauthorized to update this media' });
       }
-
-      // Parse tags
-      const tagArray = tags ? tags.split(',').map((tag: string) => tag.trim()).filter(Boolean) : media.tags;
 
       await media.update({
-        alt: alt !== undefined ? alt : media.alt,
-        caption: caption !== undefined ? caption : media.caption,
-        tags: tagArray,
-        folder: folder !== undefined ? folder : media.folder,
-        isPublic: isPublic !== undefined ? isPublic : media.isPublic,
+        metadata: { ...media.metadata, ...metadata },
+        isPublic: isPublic !== undefined ? isPublic : media.isPublic
       });
 
-      res.json({
-        success: true,
-        data: media,
-        message: 'Media updated successfully',
-      });
+      res.json(media);
     } catch (error) {
       console.error('Error updating media:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to update media',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
-      });
+      res.status(500).json({ error: 'Failed to update media' });
     }
   }
 
-  /**
-   * Delete media
-   */
-  static async deleteMedia(req: Request, res: Response): Promise<void> {
+  // Delete media
+  static async delete(req: Request, res: Response) {
     try {
       const { id } = req.params;
 
-      const media = await Media.findByPk(id);
+      const media = await ContentMedia.findByPk(id);
       if (!media) {
-        res.status(404).json({
-          success: false,
-          message: 'Media not found',
-        });
-        return;
+        return res.status(404).json({ error: 'Media not found' });
       }
 
-      // Check if user can delete this media
-      if (media.uploadedById !== req.user!.id && req.user!.role !== 'admin') {
-        res.status(403).json({
-          success: false,
-          message: 'Not authorized to delete this media',
-        });
-        return;
+      // Check permissions
+      if (media.uploadedBy !== req.user!.id && req.user!.role !== 'admin') {
+        return res.status(403).json({ error: 'Unauthorized to delete this media' });
       }
 
-      // Check if media is in use
-      if (media.usage.totalUsageCount > 0) {
-        res.status(400).json({
-          success: false,
-          message: 'Cannot delete media that is currently in use',
-          usage: media.usage,
-        });
-        return;
-      }
-
+      // Delete files from disk
       try {
-        // Delete physical files
-        const filePath = path.join(process.cwd(), 'uploads', media.filename);
-        await fs.unlink(filePath).catch(() => {}); // Ignore if file doesn't exist
-
-        // Delete thumbnail if exists
+        await fs.unlink(path.join(process.cwd(), media.url));
         if (media.thumbnailUrl) {
-          const thumbnailPath = path.join(process.cwd(), media.thumbnailUrl.replace('/uploads/', 'uploads/'));
-          await fs.unlink(thumbnailPath).catch(() => {});
+          await fs.unlink(path.join(process.cwd(), media.thumbnailUrl));
         }
-
-        // Delete processed versions if they exist
-        if (media.metadata?.processedVersions) {
-          for (const version of Object.values(media.metadata.processedVersions)) {
-            const versionPath = path.join(process.cwd(), (version as string).replace('/uploads/', 'uploads/'));
-            await fs.unlink(versionPath).catch(() => {});
-          }
-        }
-      } catch (fileError) {
-        console.error('Error deleting files:', fileError);
-        // Continue with database deletion even if file deletion fails
+      } catch (error) {
+        console.error('Error deleting files:', error);
       }
 
       await media.destroy();
-
-      res.json({
-        success: true,
-        message: 'Media deleted successfully',
-      });
+      res.json({ message: 'Media deleted successfully' });
     } catch (error) {
       console.error('Error deleting media:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to delete media',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
-      });
+      res.status(500).json({ error: 'Failed to delete media' });
     }
   }
 
-  /**
-   * Get media folders
-   */
-  static async getFolders(req: Request, res: Response): Promise<void> {
+  // Get media library stats
+  static async getStats(req: Request, res: Response) {
     try {
-      const folders = await Media.getFolders();
+      const totalCount = await ContentMedia.count();
+      const totalSize = await ContentMedia.sum('size');
+      
+      const typeStats = await ContentMedia.findAll({
+        attributes: [
+          'type',
+          [require('sequelize').fn('COUNT', '*'), 'count'],
+          [require('sequelize').fn('SUM', require('sequelize').col('size')), 'totalSize']
+        ],
+        group: ['type']
+      });
+
+      const recentUploads = await ContentMedia.findAll({
+        limit: 10,
+        order: [['createdAt', 'DESC']],
+        include: [
+          {
+            model: User,
+            as: 'uploader',
+            attributes: ['id', 'name', 'avatar']
+          }
+        ]
+      });
 
       res.json({
-        success: true,
-        data: folders,
+        totalCount,
+        totalSize,
+        typeStats,
+        recentUploads
       });
     } catch (error) {
-      console.error('Error fetching folders:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch folders',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
-      });
-    }
-  }
-
-  /**
-   * Create a new folder
-   */
-  static async createFolder(req: Request, res: Response): Promise<void> {
-    try {
-      const { name } = req.body;
-
-      if (!name || name.trim().length === 0) {
-        res.status(400).json({
-          success: false,
-          message: 'Folder name is required',
-        });
-        return;
-      }
-
-      // Check if folder already exists
-      const existingFolders = await Media.getFolders();
-      if (existingFolders.includes(name.trim())) {
-        res.status(400).json({
-          success: false,
-          message: 'Folder already exists',
-        });
-        return;
-      }
-
-      res.json({
-        success: true,
-        data: { name: name.trim() },
-        message: 'Folder created successfully',
-      });
-    } catch (error) {
-      console.error('Error creating folder:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to create folder',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
-      });
-    }
-  }
-
-  /**
-   * Move media to folder
-   */
-  static async moveToFolder(req: Request, res: Response): Promise<void> {
-    try {
-      const { mediaIds, folder } = req.body;
-
-      if (!Array.isArray(mediaIds) || mediaIds.length === 0) {
-        res.status(400).json({
-          success: false,
-          message: 'Media IDs array is required',
-        });
-        return;
-      }
-
-      await Media.update(
-        { folder: folder || null },
-        { where: { id: mediaIds } }
-      );
-
-      res.json({
-        success: true,
-        message: `${mediaIds.length} media items moved successfully`,
-      });
-    } catch (error) {
-      console.error('Error moving media:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to move media',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
-      });
-    }
-  }
-
-  /**
-   * Get storage statistics
-   */
-  static async getStorageStats(req: Request, res: Response): Promise<void> {
-    try {
-      const stats = await Media.getStorageStats();
-
-      res.json({
-        success: true,
-        data: stats,
-      });
-    } catch (error) {
-      console.error('Error fetching storage stats:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch storage statistics',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
-      });
-    }
-  }
-
-  /**
-   * Clean up unused media
-   */
-  static async cleanupUnused(req: Request, res: Response): Promise<void> {
-    try {
-      const { olderThanDays = 30 } = req.query;
-
-      // Only admins can cleanup
-      if (req.user!.role !== 'admin') {
-        res.status(403).json({
-          success: false,
-          message: 'Only administrators can cleanup unused media',
-        });
-        return;
-      }
-
-      const deletedCount = await Media.cleanupUnused(Number(olderThanDays));
-
-      res.json({
-        success: true,
-        data: { deletedCount },
-        message: `${deletedCount} unused media items cleaned up`,
-      });
-    } catch (error) {
-      console.error('Error cleaning up media:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to cleanup unused media',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
-      });
+      console.error('Error fetching media stats:', error);
+      res.status(500).json({ error: 'Failed to fetch media stats' });
     }
   }
 }
 
-export default MediaController; 
+export default MediaController;

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { z } from 'zod';
 import { asyncHandler } from '../middleware/errorHandler';
 import { ApiError } from '../utils/apiError';
@@ -66,7 +66,7 @@ const goalFiltersSchema = z.object({
 });
 
 // Get all goals for the current user
-router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const filters = goalFiltersSchema.parse(req.query);
 
@@ -175,7 +175,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Get a single goal by ID with milestones
-router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const { id } = req.params;
 
@@ -205,7 +205,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Create a new goal
-router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const validatedData = createGoalSchema.parse(req.body);
 
@@ -234,7 +234,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Update a goal
-router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const { id } = req.params;
   const validatedData = updateGoalSchema.parse(req.body);
@@ -282,7 +282,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Delete a goal
-router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const { id } = req.params;
 
@@ -304,7 +304,7 @@ router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Create a milestone for a goal
-router.post('/:id/milestones', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.post('/:id/milestones', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const { id: goalId } = req.params;
   const validatedData = createMilestoneSchema.parse(req.body);
@@ -337,7 +337,7 @@ router.post('/:id/milestones', asyncHandler(async (req: AuthenticatedRequest, re
 }));
 
 // Update a milestone
-router.put('/:goalId/milestones/:milestoneId', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.put('/:goalId/milestones/:milestoneId', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const { goalId, milestoneId } = req.params;
   const validatedData = updateMilestoneSchema.parse(req.body);
@@ -384,7 +384,7 @@ router.put('/:goalId/milestones/:milestoneId', asyncHandler(async (req: Authenti
 }));
 
 // Delete a milestone
-router.delete('/:goalId/milestones/:milestoneId', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.delete('/:goalId/milestones/:milestoneId', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const { goalId, milestoneId } = req.params;
 
@@ -414,7 +414,7 @@ router.delete('/:goalId/milestones/:milestoneId', asyncHandler(async (req: Authe
 }));
 
 // Get goal statistics
-router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
 
   const stats = await db.query(`

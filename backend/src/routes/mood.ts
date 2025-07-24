@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { z } from 'zod';
 import { asyncHandler } from '../middleware/errorHandler';
 import { ApiError } from '../utils/apiError';
@@ -35,7 +35,7 @@ const moodFiltersSchema = z.object({
 });
 
 // Get all mood entries for the current user
-router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const filters = moodFiltersSchema.parse(req.query);
 
@@ -131,7 +131,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Get today's mood entry
-router.get('/today', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/today', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   
   const today = new Date();
@@ -158,7 +158,7 @@ router.get('/today', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Get mood statistics and insights
-router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
 
   // Overall statistics
@@ -288,7 +288,7 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, res
 }));
 
 // Get a single mood entry by ID
-router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const { id } = req.params;
 
@@ -307,7 +307,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Create a new mood entry
-router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const validatedData = createMoodEntrySchema.parse(req.body);
 
@@ -352,7 +352,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Update a mood entry
-router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const { id } = req.params;
   const validatedData = createMoodEntrySchema.parse(req.body);
@@ -385,7 +385,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Delete a mood entry
-router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user!.id;
   const { id } = req.params;
 

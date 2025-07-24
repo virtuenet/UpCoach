@@ -19,6 +19,15 @@ declare global {
   }
 }
 
+// Export AuthenticatedRequest interface
+export interface AuthenticatedRequest extends Request {
+  user: {
+    id: string;
+    email: string;
+    role: string;
+  };
+}
+
 /**
  * Authentication middleware
  */
@@ -179,16 +188,24 @@ async function checkResourceOwnership(resourceId: string, userId: string): Promi
 }
 
 export const generateTokens = (userId: string): { accessToken: string; refreshToken: string } => {
+  const accessTokenOptions = {
+    expiresIn: config.jwt.expiresIn
+  };
+  
+  const refreshTokenOptions = {
+    expiresIn: config.jwt.refreshExpiresIn
+  };
+  
   const accessToken = jwt.sign(
     { userId, type: 'access' },
     config.jwt.secret,
-    { expiresIn: config.jwt.expiresIn }
+    { expiresIn: config.jwt.expiresIn } as any
   );
 
   const refreshToken = jwt.sign(
     { userId, type: 'refresh' },
     config.jwt.refreshSecret,
-    { expiresIn: config.jwt.refreshExpiresIn }
+    { expiresIn: config.jwt.refreshExpiresIn } as any
   );
 
   return { accessToken, refreshToken };
@@ -225,4 +242,9 @@ export const blacklistToken = async (token: string): Promise<void> => {
   } catch (error) {
     logger.error('Error blacklisting token:', error);
   }
-}; 
+};
+
+// Export aliases for common middleware names
+export const authenticate = authMiddleware;
+export const authorize = adminMiddleware;
+export const authenticateToken = authMiddleware; 

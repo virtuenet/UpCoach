@@ -1,691 +1,472 @@
 import Stripe from 'stripe';
-import { Transaction, Subscription, BillingEvent } from '../../models';
-import { sequelize } from '../../models';
+import { 
+  Transaction, 
+  Subscription, 
+  BillingEvent,
+  User,
+  TransactionStatus,
+  TransactionType,
+  PaymentMethod,
+  SubscriptionStatus,
+  BillingEventType,
+  BillingEventSource,
+} from '../../models';
+import { logger } from '../../utils/logger';
 
-/**
- * StripeWebhookService
- * Handles Stripe webhook events and updates database accordingly
- */
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
 export class StripeWebhookService {
-  private stripe: Stripe;
-  private webhookSecret: string;
-
-  constructor() {
-    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-      apiVersion: '2023-10-16',
-    });
-    this.webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
-  }
-
   /**
-   * Verify webhook signature
+   * Handle incoming Stripe webhook
    */
-  verifyWebhookSignature(payload: string | Buffer, signature: string): Stripe.Event {
+  async handleWebhook(event: Stripe.Event): Promise<void> {
     try {
-      return this.stripe.webhooks.constructEvent(
-        payload,
-        signature,
-        this.webhookSecret
-      );
-    } catch (err) {
-      throw new Error(`Webhook signature verification failed: ${err.message}`);
-    }
-  }
+      // Check for duplicate events
+      const existingEvent = await BillingEvent.findOne({
+        where: { stripeEventId: event.id },
+      });
 
-  /**
-   * Process webhook event
-   */
-  async processWebhookEvent(event: Stripe.Event): Promise<void> {
-    // Check for duplicate webhook
-    const isDuplicate = await BillingEvent.isDuplicateWebhook(event.id);
-    if (isDuplicate) {
-      console.log(`Duplicate webhook received: ${event.id}`);
-      return;
-    }
-
-    // Create billing event record
-    const billingEvent = await BillingEvent.create({
-      eventType: this.mapStripeEventType(event.type),
-      webhookId: event.id,
-      webhookProvider: 'stripe',
-      webhookVerified: true,
-      source: 'webhook',
-      eventData: {
-        metadata: event.data.object,
-      },
-      processingStatus: 'processing',
-      sideEffects: {},
-      impact: {},
-      compliance: {
-        gdprCompliant: true,
-        pciCompliant: true,
-      },
-      childEventIds: [],
-      environment: process.env.NODE_ENV as any,
-      version: '1.0.0',
-      tags: ['stripe', event.type],
-      eventTimestamp: new Date(event.created * 1000),
-    });
-
-    const transaction = await sequelize.transaction();
-
-    try {
-      switch (event.type) {
-        case 'payment_intent.succeeded':
-          await this.handlePaymentSucceeded(event, billingEvent, transaction);
-          break;
-        
-        case 'payment_intent.payment_failed':
-          await this.handlePaymentFailed(event, billingEvent, transaction);
-          break;
-        
-        case 'customer.subscription.created':
-          await this.handleSubscriptionCreated(event, billingEvent, transaction);
-          break;
-        
-        case 'customer.subscription.updated':
-          await this.handleSubscriptionUpdated(event, billingEvent, transaction);
-          break;
-        
-        case 'customer.subscription.deleted':
-          await this.handleSubscriptionDeleted(event, billingEvent, transaction);
-          break;
-        
-        case 'customer.subscription.trial_will_end':
-          await this.handleTrialWillEnd(event, billingEvent, transaction);
-          break;
-        
-        case 'invoice.payment_succeeded':
-          await this.handleInvoicePaymentSucceeded(event, billingEvent, transaction);
-          break;
-        
-        case 'invoice.payment_failed':
-          await this.handleInvoicePaymentFailed(event, billingEvent, transaction);
-          break;
-        
-        case 'charge.refunded':
-          await this.handleChargeRefunded(event, billingEvent, transaction);
-          break;
-        
-        case 'charge.dispute.created':
-          await this.handleDisputeCreated(event, billingEvent, transaction);
-          break;
-        
-        default:
-          console.log(`Unhandled event type: ${event.type}`);
+      if (existingEvent) {
+        logger.info(`Duplicate webhook event: ${event.id}`);
+        return;
       }
 
-      // Update billing event as completed
-      billingEvent.processingStatus = 'completed';
-      billingEvent.processedAt = new Date();
-      billingEvent.processingDuration = Date.now() - billingEvent.createdAt.getTime();
-      await billingEvent.save({ transaction });
+      // Process event based on type
+      switch (event.type) {
+        case 'payment_intent.succeeded':
+          await this.handlePaymentSucceeded(event.data.object as Stripe.PaymentIntent);
+          break;
 
-      await transaction.commit();
+        case 'payment_intent.payment_failed':
+          await this.handlePaymentFailed(event.data.object as Stripe.PaymentIntent);
+          break;
+
+        case 'customer.subscription.created':
+          await this.handleSubscriptionCreated(event.data.object as Stripe.Subscription);
+          break;
+
+        case 'customer.subscription.updated':
+          await this.handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
+          break;
+
+        case 'customer.subscription.deleted':
+          await this.handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
+          break;
+
+        case 'customer.subscription.trial_will_end':
+          await this.handleTrialWillEnd(event.data.object as Stripe.Subscription);
+          break;
+
+        case 'invoice.payment_succeeded':
+          await this.handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice);
+          break;
+
+        case 'invoice.payment_failed':
+          await this.handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);
+          break;
+
+        case 'charge.refunded':
+          await this.handleChargeRefunded(event.data.object as Stripe.Charge);
+          break;
+
+        case 'charge.dispute.created':
+          await this.handleDisputeCreated(event.data.object as Stripe.Dispute);
+          break;
+
+        default:
+          logger.info(`Unhandled webhook event type: ${event.type}`);
+      }
+
+      // Record the event
+      await this.recordBillingEvent(event);
     } catch (error) {
-      await transaction.rollback();
-      
-      // Update billing event as failed
-      billingEvent.processingStatus = 'failed';
-      billingEvent.processingError = error.message;
-      await billingEvent.save();
-      
+      logger.error('Error processing webhook:', error);
       throw error;
     }
   }
 
   /**
-   * Handle payment succeeded event
+   * Handle successful payment
    */
-  private async handlePaymentSucceeded(
-    event: Stripe.Event,
-    billingEvent: BillingEvent,
-    transaction: any
-  ): Promise<void> {
-    const paymentIntent = event.data.object as Stripe.PaymentIntent;
-    
-    // Find or create transaction
-    const [txn, created] = await Transaction.findOrCreate({
-      where: { providerTransactionId: paymentIntent.id },
-      defaults: {
-        userId: paymentIntent.metadata.userId,
-        subscriptionId: paymentIntent.metadata.subscriptionId,
-        type: 'payment',
-        status: 'completed',
-        amount: paymentIntent.amount / 100, // Convert from cents
-        currency: paymentIntent.currency.toUpperCase(),
-        description: paymentIntent.description || 'Subscription payment',
-        paymentMethod: this.mapPaymentMethod(paymentIntent.payment_method_types[0]),
-        paymentProvider: 'stripe',
-        providerTransactionId: paymentIntent.id,
-        providerCustomerId: paymentIntent.customer as string,
-        subtotal: paymentIntent.amount / 100,
-        taxAmount: 0, // Would be calculated from metadata
-        taxRate: 0,
-        refundedAmount: 0,
-        requiresReview: false,
-        metadata: paymentIntent.metadata,
-        processedAt: new Date(),
-      },
-      transaction,
+  private async handlePaymentSucceeded(paymentIntent: Stripe.PaymentIntent): Promise<void> {
+    const user = await User.findOne({
+      where: { email: paymentIntent.receipt_email! },
     });
 
-    // Update billing event
-    billingEvent.userId = txn.userId;
-    billingEvent.transactionId = txn.id;
-    billingEvent.subscriptionId = txn.subscriptionId;
-    billingEvent.eventData = {
-      amount: txn.amount,
-      currency: txn.currency,
-      description: txn.description,
-      paymentMethod: txn.paymentMethod,
-    };
-    billingEvent.impact = {
-      revenueImpact: txn.amount,
-      mrrChange: 0, // Will be calculated based on subscription
-    };
-    billingEvent.sideEffects = {
-      emailsSent: ['payment_confirmation'],
-      notificationsSent: ['payment_success'],
-    };
-  }
+    if (!user) {
+      logger.error(`User not found for payment: ${paymentIntent.id}`);
+      return;
+    }
 
-  /**
-   * Handle payment failed event
-   */
-  private async handlePaymentFailed(
-    event: Stripe.Event,
-    billingEvent: BillingEvent,
-    transaction: any
-  ): Promise<void> {
-    const paymentIntent = event.data.object as Stripe.PaymentIntent;
-    
-    // Create failed transaction record
-    const txn = await Transaction.create({
-      userId: paymentIntent.metadata.userId,
-      subscriptionId: paymentIntent.metadata.subscriptionId,
-      type: 'payment',
-      status: 'failed',
+    // Create transaction record
+    await Transaction.create({
+      userId: user.id,
+      stripeTransactionId: paymentIntent.id,
+      type: TransactionType.PAYMENT,
+      status: TransactionStatus.COMPLETED,
       amount: paymentIntent.amount / 100,
-      currency: paymentIntent.currency.toUpperCase(),
-      description: paymentIntent.description || 'Failed payment',
-      paymentMethod: this.mapPaymentMethod(paymentIntent.payment_method_types[0]),
-      paymentProvider: 'stripe',
-      providerTransactionId: paymentIntent.id,
-      providerCustomerId: paymentIntent.customer as string,
-      subtotal: paymentIntent.amount / 100,
-      taxAmount: 0,
-      taxRate: 0,
-      refundedAmount: 0,
-      requiresReview: true,
-      metadata: {
-        ...paymentIntent.metadata,
-        failureCode: paymentIntent.last_payment_error?.code,
-        failureMessage: paymentIntent.last_payment_error?.message,
-      },
-      failedAt: new Date(),
-    }, { transaction });
+      currency: paymentIntent.currency,
+      paymentMethod: PaymentMethod.CARD,
+      description: paymentIntent.description || 'Payment',
+    });
 
-    // Update billing event
-    billingEvent.userId = txn.userId;
-    billingEvent.transactionId = txn.id;
-    billingEvent.subscriptionId = txn.subscriptionId;
-    billingEvent.eventData = {
-      amount: txn.amount,
-      currency: txn.currency,
+    // Create billing event
+    await BillingEvent.create({
+      eventType: BillingEventType.PAYMENT_SUCCEEDED,
+      source: BillingEventSource.STRIPE_WEBHOOK,
+      userId: user.id,
+      stripeEventId: paymentIntent.id,
+      description: `Payment of ${paymentIntent.amount / 100} ${paymentIntent.currency} succeeded`,
+      amount: paymentIntent.amount / 100,
+      currency: paymentIntent.currency,
+      isProcessed: true,
+      processedAt: new Date(),
+    });
+  }
+
+  /**
+   * Handle failed payment
+   */
+  private async handlePaymentFailed(paymentIntent: Stripe.PaymentIntent): Promise<void> {
+    const user = await User.findOne({
+      where: { email: paymentIntent.receipt_email! },
+    });
+
+    if (!user) return;
+
+    // Create failed transaction
+    await Transaction.create({
+      userId: user.id,
+      stripeTransactionId: paymentIntent.id,
+      type: TransactionType.PAYMENT,
+      status: TransactionStatus.FAILED,
+      amount: paymentIntent.amount / 100,
+      currency: paymentIntent.currency,
+      paymentMethod: PaymentMethod.CARD,
+      description: paymentIntent.description || 'Payment',
       failureReason: paymentIntent.last_payment_error?.message,
-      failureCode: paymentIntent.last_payment_error?.code,
-    };
-    billingEvent.sideEffects = {
-      emailsSent: ['payment_failed'],
-      notificationsSent: ['payment_failure'],
-      actionsPerformed: ['dunning_started'],
-    };
+    });
+
+    // Create billing event
+    await BillingEvent.create({
+      eventType: BillingEventType.PAYMENT_FAILED,
+      source: BillingEventSource.STRIPE_WEBHOOK,
+      userId: user.id,
+      stripeEventId: paymentIntent.id,
+      description: `Payment failed: ${paymentIntent.last_payment_error?.message}`,
+      amount: paymentIntent.amount / 100,
+      currency: paymentIntent.currency,
+      isProcessed: true,
+      processedAt: new Date(),
+    });
   }
 
   /**
-   * Handle subscription created event
+   * Handle subscription creation
    */
-  private async handleSubscriptionCreated(
-    event: Stripe.Event,
-    billingEvent: BillingEvent,
-    transaction: any
-  ): Promise<void> {
-    const stripeSubscription = event.data.object as Stripe.Subscription;
-    
-    // Create subscription record
+  private async handleSubscriptionCreated(stripeSubscription: Stripe.Subscription): Promise<void> {
+    // Find user by looking up existing subscription with the same customer ID
+    const existingSubscription = await Subscription.findOne({
+      where: { stripeCustomerId: stripeSubscription.customer as string },
+      include: [{ model: User, as: 'user' }],
+    });
+
+    const user = existingSubscription?.user;
+
+    if (!user) return;
+
     const subscription = await Subscription.create({
-      userId: stripeSubscription.metadata.userId,
-      customerId: stripeSubscription.customer as string,
-      planId: stripeSubscription.items.data[0].price.id,
-      planName: stripeSubscription.items.data[0].price.nickname || 'Subscription',
-      planType: this.mapPlanType(stripeSubscription.items.data[0].price.metadata),
-      status: this.mapSubscriptionStatus(stripeSubscription.status),
-      billingInterval: this.mapBillingInterval(stripeSubscription.items.data[0].price.recurring?.interval),
-      billingAmount: (stripeSubscription.items.data[0].price.unit_amount || 0) / 100,
-      currency: stripeSubscription.currency.toUpperCase(),
-      trialStart: stripeSubscription.trial_start ? new Date(stripeSubscription.trial_start * 1000) : undefined,
-      trialEnd: stripeSubscription.trial_end ? new Date(stripeSubscription.trial_end * 1000) : undefined,
-      currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
-      startDate: new Date(stripeSubscription.start_date * 1000),
-      discountPercentage: 0,
-      discountAmount: 0,
-      usageMetrics: {
-        sessionsUsed: 0,
-        sessionsLimit: -1,
-        storageUsed: 0,
-        storageLimit: 1000,
-        coachingHoursUsed: 0,
-        coachingHoursLimit: 10,
-        aiCreditsUsed: 0,
-        aiCreditsLimit: 1000,
-      },
-      winBackAttempts: 0,
-      tags: [],
-    }, { transaction });
+      userId: user.id,
+      stripeSubscriptionId: stripeSubscription.id,
+      stripeCustomerId: stripeSubscription.customer as string,
+      plan: this.mapStripePlanToInternal(stripeSubscription.items.data[0].price.lookup_key!),
+      status: this.mapStripeStatusToInternal(stripeSubscription.status),
+      amount: stripeSubscription.items.data[0].price.unit_amount! / 100,
+      currency: stripeSubscription.currency,
+      currentPeriodStart: new Date((stripeSubscription as any).current_period_start * 1000),
+      currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
+      trialStartDate: stripeSubscription.trial_start 
+        ? new Date(stripeSubscription.trial_start * 1000) 
+        : undefined,
+      trialEndDate: stripeSubscription.trial_end 
+        ? new Date(stripeSubscription.trial_end * 1000) 
+        : undefined,
+    });
 
-    // Update billing event
-    billingEvent.userId = subscription.userId;
-    billingEvent.subscriptionId = subscription.id;
-    billingEvent.eventData = {
-      newPlan: subscription.planName,
-      newAmount: subscription.billingAmount,
-    };
-    billingEvent.impact = {
-      mrrChange: subscription.getMRR(),
-    };
-    billingEvent.sideEffects = {
-      emailsSent: ['welcome_email'],
-      notificationsSent: ['subscription_created'],
-    };
+    // Create billing event
+    await BillingEvent.create({
+      eventType: BillingEventType.SUBSCRIPTION_CREATED,
+      source: BillingEventSource.STRIPE_WEBHOOK,
+      userId: user.id,
+      subscriptionId: subscription.id,
+      stripeEventId: stripeSubscription.id,
+      description: `Subscription created: ${subscription.plan} plan`,
+      isProcessed: true,
+      processedAt: new Date(),
+    });
   }
 
   /**
-   * Handle subscription updated event
+   * Handle subscription update
    */
-  private async handleSubscriptionUpdated(
-    event: Stripe.Event,
-    billingEvent: BillingEvent,
-    transaction: any
-  ): Promise<void> {
-    const stripeSubscription = event.data.object as Stripe.Subscription;
-    const previousAttributes = event.data.previous_attributes as any;
-    
-    // Find existing subscription
+  private async handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription): Promise<void> {
     const subscription = await Subscription.findOne({
-      where: { customerId: stripeSubscription.customer as string },
-      transaction,
+      where: { stripeSubscriptionId: stripeSubscription.id },
     });
 
-    if (!subscription) {
-      throw new Error(`Subscription not found for customer: ${stripeSubscription.customer}`);
+    if (!subscription) return;
+
+    const previousPlan = subscription.plan;
+    const newPlan = this.mapStripePlanToInternal(stripeSubscription.items.data[0].price.lookup_key!);
+
+    await subscription.update({
+      plan: newPlan,
+      status: this.mapStripeStatusToInternal(stripeSubscription.status),
+      amount: stripeSubscription.items.data[0].price.unit_amount! / 100,
+      currentPeriodStart: new Date((stripeSubscription as any).current_period_start * 1000),
+      currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
+    });
+
+    // Determine event type
+    let eventType = BillingEventType.SUBSCRIPTION_UPDATED;
+    if (previousPlan !== newPlan) {
+      eventType = BillingEventType.PLAN_CHANGED;
     }
 
-    const oldMRR = subscription.getMRR();
-
-    // Update subscription
-    subscription.status = this.mapSubscriptionStatus(stripeSubscription.status);
-    subscription.currentPeriodStart = new Date(stripeSubscription.current_period_start * 1000);
-    subscription.currentPeriodEnd = new Date(stripeSubscription.current_period_end * 1000);
-    
-    if (previousAttributes.items) {
-      // Plan changed
-      subscription.previousPlanId = subscription.planId;
-      subscription.planId = stripeSubscription.items.data[0].price.id;
-      subscription.planName = stripeSubscription.items.data[0].price.nickname || 'Subscription';
-      subscription.billingAmount = (stripeSubscription.items.data[0].price.unit_amount || 0) / 100;
-      
-      if (subscription.billingAmount > (previousAttributes.items.data[0].price.unit_amount || 0) / 100) {
-        subscription.upgradedAt = new Date();
-      } else {
-        subscription.downgradedAt = new Date();
-      }
-    }
-
-    await subscription.save({ transaction });
-
-    const newMRR = subscription.getMRR();
-
-    // Update billing event
-    billingEvent.userId = subscription.userId;
-    billingEvent.subscriptionId = subscription.id;
-    billingEvent.eventData = {
-      oldPlan: previousAttributes.items?.data[0].price.nickname,
-      newPlan: subscription.planName,
-      oldAmount: previousAttributes.items?.data[0].price.unit_amount / 100,
-      newAmount: subscription.billingAmount,
-    };
-    billingEvent.impact = {
-      mrrChange: newMRR - oldMRR,
-    };
+    // Create billing event
+    await BillingEvent.create({
+      eventType,
+      source: BillingEventSource.STRIPE_WEBHOOK,
+      userId: subscription.userId,
+      subscriptionId: subscription.id,
+      stripeEventId: stripeSubscription.id,
+      description: `Subscription updated: ${previousPlan} → ${newPlan}`,
+      previousValue: previousPlan,
+      newValue: newPlan,
+      isProcessed: true,
+      processedAt: new Date(),
+    });
   }
 
   /**
-   * Handle subscription deleted event
+   * Handle subscription deletion
    */
-  private async handleSubscriptionDeleted(
-    event: Stripe.Event,
-    billingEvent: BillingEvent,
-    transaction: any
-  ): Promise<void> {
-    const stripeSubscription = event.data.object as Stripe.Subscription;
-    
-    // Find subscription
+  private async handleSubscriptionDeleted(stripeSubscription: Stripe.Subscription): Promise<void> {
     const subscription = await Subscription.findOne({
-      where: { customerId: stripeSubscription.customer as string },
-      transaction,
+      where: { stripeSubscriptionId: stripeSubscription.id },
     });
 
-    if (!subscription) {
-      throw new Error(`Subscription not found for customer: ${stripeSubscription.customer}`);
-    }
+    if (!subscription) return;
 
-    const mrrLost = subscription.getMRR();
+    await subscription.update({
+      status: SubscriptionStatus.CANCELED,
+      canceledAt: new Date(),
+    });
 
-    // Update subscription
-    subscription.status = 'canceled';
-    subscription.canceledAt = new Date();
-    subscription.endDate = new Date();
-    await subscription.save({ transaction });
-
-    // Update billing event
-    billingEvent.userId = subscription.userId;
-    billingEvent.subscriptionId = subscription.id;
-    billingEvent.eventData = {
+    // Create billing event
+    await BillingEvent.create({
+      eventType: BillingEventType.SUBSCRIPTION_CANCELED,
+      source: BillingEventSource.STRIPE_WEBHOOK,
+      userId: subscription.userId,
+      subscriptionId: subscription.id,
+      stripeEventId: stripeSubscription.id,
       description: 'Subscription canceled',
-    };
-    billingEvent.impact = {
-      mrrChange: -mrrLost,
-    };
-    billingEvent.sideEffects = {
-      emailsSent: ['cancellation_confirmation'],
-      notificationsSent: ['subscription_canceled'],
-      actionsPerformed: ['winback_campaign_queued'],
-    };
+      isProcessed: true,
+      processedAt: new Date(),
+    });
   }
 
   /**
-   * Handle trial will end event
+   * Handle trial ending soon
    */
-  private async handleTrialWillEnd(
-    event: Stripe.Event,
-    billingEvent: BillingEvent,
-    transaction: any
-  ): Promise<void> {
-    const stripeSubscription = event.data.object as Stripe.Subscription;
-    
-    // Find subscription
+  private async handleTrialWillEnd(stripeSubscription: Stripe.Subscription): Promise<void> {
     const subscription = await Subscription.findOne({
-      where: { customerId: stripeSubscription.customer as string },
-      transaction,
+      where: { stripeSubscriptionId: stripeSubscription.id },
     });
 
-    if (!subscription) {
-      throw new Error(`Subscription not found for customer: ${stripeSubscription.customer}`);
-    }
+    if (!subscription) return;
 
-    // Update billing event
-    billingEvent.userId = subscription.userId;
-    billingEvent.subscriptionId = subscription.id;
-    billingEvent.eventData = {
-      trialDays: subscription.trialDays,
-      description: 'Trial ending soon',
-    };
-    billingEvent.sideEffects = {
-      emailsSent: ['trial_ending_reminder'],
-      notificationsSent: ['trial_ending'],
-    };
+    // Create billing event
+    await BillingEvent.create({
+      eventType: BillingEventType.TRIAL_ENDED,
+      source: BillingEventSource.STRIPE_WEBHOOK,
+      userId: subscription.userId,
+      subscriptionId: subscription.id,
+      stripeEventId: stripeSubscription.id,
+      description: 'Trial period ending soon',
+      isProcessed: true,
+      processedAt: new Date(),
+    });
+
+    // TODO: Send notification to user
   }
 
   /**
    * Handle invoice payment succeeded
    */
-  private async handleInvoicePaymentSucceeded(
-    event: Stripe.Event,
-    billingEvent: BillingEvent,
-    transaction: any
-  ): Promise<void> {
-    const invoice = event.data.object as Stripe.Invoice;
-    
-    // Update next billing date for subscription
-    if (invoice.subscription) {
-      const subscription = await Subscription.findOne({
-        where: { customerId: invoice.customer as string },
-        transaction,
-      });
+  private async handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {
+    const subscription = await Subscription.findOne({
+      where: { stripeSubscriptionId: (invoice as any).subscription as string },
+    });
 
-      if (subscription) {
-        subscription.lastPaymentDate = new Date();
-        subscription.lastPaymentAmount = invoice.amount_paid / 100;
-        subscription.lastPaymentStatus = 'succeeded';
-        subscription.nextBillingDate = new Date((invoice.period_end || 0) * 1000);
-        await subscription.save({ transaction });
-      }
-    }
+    if (!subscription) return;
 
-    billingEvent.eventData = {
+    // Update subscription payment date
+    // Update subscription if needed
+    await subscription.save();
+
+    // Create transaction
+    await Transaction.create({
+      userId: subscription.userId,
+      subscriptionId: subscription.id,
+      stripeTransactionId: (invoice as any).charge as string,
+      type: TransactionType.PAYMENT,
+      status: TransactionStatus.COMPLETED,
       amount: invoice.amount_paid / 100,
       currency: invoice.currency,
-      invoiceNumber: invoice.number,
-    };
-    billingEvent.impact = {
-      revenueImpact: invoice.amount_paid / 100,
-    };
+      paymentMethod: PaymentMethod.CARD,
+      description: 'Subscription payment',
+      stripeInvoiceId: invoice.id,
+    });
   }
 
   /**
    * Handle invoice payment failed
    */
-  private async handleInvoicePaymentFailed(
-    event: Stripe.Event,
-    billingEvent: BillingEvent,
-    transaction: any
-  ): Promise<void> {
-    const invoice = event.data.object as Stripe.Invoice;
-    
+  private async handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
+    const subscription = await Subscription.findOne({
+      where: { stripeSubscriptionId: (invoice as any).subscription as string },
+    });
+
+    if (!subscription) return;
+
     // Update subscription status
-    if (invoice.subscription) {
-      const subscription = await Subscription.findOne({
-        where: { customerId: invoice.customer as string },
-        transaction,
-      });
+    await subscription.update({
+      status: SubscriptionStatus.PAST_DUE,
+    });
 
-      if (subscription) {
-        subscription.status = 'past_due';
-        subscription.lastPaymentStatus = 'failed';
-        await subscription.save({ transaction });
-      }
-    }
-
-    billingEvent.eventData = {
+    // Create billing event
+    await BillingEvent.create({
+      eventType: BillingEventType.PAYMENT_FAILED,
+      source: BillingEventSource.STRIPE_WEBHOOK,
+      userId: subscription.userId,
+      subscriptionId: subscription.id,
+      stripeEventId: invoice.id,
+      description: 'Invoice payment failed',
       amount: invoice.amount_due / 100,
       currency: invoice.currency,
-      invoiceNumber: invoice.number,
-      failureReason: 'Payment failed',
-    };
-    billingEvent.sideEffects = {
-      emailsSent: ['payment_failed', 'update_payment_method'],
-      actionsPerformed: ['dunning_process_started'],
-    };
+      isProcessed: true,
+      processedAt: new Date(),
+    });
   }
 
   /**
    * Handle charge refunded
    */
-  private async handleChargeRefunded(
-    event: Stripe.Event,
-    billingEvent: BillingEvent,
-    transaction: any
-  ): Promise<void> {
-    const charge = event.data.object as Stripe.Charge;
-    
-    // Find original transaction
-    const originalTransaction = await Transaction.findOne({
-      where: { providerTransactionId: charge.payment_intent as string },
-      transaction,
+  private async handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
+    const transaction = await Transaction.findOne({
+      where: { stripeTransactionId: charge.id },
     });
 
-    if (!originalTransaction) {
-      throw new Error(`Original transaction not found for charge: ${charge.id}`);
-    }
+    if (!transaction) return;
+
+    // Update transaction
+    await transaction.update({
+      status: TransactionStatus.REFUNDED,
+      refundedAmount: charge.amount_refunded / 100,
+    });
 
     // Create refund transaction
-    const refundTransaction = await Transaction.create({
-      userId: originalTransaction.userId,
-      subscriptionId: originalTransaction.subscriptionId,
-      type: 'refund',
-      status: 'completed',
+    await Transaction.create({
+      userId: transaction.userId,
+      subscriptionId: transaction.subscriptionId,
+      stripeTransactionId: `${charge.id}_refund`,
+      type: TransactionType.REFUND,
+      status: TransactionStatus.COMPLETED,
       amount: charge.amount_refunded / 100,
-      currency: charge.currency.toUpperCase(),
-      description: `Refund for ${originalTransaction.description}`,
-      paymentMethod: originalTransaction.paymentMethod,
-      paymentProvider: 'stripe',
-      providerTransactionId: `${charge.id}_refund`,
-      providerCustomerId: originalTransaction.providerCustomerId,
-      originalTransactionId: originalTransaction.id,
-      subtotal: charge.amount_refunded / 100,
-      taxAmount: 0,
-      taxRate: 0,
-      refundedAmount: 0,
-      requiresReview: false,
-      metadata: {
-        reason: charge.refunds.data[0]?.reason,
-      },
+      currency: charge.currency,
+      paymentMethod: PaymentMethod.CARD,
+      description: 'Refund',
+    });
+
+    // Create billing event
+    await BillingEvent.create({
+      eventType: BillingEventType.REFUND_ISSUED,
+      source: BillingEventSource.STRIPE_WEBHOOK,
+      userId: transaction.userId,
+      transactionId: transaction.id,
+      stripeEventId: charge.id,
+      description: 'Refund issued',
+      amount: charge.amount_refunded / 100,
+      currency: charge.currency,
+      isProcessed: true,
       processedAt: new Date(),
-    }, { transaction });
-
-    // Update original transaction
-    originalTransaction.refundedAmount += refundTransaction.amount;
-    originalTransaction.refundedAt = new Date();
-    originalTransaction.refundReason = charge.refunds.data[0]?.reason || 'Customer requested';
-    await originalTransaction.save({ transaction });
-
-    billingEvent.userId = refundTransaction.userId;
-    billingEvent.transactionId = refundTransaction.id;
-    billingEvent.eventData = {
-      amount: refundTransaction.amount,
-      currency: refundTransaction.currency,
-      description: refundTransaction.description,
-    };
-    billingEvent.impact = {
-      revenueImpact: -refundTransaction.amount,
-    };
+    });
   }
 
   /**
    * Handle dispute created
    */
-  private async handleDisputeCreated(
-    event: Stripe.Event,
-    billingEvent: BillingEvent,
-    transaction: any
-  ): Promise<void> {
-    const dispute = event.data.object as Stripe.Dispute;
-    
-    // Find transaction
-    const txn = await Transaction.findOne({
-      where: { providerTransactionId: dispute.payment_intent as string },
-      transaction,
+  private async handleDisputeCreated(dispute: Stripe.Dispute): Promise<void> {
+    const transaction = await Transaction.findOne({
+      where: { stripeTransactionId: dispute.charge as string },
     });
 
-    if (txn) {
-      txn.requiresReview = true;
-      txn.metadata = {
-        ...txn.metadata,
-        dispute: {
-          id: dispute.id,
-          amount: dispute.amount / 100,
-          reason: dispute.reason,
-          status: dispute.status,
-        },
-      };
-      await txn.save({ transaction });
+    if (!transaction) return;
 
-      billingEvent.userId = txn.userId;
-      billingEvent.transactionId = txn.id;
-    }
-
-    billingEvent.eventData = {
+    // Create billing event
+    await BillingEvent.create({
+      eventType: BillingEventType.CHARGEBACK_CREATED,
+      source: BillingEventSource.STRIPE_WEBHOOK,
+      userId: transaction.userId,
+      transactionId: transaction.id,
+      stripeEventId: dispute.id,
+      description: `Dispute created: ${dispute.reason}`,
       amount: dispute.amount / 100,
       currency: dispute.currency,
-      chargebackReason: dispute.reason,
-      disputeAmount: dispute.amount / 100,
-    };
-    billingEvent.sideEffects = {
-      emailsSent: ['dispute_notification'],
-      actionsPerformed: ['dispute_evidence_requested'],
-    };
+      isProcessed: false, // Requires manual review
+      processedAt: new Date(),
+    });
   }
 
   /**
-   * Map Stripe event type to billing event type
+   * Record billing event for audit
    */
-  private mapStripeEventType(stripeType: string): BillingEvent['eventType'] {
-    const mapping: Record<string, BillingEvent['eventType']> = {
-      'payment_intent.succeeded': 'payment_succeeded',
-      'payment_intent.payment_failed': 'payment_failed',
-      'customer.subscription.created': 'subscription_created',
-      'customer.subscription.updated': 'subscription_updated',
-      'customer.subscription.deleted': 'subscription_cancelled',
-      'customer.subscription.trial_will_end': 'trial_ended',
-      'invoice.payment_succeeded': 'invoice_paid',
-      'invoice.payment_failed': 'invoice_failed',
-      'charge.refunded': 'payment_refunded',
-      'charge.dispute.created': 'chargeback_created',
-    };
-
-    return mapping[stripeType] || 'payment_succeeded';
+  private async recordBillingEvent(event: Stripe.Event): Promise<void> {
+    // This is handled in individual event handlers
+    logger.info(`Processed Stripe webhook: ${event.type}`);
   }
 
   /**
-   * Map payment method
+   * Map Stripe plan to internal plan
    */
-  private mapPaymentMethod(method: string): Transaction['paymentMethod'] {
-    const mapping: Record<string, Transaction['paymentMethod']> = {
-      'card': 'card',
-      'bank_transfer': 'bank_transfer',
-      'paypal': 'paypal',
+  private mapStripePlanToInternal(stripePlan: string): any {
+    const planMap: Record<string, string> = {
+      'basic_monthly': 'basic',
+      'pro_monthly': 'pro',
+      'team_monthly': 'team',
+      'enterprise_monthly': 'enterprise',
     };
 
-    return mapping[method] || 'other';
+    return planMap[stripePlan] || 'free';
   }
 
   /**
-   * Map subscription status
+   * Map Stripe status to internal status
    */
-  private mapSubscriptionStatus(status: string): Subscription['status'] {
-    const mapping: Record<string, Subscription['status']> = {
-      'trialing': 'trialing',
-      'active': 'active',
-      'past_due': 'past_due',
-      'canceled': 'canceled',
-      'unpaid': 'unpaid',
-      'paused': 'paused',
+  private mapStripeStatusToInternal(stripeStatus: Stripe.Subscription.Status): SubscriptionStatus {
+    const statusMap: Record<string, SubscriptionStatus> = {
+      'active': SubscriptionStatus.ACTIVE,
+      'past_due': SubscriptionStatus.PAST_DUE,
+      'canceled': SubscriptionStatus.CANCELED,
+      'incomplete': SubscriptionStatus.INCOMPLETE,
+      'incomplete_expired': SubscriptionStatus.INCOMPLETE_EXPIRED,
+      'trialing': SubscriptionStatus.TRIALING,
+      'paused': SubscriptionStatus.PAUSED,
     };
 
-    return mapping[status] || 'active';
-  }
-
-  /**
-   * Map billing interval
-   */
-  private mapBillingInterval(interval?: string): Subscription['billingInterval'] {
-    const mapping: Record<string, Subscription['billingInterval']> = {
-      'month': 'monthly',
-      'quarter': 'quarterly',
-      'year': 'yearly',
-    };
-
-    return mapping[interval || 'month'] || 'monthly';
-  }
-
-  /**
-   * Map plan type from metadata
-   */
-  private mapPlanType(metadata: any): Subscription['planType'] {
-    return metadata?.planType || 'basic';
+    return statusMap[stripeStatus] || SubscriptionStatus.INCOMPLETE;
   }
 }
 
-export default StripeWebhookService; 
+export const stripeWebhookService = new StripeWebhookService(); 

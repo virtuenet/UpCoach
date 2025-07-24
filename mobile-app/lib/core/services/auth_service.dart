@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../constants/app_constants.dart';
 import '../../shared/models/user_model.dart';
+import '../../shared/models/auth_response.dart';
 
 class AuthService {
   static final AuthService _instance = AuthService._internal();
@@ -146,22 +147,4 @@ class AuthService {
   }
 }
 
-class AuthResponse {
-  final UserModel user;
-  final String accessToken;
-  final String refreshToken;
-
-  AuthResponse({
-    required this.user,
-    required this.accessToken,
-    required this.refreshToken,
-  });
-
-  factory AuthResponse.fromJson(Map<String, dynamic> json) {
-    return AuthResponse(
-      user: UserModel.fromJson(json['user'] as Map<String, dynamic>),
-      accessToken: json['access_token'] as String,
-      refreshToken: json['refresh_token'] as String,
-    );
-  }
-} 
+ 
