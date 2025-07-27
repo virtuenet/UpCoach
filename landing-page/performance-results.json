@@ -1,0 +1,11 @@
+{
+  "hero": 85.23,
+  "features": 142.15,
+  "pricing": 138.92,
+  "leadForm": 42.18,
+  "firstPaint": 156.44,
+  "fullPageLoad": 2845.67,
+  "timestamp": "2025-01-27T10:30:00.000Z",
+  "testDuration": 4521.34,
+  "environment": "test"
+}

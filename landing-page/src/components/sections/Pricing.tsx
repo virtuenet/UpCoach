@@ -2,7 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { Check, X, Sparkles, Zap, Crown } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { trackPricingView, trackPlanSelect, trackCTAClick } from '@/services/analytics';
 
 const plans = [
   {
@@ -17,6 +18,7 @@ const plans = [
       { text: 'Progress photos (10 photos)', included: true },
       { text: 'AI insights (basic)', included: true },
       { text: 'Offline mode', included: true },
+      { text: '7-day trial of Pro features', included: true },
       { text: 'Unlimited voice journals', included: false },
       { text: 'Advanced analytics', included: false },
       { text: 'Priority support', included: false }
@@ -76,6 +78,26 @@ const plans = [
 
 export default function Pricing() {
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
+  
+  // Track pricing section view
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          trackPricingView();
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.5 }
+    );
+    
+    const section = document.getElementById('pricing');
+    if (section) {
+      observer.observe(section);
+    }
+    
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <section id="pricing" className="py-24 bg-white">
@@ -217,6 +239,10 @@ export default function Pricing() {
                     href={plan.ctaAction}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => {
+                      trackPlanSelect(plan.name, billingPeriod);
+                      trackCTAClick(plan.cta, 'pricing');
+                    }}
                     className={`block w-full py-4 px-6 rounded-xl font-semibold text-center transition-all duration-300 ${
                       plan.popular
                         ? 'bg-gradient-to-r from-primary-600 to-secondary-600 text-white hover:shadow-lg hover:scale-105'
@@ -233,6 +259,179 @@ export default function Pricing() {
           })}
         </div>
         
+        {/* Feature Comparison Matrix */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="mt-24 max-w-5xl mx-auto"
+        >
+          <div className="text-center mb-12">
+            <h3 className="text-3xl font-bold text-gray-900 mb-4">
+              Detailed Feature Comparison
+            </h3>
+            <p className="text-lg text-gray-600">
+              Everything you need to know about each plan
+            </p>
+          </div>
+          
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left p-6 font-semibold text-gray-900">Features</th>
+                    <th className="text-center p-6">
+                      <div className="text-lg font-semibold text-gray-900">Starter</div>
+                      <div className="text-sm text-gray-600">Free forever</div>
+                    </th>
+                    <th className="text-center p-6 bg-primary-50">
+                      <div className="text-lg font-semibold text-primary-900">Pro</div>
+                      <div className="text-sm text-primary-700">$14.99/mo</div>
+                      <div className="text-xs text-primary-600 font-medium mt-1">MOST POPULAR</div>
+                    </th>
+                    <th className="text-center p-6">
+                      <div className="text-lg font-semibold text-gray-900">Pro Annual</div>
+                      <div className="text-sm text-gray-600">$119.99/yr</div>
+                      <div className="text-xs text-green-600 font-medium mt-1">SAVE 33%</div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {/* Core Features */}
+                  <tr className="bg-gray-50">
+                    <td colSpan={4} className="px-6 py-3 text-sm font-semibold text-gray-700">Core Features</td>
+                  </tr>
+                  <tr>
+                    <td className="p-6 text-gray-700">Voice Journaling</td>
+                    <td className="p-6 text-center text-gray-600">5/day</td>
+                    <td className="p-6 text-center bg-primary-50 font-semibold text-primary-900">Unlimited</td>
+                    <td className="p-6 text-center font-semibold">Unlimited</td>
+                  </tr>
+                  <tr>
+                    <td className="p-6 text-gray-700">Habit Tracking</td>
+                    <td className="p-6 text-center text-gray-600">3 habits</td>
+                    <td className="p-6 text-center bg-primary-50 font-semibold text-primary-900">Unlimited</td>
+                    <td className="p-6 text-center font-semibold">Unlimited</td>
+                  </tr>
+                  <tr>
+                    <td className="p-6 text-gray-700">Progress Photos</td>
+                    <td className="p-6 text-center text-gray-600">10 photos</td>
+                    <td className="p-6 text-center bg-primary-50 font-semibold text-primary-900">Unlimited</td>
+                    <td className="p-6 text-center font-semibold">Unlimited</td>
+                  </tr>
+                  <tr>
+                    <td className="p-6 text-gray-700">Offline Mode</td>
+                    <td className="p-6 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                    <td className="p-6 text-center bg-primary-50"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                    <td className="p-6 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  </tr>
+                  
+                  {/* AI Features */}
+                  <tr className="bg-gray-50">
+                    <td colSpan={4} className="px-6 py-3 text-sm font-semibold text-gray-700">AI & Analytics</td>
+                  </tr>
+                  <tr>
+                    <td className="p-6 text-gray-700">AI Insights</td>
+                    <td className="p-6 text-center text-gray-600">Basic</td>
+                    <td className="p-6 text-center bg-primary-50 font-semibold text-primary-900">Advanced</td>
+                    <td className="p-6 text-center font-semibold">Advanced + Custom</td>
+                  </tr>
+                  <tr>
+                    <td className="p-6 text-gray-700">Analytics Dashboard</td>
+                    <td className="p-6 text-center"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                    <td className="p-6 text-center bg-primary-50"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                    <td className="p-6 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  </tr>
+                  <tr>
+                    <td className="p-6 text-gray-700">Progress Reports</td>
+                    <td className="p-6 text-center text-gray-600">Weekly</td>
+                    <td className="p-6 text-center bg-primary-50 font-semibold text-primary-900">Daily</td>
+                    <td className="p-6 text-center font-semibold">Real-time</td>
+                  </tr>
+                  <tr>
+                    <td className="p-6 text-gray-700">AI Coach Personality</td>
+                    <td className="p-6 text-center text-gray-600">Default</td>
+                    <td className="p-6 text-center bg-primary-50 text-gray-600">3 options</td>
+                    <td className="p-6 text-center font-semibold text-primary-900">Customizable</td>
+                  </tr>
+                  
+                  {/* Advanced Features */}
+                  <tr className="bg-gray-50">
+                    <td colSpan={4} className="px-6 py-3 text-sm font-semibold text-gray-700">Advanced Features</td>
+                  </tr>
+                  <tr>
+                    <td className="p-6 text-gray-700">Data Export</td>
+                    <td className="p-6 text-center"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                    <td className="p-6 text-center bg-primary-50"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                    <td className="p-6 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  </tr>
+                  <tr>
+                    <td className="p-6 text-gray-700">Custom Reminders</td>
+                    <td className="p-6 text-center"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                    <td className="p-6 text-center bg-primary-50"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                    <td className="p-6 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  </tr>
+                  <tr>
+                    <td className="p-6 text-gray-700">Early Access</td>
+                    <td className="p-6 text-center"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                    <td className="p-6 text-center bg-primary-50"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                    <td className="p-6 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  </tr>
+                  <tr>
+                    <td className="p-6 text-gray-700">API Access</td>
+                    <td className="p-6 text-center"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                    <td className="p-6 text-center bg-primary-50"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                    <td className="p-6 text-center text-gray-600">Coming Soon</td>
+                  </tr>
+                  
+                  {/* Support */}
+                  <tr className="bg-gray-50">
+                    <td colSpan={4} className="px-6 py-3 text-sm font-semibold text-gray-700">Support & Resources</td>
+                  </tr>
+                  <tr>
+                    <td className="p-6 text-gray-700">Customer Support</td>
+                    <td className="p-6 text-center text-gray-600">Community</td>
+                    <td className="p-6 text-center bg-primary-50 font-semibold text-primary-900">Priority Email</td>
+                    <td className="p-6 text-center font-semibold">Dedicated Manager</td>
+                  </tr>
+                  <tr>
+                    <td className="p-6 text-gray-700">Onboarding</td>
+                    <td className="p-6 text-center text-gray-600">Self-guided</td>
+                    <td className="p-6 text-center bg-primary-50 text-gray-600">Video tutorials</td>
+                    <td className="p-6 text-center font-semibold text-primary-900">1-on-1 session</td>
+                  </tr>
+                  <tr>
+                    <td className="p-6 text-gray-700">Exclusive Content</td>
+                    <td className="p-6 text-center"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                    <td className="p-6 text-center bg-primary-50"><X className="w-5 h-5 text-gray-300 mx-auto" /></td>
+                    <td className="p-6 text-center"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          {/* CTA for comparison */}
+          <div className="text-center mt-8">
+            <p className="text-gray-600 mb-4">
+              Still not sure? Try Pro free for 7 days and experience the difference.
+            </p>
+            <a
+              href="https://apps.apple.com/app/upcoach"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary-600 to-secondary-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300"
+            >
+              Start Your Free Trial
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </a>
+          </div>
+        </motion.div>
+
         {/* Trust Badges */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -266,6 +465,71 @@ export default function Pricing() {
             Prices are in USD. Subscriptions renew automatically. You can cancel anytime from your account settings. 
             Pro features require an active subscription after the trial period.
           </p>
+        </motion.div>
+        
+        {/* Pricing FAQ */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="mt-24 max-w-3xl mx-auto"
+        >
+          <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
+            Frequently Asked Questions
+          </h3>
+          
+          <div className="space-y-6">
+            <div className="bg-gray-50 rounded-xl p-6">
+              <h4 className="font-semibold text-gray-900 mb-2">
+                What happens after my 7-day free trial?
+              </h4>
+              <p className="text-gray-600">
+                After your trial ends, you'll be automatically subscribed to the Pro plan unless you cancel. 
+                You can cancel anytime during the trial without being charged.
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 rounded-xl p-6">
+              <h4 className="font-semibold text-gray-900 mb-2">
+                Can I switch plans anytime?
+              </h4>
+              <p className="text-gray-600">
+                Yes! You can upgrade, downgrade, or switch between monthly and annual billing at any time. 
+                Changes take effect at your next billing cycle.
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 rounded-xl p-6">
+              <h4 className="font-semibold text-gray-900 mb-2">
+                Do you offer refunds?
+              </h4>
+              <p className="text-gray-600">
+                We offer a 30-day money-back guarantee for annual plans. For monthly plans, 
+                you can cancel anytime and won't be charged for the next month.
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 rounded-xl p-6">
+              <h4 className="font-semibold text-gray-900 mb-2">
+                Is there a student discount?
+              </h4>
+              <p className="text-gray-600">
+                Yes! Students get 50% off Pro plans with a valid .edu email address. 
+                Contact support@upcoach.ai to verify your student status.
+              </p>
+            </div>
+            
+            <div className="bg-gray-50 rounded-xl p-6">
+              <h4 className="font-semibold text-gray-900 mb-2">
+                What payment methods do you accept?
+              </h4>
+              <p className="text-gray-600">
+                We accept all major credit cards, debit cards, Apple Pay, Google Pay, and PayPal. 
+                All payments are processed securely through Stripe.
+              </p>
+            </div>
+          </div>
         </motion.div>
       </div>
     </section>

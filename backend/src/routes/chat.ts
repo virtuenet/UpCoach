@@ -1,20 +1,15 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
-import OpenAI from 'openai';
 import { asyncHandler } from '../middleware/errorHandler';
 import { ApiError } from '../utils/apiError';
 import { db } from '../services/database';
 import { logger } from '../utils/logger';
 import { config } from '../config/environment';
-import { claudeService } from '../services/claude';
+import { aiService } from '../services/ai/AIService';
+import { userProfilingService } from '../services/ai/UserProfilingService';
 import { AuthenticatedRequest } from '../types/auth';
 
 const router = Router();
-
-// Initialize OpenAI
-const openai = new OpenAI({
-  apiKey: config.openai.apiKey,
-});
 
 // Validation schemas
 const chatMessageSchema = z.object({
@@ -26,30 +21,6 @@ const chatMessageSchema = z.object({
 const createConversationSchema = z.object({
   title: z.string().min(1, 'Title is required').max(255, 'Title too long').optional(),
 });
-
-// System prompt for the AI coach
-const SYSTEM_PROMPT = `You are UpCoach, an AI personal development coach. Your role is to help users achieve their goals, improve their well-being, and develop personally and professionally.
-
-Key characteristics:
-- Be supportive, empathetic, and encouraging
-- Provide practical, actionable advice
-- Ask thoughtful questions to help users reflect
-- Draw from evidence-based practices in psychology, productivity, and personal development
-- Be concise but thorough in your responses
-- Maintain a positive but realistic outlook
-- Respect user privacy and maintain confidentiality
-
-You can help with:
-- Goal setting and achievement
-- Task management and productivity
-- Stress management and well-being
-- Career development
-- Habit formation
-- Time management
-- Motivation and accountability
-- Personal reflection and growth
-
-Always remember to be respectful, non-judgmental, and supportive. If users share sensitive information, acknowledge it appropriately and provide resources if needed.`;
 
 // Get all conversations for the current user
 router.get('/conversations', asyncHandler(async (req: Request, res: Response) => {
@@ -178,6 +149,9 @@ router.post('/message', asyncHandler(async (req: Request, res: Response) => {
   });
 
   try {
+    // Get user profile for personalization
+    const userProfile = await userProfilingService.createOrUpdateProfile(userId);
+    
     // Get conversation history for context
     const messageHistory = await db.query(`
       SELECT content, is_from_user, created_at
@@ -187,105 +161,57 @@ router.post('/message', asyncHandler(async (req: Request, res: Response) => {
       LIMIT 20
     `, [conversationId]);
 
-    let aiResponse: string | null = null;
-    let aiMessage: any;
+    // Build message history for AI
+    const conversationMessages = messageHistory.rows.slice(0, -1).map((msg) => ({
+      role: msg.is_from_user ? 'user' : 'assistant' as 'user' | 'assistant',
+      content: msg.content,
+    }));
 
-    if (aiProvider === 'claude' && config.features.enableClaude) {
-      // Use Claude
-      const claudeMessages = messageHistory.rows.slice(0, -1).map((msg) => ({
-        role: msg.is_from_user ? 'user' : 'assistant' as 'user' | 'assistant',
-        content: msg.content,
-      }));
-
-      claudeMessages.push({
-        role: 'user' as 'user' | 'assistant',
-        content: validatedData.content,
-      });
-
-      aiResponse = await claudeService.generateCoachingResponse(
-        validatedData.content,
-        claudeMessages.slice(0, -1) as any
-      );
-
-      if (!aiResponse) {
-        throw new Error('No response from AI');
+    // Generate AI response using new AI service
+    const response = await aiService.generateCoachingResponse(
+      validatedData.content,
+      {
+        conversationHistory: conversationMessages,
+        userId,
+        personality: userProfile.communicationPreference,
+        provider: aiProvider as 'openai' | 'claude'
       }
+    );
 
-      // Save AI response
-      aiMessage = await db.insert('chat_messages', {
-        conversation_id: conversationId,
-        content: aiResponse,
-        is_from_user: false,
-        metadata: {
-          model: 'claude',
-          provider: 'claude',
-        },
-      });
-
-    } else {
-      // Use OpenAI (default)
-      const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
-        { role: 'system', content: SYSTEM_PROMPT },
-      ];
-
-      // Add conversation history (excluding the message we just added since we'll add it manually)
-      messageHistory.rows.slice(0, -1).forEach((msg) => {
-        messages.push({
-          role: msg.is_from_user ? 'user' : 'assistant',
-          content: msg.content,
-        });
-      });
-
-      // Add the current user message
-      messages.push({
-        role: 'user',
-        content: validatedData.content,
-      });
-
-      // Get AI response from OpenAI
-      const completion = await openai.chat.completions.create({
-        model: config.openai.model,
-        messages,
-        max_tokens: 1000,
-        temperature: 0.7,
-        presence_penalty: 0.1,
-        frequency_penalty: 0.1,
-      });
-
-      aiResponse = completion.choices[0]?.message?.content;
-
-      if (!aiResponse) {
-        throw new Error('No response from AI');
-      }
-
-      // Save AI response
-      aiMessage = await db.insert('chat_messages', {
-        conversation_id: conversationId,
-        content: aiResponse,
-        is_from_user: false,
-        metadata: {
-          model: config.openai.model,
-          tokens: completion.usage?.total_tokens || 0,
-        },
-      });
-
-      // Update conversation title if it's the first exchange
-      if (messageHistory.rows.length <= 2) {
-        const title = validatedData.content.length > 50 
-          ? validatedData.content.substring(0, 47) + '...'
-          : validatedData.content;
-        
-        await db.update('chat_conversations', { title }, { id: conversationId });
-      }
-
-      logger.info('Chat message processed:', { 
-        conversationId, 
-        userId, 
-        userMessageId: userMessage.id,
-        aiMessageId: aiMessage.id,
-        tokens: completion.usage?.total_tokens || 0,
-      });
+    if (!response.content) {
+      throw new Error('No response from AI');
     }
+
+    // Save AI response
+    const aiMessage = await db.insert('chat_messages', {
+      conversation_id: conversationId,
+      content: response.content,
+      is_from_user: false,
+      metadata: {
+        model: response.model,
+        provider: response.provider,
+        tokens: response.usage?.total_tokens || 0,
+        personality: userProfile.communicationPreference,
+      },
+    });
+
+    // Update conversation title if it's the first exchange
+    if (messageHistory.rows.length <= 2) {
+      const title = validatedData.content.length > 50 
+        ? validatedData.content.substring(0, 47) + '...'
+        : validatedData.content;
+      
+      await db.update('chat_conversations', { title }, { id: conversationId });
+    }
+
+    logger.info('Chat message processed:', { 
+      conversationId, 
+      userId, 
+      userMessageId: userMessage.id,
+      aiMessageId: aiMessage.id,
+      provider: response.provider,
+      tokens: response.usage?.total_tokens || 0,
+    });
 
     res.json({
       success: true,

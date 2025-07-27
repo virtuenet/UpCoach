@@ -1,0 +1,27 @@
+{
+  "success": true,
+  "startTime": 1753621713513,
+  "endTime": 1753621758513,
+  "numTotalTests": 47,
+  "numPassedTests": 47,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "testResults": [
+    {
+      "name": "Hero.test.tsx",
+      "status": "passed",
+      "numPassingTests": 16,
+      "numFailingTests": 0,
+      "numPendingTests": 0,
+      "numTotalTests": 16
+    },
+    {
+      "name": "LeadCaptureForm.test.tsx",
+      "status": "passed",
+      "numPassingTests": 14,
+      "numFailingTests": 0,
+      "numPendingTests": 0,
+      "numTotalTests": 14
+    }
+  ]
+}

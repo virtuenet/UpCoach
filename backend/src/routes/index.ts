@@ -7,6 +7,7 @@ import moodRoutes from './mood';
 import chatRoutes from './chat';
 import cmsRoutes from './cms';
 import financialRoutes from './financial';
+import aiRoutes from './ai';
 import { authMiddleware } from '../middleware/auth';
 
 export const setupRoutes = (app: Application): void => {
@@ -27,6 +28,9 @@ export const setupRoutes = (app: Application): void => {
   
   // Financial routes (protected)
   app.use(`${apiPrefix}/financial`, authMiddleware, financialRoutes);
+  
+  // AI routes (protected)
+  app.use(`${apiPrefix}/ai`, authMiddleware, aiRoutes);
 
   // API info endpoint
   app.get(`${apiPrefix}`, (req, res) => {
@@ -82,6 +86,14 @@ export const setupRoutes = (app: Application): void => {
           getConversation: 'GET /api/chat/conversations/:id',
           sendMessage: 'POST /api/chat/conversations/:id/messages',
           getMessages: 'GET /api/chat/conversations/:id/messages',
+        },
+        ai: {
+          userProfile: 'GET /api/ai/profile',
+          updatePreferences: 'PUT /api/ai/profile/preferences',
+          refreshProfile: 'POST /api/ai/profile/refresh',
+          insights: 'GET /api/ai/insights',
+          recommendations: 'GET /api/ai/recommendations',
+          readinessAssessment: 'GET /api/ai/assessment/readiness',
         },
       },
       status: 'operational',

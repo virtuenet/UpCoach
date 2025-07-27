@@ -1,0 +1,151 @@
+name: Visual Regression Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  visual-tests:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: |
+        cd visual-tests
+        npm ci
+    
+    - name: Install Playwright Browsers
+      run: |
+        cd visual-tests
+        npx playwright install --with-deps ${{ matrix.browser }}
+    
+    - name: Run visual tests
+      run: |
+        cd visual-tests
+        npx playwright test --project=${{ matrix.browser }}
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: visual-test-results-${{ matrix.browser }}
+        path: visual-tests/test-results/
+        retention-days: 30
+    
+    - name: Upload baseline images
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: visual-baseline-images-${{ matrix.browser }}
+        path: visual-tests/tests/**/*-snapshots/
+        retention-days: 30
+    
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request' && failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const browser = '${{ matrix.browser }}';
+          const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `⚠️ Visual regression tests failed for ${browser}!\n\nView the test results and diff images: ${runUrl}\n\nTo update baselines, run: \`npm run test:update\``
+          });
+
+  visual-test-report:
+    needs: visual-tests
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: visual-artifacts
+    
+    - name: Generate combined report
+      run: |
+        echo "# Visual Test Summary" > visual-report.md
+        echo "" >> visual-report.md
+        echo "## Test Results by Browser" >> visual-report.md
+        echo "" >> visual-report.md
+        
+        for browser in chromium firefox webkit; do
+          echo "### $browser" >> visual-report.md
+          if [ -d "visual-artifacts/visual-test-results-$browser" ]; then
+            echo "✅ Results uploaded" >> visual-report.md
+          else
+            echo "❌ No results found" >> visual-report.md
+          fi
+          echo "" >> visual-report.md
+        done
+        
+        echo "## Next Steps" >> visual-report.md
+        echo "- Review failed tests in the artifacts" >> visual-report.md
+        echo "- Update baselines if changes are intentional" >> visual-report.md
+        echo "- Re-run tests after fixes" >> visual-report.md
+    
+    - name: Upload combined report
+      uses: actions/upload-artifact@v3
+      with:
+        name: visual-test-summary
+        path: visual-report.md
+
+  update-baselines:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Install dependencies
+      run: |
+        cd visual-tests
+        npm ci
+        npx playwright install --with-deps
+    
+    - name: Update baseline screenshots
+      run: |
+        cd visual-tests
+        npm run test:update
+    
+    - name: Commit updated baselines
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add visual-tests/tests/**/*-snapshots/
+        git diff --staged --quiet || git commit -m "chore: update visual regression baselines"
+    
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}

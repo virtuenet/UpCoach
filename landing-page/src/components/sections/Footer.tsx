@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Twitter, Linkedin, Youtube, Mail } from 'lucide-react';
+import NewsletterForm from '@/components/forms/NewsletterForm';
 
 const footerLinks = {
   Product: [
@@ -41,6 +42,21 @@ export default function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300">
       <div className="container mx-auto px-4 py-12">
+        {/* Newsletter Section */}
+        <div className="border-b border-gray-800 pb-12 mb-12">
+          <div className="max-w-4xl mx-auto text-center">
+            <h3 className="text-2xl font-bold text-white mb-4">
+              Stay Ahead of the Curve
+            </h3>
+            <p className="text-gray-400 mb-6">
+              Get weekly insights on productivity, AI coaching tips, and exclusive updates.
+            </p>
+            <div className="max-w-md mx-auto">
+              <NewsletterForm variant="inline" />
+            </div>
+          </div>
+        </div>
+        
         <div className="grid grid-cols-2 md:grid-cols-6 gap-8">
           {/* Logo and description */}
           <div className="col-span-2">
@@ -51,6 +67,35 @@ export default function Footer() {
             <p className="text-gray-400 mb-6 max-w-sm">
               Transform your professional development with personalized AI coaching that helps you achieve your goals faster.
             </p>
+            
+            {/* App Store Badges */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-6">
+              <Link
+                href="https://apps.apple.com/app/upcoach"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block"
+              >
+                <img 
+                  src="/app-store-badge.svg" 
+                  alt="Download on the App Store" 
+                  className="h-10"
+                />
+              </Link>
+              <Link
+                href="https://play.google.com/store/apps/details?id=com.upcoach.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block"
+              >
+                <img 
+                  src="/google-play-badge.svg" 
+                  alt="Get it on Google Play" 
+                  className="h-10"
+                />
+              </Link>
+            </div>
+            
             <div className="flex space-x-4">
               {socialLinks.map((social) => {
                 const Icon = social.icon;

@@ -9,62 +9,20 @@ import {
   UserButton,
 } from '@clerk/nextjs';
 import Header from '../components/Header';
+import StructuredData from '../components/StructuredData';
+import WebVitals from '../components/WebVitals';
+import GoogleAnalytics from '../components/GoogleAnalytics';
+import { defaultMetadata } from './metadata';
 import '../styles/globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true,
+  variable: '--font-inter',
+});
 
-export const metadata: Metadata = {
-  title: {
-    default: 'UpCoach - AI-Powered Personal Coaching',
-    template: '%s | UpCoach',
-  },
-  description: 'Transform your professional development with UpCoach, the AI-powered coaching platform that provides personalized guidance, smart task management, and progress tracking.',
-  keywords: ['AI coaching', 'personal development', 'productivity', 'task management', 'goal setting', 'professional growth'],
-  authors: [{ name: 'UpCoach Team' }],
-  creator: 'UpCoach',
-  publisher: 'UpCoach',
-  metadataBase: new URL('https://upcoach.ai'),
-  alternates: {
-    canonical: '/',
-  },
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: '/',
-    title: 'UpCoach - AI-Powered Personal Coaching',
-    description: 'Transform your professional development with UpCoach, the AI-powered coaching platform.',
-    siteName: 'UpCoach',
-    images: [
-      {
-        url: '/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'UpCoach - AI-Powered Personal Coaching',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'UpCoach - AI-Powered Personal Coaching',
-    description: 'Transform your professional development with UpCoach, the AI-powered coaching platform.',
-    images: ['/og-image.jpg'],
-    creator: '@upcoach',
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
-  verification: {
-    google: 'your-google-verification-code',
-  },
-};
+export const metadata: Metadata = defaultMetadata;
 
 export default function RootLayout({
   children,
@@ -75,14 +33,38 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" className="scroll-smooth">
         <head>
+          {/* Preconnect to external domains */}
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          <link rel="preconnect" href="https://api.clerk.com" />
+          
+          {/* DNS Prefetch for performance */}
+          <link rel="dns-prefetch" href="https://api.clerk.com" />
+          <link rel="dns-prefetch" href="https://supabase.co" />
+          
+          {/* Favicon */}
           <link rel="icon" href="/favicon.ico" />
           <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
           <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
           <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
           <link rel="manifest" href="/site.webmanifest" />
           <meta name="theme-color" content="#3b82f6" />
+          
+          {/* Critical CSS for above-the-fold content */}
+          <style dangerouslySetInnerHTML={{
+            __html: `
+              /* Critical CSS for initial paint */
+              body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+              .min-h-screen { min-height: 100vh; }
+              .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+              @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+            `
+          }} />
         </head>
         <body className={`${inter.className} antialiased`}>
+          <GoogleAnalytics />
+          <StructuredData />
+          <WebVitals />
           <div id="__next">
             <Header />
             {children}

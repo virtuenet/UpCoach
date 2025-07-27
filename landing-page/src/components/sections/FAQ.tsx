@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, HelpCircle, MessageCircle, Shield, Smartphone, CreditCard, RefreshCw } from 'lucide-react';
+import { trackFAQExpand } from '@/services/analytics';
 
 const faqCategories = [
   {
@@ -81,7 +82,14 @@ export default function FAQ() {
 
   const toggleFAQ = (categoryIndex: number, faqIndex: number) => {
     const key = `${categoryIndex}-${faqIndex}`;
-    setOpenIndex(openIndex === key ? null : key);
+    const isOpening = openIndex !== key;
+    setOpenIndex(isOpening ? key : null);
+    
+    // Track FAQ expansion
+    if (isOpening) {
+      const question = faqCategories[categoryIndex].faqs[faqIndex].question;
+      trackFAQExpand(question);
+    }
   };
 
   return (

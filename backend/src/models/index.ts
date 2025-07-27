@@ -55,6 +55,7 @@ import {
   ReportFormat
 } from './financial/FinancialReport';
 import { RevenueAnalytics } from './financial/RevenueAnalytics';
+import { UserProfile } from './UserProfile';
 
 // Load environment variables
 dotenv.config();
@@ -125,6 +126,9 @@ export { ContentCategory } from './cms/ContentCategory';
 export { ContentTag } from './cms/ContentTag';
 export { ContentMedia } from './cms/ContentMedia';
 export { Template } from './cms/Template';
+
+// AI models
+export { UserProfile } from './UserProfile';
 
 // Define associations
 export function defineAssociations() {
