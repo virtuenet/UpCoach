@@ -11,6 +11,10 @@ import '../../features/mood/screens/mood_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../shared/widgets/main_navigation.dart';
+import '../../features/ai/presentation/screens/ai_coach_screen.dart';
+import '../../features/ai/presentation/screens/ai_insights_screen.dart';
+import '../../features/ai/presentation/screens/voice_coach_screen.dart';
+import '../../features/ai/presentation/screens/recommendations_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -79,7 +83,25 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: '/profile',
             builder: (context, state) => const ProfileScreen(),
           ),
+          GoRoute(
+            path: '/ai-coach',
+            builder: (context, state) => const AICoachScreen(),
+          ),
         ],
+      ),
+      
+      // AI Feature Routes (outside main navigation)
+      GoRoute(
+        path: '/ai/insights',
+        builder: (context, state) => const AIInsightsScreen(),
+      ),
+      GoRoute(
+        path: '/ai/voice-coach',
+        builder: (context, state) => const VoiceCoachScreen(),
+      ),
+      GoRoute(
+        path: '/ai/recommendations',
+        builder: (context, state) => const RecommendationsScreen(),
       ),
     ],
   );

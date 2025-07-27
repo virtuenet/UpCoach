@@ -12,6 +12,7 @@ import {
   TrendingUp,
   FileText,
   Calculator,
+  Brain,
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 
@@ -32,6 +33,7 @@ export default function Layout() {
     { name: 'Tasks', href: '/tasks', icon: CheckSquare },
     { name: 'Mood', href: '/moods', icon: Heart },
     { name: 'Chat', href: '/chat', icon: MessageSquare },
+    { name: 'AI Analytics', href: '/ai-analytics', icon: Brain },
   ];
 
   const financialNav = [

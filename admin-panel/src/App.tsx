@@ -15,6 +15,7 @@ import SubscriptionsPage from './pages/SubscriptionsPage';
 import ReportsPage from './pages/ReportsPage';
 import CMSPage from './pages/CMSPage';
 import ContentEditorPage from './pages/ContentEditorPage';
+import AIAnalytics from './pages/AIAnalytics';
 import { useAuthStore } from './stores/authStore';
 
 function App() {
@@ -66,6 +67,9 @@ function App() {
           <Route path="/cms/content/new" element={<ContentEditorPage />} />
           <Route path="/cms/content/:id" element={<ContentEditorPage />} />
           <Route path="/cms/content/:id/edit" element={<ContentEditorPage />} />
+          
+          {/* AI Analytics */}
+          <Route path="/ai-analytics" element={<AIAnalytics />} />
           
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
