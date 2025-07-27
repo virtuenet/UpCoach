@@ -414,7 +414,7 @@ export class PredictiveAnalytics {
 
     // Calculate session frequency (sessions per week)
     const uniqueDays = new Set(
-      userData.tasks.map(t => new Date(t.createdAt).toDateString())
+      userData.tasks.map((t: any) => new Date(t.createdAt).toDateString())
     ).size;
     const weeksCovered = Math.max(1, 
       (Date.now() - new Date(userData.tasks[userData.tasks.length - 1]?.createdAt || Date.now()).getTime()) / 
@@ -503,7 +503,7 @@ export class PredictiveAnalytics {
     const consistency = totalTasks > 0 ? completedTasks.length / totalTasks : 0;
 
     // Analyze completion times
-    const completionTimes = completedTasks.map(t => {
+    const completionTimes = completedTasks.map((t: any) => {
       const created = new Date(t.createdAt).getTime();
       const completed = new Date(t.completedAt || t.updatedAt).getTime();
       return (completed - created) / (1000 * 60 * 60); // hours
@@ -728,8 +728,8 @@ Provide JSON with:
 
   private async analyzeTimePatterns(userData: any): Promise<BehaviorPattern> {
     // Analyze when user is most active
-    const taskTimes = userData.tasks.map(t => new Date(t.createdAt).getHours());
-    const hourCounts = taskTimes.reduce((acc, hour) => {
+    const taskTimes = userData.tasks.map((t: any) => new Date(t.createdAt).getHours());
+    const hourCounts = taskTimes.reduce((acc: any, hour) => {
       acc[hour] = (acc[hour] || 0) + 1;
       return acc;
     }, {} as Record<number, number>);
@@ -776,7 +776,7 @@ Provide JSON with:
   private detectStrategyChanges(tasks: Task[]): number {
     // Detect how often user changes approach
     let changes = 0;
-    const taskTypes = tasks.map(t => t.category || 'general');
+    const taskTypes = tasks.map((t: any) => t.category || 'general');
     
     for (let i = 1; i < taskTypes.length; i++) {
       if (taskTypes[i] !== taskTypes[i-1]) changes++;
@@ -800,7 +800,7 @@ Provide JSON with:
     }
 
     // Check mood recovery
-    const moodDips = userData.moods.filter(m => 
+    const moodDips = userData.moods.filter((m: any) => 
       m.mood === 'stressed' || m.mood === 'sad'
     );
     if (moodDips.length > 0) {

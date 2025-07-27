@@ -142,7 +142,7 @@ export class AIService {
     try {
       // Extract system message for Claude
       const systemMessage = messages.find(m => m.role === 'system');
-      const conversationMessages = messages.filter(m => m.role !== 'system');
+      const conversationMessages = messages.filter((m: any) => m.role !== 'system');
 
       const response = await this.anthropic.messages.create({
         model: options.model,

@@ -624,7 +624,7 @@ export class InsightGenerator {
         priority: 'high',
         confidence: 0.75,
         evidence: [{
-          type: 'correlation',
+          type: 'pattern' as const,
           description: 'Task volume vs mood correlation',
           dataPoints: [{
             taskVelocity: data.metrics.taskVelocity,
@@ -740,14 +740,14 @@ export class InsightGenerator {
     if (Math.abs(correlation.coefficient) > 0.5) {
       insights.push({
         id: `correlation_${Date.now()}_task_mood`,
-        type: 'correlation',
+        type: 'pattern' as const,
         title: correlation.coefficient > 0 ? 'Productivity Boosts Mood' : 'Mood Affects Productivity',
         description: correlation.description,
         category: 'wellbeing',
         priority: 'medium',
         confidence: Math.abs(correlation.coefficient),
         evidence: [{
-          type: 'correlation',
+          type: 'pattern' as const,
           description: 'Statistical correlation between task completion and mood',
           dataPoints: correlation.dataPoints,
           strength: Math.abs(correlation.coefficient)
@@ -900,7 +900,7 @@ export class InsightGenerator {
     const moodValues = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1 };
     const recentMoods = moods.slice(-7);
     
-    const negativeCount = recentMoods.filter(m => 
+    const negativeCount = recentMoods.filter((m: any) => 
       m.mood === 'stressed' || m.mood === 'sad'
     ).length;
 
@@ -1215,7 +1215,7 @@ export class InsightGenerator {
   }
 
   private calculateTaskVelocity(tasks: Task[]): number {
-    const days = new Set(tasks.map(t => new Date(t.createdAt).toDateString())).size;
+    const days = new Set(tasks.map((t: any) => new Date(t.createdAt).toDateString())).size;
     return days > 0 ? tasks.length / days : 0;
   }
 

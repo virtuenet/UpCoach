@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth';
-import { upload } from '../middleware/upload';
+import upload from '../middleware/upload';
 import { userProfilingController } from '../controllers/ai/UserProfilingController';
 import { aiController } from '../controllers/ai/AIController';
 

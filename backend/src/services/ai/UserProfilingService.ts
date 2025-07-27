@@ -287,7 +287,7 @@ export class UserProfilingService {
   }
 
   private async analyzeMessagePatterns(messages: any[]): Promise<any> {
-    const userMessages = messages.filter(m => m.role === 'user');
+    const userMessages = messages.filter((m: any) => m.role === 'user');
     
     // Topic extraction
     const topicKeywords = {
@@ -332,7 +332,7 @@ export class UserProfilingService {
       : 10;
 
     // Calculate engagement level (0-100)
-    const messagesPerSession = messages.length / Math.max(1, messages.filter(m => m.isFirstInSession).length);
+    const messagesPerSession = messages.length / Math.max(1, messages.filter((m: any) => m.isFirstInSession).length);
     const avgMessageLength = userMessages.reduce((sum, m) => sum + m.content.length, 0) / Math.max(1, userMessages.length);
     
     const engagementLevel = Math.min(100, Math.round(

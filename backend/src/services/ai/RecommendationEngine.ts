@@ -563,7 +563,7 @@ export class RecommendationEngine {
     if (tasks.length < 5) return false;
     
     // Check if tasks are spread throughout the day
-    const taskHours = tasks.map(t => new Date(t.createdAt).getHours());
+    const taskHours = tasks.map((t: any) => new Date(t.createdAt).getHours());
     const uniqueHours = new Set(taskHours);
     
     return uniqueHours.size > tasks.length * 0.7;

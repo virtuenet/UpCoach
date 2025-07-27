@@ -485,7 +485,7 @@ Balance directness with respect and understanding of individual circumstances.`,
       'I appreciate you sharing this',
       'Thank you for your openness',
       'Your efforts are valued',
-      'I'm here to support you'
+      'I\'m here to support you'
     ];
 
     // Simple implementation - in production, use NLP for better placement

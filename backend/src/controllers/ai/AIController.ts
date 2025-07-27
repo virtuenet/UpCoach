@@ -11,7 +11,7 @@ export class AIController {
   // Recommendations
   async getRecommendations(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || req.params.userId;
+      const userId = req.user?.id || "" || req.params.userId;
       const { types, limit } = req.query;
       
       const recommendations = await recommendationEngine.generateRecommendations(
@@ -33,7 +33,7 @@ export class AIController {
 
   async getOptimalTiming(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.id || "";
       const { activityType } = req.params;
       
       const timing = await recommendationEngine.getOptimalTiming(userId, activityType);
@@ -50,7 +50,7 @@ export class AIController {
 
   async getAdaptiveSchedule(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.id || "";
       const { date } = req.query;
       
       const schedule = await recommendationEngine.generateAdaptiveSchedule(
@@ -71,7 +71,7 @@ export class AIController {
   // Conversational AI
   async processMessage(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.id || "";
       const { message, conversationId, context } = req.body;
       
       const result = await conversationalAI.processConversation(
@@ -93,7 +93,7 @@ export class AIController {
 
   async generateSmartResponse(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.id || "";
       const { message, options } = req.body;
       
       const response = await conversationalAI.generateSmartResponse(
@@ -115,7 +115,7 @@ export class AIController {
   // Predictive Analytics
   async getPredictions(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || req.params.userId;
+      const userId = req.user?.id || "" || req.params.userId;
       
       const [successPrediction, churnRisk, behaviorPatterns] = await Promise.all([
         predictiveAnalytics.predictUserSuccess(userId),
@@ -155,7 +155,7 @@ export class AIController {
 
   async getInterventionPlan(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.id || "";
       const { riskType } = req.params;
       
       const plan = await predictiveAnalytics.generateInterventionPlan(
@@ -176,7 +176,7 @@ export class AIController {
   // Adaptive Learning
   async createLearningPath(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.id || "";
       const { goalId, options } = req.body;
       
       const path = await adaptiveLearning.createPersonalizedLearningPath(
@@ -197,7 +197,7 @@ export class AIController {
 
   async getLearningPaths(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.id || "";
       
       const paths = await adaptiveLearning.getLearningPaths(userId);
       
@@ -213,7 +213,7 @@ export class AIController {
 
   async trackLearningProgress(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.id || "";
       const { pathId, moduleId } = req.params;
       const { progress } = req.body;
       
@@ -236,7 +236,7 @@ export class AIController {
 
   async getNextModule(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.id || "";
       const { pathId } = req.params;
       
       const module = await adaptiveLearning.getRecommendedNextModule(userId, pathId);
@@ -254,7 +254,7 @@ export class AIController {
   // Voice AI
   async analyzeVoice(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.id || "";
       const audioBuffer = req.file?.buffer;
       
       if (!audioBuffer) {
@@ -281,7 +281,7 @@ export class AIController {
 
   async getVoiceCoaching(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.id || "";
       const { voiceAnalysis, options } = req.body;
       
       const coaching = await voiceAI.generateVoiceCoaching(
@@ -302,7 +302,7 @@ export class AIController {
 
   async getVoiceInsights(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.id || "";
       const { days } = req.query;
       
       const insights = await voiceAI.getVoiceInsightSummary(
@@ -322,7 +322,7 @@ export class AIController {
 
   async compareVoiceSessions(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.id || "";
       const { sessionId1, sessionId2 } = req.params;
       
       const comparison = await voiceAI.compareVoiceSessions(
@@ -344,7 +344,7 @@ export class AIController {
   // Insights
   async getInsightReport(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || req.params.userId;
+      const userId = req.user?.id || "" || req.params.userId;
       const { days, startDate, endDate } = req.query;
       
       const report = await insightGenerator.generateInsightReport(
@@ -368,7 +368,7 @@ export class AIController {
 
   async getActiveInsights(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.id || "";
       
       const insights = await insightGenerator.getActiveInsights(userId);
       
@@ -384,7 +384,7 @@ export class AIController {
 
   async dismissInsight(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id;
+      const userId = req.user?.id || "";
       const { insightId } = req.params;
       
       await insightGenerator.dismissInsight(userId, insightId);

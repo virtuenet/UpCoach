@@ -258,8 +258,8 @@ export class ContextManager {
     }
 
     // Infer from repeated tasks
-    const taskTitles = tasks.map(t => t.title.toLowerCase());
-    const frequencies = taskTitles.reduce((acc, title) => {
+    const taskTitles = tasks.map((t: any) => t.title.toLowerCase());
+    const frequencies = taskTitles.reduce((acc: any, title) => {
       acc[title] = (acc[title] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
@@ -279,7 +279,7 @@ export class ContextManager {
   }
 
   private summarizeDailyRoutine(tasks: any[]): string {
-    const tasksByHour = tasks.reduce((acc, task) => {
+    const tasksByHour = tasks.reduce((acc: any, task) => {
       const hour = new Date(task.createdAt).getHours();
       const period = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
       acc[period] = (acc[period] || 0) + 1;
@@ -310,7 +310,7 @@ export class ContextManager {
     if (tasks.length === 0) return 0;
 
     const daysWithTasks = new Set(
-      tasks.map(t => new Date(t.createdAt).toDateString())
+      tasks.map((t: any) => new Date(t.createdAt).toDateString())
     ).size;
 
     const dayRange = 7; // Look at last 7 days
@@ -320,7 +320,7 @@ export class ContextManager {
   private calculateEngagementLevel(messages: any[]): number {
     if (messages.length === 0) return 0;
 
-    const recentMessages = messages.filter(m => 
+    const recentMessages = messages.filter((m: any) => 
       new Date(m.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
     );
 
@@ -341,14 +341,14 @@ export class ContextManager {
 
     if (todayTasks.length === 0) return 'No completions yet today';
 
-    return todayTasks.map(t => t.title).join(', ');
+    return todayTasks.map((t: any) => t.title).join(', ');
   }
 
   private extractChallenges(messages: any[]): string {
     // Look for challenge-related keywords in recent messages
     const challengeKeywords = ['struggle', 'difficult', 'hard', 'challenge', 'problem', 'stuck'];
     
-    const challengeMessages = messages.filter(m => 
+    const challengeMessages = messages.filter((m: any) => 
       challengeKeywords.some(keyword => 
         m.content.toLowerCase().includes(keyword)
       )
@@ -460,7 +460,7 @@ export class ContextManager {
   private calculateAverageMessageLength(messages: any[]): number {
     if (messages.length === 0) return 0;
     
-    const userMessages = messages.filter(m => m.role === 'user');
+    const userMessages = messages.filter((m: any) => m.role === 'user');
     const totalLength = userMessages.reduce((sum, m) => sum + m.content.length, 0);
     
     return Math.round(totalLength / userMessages.length);

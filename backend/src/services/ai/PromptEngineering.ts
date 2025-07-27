@@ -109,7 +109,7 @@ Provide practical strategies and emotional support.`,
     if (options.context && Object.keys(options.context).length > 0) {
       const contextString = this.formatContext(options.context);
       if (contextString) {
-        const lastUserIndex = optimized.findLastIndex(m => m.role === 'user');
+        const lastUserIndex = optimized.slice().reverse().findIndex(m => m.role === 'user');
         if (lastUserIndex >= 0) {
           optimized[lastUserIndex].content += `\n\nContext: ${contextString}`;
         }

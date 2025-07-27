@@ -261,12 +261,12 @@ Provide a JSON response with:
     if (history.length === 0) return analysis;
 
     // Calculate metrics
-    const userMessages = history.filter(m => m.role === 'user');
+    const userMessages = history.filter((m: any) => m.role === 'user');
     const totalLength = userMessages.reduce((sum, m) => sum + m.content.length, 0);
     analysis.avgMessageLength = totalLength / userMessages.length;
 
     // Question ratio
-    const questions = userMessages.filter(m => m.content.includes('?'));
+    const questions = userMessages.filter((m: any) => m.content.includes('?'));
     analysis.questionRatio = questions.length / userMessages.length;
 
     // Engagement trend

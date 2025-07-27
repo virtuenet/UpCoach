@@ -746,7 +746,7 @@ Ensure progressive difficulty and logical skill building.`;
     }
 
     // Update overall path progress
-    const completedModules = path.modules.filter(m => m.completed).length;
+    const completedModules = path.modules.filter((m: any) => m.completed).length;
     path.progress = (completedModules / path.modules.length) * 100;
 
     // Track performance metrics
