@@ -11,6 +11,7 @@ import aiRoutes from './ai';
 import coachContentRoutes from './coachContent';
 import referralRoutes from './referral';
 import onboardingRoutes from './onboarding';
+import forumRoutes from './forum';
 import { authMiddleware } from '../middleware/auth';
 
 export const setupRoutes = (app: Application): void => {
@@ -43,6 +44,9 @@ export const setupRoutes = (app: Application): void => {
   
   // Onboarding routes (protected)
   app.use(`${apiPrefix}/onboarding`, authMiddleware, onboardingRoutes);
+  
+  // Forum routes (mixed public and protected)
+  app.use(`${apiPrefix}/forum`, forumRoutes);
 
   // API info endpoint
   app.get(`${apiPrefix}`, (req, res) => {
@@ -111,6 +115,16 @@ export const setupRoutes = (app: Application): void => {
           status: 'GET /api/onboarding/status',
           complete: 'POST /api/onboarding/complete',
           skip: 'POST /api/onboarding/skip',
+        },
+        forum: {
+          categories: 'GET /api/forum/categories',
+          threads: 'GET /api/forum/threads',
+          thread: 'GET /api/forum/threads/:threadId',
+          createThread: 'POST /api/forum/threads',
+          createPost: 'POST /api/forum/posts',
+          votePost: 'POST /api/forum/posts/:postId/vote',
+          editPost: 'PUT /api/forum/posts/:postId',
+          deletePost: 'DELETE /api/forum/posts/:postId',
         },
       },
       status: 'operational',
