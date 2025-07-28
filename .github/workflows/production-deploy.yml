@@ -1,0 +1,176 @@
+name: Production Deployment
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: |
+          npm ci --prefix backend
+          npm ci --prefix admin-panel
+          npm ci --prefix landing-page
+      
+      - name: Run tests
+        run: |
+          npm run test --prefix backend
+          npm run test:unit --prefix admin-panel
+      
+      - name: Run linting
+        run: |
+          npm run lint --prefix backend
+          npm run lint --prefix admin-panel
+          npm run lint --prefix landing-page
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    strategy:
+      matrix:
+        service: [backend, admin-panel, landing-page]
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Log in to Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./${{ matrix.service }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'production' }}
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+      
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }} --region ${{ vars.AWS_REGION }}
+      
+      - name: Deploy to Kubernetes
+        run: |
+          # Update image tags in manifests
+          export VERSION=${{ github.ref_name }}
+          envsubst < k8s/backend-deployment.yaml | kubectl apply -f -
+          envsubst < k8s/admin-panel-deployment.yaml | kubectl apply -f -
+          envsubst < k8s/landing-page-deployment.yaml | kubectl apply -f -
+          
+          # Wait for rollout
+          kubectl rollout status deployment/backend -n upcoach
+          kubectl rollout status deployment/admin-panel -n upcoach
+          kubectl rollout status deployment/landing-page -n upcoach
+      
+      - name: Run database migrations
+        run: |
+          kubectl exec -it deployment/backend -n upcoach -- npm run migrate:prod
+
+  smoke-test:
+    needs: deploy
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Wait for services
+        run: sleep 30
+      
+      - name: Health check
+        run: |
+          curl -f https://api.upcoach.ai/health || exit 1
+          curl -f https://admin.upcoach.ai || exit 1
+          curl -f https://upcoach.ai || exit 1
+      
+      - name: Run E2E tests
+        run: |
+          npm ci --prefix tests/e2e
+          npm run test:prod --prefix tests/e2e
+
+  notify:
+    needs: [deploy, smoke-test]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          channel: '#deployments'
+          username: 'GitHub Actions'
+          text: |
+            Deployment ${{ github.ref_name }} to ${{ github.event.inputs.environment || 'production' }}
+            Status: ${{ job.status }}
+            Actor: ${{ github.actor }}
+            
+      - name: Create Sentry release
+        uses: getsentry/action-release@v1
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+        with:
+          environment: ${{ github.event.inputs.environment || 'production' }}
+          version: ${{ github.ref_name }}
