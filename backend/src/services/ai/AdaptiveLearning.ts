@@ -504,7 +504,7 @@ Ensure progressive difficulty and logical skill building.`;
     // Record adaptations
     adaptedPath.adaptations.push({
       timestamp: new Date(),
-      adaptationType: 'initial',
+      adaptationType: 'style' as const,
       reason: 'Personalized based on user profile',
       previousValue: 'base path',
       newValue: 'adapted path',

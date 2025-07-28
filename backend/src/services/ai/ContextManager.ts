@@ -265,13 +265,13 @@ export class ContextManager {
     }, {} as Record<string, number>);
 
     const mostFrequent = Object.entries(frequencies)
-      .sort(([, a], [, b]) => b - a)[0];
+      .sort(([, a], [, b]) => (b as number) - (a as number))[0];
 
-    if (mostFrequent && mostFrequent[1] > 2) {
+    if (mostFrequent && (mostFrequent[1] as number) > 2) {
       return {
         name: mostFrequent[0],
         description: 'Frequently performed task',
-        progress: (mostFrequent[1] / 30) * 100
+        progress: ((mostFrequent[1] as number) / 30) * 100
       };
     }
 
@@ -287,7 +287,7 @@ export class ContextManager {
     }, {} as Record<string, number>);
 
     const mostActiveTime = Object.entries(tasksByHour)
-      .sort(([, a], [, b]) => b - a)[0];
+      .sort(([, a], [, b]) => (b as number) - (a as number))[0];
 
     return mostActiveTime 
       ? `Most active in the ${mostActiveTime[0]}`

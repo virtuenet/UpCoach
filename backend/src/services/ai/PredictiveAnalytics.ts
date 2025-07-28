@@ -3,6 +3,7 @@ import { Task } from '../../models/Task';
 import { Mood } from '../../models/Mood';
 import { UserProfile } from '../../models/UserProfile';
 import { ChatMessage } from '../../models/ChatMessage';
+import { Chat } from '../../models/Chat';
 import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
 import { aiService } from './AIService';
@@ -694,7 +695,7 @@ Provide JSON with:
 
   private analyzeGoalPatterns(goals: Goal[]): BehaviorPattern {
     const completedGoals = goals.filter(g => g.status === 'completed');
-    const activeGoals = goals.filter(g => g.status === 'active');
+    const activeGoals = goals.filter(g => g.status === 'in_progress');
     
     const completionRate = goals.length > 0 ? completedGoals.length / goals.length : 0;
     const frequency = Math.min(1, goals.length / 12); // Expecting monthly goals
@@ -735,7 +736,7 @@ Provide JSON with:
     }, {} as Record<number, number>);
 
     const peakHour = Object.entries(hourCounts)
-      .sort(([, a], [, b]) => b - a)[0]?.[0] || '9';
+      .sort(([, a], [, b]) => (b as number) - (a as number))[0]?.[0] || '9';
 
     const insights = [];
     if (parseInt(peakHour) < 9) insights.push('Early bird - most active in morning');

@@ -15,6 +15,8 @@ import '../../features/ai/presentation/screens/ai_coach_screen.dart';
 import '../../features/ai/presentation/screens/ai_insights_screen.dart';
 import '../../features/ai/presentation/screens/voice_coach_screen.dart';
 import '../../features/ai/presentation/screens/recommendations_screen.dart';
+import '../../features/content/presentation/screens/content_library_screen.dart';
+import '../../features/content/presentation/screens/article_detail_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -87,6 +89,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: '/ai-coach',
             builder: (context, state) => const AICoachScreen(),
           ),
+          GoRoute(
+            path: '/content',
+            builder: (context, state) => const ContentLibraryScreen(),
+          ),
         ],
       ),
       
@@ -102,6 +108,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/ai/recommendations',
         builder: (context, state) => const RecommendationsScreen(),
+      ),
+      
+      // Content Routes
+      GoRoute(
+        path: '/content/article/:id',
+        builder: (context, state) {
+          final articleId = int.parse(state.pathParameters['id']!);
+          return ArticleDetailScreen(articleId: articleId);
+        },
+      ),
+      GoRoute(
+        path: '/content/saved',
+        builder: (context, state) => const ContentLibraryScreen(), // TODO: Create SavedArticlesScreen
       ),
     ],
   );

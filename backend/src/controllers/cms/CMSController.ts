@@ -4,14 +4,14 @@ import sequelize from 'sequelize';
 import { ContentArticle } from '../../models/cms/ContentArticle';
 import { ContentCategory } from '../../models/cms/ContentCategory';
 import { ContentMedia } from '../../models/cms/ContentMedia';
-import { ContentTemplate } from '../../models/cms/ContentTemplate';
-import { ContentVersion } from '../../models/cms/ContentVersion';
-import { ContentInteraction } from '../../models/cms/ContentInteraction';
-import { ContentSchedule } from '../../models/cms/ContentSchedule';
-import { ContentComment } from '../../models/cms/ContentComment';
+import ContentTemplate from '../../models/cms/ContentTemplate';
+import ContentVersion from '../../models/cms/ContentVersion';
+import ContentInteraction from '../../models/cms/ContentInteraction';
+import ContentSchedule from '../../models/cms/ContentSchedule';
+import ContentComment from '../../models/cms/ContentComment';
 import { User } from '../../models/User';
 import { cacheService } from '../../services/cache/CacheService';
-import { uploadService } from '../../services/upload/UploadService';
+import uploadService from '../../services/upload/UploadService';
 import { logger } from '../../utils/logger';
 import slugify from 'slugify';
 
@@ -52,8 +52,9 @@ export const getArticles = async (req: Request, res: Response) => {
     }
 
     // Parse sort
-    const sortField = sort.startsWith('-') ? sort.slice(1) : sort;
-    const sortOrder = sort.startsWith('-') ? 'DESC' : 'ASC';
+    const sortString = String(sort);
+    const sortField = sortString.startsWith('-') ? sortString.slice(1) : sortString;
+    const sortOrder = sortString.startsWith('-') ? 'DESC' : 'ASC';
 
     const { rows: articles, count } = await ContentArticle.findAndCountAll({
       where,
@@ -119,7 +120,7 @@ export const createArticle = async (req: Request, res: Response) => {
       slug: articleSlug,
       summary,
       content,
-      authorId: req.user!.id,
+      authorId: Number(req.user!.id),
       categoryId,
       featuredImage,
       tags: tags || [],
@@ -131,11 +132,11 @@ export const createArticle = async (req: Request, res: Response) => {
       visibility,
       publishDate,
       allowComments,
-      lastModifiedBy: req.user!.id,
+      lastModifiedBy: Number(req.user!.id),
     });
 
     // Create initial version
-    await article.createVersion(req.user!.id, 'Initial version');
+    await article.createVersion(Number(req.user!.id), 'Initial version');
 
     // Invalidate cache
     await cacheService.invalidate('cms:articles:*');
@@ -180,8 +181,8 @@ export const getArticle = async (req: Request, res: Response) => {
     // Track view if public
     if (isPublic && req.user) {
       await ContentInteraction.create({
-        userId: req.user.id,
-        articleId: article.id,
+        userId: Number(req.user.id),
+        contentId: article.id,
         interactionType: 'view',
       });
       await article.incrementViewCount();
@@ -210,17 +211,17 @@ export const updateArticle = async (req: Request, res: Response) => {
     }
 
     // Check permissions
-    if (!article.canEdit(req.user!.id, req.user!.role)) {
+    if (!article.canEdit(Number(req.user!.id), req.user!.role)) {
       return res.status(403).json({ success: false, error: 'Permission denied' });
     }
 
     // Create version before updating
-    await article.createVersion(req.user!.id, req.body.changeSummary);
+    await article.createVersion(Number(req.user!.id), req.body.changeSummary);
 
     // Update article
     await article.update({
       ...req.body,
-      lastModifiedBy: req.user!.id,
+      lastModifiedBy: Number(req.user!.id),
     });
 
     // Invalidate cache
@@ -327,8 +328,8 @@ export const getArticleVersions = async (req: Request, res: Response) => {
     const { id } = req.params;
     
     const versions = await ContentVersion.findAll({
-      where: { articleId: id },
-      order: [['versionNumber', 'DESC']],
+      where: { contentId: id },
+      order: [['version', 'DESC']],
       include: [
         {
           model: User,
@@ -359,8 +360,8 @@ export const revertArticleVersion = async (req: Request, res: Response) => {
 
     const versionData = await ContentVersion.findOne({
       where: {
-        articleId: id,
-        versionNumber: version,
+        contentId: id,
+        version: version,
       },
     });
 
@@ -369,13 +370,13 @@ export const revertArticleVersion = async (req: Request, res: Response) => {
     }
 
     // Create new version before reverting
-    await article.createVersion(req.user!.id, `Reverted to version ${version}`);
+    await article.createVersion(Number(req.user!.id), `Reverted to version ${version}`);
 
     // Revert to selected version
     await article.update({
       title: versionData.title,
       content: versionData.content,
-      lastModifiedBy: req.user!.id,
+      lastModifiedBy: Number(req.user!.id),
     });
 
     // Invalidate cache
@@ -410,18 +411,25 @@ export const uploadMedia = async (req: Request, res: Response) => {
 
     const media = await ContentMedia.create({
       filename: uploadResult.filename,
-      originalName: req.file.originalname,
+      originalFilename: req.file.originalname,
       mimeType: req.file.mimetype,
       size: req.file.size,
       url: uploadResult.url,
       thumbnailUrl: uploadResult.thumbnailUrl,
-      altText,
-      caption,
-      dimensions: uploadResult.dimensions,
+      type: req.file.mimetype.startsWith('image/') ? 'image' : 
+            req.file.mimetype.startsWith('video/') ? 'video' : 
+            req.file.mimetype.startsWith('audio/') ? 'audio' : 'document',
+      width: uploadResult.dimensions?.width,
+      height: uploadResult.dimensions?.height,
       uploadedBy: req.user!.id,
-      folder,
-      tags: tags ? tags.split(',').map(t => t.trim()) : [],
-      metadata: uploadResult.metadata,
+      isPublic: true,
+      metadata: {
+        ...uploadResult.metadata,
+        alt: altText,
+        caption,
+        folder,
+        tags: tags ? tags.split(',').map(t => t.trim()) : [],
+      },
     });
 
     res.json({
@@ -445,7 +453,7 @@ export const getMedia = async (req: Request, res: Response) => {
     if (search) {
       where[Op.or] = [
         { filename: { [Op.iLike]: `%${search}%` } },
-        { originalName: { [Op.iLike]: `%${search}%` } },
+        { originalFilename: { [Op.iLike]: `%${search}%` } },
         { altText: { [Op.iLike]: `%${search}%` } },
       ];
     }
@@ -531,7 +539,7 @@ export const createCategory = async (req: Request, res: Response) => {
       parentId,
       icon,
       color,
-      orderIndex: orderIndex || 0,
+      order: orderIndex || 0,
     });
 
     res.status(201).json({
@@ -625,7 +633,7 @@ export const createTemplate = async (req: Request, res: Response) => {
   try {
     const template = await ContentTemplate.create({
       ...req.body,
-      createdBy: req.user!.id,
+      createdBy: Number(req.user!.id),
     });
 
     res.status(201).json({
@@ -760,12 +768,12 @@ export const getArticleAnalytics = async (req: Request, res: Response) => {
     // Check permissions
     if (req.user!.role !== 'admin' && 
         req.user!.role !== 'editor' && 
-        article.authorId !== req.user!.id) {
+        article.authorId !== Number(req.user!.id)) {
       return res.status(403).json({ success: false, error: 'Permission denied' });
     }
 
     const interactions = await ContentInteraction.findAll({
-      where: { articleId: id },
+      where: { contentId: id },
       attributes: [
         'interactionType',
         [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
@@ -778,14 +786,14 @@ export const getArticleAnalytics = async (req: Request, res: Response) => {
         id: article.id,
         title: article.title,
         status: article.status,
-        publishedAt: article.publishedAt,
+        publishedAt: article.publishDate,
       },
       metrics: {
         views: article.viewCount,
         likes: article.likeCount,
         shares: article.shareCount,
         comments: await ContentComment.count({
-          where: { articleId: id },
+          where: { contentId: id },
         }),
       },
       interactions: interactions.reduce((acc, curr) => {
@@ -813,11 +821,11 @@ export const scheduleContent = async (req: Request, res: Response) => {
     const { articleId, scheduledDate, action, actionData } = req.body;
 
     const schedule = await ContentSchedule.create({
-      articleId,
-      scheduledDate,
-      action,
-      actionData,
-      createdBy: req.user!.id,
+      contentId: articleId,
+      scheduledFor: scheduledDate,
+      scheduleType: action as 'publish' | 'unpublish' | 'update',
+      metadata: actionData,
+      createdBy: Number(req.user!.id),
     });
 
     res.status(201).json({
@@ -833,7 +841,7 @@ export const scheduleContent = async (req: Request, res: Response) => {
 export const getScheduledContent = async (req: Request, res: Response) => {
   try {
     const schedules = await ContentSchedule.findAll({
-      where: { isProcessed: false },
+      where: { status: 'pending' },
       include: [
         {
           model: ContentArticle,
@@ -841,7 +849,7 @@ export const getScheduledContent = async (req: Request, res: Response) => {
           attributes: ['id', 'title', 'slug', 'status'],
         },
       ],
-      order: [['scheduledDate', 'ASC']],
+      order: [['scheduledFor', 'ASC']],
     });
 
     res.json({
@@ -904,7 +912,7 @@ function extractKeywords(content: string): string[] {
   });
 
   return Object.entries(wordCount)
-    .sort(([, a], [, b]) => b - a)
+    .sort(([, a], [, b]) => Number(b) - Number(a))
     .slice(0, 10)
     .map(([word]) => word);
 }

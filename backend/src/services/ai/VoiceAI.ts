@@ -523,15 +523,15 @@ Consider tone, word choice, and emotional indicators.`;
   private async updateMoodFromVoice(userId: string, analysis: VoiceAnalysis): Promise<void> {
     try {
       // Map sentiment to mood
-      let mood: string;
+      let mood: 'great' | 'good' | 'okay' | 'bad' | 'terrible';
       if (analysis.sentiment.overall === 'positive') {
-        mood = analysis.sentiment.emotions.joy > 0.7 ? 'happy' : 'content';
+        mood = analysis.sentiment.emotions.joy > 0.7 ? 'great' : 'good';
       } else if (analysis.sentiment.overall === 'negative') {
-        if (analysis.sentiment.emotions.sadness > 0.6) mood = 'sad';
-        else if (analysis.sentiment.emotions.anger > 0.6) mood = 'stressed';
-        else mood = 'stressed';
+        if (analysis.sentiment.emotions.sadness > 0.6) mood = 'bad';
+        else if (analysis.sentiment.emotions.anger > 0.6) mood = 'terrible';
+        else mood = 'bad';
       } else {
-        mood = 'neutral';
+        mood = 'okay';
       }
 
       // Estimate energy level from speech patterns
@@ -541,7 +541,8 @@ Consider tone, word choice, and emotional indicators.`;
       await Mood.create({
         userId,
         mood,
-        energy,
+        moodScore: mood === 'great' ? 5 : mood === 'good' ? 4 : mood === 'okay' ? 3 : mood === 'bad' ? 2 : 1,
+        energyLevel: energy,
         notes: `Voice reflection: ${analysis.transcript.substring(0, 100)}...`,
         activities: ['voice_reflection']
       });
@@ -626,7 +627,7 @@ User said: "${transcript}"
 
 Context:
 - Emotional state: ${context.emotionalState.overall} (score: ${context.emotionalState.score})
-- Key emotions: ${Object.entries(context.emotionalState.emotions).filter(([_, v]) => v > 0.5).map(([k]) => k).join(', ')}
+- Key emotions: ${Object.entries(context.emotionalState.emotions).filter(([_, v]) => (v as number) > 0.5).map(([k]) => k).join(', ')}
 - Speech patterns: ${context.communicationStyle.pace} pace, ${context.communicationStyle.tone} tone
 - Key themes: ${context.keyThemes.join(', ')}
 

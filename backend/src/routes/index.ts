@@ -8,6 +8,9 @@ import chatRoutes from './chat';
 import cmsRoutes from './cms';
 import financialRoutes from './financial';
 import aiRoutes from './ai';
+import coachContentRoutes from './coachContent';
+import referralRoutes from './referral';
+import onboardingRoutes from './onboarding';
 import { authMiddleware } from '../middleware/auth';
 
 export const setupRoutes = (app: Application): void => {
@@ -26,11 +29,20 @@ export const setupRoutes = (app: Application): void => {
   // CMS routes (mixed public and protected)
   app.use(`${apiPrefix}/cms`, cmsRoutes);
   
+  // Coach content routes (protected)
+  app.use(`${apiPrefix}/coach-content`, authMiddleware, coachContentRoutes);
+  
   // Financial routes (protected)
   app.use(`${apiPrefix}/financial`, authMiddleware, financialRoutes);
   
   // AI routes (protected)
   app.use(`${apiPrefix}/ai`, authMiddleware, aiRoutes);
+  
+  // Referral routes (mixed public and protected)
+  app.use(`${apiPrefix}/referrals`, referralRoutes);
+  
+  // Onboarding routes (protected)
+  app.use(`${apiPrefix}/onboarding`, authMiddleware, onboardingRoutes);
 
   // API info endpoint
   app.get(`${apiPrefix}`, (req, res) => {
@@ -94,6 +106,11 @@ export const setupRoutes = (app: Application): void => {
           insights: 'GET /api/ai/insights',
           recommendations: 'GET /api/ai/recommendations',
           readinessAssessment: 'GET /api/ai/assessment/readiness',
+        },
+        onboarding: {
+          status: 'GET /api/onboarding/status',
+          complete: 'POST /api/onboarding/complete',
+          skip: 'POST /api/onboarding/skip',
         },
       },
       status: 'operational',

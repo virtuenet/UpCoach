@@ -50,7 +50,12 @@ router.post('/register', asyncHandler(async (req: Request, res: Response) => {
   }
 
   // Create user
-  const user = await UserService.create(validatedData);
+  const user = await UserService.create({
+    email: validatedData.email,
+    password: validatedData.password,
+    name: validatedData.name,
+    bio: validatedData.bio,
+  });
 
   // Generate tokens
   const tokens = generateTokens(user.id);

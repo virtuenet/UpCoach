@@ -4,17 +4,24 @@ import { sequelize } from '../config/database';
 export interface UserProfileAttributes {
   id: string;
   userId: string;
-  learningStyle: 'visual' | 'auditory' | 'kinesthetic' | 'reading' | 'balanced';
-  communicationPreference: 'supportive' | 'direct' | 'analytical' | 'motivational' | 'empathetic';
+  age?: number;
+  occupation?: string;
+  timezone?: string;
+  coachingStyle?: string;
+  sessionFrequency?: string;
+  commitmentLevel?: string;
+  learningStyle?: 'visual' | 'auditory' | 'kinesthetic' | 'reading' | 'balanced';
+  communicationPreference?: 'supportive' | 'direct' | 'analytical' | 'motivational' | 'empathetic';
   personalityType?: string;
-  coachingPreferences: {
+  aiPersonalization?: any;
+  coachingPreferences?: {
     preferredMethods: string[];
     sessionFrequency: 'daily' | 'weekly' | 'biweekly' | 'monthly';
     sessionDuration: number; // minutes
     preferredTimes: string[]; // ['morning', 'afternoon', 'evening']
     focusAreas: string[];
   };
-  behaviorPatterns: {
+  behaviorPatterns?: {
     avgSessionDuration: number;
     completionRate: number;
     engagementLevel: number;
@@ -22,7 +29,7 @@ export interface UserProfileAttributes {
     responseTime: number; // avg minutes to respond
     consistencyScore: number;
   };
-  progressMetrics: {
+  progressMetrics?: {
     totalGoalsSet: number;
     goalsCompleted: number;
     currentStreak: number;
@@ -31,34 +38,41 @@ export interface UserProfileAttributes {
     accountAge: number; // days
     lastActiveDate: Date;
   };
-  strengths: string[];
-  growthAreas: string[];
-  motivators: string[];
-  obstacles: string[];
-  preferences: any;
-  metadata: any;
+  strengths?: string[];
+  growthAreas?: string[];
+  motivators?: string[];
+  obstacles?: string[];
+  preferences?: any;
+  metadata?: any;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 export interface UserProfileCreationAttributes 
-  extends Optional<UserProfileAttributes, 'id' | 'personalityType' | 'createdAt' | 'updatedAt'> {}
+  extends Optional<UserProfileAttributes, 'id' | 'age' | 'occupation' | 'timezone' | 'coachingStyle' | 'sessionFrequency' | 'commitmentLevel' | 'learningStyle' | 'communicationPreference' | 'personalityType' | 'aiPersonalization' | 'coachingPreferences' | 'behaviorPatterns' | 'progressMetrics' | 'strengths' | 'growthAreas' | 'motivators' | 'obstacles' | 'preferences' | 'metadata' | 'createdAt' | 'updatedAt'> {}
 
 export class UserProfile extends Model<UserProfileAttributes, UserProfileCreationAttributes> 
   implements UserProfileAttributes {
   public id!: string;
   public userId!: string;
-  public learningStyle!: 'visual' | 'auditory' | 'kinesthetic' | 'reading' | 'balanced';
-  public communicationPreference!: 'supportive' | 'direct' | 'analytical' | 'motivational' | 'empathetic';
+  public age?: number;
+  public occupation?: string;
+  public timezone?: string;
+  public coachingStyle?: string;
+  public sessionFrequency?: string;
+  public commitmentLevel?: string;
+  public learningStyle?: 'visual' | 'auditory' | 'kinesthetic' | 'reading' | 'balanced';
+  public communicationPreference?: 'supportive' | 'direct' | 'analytical' | 'motivational' | 'empathetic';
   public personalityType?: string;
-  public coachingPreferences!: {
+  public aiPersonalization?: any;
+  public coachingPreferences?: {
     preferredMethods: string[];
     sessionFrequency: 'daily' | 'weekly' | 'biweekly' | 'monthly';
     sessionDuration: number;
     preferredTimes: string[];
     focusAreas: string[];
   };
-  public behaviorPatterns!: {
+  public behaviorPatterns?: {
     avgSessionDuration: number;
     completionRate: number;
     engagementLevel: number;
@@ -66,7 +80,7 @@ export class UserProfile extends Model<UserProfileAttributes, UserProfileCreatio
     responseTime: number;
     consistencyScore: number;
   };
-  public progressMetrics!: {
+  public progressMetrics?: {
     totalGoalsSet: number;
     goalsCompleted: number;
     currentStreak: number;
@@ -75,12 +89,12 @@ export class UserProfile extends Model<UserProfileAttributes, UserProfileCreatio
     accountAge: number;
     lastActiveDate: Date;
   };
-  public strengths!: string[];
-  public growthAreas!: string[];
-  public motivators!: string[];
-  public obstacles!: string[];
-  public preferences!: any;
-  public metadata!: any;
+  public strengths?: string[];
+  public growthAreas?: string[];
+  public motivators?: string[];
+  public obstacles?: string[];
+  public preferences?: any;
+  public metadata?: any;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -101,6 +115,31 @@ UserProfile.init(
         key: 'id',
       },
     },
+    age: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    occupation: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    timezone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: 'UTC',
+    },
+    coachingStyle: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    sessionFrequency: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    commitmentLevel: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     learningStyle: {
       type: DataTypes.ENUM('visual', 'auditory', 'kinesthetic', 'reading', 'balanced'),
       defaultValue: 'balanced',
@@ -112,6 +151,11 @@ UserProfile.init(
     personalityType: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    aiPersonalization: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+      defaultValue: {},
     },
     coachingPreferences: {
       type: DataTypes.JSONB,

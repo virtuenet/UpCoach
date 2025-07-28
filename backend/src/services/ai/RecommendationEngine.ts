@@ -145,7 +145,7 @@ export class RecommendationEngine {
       timeOfDay,
       dayOfWeek: now.getDay(),
       currentMood: recentMood?.mood,
-      energyLevel: recentMood?.energy,
+      energyLevel: recentMood?.energyLevel,
       recentActivity: {
         tasks: recentTasks,
         profile

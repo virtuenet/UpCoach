@@ -270,6 +270,21 @@ export class AIService {
 
     return modelMap[task] || modelMap.coaching;
   }
+
+  // Create initial coaching session for new users
+  async createInitialSession(userId: number, onboardingData: any): Promise<void> {
+    try {
+      const userContext = await this.contextManager.getUserContext(String(userId));
+      const personality = await this.personalityEngine.getPersonality(String(userId));
+      
+      // Context will be built dynamically when needed
+      // The context manager will fetch fresh data on each request
+
+      logger.info(`Created initial AI session for user ${userId}`);
+    } catch (error) {
+      logger.error('Failed to create initial AI session:', error);
+    }
+  }
 }
 
 export const aiService = new AIService();

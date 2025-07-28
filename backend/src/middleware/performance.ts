@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { performance } from 'perf_hooks';
-import { Counter, Histogram, register } from 'prom-client';
+import { Counter, Histogram, Gauge, register } from 'prom-client';
 import { logger } from '../utils/logger';
 
 // Initialize Prometheus metrics
@@ -31,7 +31,7 @@ const httpResponseSize = new Histogram({
   buckets: [100, 1000, 10000, 100000, 1000000],
 });
 
-const activeRequests = new Counter({
+const activeRequests = new Gauge({
   name: 'http_requests_active',
   help: 'Number of active HTTP requests',
 });
@@ -94,7 +94,7 @@ export const performanceMiddleware = (req: Request, res: Response, next: NextFun
 
   // Intercept response end
   const originalEnd = res.end;
-  res.end = function(...args: any[]) {
+  res.end = function(...args: any[]): Response {
     // Calculate duration
     const duration = req.startTime ? (performance.now() - req.startTime) / 1000 : 0;
     
@@ -130,7 +130,7 @@ export const performanceMiddleware = (req: Request, res: Response, next: NextFun
     }
 
     // Call original end
-    originalEnd.apply(res, args);
+    return originalEnd.apply(res, args);
   };
 
   next();

@@ -136,6 +136,9 @@ export const requireRole = (roles: string | string[]) => {
   };
 };
 
+// Alias for requireRole
+export const authorizeRoles = requireRole;
+
 export const requireOwnership = (resourceIdParam: string = 'id') => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {

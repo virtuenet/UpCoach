@@ -61,6 +61,10 @@ const envSchema = z.object({
   
   // Analytics
   ANALYTICS_API_KEY: z.string().optional(),
+  
+  // CDN Configuration
+  CDN_URL: z.string().optional(),
+  CDN_ENABLED: z.string().transform(val => val === 'true').optional().default('false'),
 });
 
 // Validate environment variables
@@ -152,6 +156,12 @@ export const config = {
   // Analytics
   analytics: {
     apiKey: env.ANALYTICS_API_KEY,
+  },
+  
+  // CDN
+  cdn: {
+    url: env.CDN_URL || '',
+    enabled: env.CDN_ENABLED,
   },
   
   // Feature flags

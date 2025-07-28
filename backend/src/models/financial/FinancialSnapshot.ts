@@ -32,7 +32,7 @@ export class FinancialSnapshot extends Model {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-  id!: string;
+  declare id: string;
 
   @Column({
     type: DataType.DATEONLY,
@@ -364,10 +364,10 @@ export class FinancialSnapshot extends Model {
   metadata?: any;
 
   @CreatedAt
-  createdAt!: Date;
+  declare createdAt: Date;
 
   @UpdatedAt
-  updatedAt!: Date;
+  declare updatedAt: Date;
 
   // Calculated properties
   get mrrGrowthRate(): number {

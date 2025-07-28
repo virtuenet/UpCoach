@@ -12,12 +12,15 @@ export interface UserAttributes {
   bio?: string;
   isActive: boolean;
   emailVerified: boolean;
+  onboardingCompleted?: boolean;
+  onboardingCompletedAt?: Date;
+  onboardingSkipped?: boolean;
   lastLoginAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-export interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'avatar' | 'bio' | 'isActive' | 'emailVerified' | 'createdAt' | 'updatedAt' | 'lastLoginAt'> {}
+export interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'avatar' | 'bio' | 'isActive' | 'emailVerified' | 'onboardingCompleted' | 'onboardingCompletedAt' | 'onboardingSkipped' | 'createdAt' | 'updatedAt' | 'lastLoginAt'> {}
 
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   public id!: string;
@@ -29,9 +32,16 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   public bio?: string;
   public isActive!: boolean;
   public emailVerified!: boolean;
+  public onboardingCompleted?: boolean;
+  public onboardingCompletedAt?: Date;
+  public onboardingSkipped?: boolean;
   public lastLoginAt?: Date;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+
+  // Association properties
+  public readonly profile?: any;
+  public readonly goals?: any[];
 
   // Instance methods
   public async comparePassword(password: string): Promise<boolean> {
@@ -40,6 +50,8 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
 
   // Associations
   public static associate(models: any) {
+    // User has one profile
+    User.hasOne(models.UserProfile, { foreignKey: 'userId', as: 'profile' });
     // User has many goals
     User.hasMany(models.Goal, { foreignKey: 'userId', as: 'goals' });
     // User has many tasks
@@ -98,6 +110,20 @@ User.init(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
       allowNull: false,
+    },
+    onboardingCompleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: true,
+    },
+    onboardingCompletedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    onboardingSkipped: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: true,
     },
     lastLoginAt: {
       type: DataTypes.DATE,

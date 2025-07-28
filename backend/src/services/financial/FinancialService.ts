@@ -336,10 +336,10 @@ export class FinancialService {
       return acc;
     }, {});
 
-    const totalCosts = Object.values(costsByCategory).reduce((sum: number, cost: any) => sum + cost, 0);
+    const totalCosts = Object.values(costsByCategory).reduce((sum: number, cost: any) => sum + (cost as number), 0);
     const netRevenue = (revenue || 0) - (refunds || 0);
     const grossProfit = netRevenue - (costsByCategory.api_services || 0);
-    const operatingExpenses = totalCosts - (costsByCategory.api_services || 0);
+    const operatingExpenses = (totalCosts as number) - (costsByCategory.api_services || 0);
     const netProfit = grossProfit - operatingExpenses;
 
     return {

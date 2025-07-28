@@ -47,7 +47,7 @@ export class CostTracking extends Model {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-  id!: string;
+  declare id: string;
 
   @Column({
     type: DataType.ENUM(...Object.values(CostCategory)),
@@ -202,10 +202,10 @@ export class CostTracking extends Model {
   metadata?: any;
 
   @CreatedAt
-  createdAt!: Date;
+  declare createdAt: Date;
 
   @UpdatedAt
-  updatedAt!: Date;
+  declare updatedAt: Date;
 
   // Hooks
   @BeforeCreate

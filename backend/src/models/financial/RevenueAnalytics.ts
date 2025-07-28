@@ -34,7 +34,7 @@ export class RevenueAnalytics extends Model {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-  id!: string;
+  declare id: string;
 
   @Column({
     type: DataType.ENUM(...Object.values(AnalyticsPeriod)),
@@ -276,10 +276,10 @@ export class RevenueAnalytics extends Model {
   metadata?: any;
 
   @CreatedAt
-  createdAt!: Date;
+  declare createdAt: Date;
 
   @UpdatedAt
-  updatedAt!: Date;
+  declare updatedAt: Date;
 
   // Calculated properties
   get netExpansionRevenue(): number {

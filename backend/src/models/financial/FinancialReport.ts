@@ -46,8 +46,8 @@ interface FinancialReportAttributes {
   error?: string;
   recipients?: string[];
   fileUrl?: string;
-  declare createdAt: Date;
-  declare updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 interface FinancialReportCreationAttributes extends Omit<FinancialReportAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
