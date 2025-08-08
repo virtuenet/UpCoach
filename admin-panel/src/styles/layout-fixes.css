@@ -1,0 +1,75 @@
+/* Layout fixes to ensure black text and proper styling */
+
+/* Force all text to be black by default */
+* {
+  color: #000000 !important;
+}
+
+/* Specific overrides for gray text where needed */
+.text-gray-600 {
+  color: #4b5563 !important;
+}
+
+.text-gray-500 {
+  color: #6b7280 !important;
+}
+
+.text-gray-400 {
+  color: #9ca3af !important;
+}
+
+/* Sidebar specific fixes */
+.sidebar-nav a {
+  color: #000000 !important;
+}
+
+.sidebar-nav a:hover {
+  color: #000000 !important;
+  background-color: #f9fafb;
+}
+
+.sidebar-nav a.active {
+  color: #000000 !important;
+  background-color: #f3f4f6;
+  font-weight: 600;
+}
+
+/* Icon color fixes */
+.sidebar-icon {
+  color: #6b7280 !important;
+}
+
+.sidebar-icon.active {
+  color: #3b82f6 !important;
+}
+
+/* Top bar fixes */
+.topbar input {
+  color: #000000 !important;
+}
+
+.topbar input::placeholder {
+  color: #9ca3af !important;
+}
+
+/* Ensure white text stays white where needed */
+.text-white,
+.bg-blue-600 span,
+.bg-blue-500 span {
+  color: #ffffff !important;
+}
+
+/* Fix active state indicator */
+.border-l-3 {
+  border-left-width: 3px;
+}
+
+/* Improve sidebar shadow */
+.sidebar {
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Improve top bar shadow */
+.topbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}

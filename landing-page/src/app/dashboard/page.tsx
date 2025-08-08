@@ -1,11 +1,11 @@
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
   const { userId } = await auth();
 
   if (!userId) {
-    redirect('/');
+    redirect("/");
   }
 
   return (
@@ -15,7 +15,8 @@ export default async function DashboardPage() {
           Welcome to Your Dashboard
         </h1>
         <p className="text-gray-600">
-          This is a protected page. Only authenticated users can see this content.
+          This is a protected page. Only authenticated users can see this
+          content.
         </p>
         <div className="mt-8 p-6 bg-white rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4">User ID</h2>
@@ -24,4 +25,4 @@ export default async function DashboardPage() {
       </div>
     </div>
   );
-} 
+}

@@ -32,8 +32,8 @@ export class ForumThread extends Model<ForumThreadAttributes, ForumThreadCreatio
   public isPinned!: boolean;
   public isLocked!: boolean;
   public isFeatured!: boolean;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Associations
   public readonly category?: any;

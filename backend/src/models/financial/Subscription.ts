@@ -71,8 +71,8 @@ export class Subscription extends Model<SubscriptionAttributes, SubscriptionCrea
   public discountPercentage?: number;
   public discountValidUntil?: Date;
   public metadata?: any;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Associations
   public readonly user?: User;

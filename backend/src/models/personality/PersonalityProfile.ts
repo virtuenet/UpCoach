@@ -77,8 +77,8 @@ class PersonalityProfile extends Model<PersonalityProfileAttributes, Personality
   public responses!: Record<string, any>[];
   public version!: string;
   public isActive!: boolean;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Instance methods
   public getDominantTrait(): string {

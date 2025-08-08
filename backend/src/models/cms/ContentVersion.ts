@@ -19,7 +19,7 @@ export interface ContentVersionAttributes {
 export interface ContentVersionCreationAttributes extends Optional<ContentVersionAttributes, 'id' | 'version' | 'excerpt' | 'featuredImage' | 'metadata' | 'changes' | 'createdAt' | 'updatedAt'> {}
 
 class ContentVersion extends Model<ContentVersionAttributes, ContentVersionCreationAttributes> implements ContentVersionAttributes {
-  public id!: number;
+  declare id: number;
   public contentId!: number;
   public version!: number;
   public title!: string;
@@ -29,8 +29,8 @@ class ContentVersion extends Model<ContentVersionAttributes, ContentVersionCreat
   public metadata?: any;
   public changes?: string;
   public createdBy!: number;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 ContentVersion.init(

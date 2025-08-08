@@ -102,8 +102,8 @@ export class CoachMemory extends Model<CoachMemoryAttributes, CoachMemoryCreatio
   public aiProcessed!: boolean;
   public insightsGenerated!: string[];
   
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   /**
    * Check if this memory is still relevant based on time and access patterns

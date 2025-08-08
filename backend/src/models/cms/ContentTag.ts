@@ -23,8 +23,8 @@ export class ContentTag extends Model<ContentTagAttributes, ContentTagCreationAt
   public color?: string;
   public isActive!: boolean;
   public usageCount!: number;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Associations
   public readonly contents?: Content[];

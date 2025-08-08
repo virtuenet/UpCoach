@@ -35,8 +35,8 @@ export class Mood extends Model<MoodAttributes, MoodCreationAttributes> implemen
   public energyLevel?: number;
   public location?: string;
   public weather?: string;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Associations
   public static associate(models: any) {

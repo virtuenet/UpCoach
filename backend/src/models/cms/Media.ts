@@ -66,8 +66,8 @@ export class Media extends Model<MediaAttributes, MediaCreationAttributes> imple
   public usage!: MediaAttributes['usage'];
   public status!: 'processing' | 'ready' | 'failed';
   public isPublic!: boolean;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
   public readonly deletedAt!: Date | null;
 
   // Instance methods

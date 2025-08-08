@@ -25,8 +25,8 @@ export class ChatMessage extends Model<ChatMessageAttributes, ChatMessageCreatio
   public parentMessageId?: string;
   public isEdited!: boolean;
   public editedAt?: Date;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Associations
   public static associate(models: any) {

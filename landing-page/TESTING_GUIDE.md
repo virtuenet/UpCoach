@@ -84,12 +84,14 @@ npx playwright test accessibility.spec.ts
 ### Unit Test Coverage
 
 Our Jest configuration enforces the following coverage thresholds:
+
 - Branches: 70%
 - Functions: 70%
 - Lines: 70%
 - Statements: 70%
 
 View coverage report:
+
 ```bash
 npm run test:coverage
 open coverage/lcov-report/index.html
@@ -98,6 +100,7 @@ open coverage/lcov-report/index.html
 ### E2E Test Coverage
 
 E2E tests cover:
+
 - ✅ Homepage functionality
 - ✅ Navigation flows
 - ✅ Form submissions
@@ -114,6 +117,7 @@ E2E tests cover:
 Located in `src/components/__tests__/`
 
 **NewsletterForm.test.tsx**
+
 - Email validation
 - Submission flow
 - Error handling
@@ -121,6 +125,7 @@ Located in `src/components/__tests__/`
 - All three variants (inline, hero, modal)
 
 **ContactForm.test.tsx**
+
 - Field validation
 - Form submission
 - Error states
@@ -132,6 +137,7 @@ Located in `src/components/__tests__/`
 Located in `src/services/__tests__/`
 
 **experiments.test.ts**
+
 - Variant assignment
 - Weight distribution
 - Target audience matching
@@ -139,6 +145,7 @@ Located in `src/services/__tests__/`
 - Storage persistence
 
 **analytics.test.ts**
+
 - Event tracking
 - Custom dimensions
 - Web Vitals reporting
@@ -147,6 +154,7 @@ Located in `src/services/__tests__/`
 ### 3. E2E Tests
 
 **homepage.spec.ts**
+
 - Page structure
 - Navigation
 - Content visibility
@@ -154,24 +162,28 @@ Located in `src/services/__tests__/`
 - Interactive elements
 
 **lead-capture.spec.ts**
+
 - Modal triggers (time, exit-intent, scroll)
 - Form validation
 - Submission flow
 - Session persistence
 
 **performance.spec.ts**
+
 - Load time metrics
 - Core Web Vitals (LCP, FID, CLS)
 - Resource optimization
 - JavaScript bundle sizes
 
 **cross-browser.spec.ts**
+
 - Browser-specific features
 - CSS compatibility
 - JavaScript functionality
 - Mobile interactions
 
 **accessibility.spec.ts**
+
 - WCAG compliance
 - Keyboard navigation
 - Screen reader support
@@ -183,43 +195,47 @@ Located in `src/services/__tests__/`
 ### Writing Tests
 
 1. **Use descriptive test names**
+
    ```typescript
-   test('newsletter form validates email format and shows error message', async () => {
+   test("newsletter form validates email format and shows error message", async () => {
      // test implementation
    });
    ```
 
 2. **Follow AAA pattern**
+
    ```typescript
    test('contact form submits successfully', async () => {
      // Arrange
      render(<ContactForm />);
-     
+
      // Act
      await userEvent.type(screen.getByLabelText(/name/i), 'John Doe');
      await userEvent.click(screen.getByRole('button', { name: /submit/i }));
-     
+
      // Assert
      expect(screen.getByText(/success/i)).toBeVisible();
    });
    ```
 
 3. **Test user behavior, not implementation**
+
    ```typescript
    // Good
-   await userEvent.click(screen.getByRole('button', { name: /subscribe/i }));
-   
+   await userEvent.click(screen.getByRole("button", { name: /subscribe/i }));
+
    // Avoid
-   await userEvent.click(screen.getByTestId('submit-btn'));
+   await userEvent.click(screen.getByTestId("submit-btn"));
    ```
 
 4. **Use proper async handling**
+
    ```typescript
    // Wait for elements
    await waitFor(() => {
      expect(screen.getByText(/success/i)).toBeVisible();
    });
-   
+
    // Wait for disappearance
    await waitForElementToBeRemoved(() => screen.queryByText(/loading/i));
    ```
@@ -227,23 +243,26 @@ Located in `src/services/__tests__/`
 ### Debugging Tests
 
 1. **Use Playwright UI mode**
+
    ```bash
    npx playwright test --ui
    ```
 
 2. **Debug specific tests**
+
    ```bash
    npx playwright test --debug homepage.spec.ts
    ```
 
 3. **View test artifacts**
+
    ```bash
    # Screenshots on failure
    test-results/homepage-spec-ts-homepage-has-correct-title/screenshot.png
-   
+
    # Videos
    test-results/homepage-spec-ts-homepage-has-correct-title/video.webm
-   
+
    # Traces
    npx playwright show-trace trace.zip
    ```
@@ -307,8 +326,9 @@ jobs:
 ### Mocking
 
 1. **Mock external services**
+
    ```typescript
-   jest.mock('@/services/analytics', () => ({
+   jest.mock("@/services/analytics", () => ({
      trackEvent: jest.fn(),
    }));
    ```
@@ -319,13 +339,14 @@ jobs:
      Promise.resolve({
        ok: true,
        json: async () => ({ success: true }),
-     })
+     }),
    );
    ```
 
 ## Performance Testing
 
 Monitor these metrics:
+
 - First Contentful Paint (FCP) < 1.8s
 - Largest Contentful Paint (LCP) < 2.5s
 - First Input Delay (FID) < 100ms
@@ -335,11 +356,13 @@ Monitor these metrics:
 ## Accessibility Testing
 
 Ensure compliance with:
+
 - WCAG 2.1 Level AA
 - Section 508
 - ADA requirements
 
 Key areas:
+
 - Keyboard navigation
 - Screen reader compatibility
 - Color contrast ratios

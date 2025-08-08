@@ -56,6 +56,8 @@ import {
 } from './financial/FinancialReport';
 import { RevenueAnalytics } from './financial/RevenueAnalytics';
 import { UserProfile } from './UserProfile';
+import { AIInteraction } from './AIInteraction';
+import { AIFeedback } from './AIFeedback';
 
 // Load environment variables
 dotenv.config();
@@ -129,6 +131,8 @@ export { Template } from './cms/Template';
 
 // AI models
 export { UserProfile } from './UserProfile';
+export { AIInteraction } from './AIInteraction';
+export { AIFeedback } from './AIFeedback';
 
 // Define associations
 export function defineAssociations() {

@@ -37,8 +37,8 @@ export class ContentCategory extends Model<ContentCategoryAttributes, ContentCat
     seoDescription?: string;
     keywords?: string[];
   };
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Associations
   public readonly contents?: Content[];

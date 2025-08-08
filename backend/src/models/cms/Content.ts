@@ -66,8 +66,8 @@ export class Content extends Model<ContentAttributes, ContentCreationAttributes>
     showDate?: boolean;
     showReadingTime?: boolean;
   };
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Associations
   public readonly author?: User;

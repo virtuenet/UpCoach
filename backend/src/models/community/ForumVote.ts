@@ -15,7 +15,7 @@ export class ForumVote extends Model<ForumVoteAttributes, ForumVoteCreationAttri
   public userId!: string;
   public postId!: string;
   public voteType!: number;
-  public readonly createdAt!: Date;
+  declare readonly createdAt: Date;
 
   // Associations
   public readonly user?: any;

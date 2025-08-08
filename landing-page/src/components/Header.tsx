@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
+import Link from "next/link";
 import {
   SignInButton,
   SignUpButton,
   SignedIn,
   SignedOut,
   UserButton,
-} from '@clerk/nextjs';
+} from "@clerk/nextjs";
 
 export default function Header() {
   return (
@@ -19,27 +19,27 @@ export default function Header() {
               UpCoach
             </Link>
             <nav className="ml-10 hidden md:flex space-x-8">
-              <Link 
-                href="/features" 
+              <Link
+                href="/features"
                 className="text-gray-700 hover:text-blue-600 transition-colors"
               >
                 Features
               </Link>
-              <Link 
-                href="/pricing" 
+              <Link
+                href="/pricing"
                 className="text-gray-700 hover:text-blue-600 transition-colors"
               >
                 Pricing
               </Link>
-              <Link 
-                href="/about" 
+              <Link
+                href="/about"
                 className="text-gray-700 hover:text-blue-600 transition-colors"
               >
                 About
               </Link>
             </nav>
           </div>
-          
+
           <div className="flex items-center space-x-4">
             <SignedOut>
               <SignInButton mode="modal">
@@ -53,10 +53,10 @@ export default function Header() {
                 </button>
               </SignUpButton>
             </SignedOut>
-            
+
             <SignedIn>
-              <Link 
-                href="/dashboard" 
+              <Link
+                href="/dashboard"
                 className="text-gray-700 hover:text-blue-600 transition-colors"
               >
                 Dashboard
@@ -68,4 +68,4 @@ export default function Header() {
       </div>
     </header>
   );
-} 
+}

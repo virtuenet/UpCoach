@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Progress } from '../ui/progress';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
+import { Progress } from "../ui/progress";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   LineChart,
   Line,
@@ -17,13 +17,13 @@ import {
   Pie,
   Cell,
   AreaChart,
-  Area
-} from 'recharts';
-import { 
-  Brain, 
-  TrendingUp, 
-  Users, 
-  Target, 
+  Area,
+} from "recharts";
+import {
+  Brain,
+  TrendingUp,
+  Users,
+  Target,
   AlertTriangle,
   CheckCircle,
   Clock,
@@ -31,8 +31,8 @@ import {
   BarChart3,
   Download,
   Filter,
-  Search
-} from 'lucide-react';
+  Search,
+} from "lucide-react";
 
 /**
  * Coach Analytics Dashboard Component
@@ -97,13 +97,15 @@ interface CoachMemory {
 
 const CoachAnalyticsDashboard: React.FC = () => {
   const [analytics, setAnalytics] = useState<UserAnalytics[]>([]);
-  const [cohortMetrics, setCohortMetrics] = useState<CohortMetrics | null>(null);
+  const [cohortMetrics, setCohortMetrics] = useState<CohortMetrics | null>(
+    null,
+  );
   const [memories, setMemories] = useState<CoachMemory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedPeriod, setSelectedPeriod] = useState('weekly');
-  const [selectedCohort, setSelectedCohort] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedPeriod, setSelectedPeriod] = useState("weekly");
+  const [selectedCohort, setSelectedCohort] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -112,27 +114,30 @@ const CoachAnalyticsDashboard: React.FC = () => {
   const fetchAnalyticsData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch cohort analytics
-      const cohortResponse = await fetch(`/api/coach-intelligence/cohort-analytics?periodType=${selectedPeriod}`);
+      const cohortResponse = await fetch(
+        `/api/coach-intelligence/cohort-analytics?periodType=${selectedPeriod}`,
+      );
       const cohortData = await cohortResponse.json();
-      
+
       if (cohortData.success) {
         setCohortMetrics(cohortData.data.cohortMetrics);
         setAnalytics(cohortData.data.individualAnalytics);
       }
 
       // Fetch recent memories sample
-      const memoriesResponse = await fetch('/api/coach-intelligence/memories/recent?limit=50');
+      const memoriesResponse = await fetch(
+        "/api/coach-intelligence/memories/recent?limit=50",
+      );
       const memoriesData = await memoriesResponse.json();
-      
+
       if (memoriesData.success) {
         setMemories(memoriesData.data.memories);
       }
-
     } catch (err) {
-      setError('Failed to fetch analytics data');
-      console.error('Analytics fetch error:', err);
+      setError("Failed to fetch analytics data");
+      console.error("Analytics fetch error:", err);
     } finally {
       setLoading(false);
     }
@@ -140,67 +145,84 @@ const CoachAnalyticsDashboard: React.FC = () => {
 
   const generateReport = async () => {
     try {
-      const response = await fetch('/api/coach-intelligence/reports/cohort', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ period: selectedPeriod, cohort: selectedCohort }),
+      const response = await fetch("/api/coach-intelligence/reports/cohort", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          period: selectedPeriod,
+          cohort: selectedCohort,
+        }),
       });
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = `coach-analytics-report-${new Date().toISOString().split('T')[0]}.pdf`;
+      a.download = `coach-analytics-report-${new Date().toISOString().split("T")[0]}.pdf`;
       a.click();
     } catch (err) {
-      console.error('Report generation error:', err);
+      console.error("Report generation error:", err);
     }
   };
 
   const getHealthScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 80) return "text-green-600";
+    if (score >= 60) return "text-yellow-600";
+    return "text-red-600";
   };
 
   const getRiskBadgeColor = (risk: number) => {
-    if (risk < 0.3) return 'bg-green-100 text-green-800';
-    if (risk < 0.7) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-red-100 text-red-800';
+    if (risk < 0.3) return "bg-green-100 text-green-800";
+    if (risk < 0.7) return "bg-yellow-100 text-yellow-800";
+    return "bg-red-100 text-red-800";
   };
 
   // Prepare chart data
-  const engagementData = analytics.map(a => ({
+  const engagementData = analytics.map((a) => ({
     name: `User ${a.userId.slice(-4)}`,
     sessions: a.engagementMetrics.totalSessions,
     duration: a.engagementMetrics.averageSessionDuration,
     participation: Math.round(a.engagementMetrics.participationScore * 100),
   }));
 
-  const satisfactionData = analytics.map(a => ({
+  const satisfactionData = analytics.map((a) => ({
     name: `User ${a.userId.slice(-4)}`,
     satisfaction: a.kpiMetrics.userSatisfactionScore,
     completion: Math.round(a.coachingMetrics.goalCompletionRate * 100),
   }));
 
   const progressData = [
-    { name: 'Skill Improvement', value: Math.round((cohortMetrics?.averageEngagement || 0) * 100) },
-    { name: 'Goal Completion', value: Math.round((cohortMetrics?.averageGoalCompletion || 0) * 100) },
-    { name: 'User Satisfaction', value: Math.round((cohortMetrics?.averageSatisfaction || 0) * 10) },
+    {
+      name: "Skill Improvement",
+      value: Math.round((cohortMetrics?.averageEngagement || 0) * 100),
+    },
+    {
+      name: "Goal Completion",
+      value: Math.round((cohortMetrics?.averageGoalCompletion || 0) * 100),
+    },
+    {
+      name: "User Satisfaction",
+      value: Math.round((cohortMetrics?.averageSatisfaction || 0) * 10),
+    },
   ];
 
-  const moodDistribution = memories.reduce((acc, memory) => {
-    const mood = memory.emotionalContext.mood;
-    acc[mood] = (acc[mood] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const moodDistribution = memories.reduce(
+    (acc, memory) => {
+      const mood = memory.emotionalContext.mood;
+      acc[mood] = (acc[mood] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
-  const moodChartData = Object.entries(moodDistribution).map(([mood, count]) => ({
-    name: mood,
-    value: count,
-  }));
+  const moodChartData = Object.entries(moodDistribution).map(
+    ([mood, count]) => ({
+      name: mood,
+      value: count,
+    }),
+  );
 
-  const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#ff0066'];
+  const colors = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#ff0066"];
 
   if (loading) {
     return (
@@ -226,33 +248,40 @@ const CoachAnalyticsDashboard: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Coach Intelligence Analytics</h1>
-          <p className="text-gray-600 mt-1">Comprehensive coaching performance and user engagement insights</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Coach Intelligence Analytics
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Comprehensive coaching performance and user engagement insights
+          </p>
         </div>
-        
+
         <div className="flex space-x-4">
           <div className="flex space-x-2">
             <Button
-              variant={selectedPeriod === 'weekly' ? 'default' : 'outline'}
-              onClick={() => setSelectedPeriod('weekly')}
+              variant={selectedPeriod === "weekly" ? "default" : "outline"}
+              onClick={() => setSelectedPeriod("weekly")}
             >
               Weekly
             </Button>
             <Button
-              variant={selectedPeriod === 'monthly' ? 'default' : 'outline'}
-              onClick={() => setSelectedPeriod('monthly')}
+              variant={selectedPeriod === "monthly" ? "default" : "outline"}
+              onClick={() => setSelectedPeriod("monthly")}
             >
               Monthly
             </Button>
             <Button
-              variant={selectedPeriod === 'quarterly' ? 'default' : 'outline'}
-              onClick={() => setSelectedPeriod('quarterly')}
+              variant={selectedPeriod === "quarterly" ? "default" : "outline"}
+              onClick={() => setSelectedPeriod("quarterly")}
             >
               Quarterly
             </Button>
           </div>
-          
-          <Button onClick={generateReport} className="flex items-center space-x-2">
+
+          <Button
+            onClick={generateReport}
+            className="flex items-center space-x-2"
+          >
             <Download className="w-4 h-4" />
             <span>Export Report</span>
           </Button>
@@ -264,11 +293,15 @@ const CoachAnalyticsDashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Active Users</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Active Users
+              </CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{cohortMetrics.totalUsers}</div>
+              <div className="text-2xl font-bold">
+                {cohortMetrics.totalUsers}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Active in selected period
               </p>
@@ -277,7 +310,9 @@ const CoachAnalyticsDashboard: React.FC = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avg Engagement</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Avg Engagement
+              </CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -292,7 +327,9 @@ const CoachAnalyticsDashboard: React.FC = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Goal Completion</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Goal Completion
+              </CardTitle>
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -307,11 +344,15 @@ const CoachAnalyticsDashboard: React.FC = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">At Risk Users</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                At Risk Users
+              </CardTitle>
               <AlertTriangle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{cohortMetrics.churnRisk}</div>
+              <div className="text-2xl font-bold text-red-600">
+                {cohortMetrics.churnRisk}
+              </div>
               <p className="text-xs text-muted-foreground">
                 High churn risk detected
               </p>
@@ -338,7 +379,11 @@ const CoachAnalyticsDashboard: React.FC = () => {
                 <YAxis />
                 <Tooltip />
                 <Bar dataKey="sessions" fill="#8884d8" name="Sessions" />
-                <Bar dataKey="participation" fill="#82ca9d" name="Participation %" />
+                <Bar
+                  dataKey="participation"
+                  fill="#82ca9d"
+                  name="Participation %"
+                />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -359,8 +404,18 @@ const CoachAnalyticsDashboard: React.FC = () => {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Line type="monotone" dataKey="satisfaction" stroke="#8884d8" name="Satisfaction" />
-                <Line type="monotone" dataKey="completion" stroke="#82ca9d" name="Completion %" />
+                <Line
+                  type="monotone"
+                  dataKey="satisfaction"
+                  stroke="#8884d8"
+                  name="Satisfaction"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="completion"
+                  stroke="#82ca9d"
+                  name="Completion %"
+                />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -381,7 +436,12 @@ const CoachAnalyticsDashboard: React.FC = () => {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Area type="monotone" dataKey="value" stroke="#8884d8" fill="#8884d8" />
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#8884d8"
+                  fill="#8884d8"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
@@ -403,13 +463,18 @@ const CoachAnalyticsDashboard: React.FC = () => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) =>
+                    `${name} ${(percent * 100).toFixed(0)}%`
+                  }
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
                 >
                   {moodChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={colors[index % colors.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -431,12 +496,17 @@ const CoachAnalyticsDashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {cohortMetrics.topStrengthAreas.slice(0, 5).map((area, index) => (
-                  <div key={index} className="flex justify-between items-center">
-                    <span className="text-sm">{area.item}</span>
-                    <Badge variant="outline">{area.count} users</Badge>
-                  </div>
-                ))}
+                {cohortMetrics.topStrengthAreas
+                  .slice(0, 5)
+                  .map((area, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center"
+                    >
+                      <span className="text-sm">{area.item}</span>
+                      <Badge variant="outline">{area.count} users</Badge>
+                    </div>
+                  ))}
               </div>
             </CardContent>
           </Card>
@@ -450,12 +520,17 @@ const CoachAnalyticsDashboard: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {cohortMetrics.topImprovementAreas.slice(0, 5).map((area, index) => (
-                  <div key={index} className="flex justify-between items-center">
-                    <span className="text-sm">{area.item}</span>
-                    <Badge variant="outline">{area.count} users</Badge>
-                  </div>
-                ))}
+                {cohortMetrics.topImprovementAreas
+                  .slice(0, 5)
+                  .map((area, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center"
+                    >
+                      <span className="text-sm">{area.item}</span>
+                      <Badge variant="outline">{area.count} users</Badge>
+                    </div>
+                  ))}
               </div>
             </CardContent>
           </Card>
@@ -497,44 +572,58 @@ const CoachAnalyticsDashboard: React.FC = () => {
               </thead>
               <tbody>
                 {analytics
-                  .filter(a => !searchTerm || a.userId.includes(searchTerm))
+                  .filter((a) => !searchTerm || a.userId.includes(searchTerm))
                   .slice(0, 10)
                   .map((user) => {
                     const healthScore = Math.round(
-                      (user.engagementMetrics.participationScore +
-                       user.coachingMetrics.goalCompletionRate +
-                       user.kpiMetrics.userSatisfactionScore / 10) / 3 * 100
+                      ((user.engagementMetrics.participationScore +
+                        user.coachingMetrics.goalCompletionRate +
+                        user.kpiMetrics.userSatisfactionScore / 10) /
+                        3) *
+                        100,
                     );
-                    
+
                     return (
                       <tr key={user.id} className="border-b hover:bg-gray-50">
                         <td className="p-2 font-mono text-sm">
                           {user.userId.slice(-8)}
                         </td>
                         <td className="p-2">
-                          <span className={`font-semibold ${getHealthScoreColor(healthScore)}`}>
+                          <span
+                            className={`font-semibold ${getHealthScoreColor(healthScore)}`}
+                          >
                             {healthScore}%
                           </span>
                         </td>
                         <td className="p-2">
                           <div className="flex items-center space-x-2">
                             <Progress
-                              value={user.engagementMetrics.participationScore * 100}
+                              value={
+                                user.engagementMetrics.participationScore * 100
+                              }
                               className="w-16"
                             />
                             <span className="text-sm">
-                              {Math.round(user.engagementMetrics.participationScore * 100)}%
+                              {Math.round(
+                                user.engagementMetrics.participationScore * 100,
+                              )}
+                              %
                             </span>
                           </div>
                         </td>
                         <td className="p-2">
                           <div className="flex items-center space-x-2">
                             <Progress
-                              value={user.coachingMetrics.goalCompletionRate * 100}
+                              value={
+                                user.coachingMetrics.goalCompletionRate * 100
+                              }
                               className="w-16"
                             />
                             <span className="text-sm">
-                              {Math.round(user.coachingMetrics.goalCompletionRate * 100)}%
+                              {Math.round(
+                                user.coachingMetrics.goalCompletionRate * 100,
+                              )}
+                              %
                             </span>
                           </div>
                         </td>
@@ -545,19 +634,30 @@ const CoachAnalyticsDashboard: React.FC = () => {
                         </td>
                         <td className="p-2">
                           <Badge
-                            className={getRiskBadgeColor(user.kpiMetrics.churnRisk)}
+                            className={getRiskBadgeColor(
+                              user.kpiMetrics.churnRisk,
+                            )}
                           >
-                            {user.kpiMetrics.churnRisk < 0.3 ? 'Low' : 
-                             user.kpiMetrics.churnRisk < 0.7 ? 'Medium' : 'High'}
+                            {user.kpiMetrics.churnRisk < 0.3
+                              ? "Low"
+                              : user.kpiMetrics.churnRisk < 0.7
+                                ? "Medium"
+                                : "High"}
                           </Badge>
                         </td>
                         <td className="p-2">
                           <div className="flex flex-wrap gap-1">
-                            {user.aiInsights.strengthAreas.slice(0, 2).map((strength, idx) => (
-                              <Badge key={idx} variant="outline" className="text-xs">
-                                {strength}
-                              </Badge>
-                            ))}
+                            {user.aiInsights.strengthAreas
+                              .slice(0, 2)
+                              .map((strength, idx) => (
+                                <Badge
+                                  key={idx}
+                                  variant="outline"
+                                  className="text-xs"
+                                >
+                                  {strength}
+                                </Badge>
+                              ))}
                           </div>
                         </td>
                       </tr>
@@ -580,7 +680,10 @@ const CoachAnalyticsDashboard: React.FC = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {memories.slice(0, 6).map((memory) => (
-              <div key={memory.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div
+                key={memory.id}
+                className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+              >
                 <div className="flex items-center justify-between mb-2">
                   <Badge variant="outline">{memory.memoryType}</Badge>
                   <span className="text-xs text-gray-500">
@@ -597,11 +700,11 @@ const CoachAnalyticsDashboard: React.FC = () => {
                   <Badge
                     variant="outline"
                     className={
-                      memory.emotionalContext.sentiment > 0 
-                        ? 'text-green-600 border-green-300'
+                      memory.emotionalContext.sentiment > 0
+                        ? "text-green-600 border-green-300"
                         : memory.emotionalContext.sentiment < 0
-                        ? 'text-red-600 border-red-300'
-                        : 'text-gray-600'
+                          ? "text-red-600 border-red-300"
+                          : "text-gray-600"
                     }
                   >
                     {memory.emotionalContext.mood}
@@ -623,4 +726,4 @@ const CoachAnalyticsDashboard: React.FC = () => {
   );
 };
 
-export default CoachAnalyticsDashboard; 
+export default CoachAnalyticsDashboard;

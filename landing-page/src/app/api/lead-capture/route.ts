@@ -1,16 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 // In a real application, you would save this to a database
 // For now, we'll just log it and return success
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // Validate required fields
     if (!body.name || !body.email) {
       return NextResponse.json(
-        { error: 'Name and email are required' },
-        { status: 400 }
+        { error: "Name and email are required" },
+        { status: 400 },
       );
     }
 
@@ -18,8 +18,8 @@ export async function POST(request: NextRequest) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(body.email)) {
       return NextResponse.json(
-        { error: 'Invalid email format' },
-        { status: 400 }
+        { error: "Invalid email format" },
+        { status: 400 },
       );
     }
 
@@ -30,28 +30,28 @@ export async function POST(request: NextRequest) {
     // 4. Send confirmation email
 
     // Log for development
-    console.log('New lead captured:', {
+    console.log("New lead captured:", {
       ...body,
-      capturedAt: new Date().toISOString()
+      capturedAt: new Date().toISOString(),
     });
 
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Return success response
     return NextResponse.json({
       success: true,
-      message: 'Lead captured successfully',
+      message: "Lead captured successfully",
       data: {
         id: Math.random().toString(36).substr(2, 9),
-        ...body
-      }
+        ...body,
+      },
     });
   } catch (error) {
-    console.error('Lead capture error:', error);
+    console.error("Lead capture error:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

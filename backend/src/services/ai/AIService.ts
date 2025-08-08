@@ -5,6 +5,9 @@ import { logger } from '../../utils/logger';
 import { PromptEngineering } from './PromptEngineering';
 import { ContextManager } from './ContextManager';
 import { PersonalityEngine } from './PersonalityEngine';
+import { CircuitBreaker } from './CircuitBreaker';
+import { RetryMechanism } from './RetryMechanism';
+import { CacheService, cache } from './CacheService';
 
 export interface AIMessage {
   role: 'system' | 'user' | 'assistant';
@@ -31,6 +34,8 @@ export interface AIOptions {
   provider?: 'openai' | 'claude';
   personality?: string;
   context?: any;
+  useCache?: boolean;
+  cacheTTL?: number;
 }
 
 export class AIService {
@@ -39,6 +44,15 @@ export class AIService {
   private promptEngine: PromptEngineering;
   private contextManager: ContextManager;
   private personalityEngine: PersonalityEngine;
+  private circuitBreaker: CircuitBreaker;
+  private retry: RetryMechanism;
+  private metrics = {
+    totalRequests: 0,
+    totalErrors: 0,
+    totalResponseTime: 0,
+    cacheHits: 0,
+    cacheMisses: 0
+  };
 
   constructor() {
     // Initialize OpenAI
@@ -55,6 +69,16 @@ export class AIService {
     this.promptEngine = new PromptEngineering();
     this.contextManager = new ContextManager();
     this.personalityEngine = new PersonalityEngine();
+    
+    // Initialize resilience components
+    this.circuitBreaker = new CircuitBreaker({
+      failureThreshold: 5,
+      resetTimeout: 60000,
+      monitoringPeriod: 60000,
+      halfOpenRetries: 3
+    });
+    
+    this.retry = new RetryMechanism();
   }
 
   async generateResponse(
@@ -67,10 +91,31 @@ export class AIService {
       temperature = 0.7,
       maxTokens = 1000,
       personality = 'default',
-      context = {}
+      context = {},
+      useCache = true,
+      cacheTTL = 300
     } = options;
 
+    const startTime = Date.now();
+    this.metrics.totalRequests++;
+
     try {
+      // Generate cache key
+      const cacheKey = CacheService.createKey(messages, options);
+      
+      // Check cache if enabled
+      if (useCache) {
+        const cached = await cache.get<AIResponse>(cacheKey, {
+          namespace: 'ai-responses',
+          ttl: cacheTTL
+        });
+        
+        if (cached) {
+          this.metrics.cacheHits++;
+          return cached;
+        }
+        this.metrics.cacheMisses++;
+      }
       // Apply personality to system prompt
       const systemPrompt = this.personalityEngine.getSystemPrompt(personality);
       
@@ -78,11 +123,14 @@ export class AIService {
       const enrichedMessages = await this.contextManager.enrichMessages(messages, context);
       
       // Apply prompt engineering
-      const optimizedMessages = this.promptEngine.optimizeMessages(enrichedMessages, {
+      const engineeredMessages = this.promptEngine.optimizeMessages(enrichedMessages, {
         personality,
         context,
         provider
       });
+      
+      // Optimize token usage
+      const optimizedMessages = this.optimizeTokenUsage(engineeredMessages);
 
       // Add system prompt if not present
       if (!optimizedMessages.find(m => m.role === 'system')) {
@@ -92,12 +140,37 @@ export class AIService {
         });
       }
 
-      if (provider === 'openai') {
-        return await this.generateOpenAIResponse(optimizedMessages, { model, temperature, maxTokens });
-      } else {
-        return await this.generateClaudeResponse(optimizedMessages, { model, temperature, maxTokens });
+      // Execute with circuit breaker and retry
+      const response = await this.circuitBreaker.execute(async () => {
+        return await this.retry.execute(async () => {
+          if (provider === 'openai') {
+            return await this.generateOpenAIResponse(optimizedMessages, { model, temperature, maxTokens });
+          } else {
+            return await this.generateClaudeResponse(optimizedMessages, { model, temperature, maxTokens });
+          }
+        }, {
+          maxRetries: 3,
+          onRetry: (error, attempt) => {
+            logger.warn(`AI request retry attempt ${attempt}:`, error.message);
+          }
+        });
+      });
+      
+      // Track metrics
+      const responseTime = Date.now() - startTime;
+      this.metrics.totalResponseTime += responseTime;
+      
+      // Cache successful response
+      if (useCache) {
+        await cache.set(cacheKey, response, {
+          namespace: 'ai-responses',
+          ttl: cacheTTL
+        });
       }
+      
+      return response;
     } catch (error) {
+      this.metrics.totalErrors++;
       logger.error('AI Service error:', error);
       throw new Error(`Failed to generate AI response: ${error.message}`);
     }
@@ -284,6 +357,87 @@ export class AIService {
     } catch (error) {
       logger.error('Failed to create initial AI session:', error);
     }
+  }
+  
+  // Token optimization
+  private optimizeTokenUsage(messages: AIMessage[], maxTokens: number = 8000): AIMessage[] {
+    let totalLength = 0;
+    const optimized: AIMessage[] = [];
+    
+    // Start from the most recent messages
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const messageLength = messages[i].content.length;
+      if (totalLength + messageLength > maxTokens && optimized.length > 0) {
+        break;
+      }
+      optimized.unshift(messages[i]);
+      totalLength += messageLength;
+    }
+    
+    // If a message had to be truncated
+    if (optimized.length > 0 && optimized[0].content.length > maxTokens) {
+      optimized[0] = {
+        ...optimized[0],
+        content: optimized[0].content.substring(0, maxTokens)
+      };
+    }
+    
+    return optimized;
+  }
+  
+  // Get performance metrics
+  getMetrics() {
+    const totalRequests = this.metrics.totalRequests || 1; // Avoid division by zero
+    return {
+      totalRequests: this.metrics.totalRequests,
+      totalErrors: this.metrics.totalErrors,
+      averageResponseTime: this.metrics.totalResponseTime / totalRequests,
+      errorRate: this.metrics.totalErrors / totalRequests,
+      cacheHitRate: this.metrics.cacheHits / (this.metrics.cacheHits + this.metrics.cacheMisses || 1),
+      circuitBreakerState: this.circuitBreaker.getState(),
+      cacheStats: cache.getStats()
+    };
+  }
+  
+  // Clear cache
+  async clearCache(namespace?: string): Promise<void> {
+    await cache.clear(namespace || 'ai-responses');
+  }
+  
+  // Health check
+  async healthCheck(): Promise<{
+    openai: boolean;
+    claude: boolean;
+    cache: boolean;
+    circuitBreaker: string;
+  }> {
+    const health = {
+      openai: false,
+      claude: false,
+      cache: false,
+      circuitBreaker: this.circuitBreaker.getState()
+    };
+    
+    // Test OpenAI
+    try {
+      await this.openai.models.list();
+      health.openai = true;
+    } catch (error) {
+      logger.error('OpenAI health check failed:', error);
+    }
+    
+    // Test Claude
+    try {
+      // Claude doesn't have a simple health check endpoint
+      health.claude = !!this.anthropic;
+    } catch (error) {
+      logger.error('Claude health check failed:', error);
+    }
+    
+    // Test cache
+    health.cache = cache.getStats().redisConnected || cache.getStats().inMemorySize >= 0;
+    
+    return health;
   }
 }
 

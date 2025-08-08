@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -12,7 +12,9 @@ const MAX_REQUESTS_PER_WINDOW = 3;
 function cleanupRateLimits() {
   const now = Date.now();
   for (const [email, timestamps] of emailRateLimits.entries()) {
-    const validTimestamps = timestamps.filter(ts => now - ts < RATE_LIMIT_WINDOW);
+    const validTimestamps = timestamps.filter(
+      (ts) => now - ts < RATE_LIMIT_WINDOW,
+    );
     if (validTimestamps.length === 0) {
       emailRateLimits.delete(email);
     } else {
@@ -24,15 +26,17 @@ function cleanupRateLimits() {
 // Check rate limit
 function checkRateLimit(email: string): boolean {
   cleanupRateLimits();
-  
+
   const now = Date.now();
   const timestamps = emailRateLimits.get(email) || [];
-  const recentTimestamps = timestamps.filter(ts => now - ts < RATE_LIMIT_WINDOW);
-  
+  const recentTimestamps = timestamps.filter(
+    (ts) => now - ts < RATE_LIMIT_WINDOW,
+  );
+
   if (recentTimestamps.length >= MAX_REQUESTS_PER_WINDOW) {
     return false;
   }
-  
+
   emailRateLimits.set(email, [...recentTimestamps, now]);
   return true;
 }
@@ -43,10 +47,10 @@ export async function POST(request: NextRequest) {
     const { email } = body;
 
     // Validate email
-    if (!email || typeof email !== 'string') {
+    if (!email || typeof email !== "string") {
       return NextResponse.json(
-        { success: false, message: 'Email is required' },
-        { status: 400 }
+        { success: false, message: "Email is required" },
+        { status: 400 },
       );
     }
 
@@ -54,16 +58,19 @@ export async function POST(request: NextRequest) {
 
     if (!EMAIL_REGEX.test(trimmedEmail)) {
       return NextResponse.json(
-        { success: false, message: 'Invalid email format' },
-        { status: 400 }
+        { success: false, message: "Invalid email format" },
+        { status: 400 },
       );
     }
 
     // Check rate limit
     if (!checkRateLimit(trimmedEmail)) {
       return NextResponse.json(
-        { success: false, message: 'Too many requests. Please try again later.' },
-        { status: 429 }
+        {
+          success: false,
+          message: "Too many requests. Please try again later.",
+        },
+        { status: 429 },
       );
     }
 
@@ -77,32 +84,28 @@ export async function POST(request: NextRequest) {
     console.log(`Newsletter signup: ${trimmedEmail}`);
 
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     // Return success response
     return NextResponse.json({
       success: true,
-      message: 'Successfully subscribed to newsletter',
+      message: "Successfully subscribed to newsletter",
       data: {
         email: trimmedEmail,
         subscribedAt: new Date().toISOString(),
-      }
+      },
     });
-
   } catch (error) {
-    console.error('Newsletter signup error:', error);
-    
+    console.error("Newsletter signup error:", error);
+
     return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
+      { success: false, message: "Internal server error" },
+      { status: 500 },
     );
   }
 }
 
 // Handle other methods
 export async function GET() {
-  return NextResponse.json(
-    { message: 'Method not allowed' },
-    { status: 405 }
-  );
+  return NextResponse.json({ message: "Method not allowed" }, { status: 405 });
 }

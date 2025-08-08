@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Card,
@@ -18,7 +18,7 @@ import {
   Paper,
   Alert,
   Button,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Psychology as PsychologyIcon,
   TrendingUp as TrendingUpIcon,
@@ -28,7 +28,7 @@ import {
   Speed as SpeedIcon,
   AttachMoney as MoneyIcon,
   Refresh as RefreshIcon,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 import {
   LineChart,
   Line,
@@ -45,11 +45,11 @@ import {
   Tooltip as ChartTooltip,
   Legend,
   ResponsiveContainer,
-} from 'recharts';
-import { format } from 'date-fns';
-import api from '../services/api';
-import PageHeader from '../components/PageHeader';
-import StatCard from '../components/StatCard';
+} from "recharts";
+import { format } from "date-fns";
+import api from "../services/api";
+import PageHeader from "../components/PageHeader";
+import StatCard from "../components/StatCard";
 
 interface AIMetrics {
   totalInteractions: number;
@@ -84,7 +84,7 @@ const AIAnalytics: React.FC = () => {
   const [interactions, setInteractions] = useState<AIInteraction[]>([]);
   const [usageData, setUsageData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState('week');
+  const [dateRange, setDateRange] = useState("week");
 
   useEffect(() => {
     fetchAIData();
@@ -103,34 +103,34 @@ const AIAnalytics: React.FC = () => {
       setInteractions(interactionsRes.data);
       setUsageData(usageRes.data);
     } catch (error) {
-      console.error('Failed to fetch AI data:', error);
+      console.error("Failed to fetch AI data:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const COLORS = ['#3f51b5', '#9c27b0', '#f44336', '#ff9800', '#4caf50'];
+  const COLORS = ["#3f51b5", "#9c27b0", "#f44336", "#ff9800", "#4caf50"];
 
   const sentimentColors = {
-    positive: '#4caf50',
-    neutral: '#ff9800',
-    negative: '#f44336',
+    positive: "#4caf50",
+    neutral: "#ff9800",
+    negative: "#f44336",
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(value);
   };
 
   const formatNumber = (value: number) => {
-    return new Intl.NumberFormat('en-US').format(value);
+    return new Intl.NumberFormat("en-US").format(value);
   };
 
   if (loading) {
     return (
-      <Box sx={{ width: '100%', mt: 4 }}>
+      <Box sx={{ width: "100%", mt: 4 }}>
         <LinearProgress />
       </Box>
     );
@@ -199,9 +199,9 @@ const AIAnalytics: React.FC = () => {
               <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={usageData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="date" 
-                    tickFormatter={(date) => format(new Date(date), 'MMM dd')}
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={(date) => format(new Date(date), "MMM dd")}
                   />
                   <YAxis />
                   <ChartTooltip />
@@ -246,13 +246,21 @@ const AIAnalytics: React.FC = () => {
                 <PieChart>
                   <Pie
                     data={[
-                      { name: 'OpenAI GPT-4', value: metrics?.modelUsage.openai || 0 },
-                      { name: 'Claude 3', value: metrics?.modelUsage.claude || 0 },
+                      {
+                        name: "OpenAI GPT-4",
+                        value: metrics?.modelUsage.openai || 0,
+                      },
+                      {
+                        name: "Claude 3",
+                        value: metrics?.modelUsage.claude || 0,
+                      },
                     ]}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) =>
+                      `${name} ${(percent * 100).toFixed(0)}%`
+                    }
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
@@ -277,7 +285,7 @@ const AIAnalytics: React.FC = () => {
                 User Satisfaction Rate
               </Typography>
               <Box sx={{ mt: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                   <Box sx={{ flex: 1, mr: 2 }}>
                     <LinearProgress
                       variant="determinate"
@@ -305,12 +313,14 @@ const AIAnalytics: React.FC = () => {
                 Response Time Distribution
               </Typography>
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={[
-                  { range: '<1s', count: 45 },
-                  { range: '1-2s', count: 35 },
-                  { range: '2-3s', count: 15 },
-                  { range: '>3s', count: 5 },
-                ]}>
+                <BarChart
+                  data={[
+                    { range: "<1s", count: 45 },
+                    { range: "1-2s", count: 35 },
+                    { range: "2-3s", count: 15 },
+                    { range: ">3s", count: 5 },
+                  ]}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="range" />
                   <YAxis />
@@ -351,26 +361,34 @@ const AIAnalytics: React.FC = () => {
                         label={interaction.type}
                         size="small"
                         color={
-                          interaction.type === 'conversation' ? 'primary' :
-                          interaction.type === 'voice' ? 'secondary' : 'default'
+                          interaction.type === "conversation"
+                            ? "primary"
+                            : interaction.type === "voice"
+                              ? "secondary"
+                              : "default"
                         }
                       />
                     </TableCell>
                     <TableCell>{interaction.model}</TableCell>
                     <TableCell align="center">{interaction.tokens}</TableCell>
-                    <TableCell align="center">{interaction.responseTime}s</TableCell>
+                    <TableCell align="center">
+                      {interaction.responseTime}s
+                    </TableCell>
                     <TableCell align="center">
                       <Chip
                         label={interaction.sentiment}
                         size="small"
                         style={{
-                          backgroundColor: sentimentColors[interaction.sentiment as keyof typeof sentimentColors],
-                          color: 'white',
+                          backgroundColor:
+                            sentimentColors[
+                              interaction.sentiment as keyof typeof sentimentColors
+                            ],
+                          color: "white",
                         }}
                       />
                     </TableCell>
                     <TableCell>
-                      {format(new Date(interaction.createdAt), 'MMM dd, HH:mm')}
+                      {format(new Date(interaction.createdAt), "MMM dd, HH:mm")}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -389,7 +407,7 @@ const AIAnalytics: React.FC = () => {
             </Typography>
             <Grid container spacing={3} sx={{ mt: 1 }}>
               <Grid item xs={12} md={4}>
-                <Box sx={{ textAlign: 'center' }}>
+                <Box sx={{ textAlign: "center" }}>
                   <Typography variant="h3" color="primary">
                     {formatNumber(metrics?.tokenUsage.total || 0)}
                   </Typography>
@@ -399,7 +417,7 @@ const AIAnalytics: React.FC = () => {
                 </Box>
               </Grid>
               <Grid item xs={12} md={4}>
-                <Box sx={{ textAlign: 'center' }}>
+                <Box sx={{ textAlign: "center" }}>
                   <Typography variant="h3" color="secondary">
                     {formatCurrency(metrics?.tokenUsage.cost || 0)}
                   </Typography>
@@ -409,9 +427,13 @@ const AIAnalytics: React.FC = () => {
                 </Box>
               </Grid>
               <Grid item xs={12} md={4}>
-                <Box sx={{ textAlign: 'center' }}>
+                <Box sx={{ textAlign: "center" }}>
                   <Typography variant="h3" color="success.main">
-                    ${((metrics?.tokenUsage.cost || 0) / (metrics?.activeUsers || 1)).toFixed(2)}
+                    $
+                    {(
+                      (metrics?.tokenUsage.cost || 0) /
+                      (metrics?.activeUsers || 1)
+                    ).toFixed(2)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Cost per Active User

@@ -1,73 +1,73 @@
-import { useState, useEffect } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Save, AlertTriangle } from 'lucide-react'
-import { settingsApi } from '../api/settings'
-import LoadingSpinner from '../components/LoadingSpinner'
-import toast from 'react-hot-toast'
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Save, AlertTriangle } from "lucide-react";
+import { settingsApi } from "../api/settings";
+import LoadingSpinner from "../components/LoadingSpinner";
+import toast from "react-hot-toast";
 
 interface SystemSettings {
-  siteName: string
-  supportEmail: string
+  siteName: string;
+  supportEmail: string;
   maxUsersPerPlan: {
-    free: number
-    pro: number
-    team: number
-    enterprise: number
-  }
-  aiModel: string
-  aiTemperature: number
-  aiMaxTokens: number
-  maintenanceMode: boolean
-  registrationEnabled: boolean
-  emailNotificationsEnabled: boolean
+    free: number;
+    pro: number;
+    team: number;
+    enterprise: number;
+  };
+  aiModel: string;
+  aiTemperature: number;
+  aiMaxTokens: number;
+  maintenanceMode: boolean;
+  registrationEnabled: boolean;
+  emailNotificationsEnabled: boolean;
 }
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('general')
-  const queryClient = useQueryClient()
+  const [activeTab, setActiveTab] = useState("general");
+  const queryClient = useQueryClient();
 
   const { data: settings, isLoading } = useQuery({
-    queryKey: ['system-settings'],
+    queryKey: ["system-settings"],
     queryFn: settingsApi.getSettings,
-  })
+  });
 
   const updateSettingsMutation = useMutation({
     mutationFn: settingsApi.updateSettings,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['system-settings'] })
-      toast.success('Settings updated successfully')
+      queryClient.invalidateQueries({ queryKey: ["system-settings"] });
+      toast.success("Settings updated successfully");
     },
     onError: () => {
-      toast.error('Failed to update settings')
+      toast.error("Failed to update settings");
     },
-  })
+  });
 
-  const [formData, setFormData] = useState<Partial<SystemSettings>>({})
+  const [formData, setFormData] = useState<Partial<SystemSettings>>({});
 
   useEffect(() => {
     if (settings) {
-      setFormData(settings)
+      setFormData(settings);
     }
-  }, [settings])
+  }, [settings]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    updateSettingsMutation.mutate(formData)
-  }
+    e.preventDefault();
+    updateSettingsMutation.mutate(formData);
+  };
 
   const tabs = [
-    { id: 'general', name: 'General' },
-    { id: 'ai', name: 'AI Configuration' },
-    { id: 'limits', name: 'User Limits' },
-    { id: 'maintenance', name: 'Maintenance' },
-  ]
+    { id: "general", name: "General" },
+    { id: "ai", name: "AI Configuration" },
+    { id: "limits", name: "User Limits" },
+    { id: "maintenance", name: "Maintenance" },
+  ];
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner size="lg" />
       </div>
-    )
+    );
   }
 
   return (
@@ -89,8 +89,8 @@ export default function SettingsPage() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`py-4 px-1 border-b-2 font-medium text-sm ${
                   activeTab === tab.id
-                    ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? "border-primary-500 text-primary-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
               >
                 {tab.name}
@@ -101,7 +101,7 @@ export default function SettingsPage() {
 
         <form onSubmit={handleSubmit} className="p-6">
           {/* General Settings */}
-          {activeTab === 'general' && (
+          {activeTab === "general" && (
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -109,8 +109,10 @@ export default function SettingsPage() {
                 </label>
                 <input
                   type="text"
-                  value={formData.siteName || ''}
-                  onChange={(e) => setFormData({ ...formData, siteName: e.target.value })}
+                  value={formData.siteName || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, siteName: e.target.value })
+                  }
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 />
               </div>
@@ -120,8 +122,10 @@ export default function SettingsPage() {
                 </label>
                 <input
                   type="email"
-                  value={formData.supportEmail || ''}
-                  onChange={(e) => setFormData({ ...formData, supportEmail: e.target.value })}
+                  value={formData.supportEmail || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, supportEmail: e.target.value })
+                  }
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 />
               </div>
@@ -129,7 +133,12 @@ export default function SettingsPage() {
                 <input
                   type="checkbox"
                   checked={formData.registrationEnabled || false}
-                  onChange={(e) => setFormData({ ...formData, registrationEnabled: e.target.checked })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      registrationEnabled: e.target.checked,
+                    })
+                  }
                   className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 />
                 <label className="ml-2 block text-sm text-gray-900">
@@ -140,7 +149,12 @@ export default function SettingsPage() {
                 <input
                   type="checkbox"
                   checked={formData.emailNotificationsEnabled || false}
-                  onChange={(e) => setFormData({ ...formData, emailNotificationsEnabled: e.target.checked })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      emailNotificationsEnabled: e.target.checked,
+                    })
+                  }
                   className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 />
                 <label className="ml-2 block text-sm text-gray-900">
@@ -151,15 +165,17 @@ export default function SettingsPage() {
           )}
 
           {/* AI Configuration */}
-          {activeTab === 'ai' && (
+          {activeTab === "ai" && (
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   AI Model
                 </label>
                 <select
-                  value={formData.aiModel || ''}
-                  onChange={(e) => setFormData({ ...formData, aiModel: e.target.value })}
+                  value={formData.aiModel || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, aiModel: e.target.value })
+                  }
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 >
                   <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
@@ -177,11 +193,17 @@ export default function SettingsPage() {
                   max="1"
                   step="0.1"
                   value={formData.aiTemperature || 0.7}
-                  onChange={(e) => setFormData({ ...formData, aiTemperature: parseFloat(e.target.value) })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      aiTemperature: parseFloat(e.target.value),
+                    })
+                  }
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 />
                 <p className="mt-1 text-sm text-gray-500">
-                  Lower values make the AI more focused, higher values more creative
+                  Lower values make the AI more focused, higher values more
+                  creative
                 </p>
               </div>
               <div>
@@ -193,7 +215,12 @@ export default function SettingsPage() {
                   min="100"
                   max="4000"
                   value={formData.aiMaxTokens || 1000}
-                  onChange={(e) => setFormData({ ...formData, aiMaxTokens: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      aiMaxTokens: parseInt(e.target.value),
+                    })
+                  }
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 />
               </div>
@@ -201,7 +228,7 @@ export default function SettingsPage() {
           )}
 
           {/* User Limits */}
-          {activeTab === 'limits' && formData.maxUsersPerPlan && (
+          {activeTab === "limits" && formData.maxUsersPerPlan && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -211,13 +238,15 @@ export default function SettingsPage() {
                   <input
                     type="number"
                     value={formData.maxUsersPerPlan.free || 0}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      maxUsersPerPlan: {
-                        ...formData.maxUsersPerPlan!,
-                        free: parseInt(e.target.value)
-                      }
-                    })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        maxUsersPerPlan: {
+                          ...formData.maxUsersPerPlan!,
+                          free: parseInt(e.target.value),
+                        },
+                      })
+                    }
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   />
                 </div>
@@ -228,13 +257,15 @@ export default function SettingsPage() {
                   <input
                     type="number"
                     value={formData.maxUsersPerPlan.pro || 0}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      maxUsersPerPlan: {
-                        ...formData.maxUsersPerPlan!,
-                        pro: parseInt(e.target.value)
-                      }
-                    })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        maxUsersPerPlan: {
+                          ...formData.maxUsersPerPlan!,
+                          pro: parseInt(e.target.value),
+                        },
+                      })
+                    }
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   />
                 </div>
@@ -245,13 +276,15 @@ export default function SettingsPage() {
                   <input
                     type="number"
                     value={formData.maxUsersPerPlan.team || 0}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      maxUsersPerPlan: {
-                        ...formData.maxUsersPerPlan!,
-                        team: parseInt(e.target.value)
-                      }
-                    })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        maxUsersPerPlan: {
+                          ...formData.maxUsersPerPlan!,
+                          team: parseInt(e.target.value),
+                        },
+                      })
+                    }
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   />
                 </div>
@@ -262,13 +295,15 @@ export default function SettingsPage() {
                   <input
                     type="number"
                     value={formData.maxUsersPerPlan.enterprise || 0}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      maxUsersPerPlan: {
-                        ...formData.maxUsersPerPlan!,
-                        enterprise: parseInt(e.target.value)
-                      }
-                    })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        maxUsersPerPlan: {
+                          ...formData.maxUsersPerPlan!,
+                          enterprise: parseInt(e.target.value),
+                        },
+                      })
+                    }
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   />
                 </div>
@@ -277,14 +312,19 @@ export default function SettingsPage() {
           )}
 
           {/* Maintenance */}
-          {activeTab === 'maintenance' && (
+          {activeTab === "maintenance" && (
             <div className="space-y-6">
               <div className="flex items-start">
                 <div className="flex items-center h-5">
                   <input
                     type="checkbox"
                     checked={formData.maintenanceMode || false}
-                    onChange={(e) => setFormData({ ...formData, maintenanceMode: e.target.checked })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        maintenanceMode: e.target.checked,
+                      })
+                    }
                     className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                   />
                 </div>
@@ -307,7 +347,8 @@ export default function SettingsPage() {
                       </h3>
                       <div className="mt-2 text-sm text-yellow-700">
                         <p>
-                          The platform is currently in maintenance mode. Regular users cannot access the system.
+                          The platform is currently in maintenance mode. Regular
+                          users cannot access the system.
                         </p>
                       </div>
                     </div>
@@ -334,5 +375,5 @@ export default function SettingsPage() {
         </form>
       </div>
     </div>
-  )
-} 
+  );
+}

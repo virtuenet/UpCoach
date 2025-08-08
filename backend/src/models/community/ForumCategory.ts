@@ -24,8 +24,8 @@ export class ForumCategory extends Model<ForumCategoryAttributes, ForumCategoryC
   public color?: string;
   public orderIndex!: number;
   public isActive!: boolean;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Associations
   public readonly threads?: any[];

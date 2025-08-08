@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Gift, Sparkles } from 'lucide-react';
-import LeadCaptureForm from './LeadCaptureForm';
-import { trackModalView } from '@/services/analytics';
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Gift, Sparkles } from "lucide-react";
+import LeadCaptureForm from "./LeadCaptureForm";
+import { trackModalView } from "@/services/analytics";
 
 interface LeadCaptureModalProps {
-  trigger?: 'exit-intent' | 'time-based' | 'scroll' | 'manual';
+  trigger?: "exit-intent" | "time-based" | "scroll" | "manual";
   delay?: number;
   scrollPercentage?: number;
 }
 
 export default function LeadCaptureModal({
-  trigger = 'time-based',
+  trigger = "time-based",
   delay = 30000, // 30 seconds
-  scrollPercentage = 50
+  scrollPercentage = 50,
 }: LeadCaptureModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [hasBeenShown, setHasBeenShown] = useState(false);
 
   useEffect(() => {
     // Check if modal has been shown in this session
-    const shown = sessionStorage.getItem('leadModalShown');
+    const shown = sessionStorage.getItem("leadModalShown");
     if (shown) {
       setHasBeenShown(true);
       return;
@@ -33,7 +33,7 @@ export default function LeadCaptureModal({
     let handleScroll: () => void;
 
     switch (trigger) {
-      case 'time-based':
+      case "time-based":
         timeoutId = setTimeout(() => {
           if (!hasBeenShown) {
             showModal();
@@ -41,40 +41,42 @@ export default function LeadCaptureModal({
         }, delay);
         break;
 
-      case 'exit-intent':
+      case "exit-intent":
         handleMouseLeave = (e: MouseEvent) => {
           if (e.clientY <= 0 && !hasBeenShown) {
             showModal();
           }
         };
-        document.addEventListener('mouseleave', handleMouseLeave);
+        document.addEventListener("mouseleave", handleMouseLeave);
         break;
 
-      case 'scroll':
+      case "scroll":
         handleScroll = () => {
-          const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+          const scrollHeight =
+            document.documentElement.scrollHeight - window.innerHeight;
           const scrolled = (window.scrollY / scrollHeight) * 100;
-          
+
           if (scrolled >= scrollPercentage && !hasBeenShown) {
             showModal();
           }
         };
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener("scroll", handleScroll);
         break;
     }
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
-      if (handleMouseLeave) document.removeEventListener('mouseleave', handleMouseLeave);
-      if (handleScroll) window.removeEventListener('scroll', handleScroll);
+      if (handleMouseLeave)
+        document.removeEventListener("mouseleave", handleMouseLeave);
+      if (handleScroll) window.removeEventListener("scroll", handleScroll);
     };
   }, [trigger, delay, scrollPercentage, hasBeenShown]);
 
   const showModal = () => {
     setIsOpen(true);
     setHasBeenShown(true);
-    sessionStorage.setItem('leadModalShown', 'true');
-    trackModalView('lead_capture_modal', trigger);
+    sessionStorage.setItem("leadModalShown", "true");
+    trackModalView("lead_capture_modal", trigger);
   };
 
   const closeModal = () => {
@@ -101,7 +103,7 @@ export default function LeadCaptureModal({
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
             className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
@@ -129,7 +131,8 @@ export default function LeadCaptureModal({
                     Join 10,000+ professionals transforming their lives
                   </h3>
                   <p className="text-lg text-white/90">
-                    Be the first to know about new features and get exclusive early-bird pricing.
+                    Be the first to know about new features and get exclusive
+                    early-bird pricing.
                   </p>
                 </div>
 
@@ -166,7 +169,7 @@ export default function LeadCaptureModal({
                 <h3 className="text-xl font-semibold text-gray-900 mb-6">
                   Reserve Your Spot
                 </h3>
-                <LeadCaptureForm 
+                <LeadCaptureForm
                   source={`modal-${trigger}`}
                   variant="modal"
                   onSuccess={handleSuccess}

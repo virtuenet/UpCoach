@@ -16,17 +16,20 @@ The UpCoach landing page includes a comprehensive A/B testing framework that all
 ## Current Experiments
 
 ### 1. Hero Button Color Test (`heroButtonColor`)
+
 - **Control**: Solid primary color button
 - **Variant A**: Gradient button with hover effect
 - **Goal**: Test which button style drives more downloads
 
 ### 2. Lead Magnet Copy (`leadMagnetCopy`)
+
 - **Control**: "Productivity Guide"
 - **Variant A**: "Habit Tracker Template"
 - **Variant B**: "AI Coaching Secrets"
 - **Goal**: Find the most compelling lead magnet
 
 ### 3. Pricing Layout (`pricingLayout`)
+
 - **Control**: Horizontal layout
 - **Variant A**: Vertical with emphasized popular plan
 - **Goal**: Optimize pricing conversion
@@ -36,17 +39,17 @@ The UpCoach landing page includes a comprehensive A/B testing framework that all
 ### Basic Usage
 
 ```tsx
-import { useExperiment } from '@/services/experiments';
-import { ABTestSwitch, Variant } from '@/components/experiments/ABTest';
+import { useExperiment } from "@/services/experiments";
+import { ABTestSwitch, Variant } from "@/components/experiments/ABTest";
 
 function MyComponent() {
-  const { variant, trackConversion } = useExperiment('experimentId');
-  
+  const { variant, trackConversion } = useExperiment("experimentId");
+
   // Track conversions
   const handleClick = () => {
-    trackConversion('button_click', 1);
+    trackConversion("button_click", 1);
   };
-  
+
   return (
     <ABTestSwitch experimentId="experimentId">
       <Variant variant="control">
@@ -67,15 +70,15 @@ function MyComponent() {
 ```typescript
 export const experiments: Record<string, Experiment> = {
   myNewTest: {
-    id: 'my-new-test',
-    name: 'My New Test',
-    description: 'Testing something new',
-    status: 'running',
+    id: "my-new-test",
+    name: "My New Test",
+    description: "Testing something new",
+    status: "running",
     variants: [
-      { id: 'control', name: 'Original', weight: 50 },
-      { id: 'variant-a', name: 'Variation', weight: 50 }
-    ]
-  }
+      { id: "control", name: "Original", weight: 50 },
+      { id: "variant-a", name: "Variation", weight: 50 },
+    ],
+  },
 };
 ```
 
@@ -97,10 +100,12 @@ targetAudience: {
 ## Analytics Integration
 
 All experiments automatically track:
+
 - **Variant assignment**: When a user is assigned to a variant
 - **Conversions**: Custom events you track with `trackConversion()`
 
 Events are sent to Google Analytics 4 with:
+
 - `experiment_id`
 - `variant_id`
 - `user_id`
@@ -125,6 +130,7 @@ Events are sent to Google Analytics 4 with:
 ## Analyzing Results
 
 View experiment results in Google Analytics 4:
+
 1. Go to **Explore** → **Free Form**
 2. Add dimensions: `experiment_id`, `variant_id`
 3. Add metrics: `experiment_conversion` events

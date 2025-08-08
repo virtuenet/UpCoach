@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowRight, Check, Zap, Shield, Award, Users } from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { trackEvent } from '@/services/analytics';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { ArrowRight, Check, Zap, Shield, Award, Users } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { trackEvent } from "@/services/analytics";
 
 interface Step {
   number: number;
@@ -16,54 +16,60 @@ interface Step {
   time: string;
 }
 
-const steps: Step[] = {
+const steps: Step[] = [
   {
     number: 1,
-    title: 'Create Your Account',
-    description: 'Sign up in seconds with your email or social accounts. No credit card required.',
+    title: "Create Your Account",
+    description:
+      "Sign up in seconds with your email or social accounts. No credit card required.",
     icon: Zap,
-    time: '30 seconds',
+    time: "30 seconds",
   },
   {
     number: 2,
-    title: 'Complete Your Profile',
-    description: 'Tell us about your goals, interests, and what you want to achieve.',
+    title: "Complete Your Profile",
+    description:
+      "Tell us about your goals, interests, and what you want to achieve.",
     icon: Award,
-    time: '2 minutes',
+    time: "2 minutes",
   },
   {
     number: 3,
-    title: 'Meet Your AI Coach',
-    description: 'Get matched with a personalized AI coach tailored to your needs.',
+    title: "Meet Your AI Coach",
+    description:
+      "Get matched with a personalized AI coach tailored to your needs.",
     icon: Users,
-    time: '1 minute',
+    time: "1 minute",
   },
   {
     number: 4,
-    title: 'Start Your Journey',
-    description: 'Begin with your first coaching session and personalized action plan.',
+    title: "Start Your Journey",
+    description:
+      "Begin with your first coaching session and personalized action plan.",
     icon: ArrowRight,
-    time: 'Ongoing',
+    time: "Ongoing",
   },
 ];
 
 const benefits = [
-  'Personalized AI coaching available 24/7',
-  'Goal tracking and progress analytics',
-  'Evidence-based coaching methodologies',
-  'Private and secure conversations',
-  'Mobile app for coaching on-the-go',
-  'Community support and resources',
+  "Personalized AI coaching available 24/7",
+  "Goal tracking and progress analytics",
+  "Evidence-based coaching methodologies",
+  "Private and secure conversations",
+  "Mobile app for coaching on-the-go",
+  "Community support and resources",
 ];
 
 export default function GetStartedPage() {
-  const [selectedPlan, setSelectedPlan] = useState<'basic' | 'pro' | 'premium'>('pro');
+  const [selectedPlan, setSelectedPlan] = useState<"basic" | "pro" | "premium">(
+    "pro",
+  );
 
   const handleGetStarted = (source: string) => {
-    trackEvent('Get Started Clicked', {
+    trackEvent("Get Started Clicked", {
       source,
       selectedPlan,
-      page: 'get-started',
+      page: "get-started",
     });
   };
 
@@ -81,8 +87,8 @@ export default function GetStartedPage() {
               Start Your Transformation Today
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-              Join thousands of people achieving their goals with personalized AI coaching.
-              Get started in minutes and see results from day one.
+              Join thousands of people achieving their goals with personalized
+              AI coaching. Get started in minutes and see results from day one.
             </p>
           </motion.div>
 
@@ -95,7 +101,7 @@ export default function GetStartedPage() {
             <Button
               size="lg"
               className="text-lg px-8 py-6"
-              onClick={() => handleGetStarted('hero')}
+              onClick={() => handleGetStarted("hero")}
               asChild
             >
               <Link href="/register">
@@ -109,9 +115,7 @@ export default function GetStartedPage() {
               className="text-lg px-8 py-6"
               asChild
             >
-              <Link href="#how-it-works">
-                See How It Works
-              </Link>
+              <Link href="#how-it-works">See How It Works</Link>
             </Button>
           </motion.div>
 
@@ -138,7 +142,10 @@ export default function GetStartedPage() {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+      <section
+        id="how-it-works"
+        className="py-20 px-4 sm:px-6 lg:px-8 bg-white"
+      >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -191,8 +198,8 @@ export default function GetStartedPage() {
                 Everything You Need to Succeed
               </h2>
               <p className="text-xl text-gray-600 mb-8">
-                Our platform provides all the tools and support you need to achieve
-                your personal and professional goals.
+                Our platform provides all the tools and support you need to
+                achieve your personal and professional goals.
               </p>
               <ul className="space-y-4">
                 {benefits.map((benefit, index) => (
@@ -243,36 +250,36 @@ export default function GetStartedPage() {
           </p>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {['basic', 'pro', 'premium'].map((plan) => (
+            {["basic", "pro", "premium"].map((plan) => (
               <motion.div
                 key={plan}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setSelectedPlan(plan as any)}
                 className={`cursor-pointer ${
-                  selectedPlan === plan ? 'ring-2 ring-primary' : ''
+                  selectedPlan === plan ? "ring-2 ring-primary" : ""
                 }`}
               >
                 <Card className="p-6 h-full">
                   <h3 className="text-2xl font-bold capitalize mb-2">{plan}</h3>
                   <p className="text-gray-600 mb-4">
-                    {plan === 'basic' && 'Perfect for getting started'}
-                    {plan === 'pro' && 'Most popular choice'}
-                    {plan === 'premium' && 'For serious achievers'}
+                    {plan === "basic" && "Perfect for getting started"}
+                    {plan === "pro" && "Most popular choice"}
+                    {plan === "premium" && "For serious achievers"}
                   </p>
                   <div className="text-3xl font-bold mb-4">
-                    ${plan === 'basic' ? '9' : plan === 'pro' ? '29' : '49'}
-                    <span className="text-base font-normal text-gray-600">/month</span>
+                    ${plan === "basic" ? "9" : plan === "pro" ? "29" : "49"}
+                    <span className="text-base font-normal text-gray-600">
+                      /month
+                    </span>
                   </div>
                   <Button
                     className="w-full"
-                    variant={selectedPlan === plan ? 'default' : 'outline'}
+                    variant={selectedPlan === plan ? "default" : "outline"}
                     onClick={() => handleGetStarted(`pricing-${plan}`)}
                     asChild
                   >
-                    <Link href={`/register?plan=${plan}`}>
-                      Select {plan}
-                    </Link>
+                    <Link href={`/register?plan=${plan}`}>Select {plan}</Link>
                   </Button>
                 </Card>
               </motion.div>
@@ -298,7 +305,7 @@ export default function GetStartedPage() {
             size="lg"
             variant="secondary"
             className="text-lg px-8 py-6"
-            onClick={() => handleGetStarted('final-cta')}
+            onClick={() => handleGetStarted("final-cta")}
             asChild
           >
             <Link href="/register">

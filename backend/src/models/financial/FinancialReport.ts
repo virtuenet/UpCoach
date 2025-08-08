@@ -66,8 +66,8 @@ export class FinancialReport extends Model<FinancialReportAttributes, FinancialR
   public error?: string;
   public recipients?: string[];
   public fileUrl?: string;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   /**
    * Helper method to check if report is ready

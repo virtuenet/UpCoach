@@ -87,8 +87,8 @@ class Avatar extends Model<AvatarAttributes, AvatarCreationAttributes> implement
   public sortOrder!: number;
   public createdBy!: string;
   public updatedBy!: string;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Instance methods
   public calculateCompatibilityScore(traits: Record<string, number>): number {

@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '../ui/card';
-import { Button } from '../ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { DatePickerWithRange } from '../ui/date-picker-with-range';
-import { format } from 'date-fns';
+} from "../ui/card";
+import { Button } from "../ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { DatePickerWithRange } from "../ui/date-picker-with-range";
+import { format } from "date-fns";
 import {
   ArrowUpIcon,
   ArrowDownIcon,
@@ -20,13 +20,13 @@ import {
   RefreshCw,
   Download,
   Calendar,
-} from 'lucide-react';
-import { financialApi, DashboardMetrics } from '../../services/financialApi';
-import LoadingSpinner from '../LoadingSpinner';
-import { ProfitLossChart } from './ProfitLossChart';
-import { MRRChart } from './MRRChart';
-import { SubscriptionChart } from './SubscriptionChart';
-import { CostBreakdownChart } from './CostBreakdownChart';
+} from "lucide-react";
+import { financialApi, DashboardMetrics } from "../../services/financialApi";
+import LoadingSpinner from "../LoadingSpinner";
+import { ProfitLossChart } from "./ProfitLossChart";
+import { MRRChart } from "./MRRChart";
+import { SubscriptionChart } from "./SubscriptionChart";
+import { CostBreakdownChart } from "./CostBreakdownChart";
 
 export function FinancialDashboard() {
   const [loading, setLoading] = useState(true);
@@ -50,7 +50,7 @@ export function FinancialDashboard() {
       const data = await financialApi.getDashboardMetrics();
       setMetrics(data);
     } catch (error) {
-      console.error('Failed to load dashboard data:', error);
+      console.error("Failed to load dashboard data:", error);
     } finally {
       setLoading(false);
     }
@@ -67,21 +67,21 @@ export function FinancialDashboard() {
       await financialApi.generateSnapshot();
       await loadDashboardData();
     } catch (error) {
-      console.error('Failed to generate snapshot:', error);
+      console.error("Failed to generate snapshot:", error);
     }
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
   };
 
   const formatPercentage = (value: number) => {
-    return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
+    return `${value >= 0 ? "+" : ""}${value.toFixed(1)}%`;
   };
 
   if (loading) {
@@ -97,7 +97,9 @@ export function FinancialDashboard() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Financial Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Financial Dashboard
+          </h1>
           <p className="text-muted-foreground">
             Track revenue, costs, and key financial metrics
           </p>
@@ -114,7 +116,9 @@ export function FinancialDashboard() {
             onClick={handleRefresh}
             disabled={refreshing}
           >
-            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+            />
           </Button>
           <Button variant="outline" onClick={handleGenerateSnapshot}>
             <Calendar className="h-4 w-4 mr-2" />
@@ -131,20 +135,30 @@ export function FinancialDashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Monthly Recurring Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Monthly Recurring Revenue
+            </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(metrics.revenue.mrr)}</div>
+            <div className="text-2xl font-bold">
+              {formatCurrency(metrics.revenue.mrr)}
+            </div>
             <p className="text-xs text-muted-foreground">
-              <span className={metrics.revenue.mrrGrowth >= 0 ? 'text-green-600' : 'text-red-600'}>
+              <span
+                className={
+                  metrics.revenue.mrrGrowth >= 0
+                    ? "text-green-600"
+                    : "text-red-600"
+                }
+              >
                 {metrics.revenue.mrrGrowth >= 0 ? (
                   <ArrowUpIcon className="inline h-3 w-3" />
                 ) : (
                   <ArrowDownIcon className="inline h-3 w-3" />
                 )}
                 {formatPercentage(metrics.revenue.mrrGrowth)}
-              </span>{' '}
+              </span>{" "}
               from last month
             </p>
           </CardContent>
@@ -152,15 +166,26 @@ export function FinancialDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Subscriptions</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Active Subscriptions
+            </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.subscriptions.active}</div>
+            <div className="text-2xl font-bold">
+              {metrics.subscriptions.active}
+            </div>
             <p className="text-xs text-muted-foreground">
-              <span className={metrics.subscriptions.netNew >= 0 ? 'text-green-600' : 'text-red-600'}>
-                {metrics.subscriptions.netNew >= 0 ? '+' : ''}{metrics.subscriptions.netNew}
-              </span>{' '}
+              <span
+                className={
+                  metrics.subscriptions.netNew >= 0
+                    ? "text-green-600"
+                    : "text-red-600"
+                }
+              >
+                {metrics.subscriptions.netNew >= 0 ? "+" : ""}
+                {metrics.subscriptions.netNew}
+              </span>{" "}
               net new this month
             </p>
           </CardContent>
@@ -172,9 +197,12 @@ export function FinancialDashboard() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.unitEconomics.ltvToCacRatio.toFixed(1)}x</div>
+            <div className="text-2xl font-bold">
+              {metrics.unitEconomics.ltvToCacRatio.toFixed(1)}x
+            </div>
             <p className="text-xs text-muted-foreground">
-              LTV: {formatCurrency(metrics.unitEconomics.ltv)} | CAC: {formatCurrency(metrics.unitEconomics.cac)}
+              LTV: {formatCurrency(metrics.unitEconomics.ltv)} | CAC:{" "}
+              {formatCurrency(metrics.unitEconomics.cac)}
             </p>
           </CardContent>
         </Card>
@@ -185,9 +213,12 @@ export function FinancialDashboard() {
             <TrendingDown className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.profitLoss.margin.toFixed(1)}%</div>
+            <div className="text-2xl font-bold">
+              {metrics.profitLoss.margin.toFixed(1)}%
+            </div>
             <p className="text-xs text-muted-foreground">
-              {formatCurrency(metrics.profitLoss.grossProfit)} profit on {formatCurrency(metrics.profitLoss.revenue)}
+              {formatCurrency(metrics.profitLoss.grossProfit)} profit on{" "}
+              {formatCurrency(metrics.profitLoss.revenue)}
             </p>
           </CardContent>
         </Card>
@@ -197,10 +228,14 @@ export function FinancialDashboard() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Annual Recurring Revenue</CardTitle>
+            <CardTitle className="text-base">
+              Annual Recurring Revenue
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{formatCurrency(metrics.revenue.arr)}</div>
+            <div className="text-3xl font-bold">
+              {formatCurrency(metrics.revenue.arr)}
+            </div>
             <p className="text-sm text-muted-foreground mt-1">
               Based on current MRR × 12
             </p>
@@ -212,9 +247,13 @@ export function FinancialDashboard() {
             <CardTitle className="text-base">Monthly Burn Rate</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{formatCurrency(metrics.costs.burnRate)}</div>
+            <div className="text-3xl font-bold">
+              {formatCurrency(metrics.costs.burnRate)}
+            </div>
             <p className="text-sm text-muted-foreground mt-1">
-              {metrics.costs.runway > 0 ? `${metrics.costs.runway} months runway` : 'Calculate cash balance'}
+              {metrics.costs.runway > 0
+                ? `${metrics.costs.runway} months runway`
+                : "Calculate cash balance"}
             </p>
           </CardContent>
         </Card>
@@ -224,7 +263,9 @@ export function FinancialDashboard() {
             <CardTitle className="text-base">Churn Rate</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{metrics.subscriptions.churnRate.toFixed(1)}%</div>
+            <div className="text-3xl font-bold">
+              {metrics.subscriptions.churnRate.toFixed(1)}%
+            </div>
             <p className="text-sm text-muted-foreground mt-1">
               {metrics.subscriptions.churned} churned this month
             </p>
@@ -247,7 +288,9 @@ export function FinancialDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>MRR Breakdown</CardTitle>
-                <CardDescription>Monthly recurring revenue trends and composition</CardDescription>
+                <CardDescription>
+                  Monthly recurring revenue trends and composition
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <MRRChart />
@@ -256,12 +299,12 @@ export function FinancialDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Revenue by Plan</CardTitle>
-                <CardDescription>Revenue distribution across subscription plans</CardDescription>
+                <CardDescription>
+                  Revenue distribution across subscription plans
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[300px]">
-                  {/* Revenue by plan chart */}
-                </div>
+                <div className="h-[300px]">{/* Revenue by plan chart */}</div>
               </CardContent>
             </Card>
           </div>
@@ -300,7 +343,8 @@ export function FinancialDashboard() {
             <CardHeader>
               <CardTitle>Cost Breakdown</CardTitle>
               <CardDescription>
-                Analyze operational costs by category and identify optimization opportunities
+                Analyze operational costs by category and identify optimization
+                opportunities
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -327,4 +371,4 @@ export function FinancialDashboard() {
       </Tabs>
     </div>
   );
-} 
+}

@@ -1,51 +1,58 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { Shield, Lock, CreditCard, RefreshCw, Award, Users } from 'lucide-react';
+import { motion } from "framer-motion";
+import {
+  Shield,
+  Lock,
+  CreditCard,
+  RefreshCw,
+  Award,
+  Users,
+} from "lucide-react";
 
 const indicators = [
   {
     icon: Shield,
-    title: 'Enterprise-Grade Security',
-    description: '256-bit encryption & SOC 2 compliant',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100'
+    title: "Enterprise-Grade Security",
+    description: "256-bit encryption & SOC 2 compliant",
+    color: "text-blue-600",
+    bgColor: "bg-blue-100",
   },
   {
     icon: Lock,
-    title: 'Privacy First',
-    description: 'Your data is never sold or shared',
-    color: 'text-green-600',
-    bgColor: 'bg-green-100'
+    title: "Privacy First",
+    description: "Your data is never sold or shared",
+    color: "text-green-600",
+    bgColor: "bg-green-100",
   },
   {
     icon: CreditCard,
-    title: 'Secure Payments',
-    description: 'Powered by Stripe with PCI compliance',
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-100'
+    title: "Secure Payments",
+    description: "Powered by Stripe with PCI compliance",
+    color: "text-purple-600",
+    bgColor: "bg-purple-100",
   },
   {
     icon: RefreshCw,
-    title: '30-Day Guarantee',
-    description: 'Full refund if not satisfied',
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-100'
+    title: "30-Day Guarantee",
+    description: "Full refund if not satisfied",
+    color: "text-orange-600",
+    bgColor: "bg-orange-100",
   },
   {
     icon: Award,
-    title: 'Industry Recognition',
+    title: "Industry Recognition",
     description: "App Store Editor's Choice 2024",
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-100'
+    color: "text-yellow-600",
+    bgColor: "bg-yellow-100",
   },
   {
     icon: Users,
-    title: 'Trusted by 50K+',
-    description: '92% user satisfaction rate',
-    color: 'text-pink-600',
-    bgColor: 'bg-pink-100'
-  }
+    title: "Trusted by 50K+",
+    description: "92% user satisfaction rate",
+    color: "text-pink-600",
+    bgColor: "bg-pink-100",
+  },
 ];
 
 export default function TrustIndicators() {
@@ -63,7 +70,8 @@ export default function TrustIndicators() {
             Why UpCoach is the Trusted Choice
           </h3>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Join thousands who trust UpCoach with their personal development journey
+            Join thousands who trust UpCoach with their personal development
+            journey
           </p>
         </motion.div>
 
@@ -79,10 +87,14 @@ export default function TrustIndicators() {
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 className="text-center group"
               >
-                <div className={`${indicator.bgColor} w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                <div
+                  className={`${indicator.bgColor} w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300`}
+                >
                   <Icon className={`w-8 h-8 ${indicator.color}`} />
                 </div>
-                <h4 className="font-semibold text-gray-900 mb-1">{indicator.title}</h4>
+                <h4 className="font-semibold text-gray-900 mb-1">
+                  {indicator.title}
+                </h4>
                 <p className="text-sm text-gray-600">{indicator.description}</p>
               </motion.div>
             );
@@ -97,7 +109,9 @@ export default function TrustIndicators() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mt-12 pt-12 border-t border-gray-200"
         >
-          <p className="text-center text-sm text-gray-500 mb-6">Secure payment processing by</p>
+          <p className="text-center text-sm text-gray-500 mb-6">
+            Secure payment processing by
+          </p>
           <div className="flex justify-center items-center gap-8 opacity-60">
             <div className="text-2xl font-bold text-gray-600">Stripe</div>
             <div className="text-2xl font-bold text-gray-600">Apple Pay</div>
@@ -115,15 +129,21 @@ export default function TrustIndicators() {
         >
           <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm">
             <Shield className="w-5 h-5 text-green-600" />
-            <span className="text-sm font-medium text-gray-700">GDPR Compliant</span>
+            <span className="text-sm font-medium text-gray-700">
+              GDPR Compliant
+            </span>
           </div>
           <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm">
             <Shield className="w-5 h-5 text-green-600" />
-            <span className="text-sm font-medium text-gray-700">HIPAA Compliant</span>
+            <span className="text-sm font-medium text-gray-700">
+              HIPAA Compliant
+            </span>
           </div>
           <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm">
             <Shield className="w-5 h-5 text-green-600" />
-            <span className="text-sm font-medium text-gray-700">SOC 2 Type II</span>
+            <span className="text-sm font-medium text-gray-700">
+              SOC 2 Type II
+            </span>
           </div>
         </motion.div>
       </div>

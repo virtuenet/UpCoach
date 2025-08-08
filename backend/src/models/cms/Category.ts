@@ -52,8 +52,8 @@ export class Category extends Model<CategoryAttributes, CategoryCreationAttribut
   public sortOrder!: number;
   public metadata!: CategoryAttributes['metadata'];
   public seo!: CategoryAttributes['seo'];
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
   public readonly deletedAt!: Date | null;
 
   // Instance methods

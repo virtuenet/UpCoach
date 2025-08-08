@@ -38,8 +38,8 @@ export class CommunityGroup extends Model<CommunityGroupAttributes, CommunityGro
   public rules?: string;
   public welcomeMessage?: string;
   public createdBy!: string;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Associations
   public readonly creator?: any;

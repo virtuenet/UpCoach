@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { format } from 'date-fns';
+import { useState, useEffect } from "react";
+import { format } from "date-fns";
 import {
   Table,
   TableBody,
@@ -7,21 +7,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '../components/ui/table';
-import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
-import LoadingSpinner from '../components/LoadingSpinner';
-import { financialApi } from '../services/financialApi';
-import { DollarSign, Users, TrendingUp, AlertCircle } from 'lucide-react';
+} from "../components/ui/table";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import LoadingSpinner from "../components/LoadingSpinner";
+import { financialApi } from "../services/financialApi";
+import { DollarSign, Users, TrendingUp, AlertCircle } from "lucide-react";
 
 interface Subscription {
   id: string;
   userId: string;
   stripeSubscriptionId: string;
   stripeCustomerId: string;
-  status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'unpaid';
+  status: "active" | "canceled" | "past_due" | "trialing" | "unpaid";
   plan: string;
-  interval: 'month' | 'year';
+  interval: "month" | "year";
   amount: number;
   currency: string;
   currentPeriodStart: Date;
@@ -54,14 +54,16 @@ export default function SubscriptionsPage() {
       setLoading(true);
       const data = await financialApi.getSubscriptions();
       setSubscriptions(data.subscriptions || []);
-      setStats(data.stats || {
-        total: 0,
-        active: 0,
-        canceled: 0,
-        mrr: 0,
-      });
+      setStats(
+        data.stats || {
+          total: 0,
+          active: 0,
+          canceled: 0,
+          mrr: 0,
+        },
+      );
     } catch (error) {
-      console.error('Error fetching subscriptions:', error);
+      console.error("Error fetching subscriptions:", error);
     } finally {
       setLoading(false);
     }
@@ -69,14 +71,14 @@ export default function SubscriptionsPage() {
 
   const getStatusBadge = (status: string) => {
     const badges: Record<string, { variant: any; label: string }> = {
-      active: { variant: 'success', label: 'Active' },
-      canceled: { variant: 'destructive', label: 'Canceled' },
-      past_due: { variant: 'warning', label: 'Past Due' },
-      trialing: { variant: 'secondary', label: 'Trialing' },
-      unpaid: { variant: 'destructive', label: 'Unpaid' },
+      active: { variant: "success", label: "Active" },
+      canceled: { variant: "destructive", label: "Canceled" },
+      past_due: { variant: "warning", label: "Past Due" },
+      trialing: { variant: "secondary", label: "Trialing" },
+      unpaid: { variant: "destructive", label: "Unpaid" },
     };
 
-    const badge = badges[status] || { variant: 'secondary', label: status };
+    const badge = badges[status] || { variant: "secondary", label: status };
     return <Badge variant={badge.variant}>{badge.label}</Badge>;
   };
 
@@ -92,9 +94,7 @@ export default function SubscriptionsPage() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Subscriptions</h1>
-        <Button onClick={fetchSubscriptions}>
-          Refresh
-        </Button>
+        <Button onClick={fetchSubscriptions}>Refresh</Button>
       </div>
 
       {/* Stats */}
@@ -112,7 +112,9 @@ export default function SubscriptionsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Active</p>
-              <p className="text-2xl font-bold text-green-600">{stats.active}</p>
+              <p className="text-2xl font-bold text-green-600">
+                {stats.active}
+              </p>
             </div>
             <TrendingUp className="h-8 w-8 text-green-600" />
           </div>
@@ -121,7 +123,9 @@ export default function SubscriptionsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Canceled</p>
-              <p className="text-2xl font-bold text-red-600">{stats.canceled}</p>
+              <p className="text-2xl font-bold text-red-600">
+                {stats.canceled}
+              </p>
             </div>
             <AlertCircle className="h-8 w-8 text-red-600" />
           </div>
@@ -130,7 +134,9 @@ export default function SubscriptionsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">MRR</p>
-              <p className="text-2xl font-bold">${(stats.mrr / 100).toFixed(2)}</p>
+              <p className="text-2xl font-bold">
+                ${(stats.mrr / 100).toFixed(2)}
+              </p>
             </div>
             <DollarSign className="h-8 w-8 text-gray-400" />
           </div>
@@ -156,8 +162,12 @@ export default function SubscriptionsPage() {
               <TableRow key={subscription.id}>
                 <TableCell>
                   <div>
-                    <p className="font-medium">{subscription.user?.name || 'Unknown'}</p>
-                    <p className="text-sm text-gray-500">{subscription.user?.email}</p>
+                    <p className="font-medium">
+                      {subscription.user?.name || "Unknown"}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {subscription.user?.email}
+                    </p>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -165,20 +175,27 @@ export default function SubscriptionsPage() {
                     {subscription.plan} / {subscription.interval}
                   </Badge>
                 </TableCell>
-                <TableCell>
-                  ${(subscription.amount / 100).toFixed(2)}
-                </TableCell>
-                <TableCell>
-                  {getStatusBadge(subscription.status)}
-                </TableCell>
+                <TableCell>${(subscription.amount / 100).toFixed(2)}</TableCell>
+                <TableCell>{getStatusBadge(subscription.status)}</TableCell>
                 <TableCell>
                   <div className="text-sm">
-                    <p>{format(new Date(subscription.currentPeriodStart), 'MMM d, yyyy')}</p>
-                    <p className="text-gray-500">to {format(new Date(subscription.currentPeriodEnd), 'MMM d, yyyy')}</p>
+                    <p>
+                      {format(
+                        new Date(subscription.currentPeriodStart),
+                        "MMM d, yyyy",
+                      )}
+                    </p>
+                    <p className="text-gray-500">
+                      to{" "}
+                      {format(
+                        new Date(subscription.currentPeriodEnd),
+                        "MMM d, yyyy",
+                      )}
+                    </p>
                   </div>
                 </TableCell>
                 <TableCell>
-                  {format(new Date(subscription.createdAt), 'MMM d, yyyy')}
+                  {format(new Date(subscription.createdAt), "MMM d, yyyy")}
                 </TableCell>
                 <TableCell>
                   <Button size="sm" variant="outline">

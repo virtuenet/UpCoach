@@ -1,68 +1,69 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Search, Edit, Trash2, Eye } from 'lucide-react'
-import { usersApi } from '../api/users'
-import LoadingSpinner from '../components/LoadingSpinner'
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Search, Edit, Trash2, Eye } from "lucide-react";
+import { usersApi } from "../api/users";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 interface User {
-  id: string
-  email: string
-  fullName: string
-  role: 'user' | 'coach' | 'admin' | 'moderator'
-  subscriptionPlan: 'free' | 'pro' | 'team' | 'enterprise'
-  isActive: boolean
-  createdAt: string
-  lastLoginAt?: string
+  id: string;
+  email: string;
+  fullName: string;
+  role: "user" | "coach" | "admin" | "moderator";
+  subscriptionPlan: "free" | "pro" | "team" | "enterprise";
+  isActive: boolean;
+  createdAt: string;
+  lastLoginAt?: string;
 }
 
 export default function UsersPage() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [roleFilter, setRoleFilter] = useState<string>('all')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const { data: users, isLoading } = useQuery({
-    queryKey: ['users', searchTerm, roleFilter, statusFilter],
-    queryFn: () => usersApi.getUsers({
-      search: searchTerm,
-      role: roleFilter === 'all' ? undefined : roleFilter,
-      status: statusFilter === 'all' ? undefined : statusFilter,
-    }),
-  })
+    queryKey: ["users", searchTerm, roleFilter, statusFilter],
+    queryFn: () =>
+      usersApi.getUsers({
+        search: searchTerm,
+        role: roleFilter === "all" ? undefined : roleFilter,
+        status: statusFilter === "all" ? undefined : statusFilter,
+      }),
+  });
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
-  }
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
   const getRoleBadge = (role: string) => {
     const colors = {
-      admin: 'bg-red-100 text-red-800',
-      moderator: 'bg-purple-100 text-purple-800',
-      coach: 'bg-blue-100 text-blue-800',
-      user: 'bg-gray-100 text-gray-800',
-    }
-    return colors[role as keyof typeof colors] || colors.user
-  }
+      admin: "bg-red-100 text-red-800",
+      moderator: "bg-purple-100 text-purple-800",
+      coach: "bg-blue-100 text-blue-800",
+      user: "bg-gray-100 text-gray-800",
+    };
+    return colors[role as keyof typeof colors] || colors.user;
+  };
 
   const getSubscriptionBadge = (plan: string) => {
     const colors = {
-      enterprise: 'bg-yellow-100 text-yellow-800',
-      team: 'bg-green-100 text-green-800',
-      pro: 'bg-blue-100 text-blue-800',
-      free: 'bg-gray-100 text-gray-800',
-    }
-    return colors[plan as keyof typeof colors] || colors.free
-  }
+      enterprise: "bg-yellow-100 text-yellow-800",
+      team: "bg-green-100 text-green-800",
+      pro: "bg-blue-100 text-blue-800",
+      free: "bg-gray-100 text-gray-800",
+    };
+    return colors[plan as keyof typeof colors] || colors.free;
+  };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner size="lg" />
       </div>
-    )
+    );
   }
 
   return (
@@ -152,36 +153,46 @@ export default function UsersPage() {
                     <div className="flex items-center">
                       <div className="h-10 w-10 rounded-full bg-primary-500 flex items-center justify-center">
                         <span className="text-sm font-medium text-white">
-                          {user.fullName?.charAt(0) || 'U'}
+                          {user.fullName?.charAt(0) || "U"}
                         </span>
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {user.fullName || 'Unknown User'}
+                          {user.fullName || "Unknown User"}
                         </div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
+                        <div className="text-sm text-gray-500">
+                          {user.email}
+                        </div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadge(user.role)}`}>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadge(user.role)}`}
+                    >
                       {user.role}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getSubscriptionBadge(user.subscriptionPlan)}`}>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getSubscriptionBadge(user.subscriptionPlan)}`}
+                    >
                       {user.subscriptionPlan}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {user.isActive ? 'Active' : 'Inactive'}
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        user.isActive
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {user.isActive ? "Active" : "Inactive"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {user.lastLoginAt ? formatDate(user.lastLoginAt) : 'Never'}
+                    {user.lastLoginAt ? formatDate(user.lastLoginAt) : "Never"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center space-x-2">
@@ -203,5 +214,5 @@ export default function UsersPage() {
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

@@ -10,6 +10,7 @@ export interface UserAttributes {
   role: 'user' | 'admin' | 'coach';
   avatar?: string;
   bio?: string;
+  googleId?: string;
   isActive: boolean;
   emailVerified: boolean;
   onboardingCompleted?: boolean;
@@ -20,7 +21,7 @@ export interface UserAttributes {
   updatedAt?: Date;
 }
 
-export interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'avatar' | 'bio' | 'isActive' | 'emailVerified' | 'onboardingCompleted' | 'onboardingCompletedAt' | 'onboardingSkipped' | 'createdAt' | 'updatedAt' | 'lastLoginAt'> {}
+export interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'avatar' | 'bio' | 'googleId' | 'isActive' | 'emailVerified' | 'onboardingCompleted' | 'onboardingCompletedAt' | 'onboardingSkipped' | 'createdAt' | 'updatedAt' | 'lastLoginAt'> {}
 
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   public id!: string;
@@ -30,14 +31,15 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   public role!: 'user' | 'admin' | 'coach';
   public avatar?: string;
   public bio?: string;
+  public googleId?: string;
   public isActive!: boolean;
   public emailVerified!: boolean;
   public onboardingCompleted?: boolean;
   public onboardingCompletedAt?: Date;
   public onboardingSkipped?: boolean;
   public lastLoginAt?: Date;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Association properties
   public readonly profile?: any;
@@ -100,6 +102,11 @@ User.init(
     bio: {
       type: DataTypes.TEXT,
       allowNull: true,
+    },
+    googleId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
     },
     isActive: {
       type: DataTypes.BOOLEAN,

@@ -30,8 +30,8 @@ export class ForumPost extends Model<ForumPostAttributes, ForumPostCreationAttri
   public deletedBy?: string;
   public editCount!: number;
   public lastEditedAt?: Date;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Virtual properties
   public voteScore?: number;

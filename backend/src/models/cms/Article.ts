@@ -81,8 +81,8 @@ export class Article extends Model<ArticleAttributes, ArticleCreationAttributes>
   public settings!: ArticleAttributes['settings'];
   public publishingSchedule!: ArticleAttributes['publishingSchedule'];
   public analytics!: ArticleAttributes['analytics'];
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
   public readonly deletedAt!: Date | null;
 
   // Instance methods

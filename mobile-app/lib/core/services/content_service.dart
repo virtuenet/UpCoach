@@ -163,9 +163,26 @@ class ContentService {
 
   // Get saved articles
   Future<List<ContentArticle>> getSavedArticles() async {
-    // TODO: Implement offline storage retrieval
-    logger.i('Getting saved articles');
-    return [];
+    try {
+      final response = await _dio.get('$_baseEndpoint/articles/saved');
+      final articles = (response.data['data'] as List)
+          .map((json) => ContentArticle.fromJson(json))
+          .toList();
+      return articles;
+    } on DioException catch (e) {
+      logger.e('Failed to fetch saved articles', error: e);
+      throw ApiException.fromDioError(e);
+    }
+  }
+  
+  // Toggle save article
+  Future<void> toggleSaveArticle(int articleId) async {
+    try {
+      await _dio.post('$_baseEndpoint/articles/$articleId/save');
+    } on DioException catch (e) {
+      logger.e('Failed to toggle save article', error: e);
+      throw ApiException.fromDioError(e);
+    }
   }
 
   // Track article view

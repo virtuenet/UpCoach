@@ -12,6 +12,7 @@ import {
 import { redis } from '../services/redis';
 import { logger } from '../utils/logger';
 import { AuthenticatedRequest } from '../middleware/auth';
+import EmailService from '../services/email/EmailService';
 
 const router = Router();
 
@@ -34,6 +35,15 @@ const refreshTokenSchema = z.object({
 
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: z.string().min(8, 'New password must be at least 8 characters'),
+});
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email('Invalid email format'),
+});
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1, 'Reset token is required'),
   newPassword: z.string().min(8, 'New password must be at least 8 characters'),
 });
 
@@ -255,6 +265,107 @@ router.post('/logout-all', authMiddleware, asyncHandler(async (req: Authenticate
   res.json({
     success: true,
     message: 'Logged out from all devices successfully',
+  });
+}));
+
+// Forgot password endpoint
+router.post('/forgot-password', asyncHandler(async (req: Request, res: Response) => {
+  const { email } = forgotPasswordSchema.parse(req.body);
+
+  // Check if user exists
+  const user = await UserService.findByEmail(email);
+  
+  // Always return success to prevent email enumeration
+  if (user) {
+    // Generate reset token
+    const resetToken = await UserService.generatePasswordResetToken(user.id);
+    
+    // Send reset email
+    await EmailService.sendPasswordResetEmail(user.email, resetToken);
+    
+    logger.info('Password reset requested:', { userId: user.id, email: user.email });
+  }
+
+  res.json({
+    success: true,
+    message: 'If an account exists with this email, a password reset link has been sent.',
+  });
+}));
+
+// Reset password endpoint
+router.post('/reset-password', asyncHandler(async (req: Request, res: Response) => {
+  const { token, newPassword } = resetPasswordSchema.parse(req.body);
+
+  // Validate password strength
+  const passwordValidation = UserService.validatePasswordStrength(newPassword);
+  if (!passwordValidation.isValid) {
+    throw new ApiError(400, 'Password does not meet security requirements', {
+      errors: passwordValidation.errors,
+    });
+  }
+
+  // Reset password
+  const userId = await UserService.resetPasswordWithToken(token, newPassword);
+
+  // Invalidate all existing sessions
+  await redis.del(`refresh_token:${userId}`);
+
+  logger.info('Password reset successfully:', { userId });
+
+  res.json({
+    success: true,
+    message: 'Password reset successfully. Please log in with your new password.',
+  });
+}));
+
+// Google OAuth endpoint
+router.post('/google', asyncHandler(async (req: Request, res: Response) => {
+  const { idToken, accessToken } = req.body;
+
+  if (!idToken) {
+    throw new ApiError(400, 'Google ID token is required');
+  }
+
+  // Verify Google token and get user info
+  const googleUser = await UserService.verifyGoogleToken(idToken);
+
+  // Find or create user
+  let user = await UserService.findByEmail(googleUser.email);
+  
+  if (!user) {
+    // Create new user from Google data
+    user = await UserService.createFromGoogle({
+      email: googleUser.email,
+      name: googleUser.name,
+      googleId: googleUser.sub,
+      avatarUrl: googleUser.picture,
+      isEmailVerified: googleUser.email_verified,
+    });
+  } else {
+    // Update Google ID if not set
+    if (!user.googleId) {
+      await UserService.updateGoogleId(user.id, googleUser.sub);
+    }
+  }
+
+  // Generate tokens
+  const tokens = generateTokens(user.id);
+
+  // Store refresh token in Redis
+  await redis.setEx(`refresh_token:${user.id}`, 30 * 24 * 60 * 60, tokens.refreshToken);
+
+  // Update last login
+  await UserService.updateLastLogin(user.id);
+
+  logger.info('User logged in with Google:', { userId: user.id, email: user.email });
+
+  res.json({
+    success: true,
+    message: 'Login successful',
+    data: {
+      user: UserService.toResponseDto(user),
+      tokens,
+    },
   });
 }));
 

@@ -12,6 +12,11 @@ import coachContentRoutes from './coachContent';
 import referralRoutes from './referral';
 import onboardingRoutes from './onboarding';
 import forumRoutes from './forum';
+import aiAnalyticsRoutes from './aiAnalytics';
+import coachRoutes from './coach';
+import advancedAnalyticsRoutes from './advancedAnalytics';
+import gamificationRoutes from './gamification';
+import enterpriseRoutes from './enterprise';
 import { authMiddleware } from '../middleware/auth';
 
 export const setupRoutes = (app: Application): void => {
@@ -47,6 +52,21 @@ export const setupRoutes = (app: Application): void => {
   
   // Forum routes (mixed public and protected)
   app.use(`${apiPrefix}/forum`, forumRoutes);
+  
+  // AI Analytics routes (admin only)
+  app.use(`${apiPrefix}/analytics`, authMiddleware, aiAnalyticsRoutes);
+  
+  // Coach marketplace routes (mixed public and protected)
+  app.use(`${apiPrefix}`, coachRoutes);
+  
+  // Advanced analytics routes (protected)
+  app.use(`${apiPrefix}/advanced-analytics`, advancedAnalyticsRoutes);
+  
+  // Gamification routes (protected)
+  app.use(`${apiPrefix}/gamification`, gamificationRoutes);
+  
+  // Enterprise routes (mixed public and protected)
+  app.use(`${apiPrefix}/enterprise`, enterpriseRoutes);
 
   // API info endpoint
   app.get(`${apiPrefix}`, (req, res) => {

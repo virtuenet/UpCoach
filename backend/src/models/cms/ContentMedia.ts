@@ -54,8 +54,8 @@ export class ContentMedia extends Model<ContentMediaAttributes, ContentMediaCrea
   public uploadedBy!: string;
   public isPublic!: boolean;
   public usageCount!: number;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Associations
   public readonly content?: Content;

@@ -69,8 +69,8 @@ class UserAvatarPreference extends Model<UserAvatarPreferenceAttributes, UserAva
   public usageCount!: number;
   public totalSessionTime!: number;
   public lastUsedAt!: Date;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Instance methods
   public recordInteraction(sessionLength: number, topics: string[] = [], rating?: number): void {

@@ -1,81 +1,88 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Loader2, Mail, User, Briefcase } from 'lucide-react';
-import { trackFormSubmit } from '@/services/analytics';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, Loader2, Mail, User, Briefcase } from "lucide-react";
+import { trackFormSubmit } from "@/services/analytics";
 
 interface LeadCaptureFormProps {
   source?: string;
-  variant?: 'inline' | 'modal' | 'sidebar';
+  variant?: "inline" | "modal" | "sidebar";
   onSuccess?: () => void;
 }
 
-export default function LeadCaptureForm({ source = 'unknown', variant = 'inline', onSuccess }: LeadCaptureFormProps) {
+export default function LeadCaptureForm({
+  source = "unknown",
+  variant = "inline",
+  onSuccess,
+}: LeadCaptureFormProps) {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    company: '',
-    role: '',
-    interest: '',
-    marketingConsent: true
+    name: "",
+    email: "",
+    company: "",
+    role: "",
+    interest: "",
+    marketingConsent: true,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setError('');
+    setError("");
 
     try {
-      const response = await fetch('/api/lead-capture', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/lead-capture", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
           source,
-          timestamp: new Date().toISOString()
-        })
+          timestamp: new Date().toISOString(),
+        }),
       });
 
-      if (!response.ok) throw new Error('Failed to submit form');
+      if (!response.ok) throw new Error("Failed to submit form");
 
       // Track conversion
-      trackFormSubmit('lead_capture', source);
+      trackFormSubmit("lead_capture", source);
 
       // Show success state
       setIsSuccess(true);
-      
+
       // Trigger callback if provided
       if (onSuccess) onSuccess();
 
       // Reset form after delay
       setTimeout(() => {
         setFormData({
-          name: '',
-          email: '',
-          company: '',
-          role: '',
-          interest: '',
-          marketingConsent: true
+          name: "",
+          email: "",
+          company: "",
+          role: "",
+          interest: "",
+          marketingConsent: true,
         });
         setIsSuccess(false);
       }, 3000);
     } catch (err) {
-      setError('Something went wrong. Please try again.');
-      console.error('Lead capture error:', err);
+      setError("Something went wrong. Please try again.");
+      console.error("Lead capture error:", err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      [name]:
+        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
@@ -90,7 +97,10 @@ export default function LeadCaptureForm({ source = 'unknown', variant = 'inline'
           <Check className="w-8 h-8 text-green-600" />
         </div>
         <h3 className="text-xl font-semibold text-gray-900 mb-2">Thank You!</h3>
-        <p className="text-gray-600">We'll be in touch soon with exclusive updates and early access opportunities.</p>
+        <p className="text-gray-600">
+          We'll be in touch soon with exclusive updates and early access
+          opportunities.
+        </p>
       </motion.div>
     );
   }
@@ -99,7 +109,10 @@ export default function LeadCaptureForm({ source = 'unknown', variant = 'inline'
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Name Field */}
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="name"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Full Name *
         </label>
         <div className="relative">
@@ -119,7 +132,10 @@ export default function LeadCaptureForm({ source = 'unknown', variant = 'inline'
 
       {/* Email Field */}
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Work Email *
         </label>
         <div className="relative">
@@ -139,7 +155,10 @@ export default function LeadCaptureForm({ source = 'unknown', variant = 'inline'
 
       {/* Company Field */}
       <div>
-        <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="company"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Company
         </label>
         <div className="relative">
@@ -158,7 +177,10 @@ export default function LeadCaptureForm({ source = 'unknown', variant = 'inline'
 
       {/* Role Field */}
       <div>
-        <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="role"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Your Role
         </label>
         <select
@@ -180,7 +202,10 @@ export default function LeadCaptureForm({ source = 'unknown', variant = 'inline'
 
       {/* Interest Field */}
       <div>
-        <label htmlFor="interest" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="interest"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Primary Interest
         </label>
         <select
@@ -210,8 +235,12 @@ export default function LeadCaptureForm({ source = 'unknown', variant = 'inline'
           onChange={handleChange}
           className="mt-1 w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
         />
-        <label htmlFor="marketingConsent" className="ml-2 text-sm text-gray-600">
-          I agree to receive marketing communications from UpCoach. You can unsubscribe at any time.
+        <label
+          htmlFor="marketingConsent"
+          className="ml-2 text-sm text-gray-600"
+        >
+          I agree to receive marketing communications from UpCoach. You can
+          unsubscribe at any time.
         </label>
       </div>
 
@@ -220,7 +249,7 @@ export default function LeadCaptureForm({ source = 'unknown', variant = 'inline'
         {error && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="text-red-600 text-sm"
           >
@@ -241,17 +270,17 @@ export default function LeadCaptureForm({ source = 'unknown', variant = 'inline'
             Submitting...
           </>
         ) : (
-          'Get Early Access'
+          "Get Early Access"
         )}
       </button>
 
       {/* Privacy Notice */}
       <p className="text-xs text-gray-500 text-center">
-        By submitting this form, you agree to our{' '}
+        By submitting this form, you agree to our{" "}
         <a href="/privacy" className="text-primary-600 hover:underline">
           Privacy Policy
-        </a>{' '}
-        and{' '}
+        </a>{" "}
+        and{" "}
         <a href="/terms" className="text-primary-600 hover:underline">
           Terms of Service
         </a>

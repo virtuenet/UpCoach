@@ -200,12 +200,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Center(
                   child: TextButton(
                     onPressed: () {
-                      // TODO: Implement forgot password
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Forgot password feature coming soon!'),
-                        ),
-                      );
+                      context.push('/forgot-password');
                     },
                     child: const Text('Forgot Password?'),
                   ),
@@ -235,14 +230,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 
                 // Google Sign In Button
                 OutlinedButton.icon(
-                  onPressed: () {
-                    // TODO: Implement Google Sign In
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Google Sign In coming soon!'),
-                      ),
-                    );
-                  },
+                  onPressed: _isLoading
+                      ? null
+                      : () async {
+                          final success = await ref
+                              .read(authProvider.notifier)
+                              .signInWithGoogle();
+                          
+                          if (success && mounted) {
+                            context.go('/home');
+                          } else if (!success && mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Google Sign In failed. Please try again.'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        },
                   icon: const Icon(Icons.g_mobiledata, size: 24),
                   label: const Text('Continue with Google'),
                 ),

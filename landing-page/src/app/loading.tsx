@@ -20,7 +20,7 @@ export default function Loading() {
           </div>
         </div>
       </div>
-      
+
       {/* Features skeleton */}
       <div className="py-24 bg-gray-50">
         <div className="container mx-auto px-4">
@@ -30,7 +30,10 @@ export default function Loading() {
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-64 bg-white rounded-2xl animate-pulse shadow-lg"></div>
+              <div
+                key={i}
+                className="h-64 bg-white rounded-2xl animate-pulse shadow-lg"
+              ></div>
             ))}
           </div>
         </div>

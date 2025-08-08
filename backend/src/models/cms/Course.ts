@@ -109,8 +109,8 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
   public settings!: CourseAttributes['settings'];
   public pricing!: CourseAttributes['pricing'];
   public analytics!: CourseAttributes['analytics'];
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
   public readonly deletedAt!: Date | null;
 
   // Instance methods

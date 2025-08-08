@@ -18,7 +18,7 @@ export interface ContentTemplateAttributes {
 export interface ContentTemplateCreationAttributes extends Optional<ContentTemplateAttributes, 'id' | 'description' | 'thumbnail' | 'isActive' | 'usageCount' | 'createdAt' | 'updatedAt'> {}
 
 class ContentTemplate extends Model<ContentTemplateAttributes, ContentTemplateCreationAttributes> implements ContentTemplateAttributes {
-  public id!: number;
+  declare id: number;
   public name!: string;
   public description?: string;
   public category!: string;
@@ -27,8 +27,8 @@ class ContentTemplate extends Model<ContentTemplateAttributes, ContentTemplateCr
   public isActive!: boolean;
   public usageCount!: number;
   public createdBy!: number;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 ContentTemplate.init(

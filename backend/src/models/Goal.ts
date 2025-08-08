@@ -35,8 +35,8 @@ export class Goal extends Model<GoalAttributes, GoalCreationAttributes> implemen
   public reminders?: any;
   public isArchived!: boolean;
   public completedAt?: Date;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Associations
   public static associate(models: any) {

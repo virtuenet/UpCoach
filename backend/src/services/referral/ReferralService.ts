@@ -328,6 +328,35 @@ export class ReferralService {
     }
   }
 
+  // Get overall referral stats
+  async getOverallStats(): Promise<{
+    totalReferrals: number;
+    activeReferrals: number;
+    completedReferrals: number;
+    totalEarnings: number;
+    pendingPayouts: number;
+    conversionRate: number;
+  }> {
+    const allReferrals = Array.from(this.referrals.values());
+    
+    const stats = {
+      totalReferrals: allReferrals.length,
+      activeReferrals: allReferrals.filter(r => r.status === 'pending' && new Date() <= r.expiresAt).length,
+      completedReferrals: allReferrals.filter(r => r.status === 'completed').length,
+      totalEarnings: allReferrals
+        .filter(r => r.rewardStatus === 'paid')
+        .reduce((sum, r) => sum + (r.referrerReward || 0), 0),
+      pendingPayouts: allReferrals
+        .filter(r => r.status === 'completed' && r.rewardStatus === 'pending')
+        .reduce((sum, r) => sum + (r.referrerReward || 0), 0),
+      conversionRate: allReferrals.length > 0 
+        ? (allReferrals.filter(r => r.status === 'completed').length / allReferrals.length) * 100
+        : 0,
+    };
+
+    return stats;
+  }
+
   // Get referral leaderboard
   async getReferralLeaderboard(
     period: 'week' | 'month' | 'all' = 'month'

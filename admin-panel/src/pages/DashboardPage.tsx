@@ -1,23 +1,30 @@
-import { useQuery } from '@tanstack/react-query'
-import { Users, CheckSquare, Target, MessageSquare, TrendingUp, TrendingDown } from 'lucide-react'
-import { dashboardApi } from '../api/dashboard'
-import LoadingSpinner from '../components/LoadingSpinner'
+import { useQuery } from "@tanstack/react-query";
+import {
+  Users,
+  CheckSquare,
+  Target,
+  MessageSquare,
+  TrendingUp,
+  TrendingDown,
+} from "lucide-react";
+import { dashboardApi } from "../api/dashboard";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 interface StatCardProps {
-  title: string
-  value: string | number
-  change: number
-  icon: React.ComponentType<any>
-  color: 'blue' | 'green' | 'purple' | 'orange'
+  title: string;
+  value: string | number;
+  change: number;
+  icon: React.ComponentType<any>;
+  color: "blue" | "green" | "purple" | "orange";
 }
 
 function StatCard({ title, value, change, icon: Icon, color }: StatCardProps) {
   const colorClasses = {
-    blue: 'bg-blue-500',
-    green: 'bg-green-500',
-    purple: 'bg-purple-500',
-    orange: 'bg-orange-500',
-  }
+    blue: "bg-blue-500",
+    green: "bg-green-500",
+    purple: "bg-purple-500",
+    orange: "bg-orange-500",
+  };
 
   return (
     <div className="bg-white overflow-hidden shadow rounded-lg">
@@ -30,12 +37,18 @@ function StatCard({ title, value, change, icon: Icon, color }: StatCardProps) {
           </div>
           <div className="ml-5 w-0 flex-1">
             <dl>
-              <dt className="text-sm font-medium text-gray-500 truncate">{title}</dt>
+              <dt className="text-sm font-medium text-gray-500 truncate">
+                {title}
+              </dt>
               <dd className="flex items-baseline">
-                <div className="text-2xl font-semibold text-gray-900">{value}</div>
-                <div className={`ml-2 flex items-baseline text-sm font-semibold ${
-                  change >= 0 ? 'text-green-600' : 'text-red-600'
-                }`}>
+                <div className="text-2xl font-semibold text-gray-900">
+                  {value}
+                </div>
+                <div
+                  className={`ml-2 flex items-baseline text-sm font-semibold ${
+                    change >= 0 ? "text-green-600" : "text-red-600"
+                  }`}
+                >
                   {change >= 0 ? (
                     <TrendingUp className="self-center flex-shrink-0 h-4 w-4" />
                   ) : (
@@ -49,21 +62,21 @@ function StatCard({ title, value, change, icon: Icon, color }: StatCardProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function DashboardPage() {
   const { data: stats, isLoading } = useQuery({
-    queryKey: ['dashboard-stats'],
+    queryKey: ["dashboard-stats"],
     queryFn: dashboardApi.getStats,
-  })
+  });
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner size="lg" />
       </div>
-    )
+    );
   }
 
   return (
@@ -71,7 +84,8 @@ export default function DashboardPage() {
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Welcome to the UpCoach admin panel. Here's what's happening with your platform.
+          Welcome to the UpCoach admin panel. Here's what's happening with your
+          platform.
         </p>
       </div>
 
@@ -125,8 +139,12 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-900">{activity.description}</p>
-                    <p className="text-xs text-gray-500">{activity.timestamp}</p>
+                    <p className="text-sm text-gray-900">
+                      {activity.description}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {activity.timestamp}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -137,5 +155,5 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

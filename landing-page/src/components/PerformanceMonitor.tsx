@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 export default function PerformanceMonitor() {
   useEffect(() => {
     // Web Vitals monitoring
-    if (typeof window !== 'undefined' && 'performance' in window) {
+    if (typeof window !== "undefined" && "performance" in window) {
       // First Contentful Paint
-      const paintEntries = performance.getEntriesByType('paint');
+      const paintEntries = performance.getEntriesByType("paint");
       paintEntries.forEach((entry) => {
         console.log(`${entry.name}: ${entry.startTime}ms`);
       });
@@ -16,18 +16,18 @@ export default function PerformanceMonitor() {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1];
-        console.log('LCP:', lastEntry.startTime);
+        console.log("LCP:", lastEntry.startTime);
       });
-      observer.observe({ entryTypes: ['largest-contentful-paint'] });
+      observer.observe({ entryTypes: ["largest-contentful-paint"] });
 
       // First Input Delay
       const fidObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           const delay = entry.processingStart - entry.startTime;
-          console.log('FID:', delay);
+          console.log("FID:", delay);
         }
       });
-      fidObserver.observe({ entryTypes: ['first-input'] });
+      fidObserver.observe({ entryTypes: ["first-input"] });
 
       // Cumulative Layout Shift
       let clsValue = 0;
@@ -35,11 +35,11 @@ export default function PerformanceMonitor() {
         for (const entry of list.getEntries()) {
           if (!entry.hadRecentInput) {
             clsValue += entry.value;
-            console.log('CLS:', clsValue);
+            console.log("CLS:", clsValue);
           }
         }
       });
-      clsObserver.observe({ entryTypes: ['layout-shift'] });
+      clsObserver.observe({ entryTypes: ["layout-shift"] });
 
       return () => {
         observer.disconnect();

@@ -4,6 +4,7 @@ import '../../shared/widgets/splash_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
+import '../../features/auth/screens/forgot_password_screen.dart';
 import '../../features/chat/screens/chat_screen.dart';
 import '../../features/tasks/screens/tasks_screen.dart';
 import '../../features/goals/screens/goals_screen.dart';
@@ -17,6 +18,10 @@ import '../../features/ai/presentation/screens/voice_coach_screen.dart';
 import '../../features/ai/presentation/screens/recommendations_screen.dart';
 import '../../features/content/presentation/screens/content_library_screen.dart';
 import '../../features/content/presentation/screens/article_detail_screen.dart';
+import '../../features/content/screens/saved_articles_screen.dart';
+import '../../features/settings/presentation/screens/biometric_settings_screen.dart';
+import '../../features/settings/presentation/screens/widget_settings_screen.dart';
+import '../../features/auth/presentation/screens/biometric_lock_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -55,6 +60,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
       ),
       
       // Main App Navigation
@@ -120,7 +129,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/content/saved',
-        builder: (context, state) => const ContentLibraryScreen(), // TODO: Create SavedArticlesScreen
+        builder: (context, state) => const SavedArticlesScreen(),
+      ),
+      
+      // Settings Routes
+      GoRoute(
+        path: '/settings/biometric',
+        builder: (context, state) => const BiometricSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/widgets',
+        builder: (context, state) => const WidgetSettingsScreen(),
       ),
     ],
   );

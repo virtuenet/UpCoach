@@ -156,6 +156,91 @@ class EmailService {
       return false;
     }
   }
+
+  // Specific email methods
+  public async sendPasswordResetEmail(email: string, resetToken: string): Promise<void> {
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+    await this.sendEmail({
+      to: email,
+      subject: 'Reset Your Password - UpCoach',
+      template: 'password-reset',
+      data: {
+        resetUrl,
+        expiryTime: '1 hour',
+      },
+    });
+  }
+
+  public async sendWelcomeEmail(email: string, name: string): Promise<void> {
+    await this.sendEmail({
+      to: email,
+      subject: 'Welcome to UpCoach!',
+      template: 'welcome',
+      data: {
+        name,
+        loginUrl: `${process.env.FRONTEND_URL}/login`,
+      },
+    });
+  }
+
+  public async sendInvitationEmail(
+    email: string,
+    organizationName: string,
+    inviterName: string,
+    inviteToken: string
+  ): Promise<void> {
+    const acceptUrl = `${process.env.FRONTEND_URL}/accept-invite?token=${inviteToken}`;
+
+    await this.sendEmail({
+      to: email,
+      subject: `You're invited to join ${organizationName} on UpCoach`,
+      template: 'organization-invite',
+      data: {
+        organizationName,
+        inviterName,
+        acceptUrl,
+        expiryTime: '7 days',
+      },
+    });
+  }
+
+  public async sendPaymentFailedEmail(email: string, name: string, retryUrl: string): Promise<void> {
+    await this.sendEmail({
+      to: email,
+      subject: 'Payment Failed - Action Required',
+      template: 'payment-failed',
+      data: {
+        name,
+        retryUrl,
+      },
+    });
+  }
+
+  public async sendReportEmail(
+    email: string,
+    reportType: string,
+    reportData: any,
+    attachmentPath?: string
+  ): Promise<void> {
+    const attachments = attachmentPath
+      ? [{ filename: `${reportType}-report.pdf`, path: attachmentPath }]
+      : undefined;
+
+    await this.sendEmail({
+      to: email,
+      subject: `Your ${reportType} Report - UpCoach`,
+      template: 'report',
+      data: {
+        reportType,
+        reportData,
+        downloadUrl: attachmentPath
+          ? `${process.env.BACKEND_URL}/reports/download/${path.basename(attachmentPath)}`
+          : null,
+      },
+      attachments,
+    });
+  }
 }
 
 export default new EmailService();

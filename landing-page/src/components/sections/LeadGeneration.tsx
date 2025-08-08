@@ -1,26 +1,32 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { ArrowRight, CheckCircle, Users, TrendingUp, Award } from 'lucide-react';
-import LeadCaptureForm from '../LeadCaptureForm';
-import { useState } from 'react';
+import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  CheckCircle,
+  Users,
+  TrendingUp,
+  Award,
+} from "lucide-react";
+import LeadCaptureForm from "../LeadCaptureForm";
+import { useState } from "react";
 
 const benefits = [
   {
     icon: Users,
-    title: 'Join 50,000+ Users',
-    description: 'Be part of a growing community of achievers'
+    title: "Join 50,000+ Users",
+    description: "Be part of a growing community of achievers",
   },
   {
     icon: TrendingUp,
-    title: 'Early Bird Pricing',
-    description: 'Lock in 50% off lifetime discount'
+    title: "Early Bird Pricing",
+    description: "Lock in 50% off lifetime discount",
   },
   {
     icon: Award,
-    title: 'Exclusive Features',
-    description: 'Get access to beta features first'
-  }
+    title: "Exclusive Features",
+    description: "Get access to beta features first",
+  },
 ];
 
 export default function LeadGeneration() {
@@ -38,15 +44,21 @@ export default function LeadGeneration() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <span className="text-primary-600 font-semibold text-sm uppercase tracking-wider">Limited Time Offer</span>
+              <span className="text-primary-600 font-semibold text-sm uppercase tracking-wider">
+                Limited Time Offer
+              </span>
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 mt-2">
                 Get Early Access &
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-secondary-600"> Save 50%</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-secondary-600">
+                  {" "}
+                  Save 50%
+                </span>
               </h2>
-              
+
               <p className="text-xl text-gray-600 mb-8">
-                Join thousands of professionals who are transforming their lives with UpCoach. 
-                Sign up now to secure your lifetime discount and exclusive benefits.
+                Join thousands of professionals who are transforming their lives
+                with UpCoach. Sign up now to secure your lifetime discount and
+                exclusive benefits.
               </p>
 
               {/* Benefits */}
@@ -66,7 +78,9 @@ export default function LeadGeneration() {
                         <Icon className="w-6 h-6 text-primary-600" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900">{benefit.title}</h3>
+                        <h3 className="font-semibold text-gray-900">
+                          {benefit.title}
+                        </h3>
                         <p className="text-gray-600">{benefit.description}</p>
                       </div>
                     </motion.div>
@@ -84,15 +98,21 @@ export default function LeadGeneration() {
               >
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <div className="text-2xl font-bold text-primary-600">92%</div>
+                    <div className="text-2xl font-bold text-primary-600">
+                      92%
+                    </div>
                     <div className="text-sm text-gray-600">Success Rate</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-primary-600">4.9★</div>
+                    <div className="text-2xl font-bold text-primary-600">
+                      4.9★
+                    </div>
                     <div className="text-sm text-gray-600">User Rating</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-primary-600">30d</div>
+                    <div className="text-2xl font-bold text-primary-600">
+                      30d
+                    </div>
                     <div className="text-sm text-gray-600">Avg. to Results</div>
                   </div>
                 </div>
@@ -121,7 +141,7 @@ export default function LeadGeneration() {
                   No credit card required. Unsubscribe anytime.
                 </p>
 
-                <LeadCaptureForm 
+                <LeadCaptureForm
                   source="lead-generation-section"
                   onSuccess={() => setFormSubmitted(true)}
                 />
@@ -157,11 +177,21 @@ export default function LeadGeneration() {
                   Join professionals from these companies:
                 </p>
                 <div className="flex flex-wrap justify-center items-center gap-6 opacity-60">
-                  <span className="text-lg font-semibold text-gray-400">Google</span>
-                  <span className="text-lg font-semibold text-gray-400">Microsoft</span>
-                  <span className="text-lg font-semibold text-gray-400">Apple</span>
-                  <span className="text-lg font-semibold text-gray-400">Meta</span>
-                  <span className="text-lg font-semibold text-gray-400">Amazon</span>
+                  <span className="text-lg font-semibold text-gray-400">
+                    Google
+                  </span>
+                  <span className="text-lg font-semibold text-gray-400">
+                    Microsoft
+                  </span>
+                  <span className="text-lg font-semibold text-gray-400">
+                    Apple
+                  </span>
+                  <span className="text-lg font-semibold text-gray-400">
+                    Meta
+                  </span>
+                  <span className="text-lg font-semibold text-gray-400">
+                    Amazon
+                  </span>
                 </div>
               </motion.div>
             </motion.div>

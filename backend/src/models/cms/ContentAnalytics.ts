@@ -43,7 +43,7 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
   public metadata!: ContentAnalyticsAttributes['metadata'];
   public ipAddress!: string | null;
   public timestamp!: Date;
-  public readonly createdAt!: Date;
+  declare readonly createdAt: Date;
 
   // Static methods for analytics
   static async getContentViews(contentType: string, contentId: string, timeframe: 'day' | 'week' | 'month' = 'week'): Promise<number> {

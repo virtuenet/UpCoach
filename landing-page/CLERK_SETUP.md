@@ -42,21 +42,21 @@ import {
   SignedIn,
   SignedOut,
   UserButton,
-} from '@clerk/nextjs';
+} from "@clerk/nextjs";
 ```
 
 ### Server Components & API Routes
 
 ```typescript
-import { auth } from '@clerk/nextjs/server';
+import { auth } from "@clerk/nextjs/server";
 
 export default async function ProtectedPage() {
   const { userId } = await auth();
-  
+
   if (!userId) {
-    redirect('/');
+    redirect("/");
   }
-  
+
   // Your protected content
 }
 ```
@@ -86,4 +86,4 @@ The middleware automatically protects routes. You can customize protection in `m
 
 - [Clerk Documentation](https://clerk.com/docs)
 - [Next.js App Router Guide](https://clerk.com/docs/quickstarts/nextjs)
-- [Clerk Components Reference](https://clerk.com/docs/components/overview) 
+- [Clerk Components Reference](https://clerk.com/docs/components/overview)

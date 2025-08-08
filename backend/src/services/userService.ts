@@ -1,8 +1,10 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { db } from './database';
 import { ApiError } from '../utils/apiError';
 import { User, CreateUserDto, UpdateUserDto, UserResponseDto } from '../types/database';
 import { logger } from '../utils/logger';
+import { redis } from './redis';
 
 export class UserService {
   static async findById(id: string): Promise<User | null> {
@@ -279,6 +281,166 @@ export class UserService {
     return {
       isValid: errors.length === 0,
       errors,
+    };
+  }
+
+  static async generatePasswordResetToken(userId: number): Promise<string> {
+    try {
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 1); // 1 hour expiry
+
+      // Store token in database or Redis
+      await redis.setEx(
+        `password_reset:${token}`,
+        3600, // 1 hour in seconds
+        JSON.stringify({ userId, expiresAt })
+      );
+
+      return token;
+    } catch (error) {
+      logger.error('Error generating password reset token:', error);
+      throw new ApiError(500, 'Failed to generate password reset token');
+    }
+  }
+
+  static async resetPasswordWithToken(token: string, newPassword: string): Promise<number> {
+    try {
+      // Get token data from Redis
+      const tokenData = await redis.get(`password_reset:${token}`);
+      
+      if (!tokenData) {
+        throw new ApiError(400, 'Invalid or expired reset token');
+      }
+
+      const { userId, expiresAt } = JSON.parse(tokenData);
+
+      // Check if token is expired
+      if (new Date() > new Date(expiresAt)) {
+        await redis.del(`password_reset:${token}`);
+        throw new ApiError(400, 'Reset token has expired');
+      }
+
+      // Hash new password
+      const passwordHash = await bcrypt.hash(newPassword, 10);
+
+      // Update password
+      const result = await db.query(
+        'UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2 RETURNING id',
+        [passwordHash, userId]
+      );
+
+      if (result.rowCount === 0) {
+        throw new ApiError(404, 'User not found');
+      }
+
+      // Delete used token
+      await redis.del(`password_reset:${token}`);
+
+      logger.info('Password reset successfully for user:', userId);
+
+      return userId;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      logger.error('Error resetting password with token:', error);
+      throw new ApiError(500, 'Failed to reset password');
+    }
+  }
+
+  static async verifyGoogleToken(idToken: string): Promise<any> {
+    try {
+      // In production, you would verify the token with Google
+      // For now, we'll throw an error to indicate it needs implementation
+      throw new ApiError(501, 'Google OAuth not yet implemented');
+      
+      // Implementation would look like:
+      // const ticket = await googleClient.verifyIdToken({
+      //   idToken,
+      //   audience: process.env.GOOGLE_CLIENT_ID,
+      // });
+      // return ticket.getPayload();
+    } catch (error) {
+      logger.error('Error verifying Google token:', error);
+      throw new ApiError(401, 'Invalid Google token');
+    }
+  }
+
+  static async createFromGoogle(googleData: {
+    email: string;
+    name: string;
+    googleId: string;
+    avatarUrl?: string;
+    isEmailVerified: boolean;
+  }): Promise<User> {
+    try {
+      const result = await db.query(`
+        INSERT INTO users (email, name, google_id, avatar_url, is_email_verified, role, is_active)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING *
+      `, [
+        googleData.email,
+        googleData.name,
+        googleData.googleId,
+        googleData.avatarUrl,
+        googleData.isEmailVerified,
+        'user',
+        true
+      ]);
+
+      logger.info('User created from Google:', { email: googleData.email });
+
+      const user = result.rows[0];
+      return {
+        id: user.id,
+        email: user.email,
+        passwordHash: '', // Google users don't have passwords
+        name: user.name,
+        role: user.role,
+        avatar: user.avatar_url,
+        bio: user.bio,
+        googleId: user.google_id,
+        isActive: user.is_active,
+        isEmailVerified: user.is_email_verified,
+        preferences: {},
+        onboardingCompleted: user.onboarding_completed,
+        onboardingCompletedAt: user.onboarding_completed_at,
+        onboardingSkipped: user.onboarding_skipped,
+        lastLoginAt: user.last_login_at,
+        createdAt: user.created_at,
+        updatedAt: user.updated_at
+      } as unknown as User;
+    } catch (error: any) {
+      if (error.code === '23505') {
+        throw new ApiError(409, 'User with this email already exists');
+      }
+      logger.error('Error creating user from Google:', error);
+      throw new ApiError(500, 'Failed to create user');
+    }
+  }
+
+  static async updateGoogleId(userId: number, googleId: string): Promise<void> {
+    try {
+      await db.query(
+        'UPDATE users SET google_id = $1, updated_at = NOW() WHERE id = $2',
+        [googleId, userId]
+      );
+    } catch (error) {
+      logger.error('Error updating Google ID:', error);
+      throw new ApiError(500, 'Failed to update Google ID');
+    }
+  }
+
+  private static mapRowToUser(row: any): UserResponseDto {
+    return {
+      id: row.id,
+      email: row.email,
+      name: row.name,
+      avatarUrl: row.avatar_url,
+      role: row.role,
+      isEmailVerified: row.is_email_verified,
+      preferences: {},
+      createdAt: row.created_at,
+      updatedAt: row.updated_at
     };
   }
 } 

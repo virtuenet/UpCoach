@@ -63,8 +63,8 @@ class Experiment extends Model<ExperimentAttributes, ExperimentCreationAttribute
   public segmentation?: SegmentationRules;
   public createdBy!: string;
   public updatedBy!: string;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Instance methods
   public isActive(): boolean {

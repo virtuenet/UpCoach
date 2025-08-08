@@ -1,10 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -12,7 +7,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Badge,
   Button,
@@ -40,7 +35,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui';
+} from "@/components/ui";
 import {
   Play,
   Pause,
@@ -54,9 +49,12 @@ import {
   BarChart3,
   Calendar,
   Users,
-} from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import experimentsService, { Experiment, ExperimentFilters } from '@/services/experimentsService';
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import experimentsService, {
+  Experiment,
+  ExperimentFilters,
+} from "@/services/experimentsService";
 
 interface ExperimentsListProps {
   onCreateExperiment: () => void;
@@ -74,8 +72,8 @@ export default function ExperimentsList({
   const [filters, setFilters] = useState<ExperimentFilters>({
     page: 1,
     limit: 10,
-    sortBy: 'createdAt',
-    sortOrder: 'DESC',
+    sortBy: "createdAt",
+    sortOrder: "DESC",
   });
   const [pagination, setPagination] = useState({
     current: 1,
@@ -83,10 +81,11 @@ export default function ExperimentsList({
     count: 0,
     totalRecords: 0,
   });
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [experimentToDelete, setExperimentToDelete] = useState<Experiment | null>(null);
+  const [experimentToDelete, setExperimentToDelete] =
+    useState<Experiment | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -101,9 +100,9 @@ export default function ExperimentsList({
       setPagination(response.pagination);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to load experiments',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to load experiments",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -112,31 +111,31 @@ export default function ExperimentsList({
 
   const handleSearch = (value: string) => {
     setSearchQuery(value);
-    setFilters(prev => ({ ...prev, search: value, page: 1 }));
+    setFilters((prev) => ({ ...prev, search: value, page: 1 }));
   };
 
   const handleStatusFilter = (status: string) => {
     setStatusFilter(status);
-    setFilters(prev => ({ ...prev, status: status || undefined, page: 1 }));
+    setFilters((prev) => ({ ...prev, status: status || undefined, page: 1 }));
   };
 
   const handlePageChange = (page: number) => {
-    setFilters(prev => ({ ...prev, page }));
+    setFilters((prev) => ({ ...prev, page }));
   };
 
   const handleStartExperiment = async (experiment: Experiment) => {
     try {
       await experimentsService.startExperiment(experiment.id);
       toast({
-        title: 'Success',
+        title: "Success",
         description: `Experiment "${experiment.name}" started successfully`,
       });
       loadExperiments();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to start experiment',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to start experiment",
+        variant: "destructive",
       });
     }
   };
@@ -145,15 +144,15 @@ export default function ExperimentsList({
     try {
       await experimentsService.stopExperiment(experiment.id);
       toast({
-        title: 'Success',
+        title: "Success",
         description: `Experiment "${experiment.name}" stopped successfully`,
       });
       loadExperiments();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to stop experiment',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to stop experiment",
+        variant: "destructive",
       });
     }
   };
@@ -163,15 +162,15 @@ export default function ExperimentsList({
       const newName = `${experiment.name} (Copy)`;
       await experimentsService.duplicateExperiment(experiment.id, newName);
       toast({
-        title: 'Success',
-        description: 'Experiment duplicated successfully',
+        title: "Success",
+        description: "Experiment duplicated successfully",
       });
       loadExperiments();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to duplicate experiment',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to duplicate experiment",
+        variant: "destructive",
       });
     }
   };
@@ -182,17 +181,17 @@ export default function ExperimentsList({
     try {
       await experimentsService.deleteExperiment(experimentToDelete.id);
       toast({
-        title: 'Success',
-        description: 'Experiment deleted successfully',
+        title: "Success",
+        description: "Experiment deleted successfully",
       });
       setDeleteDialogOpen(false);
       setExperimentToDelete(null);
       loadExperiments();
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to delete experiment',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to delete experiment",
+        variant: "destructive",
       });
     }
   };
@@ -200,7 +199,7 @@ export default function ExperimentsList({
   const getStatusBadge = (status: string) => {
     const color = experimentsService.getStatusColor(status);
     const icon = experimentsService.getStatusIcon(status);
-    
+
     return (
       <Badge variant={color as any} className="flex items-center gap-1">
         <span>{icon}</span>
@@ -210,15 +209,15 @@ export default function ExperimentsList({
   };
 
   const canStartExperiment = (experiment: Experiment) => {
-    return experiment.status === 'draft' || experiment.status === 'paused';
+    return experiment.status === "draft" || experiment.status === "paused";
   };
 
   const canStopExperiment = (experiment: Experiment) => {
-    return experiment.status === 'active';
+    return experiment.status === "active";
   };
 
   const canDeleteExperiment = (experiment: Experiment) => {
-    return experiment.status === 'draft';
+    return experiment.status === "draft";
   };
 
   return (
@@ -231,7 +230,10 @@ export default function ExperimentsList({
             Manage and monitor your A/B testing experiments
           </p>
         </div>
-        <Button onClick={onCreateExperiment} className="flex items-center gap-2">
+        <Button
+          onClick={onCreateExperiment}
+          className="flex items-center gap-2"
+        >
           <Plus className="h-4 w-4" />
           Create Experiment
         </Button>
@@ -324,7 +326,7 @@ export default function ExperimentsList({
                           <Calendar className="h-4 w-4" />
                           {experimentsService.formatDuration(
                             experiment.startDate,
-                            experiment.endDate
+                            experiment.endDate,
                           )}
                         </div>
                       </TableCell>
@@ -365,10 +367,16 @@ export default function ExperimentsList({
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                              <DropdownMenuItem onClick={() => onEditExperiment(experiment)}>
+                              <DropdownMenuItem
+                                onClick={() => onEditExperiment(experiment)}
+                              >
                                 Edit
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleDuplicateExperiment(experiment)}>
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleDuplicateExperiment(experiment)
+                                }
+                              >
                                 <Copy className="h-4 w-4 mr-2" />
                                 Duplicate
                               </DropdownMenuItem>
@@ -401,11 +409,16 @@ export default function ExperimentsList({
                       <PaginationPrevious
                         onClick={() => handlePageChange(pagination.current - 1)}
                         className={
-                          pagination.current === 1 ? 'pointer-events-none opacity-50' : ''
+                          pagination.current === 1
+                            ? "pointer-events-none opacity-50"
+                            : ""
                         }
                       />
                     </PaginationItem>
-                    {Array.from({ length: pagination.total }, (_, i) => i + 1).map((page) => (
+                    {Array.from(
+                      { length: pagination.total },
+                      (_, i) => i + 1,
+                    ).map((page) => (
                       <PaginationItem key={page}>
                         <PaginationLink
                           onClick={() => handlePageChange(page)}
@@ -420,8 +433,8 @@ export default function ExperimentsList({
                         onClick={() => handlePageChange(pagination.current + 1)}
                         className={
                           pagination.current === pagination.total
-                            ? 'pointer-events-none opacity-50'
-                            : ''
+                            ? "pointer-events-none opacity-50"
+                            : ""
                         }
                       />
                     </PaginationItem>
@@ -439,13 +452,16 @@ export default function ExperimentsList({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Experiment</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{experimentToDelete?.name}"? This action cannot
-              be undone.
+              Are you sure you want to delete "{experimentToDelete?.name}"? This
+              action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteExperiment} className="bg-destructive">
+            <AlertDialogAction
+              onClick={handleDeleteExperiment}
+              className="bg-destructive"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -453,4 +469,4 @@ export default function ExperimentsList({
       </AlertDialog>
     </div>
   );
-} 
+}

@@ -1,7 +1,16 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { getActiveExperiments, markReturningUser } from '@/services/experiments';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+import {
+  getActiveExperiments,
+  markReturningUser,
+} from "@/services/experiments";
 
 interface ExperimentContextType {
   experiments: Record<string, string>;
@@ -30,12 +39,12 @@ export function ExperimentProvider({ children }: ExperimentProviderProps) {
     const activeExperiments = getActiveExperiments();
     setExperiments(activeExperiments);
     setIsLoading(false);
-    
+
     // Mark as returning user after first visit
     const timer = setTimeout(() => {
       markReturningUser();
     }, 5000);
-    
+
     return () => clearTimeout(timer);
   }, []);
 

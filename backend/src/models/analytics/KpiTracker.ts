@@ -208,8 +208,8 @@ export class KpiTracker extends Model<KpiTrackerAttributes, KpiTrackerCreationAt
   public confidentiality!: 'public' | 'team' | 'private';
   public tags!: string[];
   
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   /**
    * Calculate overall progress based on key results or milestones

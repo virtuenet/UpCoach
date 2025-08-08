@@ -71,8 +71,8 @@ export class Transaction extends Model<TransactionAttributes, TransactionCreatio
   public refundedAmount?: number;
   public fee?: number;
   public net?: number;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Associations
   public readonly user?: User;

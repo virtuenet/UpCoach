@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { format } from 'date-fns';
-import { Plus, Download, Upload, Trash2, Edit } from 'lucide-react';
-import { financialApi, CostTracking } from '../services/financialApi';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { useState, useEffect } from "react";
+import { format } from "date-fns";
+import { Plus, Download, Upload, Trash2, Edit } from "lucide-react";
+import { financialApi, CostTracking } from "../services/financialApi";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 export default function CostTrackingPage() {
   const [loading, setLoading] = useState(true);
@@ -23,14 +23,14 @@ export default function CostTrackingPage() {
       setCosts(response.costs);
       setTotalCount(response.total);
     } catch (error) {
-      console.error('Failed to load costs:', error);
+      console.error("Failed to load costs:", error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this cost entry?')) {
+    if (!confirm("Are you sure you want to delete this cost entry?")) {
       return;
     }
 
@@ -38,14 +38,14 @@ export default function CostTrackingPage() {
       await financialApi.deleteCost(id);
       await loadCosts();
     } catch (error) {
-      console.error('Failed to delete cost:', error);
+      console.error("Failed to delete cost:", error);
     }
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -133,32 +133,41 @@ export default function CostTrackingPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                      {cost.category.replace(/_/g, ' ')}
+                      {cost.category.replace(/_/g, " ")}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {cost.provider || '-'}
+                    {cost.provider || "-"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {formatCurrency(cost.amount)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {format(new Date(cost.periodStart), 'MMM d')} - {format(new Date(cost.periodEnd), 'MMM d, yyyy')}
+                    {format(new Date(cost.periodStart), "MMM d")} -{" "}
+                    {format(new Date(cost.periodEnd), "MMM d, yyyy")}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      cost.type === 'fixed' ? 'bg-gray-100 text-gray-800' :
-                      cost.type === 'variable' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-green-100 text-green-800'
-                    }`}>
+                    <span
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        cost.type === "fixed"
+                          ? "bg-gray-100 text-gray-800"
+                          : cost.type === "variable"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-green-100 text-green-800"
+                      }`}
+                    >
                       {cost.type}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      cost.isApproved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {cost.isApproved ? 'Approved' : 'Pending'}
+                    <span
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        cost.isApproved
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {cost.isApproved ? "Approved" : "Pending"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -202,19 +211,19 @@ export default function CostTrackingPage() {
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700">
-                Showing{' '}
-                <span className="font-medium">{(page - 1) * 20 + 1}</span>{' '}
-                to{' '}
+                Showing{" "}
+                <span className="font-medium">{(page - 1) * 20 + 1}</span> to{" "}
                 <span className="font-medium">
                   {Math.min(page * 20, totalCount)}
-                </span>{' '}
-                of{' '}
-                <span className="font-medium">{totalCount}</span>{' '}
-                results
+                </span>{" "}
+                of <span className="font-medium">{totalCount}</span> results
               </p>
             </div>
             <div>
-              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+              <nav
+                className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                aria-label="Pagination"
+              >
                 <button
                   onClick={() => setPage(Math.max(1, page - 1))}
                   disabled={page === 1}
@@ -236,4 +245,4 @@ export default function CostTrackingPage() {
       </div>
     </div>
   );
-} 
+}

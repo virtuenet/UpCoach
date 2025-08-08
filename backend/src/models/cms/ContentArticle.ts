@@ -55,7 +55,7 @@ export interface ContentArticleCreationAttributes extends Optional<ContentArticl
 
 export class ContentArticle extends Model<ContentArticleAttributes, ContentArticleCreationAttributes> 
   implements ContentArticleAttributes {
-  public id!: number;
+  declare id: number;
   public slug!: string;
   public title!: string;
   public summary?: string;
@@ -79,8 +79,8 @@ export class ContentArticle extends Model<ContentArticleAttributes, ContentArtic
   public isPinned!: boolean;
   public lastModifiedBy?: number;
   public metadata?: any;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Associations
   public readonly author?: User;

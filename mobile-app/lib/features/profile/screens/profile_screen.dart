@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../../core/theme/app_theme.dart';
 import '../../../features/auth/providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
+import '../services/profile_service.dart';
 import 'edit_profile_screen.dart';
 import 'settings_screen.dart';
+import 'help_center_screen.dart';
+import 'feedback_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -96,7 +101,7 @@ class ProfileScreen extends ConsumerWidget {
                               size: 20,
                             ),
                             onPressed: () {
-                              // TODO: Implement image picker
+                              _showImagePickerOptions(context, ref);
                             },
                           ),
                         ),
@@ -242,14 +247,24 @@ class ProfileScreen extends ConsumerWidget {
                   icon: Icons.help_outline,
                   title: 'Help Center',
                   onTap: () {
-                    // TODO: Navigate to help center
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HelpCenterScreen(),
+                      ),
+                    );
                   },
                 ),
                 _MenuItem(
                   icon: Icons.feedback_outlined,
                   title: 'Send Feedback',
                   onTap: () {
-                    // TODO: Show feedback form
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const FeedbackScreen(),
+                      ),
+                    );
                   },
                 ),
                 _MenuItem(
@@ -405,6 +420,91 @@ class ProfileScreen extends ConsumerWidget {
         )),
       ],
     );
+  }
+
+  void _showImagePickerOptions(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Change Profile Photo',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Take Photo'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera, ref);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choose from Gallery'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery, ref);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text('Remove Photo', style: TextStyle(color: Colors.red)),
+              onTap: () {
+                Navigator.pop(context);
+                _removePhoto(ref);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source, WidgetRef ref) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+      source: source,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 85,
+    );
+
+    if (image != null) {
+      try {
+        final profileService = ref.read(profileServiceProvider);
+        await profileService.updateProfilePhoto(File(image.path));
+        
+        // Refresh profile data
+        ref.refresh(profileProvider);
+      } catch (e) {
+        // Handle error
+        print('Failed to update profile photo: $e');
+      }
+    }
+  }
+
+  Future<void> _removePhoto(WidgetRef ref) async {
+    try {
+      final profileService = ref.read(profileServiceProvider);
+      await profileService.removeProfilePhoto();
+      
+      // Refresh profile data
+      ref.refresh(profileProvider);
+    } catch (e) {
+      // Handle error
+      print('Failed to remove profile photo: $e');
+    }
   }
 }
 

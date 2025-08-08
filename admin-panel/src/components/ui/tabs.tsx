@@ -1,38 +1,47 @@
-import * as React from "react"
+import * as React from "react";
 
 interface TabsContextValue {
-  value: string
-  onValueChange: (value: string) => void
+  value: string;
+  onValueChange: (value: string) => void;
 }
 
-const TabsContext = React.createContext<TabsContextValue | undefined>(undefined)
+const TabsContext = React.createContext<TabsContextValue | undefined>(
+  undefined,
+);
 
 interface TabsProps {
-  defaultValue?: string
-  value?: string
-  onValueChange?: (value: string) => void
-  className?: string
-  children: React.ReactNode
+  defaultValue?: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
+  className?: string;
+  children: React.ReactNode;
 }
 
-const Tabs = ({ defaultValue = "", value: controlledValue, onValueChange, className = "", children }: TabsProps) => {
-  const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue)
-  const value = controlledValue ?? uncontrolledValue
-  
+const Tabs = ({
+  defaultValue = "",
+  value: controlledValue,
+  onValueChange,
+  className = "",
+  children,
+}: TabsProps) => {
+  const [uncontrolledValue, setUncontrolledValue] =
+    React.useState(defaultValue);
+  const value = controlledValue ?? uncontrolledValue;
+
   const handleValueChange = (newValue: string) => {
     if (onValueChange) {
-      onValueChange(newValue)
+      onValueChange(newValue);
     } else {
-      setUncontrolledValue(newValue)
+      setUncontrolledValue(newValue);
     }
-  }
-  
+  };
+
   return (
     <TabsContext.Provider value={{ value, onValueChange: handleValueChange }}>
       <div className={className}>{children}</div>
     </TabsContext.Provider>
-  )
-}
+  );
+};
 
 const TabsList = React.forwardRef<
   HTMLDivElement,
@@ -43,20 +52,21 @@ const TabsList = React.forwardRef<
     className={`inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground ${className}`}
     {...props}
   />
-))
-TabsList.displayName = "TabsList"
+));
+TabsList.displayName = "TabsList";
 
-interface TabsTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  value: string
+interface TabsTriggerProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  value: string;
 }
 
 const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
   ({ className = "", value, ...props }, ref) => {
-    const context = React.useContext(TabsContext)
-    if (!context) throw new Error("TabsTrigger must be used within Tabs")
-    
-    const isActive = context.value === value
-    
+    const context = React.useContext(TabsContext);
+    if (!context) throw new Error("TabsTrigger must be used within Tabs");
+
+    const isActive = context.value === value;
+
     return (
       <button
         ref={ref}
@@ -69,31 +79,31 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
         onClick={() => context.onValueChange(value)}
         {...props}
       />
-    )
-  }
-)
-TabsTrigger.displayName = "TabsTrigger"
+    );
+  },
+);
+TabsTrigger.displayName = "TabsTrigger";
 
 interface TabsContentProps extends React.HTMLAttributes<HTMLDivElement> {
-  value: string
+  value: string;
 }
 
 const TabsContent = React.forwardRef<HTMLDivElement, TabsContentProps>(
   ({ className = "", value, ...props }, ref) => {
-    const context = React.useContext(TabsContext)
-    if (!context) throw new Error("TabsContent must be used within Tabs")
-    
-    if (context.value !== value) return null
-    
+    const context = React.useContext(TabsContext);
+    if (!context) throw new Error("TabsContent must be used within Tabs");
+
+    if (context.value !== value) return null;
+
     return (
       <div
         ref={ref}
         className={`mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${className}`}
         {...props}
       />
-    )
-  }
-)
-TabsContent.displayName = "TabsContent"
+    );
+  },
+);
+TabsContent.displayName = "TabsContent";
 
-export { Tabs, TabsList, TabsTrigger, TabsContent }
+export { Tabs, TabsList, TabsTrigger, TabsContent };

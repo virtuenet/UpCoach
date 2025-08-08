@@ -14,13 +14,13 @@ export interface ContentInteractionAttributes {
 export interface ContentInteractionCreationAttributes extends Optional<ContentInteractionAttributes, 'id' | 'metadata' | 'createdAt' | 'updatedAt'> {}
 
 class ContentInteraction extends Model<ContentInteractionAttributes, ContentInteractionCreationAttributes> implements ContentInteractionAttributes {
-  public id!: number;
+  declare id: number;
   public contentId!: number;
   public userId!: number;
   public interactionType!: 'view' | 'like' | 'share' | 'save' | 'comment';
   public metadata?: any;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 ContentInteraction.init(

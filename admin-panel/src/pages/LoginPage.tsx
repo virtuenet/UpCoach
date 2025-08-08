@@ -1,20 +1,20 @@
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useAuthStore } from '../stores/authStore'
-import LoadingSpinner from '../components/LoadingSpinner'
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useAuthStore } from "../stores/authStore";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-})
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
 
-type LoginFormData = z.infer<typeof loginSchema>
+type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const { login } = useAuthStore()
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuthStore();
 
   const {
     register,
@@ -22,18 +22,18 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-  })
+  });
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      setIsLoading(true)
-      await login(data.email, data.password)
+      setIsLoading(true);
+      await login(data.email, data.password);
     } catch (error) {
       // Error is handled in the store
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -53,7 +53,7 @@ export default function LoginPage() {
                 Email address
               </label>
               <input
-                {...register('email')}
+                {...register("email")}
                 type="email"
                 autoComplete="email"
                 required
@@ -61,7 +61,9 @@ export default function LoginPage() {
                 placeholder="Email address"
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.email.message}
+                </p>
               )}
             </div>
             <div>
@@ -69,7 +71,7 @@ export default function LoginPage() {
                 Password
               </label>
               <input
-                {...register('password')}
+                {...register("password")}
                 type="password"
                 autoComplete="current-password"
                 required
@@ -77,7 +79,9 @@ export default function LoginPage() {
                 placeholder="Password"
               />
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.password.message}
+                </p>
               )}
             </div>
           </div>
@@ -88,15 +92,11 @@ export default function LoginPage() {
               disabled={isLoading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? (
-                <LoadingSpinner size="sm" />
-              ) : (
-                'Sign in'
-              )}
+              {isLoading ? <LoadingSpinner size="sm" /> : "Sign in"}
             </button>
           </div>
         </form>
       </div>
     </div>
-  )
-} 
+  );
+}

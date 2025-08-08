@@ -85,8 +85,8 @@ export class BillingEvent extends Model<BillingEventAttributes, BillingEventCrea
   public processingError?: string;
   public retryCount!: number;
   public metadata?: any;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Associations
   public readonly user?: User;

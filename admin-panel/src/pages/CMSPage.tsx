@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { 
-  FileText, 
-  FolderOpen, 
-  Tag, 
-  Image, 
+import React, { useState } from "react";
+import {
+  FileText,
+  FolderOpen,
+  Tag,
+  Image,
   Plus,
   Search,
   Filter,
@@ -12,33 +12,47 @@ import {
   Edit,
   Trash2,
   MoreVertical,
-  TrendingUp
-} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import ContentList from '../components/cms/ContentList';
-import ContentStats from '../components/cms/ContentStats';
+  TrendingUp,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import ContentList from "../components/cms/ContentList";
+import ContentStats from "../components/cms/ContentStats";
 
-type ContentTab = 'all' | 'articles' | 'guides' | 'exercises' | 'lessons' | 'tips';
+type ContentTab =
+  | "all"
+  | "articles"
+  | "guides"
+  | "exercises"
+  | "lessons"
+  | "tips";
 
 const CMSPage: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<ContentTab>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<ContentTab>("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const tabs: { id: ContentTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'all', label: 'All Content', icon: <FileText className="w-4 h-4" /> },
-    { id: 'articles', label: 'Articles', icon: <FileText className="w-4 h-4" /> },
-    { id: 'guides', label: 'Guides', icon: <FolderOpen className="w-4 h-4" /> },
-    { id: 'exercises', label: 'Exercises', icon: <TrendingUp className="w-4 h-4" /> },
-    { id: 'lessons', label: 'Lessons', icon: <Calendar className="w-4 h-4" /> },
-    { id: 'tips', label: 'Tips', icon: <Tag className="w-4 h-4" /> }
+    { id: "all", label: "All Content", icon: <FileText className="w-4 h-4" /> },
+    {
+      id: "articles",
+      label: "Articles",
+      icon: <FileText className="w-4 h-4" />,
+    },
+    { id: "guides", label: "Guides", icon: <FolderOpen className="w-4 h-4" /> },
+    {
+      id: "exercises",
+      label: "Exercises",
+      icon: <TrendingUp className="w-4 h-4" />,
+    },
+    { id: "lessons", label: "Lessons", icon: <Calendar className="w-4 h-4" /> },
+    { id: "tips", label: "Tips", icon: <Tag className="w-4 h-4" /> },
   ];
 
   const handleCreateContent = () => {
-    navigate('/cms/content/new');
+    navigate("/cms/content/new");
   };
 
   return (
@@ -47,8 +61,12 @@ const CMSPage: React.FC = () => {
       <div className="mb-8">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Content Management</h1>
-            <p className="text-gray-600 mt-1">Create and manage coaching content</p>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Content Management
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Create and manage coaching content
+            </p>
           </div>
           <button
             onClick={handleCreateContent}
@@ -73,9 +91,10 @@ const CMSPage: React.FC = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`
                   flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm
-                  ${activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ${
+                    activeTab === tab.id
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                   }
                 `}
               >

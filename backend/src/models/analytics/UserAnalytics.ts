@@ -202,8 +202,8 @@ export class UserAnalytics extends Model<UserAnalyticsAttributes, UserAnalyticsC
   public nextCalculationDate!: Date;
   public dataQualityScore!: number;
   
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   /**
    * Calculate overall health score for the user

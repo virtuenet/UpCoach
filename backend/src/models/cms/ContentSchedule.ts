@@ -18,7 +18,7 @@ export interface ContentScheduleAttributes {
 export interface ContentScheduleCreationAttributes extends Optional<ContentScheduleAttributes, 'id' | 'status' | 'metadata' | 'processedAt' | 'error' | 'createdAt' | 'updatedAt'> {}
 
 class ContentSchedule extends Model<ContentScheduleAttributes, ContentScheduleCreationAttributes> implements ContentScheduleAttributes {
-  public id!: number;
+  declare id: number;
   public contentId!: number;
   public scheduleType!: 'publish' | 'unpublish' | 'update';
   public scheduledFor!: Date;
@@ -27,8 +27,8 @@ class ContentSchedule extends Model<ContentScheduleAttributes, ContentScheduleCr
   public createdBy!: number;
   public processedAt?: Date;
   public error?: string;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 ContentSchedule.init(

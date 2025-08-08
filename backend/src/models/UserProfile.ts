@@ -95,8 +95,8 @@ export class UserProfile extends Model<UserProfileAttributes, UserProfileCreatio
   public obstacles?: string[];
   public preferences?: any;
   public metadata?: any;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 UserProfile.init(

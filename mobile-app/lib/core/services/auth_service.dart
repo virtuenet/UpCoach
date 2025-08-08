@@ -145,6 +145,49 @@ class AuthService {
       return 'An unexpected error occurred';
     }
   }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _dio.post(
+        '/auth/forgot-password',
+        data: {'email': email},
+      );
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<AuthResponse> signInWithGoogle() async {
+    try {
+      // TODO: Implement actual Google Sign In using google_sign_in package
+      // For now, throw an error to indicate it's not implemented
+      throw Exception('Google Sign In not yet implemented');
+      
+      // Implementation would look like:
+      // final GoogleSignIn _googleSignIn = GoogleSignIn();
+      // final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      // if (googleUser == null) throw Exception('Google sign in cancelled');
+      // 
+      // final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      // 
+      // final response = await _dio.post(
+      //   '/auth/google',
+      //   data: {
+      //     'id_token': googleAuth.idToken,
+      //     'access_token': googleAuth.accessToken,
+      //   },
+      // );
+      // 
+      // final authResponse = AuthResponse.fromJson(response.data);
+      // 
+      // await _secureStorage.write(key: 'access_token', value: authResponse.accessToken);
+      // await _secureStorage.write(key: 'refresh_token', value: authResponse.refreshToken);
+      // 
+      // return authResponse;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
 }
 
  

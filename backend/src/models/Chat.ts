@@ -27,8 +27,8 @@ export class Chat extends Model<ChatAttributes, ChatCreationAttributes> implemen
   public lastMessageAt?: Date;
   public messageCount!: number;
   public metadata?: any;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Associations
   public static associate(models: any) {

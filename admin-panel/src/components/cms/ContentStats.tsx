@@ -1,14 +1,14 @@
-import React from 'react';
-import { 
-  FileText, 
-  Eye, 
-  TrendingUp, 
+import React from "react";
+import {
+  FileText,
+  Eye,
+  TrendingUp,
   Clock,
   CheckCircle,
   Archive,
   PenTool,
-  Calendar
-} from 'lucide-react';
+  Calendar,
+} from "lucide-react";
 
 interface StatCard {
   title: string;
@@ -21,47 +21,47 @@ interface StatCard {
 const ContentStats: React.FC = () => {
   const stats: StatCard[] = [
     {
-      title: 'Total Content',
-      value: '248',
+      title: "Total Content",
+      value: "248",
       change: 12.5,
       icon: <FileText className="w-6 h-6" />,
-      color: 'bg-blue-500'
+      color: "bg-blue-500",
     },
     {
-      title: 'Published',
-      value: '186',
+      title: "Published",
+      value: "186",
       change: 8.3,
       icon: <CheckCircle className="w-6 h-6" />,
-      color: 'bg-green-500'
+      color: "bg-green-500",
     },
     {
-      title: 'Draft',
-      value: '42',
+      title: "Draft",
+      value: "42",
       change: -5.2,
       icon: <PenTool className="w-6 h-6" />,
-      color: 'bg-yellow-500'
+      color: "bg-yellow-500",
     },
     {
-      title: 'Scheduled',
-      value: '12',
+      title: "Scheduled",
+      value: "12",
       change: 25.0,
       icon: <Calendar className="w-6 h-6" />,
-      color: 'bg-purple-500'
+      color: "bg-purple-500",
     },
     {
-      title: 'Total Views',
-      value: '45.2K',
+      title: "Total Views",
+      value: "45.2K",
       change: 18.7,
       icon: <Eye className="w-6 h-6" />,
-      color: 'bg-indigo-500'
+      color: "bg-indigo-500",
     },
     {
-      title: 'Avg. Read Time',
-      value: '4.8 min',
+      title: "Avg. Read Time",
+      value: "4.8 min",
       change: 2.1,
       icon: <Clock className="w-6 h-6" />,
-      color: 'bg-pink-500'
-    }
+      color: "bg-pink-500",
+    },
   ];
 
   return (
@@ -72,10 +72,14 @@ const ContentStats: React.FC = () => {
             <div className={`${stat.color} text-white p-3 rounded-lg`}>
               {stat.icon}
             </div>
-            <div className={`flex items-center gap-1 text-sm ${
-              stat.change > 0 ? 'text-green-600' : 'text-red-600'
-            }`}>
-              <TrendingUp className={`w-4 h-4 ${stat.change < 0 ? 'rotate-180' : ''}`} />
+            <div
+              className={`flex items-center gap-1 text-sm ${
+                stat.change > 0 ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              <TrendingUp
+                className={`w-4 h-4 ${stat.change < 0 ? "rotate-180" : ""}`}
+              />
               {Math.abs(stat.change)}%
             </div>
           </div>

@@ -16,15 +16,15 @@ export interface ContentCommentAttributes {
 export interface ContentCommentCreationAttributes extends Optional<ContentCommentAttributes, 'id' | 'parentId' | 'status' | 'likes' | 'createdAt' | 'updatedAt'> {}
 
 class ContentComment extends Model<ContentCommentAttributes, ContentCommentCreationAttributes> implements ContentCommentAttributes {
-  public id!: number;
+  declare id: number;
   public contentId!: number;
   public userId!: number;
   public parentId?: number;
   public comment!: string;
   public status!: 'pending' | 'approved' | 'rejected' | 'flagged';
   public likes!: number;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 ContentComment.init(
