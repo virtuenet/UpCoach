@@ -8,7 +8,7 @@ const router = Router();
 
 // All routes require authentication and admin role
 router.use(authenticateToken);
-router.use(requireRole(['admin']));
+router.use(requireRole('admin'));
 
 // Get AI metrics
 router.get('/ai/metrics', aiAnalyticsController.getAIMetrics);

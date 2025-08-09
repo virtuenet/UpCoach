@@ -12,7 +12,8 @@ import {
   BeforeUpdate,
 } from 'sequelize-typescript';
 import { CoachProfile } from './CoachProfile';
-import { User } from './User';
+import { makeCompatible, UserModel } from './ModelCompatibility';
+const User = makeCompatible(UserModel);
 import { Op } from 'sequelize';
 import * as sequelize from 'sequelize';
 
@@ -241,14 +242,14 @@ export class ClientCoachPackage extends Model {
   @BelongsTo(() => CoachPackage)
   package!: CoachPackage;
 
-  @ForeignKey(() => User)
+  @ForeignKey(() => User as any)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
   clientId!: number;
 
-  @BelongsTo(() => User)
+  @BelongsTo(() => User as any)
   client!: User;
 
   @Column({

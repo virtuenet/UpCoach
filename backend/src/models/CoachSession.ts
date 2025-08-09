@@ -10,7 +10,8 @@ import {
   BeforeCreate,
   AfterUpdate,
 } from 'sequelize-typescript';
-import { User } from './User';
+import { makeCompatible, UserModel } from './ModelCompatibility';
+const User = makeCompatible(UserModel);
 import { CoachProfile } from './CoachProfile';
 import { Op, literal } from 'sequelize';
 
@@ -65,14 +66,14 @@ export class CoachSession extends Model {
   @BelongsTo(() => CoachProfile)
   coach!: CoachProfile;
 
-  @ForeignKey(() => User)
+  @ForeignKey(() => User as any)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
   clientId!: number;
 
-  @BelongsTo(() => User)
+  @BelongsTo(() => User as any)
   client!: User;
 
   // Session Details

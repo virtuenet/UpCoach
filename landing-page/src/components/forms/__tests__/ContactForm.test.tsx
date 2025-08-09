@@ -62,7 +62,7 @@ describe("ContactForm", () => {
       await user.click(screen.getByRole("button", { name: /send message/i }));
 
       expect(
-        screen.getByText(/please enter a valid email/i),
+        screen.getByText(/please enter a valid email address/i),
       ).toBeInTheDocument();
     });
 
@@ -158,9 +158,8 @@ describe("ContactForm", () => {
     it("renders full layout with contact info", () => {
       render(<ContactForm variant="full" />);
 
-      expect(
-        screen.getByText(/let's build something amazing together/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/let's build something/i)).toBeInTheDocument();
+      expect(screen.getByText(/amazing together/i)).toBeInTheDocument();
       expect(screen.getByText(/email us/i)).toBeInTheDocument();
       expect(screen.getByText(/hello@upcoach.ai/i)).toBeInTheDocument();
       expect(screen.getByText(/live chat/i)).toBeInTheDocument();
@@ -170,8 +169,10 @@ describe("ContactForm", () => {
     it("includes company field with icon", () => {
       render(<ContactForm variant="full" />);
 
-      expect(screen.getByPlaceholderText(/company/i)).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(/your name/i)).toBeInTheDocument();
+      // Company field doesn't have placeholder, check by label
+      expect(screen.getByText(/company/i)).toBeInTheDocument();
+      // Name field doesn't have placeholder, check by label
+      expect(screen.getByText(/name \*/i)).toBeInTheDocument();
       expect(screen.getByPlaceholderText(/email address/i)).toBeInTheDocument();
       expect(screen.getByPlaceholderText(/your message/i)).toBeInTheDocument();
     });

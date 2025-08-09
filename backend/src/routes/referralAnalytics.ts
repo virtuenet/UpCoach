@@ -7,7 +7,7 @@ const router = Router();
 
 // All routes require authentication and admin role
 router.use(authenticateToken);
-router.use(requireRole(['admin']));
+router.use(requireRole('admin'));
 
 // Get referral statistics
 router.get('/referrals/stats', referralAnalyticsController.getReferralStats);

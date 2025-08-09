@@ -10,7 +10,8 @@ import {
   UpdatedAt,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
-import { User } from './User';
+import { makeCompatible, UserModel } from './ModelCompatibility';
+const User = makeCompatible(UserModel);
 import { AIFeedback } from './AIFeedback';
 
 @Table({
@@ -25,14 +26,14 @@ export class AIInteraction extends Model {
   })
   declare id: number;
 
-  @ForeignKey(() => User)
+  @ForeignKey(() => User as any)
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
   })
   userId?: number;
 
-  @BelongsTo(() => User)
+  @BelongsTo(() => User as any)
   user?: User;
 
   @Column({

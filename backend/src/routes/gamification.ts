@@ -9,26 +9,26 @@ router.use(authenticateToken);
 
 // User stats and achievements
 router.get('/stats', gamificationController.getUserStats);
-router.get('/achievements', ...gamificationController.getUserAchievements);
-router.post('/achievements/:achievementId/claim', ...gamificationController.claimAchievement);
+router.get('/achievements', gamificationController.getUserAchievements);
+router.post('/achievements/:achievementId/claim', gamificationController.claimAchievement);
 
 // Streaks
 router.get('/streaks', gamificationController.getUserStreaks);
-router.post('/streaks/update', ...gamificationController.updateStreak);
+router.post('/streaks/update', gamificationController.updateStreak);
 
 // Challenges
-router.get('/challenges', ...gamificationController.getChallenges);
-router.post('/challenges/:challengeId/join', ...gamificationController.joinChallenge);
+router.get('/challenges', gamificationController.getChallenges);
+router.post('/challenges/:challengeId/join', gamificationController.joinChallenge);
 
 // Leaderboard
-router.get('/leaderboard', ...gamificationController.getLeaderboard);
+router.get('/leaderboard', gamificationController.getLeaderboard);
 
 // Reward store
-router.get('/rewards/store', ...gamificationController.getRewardStore);
-router.post('/rewards/purchase/:itemId', ...gamificationController.purchaseReward);
+router.get('/rewards/store', gamificationController.getRewardStore);
+router.post('/rewards/purchase/:itemId', gamificationController.purchaseReward);
 router.get('/rewards/my-rewards', gamificationController.getUserRewards);
 
 // Activity tracking (internal use)
-router.post('/track', ...gamificationController.trackActivity);
+router.post('/track', gamificationController.trackActivity);
 
 export default router;

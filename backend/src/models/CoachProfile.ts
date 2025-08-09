@@ -11,7 +11,8 @@ import {
   BeforeCreate,
   BeforeUpdate,
 } from 'sequelize-typescript';
-import { User } from './User';
+import { makeCompatible, UserModel } from './ModelCompatibility';
+const User = makeCompatible(UserModel);
 import { CoachSession } from './CoachSession';
 import { CoachReview } from './CoachReview';
 import { CoachPackage } from './CoachPackage';
@@ -46,7 +47,7 @@ export class CoachProfile extends Model {
   })
   declare id: number;
 
-  @ForeignKey(() => User)
+  @ForeignKey(() => User as any)
   @Column({
     type: DataType.INTEGER,
     unique: true,
@@ -54,7 +55,7 @@ export class CoachProfile extends Model {
   })
   userId!: number;
 
-  @BelongsTo(() => User)
+  @BelongsTo(() => User as any)
   user!: User;
 
   @Column({
