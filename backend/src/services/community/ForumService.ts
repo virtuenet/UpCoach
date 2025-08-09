@@ -88,7 +88,7 @@ export class ForumService {
       await transaction.commit();
 
       // Clear category threads cache
-      await cacheService.delete(`forum:threads:${data.categoryId}:*`);
+      await cacheService.del(`forum:threads:${data.categoryId}:*`);
 
       // Track activity
       await this.trackActivity(data.userId, 'thread_created', 'thread', thread.id);

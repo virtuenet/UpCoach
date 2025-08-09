@@ -3,6 +3,7 @@ import { Organization, OrganizationAttributes } from '../../models/Organization'
 import { Team } from '../../models/Team';
 import { User } from '../../models/User';
 import { sequelize } from '../../models';
+import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
 import { AppError } from '../../utils/errors';
 import { generateSlug } from '../../utils/slug';
@@ -137,7 +138,7 @@ export class OrganizationService {
     if (data.name && data.name !== organization.name) {
       const newSlug = generateSlug(data.name);
       const slugExists = await Organization.findOne({
-        where: { slug: newSlug, id: { [sequelize.Op.ne]: organizationId } },
+        where: { slug: newSlug, id: { [Op.ne]: organizationId } },
       });
 
       if (!slugExists) {
@@ -212,7 +213,7 @@ export class OrganizationService {
 
       await transaction.commit();
 
-      const invitationId = result[0].id;
+      const invitationId = (result[0] as any).id;
 
       logger.info('Organization invitation created', {
         organizationId,
@@ -259,9 +260,9 @@ export class OrganizationService {
          VALUES (:organizationId, :userId, :role, true)`,
         {
           replacements: {
-            organizationId: invitation.organization_id,
+            organizationId: (invitation as any).organization_id,
             userId,
-            role: invitation.role,
+            role: (invitation as any).role,
           },
           transaction,
         }

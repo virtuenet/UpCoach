@@ -121,7 +121,7 @@ export class SSOService {
   async initiateSAMLLogin(configId: number): Promise<string> {
     const saml = await this.getSAMLProvider(configId);
     
-    const loginUrl = await saml.getAuthorizeUrlAsync();
+    const loginUrl = await saml.getAuthorizeUrlAsync('', '', '');
     
     logger.info('SAML login initiated', { configId });
     
@@ -192,7 +192,7 @@ export class SSOService {
             organizationId: config.organization_id,
             configId,
             sessionId,
-            idpSessionId: profile.sessionIndex,
+            idpSessionId: (profile as any).sessionIndex,
             attributes: JSON.stringify(attributes),
             expiresAt,
           },

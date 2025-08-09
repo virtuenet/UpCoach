@@ -198,23 +198,34 @@ export default function NewsletterForm({
 
   // Default inline variant
   return (
-    <form onSubmit={handleSubmit} className={`flex gap-2 ${className}`}>
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Enter your email"
-        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary-500 transition-colors text-sm"
-        disabled={status === "loading" || status === "success"}
-        required
-      />
-      <button
-        type="submit"
-        disabled={status === "loading" || status === "success"}
-        className="px-6 py-2 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap"
-      >
-        {status === "loading" ? "Subscribing..." : "Subscribe"}
-      </button>
-    </form>
+    <div className={className}>
+      <form onSubmit={handleSubmit} className="flex gap-2">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Enter your email"
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary-500 transition-colors text-sm"
+          disabled={status === "loading" || status === "success"}
+          required
+        />
+        <button
+          type="submit"
+          disabled={status === "loading" || status === "success"}
+          className="px-6 py-2 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap"
+        >
+          {status === "loading" ? "Subscribing..." : "Subscribe"}
+        </button>
+      </form>
+      {message && (
+        <p
+          className={`text-sm mt-2 ${
+            status === "error" ? "text-red-600" : "text-green-600"
+          }`}
+        >
+          {message}
+        </p>
+      )}
+    </div>
   );
 }

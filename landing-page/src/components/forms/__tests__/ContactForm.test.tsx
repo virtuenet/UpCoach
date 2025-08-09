@@ -61,9 +61,13 @@ describe("ContactForm", () => {
 
       await user.click(screen.getByRole("button", { name: /send message/i }));
 
-      expect(
-        screen.getByText(/please enter a valid email address/i),
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getByText(/please enter a valid email address/i),
+        ).toBeInTheDocument();
+      });
+      
+      expect(global.fetch).not.toHaveBeenCalled();
     });
 
     it("validates message length", async () => {
@@ -163,18 +167,20 @@ describe("ContactForm", () => {
       expect(screen.getByText(/email us/i)).toBeInTheDocument();
       expect(screen.getByText(/hello@upcoach.ai/i)).toBeInTheDocument();
       expect(screen.getByText(/live chat/i)).toBeInTheDocument();
-      expect(screen.getByText(/enterprise/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/enterprise/i)[0]).toBeInTheDocument();
     });
 
     it("includes company field with icon", () => {
       render(<ContactForm variant="full" />);
 
-      // Company field doesn't have placeholder, check by label
-      expect(screen.getByText(/company/i)).toBeInTheDocument();
-      // Name field doesn't have placeholder, check by label
-      expect(screen.getByText(/name \*/i)).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(/email address/i)).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(/your message/i)).toBeInTheDocument();
+      // Company field label
+      expect(screen.getByLabelText(/company/i)).toBeInTheDocument();
+      // Name field label
+      expect(screen.getByLabelText(/name \*/i)).toBeInTheDocument();
+      // Email field label
+      expect(screen.getByLabelText(/email \*/i)).toBeInTheDocument();
+      // Message field label
+      expect(screen.getByLabelText(/message \*/i)).toBeInTheDocument();
     });
 
     it("shows success message after submission", async () => {
@@ -270,12 +276,13 @@ describe("ContactForm", () => {
       const button = screen.getByRole("button", { name: /send message/i });
       await user.click(button);
 
-      // Check loading state
+      // Check loading state - button and inputs should be disabled
       await waitFor(() => {
-        expect(screen.getByText(/sending/i)).toBeInTheDocument();
+        expect(button).toBeDisabled();
       });
-      expect(button).toBeDisabled();
       expect(screen.getByPlaceholderText("Your name")).toBeDisabled();
+      expect(screen.getByPlaceholderText("Email address")).toBeDisabled();
+      expect(screen.getByPlaceholderText("Your message")).toBeDisabled();
     });
 
     it("resets form after successful submission", async () => {
@@ -329,6 +336,10 @@ describe("ContactForm", () => {
 
       await user.click(screen.getByRole("button", { name: /send message/i }));
 
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalled();
+      });
+      
       await waitFor(() => {
         expect(trackContactForm).toHaveBeenCalledWith("sidebar");
       });

@@ -78,7 +78,7 @@ describe("NewsletterForm", () => {
       });
 
       expect(
-        screen.getByRole("button", { name: /subscribed!/i }),
+        screen.getByText(/welcome aboard! check your email for confirmation/i),
       ).toBeInTheDocument();
     });
 
@@ -144,7 +144,7 @@ describe("NewsletterForm", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText(/message sent successfully/i),
+          screen.getByText(/welcome aboard! check your email for confirmation/i),
         ).toBeInTheDocument();
         expect(input).toBeDisabled();
       });
