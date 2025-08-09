@@ -343,8 +343,8 @@ router.post('/google', asyncHandler(async (req: Request, res: Response) => {
     });
   } else {
     // Update Google ID if not set
-    if (!user.googleId) {
-      await UserService.updateGoogleId(user.id, googleUser.sub);
+    if (!(user as any).googleId) {
+      await UserService.updateGoogleId(parseInt(user.id as string), googleUser.sub);
     }
   }
 

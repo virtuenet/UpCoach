@@ -50,7 +50,7 @@ describe("NewsletterForm", () => {
       await userEvent.click(button);
 
       expect(
-        screen.getByText(/please enter a valid email/i),
+        screen.getByText(/please enter a valid email address/i),
       ).toBeInTheDocument();
       expect(global.fetch).not.toHaveBeenCalled();
     });
@@ -78,7 +78,7 @@ describe("NewsletterForm", () => {
       });
 
       expect(
-        screen.getByRole("button", { name: /subscribed/i }),
+        screen.getByRole("button", { name: /subscribed!/i }),
       ).toBeInTheDocument();
     });
 

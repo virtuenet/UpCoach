@@ -10,8 +10,7 @@ import {
   AfterCreate,
   AfterUpdate,
 } from 'sequelize-typescript';
-import { makeCompatible, UserModel } from './ModelCompatibility';
-const User = makeCompatible(UserModel);
+import { User } from './User';
 import { CoachProfile } from './CoachProfile';
 import { CoachSession } from './CoachSession';
 import { Op } from 'sequelize';
@@ -53,7 +52,7 @@ export class CoachReview extends Model {
   clientId!: number;
 
   @BelongsTo(() => User as any)
-  client!: User;
+  client!: any;
 
   @ForeignKey(() => CoachSession)
   @Column({

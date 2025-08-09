@@ -34,7 +34,7 @@ export class AIInteraction extends Model {
   userId?: number;
 
   @BelongsTo(() => User as any)
-  user?: User;
+  user?: any;
 
   @Column({
     type: DataType.STRING(50),

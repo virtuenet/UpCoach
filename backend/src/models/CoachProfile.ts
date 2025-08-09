@@ -11,8 +11,7 @@ import {
   BeforeCreate,
   BeforeUpdate,
 } from 'sequelize-typescript';
-import { makeCompatible, UserModel } from './ModelCompatibility';
-const User = makeCompatible(UserModel);
+import { User } from './User';
 import { CoachSession } from './CoachSession';
 import { CoachReview } from './CoachReview';
 import { CoachPackage } from './CoachPackage';
@@ -56,7 +55,7 @@ export class CoachProfile extends Model {
   userId!: number;
 
   @BelongsTo(() => User as any)
-  user!: User;
+  user!: any;
 
   @Column({
     type: DataType.STRING(255),

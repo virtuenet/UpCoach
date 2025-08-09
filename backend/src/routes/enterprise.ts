@@ -180,23 +180,24 @@ router.get(
   enterpriseController.getPolicies
 );
 
-router.put(
-  '/policies/:policyId',
-  authorize('organization', 'admin'),
-  enterpriseController.updatePolicy
-);
+// TODO: Implement these policy methods
+// router.put(
+//   '/policies/:policyId',
+//   authorize('organization', 'admin'),
+//   enterpriseController.updatePolicy
+// );
 
-router.delete(
-  '/policies/:policyId',
-  authorize('organization', 'admin'),
-  enterpriseController.deletePolicy
-);
+// router.delete(
+//   '/policies/:policyId',
+//   authorize('organization', 'admin'),
+//   enterpriseController.deletePolicy
+// );
 
-router.patch(
-  '/policies/:policyId/toggle',
-  authorize('organization', 'admin'),
-  enterpriseController.togglePolicy
-);
+// router.patch(
+//   '/policies/:policyId/toggle',
+//   authorize('organization', 'admin'),
+//   enterpriseController.togglePolicy
+// );
 
 // Audit logs
 router.get(

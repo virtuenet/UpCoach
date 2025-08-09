@@ -8,8 +8,7 @@ import {
   CreatedAt,
 } from 'sequelize-typescript';
 import { Op, Sequelize } from 'sequelize';
-import { makeCompatible, UserModel } from './ModelCompatibility';
-const User = makeCompatible(UserModel);
+import { User } from './User';
 import { AIInteraction } from './AIInteraction';
 
 @Table({
@@ -42,7 +41,7 @@ export class AIFeedback extends Model {
   userId!: number;
 
   @BelongsTo(() => User as any)
-  user!: User;
+  user!: any;
 
   @Column({
     type: DataType.STRING(20),

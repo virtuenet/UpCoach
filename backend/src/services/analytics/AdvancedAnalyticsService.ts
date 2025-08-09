@@ -335,7 +335,7 @@ export class AdvancedAnalyticsService {
       );
 
       const timeToComplete = prevStep[0]
-        ? Math.floor((Date.now() - new Date(prevStep[0].completed_at).getTime()) / 1000)
+        ? Math.floor((Date.now() - new Date((prevStep[0] as any).completed_at).getTime()) / 1000)
         : null;
 
       await sequelize.query(
@@ -569,7 +569,7 @@ export class AdvancedAnalyticsService {
         type: QueryTypes.SELECT,
       });
 
-      await cacheService.set(cacheKey, result, 3600); // 1 hour cache
+      await cacheService.set(cacheKey, result, { ttl: 3600 }); // 1 hour cache
       return result;
     } catch (error) {
       logger.error('Failed to compare cohorts', { error, cohortIds });

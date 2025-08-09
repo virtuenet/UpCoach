@@ -12,8 +12,7 @@ import {
   BeforeUpdate,
 } from 'sequelize-typescript';
 import { CoachProfile } from './CoachProfile';
-import { makeCompatible, UserModel } from './ModelCompatibility';
-const User = makeCompatible(UserModel);
+import { User } from './User';
 import { Op } from 'sequelize';
 import * as sequelize from 'sequelize';
 
@@ -250,7 +249,7 @@ export class ClientCoachPackage extends Model {
   clientId!: number;
 
   @BelongsTo(() => User as any)
-  client!: User;
+  client!: any;
 
   @Column({
     type: DataType.DATE,
