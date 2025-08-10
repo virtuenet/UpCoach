@@ -17,10 +17,10 @@ jobs:
         browser: [chromium, firefox, webkit]
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'npm'
@@ -42,7 +42,7 @@ jobs:
     
     - name: Upload test results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: visual-test-results-${{ matrix.browser }}
         path: visual-tests/test-results/
@@ -50,7 +50,7 @@ jobs:
     
     - name: Upload baseline images
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: visual-baseline-images-${{ matrix.browser }}
         path: visual-tests/tests/**/*-snapshots/
@@ -77,10 +77,10 @@ jobs:
     if: always()
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Download all artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         path: visual-artifacts
     
@@ -107,7 +107,7 @@ jobs:
         echo "- Re-run tests after fixes" >> visual-report.md
     
     - name: Upload combined report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: visual-test-summary
         path: visual-report.md
@@ -117,12 +117,12 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
     
