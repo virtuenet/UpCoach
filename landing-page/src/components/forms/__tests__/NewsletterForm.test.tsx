@@ -49,9 +49,11 @@ describe("NewsletterForm", () => {
       await userEvent.type(input, "invalid-email");
       await userEvent.click(button);
 
-      expect(
-        screen.getByText(/please enter a valid email address/i),
-      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.getByText(/please enter a valid email address/i),
+        ).toBeInTheDocument();
+      });
       expect(global.fetch).not.toHaveBeenCalled();
     });
 

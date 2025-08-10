@@ -61,10 +61,10 @@ describe("ContactForm", () => {
 
       await user.click(screen.getByRole("button", { name: /send message/i }));
 
+      // Wait for error message to appear
       await waitFor(() => {
-        expect(
-          screen.getByText(/please enter a valid email address/i),
-        ).toBeInTheDocument();
+        const errorMessage = screen.queryByText(/please enter a valid email address/i);
+        expect(errorMessage).toBeInTheDocument();
       });
       
       expect(global.fetch).not.toHaveBeenCalled();

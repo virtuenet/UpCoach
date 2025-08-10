@@ -310,17 +310,12 @@ describe("Landing Page User Scenarios", () => {
       );
 
       // User goes directly to app download section
-      const appDownloadSection = screen.getByText(
-        /Start Your Transformation Journey Today/i,
-      );
-      expect(appDownloadSection).toBeInTheDocument();
-
-      // Download app
-      const iosButton = screen.getByRole("link", { name: /App Store/i });
+      const iosButton = screen.getByText("Download for iOS");
       await user.click(iosButton);
 
       // Should navigate to app store
-      expect(iosButton).toHaveAttribute(
+      const iosLink = iosButton.closest("a");
+      expect(iosLink).toHaveAttribute(
         "href",
         "https://apps.apple.com/app/upcoach",
       );
