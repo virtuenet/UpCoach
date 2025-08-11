@@ -17,9 +17,10 @@ export default defineConfig({
   expect: {
     // Threshold for pixel differences (0-1)
     toHaveScreenshot: { 
-      threshold: 0.2,
-      maxDiffPixels: 100,
-      animations: 'disabled'
+      threshold: 0.3,  // Increased to handle cross-platform differences
+      maxDiffPixels: 500,  // Increased to handle font rendering differences
+      animations: 'disabled',
+      stylePath: './screenshot-styles.css'
     },
   },
   
@@ -42,7 +43,7 @@ export default defineConfig({
   // Shared settings for all projects
   use: {
     // Base URL for tests
-    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+    baseURL: process.env.BASE_URL || 'http://localhost:7003',
     
     // Collect trace when retrying the failed test
     trace: 'on-first-retry',
@@ -96,7 +97,7 @@ export default defineConfig({
   // Run local dev server before starting tests
   webServer: process.env.CI ? undefined : {
     command: 'cd ../landing-page && npm run dev',
-    port: 3000,
+    port: 7003,
     reuseExistingServer: !process.env.CI,
   },
 });

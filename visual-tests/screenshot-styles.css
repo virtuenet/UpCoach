@@ -1,0 +1,32 @@
+/* Styles to make screenshots more consistent across platforms */
+
+/* Normalize font rendering */
+* {
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: geometricPrecision !important;
+}
+
+/* Disable animations and transitions */
+*, 
+*::before, 
+*::after {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+}
+
+/* Hide scrollbars for consistency */
+::-webkit-scrollbar {
+  display: none !important;
+}
+
+* {
+  scrollbar-width: none !important;
+}
+
+/* Normalize line heights */
+body {
+  line-height: 1.5 !important;
+}

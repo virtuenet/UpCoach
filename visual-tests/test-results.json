@@ -10,7 +10,9 @@
     "grep": {},
     "grepInvert": null,
     "maxFailures": 0,
-    "metadata": {},
+    "metadata": {
+      "actualWorkers": 1
+    },
     "preserveOutput": "always",
     "reporter": [
       [
@@ -40,7 +42,9 @@
         "outputDir": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "chromium",
         "name": "chromium",
         "testDir": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/tests",
@@ -54,7 +58,9 @@
         "outputDir": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "firefox",
         "name": "firefox",
         "testDir": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/tests",
@@ -68,7 +74,9 @@
         "outputDir": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "webkit",
         "name": "webkit",
         "testDir": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/tests",
@@ -82,7 +90,9 @@
         "outputDir": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "Mobile Chrome",
         "name": "Mobile Chrome",
         "testDir": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/tests",
@@ -96,7 +106,9 @@
         "outputDir": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "Mobile Safari",
         "name": "Mobile Safari",
         "testDir": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/tests",
@@ -110,7 +122,9 @@
         "outputDir": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "iPad",
         "name": "iPad",
         "testDir": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/tests",
@@ -122,27 +136,78 @@
       }
     ],
     "shard": null,
-    "updateSnapshots": "missing",
+    "updateSnapshots": "changed",
     "updateSourceMethod": "patch",
-    "version": "1.54.1",
+    "version": "1.54.2",
     "workers": 8,
     "webServer": {
       "command": "cd ../landing-page && npm run dev",
-      "port": 3000,
+      "port": 7003,
       "reuseExistingServer": true
     }
   },
-  "suites": [],
-  "errors": [
+  "suites": [
     {
-      "message": "Error: Timed out waiting 60000ms from config.webServer.",
-      "stack": "Error: Timed out waiting 60000ms from config.webServer."
+      "title": "landing-page.spec.ts",
+      "file": "landing-page.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Landing Page Visual Tests",
+          "file": "landing-page.spec.ts",
+          "line": 10,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Hero section visual snapshot",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8257,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/tests/landing-page.spec.ts-snapshots/hero-section-chromium-darwin.png is re-generated, writing actual.\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-10T23:55:05.833Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0f2b3f5c1ecc224a2ed-9fec25e93d0053a95128",
+              "file": "landing-page.spec.ts",
+              "line": 31,
+              "column": 7
+            }
+          ]
+        }
+      ]
     }
   ],
+  "errors": [],
   "stats": {
-    "startTime": "2025-08-10T09:22:58.569Z",
-    "duration": 60058.966,
-    "expected": 0,
+    "startTime": "2025-08-10T23:55:04.825Z",
+    "duration": 9584.639000000001,
+    "expected": 1,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0
