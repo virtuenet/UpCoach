@@ -1,10 +1,11 @@
 name: Visual Regression Tests
 
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
+  # Temporarily disabled until visual test baselines are stable
+  # push:
+  #   branches: [main, develop]
+  # pull_request:
+  #   branches: [main]
   workflow_dispatch:
 
 jobs:

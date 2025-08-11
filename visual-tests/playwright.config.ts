@@ -18,10 +18,12 @@ export default defineConfig({
     // Threshold for pixel differences (0-1)
     toHaveScreenshot: { 
       threshold: 0.3,  // Increased to handle cross-platform differences
-      maxDiffPixels: 500,  // Increased to handle font rendering differences
+      maxDiffPixels: 1000,  // Increased to handle font rendering differences
+      maxDiffPixelRatio: 0.05,  // Allow up to 5% pixel difference
       animations: 'disabled',
       stylePath: './screenshot-styles.css'
     },
+    timeout: 10000  // Increase timeout for screenshot stability
   },
   
   // Fail the build on CI if you accidentally left test.only

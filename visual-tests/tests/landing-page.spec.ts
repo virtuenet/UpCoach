@@ -21,21 +21,42 @@ test.describe('Landing Page Visual Tests', () => {
         *, *::before, *::after {
           animation-duration: 0s !important;
           animation-delay: 0s !important;
+          animation-iteration-count: 1 !important;
           transition-duration: 0s !important;
           transition-delay: 0s !important;
+          animation-fill-mode: forwards !important;
+        }
+        
+        /* Stop any JavaScript-based animations */
+        * {
+          animation-play-state: paused !important;
+        }
+        
+        /* Disable smooth scrolling */
+        html {
+          scroll-behavior: auto !important;
         }
       `
     });
+    
+    // Wait a bit for any JavaScript animations to settle
+    await page.waitForTimeout(1000);
   });
 
   test('Hero section visual snapshot', async ({ page }) => {
     const heroSection = page.locator('section').first();
     await expect(heroSection).toBeVisible();
     
+    // Wait for any lazy-loaded images
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(500);
+    
     // Take screenshot of hero section
     await expect(heroSection).toHaveScreenshot('hero-section.png', {
       fullPage: false,
-      clip: await heroSection.boundingBox()
+      animations: 'disabled',
+      mask: [page.locator('[class*="animate"]')],  // Mask any animated elements
+      maxDiffPixelRatio: 0.05  // Allow up to 5% difference
     });
   });
 

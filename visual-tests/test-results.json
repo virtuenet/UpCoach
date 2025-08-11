@@ -136,7 +136,7 @@
       }
     ],
     "shard": null,
-    "updateSnapshots": "changed",
+    "updateSnapshots": "missing",
     "updateSourceMethod": "patch",
     "version": "1.54.2",
     "workers": 8,
@@ -162,7 +162,7 @@
           "specs": [
             {
               "title": "Hero section visual snapshot",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -175,27 +175,78 @@
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "passed",
-                      "duration": 8257,
-                      "errors": [],
-                      "stdout": [
+                      "status": "failed",
+                      "duration": 13212,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveScreenshot\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\n  21943 pixels (ratio 0.02 of all image pixels) are different.\n\n  Snapshot: hero-section.png\n\nCall log:\n\u001b[2m  - Expect \"toHaveScreenshot(hero-section.png)\" with timeout 10000ms\u001b[22m\n\u001b[2m    - verifying given screenshot expectation\u001b[22m\n\u001b[2m  - waiting for locator('section').first()\u001b[22m\n\u001b[2m    - locator resolved to <section class=\"relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 overflow-hidden\">…</section>\u001b[22m\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    - waiting for element to be stable\u001b[22m\n\u001b[2m  - 22720 pixels (ratio 0.02 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 100ms before taking screenshot\u001b[22m\n\u001b[2m  - waiting for locator('section').first()\u001b[22m\n\u001b[2m    - locator resolved to <section class=\"relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 overflow-hidden\">…</section>\u001b[22m\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    - waiting for element to be stable\u001b[22m\n\u001b[2m  - 1639 pixels (ratio 0.01 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 250ms before taking screenshot\u001b[22m\n\u001b[2m  - waiting for locator('section').first()\u001b[22m\n\u001b[2m    - locator resolved to <section class=\"relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 overflow-hidden\">…</section>\u001b[22m\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    - waiting for element to be stable\u001b[22m\n\u001b[2m  - 1639 pixels (ratio 0.01 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 500ms before taking screenshot\u001b[22m\n\u001b[2m  - waiting for locator('section').first()\u001b[22m\n\u001b[2m    - locator resolved to <section class=\"relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 overflow-hidden\">…</section>\u001b[22m\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    - waiting for element to be stable\u001b[22m\n\u001b[2m  - 1661 pixels (ratio 0.01 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 1000ms before taking screenshot\u001b[22m\n\u001b[2m  - waiting for locator('section').first()\u001b[22m\n\u001b[2m    - locator resolved to <section class=\"relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 overflow-hidden\">…</section>\u001b[22m\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    - waiting for element to be stable\u001b[22m\n\u001b[2m  - captured a stable screenshot\u001b[22m\n\u001b[2m  - 21943 pixels (ratio 0.02 of all image pixels) are different.\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveScreenshot\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\n  21943 pixels (ratio 0.02 of all image pixels) are different.\n\n  Snapshot: hero-section.png\n\nCall log:\n\u001b[2m  - Expect \"toHaveScreenshot(hero-section.png)\" with timeout 10000ms\u001b[22m\n\u001b[2m    - verifying given screenshot expectation\u001b[22m\n\u001b[2m  - waiting for locator('section').first()\u001b[22m\n\u001b[2m    - locator resolved to <section class=\"relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 overflow-hidden\">…</section>\u001b[22m\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    - waiting for element to be stable\u001b[22m\n\u001b[2m  - 22720 pixels (ratio 0.02 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 100ms before taking screenshot\u001b[22m\n\u001b[2m  - waiting for locator('section').first()\u001b[22m\n\u001b[2m    - locator resolved to <section class=\"relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 overflow-hidden\">…</section>\u001b[22m\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    - waiting for element to be stable\u001b[22m\n\u001b[2m  - 1639 pixels (ratio 0.01 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 250ms before taking screenshot\u001b[22m\n\u001b[2m  - waiting for locator('section').first()\u001b[22m\n\u001b[2m    - locator resolved to <section class=\"relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 overflow-hidden\">…</section>\u001b[22m\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    - waiting for element to be stable\u001b[22m\n\u001b[2m  - 1639 pixels (ratio 0.01 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 500ms before taking screenshot\u001b[22m\n\u001b[2m  - waiting for locator('section').first()\u001b[22m\n\u001b[2m    - locator resolved to <section class=\"relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 overflow-hidden\">…</section>\u001b[22m\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    - waiting for element to be stable\u001b[22m\n\u001b[2m  - 1661 pixels (ratio 0.01 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 1000ms before taking screenshot\u001b[22m\n\u001b[2m  - waiting for locator('section').first()\u001b[22m\n\u001b[2m    - locator resolved to <section class=\"relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 overflow-hidden\">…</section>\u001b[22m\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    - waiting for element to be stable\u001b[22m\n\u001b[2m  - captured a stable screenshot\u001b[22m\n\u001b[2m  - 21943 pixels (ratio 0.02 of all image pixels) are different.\u001b[22m\n\n    at /Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/tests/landing-page.spec.ts:55:31",
+                        "location": {
+                          "file": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/tests/landing-page.spec.ts",
+                          "column": 31,
+                          "line": 55
+                        },
+                        "snippet": "  53 |     \n  54 |     // Take screenshot of hero section\n> 55 |     await expect(heroSection).toHaveScreenshot('hero-section.png', {\n     |                               ^\n  56 |       fullPage: false,\n  57 |       animations: 'disabled',\n  58 |       mask: [page.locator('[class*=\"animate\"]')],  // Mask any animated elements"
+                      },
+                      "errors": [
                         {
-                          "text": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/tests/landing-page.spec.ts-snapshots/hero-section-chromium-darwin.png is re-generated, writing actual.\n"
+                          "location": {
+                            "file": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/tests/landing-page.spec.ts",
+                            "column": 31,
+                            "line": 55
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveScreenshot\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\n  21943 pixels (ratio 0.02 of all image pixels) are different.\n\n  Snapshot: hero-section.png\n\nCall log:\n\u001b[2m  - Expect \"toHaveScreenshot(hero-section.png)\" with timeout 10000ms\u001b[22m\n\u001b[2m    - verifying given screenshot expectation\u001b[22m\n\u001b[2m  - waiting for locator('section').first()\u001b[22m\n\u001b[2m    - locator resolved to <section class=\"relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 overflow-hidden\">…</section>\u001b[22m\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    - waiting for element to be stable\u001b[22m\n\u001b[2m  - 22720 pixels (ratio 0.02 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 100ms before taking screenshot\u001b[22m\n\u001b[2m  - waiting for locator('section').first()\u001b[22m\n\u001b[2m    - locator resolved to <section class=\"relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 overflow-hidden\">…</section>\u001b[22m\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    - waiting for element to be stable\u001b[22m\n\u001b[2m  - 1639 pixels (ratio 0.01 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 250ms before taking screenshot\u001b[22m\n\u001b[2m  - waiting for locator('section').first()\u001b[22m\n\u001b[2m    - locator resolved to <section class=\"relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 overflow-hidden\">…</section>\u001b[22m\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    - waiting for element to be stable\u001b[22m\n\u001b[2m  - 1639 pixels (ratio 0.01 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 500ms before taking screenshot\u001b[22m\n\u001b[2m  - waiting for locator('section').first()\u001b[22m\n\u001b[2m    - locator resolved to <section class=\"relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 overflow-hidden\">…</section>\u001b[22m\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    - waiting for element to be stable\u001b[22m\n\u001b[2m  - 1661 pixels (ratio 0.01 of all image pixels) are different.\u001b[22m\n\u001b[2m  - waiting 1000ms before taking screenshot\u001b[22m\n\u001b[2m  - waiting for locator('section').first()\u001b[22m\n\u001b[2m    - locator resolved to <section class=\"relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 overflow-hidden\">…</section>\u001b[22m\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    - waiting for element to be stable\u001b[22m\n\u001b[2m  - captured a stable screenshot\u001b[22m\n\u001b[2m  - 21943 pixels (ratio 0.02 of all image pixels) are different.\u001b[22m\n\n\n  53 |     \n  54 |     // Take screenshot of hero section\n> 55 |     await expect(heroSection).toHaveScreenshot('hero-section.png', {\n     |                               ^\n  56 |       fullPage: false,\n  57 |       animations: 'disabled',\n  58 |       mask: [page.locator('[class*=\"animate\"]')],  // Mask any animated elements\n    at /Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/tests/landing-page.spec.ts:55:31"
                         }
                       ],
+                      "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2025-08-10T23:55:05.833Z",
+                      "startTime": "2025-08-11T00:13:09.863Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "hero-section-expected.png",
+                          "contentType": "image/png",
+                          "path": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/tests/landing-page.spec.ts-snapshots/hero-section-chromium-darwin.png"
+                        },
+                        {
+                          "name": "hero-section-actual.png",
+                          "contentType": "image/png",
+                          "path": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/test-results/landing-page-Landing-Page--98df5-ero-section-visual-snapshot-chromium/hero-section-actual.png"
+                        },
+                        {
+                          "name": "hero-section-diff.png",
+                          "contentType": "image/png",
+                          "path": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/test-results/landing-page-Landing-Page--98df5-ero-section-visual-snapshot-chromium/hero-section-diff.png"
+                        },
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/test-results/landing-page-Landing-Page--98df5-ero-section-visual-snapshot-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/test-results/landing-page-Landing-Page--98df5-ero-section-visual-snapshot-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/test-results/landing-page-Landing-Page--98df5-ero-section-visual-snapshot-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/visual-tests/tests/landing-page.spec.ts",
+                        "column": 31,
+                        "line": 55
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "id": "e0f2b3f5c1ecc224a2ed-9fec25e93d0053a95128",
               "file": "landing-page.spec.ts",
-              "line": 31,
+              "line": 46,
               "column": 7
             }
           ]
@@ -205,11 +256,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2025-08-10T23:55:04.825Z",
-    "duration": 9584.639000000001,
-    "expected": 1,
+    "startTime": "2025-08-11T00:13:08.793Z",
+    "duration": 14570.528,
+    "expected": 0,
     "skipped": 0,
-    "unexpected": 0,
+    "unexpected": 1,
     "flaky": 0
   }
 }
