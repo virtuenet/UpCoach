@@ -77,7 +77,7 @@ export class ArticleController {
       res.status(500).json({
         success: false,
         message: 'Failed to fetch articles',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -152,7 +152,7 @@ export class ArticleController {
       res.status(500).json({
         success: false,
         message: 'Failed to fetch article',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -183,7 +183,7 @@ export class ArticleController {
         seoTitle,
         seoDescription,
         seoKeywords,
-        tags,
+        // tags,
         settings,
         publishingSchedule,
       } = req.body;
@@ -246,7 +246,7 @@ export class ArticleController {
       res.status(500).json({
         success: false,
         message: 'Failed to create article',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -345,7 +345,7 @@ export class ArticleController {
       res.status(500).json({
         success: false,
         message: 'Failed to update article',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -386,7 +386,7 @@ export class ArticleController {
       res.status(500).json({
         success: false,
         message: 'Failed to delete article',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -428,7 +428,7 @@ export class ArticleController {
       res.status(500).json({
         success: false,
         message: 'Failed to publish article',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -470,7 +470,7 @@ export class ArticleController {
       res.status(500).json({
         success: false,
         message: 'Failed to archive article',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -480,7 +480,8 @@ export class ArticleController {
    */
   static async getPopularArticles(req: Request, res: Response): Promise<void> {
     try {
-      const { limit = 10, timeframe = 'month' } = req.query;
+      const { limit = 10 } = req.query;
+      // const { timeframe = 'month' } = req.query; // unused
 
       const articles = await Article.getPopular(Number(limit));
 
@@ -493,7 +494,7 @@ export class ArticleController {
       res.status(500).json({
         success: false,
         message: 'Failed to fetch popular articles',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -530,7 +531,7 @@ export class ArticleController {
       res.status(500).json({
         success: false,
         message: 'Failed to search articles',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -570,7 +571,7 @@ export class ArticleController {
       res.status(500).json({
         success: false,
         message: 'Failed to fetch article analytics',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }

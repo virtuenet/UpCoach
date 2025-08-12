@@ -1,6 +1,5 @@
 import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
-import path from 'path';
 
 dotenv.config();
 
@@ -82,7 +81,7 @@ export async function closeDatabase(): Promise<void> {
 export async function query(text: string, params?: any[]): Promise<any> {
   try {
     const start = Date.now();
-    const [results, metadata] = await sequelize.query(text, {
+    const [results] = await sequelize.query(text, {
       replacements: params,
       raw: true
     });

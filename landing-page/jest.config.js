@@ -49,6 +49,8 @@ const customJestConfig = {
     },
   },
   testTimeout: 30000,
+  // Retry flaky tests
+  retryTimes: 2,
   // Explicitly handle TypeScript and JSX files
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
 };

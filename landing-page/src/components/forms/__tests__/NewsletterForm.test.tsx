@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import NewsletterForm from "../NewsletterForm";
 
@@ -40,32 +40,36 @@ describe("NewsletterForm", () => {
     });
 
     it("validates email format", async () => {
+      const user = userEvent.setup();
       render(<NewsletterForm variant="inline" />);
 
       const input = screen.getByPlaceholderText("Enter your email");
       const button = screen.getByRole("button", { name: /subscribe/i });
 
       // Test invalid email
-      await userEvent.type(input, "invalid-email");
-      await userEvent.click(button);
-
-      await waitFor(() => {
-        expect(
-          screen.getByText(/please enter a valid email address/i),
-        ).toBeInTheDocument();
+      await act(async () => {
+        await user.type(input, "invalid-email");
+        await user.click(button);
       });
+
+      expect(
+        screen.getByText(/please enter a valid email address/i),
+      ).toBeInTheDocument();
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
     it("submits valid email successfully", async () => {
+      const user = userEvent.setup();
       const onSuccess = jest.fn();
       render(<NewsletterForm variant="inline" onSuccess={onSuccess} />);
 
       const input = screen.getByPlaceholderText("Enter your email");
       const button = screen.getByRole("button", { name: /subscribe/i });
 
-      await userEvent.type(input, "test@example.com");
-      await userEvent.click(button);
+      await act(async () => {
+        await user.type(input, "test@example.com");
+        await user.click(button);
+      });
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith("/api/newsletter", {

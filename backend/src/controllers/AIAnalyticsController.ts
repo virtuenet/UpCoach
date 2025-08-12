@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { Op } from 'sequelize';
 import { subDays, startOfDay, endOfDay, format } from 'date-fns';
 import { eachDayOfInterval } from 'date-fns/eachDayOfInterval';
 import { sequelize } from '../database/connection';
@@ -196,7 +195,7 @@ export class AIAnalyticsController {
     }
   }
 
-  async getAIHealthStatus(req: Request, res: Response): Promise<void> {
+  async getAIHealthStatus(_req: Request, res: Response): Promise<void> {
     try {
       const health = await aiService.healthCheck();
       const metrics = aiService.getMetrics();
@@ -220,7 +219,7 @@ export class AIAnalyticsController {
     }
   }
 
-  async clearAICache(req: Request, res: Response): Promise<void> {
+  async clearAICache(_req: Request, res: Response): Promise<void> {
     try {
       await aiService.clearCache();
       res.json({ message: 'AI cache cleared successfully' });

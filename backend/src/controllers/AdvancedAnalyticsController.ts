@@ -374,7 +374,7 @@ export class AdvancedAnalyticsController {
   ];
 
   // Get all cohorts
-  getCohorts = async (req: Request, res: Response) => {
+  getCohorts = async (_req: Request, res: Response) => {
     try {
       const { sequelize } = require('../models');
       const { QueryTypes } = require('sequelize');
@@ -419,7 +419,7 @@ export class AdvancedAnalyticsController {
   };
 
   // Get all funnels
-  getFunnels = async (req: Request, res: Response) => {
+  getFunnels = async (_req: Request, res: Response) => {
     try {
       const { sequelize } = require('../models');
       const { QueryTypes } = require('sequelize');

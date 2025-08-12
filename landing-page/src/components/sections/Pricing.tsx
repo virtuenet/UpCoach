@@ -180,6 +180,7 @@ export default function Pricing() {
                     ? "shadow-2xl border-2 border-primary-200"
                     : "shadow-xl border border-gray-100"
                 }`}
+                data-testid={`pricing-plan-${plan.name.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 {plan.popular && (
                   <div className="absolute -top-5 left-0 right-0 flex justify-center">
@@ -290,6 +291,7 @@ export default function Pricing() {
                           ? "bg-secondary-600 text-white hover:bg-secondary-700 hover:shadow-lg"
                           : "bg-gray-100 text-gray-900 hover:bg-gray-200"
                     }`}
+                    data-testid={`cta-${plan.name.toLowerCase().replace(/\s+/g, '-')}`}
                   >
                     {plan.cta}
                   </a>

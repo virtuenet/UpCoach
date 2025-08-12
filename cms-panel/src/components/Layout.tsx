@@ -10,7 +10,8 @@ import {
   LogOut,
   Users,
   FolderOpen,
-  Image
+  Image,
+  BookOpen
 } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
 
@@ -47,6 +48,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Content', href: '/content', icon: FileText },
+    { name: 'Courses', href: '/courses', icon: BookOpen },
     { name: 'Media Library', href: '/media', icon: Image },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
     { name: 'Settings', href: '/settings', icon: Settings },

@@ -9,6 +9,9 @@ import CreateContentPage from './pages/CreateContentPage'
 import EditContentPage from './pages/EditContentPage'
 import MediaLibraryPage from './pages/MediaLibraryPage'
 import AnalyticsPage from './pages/AnalyticsPage'
+import CoursesPage from './pages/CoursesPage'
+import CreateCoursePage from './pages/CreateCoursePage'
+import SettingsPage from './pages/SettingsPage'
 import Layout from './components/Layout'
 import ErrorBoundary from './components/ErrorBoundary'
 
@@ -45,8 +48,11 @@ function App() {
                         <Route path="/content" element={<ContentPage />} />
                         <Route path="/content/create" element={<CreateContentPage />} />
                         <Route path="/content/edit/:id" element={<EditContentPage />} />
+                        <Route path="/courses" element={<CoursesPage />} />
+                        <Route path="/courses/create" element={<CreateCoursePage />} />
                         <Route path="/media" element={<MediaLibraryPage />} />
                         <Route path="/analytics" element={<AnalyticsPage />} />
+                        <Route path="/settings" element={<SettingsPage />} />
                         <Route path="*" element={<Navigate to="/" replace />} />
                       </Routes>
                     </Layout>

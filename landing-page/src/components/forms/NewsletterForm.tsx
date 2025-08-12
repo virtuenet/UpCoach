@@ -198,7 +198,7 @@ export default function NewsletterForm({
 
   // Default inline variant
   return (
-    <div className={className}>
+    <div className={className} data-testid="newsletter-form">
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           type="email"
@@ -208,11 +208,13 @@ export default function NewsletterForm({
           className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary-500 transition-colors text-sm"
           disabled={status === "loading" || status === "success"}
           required
+          data-testid="newsletter-email-input"
         />
         <button
           type="submit"
           disabled={status === "loading" || status === "success"}
           className="px-6 py-2 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap"
+          data-testid="newsletter-submit-button"
         >
           {status === "loading" ? "Subscribing..." : "Subscribe"}
         </button>
