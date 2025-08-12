@@ -8,7 +8,9 @@
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "type-check": "tsc --noEmit",
-    "format": "prettier --write src"
+    "format": "prettier --write src",
+    "test": "vitest",
+    "test:unit": "vitest --coverage"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",
