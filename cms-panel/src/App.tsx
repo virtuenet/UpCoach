@@ -10,6 +10,7 @@ import EditContentPage from './pages/EditContentPage'
 import MediaLibraryPage from './pages/MediaLibraryPage'
 import AnalyticsPage from './pages/AnalyticsPage'
 import Layout from './components/Layout'
+import ErrorBoundary from './components/ErrorBoundary'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,44 +28,46 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <div className="min-h-screen bg-gray-50">
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route
-              path="/*"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Routes>
-                      <Route path="/" element={<DashboardPage />} />
-                      <Route path="/dashboard" element={<DashboardPage />} />
-                      <Route path="/content" element={<ContentPage />} />
-                      <Route path="/content/create" element={<CreateContentPage />} />
-                      <Route path="/content/edit/:id" element={<EditContentPage />} />
-                      <Route path="/media" element={<MediaLibraryPage />} />
-                      <Route path="/analytics" element={<AnalyticsPage />} />
-                      <Route path="*" element={<Navigate to="/" replace />} />
-                    </Routes>
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </div>
-      </Router>
-      <Toaster 
-        position="top-right"
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: '#363636',
-            color: '#fff',
-          },
-        }}
-      />
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <div className="min-h-screen bg-gray-50">
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route
+                path="/*"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Routes>
+                        <Route path="/" element={<DashboardPage />} />
+                        <Route path="/dashboard" element={<DashboardPage />} />
+                        <Route path="/content" element={<ContentPage />} />
+                        <Route path="/content/create" element={<CreateContentPage />} />
+                        <Route path="/content/edit/:id" element={<EditContentPage />} />
+                        <Route path="/media" element={<MediaLibraryPage />} />
+                        <Route path="/analytics" element={<AnalyticsPage />} />
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                      </Routes>
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </div>
+        </Router>
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+          }}
+        />
+      </QueryClientProvider>
+    </ErrorBoundary>
   )
 }
 

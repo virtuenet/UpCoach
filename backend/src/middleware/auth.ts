@@ -4,7 +4,6 @@ import { config } from '../config/environment';
 import { logger } from '../utils/logger';
 import { redis } from '../services/redis';
 import { ApiError } from '../utils/apiError';
-import { UserService } from '../services/userService';
 
 // Extend Request interface to include user
 declare global {
@@ -47,7 +46,26 @@ export const authMiddleware = async (
       return;
     }
     
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    // Check if token is blacklisted
+    const isBlacklisted = await redis.get(`blacklist:${token}`);
+    if (isBlacklisted) {
+      res.status(401).json({
+        success: false,
+        error: 'Token has been revoked',
+      });
+      return;
+    }
+    
+    const decoded = jwt.verify(token, config.jwt.secret) as any;
+    
+    // Validate token structure
+    if (!decoded.id || !decoded.email || !decoded.role) {
+      res.status(401).json({
+        success: false,
+        error: 'Invalid token structure',
+      });
+      return;
+    }
     
     req.user = {
       id: decoded.id,
@@ -57,9 +75,28 @@ export const authMiddleware = async (
     
     next();
   } catch (error) {
-    res.status(401).json({
+    if (error instanceof jwt.TokenExpiredError) {
+      res.status(401).json({
+        success: false,
+        error: 'Token has expired',
+        code: 'TOKEN_EXPIRED'
+      });
+      return;
+    }
+    
+    if (error instanceof jwt.JsonWebTokenError) {
+      res.status(401).json({
+        success: false,
+        error: 'Invalid token',
+        code: 'INVALID_TOKEN'
+      });
+      return;
+    }
+    
+    logger.error('Auth middleware error:', error);
+    res.status(500).json({
       success: false,
-      error: 'Invalid or expired token',
+      error: 'Authentication error',
     });
   }
 };
@@ -95,18 +132,26 @@ export const optionalAuthMiddleware = async (
     const token = req.headers.authorization?.replace('Bearer ', '');
     
     if (token) {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-      
-      req.user = {
-        id: decoded.id,
-        email: decoded.email,
-        role: decoded.role,
-      };
+      // Check if token is blacklisted
+      const isBlacklisted = await redis.get(`blacklist:${token}`);
+      if (!isBlacklisted) {
+        const decoded = jwt.verify(token, config.jwt.secret) as any;
+        
+        // Validate token structure
+        if (decoded.id && decoded.email && decoded.role) {
+          req.user = {
+            id: decoded.id,
+            email: decoded.email,
+            role: decoded.role,
+          };
+        }
+      }
     }
     
     next();
   } catch (error) {
     // Continue without auth if token is invalid
+    logger.debug('Optional auth: Invalid token provided', error);
     next();
   }
 };
@@ -184,21 +229,38 @@ export const requireOwnership = (resourceIdParam: string = 'id') => {
 
 // Helper function to check resource ownership
 async function checkResourceOwnership(resourceId: string, userId: string): Promise<boolean> {
-  // This would be implemented based on your specific data model
-  // You might need to query different tables based on the resource type
-  // For now, we'll return true as a placeholder
-  return true;
+  try {
+    // We'll need to implement proper resource checking based on the actual resource type
+    // This would typically involve database queries specific to each resource
+    
+    // Check if the resource belongs to the user
+    // This assumes resources have a userId field or similar ownership indicator
+    // You'll need to customize this based on your actual resource types
+    
+    // Example implementation for user-owned resources:
+    // For user-specific resources, check if the resourceId matches userId
+    if (resourceId === userId) {
+      return true;
+    }
+    
+    // For other resources, you might need to query the database
+    // This is a generic check that should be customized per resource type
+    // For example:
+    // - For goals: SELECT * FROM goals WHERE id = resourceId AND user_id = userId
+    // - For sessions: SELECT * FROM sessions WHERE id = resourceId AND coach_id = userId
+    
+    // Since we don't know the resource type from just the ID,
+    // this needs to be implemented based on your routing patterns
+    // For now, return false to be secure by default
+    logger.warn(`Resource ownership check not fully implemented for resource: ${resourceId}, user: ${userId}`);
+    return false;
+  } catch (error) {
+    logger.error('Error checking resource ownership:', error);
+    return false;
+  }
 }
 
 export const generateTokens = (userId: string): { accessToken: string; refreshToken: string } => {
-  const accessTokenOptions = {
-    expiresIn: config.jwt.expiresIn
-  };
-  
-  const refreshTokenOptions = {
-    expiresIn: config.jwt.refreshExpiresIn
-  };
-  
   const accessToken = jwt.sign(
     { userId, type: 'access' },
     config.jwt.secret,
