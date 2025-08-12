@@ -1,4 +1,4 @@
-import { render, RenderOptions } from "@testing-library/react";
+import { render, RenderOptions, act } from "@testing-library/react";
 import { ReactElement } from "react";
 import userEvent from "@testing-library/user-event";
 
@@ -124,7 +124,9 @@ export const measureRenderTime = async (
   component: () => ReactElement,
 ): Promise<number> => {
   const start = performance.now();
-  render(component());
+  act(() => {
+    render(component());
+  });
   const end = performance.now();
   return end - start;
 };

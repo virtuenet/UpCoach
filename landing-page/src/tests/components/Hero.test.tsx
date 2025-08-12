@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Hero from "@/components/sections/Hero";
 import { trackAppDownload } from "@/services/analytics";
@@ -64,8 +64,10 @@ describe("Hero Section", () => {
       // Initially modal should not be visible
       expect(screen.queryByTitle("UpCoach Demo Video")).not.toBeInTheDocument();
 
-      // Click watch demo
-      await userEvent.click(watchDemoButton);
+      // Click watch demo within act
+      await act(async () => {
+        await userEvent.click(watchDemoButton);
+      });
 
       // Modal should appear
       await waitFor(() => {
@@ -77,7 +79,9 @@ describe("Hero Section", () => {
       render(<Hero />);
 
       // Open modal
-      await userEvent.click(screen.getByText("Watch 2-minute Demo"));
+      await act(async () => {
+        await userEvent.click(screen.getByText("Watch 2-minute Demo"));
+      });
 
       // Wait for modal to appear
       await waitFor(() => {
@@ -86,7 +90,9 @@ describe("Hero Section", () => {
 
       // Click close button
       const closeButton = screen.getByLabelText("Close video");
-      await userEvent.click(closeButton);
+      await act(async () => {
+        await userEvent.click(closeButton);
+      });
 
       // Modal should disappear
       await waitFor(() => {

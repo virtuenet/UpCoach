@@ -158,7 +158,7 @@ describe('Admin Panel App', () => {
     const originalError = console.error;
     console.error = vi.fn();
     
-    const checkAuthMock = vi.fn().mockRejectedValue(new Error('Auth failed'));
+    const checkAuthMock = vi.fn().mockImplementation(() => Promise.reject(new Error('Auth failed')));
     (useAuthStore.getState as Mock).mockReturnValue({
       checkAuth: checkAuthMock,
       user: null,
