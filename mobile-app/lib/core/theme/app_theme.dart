@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../shared/constants/ui_constants.dart';
 
 class AppTheme {
   // Brand Colors
@@ -44,7 +45,7 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
           foregroundColor: textOnPrimary,
-          minimumSize: const Size(double.infinity, 48),
+          minimumSize: Size(double.infinity, UIConstants.buttonHeight),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -53,7 +54,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: primaryColor,
-          minimumSize: const Size(double.infinity, 48),
+          minimumSize: Size(double.infinity, UIConstants.buttonHeight),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -63,7 +64,7 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: primaryColor,
-          minimumSize: const Size(double.infinity, 48),
+          minimumSize: Size(double.infinity, UIConstants.buttonHeight),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -117,7 +118,7 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
           foregroundColor: textOnPrimary,
-          minimumSize: const Size(double.infinity, 48),
+          minimumSize: Size(double.infinity, UIConstants.buttonHeight),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -126,7 +127,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: primaryColor,
-          minimumSize: const Size(double.infinity, 48),
+          minimumSize: Size(double.infinity, UIConstants.buttonHeight),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -136,7 +137,7 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: primaryColor,
-          minimumSize: const Size(double.infinity, 48),
+          minimumSize: Size(double.infinity, UIConstants.buttonHeight),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),

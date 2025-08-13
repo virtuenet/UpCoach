@@ -1,12 +1,22 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
+import { Icons } from '../../icons';
 
-interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
   icon?: React.ReactNode;
   title: string;
   description?: string;
-  action?: React.ReactNode;
+  action?: {
+    label: string;
+    onClick: () => void;
+    variant?: 'primary' | 'secondary' | 'outline';
+  };
+  secondaryAction?: {
+    label: string;
+    onClick: () => void;
+  };
   variant?: 'default' | 'minimal' | 'card';
+  size?: 'small' | 'medium' | 'large';
 }
 
 const EmptyState: React.FC<EmptyStateProps> = ({

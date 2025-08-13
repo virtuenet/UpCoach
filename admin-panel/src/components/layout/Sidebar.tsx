@@ -195,7 +195,7 @@ const Sidebar: React.FC = () => {
       <SidebarHeader>
         <Logo component={Link} to="/">
           <Build sx={{ fontSize: 28 }} />
-          FlexERP - Modular AI-Powered ERP
+          UpCoach Admin
         </Logo>
       </SidebarHeader>
 

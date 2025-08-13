@@ -16,6 +16,7 @@ import {
   Gift,
 } from "lucide-react";
 import { useAuthStore } from "../stores/authStore";
+import { SkipLink } from "../../shared/components/ui/SkipNavigation";
 
 export default function Layout() {
   const navigate = useNavigate();
@@ -55,7 +56,10 @@ export default function Layout() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      <SkipLink href="#main-content" />
+      <SkipLink href="#navigation">Skip to navigation</SkipLink>
+      <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
       <div className="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 shadow-sm">
         <div className="flex flex-col h-full">
@@ -65,7 +69,7 @@ export default function Layout() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto bg-white">
+          <nav id="navigation" className="flex-1 px-3 py-4 space-y-1 overflow-y-auto bg-white">
             {navigation.map((item) => (
               <NavLink
                 key={item.name}
@@ -255,10 +259,11 @@ export default function Layout() {
 
       {/* Main content */}
       <div className="ml-64 pt-16">
-        <main className="p-8">
+        <main id="main-content" className="p-8" tabIndex={-1}>
           <Outlet />
         </main>
       </div>
     </div>
+    </>
   );
 }

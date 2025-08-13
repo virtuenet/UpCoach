@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { financialApi, DashboardMetrics } from "../../services/financialApi";
 import LoadingSpinner from "../LoadingSpinner";
+import { DashboardSkeleton } from "../../../shared/components/ui/SkeletonLoader";
 import { ProfitLossChart } from "./ProfitLossChart";
 import { MRRChart } from "./MRRChart";
 import { SubscriptionChart } from "./SubscriptionChart";
@@ -85,7 +86,7 @@ export function FinancialDashboard() {
   };
 
   if (loading) {
-    return <LoadingSpinner />;
+    return <DashboardSkeleton />;
   }
 
   if (!metrics) {
