@@ -1,0 +1,109 @@
+version: 2
+snapshot:
+  widths:
+    - 375   # Mobile
+    - 768   # Tablet
+    - 1280  # Desktop
+    - 1920  # Wide desktop
+  min-height: 1024
+  percy-css: |
+    /* Hide dynamic elements during visual testing */
+    .timestamp,
+    .loading-spinner,
+    .real-time-data {
+      visibility: hidden !important;
+    }
+    /* Ensure consistent rendering */
+    * {
+      animation-duration: 0s !important;
+      animation-delay: 0s !important;
+      transition-duration: 0s !important;
+      transition-delay: 0s !important;
+    }
+  enable-javascript: true
+  disable-shadow-dom: false
+  
+discovery:
+  allowed-hostnames:
+    - localhost
+    - "*.upcoach.ai"
+  network-idle-timeout: 500
+  disable-cache: false
+  
+static:
+  base-url: /
+  files: "**/*.{html,css,js,jsx,ts,tsx}"
+  ignore: 
+    - "node_modules/**"
+    - "coverage/**"
+    - "dist/**"
+    - ".next/**"
+
+# Project-specific configurations
+projects:
+  admin-panel:
+    base-url: "http://localhost:8006"
+    snapshots:
+      - name: Dashboard
+        url: /dashboard
+        wait-for-selector: "[data-testid='dashboard-loaded']"
+      - name: Users List
+        url: /users
+        wait-for-selector: "[data-testid='users-table']"
+      - name: Financial Dashboard
+        url: /financial
+        wait-for-selector: "[data-testid='financial-charts']"
+      - name: AI Analytics
+        url: /ai-analytics
+        wait-for-selector: "[data-testid='ai-metrics']"
+  
+  cms-panel:
+    base-url: "http://localhost:8007"
+    snapshots:
+      - name: Content List
+        url: /content
+        wait-for-selector: "[data-testid='content-list']"
+      - name: Content Editor
+        url: /content/new
+        wait-for-selector: "[data-testid='content-editor']"
+      - name: Media Library
+        url: /media
+        wait-for-selector: "[data-testid='media-grid']"
+  
+  landing-page:
+    base-url: "http://localhost:8005"
+    snapshots:
+      - name: Homepage Hero
+        url: /
+        wait-for-selector: "[data-testid='hero-section']"
+        percy-css: |
+          /* Ensure hero image loads */
+          .hero-image { 
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==') !important;
+          }
+      - name: Pricing Page
+        url: /pricing
+        wait-for-selector: "[data-testid='pricing-cards']"
+      - name: Features Page
+        url: /features
+        wait-for-selector: "[data-testid='features-grid']"
+
+# Environment-specific overrides
+environments:
+  staging:
+    projects:
+      admin-panel:
+        base-url: "https://admin-staging.upcoach.ai"
+      cms-panel:
+        base-url: "https://cms-staging.upcoach.ai"
+      landing-page:
+        base-url: "https://staging.upcoach.ai"
+  
+  production:
+    projects:
+      admin-panel:
+        base-url: "https://admin.upcoach.ai"
+      cms-panel:
+        base-url: "https://cms.upcoach.ai"
+      landing-page:
+        base-url: "https://upcoach.ai"

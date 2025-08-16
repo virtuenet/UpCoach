@@ -13,7 +13,7 @@ import { Op } from 'sequelize';
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
 import { ApiError } from '../../utils/apiError';
 import { reportingService } from '../../services/financial/ReportingService';
-import { EmailService } from '../../services/EmailService';
+import { emailService } from '../../services/email/UnifiedEmailService';
 import { SchedulerService } from '../../services/SchedulerService';
 
 export class FinancialDashboardController {
@@ -832,7 +832,7 @@ export class FinancialDashboardController {
         throw new ApiError(400, 'Email address is required');
       }
 
-      await EmailService.sendTestEmail(email);
+      await emailService.sendTestEmail(email);
       
       res.json({ 
         success: true, 

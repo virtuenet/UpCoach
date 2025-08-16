@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Save, ArrowLeft, Eye, Image, Settings, Calendar } from 'lucide-react'
+import DOMPurify from 'isomorphic-dompurify'
 import { contentApi } from '../api/content'
 import RichTextEditor from '../components/RichTextEditor'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -128,7 +129,19 @@ export default function CreateContentPage() {
           {watchedContent[2] && (
             <div 
               className="prose prose-lg max-w-none"
-              dangerouslySetInnerHTML={{ __html: watchedContent[2] }}
+              dangerouslySetInnerHTML={{ 
+                __html: DOMPurify.sanitize(watchedContent[2], {
+                  ALLOWED_TAGS: [
+                    'p', 'br', 'strong', 'em', 'u', 'i', 'b',
+                    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                    'ul', 'ol', 'li', 'blockquote', 'code', 'pre',
+                    'a', 'img', 'table', 'thead', 'tbody', 'tr', 'td', 'th'
+                  ],
+                  ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id'],
+                  FORBID_TAGS: ['script', 'style', 'iframe', 'form'],
+                  FORBID_ATTR: ['onerror', 'onload', 'onclick']
+                })
+              }}
             />
           )}
         </article>

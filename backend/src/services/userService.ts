@@ -321,8 +321,9 @@ export class UserService {
         throw new ApiError(400, 'Reset token has expired');
       }
 
-      // Hash new password
-      const passwordHash = await bcrypt.hash(newPassword, 10);
+      // Hash new password with secure bcrypt rounds
+      const rounds = parseInt(process.env.BCRYPT_ROUNDS || '14', 10);
+      const passwordHash = await bcrypt.hash(newPassword, rounds);
 
       // Update password
       const result = await db.query(

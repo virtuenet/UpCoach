@@ -4,7 +4,7 @@ import { UserProfile } from '../models/UserProfile';
 import { Goal } from '../models/Goal';
 import { logger } from '../utils/logger';
 import { analyticsService } from '../services/analytics/AnalyticsService';
-import { emailAutomationService } from '../services/email/EmailAutomationService';
+import { emailAutomationService } from '../services/email/emailService';
 import { aiService } from '../services/ai/AIService';
 import { sequelize } from '../config/database';
 

@@ -5,7 +5,7 @@ import { TeamService } from '../services/enterprise/TeamService';
 import { catchAsync } from '../utils/catchAsync';
 import { AppError } from '../utils/errors';
 import { logger } from '../utils/logger';
-import EmailService from '../services/email/EmailService';
+import { emailService } from '../services/email/UnifiedEmailService';
 
 export class EnterpriseController {
   private organizationService: OrganizationService;
@@ -112,7 +112,7 @@ export class EnterpriseController {
     const inviter = await this.teamService.getUserById(parseInt(invitedBy as string));
     
     // Send invitation email
-    await EmailService.sendInvitationEmail(
+    await emailService.sendInvitationEmail(
       email,
       organization!.name,
       inviter.fullName || inviter.email,

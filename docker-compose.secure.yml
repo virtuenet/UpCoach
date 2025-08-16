@@ -1,0 +1,300 @@
+version: '3.8'
+
+# Secure Docker Compose Configuration for Production
+# This file implements security best practices for container deployment
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+    internal: true  # Internal network for backend services
+  database:
+    driver: bridge
+    internal: true  # Isolated network for database
+
+services:
+  # PostgreSQL Database (Secured)
+  postgres:
+    image: postgres:15-alpine
+    container_name: upcoach-db
+    user: "1000:1000"  # Run as non-root user
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+    # Remove port exposure in production
+    # ports:
+    #   - "8004:5432"
+    networks:
+      - database
+      - backend
+    volumes:
+      - postgres_data:/var/lib/postgresql/data:rw
+      - ./backend/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /run/postgresql
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis Cache (Secured)
+  redis:
+    image: redis:7-alpine
+    container_name: upcoach-redis
+    user: "999:999"  # Redis user
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+      --protected-mode yes
+    # Remove port exposure in production
+    # ports:
+    #   - "8003:6379"
+    networks:
+      - backend
+    volumes:
+      - redis_data:/data:rw
+    healthcheck:
+      test: ["CMD", "redis-cli", "--pass", "${REDIS_PASSWORD}", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Nginx Reverse Proxy (Security Gateway)
+  nginx:
+    image: nginx:alpine
+    container_name: upcoach-nginx
+    user: "101:101"  # nginx user
+    ports:
+      - "443:443"
+      - "80:80"
+    networks:
+      - frontend
+      - backend
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - backend-api
+      - admin-panel
+      - cms-panel
+      - landing-page
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Backend API (Secured)
+  backend-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.secure
+      args:
+        NODE_ENV: production
+    container_name: upcoach-api
+    user: "1000:1000"  # Run as non-root
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      # Security settings
+      BCRYPT_ROUNDS: "14"
+      COOKIE_SECURE: "true"
+      COOKIE_HTTPONLY: "true"
+      COOKIE_SAMESITE: "strict"
+      CORS_ORIGINS: ${CORS_ORIGINS}
+    networks:
+      - backend
+      - database
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/uploads
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # Admin Panel (Secured)
+  admin-panel:
+    build:
+      context: ./admin-panel
+      dockerfile: Dockerfile.secure
+      args:
+        NODE_ENV: production
+    container_name: upcoach-admin
+    user: "1000:1000"
+    environment:
+      NODE_ENV: production
+      VITE_API_URL: http://backend-api:8080
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      - backend-api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/.vite
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # CMS Panel (Secured)
+  cms-panel:
+    build:
+      context: ./cms-panel
+      dockerfile: Dockerfile.secure
+      args:
+        NODE_ENV: production
+    container_name: upcoach-cms
+    user: "1000:1000"
+    environment:
+      NODE_ENV: production
+      VITE_API_URL: http://backend-api:8080
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      - backend-api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/.vite
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Landing Page (Secured)
+  landing-page:
+    build:
+      context: ./landing-page
+      dockerfile: Dockerfile.secure
+      args:
+        NODE_ENV: production
+    container_name: upcoach-landing
+    user: "1000:1000"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: https://${DOMAIN}/api
+    networks:
+      - frontend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/.next/cache
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/postgres
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/redis

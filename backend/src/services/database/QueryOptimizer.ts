@@ -1,7 +1,7 @@
 import { Sequelize, QueryTypes, Transaction } from 'sequelize';
 import { performance } from 'perf_hooks';
 import { logger } from '../../utils/logger';
-import { cacheService } from '../cache/CacheService';
+import { getCacheService } from '../cache/UnifiedCacheService';
 import { trackDatabaseQuery } from '../../middleware/performance';
 
 interface QueryPlan {
@@ -286,7 +286,7 @@ export class QueryOptimizer {
     }
 
     // Check Redis cache
-    const cached = await cacheService.get<T>(key, { prefix: 'query:' });
+    const cached = await getCacheService().get<T>(key, { prefix: 'query:' });
     if (cached) {
       // Update memory cache
       this.queryCache.set(key, { result: cached, timestamp: Date.now() });
@@ -307,7 +307,7 @@ export class QueryOptimizer {
     }
 
     // Set in Redis cache
-    await cacheService.set(key, value, {
+    await getCacheService().set(key, value, {
       prefix: 'query:',
       ttl: ttl || 300, // 5 minutes default
     });

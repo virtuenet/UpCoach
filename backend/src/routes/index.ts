@@ -17,6 +17,7 @@ import coachRoutes from './coach';
 import advancedAnalyticsRoutes from './advancedAnalytics';
 import gamificationRoutes from './gamification';
 import enterpriseRoutes from './enterprise';
+import csrfRoutes from './csrf';
 import { authMiddleware } from '../middleware/auth';
 
 export const setupRoutes = (app: Application): void => {
@@ -24,6 +25,7 @@ export const setupRoutes = (app: Application): void => {
 
   // Public routes (no authentication required)
   app.use(`${apiPrefix}/auth`, authRoutes);
+  app.use(`${apiPrefix}`, csrfRoutes); // CSRF token endpoint
 
   // Protected routes (authentication required)
   app.use(`${apiPrefix}/users`, authMiddleware, userRoutes);

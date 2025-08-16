@@ -5,7 +5,7 @@ import { validationResult } from 'express-validator';
 
 export class ForumController {
   // Get all forum categories
-  async getCategories(req: Request, res: Response) {
+  async getCategories(_req: Request, res: Response) {
     try {
       const categories = await forumService.getCategories();
       
@@ -156,7 +156,7 @@ export class ForumController {
       logger.error('Failed to create post', { error, userId: req.user!.id });
       res.status(500).json({
         success: false,
-        error: error.message || 'Failed to create post',
+        error: (error as Error).message || 'Failed to create post',
       });
     }
   }
@@ -205,9 +205,9 @@ export class ForumController {
       });
     } catch (error) {
       logger.error('Failed to edit post', { error, postId: req.params.postId });
-      res.status(error.message === 'Unauthorized' ? 403 : 500).json({
+      res.status((error as Error).message === 'Unauthorized' ? 403 : 500).json({
         success: false,
-        error: error.message || 'Failed to edit post',
+        error: (error as Error).message || 'Failed to edit post',
       });
     }
   }

@@ -6,10 +6,10 @@ import { User } from '../../models/User';
 import { Transaction, Op, Sequelize } from 'sequelize';
 import { sequelize } from '../../models';
 import { logger } from '../../utils/logger';
-import emailService from '../email/EmailService';
+import emailService from '../email/UnifiedEmailService';
 import { stripeService } from '../payment/StripeService';
 import { analyticsService } from '../analytics/AnalyticsService';
-import { cacheService } from '../cache/CacheService';
+import { getCacheService } from '../cache/UnifiedCacheService';
 
 interface CoachSearchFilters {
   specialization?: string;
@@ -153,7 +153,7 @@ export class CoachService {
 
       // Cache popular searches
       const cacheKey = `coach-search:${JSON.stringify(filters)}:${page}:${limit}`;
-      await cacheService.set(cacheKey, { coaches: rows, total: count }, 300); // 5 min cache
+      await getCacheService().set(cacheKey, { coaches: rows, total: count }, 300); // 5 min cache
 
       return {
         coaches: rows,

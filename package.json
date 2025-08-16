@@ -1,0 +1,92 @@
+{
+  "name": "upcoach",
+  "version": "1.0.0",
+  "private": true,
+  "description": "UpCoach - AI-Powered Coaching Platform Monorepo",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "type-check": "turbo run type-check",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "install:all": "npm install && npm run install:workspaces",
+    "install:workspaces": "npm install --workspaces",
+    
+    "// Development Commands": "",
+    "dev:backend": "npm run dev --workspace=@upcoach/backend",
+    "dev:admin": "npm run dev --workspace=@upcoach/admin-panel",
+    "dev:cms": "npm run dev --workspace=@upcoach/cms-panel",
+    "dev:landing": "npm run dev --workspace=@upcoach/landing-page",
+    "dev:mobile": "npm run dev --workspace=@upcoach/mobile-app",
+    "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev:admin\" \"npm run dev:cms\" \"npm run dev:landing\"",
+    
+    "// Testing Commands": "",
+    "test:unit": "turbo run test:unit",
+    "test:e2e": "turbo run test:e2e",
+    "test:integration": "turbo run test:integration",
+    "test:coverage": "turbo run test:coverage",
+    
+    "// Docker Commands": "",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up",
+    "docker:down": "docker-compose down",
+    "docker:rebuild": "docker-compose down && docker-compose build --no-cache && docker-compose up",
+    
+    "// Database Commands": "",
+    "db:migrate": "npm run db:migrate --workspace=@upcoach/backend",
+    "db:seed": "npm run db:seed --workspace=@upcoach/backend",
+    "db:reset": "npm run db:reset --workspace=@upcoach/backend",
+    
+    "// Utility Commands": "",
+    "prepare": "husky install",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "turbo run build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "@commitlint/cli": "^18.4.3",
+    "@commitlint/config-conventional": "^18.4.3",
+    "@percy/cli": "^1.27.4",
+    "@playwright/test": "^1.40.1",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "artillery": "^2.0.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.1.0",
+    "nyc": "^15.1.0",
+    "prettier": "^3.1.0",
+    "turbo": "^1.11.0",
+    "typescript": "^5.3.0",
+    "wait-on": "^7.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/upcoach/upcoach-project.git"
+  },
+  "author": "UpCoach Team",
+  "license": "PROPRIETARY"
+}

@@ -229,7 +229,7 @@ export class ContentCategoryController {
   }
 
   // Get category content count
-  static async getContentCount(req: Request, res: Response) {
+  static async getContentCount(_req: Request, res: Response) {
     try {
       const categories = await ContentCategory.findAll({
         attributes: [

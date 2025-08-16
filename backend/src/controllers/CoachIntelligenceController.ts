@@ -78,7 +78,7 @@ export class CoachIntelligenceController {
       res.status(500).json({
         success: false,
         message: 'Failed to process coaching session',
-        error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
       });
     }
   }
@@ -139,7 +139,7 @@ export class CoachIntelligenceController {
       res.status(500).json({
         success: false,
         message: 'Failed to retrieve relevant memories',
-        error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
       });
     }
   }
@@ -182,7 +182,7 @@ export class CoachIntelligenceController {
       res.status(500).json({
         success: false,
         message: 'Failed to generate coaching recommendations',
-        error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
       });
     }
   }
@@ -217,7 +217,7 @@ export class CoachIntelligenceController {
       res.status(500).json({
         success: false,
         message: 'Failed to generate weekly report',
-        error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
       });
     }
   }
@@ -262,7 +262,7 @@ export class CoachIntelligenceController {
       res.status(500).json({
         success: false,
         message: 'Failed to retrieve user analytics',
-        error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
       });
     }
   }
@@ -356,7 +356,7 @@ export class CoachIntelligenceController {
       res.status(500).json({
         success: false,
         message: 'Failed to retrieve user memories',
-        error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
       });
     }
   }
@@ -394,7 +394,7 @@ export class CoachIntelligenceController {
       res.status(500).json({
         success: false,
         message: 'Failed to create KPI tracker',
-        error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
       });
     }
   }
@@ -462,7 +462,7 @@ export class CoachIntelligenceController {
       res.status(500).json({
         success: false,
         message: 'Failed to retrieve KPI trackers',
-        error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
       });
     }
   }
@@ -515,7 +515,7 @@ export class CoachIntelligenceController {
       res.status(500).json({
         success: false,
         message: 'Failed to update KPI progress',
-        error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
       });
     }
   }
@@ -526,7 +526,7 @@ export class CoachIntelligenceController {
    */
   async getCohortAnalytics(req: Request, res: Response): Promise<void> {
     try {
-      const { cohortId, avatarId, periodType = 'weekly' } = req.query;
+      const { cohortId, periodType = 'weekly' } = req.query;
 
       let whereClause: any = {};
 
@@ -570,7 +570,7 @@ export class CoachIntelligenceController {
       res.status(500).json({
         success: false,
         message: 'Failed to retrieve cohort analytics',
-        error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
       });
     }
   }

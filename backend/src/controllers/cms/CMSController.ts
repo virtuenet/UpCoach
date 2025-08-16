@@ -10,7 +10,7 @@ import ContentInteraction from '../../models/cms/ContentInteraction';
 import ContentSchedule from '../../models/cms/ContentSchedule';
 import ContentComment from '../../models/cms/ContentComment';
 import { User } from '../../models/User';
-import { cacheService } from '../../services/cache/CacheService';
+import { getCacheService } from '../../services/cache/UnifiedCacheService';
 import uploadService from '../../services/upload/UploadService';
 import { logger } from '../../utils/logger';
 import slugify from 'slugify';
@@ -139,7 +139,7 @@ export const createArticle = async (req: Request, res: Response) => {
     await article.createVersion(Number(req.user!.id), 'Initial version');
 
     // Invalidate cache
-    await cacheService.invalidate('cms:articles:*');
+    await getCacheService().invalidate('cms:articles:*');
 
     res.status(201).json({
       success: true,
@@ -158,7 +158,7 @@ export const getArticle = async (req: Request, res: Response) => {
 
     // Try cache first
     const cacheKey = `cms:article:${id}`;
-    const cached = await cacheService.get(cacheKey);
+    const cached = await getCacheService().get(cacheKey);
     if (cached) {
       return res.json({ success: true, data: cached });
     }
@@ -189,7 +189,7 @@ export const getArticle = async (req: Request, res: Response) => {
     }
 
     // Cache the result
-    await cacheService.set(cacheKey, article, { ttl: 3600 });
+    await getCacheService().set(cacheKey, article, { ttl: 3600 });
 
     res.json({
       success: true,
@@ -225,8 +225,8 @@ export const updateArticle = async (req: Request, res: Response) => {
     });
 
     // Invalidate cache
-    await cacheService.del(`cms:article:${id}`);
-    await cacheService.invalidate('cms:articles:*');
+    await getCacheService().del(`cms:article:${id}`);
+    await getCacheService().invalidate('cms:articles:*');
 
     res.json({
       success: true,
@@ -250,8 +250,8 @@ export const deleteArticle = async (req: Request, res: Response) => {
     await article.destroy();
 
     // Invalidate cache
-    await cacheService.del(`cms:article:${id}`);
-    await cacheService.invalidate('cms:articles:*');
+    await getCacheService().del(`cms:article:${id}`);
+    await getCacheService().invalidate('cms:articles:*');
 
     res.json({
       success: true,
@@ -279,8 +279,8 @@ export const publishArticle = async (req: Request, res: Response) => {
     await article.publish();
 
     // Invalidate cache
-    await cacheService.del(`cms:article:${id}`);
-    await cacheService.invalidate('cms:articles:*');
+    await getCacheService().del(`cms:article:${id}`);
+    await getCacheService().invalidate('cms:articles:*');
 
     res.json({
       success: true,
@@ -309,8 +309,8 @@ export const unpublishArticle = async (req: Request, res: Response) => {
     await article.unpublish();
 
     // Invalidate cache
-    await cacheService.del(`cms:article:${id}`);
-    await cacheService.invalidate('cms:articles:*');
+    await getCacheService().del(`cms:article:${id}`);
+    await getCacheService().invalidate('cms:articles:*');
 
     res.json({
       success: true,
@@ -380,8 +380,8 @@ export const revertArticleVersion = async (req: Request, res: Response) => {
     });
 
     // Invalidate cache
-    await cacheService.del(`cms:article:${id}`);
-    await cacheService.invalidate('cms:articles:*');
+    await getCacheService().del(`cms:article:${id}`);
+    await getCacheService().invalidate('cms:articles:*');
 
     res.json({
       success: true,
@@ -428,7 +428,7 @@ export const uploadMedia = async (req: Request, res: Response) => {
         alt: altText,
         caption,
         folder,
-        tags: tags ? tags.split(',').map(t => t.trim()) : [],
+        tags: tags ? tags.split(',').map((t: string) => t.trim()) : [],
       },
     });
 
@@ -509,7 +509,7 @@ export const deleteMedia = async (req: Request, res: Response) => {
 };
 
 // Category Controllers
-export const getCategories = async (req: Request, res: Response) => {
+export const getCategories = async (_req: Request, res: Response) => {
   try {
     const categories = await ContentCategory.findAll({
       where: { isActive: true },
@@ -540,6 +540,7 @@ export const createCategory = async (req: Request, res: Response) => {
       icon,
       color,
       order: orderIndex || 0,
+      isActive: true,
     });
 
     res.status(201).json({
@@ -711,7 +712,7 @@ export const previewContent = async (req: Request, res: Response) => {
 // Analytics
 export const getContentAnalytics = async (req: Request, res: Response) => {
   try {
-    const { startDate, endDate } = req.query;
+    const {} = req.query;
 
     const analytics = {
       totalArticles: await ContentArticle.count(),
@@ -796,10 +797,10 @@ export const getArticleAnalytics = async (req: Request, res: Response) => {
           where: { contentId: id },
         }),
       },
-      interactions: interactions.reduce((acc, curr) => {
+      interactions: interactions.reduce((acc: Record<string, any>, curr) => {
         acc[curr.interactionType] = curr.get('count');
         return acc;
-      }, {}),
+      }, {} as Record<string, any>),
       engagementRate: article.viewCount > 0 
         ? ((article.likeCount + article.shareCount) / article.viewCount * 100).toFixed(2)
         : 0,
@@ -838,7 +839,7 @@ export const scheduleContent = async (req: Request, res: Response) => {
   }
 };
 
-export const getScheduledContent = async (req: Request, res: Response) => {
+export const getScheduledContent = async (_req: Request, res: Response) => {
   try {
     const schedules = await ContentSchedule.findAll({
       where: { status: 'pending' },
@@ -906,7 +907,7 @@ function extractKeywords(content: string): string[] {
     .filter(word => word.length > 4)
     .filter(word => !['the', 'and', 'for', 'with', 'from'].includes(word));
   
-  const wordCount = {};
+  const wordCount: Record<string, number> = {};
   words.forEach(word => {
     wordCount[word] = (wordCount[word] || 0) + 1;
   });

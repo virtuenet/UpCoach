@@ -1,0 +1,67 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "checkJs": false,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "baseUrl": ".",
+    "paths": {
+      "@upcoach/shared": ["packages/shared/src"],
+      "@upcoach/shared/*": ["packages/shared/src/*"],
+      "@upcoach/types": ["packages/types/src"],
+      "@upcoach/types/*": ["packages/types/src/*"],
+      "@upcoach/utils": ["packages/utils/src"],
+      "@upcoach/utils/*": ["packages/utils/src/*"],
+      "@upcoach/ui": ["packages/ui/src"],
+      "@upcoach/ui/*": ["packages/ui/src/*"],
+      "@upcoach/test-utils": ["packages/test-utils/src"],
+      "@upcoach/test-utils/*": ["packages/test-utils/src/*"]
+    }
+  },
+  "include": [
+    "packages/*/src/**/*",
+    "apps/*/src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/node_modules",
+    "dist",
+    "**/dist",
+    "build",
+    "**/build",
+    ".next",
+    "**/.next",
+    "coverage",
+    "**/coverage",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/*.test.ts",
+    "**/*.test.tsx"
+  ],
+  "references": [
+    { "path": "./packages/types" },
+    { "path": "./packages/utils" },
+    { "path": "./packages/shared" },
+    { "path": "./packages/ui" },
+    { "path": "./packages/test-utils" },
+    { "path": "./apps/backend" },
+    { "path": "./apps/admin-panel" },
+    { "path": "./apps/cms-panel" },
+    { "path": "./apps/landing-page" }
+  ]
+}

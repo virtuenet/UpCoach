@@ -20,7 +20,7 @@ export class ContentController {
         authorId,
         isPremium,
         search,
-        tags,
+        // tags,
         sortBy = 'publishedAt',
         sortOrder = 'DESC'
       } = req.query;
@@ -341,7 +341,7 @@ export class ContentController {
   static async getAnalytics(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { startDate, endDate } = req.query;
+      const {} = req.query;
 
       const content = await Content.findByPk(id);
       if (!content) {

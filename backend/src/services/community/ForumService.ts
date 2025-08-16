@@ -6,7 +6,7 @@ import ForumPost from '../../models/community/ForumPost';
 import ForumVote from '../../models/community/ForumVote';
 import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
-import { cacheService } from '../cache/CacheService';
+import { getCacheService } from '../cache/UnifiedCacheService';
 import DOMPurify from 'isomorphic-dompurify';
 import { marked } from 'marked';
 
@@ -39,7 +39,7 @@ export class ForumService {
   // Get all forum categories
   async getCategories(): Promise<ForumCategory[]> {
     const cacheKey = 'forum:categories';
-    const cached = await cacheService.get<ForumCategory[]>(cacheKey);
+    const cached = await getCacheService().get<ForumCategory[]>(cacheKey);
     
     if (cached) {
       return cached;
@@ -51,7 +51,7 @@ export class ForumService {
       attributes: ['id', 'name', 'description', 'slug', 'icon', 'color'],
     });
 
-    await cacheService.set(cacheKey, categories, { ttl: 3600 }); // Cache for 1 hour
+    await getCacheService().set(cacheKey, categories, { ttl: 3600 }); // Cache for 1 hour
     return categories;
   }
 
@@ -88,7 +88,7 @@ export class ForumService {
       await transaction.commit();
 
       // Clear category threads cache
-      await cacheService.del(`forum:threads:${data.categoryId}:*`);
+      await getCacheService().del(`forum:threads:${data.categoryId}:*`);
 
       // Track activity
       await this.trackActivity(data.userId, 'thread_created', 'thread', thread.id);

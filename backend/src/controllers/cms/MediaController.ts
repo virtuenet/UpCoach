@@ -11,12 +11,12 @@ import crypto from 'crypto';
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
+  destination: async (_req, _file, cb) => {
     const uploadDir = path.join(process.cwd(), 'uploads', 'media');
     await fs.mkdir(uploadDir, { recursive: true });
     cb(null, uploadDir);
   },
-  filename: (req, file, cb) => {
+  filename: (_req, file, cb) => {
     const uniqueSuffix = crypto.randomBytes(6).toString('hex');
     const ext = path.extname(file.originalname);
     const name = path.basename(file.originalname, ext);
@@ -30,7 +30,7 @@ const upload = multer({
   limits: {
     fileSize: 50 * 1024 * 1024, // 50MB max file size
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     const allowedMimes = [
       'image/jpeg',
       'image/jpg',
@@ -342,7 +342,7 @@ export class MediaController {
   }
 
   // Get media library stats
-  static async getStats(req: Request, res: Response) {
+  static async getStats(_req: Request, res: Response) {
     try {
       const totalCount = await ContentMedia.count();
       const totalSize = await ContentMedia.sum('size');

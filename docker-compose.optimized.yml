@@ -1,0 +1,261 @@
+version: '3.9'
+
+x-common-variables: &common-variables
+  NODE_ENV: ${NODE_ENV:-production}
+  TZ: ${TZ:-UTC}
+
+x-backend-variables: &backend-variables
+  <<: *common-variables
+  DATABASE_URL: ${DATABASE_URL}
+  REDIS_URL: redis://redis:6379
+  JWT_SECRET: ${JWT_SECRET}
+  STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+  OPENAI_API_KEY: ${OPENAI_API_KEY}
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 40s
+
+services:
+  # Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: upcoach-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-upcoach}
+      POSTGRES_USER: ${POSTGRES_USER:-upcoach}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/src/database/migrations:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-upcoach}"]
+    networks:
+      - upcoach-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: upcoach-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "redis-cli", "ping"]
+    networks:
+      - upcoach-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+      cache_from:
+        - upcoach/backend:latest
+      args:
+        NODE_VERSION: 20-alpine
+    image: upcoach/backend:latest
+    container_name: upcoach-backend
+    restart: unless-stopped
+    environment:
+      <<: *backend-variables
+      PORT: 8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - backend_logs:/app/logs
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+    networks:
+      - upcoach-network
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Admin Panel
+  admin-panel:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+      cache_from:
+        - upcoach/admin-panel:latest
+      args:
+        NODE_VERSION: 20-alpine
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+    image: upcoach/admin-panel:latest
+    container_name: upcoach-admin
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${ADMIN_PORT:-8006}:80"
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+    networks:
+      - upcoach-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  # CMS Panel
+  cms-panel:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+      cache_from:
+        - upcoach/cms-panel:latest
+      args:
+        NODE_VERSION: 20-alpine
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+    image: upcoach/cms-panel:latest
+    container_name: upcoach-cms
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${CMS_PORT:-8007}:80"
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+    networks:
+      - upcoach-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  # Landing Page (Next.js)
+  landing-page:
+    build:
+      context: ./landing-page
+      dockerfile: Dockerfile
+      cache_from:
+        - upcoach/landing:latest
+    image: upcoach/landing:latest
+    container_name: upcoach-landing
+    restart: unless-stopped
+    environment:
+      <<: *common-variables
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+    ports:
+      - "${LANDING_PORT:-8005}:3000"
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/"]
+    networks:
+      - upcoach-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # Nginx Reverse Proxy (optional, for production)
+  nginx:
+    image: nginx:alpine
+    container_name: upcoach-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/production.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_cache:/var/cache/nginx
+    depends_on:
+      - backend
+      - admin-panel
+      - cms-panel
+      - landing-page
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+    networks:
+      - upcoach-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  backend_logs:
+    driver: local
+  nginx_cache:
+    driver: local
+
+networks:
+  upcoach-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16

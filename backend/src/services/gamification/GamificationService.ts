@@ -1,9 +1,9 @@
 import { Op, Sequelize, QueryTypes, Transaction } from 'sequelize';
 import { sequelize } from '../../models';
 import { logger } from '../../utils/logger';
-import emailService from '../email/EmailService';
+import emailService from '../email/UnifiedEmailService';
 import { analyticsService } from '../analytics/AnalyticsService';
-import { cacheService } from '../cache/CacheService';
+import { getCacheService } from '../cache/UnifiedCacheService';
 import { format, differenceInDays, startOfDay } from 'date-fns';
 
 interface AchievementProgress {

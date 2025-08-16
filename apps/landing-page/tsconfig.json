@@ -1,0 +1,6 @@
+{
+  "extends": "../../landing-page/tsconfig.json",
+  "compilerOptions": {
+    "composite": true
+  }
+}

@@ -402,7 +402,7 @@ export class CoachController {
   ];
 
   // Admin: Get all coaches
-  adminGetCoaches = async (req: Request, res: Response) => {
+  adminGetCoaches = async (_req: Request, res: Response) => {
     try {
       const { CoachProfile } = require('../models/CoachProfile');
       const { User } = require('../models/User');
@@ -431,7 +431,7 @@ export class CoachController {
   };
 
   // Admin: Get all sessions
-  adminGetSessions = async (req: Request, res: Response) => {
+  adminGetSessions = async (_req: Request, res: Response) => {
     try {
       const { CoachSession } = require('../models/CoachSession');
       const { CoachProfile } = require('../models/CoachProfile');
@@ -467,7 +467,7 @@ export class CoachController {
   };
 
   // Admin: Get all reviews
-  adminGetReviews = async (req: Request, res: Response) => {
+  adminGetReviews = async (_req: Request, res: Response) => {
     try {
       const { CoachReview } = require('../models/CoachReview');
       const { CoachProfile } = require('../models/CoachProfile');
@@ -503,7 +503,7 @@ export class CoachController {
   };
 
   // Admin: Get marketplace stats
-  adminGetStats = async (req: Request, res: Response) => {
+  adminGetStats = async (_req: Request, res: Response) => {
     try {
       const stats = await coachService.getMarketplaceStats();
       

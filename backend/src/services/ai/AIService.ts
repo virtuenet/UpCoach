@@ -7,7 +7,7 @@ import { ContextManager } from './ContextManager';
 import { PersonalityEngine } from './PersonalityEngine';
 import { CircuitBreaker } from './CircuitBreaker';
 import { RetryMechanism } from './RetryMechanism';
-import { CacheService, cache } from './CacheService';
+import { UnifiedCacheService, getCacheService } from '../cache/UnifiedCacheService';
 
 export interface AIMessage {
   role: 'system' | 'user' | 'assistant';
@@ -101,11 +101,11 @@ export class AIService {
 
     try {
       // Generate cache key
-      const cacheKey = CacheService.createKey(messages, options);
+      const cacheKey = JSON.stringify({ messages, options });
       
       // Check cache if enabled
       if (useCache) {
-        const cached = await cache.get<AIResponse>(cacheKey, {
+        const cached = await getCacheService().get<AIResponse>(cacheKey, {
           namespace: 'ai-responses',
           ttl: cacheTTL
         });
@@ -162,7 +162,7 @@ export class AIService {
       
       // Cache successful response
       if (useCache) {
-        await cache.set(cacheKey, response, {
+        await getCacheService().set(cacheKey, response, {
           namespace: 'ai-responses',
           ttl: cacheTTL
         });
@@ -395,13 +395,13 @@ export class AIService {
       errorRate: this.metrics.totalErrors / totalRequests,
       cacheHitRate: this.metrics.cacheHits / (this.metrics.cacheHits + this.metrics.cacheMisses || 1),
       circuitBreakerState: this.circuitBreaker.getState(),
-      cacheStats: cache.getStats()
+      cacheStats: getCacheService().getStats()
     };
   }
   
   // Clear cache
   async clearCache(namespace?: string): Promise<void> {
-    await cache.clear(namespace || 'ai-responses');
+    await getCacheService().invalidate('*', namespace || 'ai-responses');
   }
   
   // Health check
@@ -435,7 +435,8 @@ export class AIService {
     }
     
     // Test cache
-    health.cache = cache.getStats().redisConnected || cache.getStats().inMemorySize >= 0;
+    const stats = getCacheService().getStats();
+    health.cache = stats.hits >= 0 || stats.misses >= 0;
     
     return health;
   }

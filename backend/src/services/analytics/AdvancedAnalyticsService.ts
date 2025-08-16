@@ -3,8 +3,15 @@ import { sequelize } from '../../models';
 import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
 import { analyticsService } from './AnalyticsService';
-import { cacheService } from '../cache/CacheService';
+import { getCacheService } from '../cache/UnifiedCacheService';
 import { format, subDays, subMonths, startOfDay, endOfDay } from 'date-fns';
+import { 
+  executeSecureQuery, 
+  buildInsertQuery, 
+  buildUpdateQuery,
+  validateQueryParams,
+  sanitizeIdentifier 
+} from '../../utils/sqlSecurity';
 
 interface CohortDefinition {
   name: string;
@@ -41,23 +48,25 @@ export class AdvancedAnalyticsService {
   // Create a new cohort
   async createCohort(definition: CohortDefinition, createdBy: number): Promise<number> {
     try {
-      // Create cohort
-      const result = await sequelize.query(
+      // Validate inputs
+      const validatedParams = validateQueryParams({
+        name: definition.name,
+        description: definition.description,
+        type: definition.type,
+        startDate: definition.startDate,
+        endDate: definition.endDate,
+        filters: JSON.stringify(definition.filters || {}),
+        createdBy,
+      });
+
+      // Create cohort using parameterized query
+      const result = await executeSecureQuery(
+        sequelize,
         `INSERT INTO user_cohorts (name, description, cohort_type, start_date, end_date, filters, created_by)
          VALUES (:name, :description, :type, :startDate, :endDate, :filters, :createdBy)
          RETURNING id`,
-        {
-          replacements: {
-            name: definition.name,
-            description: definition.description,
-            type: definition.type,
-            startDate: definition.startDate,
-            endDate: definition.endDate,
-            filters: JSON.stringify(definition.filters || {}),
-            createdBy,
-          },
-          type: QueryTypes.INSERT,
-        }
+        validatedParams,
+        QueryTypes.INSERT
       );
 
       const cohortId = result[0][0].id;
@@ -131,20 +140,22 @@ export class AdvancedAnalyticsService {
         break;
     }
 
-    await sequelize.query(userQuery, {
-      replacements,
-      type: QueryTypes.INSERT,
-    });
+    // Execute the parameterized query safely
+    await executeSecureQuery(
+      sequelize,
+      userQuery,
+      validateQueryParams(replacements),
+      QueryTypes.INSERT
+    );
 
-    // Update user count
-    await sequelize.query(
+    // Update user count using parameterized query
+    await executeSecureQuery(
+      sequelize,
       `UPDATE user_cohorts 
        SET user_count = (SELECT COUNT(*) FROM user_cohort_members WHERE cohort_id = :cohortId)
        WHERE id = :cohortId`,
-      {
-        replacements: { cohortId },
-        type: QueryTypes.UPDATE,
-      }
+      validateQueryParams({ cohortId }),
+      QueryTypes.UPDATE
     );
   }
 
@@ -182,17 +193,22 @@ export class AdvancedAnalyticsService {
     periodType: 'day' | 'week' | 'month' = 'day'
   ): Promise<RetentionData[]> {
     try {
-      // Call the stored procedure
-      await sequelize.query(
+      // Validate period type
+      if (!['day', 'week', 'month'].includes(periodType)) {
+        throw new Error('Invalid period type');
+      }
+
+      // Call the stored procedure with validated parameters
+      await executeSecureQuery(
+        sequelize,
         'SELECT calculate_cohort_retention(:cohortId, :periodType)',
-        {
-          replacements: { cohortId, periodType },
-          type: QueryTypes.SELECT,
-        }
+        validateQueryParams({ cohortId, periodType }),
+        QueryTypes.SELECT
       );
 
-      // Fetch calculated metrics
-      const metrics = await sequelize.query(
+      // Fetch calculated metrics with parameterized query
+      const metrics = await executeSecureQuery(
+        sequelize,
         `SELECT 
           period_number as period,
           users_retained as "usersRetained",
@@ -203,10 +219,8 @@ export class AdvancedAnalyticsService {
          WHERE cohort_id = :cohortId
            AND period_type = :periodType
          ORDER BY period_number`,
-        {
-          replacements: { cohortId, periodType },
-          type: QueryTypes.SELECT,
-        }
+        validateQueryParams({ cohortId, periodType }),
+        QueryTypes.SELECT
       );
 
       return metrics as RetentionData[];
@@ -224,21 +238,23 @@ export class AdvancedAnalyticsService {
     sessionId?: string
   ): Promise<void> {
     try {
-      await sequelize.query(
+      // Validate and sanitize activity type
+      const validatedParams = validateQueryParams({
+        userId,
+        activityType: activityType.substring(0, 100), // Limit length
+        data: JSON.stringify(data || {}),
+        sessionId,
+        platform: data?.platform || 'web',
+        deviceType: data?.deviceType || 'desktop',
+      });
+
+      await executeSecureQuery(
+        sequelize,
         `INSERT INTO user_activity_logs 
          (user_id, activity_type, activity_data, session_id, platform, device_type)
          VALUES (:userId, :activityType, :data, :sessionId, :platform, :deviceType)`,
-        {
-          replacements: {
-            userId,
-            activityType,
-            data: JSON.stringify(data || {}),
-            sessionId,
-            platform: data?.platform || 'web',
-            deviceType: data?.deviceType || 'desktop',
-          },
-          type: QueryTypes.INSERT,
-        }
+        validatedParams,
+        QueryTypes.INSERT
       );
 
       // Update feature usage stats
@@ -254,7 +270,11 @@ export class AdvancedAnalyticsService {
   private async updateFeatureUsage(featureName: string, userId: number): Promise<void> {
     const today = format(new Date(), 'yyyy-MM-dd');
     
-    await sequelize.query(
+    // Sanitize feature name to prevent injection
+    const sanitizedFeatureName = featureName.replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 50);
+    
+    await executeSecureQuery(
+      sequelize,
       `INSERT INTO feature_usage_stats (feature_name, date, unique_users, total_uses)
        VALUES (:featureName, :date, 1, 1)
        ON CONFLICT (feature_name, date)
@@ -268,15 +288,13 @@ export class AdvancedAnalyticsService {
                AND id < (SELECT MAX(id) FROM user_activity_logs WHERE user_id = :userId AND activity_type = :activityType)
            ) THEN 1 ELSE 0 END,
          total_uses = feature_usage_stats.total_uses + 1`,
-      {
-        replacements: {
-          featureName,
-          date: today,
-          userId,
-          activityType: `feature_${featureName}`,
-        },
-        type: QueryTypes.INSERT,
-      }
+      validateQueryParams({
+        featureName: sanitizedFeatureName,
+        date: today,
+        userId,
+        activityType: `feature_${sanitizedFeatureName}`,
+      }),
+      QueryTypes.INSERT
     );
   }
 
@@ -503,7 +521,7 @@ export class AdvancedAnalyticsService {
   ): Promise<any> {
     try {
       const cacheKey = `cohort-comparison:${cohortIds.join('-')}:${metricType}`;
-      const cached = await cacheService.get(cacheKey);
+      const cached = await getCacheService().get(cacheKey);
       if (cached) return cached;
 
       let query = '';
@@ -569,7 +587,7 @@ export class AdvancedAnalyticsService {
         type: QueryTypes.SELECT,
       });
 
-      await cacheService.set(cacheKey, result, { ttl: 3600 }); // 1 hour cache
+      await getCacheService().set(cacheKey, result, { ttl: 3600 }); // 1 hour cache
       return result;
     } catch (error) {
       logger.error('Failed to compare cohorts', { error, cohortIds });

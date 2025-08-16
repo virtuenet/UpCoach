@@ -110,20 +110,27 @@ test.describe("Cross-Browser Compatibility", () => {
   });
 });
 
-test.describe("Mobile Browser Compatibility", () => {
-  test.use({ ...devices["iPhone 12"] });
+// Separate mobile test configuration
+const mobileConfig = { ...devices["iPhone 12"] };
 
-  test("touch interactions work on mobile", async ({ page }) => {
-    await page.goto("/");
+test.describe("Mobile Browser Compatibility", () => {
+  test("touch interactions work on mobile", async ({ browser }) => {
+    // Create a new context with mobile device settings
+    const context = await browser.newContext(mobileConfig);
+    const mobilePage = await context.newPage();
+    await mobilePage.goto("/");
 
     // Test tap on button
-    const ctaButton = page
+    const ctaButton = mobilePage
       .getByRole("link", { name: /download for ios/i })
       .first();
     await ctaButton.tap();
 
     // Should navigate or show expected behavior
-    expect(page.url()).toContain("apps.apple.com");
+    expect(mobilePage.url()).toContain("apps.apple.com");
+    
+    // Clean up
+    await context.close();
   });
 
   test("viewport meta tag is correct", async ({ page }) => {
@@ -135,18 +142,24 @@ test.describe("Mobile Browser Compatibility", () => {
     expect(html).toContain("initial-scale=1");
   });
 
-  test("mobile menu works correctly", async ({ page }) => {
-    await page.goto("/");
+  test("mobile menu works correctly", async ({ browser }) => {
+    // Create mobile context for proper mobile testing
+    const context = await browser.newContext(mobileConfig);
+    const mobilePage = await context.newPage();
+    await mobilePage.goto("/");
 
     // Look for mobile menu button (if exists)
-    const menuButton = page.getByRole("button", { name: /menu/i });
+    const menuButton = mobilePage.getByRole("button", { name: /menu/i });
     const menuExists = await menuButton.isVisible().catch(() => false);
 
     if (menuExists) {
       await menuButton.tap();
       // Check that menu items are visible
-      await expect(page.getByRole("link", { name: /features/i })).toBeVisible();
+      await expect(mobilePage.getByRole("link", { name: /features/i })).toBeVisible();
     }
+    
+    // Clean up
+    await context.close();
   });
 });
 

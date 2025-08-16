@@ -83,7 +83,7 @@ export class TemplateController {
       res.status(500).json({
         success: false,
         message: 'Failed to fetch templates',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -106,7 +106,7 @@ export class TemplateController {
       res.status(500).json({
         success: false,
         message: 'Failed to fetch popular templates',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -137,7 +137,7 @@ export class TemplateController {
       res.status(500).json({
         success: false,
         message: 'Failed to search templates',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -197,7 +197,7 @@ export class TemplateController {
       res.status(500).json({
         success: false,
         message: 'Failed to create template',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -236,7 +236,7 @@ export class TemplateController {
       res.status(500).json({
         success: false,
         message: 'Failed to fetch template',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -296,7 +296,7 @@ export class TemplateController {
       res.status(500).json({
         success: false,
         message: 'Failed to update template',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -338,7 +338,7 @@ export class TemplateController {
       res.status(500).json({
         success: false,
         message: 'Failed to delete template',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -362,7 +362,7 @@ export class TemplateController {
       res.status(500).json({
         success: false,
         message: 'Failed to duplicate template',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -410,7 +410,7 @@ export class TemplateController {
       res.status(500).json({
         success: false,
         message: 'Failed to create content from template',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -431,7 +431,7 @@ export class TemplateController {
       res.status(500).json({
         success: false,
         message: 'Failed to fetch user templates',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -439,7 +439,7 @@ export class TemplateController {
   /**
    * Get template categories
    */
-  static async getCategories(req: Request, res: Response): Promise<void> {
+  static async getCategories(_req: Request, res: Response): Promise<void> {
     try {
       const categories = [
         {
@@ -481,7 +481,7 @@ export class TemplateController {
       res.status(500).json({
         success: false,
         message: 'Failed to fetch template categories',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -545,7 +545,7 @@ export class TemplateController {
       res.status(500).json({
         success: false,
         message: 'Failed to generate template preview',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }
@@ -555,7 +555,7 @@ export class TemplateController {
    */
   static async getAutomationSuggestions(req: Request, res: Response): Promise<void> {
     try {
-      const { category, contentType } = req.query;
+      const { category } = req.query;
 
       const suggestions = {
         article: [
@@ -609,7 +609,7 @@ export class TemplateController {
       res.status(500).json({
         success: false,
         message: 'Failed to fetch automation suggestions',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
       });
     }
   }

@@ -1,29 +1,92 @@
-import { Router } from 'express';
+import { Router, Request, Response, raw } from 'express';
 import { authMiddleware } from '../middleware/auth';
 import { FinancialDashboardController } from '../controllers/financial/FinancialDashboardController';
 import { stripeWebhookService } from '../services/financial/StripeWebhookService';
 import { logger } from '../utils/logger';
+import { config } from '../config/environment';
+import Stripe from 'stripe';
 
 const router = Router();
 const financialController = new FinancialDashboardController();
-
-// Stripe webhook endpoint (no auth required)
-router.post('/webhook/stripe', async (req, res) => {
-  const sig = req.headers['stripe-signature'] as string;
-  
-  try {
-    // Verify webhook signature
-    const event = req.body; // Stripe event object
-    
-    // Process webhook
-    await stripeWebhookService.handleWebhook(event);
-    
-    res.json({ received: true });
-  } catch (error) {
-    logger.error('Webhook error:', error);
-    res.status(400).send(`Webhook Error: ${error.message}`);
-  }
+const stripe = new Stripe(config.stripe.secretKey || '', {
+  apiVersion: '2024-12-18.acacia',
 });
+
+// Stripe webhook endpoint with proper signature validation
+// IMPORTANT: Use raw body for signature verification
+router.post('/webhook/stripe', 
+  raw({ type: 'application/json' }), // Raw body required for signature verification
+  async (req: Request, res: Response) => {
+    const sig = req.headers['stripe-signature'] as string;
+    
+    if (!sig) {
+      logger.error('Missing Stripe signature header');
+      return res.status(400).json({ 
+        error: 'Missing signature header',
+        code: 'MISSING_SIGNATURE' 
+      });
+    }
+    
+    if (!config.stripe.webhookSecret) {
+      logger.error('Stripe webhook secret not configured');
+      return res.status(500).json({ 
+        error: 'Webhook configuration error',
+        code: 'WEBHOOK_NOT_CONFIGURED' 
+      });
+    }
+    
+    let event: Stripe.Event;
+    
+    try {
+      // Verify webhook signature using Stripe SDK
+      event = stripe.webhooks.constructEvent(
+        req.body, // Raw body buffer
+        sig,
+        config.stripe.webhookSecret
+      );
+      
+      logger.info('Stripe webhook signature verified', { 
+        eventType: event.type,
+        eventId: event.id 
+      });
+    } catch (err) {
+      logger.error('Webhook signature verification failed', { 
+        error: err.message,
+        signature: sig.substring(0, 20) + '...' // Log partial signature for debugging
+      });
+      
+      // Return 400 to indicate invalid signature
+      return res.status(400).json({ 
+        error: 'Invalid signature',
+        code: 'INVALID_SIGNATURE'
+      });
+    }
+    
+    try {
+      // Process verified webhook event
+      await stripeWebhookService.handleWebhook(event);
+      
+      // Return 200 to acknowledge receipt
+      res.json({ 
+        received: true,
+        eventId: event.id,
+        eventType: event.type
+      });
+    } catch (error) {
+      logger.error('Webhook processing error:', {
+        error: error.message,
+        eventId: event.id,
+        eventType: event.type
+      });
+      
+      // Return 500 for processing errors (Stripe will retry)
+      res.status(500).json({ 
+        error: 'Webhook processing failed',
+        code: 'PROCESSING_ERROR'
+      });
+    }
+  }
+);
 
 // Protected routes (require admin auth)
 router.use(authMiddleware);

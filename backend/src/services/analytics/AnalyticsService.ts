@@ -2,7 +2,7 @@ import { Request } from 'express';
 import axios from 'axios';
 import { logger } from '../../utils/logger';
 import { User } from '../../models/User';
-import { cacheService } from '../cache/CacheService';
+import { getCacheService } from '../cache/UnifiedCacheService';
 
 interface TrackingEvent {
   userId?: number;
@@ -98,7 +98,7 @@ export class AnalyticsService {
       await Promise.all(promises);
 
       // Cache user traits for faster lookups
-      await cacheService.set(
+      await getCacheService().set(
         `analytics:user:${traits.userId}`,
         traits,
         { ttl: 3600 } // 1 hour
@@ -214,7 +214,7 @@ export class AnalyticsService {
   // Get user analytics summary
   async getUserAnalytics(userId: number): Promise<any> {
     const cacheKey = `analytics:summary:${userId}`;
-    const cached = await cacheService.get(cacheKey);
+    const cached = await getCacheService().get(cacheKey);
     if (cached) return cached;
 
     try {
@@ -227,7 +227,7 @@ export class AnalyticsService {
         behaviorSegment: await this.getUserSegment(userId),
       };
 
-      await cacheService.set(cacheKey, summary, { ttl: 300 }); // 5 minutes
+      await getCacheService().set(cacheKey, summary, { ttl: 300 }); // 5 minutes
       return summary;
     } catch (error) {
       logger.error('Failed to get user analytics', { error, userId });

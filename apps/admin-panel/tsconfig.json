@@ -1,0 +1,6 @@
+{
+  "extends": "../../admin-panel/tsconfig.json",
+  "compilerOptions": {
+    "composite": true
+  }
+}

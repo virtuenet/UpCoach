@@ -1,0 +1,29 @@
+{
+  "name": "@upcoach/test-contracts",
+  "version": "1.0.0",
+  "description": "Contract testing schemas and validators for UpCoach",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest",
+    "test:pact": "jest --testMatch='**/*.pact.test.ts'",
+    "pact:publish": "pact-broker publish ./pacts --consumer-app-version=$npm_package_version",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@pact-foundation/pact": "^12.1.0",
+    "zod": "^3.22.4",
+    "ajv": "^8.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "axios": "^1.6.0"
+  }
+}

@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { Experiment, ExperimentVariant } from '../../models/experiments/Experiment';
+import { Experiment } from '../../models/experiments/Experiment';
 import { ExperimentAssignment } from '../../models/experiments/ExperimentAssignment';
 import { ExperimentEvent } from '../../models/experiments/ExperimentEvent';
 import { User } from '../../models/User';

@@ -145,12 +145,16 @@ User.init(
     hooks: {
       beforeCreate: async (user: User) => {
         if (user.password) {
-          user.password = await bcrypt.hash(user.password, 10);
+          // Use bcrypt rounds from config or default to 14 for security
+          const rounds = parseInt(process.env.BCRYPT_ROUNDS || '14', 10);
+          user.password = await bcrypt.hash(user.password, rounds);
         }
       },
       beforeUpdate: async (user: User) => {
         if (user.changed('password')) {
-          user.password = await bcrypt.hash(user.password, 10);
+          // Use bcrypt rounds from config or default to 14 for security
+          const rounds = parseInt(process.env.BCRYPT_ROUNDS || '14', 10);
+          user.password = await bcrypt.hash(user.password, rounds);
         }
       },
     },

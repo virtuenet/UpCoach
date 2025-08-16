@@ -1,0 +1,436 @@
+name: Comprehensive Test Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run nightly tests at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  NODE_VERSION: '18'
+  FLUTTER_VERSION: '3.16.0'
+  PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
+  DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+
+jobs:
+  # Unit Tests for all packages
+  unit-tests:
+    name: Unit Tests - ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - backend
+          - admin-panel
+          - cms-panel
+          - landing-page
+          - shared
+          - utils
+          - ui
+          - test-utils
+          - test-contracts
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run unit tests for ${{ matrix.package }}
+        run: |
+          cd packages/${{ matrix.package }} || cd apps/${{ matrix.package }} || cd ${{ matrix.package }}
+          npm test -- --coverage
+        continue-on-error: false
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./**/coverage/lcov.info
+          flags: ${{ matrix.package }}
+          name: ${{ matrix.package }}-coverage
+      
+      - name: Check coverage thresholds
+        run: |
+          COVERAGE=$(cat coverage/coverage-summary.json | jq '.total.lines.pct')
+          THRESHOLD=70
+          if [ "${{ matrix.package }}" = "backend" ]; then THRESHOLD=80; fi
+          if [ "${{ matrix.package }}" = "landing-page" ]; then THRESHOLD=85; fi
+          if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
+            echo "Coverage $COVERAGE% is below threshold $THRESHOLD%"
+            exit 1
+          fi
+
+  # Integration Tests
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: upcoach_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run database migrations
+        run: |
+          cd backend
+          npm run db:migrate
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/upcoach_test
+      
+      - name: Run integration tests
+        run: npm run test:integration
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/upcoach_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-secret
+
+  # Contract Tests
+  contract-tests:
+    name: Contract Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run contract tests
+        run: |
+          cd packages/test-contracts
+          npm run test:pact
+      
+      - name: Publish pacts
+        if: github.ref == 'refs/heads/main'
+        run: |
+          cd packages/test-contracts
+          npm run pact:publish
+        env:
+          PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
+          PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
+
+  # E2E Tests with Playwright
+  e2e-tests:
+    name: E2E Tests - ${{ matrix.project }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - chromium
+          - firefox
+          - webkit
+          - mobile-chrome
+          - mobile-safari
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps ${{ matrix.project }}
+      
+      - name: Start services
+        run: |
+          docker-compose up -d
+          npm run wait-on http://localhost:8080/health
+          npm run wait-on http://localhost:8006
+          npm run wait-on http://localhost:8007
+          npm run wait-on http://localhost:8005
+      
+      - name: Run E2E tests
+        run: npx playwright test --project=${{ matrix.project }}
+      
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.project }}
+          path: |
+            playwright-report/
+            test-results/
+
+  # Visual Regression Tests with Percy
+  visual-regression:
+    name: Visual Regression Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Start services
+        run: |
+          docker-compose up -d
+          npm run wait-on http://localhost:8006
+          npm run wait-on http://localhost:8007
+          npm run wait-on http://localhost:8005
+      
+      - name: Run Percy snapshots
+        run: npx percy exec -- npm run test:visual
+        env:
+          PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
+      
+      - name: Comment PR with Percy results
+        uses: percy/percy-comment@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Flutter Mobile Tests
+  flutter-tests:
+    name: Flutter Tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            platform: android
+          - os: macos-latest
+            platform: ios
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+      
+      - name: Install dependencies
+        run: |
+          cd mobile-app
+          flutter pub get
+      
+      - name: Run Flutter tests
+        run: |
+          cd mobile-app
+          flutter test --coverage
+      
+      - name: Run golden tests
+        run: |
+          cd mobile-app
+          flutter test --update-goldens
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: mobile-app/coverage/lcov.info
+          flags: flutter-${{ matrix.platform }}
+
+  # Performance Tests with Artillery
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install Artillery
+        run: npm install -g artillery
+      
+      - name: Start backend services
+        run: |
+          docker-compose up -d backend postgres redis
+          npm run wait-on http://localhost:8080/health
+      
+      - name: Run performance tests
+        run: |
+          cd performance
+          artillery run artillery-config.yml --environment local
+      
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-results
+          path: performance/artillery-report.json
+      
+      - name: Check performance thresholds
+        run: |
+          cd performance
+          node ../scripts/check-performance-thresholds.js
+
+  # Security Scanning
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Trivy security scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+      
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+      
+      - name: Run npm audit
+        run: |
+          npm audit --production --audit-level=high
+        continue-on-error: true
+      
+      - name: Run OWASP dependency check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'upcoach'
+          path: '.'
+          format: 'HTML'
+
+  # Accessibility Tests
+  accessibility-tests:
+    name: Accessibility Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Start services
+        run: |
+          docker-compose up -d
+          npm run wait-on http://localhost:8005
+          npm run wait-on http://localhost:8006
+          npm run wait-on http://localhost:8007
+      
+      - name: Run accessibility tests
+        run: |
+          npx pa11y-ci --config .pa11yci.json
+
+  # Test Summary and Reporting
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs:
+      - unit-tests
+      - integration-tests
+      - contract-tests
+      - e2e-tests
+      - flutter-tests
+      - performance-tests
+    if: always()
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+      
+      - name: Generate test report
+        run: |
+          node scripts/generate-test-report.js
+      
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: test-report.html
+      
+      - name: Comment PR with test results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('test-summary.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+      
+      - name: Send metrics to Datadog
+        if: github.ref == 'refs/heads/main'
+        run: |
+          node scripts/send-test-metrics.js
+        env:
+          DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+          DATADOG_APP_KEY: ${{ secrets.DATADOG_APP_KEY }}

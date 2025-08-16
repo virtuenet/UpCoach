@@ -1,38 +1,31 @@
-import axios from "axios";
+import { createApiClient } from "../../../shared/services/apiClient";
 import { useAuthStore } from "../stores/authStore";
+import { csrfManager } from "../services/csrfManager";
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
-export const apiClient = axios.create({
+export const apiClient = createApiClient({
   baseURL: BASE_URL,
   timeout: 30000,
-  headers: {
-    "Content-Type": "application/json",
+  getAuthToken: () => useAuthStore.getState().token,
+  getCSRFToken: async () => {
+    try {
+      return await csrfManager.getToken();
+    } catch (error) {
+      console.warn('Failed to get CSRF token:', error);
+      return null;
+    }
   },
+  onUnauthorized: () => {
+    // Handle logout
+    useAuthStore.getState().logout();
+    window.location.href = '/login';
+  },
+  onError: (error) => {
+    // Log errors for debugging
+    console.error('API Error:', error.response?.data || error.message);
+  }
 });
 
-// Request interceptor to add auth token
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = useAuthStore.getState().token;
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  },
-);
-
-// Response interceptor to handle errors
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      useAuthStore.getState().logout();
-      window.location.href = "/login";
-    }
-    return Promise.reject(error);
-  },
-);
+// Export for backward compatibility
+export default apiClient;

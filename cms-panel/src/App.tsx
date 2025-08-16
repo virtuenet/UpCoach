@@ -14,6 +14,7 @@ import CreateCoursePage from './pages/CreateCoursePage'
 import SettingsPage from './pages/SettingsPage'
 import Layout from './components/Layout'
 import ErrorBoundary from './components/ErrorBoundary'
+import SessionWrapper from './components/SessionWrapper'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,7 +35,8 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <Router>
-          <div className="min-h-screen bg-gray-50">
+          <SessionWrapper>
+            <div className="min-h-screen bg-gray-50">
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route
@@ -60,7 +62,8 @@ function App() {
                 }
               />
             </Routes>
-          </div>
+            </div>
+          </SessionWrapper>
         </Router>
         <Toaster 
           position="top-right"

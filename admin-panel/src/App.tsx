@@ -25,6 +25,7 @@ import ContentEditorPage from "./pages/ContentEditorPage";
 import AIAnalytics from "./pages/AIAnalytics";
 import ReferralManagement from "./pages/ReferralManagement";
 import { useAuthStore } from "./stores/authStore";
+import SessionWrapper from "./components/SessionWrapper";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -52,7 +53,8 @@ function App() {
   return (
     <ErrorBoundary>
       <Router>
-        <Routes>
+        <SessionWrapper>
+          <Routes>
           <Route path="/login" element={<LoginPage />} />
 
           {/* Protected routes */}
@@ -89,6 +91,7 @@ function App() {
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Routes>
+        </SessionWrapper>
       </Router>
     </ErrorBoundary>
   );

@@ -8,7 +8,7 @@ import {
   ReportFormat 
 } from '../../models';
 import { financialService } from './FinancialService';
-import { EmailService } from '../EmailService';
+import { emailService } from '../email/UnifiedEmailService';
 import { logger } from '../../utils/logger';
 
 export class ReportingService {
@@ -363,7 +363,7 @@ export class ReportingService {
 
       // Send critical alerts immediately
       if (criticalAlerts.length > 0) {
-        await EmailService.sendAlert({
+        await emailService.sendAlert({
           to: ['ceo@upcoach.app', 'cfo@upcoach.app'],
           subject: '🚨 CRITICAL Financial Alert',
           alerts: criticalAlerts,
@@ -373,7 +373,7 @@ export class ReportingService {
 
       // Send high priority alerts
       if (highAlerts.length > 0) {
-        await EmailService.sendAlert({
+        await emailService.sendAlert({
           to: ['cfo@upcoach.app', 'finance@upcoach.app'],
           subject: '⚠️ High Priority Financial Alert',
           alerts: highAlerts,
@@ -383,7 +383,7 @@ export class ReportingService {
 
       // Send medium priority alerts in daily digest
       if (mediumAlerts.length > 0) {
-        await EmailService.sendAlert({
+        await emailService.sendAlert({
           to: ['finance@upcoach.app'],
           subject: '📊 Financial Alert Digest',
           alerts: mediumAlerts,
@@ -403,7 +403,7 @@ export class ReportingService {
     try {
       const recipients = this.getReportRecipients(report.type);
       
-      await EmailService.sendReport({
+      await emailService.sendReport({
         to: recipients,
         subject: report.title,
         report: report,

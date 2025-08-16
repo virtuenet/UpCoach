@@ -1,0 +1,235 @@
+/**
+ * Circuit Breaker implementation using opossum
+ * Replaces custom CircuitBreaker implementation
+ */
+
+import CircuitBreaker from 'opossum';
+import { EventEmitter } from 'events';
+
+export interface CircuitBreakerOptions {
+  timeout?: number;
+  errorThresholdPercentage?: number;
+  resetTimeout?: number;
+  rollingCountTimeout?: number;
+  rollingCountBuckets?: number;
+  name?: string;
+  group?: string;
+  capacity?: number;
+  errorFilter?: (error: any) => boolean;
+  volumeThreshold?: number;
+}
+
+/**
+ * Create a circuit breaker for a function
+ */
+export function createCircuitBreaker<T extends (...args: any[]) => Promise<any>>(
+  fn: T,
+  options: CircuitBreakerOptions = {}
+): CircuitBreaker<T> {
+  const breakerOptions: CircuitBreaker.Options = {
+    timeout: options.timeout || 3000,
+    errorThresholdPercentage: options.errorThresholdPercentage || 50,
+    resetTimeout: options.resetTimeout || 30000,
+    rollingCountTimeout: options.rollingCountTimeout || 10000,
+    rollingCountBuckets: options.rollingCountBuckets || 10,
+    name: options.name || fn.name || 'anonymous',
+    group: options.group,
+    capacity: options.capacity || 10,
+    errorFilter: options.errorFilter,
+    volumeThreshold: options.volumeThreshold || 10,
+  };
+
+  const breaker = new CircuitBreaker(fn, breakerOptions);
+
+  // Add event listeners for monitoring
+  breaker.on('open', () => {
+    console.warn(`Circuit breaker opened: ${breakerOptions.name}`);
+  });
+
+  breaker.on('halfOpen', () => {
+    console.info(`Circuit breaker half-open: ${breakerOptions.name}`);
+  });
+
+  breaker.on('close', () => {
+    console.info(`Circuit breaker closed: ${breakerOptions.name}`);
+  });
+
+  breaker.on('reject', () => {
+    console.warn(`Circuit breaker rejected request: ${breakerOptions.name}`);
+  });
+
+  return breaker;
+}
+
+/**
+ * Circuit Breaker class for backward compatibility
+ */
+export class CircuitBreakerWrapper extends EventEmitter {
+  private breaker: CircuitBreaker;
+  private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED';
+
+  constructor(options: CircuitBreakerOptions = {}) {
+    super();
+    
+    // Create a dummy function that will be replaced
+    const dummyFn = async (...args: any[]) => {
+      throw new Error('Function not set. Use execute() method.');
+    };
+
+    this.breaker = createCircuitBreaker(dummyFn, options);
+
+    // Mirror events
+    this.breaker.on('open', () => {
+      this.state = 'OPEN';
+      this.emit('open');
+    });
+
+    this.breaker.on('halfOpen', () => {
+      this.state = 'HALF_OPEN';
+      this.emit('halfOpen');
+    });
+
+    this.breaker.on('close', () => {
+      this.state = 'CLOSED';
+      this.emit('close');
+    });
+
+    this.breaker.on('reject', () => {
+      this.emit('reject');
+    });
+
+    this.breaker.on('success', (result) => {
+      this.emit('success', result);
+    });
+
+    this.breaker.on('failure', (error) => {
+      this.emit('failure', error);
+    });
+
+    this.breaker.on('timeout', () => {
+      this.emit('timeout');
+    });
+
+    this.breaker.on('fallback', (result) => {
+      this.emit('fallback', result);
+    });
+  }
+
+  /**
+   * Execute a function with circuit breaker protection
+   */
+  async execute<T>(fn: () => Promise<T>): Promise<T> {
+    // Create a new circuit breaker for this specific function
+    const functionBreaker = createCircuitBreaker(fn, {
+      timeout: this.breaker.options.timeout,
+      errorThresholdPercentage: this.breaker.options.errorThresholdPercentage,
+      resetTimeout: this.breaker.options.resetTimeout,
+    });
+
+    try {
+      return await functionBreaker.fire();
+    } finally {
+      // Clean up the temporary breaker
+      functionBreaker.shutdown();
+    }
+  }
+
+  /**
+   * Get current state
+   */
+  getState(): 'CLOSED' | 'OPEN' | 'HALF_OPEN' {
+    if (this.breaker.opened) return 'OPEN';
+    if (this.breaker.halfOpen) return 'HALF_OPEN';
+    return 'CLOSED';
+  }
+
+  /**
+   * Get circuit breaker stats
+   */
+  getStats() {
+    return this.breaker.stats;
+  }
+
+  /**
+   * Manually open the circuit
+   */
+  open() {
+    this.breaker.open();
+  }
+
+  /**
+   * Manually close the circuit
+   */
+  close() {
+    this.breaker.close();
+  }
+
+  /**
+   * Shutdown the circuit breaker
+   */
+  shutdown() {
+    this.breaker.shutdown();
+  }
+
+  /**
+   * Set fallback function
+   */
+  fallback<T>(fn: () => T | Promise<T>) {
+    this.breaker.fallback(fn);
+    return this;
+  }
+}
+
+/**
+ * Create a circuit breaker factory for multiple endpoints
+ */
+export class CircuitBreakerFactory {
+  private breakers: Map<string, CircuitBreaker> = new Map();
+  private defaultOptions: CircuitBreakerOptions;
+
+  constructor(defaultOptions: CircuitBreakerOptions = {}) {
+    this.defaultOptions = defaultOptions;
+  }
+
+  /**
+   * Get or create a circuit breaker for a key
+   */
+  getBreaker<T extends (...args: any[]) => Promise<any>>(
+    key: string,
+    fn: T,
+    options?: CircuitBreakerOptions
+  ): CircuitBreaker<T> {
+    if (!this.breakers.has(key)) {
+      const breaker = createCircuitBreaker(fn, {
+        ...this.defaultOptions,
+        ...options,
+        name: key,
+      });
+      this.breakers.set(key, breaker);
+    }
+    return this.breakers.get(key) as CircuitBreaker<T>;
+  }
+
+  /**
+   * Get all breaker stats
+   */
+  getAllStats() {
+    const stats: Record<string, any> = {};
+    this.breakers.forEach((breaker, key) => {
+      stats[key] = breaker.stats;
+    });
+    return stats;
+  }
+
+  /**
+   * Shutdown all breakers
+   */
+  shutdownAll() {
+    this.breakers.forEach(breaker => breaker.shutdown());
+    this.breakers.clear();
+  }
+}
+
+// Export for backward compatibility
+export { CircuitBreakerWrapper as CircuitBreaker };
+export default { createCircuitBreaker, CircuitBreakerWrapper, CircuitBreakerFactory };

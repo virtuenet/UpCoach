@@ -1,10 +1,10 @@
 import { User } from '../../models/User';
 import { Transaction, Op } from 'sequelize';
 import { logger } from '../../utils/logger';
-import emailService from '../email/EmailService';
+import emailService from '../email/UnifiedEmailService';
 import { analyticsService } from '../analytics/AnalyticsService';
 import { generateCode } from '../../utils/generators';
-import { cacheService } from '../cache/CacheService';
+import { getCacheService } from '../cache/UnifiedCacheService';
 
 interface ReferralProgram {
   id: string;
@@ -609,19 +609,19 @@ export class ReferralService {
 
   // Database operations (in production, these would use actual database)
   private async saveReferralToDatabase(referral: Referral): Promise<void> {
-    await cacheService.set(`referral:${referral.code}`, referral);
+    await getCacheService().set(`referral:${referral.code}`, referral);
   }
 
   private async updateReferralInDatabase(
     referral: Referral,
     transaction?: Transaction
   ): Promise<void> {
-    await cacheService.set(`referral:${referral.code}`, referral);
+    await getCacheService().set(`referral:${referral.code}`, referral);
   }
 
   private async getReferralByCode(code: string): Promise<Referral | null> {
     return this.referrals.get(code) || 
-           await cacheService.get<Referral>(`referral:${code}`);
+           await getCacheService().get<Referral>(`referral:${code}`);
   }
 
   private async getReferralByReferee(refereeId: number): Promise<Referral | null> {

@@ -5,8 +5,8 @@ import ContentSchedule from '../../models/cms/ContentSchedule';
 import ContentVersion from '../../models/cms/ContentVersion';
 import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
-import emailService from '../email/EmailService';
-import { cacheService } from '../cache/CacheService';
+import emailService from '../email/UnifiedEmailService';
+import { getCacheService } from '../cache/UnifiedCacheService';
 import cron from 'node-cron';
 
 interface PublishingOptions {
@@ -483,8 +483,8 @@ export class PublishingService {
   }
 
   private async invalidateArticleCache(articleId: number) {
-    await cacheService.del(`cms:article:${articleId}`);
-    await cacheService.invalidate('cms:articles:*');
+    await getCacheService().del(`cms:article:${articleId}`);
+    await getCacheService().invalidate('cms:articles:*');
   }
 
   // Analytics tracking

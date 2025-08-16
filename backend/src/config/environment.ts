@@ -1,29 +1,49 @@
 import dotenv from 'dotenv';
 import { z } from 'zod';
+import { validateSecret } from '../utils/secrets';
 
 // Load environment variables
 dotenv.config();
 
-// Environment validation schema
+// Custom Zod refinements for security validation
+const secureString = (minLength: number = 64) => 
+  z.string()
+    .min(minLength, `Must be at least ${minLength} characters`)
+    .refine((val) => {
+      // Check for weak patterns
+      const weakPatterns = ['secret', 'key', 'password', 'test', 'placeholder', 'change', 'example'];
+      const lower = val.toLowerCase();
+      return !weakPatterns.some(pattern => lower.includes(pattern));
+    }, 'Contains weak or placeholder values - please use a secure secret');
+
+// Environment validation schema with enhanced security
 const envSchema = z.object({
   // Server Configuration
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.string().transform(Number).default('3001'),
   
   // Database Configuration
-  DATABASE_URL: z.string().min(1, 'Database URL is required'),
+  DATABASE_URL: z.string()
+    .min(20, 'Database URL must be properly configured')
+    .refine(val => process.env.NODE_ENV !== 'production' || !val.includes('password'), 'Database URL contains weak password'),
   
   // Redis Configuration
   REDIS_URL: z.string().optional().default('redis://localhost:6379'),
   
-  // Authentication
-  JWT_SECRET: z.string().min(32, 'JWT secret must be at least 32 characters'),
-  JWT_EXPIRES_IN: z.string().default('7d'),
-  JWT_REFRESH_SECRET: z.string().min(32, 'JWT refresh secret must be at least 32 characters'),
-  JWT_REFRESH_EXPIRES_IN: z.string().default('30d'),
+  // Authentication - Enhanced security requirements
+  JWT_SECRET: process.env.NODE_ENV === 'production' 
+    ? secureString(64)
+    : z.string().min(32, 'JWT secret must be at least 32 characters'),
+  JWT_EXPIRES_IN: z.string().default('15m'), // Reduced from 7d for security
+  JWT_REFRESH_SECRET: process.env.NODE_ENV === 'production'
+    ? secureString(64)
+    : z.string().min(32, 'JWT refresh secret must be at least 32 characters'),
+  JWT_REFRESH_EXPIRES_IN: z.string().default('7d'), // Reduced from 30d
   
   // OpenAI Configuration
-  OPENAI_API_KEY: z.string().min(1, 'OpenAI API key is required'),
+  OPENAI_API_KEY: z.string()
+    .min(1, 'OpenAI API key is required')
+    .refine(val => !val || val.startsWith('sk-'), 'Invalid OpenAI API key format'),
   OPENAI_MODEL: z.string().default('gpt-3.5-turbo'),
   
   // Claude Configuration
@@ -50,11 +70,27 @@ const envSchema = z.object({
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
   LOG_FILE: z.string().optional(),
   
+  // Security Settings
+  BCRYPT_ROUNDS: z.string().transform(Number).default('14'),
+  SESSION_SECRET: z.string().optional(),
+  COOKIE_SECURE: z.string().transform(val => val === 'true').default('true'),
+  COOKIE_HTTPONLY: z.string().transform(val => val === 'true').default('true'),
+  COOKIE_SAMESITE: z.enum(['strict', 'lax', 'none']).optional().default('strict'),
+  
+  // Stripe Configuration
+  STRIPE_SECRET_KEY: z.string()
+    .optional()
+    .refine(val => !val || val.startsWith('sk_'), 'Invalid Stripe secret key format'),
+  STRIPE_WEBHOOK_SECRET: z.string()
+    .optional()
+    .refine(val => !val || val.startsWith('whsec_'), 'Invalid Stripe webhook secret format'),
+  
   // Email Configuration (for notifications)
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.string().transform(Number).optional(),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
+  EMAIL_FROM: z.string().email().optional(),
   
   // Push Notifications
   FCM_SERVER_KEY: z.string().optional(),
@@ -79,6 +115,21 @@ if (!envResult.success) {
 }
 
 const env = envResult.data;
+
+// Validate secrets in production
+if (env.NODE_ENV === 'production') {
+  const secretValidation = [
+    { name: 'JWT_SECRET', value: env.JWT_SECRET },
+    { name: 'JWT_REFRESH_SECRET', value: env.JWT_REFRESH_SECRET },
+  ];
+  
+  secretValidation.forEach(({ name, value }) => {
+    if (!validateSecret(value, 64)) {
+      console.error(`❌ Security validation failed for ${name}: Secret is weak or contains placeholder values`);
+      process.exit(1);
+    }
+  });
+}
 
 // Export typed configuration
 export const config = {
@@ -140,12 +191,28 @@ export const config = {
     file: env.LOG_FILE,
   },
   
+  // Security
+  security: {
+    bcryptRounds: env.BCRYPT_ROUNDS,
+    sessionSecret: env.SESSION_SECRET,
+    cookieSecure: env.COOKIE_SECURE,
+    cookieHttpOnly: env.COOKIE_HTTPONLY,
+    cookieSameSite: env.COOKIE_SAMESITE,
+  },
+  
+  // Stripe
+  stripe: {
+    secretKey: env.STRIPE_SECRET_KEY || '',
+    webhookSecret: env.STRIPE_WEBHOOK_SECRET || '',
+  },
+  
   // Email
   email: {
     host: env.SMTP_HOST,
     port: env.SMTP_PORT,
     user: env.SMTP_USER,
     pass: env.SMTP_PASS,
+    from: env.EMAIL_FROM,
   },
   
   // Push Notifications

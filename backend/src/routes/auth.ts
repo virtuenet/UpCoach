@@ -12,7 +12,7 @@ import {
 import { redis } from '../services/redis';
 import { logger } from '../utils/logger';
 import { AuthenticatedRequest } from '../middleware/auth';
-import EmailService from '../services/email/EmailService';
+import { emailService } from '../services/email/UnifiedEmailService';
 
 const router = Router();
 
@@ -281,7 +281,7 @@ router.post('/forgot-password', asyncHandler(async (req: Request, res: Response)
     const resetToken = await UserService.generatePasswordResetToken(user.id);
     
     // Send reset email
-    await EmailService.sendPasswordResetEmail(user.email, resetToken);
+    await emailService.sendPasswordResetEmail(user.email, resetToken);
     
     logger.info('Password reset requested:', { userId: user.id, email: user.email });
   }

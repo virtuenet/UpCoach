@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 import { ContentArticle } from '../../models/cms/ContentArticle';
 import { ContentCategory } from '../../models/cms/ContentCategory';
 import { ContentMedia } from '../../models/cms/ContentMedia';
-import ContentVersion from '../../models/cms/ContentVersion';
-import { User } from '../../models/User';
+// import ContentVersion from '../../models/cms/ContentVersion';
+// import { User } from '../../models/User';
 import { PublishingService } from '../../services/cms/PublishingService';
 import { logger } from '../../utils/logger';
 import { Op } from 'sequelize';
@@ -295,7 +295,7 @@ export class CoachContentController {
     try {
       const coachId = req.user!.id;
       const { id } = req.params;
-      const { startDate, endDate } = req.query;
+      const {} = req.query;
 
       const article = await ContentArticle.findOne({
         where: { id, authorId: coachId },
@@ -436,7 +436,7 @@ export class CoachContentController {
   }
 
   // Get available categories for coaches
-  async getCategories(req: Request, res: Response) {
+  async getCategories(_req: Request, res: Response) {
     try {
       const categories = await ContentCategory.findAll({
         where: { isActive: true },
