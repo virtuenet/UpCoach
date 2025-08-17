@@ -227,9 +227,10 @@ export class ForumController {
       });
     } catch (error) {
       logger.error('Failed to delete post', { error, postId: req.params.postId });
-      res.status(error.message === 'Unauthorized' ? 403 : 500).json({
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete post';
+      res.status(errorMessage === 'Unauthorized' ? 403 : 500).json({
         success: false,
-        error: error.message || 'Failed to delete post',
+        error: errorMessage,
       });
     }
   }
@@ -250,7 +251,7 @@ export class ForumController {
       logger.error('Failed to mark as solution', { error, postId: req.params.postId });
       res.status(500).json({
         success: false,
-        error: error.message || 'Failed to mark as solution',
+        error: error instanceof Error ? error.message : 'Failed to mark as solution',
       });
     }
   }

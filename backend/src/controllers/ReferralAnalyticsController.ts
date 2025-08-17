@@ -6,7 +6,7 @@ import { logger } from '../utils/logger';
 import { referralService } from '../services/referral/ReferralService';
 
 export class ReferralAnalyticsController {
-  async getReferralStats(req: Request, res: Response): Promise<void> {
+  async getReferralStats(_req: Request, res: Response): Promise<void> {
     try {
       const stats = await referralService.getOverallStats();
       
@@ -137,7 +137,7 @@ export class ReferralAnalyticsController {
     }
   }
 
-  async getReferralPrograms(req: Request, res: Response): Promise<void> {
+  async getReferralPrograms(_req: Request, res: Response): Promise<void> {
     try {
       const programs = [
         {

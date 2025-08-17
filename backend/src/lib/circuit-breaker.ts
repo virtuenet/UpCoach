@@ -25,7 +25,7 @@ export interface CircuitBreakerOptions {
 export function createCircuitBreaker<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   options: CircuitBreakerOptions = {}
-): CircuitBreaker<T> {
+): CircuitBreaker<any[], any> {
   const breakerOptions: CircuitBreaker.Options = {
     timeout: options.timeout || 3000,
     errorThresholdPercentage: options.errorThresholdPercentage || 50,
@@ -39,7 +39,7 @@ export function createCircuitBreaker<T extends (...args: any[]) => Promise<any>>
     volumeThreshold: options.volumeThreshold || 10,
   };
 
-  const breaker = new CircuitBreaker(fn, breakerOptions);
+  const breaker = new CircuitBreaker<any[], any>(fn as any, breakerOptions);
 
   // Add event listeners for monitoring
   breaker.on('open', () => {
@@ -65,14 +65,14 @@ export function createCircuitBreaker<T extends (...args: any[]) => Promise<any>>
  * Circuit Breaker class for backward compatibility
  */
 export class CircuitBreakerWrapper extends EventEmitter {
-  private breaker: CircuitBreaker;
-  private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED';
+  private breaker: CircuitBreaker<any[], any>;
+  private _state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED';
 
   constructor(options: CircuitBreakerOptions = {}) {
     super();
     
     // Create a dummy function that will be replaced
-    const dummyFn = async (...args: any[]) => {
+    const dummyFn = async (..._args: any[]) => {
       throw new Error('Function not set. Use execute() method.');
     };
 
@@ -80,17 +80,17 @@ export class CircuitBreakerWrapper extends EventEmitter {
 
     // Mirror events
     this.breaker.on('open', () => {
-      this.state = 'OPEN';
+      this._state = 'OPEN';
       this.emit('open');
     });
 
     this.breaker.on('halfOpen', () => {
-      this.state = 'HALF_OPEN';
+      this._state = 'HALF_OPEN';
       this.emit('halfOpen');
     });
 
     this.breaker.on('close', () => {
-      this.state = 'CLOSED';
+      this._state = 'CLOSED';
       this.emit('close');
     });
 
@@ -98,11 +98,11 @@ export class CircuitBreakerWrapper extends EventEmitter {
       this.emit('reject');
     });
 
-    this.breaker.on('success', (result) => {
+    this.breaker.on('success', (result: any) => {
       this.emit('success', result);
     });
 
-    this.breaker.on('failure', (error) => {
+    this.breaker.on('failure', (error: any) => {
       this.emit('failure', error);
     });
 
@@ -110,7 +110,7 @@ export class CircuitBreakerWrapper extends EventEmitter {
       this.emit('timeout');
     });
 
-    this.breaker.on('fallback', (result) => {
+    this.breaker.on('fallback', (result: any) => {
       this.emit('fallback', result);
     });
   }
@@ -184,7 +184,7 @@ export class CircuitBreakerWrapper extends EventEmitter {
  * Create a circuit breaker factory for multiple endpoints
  */
 export class CircuitBreakerFactory {
-  private breakers: Map<string, CircuitBreaker> = new Map();
+  private breakers: Map<string, CircuitBreaker<any[], any>> = new Map();
   private defaultOptions: CircuitBreakerOptions;
 
   constructor(defaultOptions: CircuitBreakerOptions = {}) {
@@ -198,7 +198,7 @@ export class CircuitBreakerFactory {
     key: string,
     fn: T,
     options?: CircuitBreakerOptions
-  ): CircuitBreaker<T> {
+  ): CircuitBreaker<any[], any> {
     if (!this.breakers.has(key)) {
       const breaker = createCircuitBreaker(fn, {
         ...this.defaultOptions,
@@ -207,7 +207,7 @@ export class CircuitBreakerFactory {
       });
       this.breakers.set(key, breaker);
     }
-    return this.breakers.get(key) as CircuitBreaker<T>;
+    return this.breakers.get(key) as CircuitBreaker<any[], any>;
   }
 
   /**

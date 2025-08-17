@@ -4,7 +4,7 @@ import { UserProfile } from '../models/UserProfile';
 import { Goal } from '../models/Goal';
 import { logger } from '../utils/logger';
 import { analyticsService } from '../services/analytics/AnalyticsService';
-import emailService from '../services/email/UnifiedEmailService';
+// import emailService from '../services/email/UnifiedEmailService';
 import { aiService } from '../services/ai/AIService';
 import { sequelize } from '../config/database';
 
@@ -335,8 +335,8 @@ export class OnboardingController {
       });
 
       // Schedule first check-in based on commitment level
-      const _checkInDelay = data.availability.commitmentLevel === 'daily' ? 24 : 48; // hours
-      // In production, schedule check-in notification using _checkInDelay
+      // const checkInDelay = data.availability.commitmentLevel === 'daily' ? 24 : 48; // hours
+      // In production, schedule check-in notification using checkInDelay
 
       logger.info('Post-onboarding actions triggered', { userId });
     } catch (error) {

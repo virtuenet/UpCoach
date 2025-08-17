@@ -1,5 +1,5 @@
-import { Op } from 'sequelize';
-import { startOfDay, endOfDay, startOfMonth, endOfMonth, format } from 'date-fns';
+// import { Op } from 'sequelize';
+import { /* startOfDay, endOfDay, */ startOfMonth, endOfMonth, format } from 'date-fns';
 import { 
   FinancialReport, 
   FinancialSnapshot,
@@ -403,11 +403,13 @@ export class ReportingService {
     try {
       const recipients = this.getReportRecipients(report.type);
       
-      await emailService.sendReport({
+      await emailService.sendFinancialReport({
         to: recipients,
-        subject: report.title,
-        report: report,
-        attachments: report.format === ReportFormat.PDF ? ['report.pdf'] : [],
+        reportType: report.type,
+        period: { start: report.startDate, end: report.endDate },
+        metrics: report.metrics,
+        insights: report.insights || [],
+        attachmentUrl: `https://app.upcoach.ai/reports/${report.id}`,
       });
 
       logger.info(`Report sent successfully: ${report.title}`);

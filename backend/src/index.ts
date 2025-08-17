@@ -95,7 +95,7 @@ app.use(cors({
 // Body parsing middleware
 app.use(express.json({ 
   limit: '10mb',
-  verify: (req: any, res, buf) => {
+  verify: (req: any, _res, buf) => {
     // Store raw body for webhook verification if needed
     req.rawBody = buf;
   }
@@ -119,7 +119,7 @@ app.use((req, res, next) => {
 });
 
 // Health check endpoint
-app.get('/health', async (req, res) => {
+app.get('/health', async (_req, res) => {
   try {
     // Test database connection
     const dbHealth = await testDatabaseConnection();
@@ -156,7 +156,7 @@ app.get('/health', async (req, res) => {
 });
 
 // API Documentation endpoint
-app.get('/api', (req, res) => {
+app.get('/api', (_req, res) => {
   res.json({
     name: 'UpCoach Backend API',
     version: '1.0.0',

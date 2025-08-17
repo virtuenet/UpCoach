@@ -146,7 +146,7 @@ export class FinancialDashboardController {
    */
   async getProfitLossStatement(req: Request, res: Response): Promise<void> {
     try {
-      const { period = 'monthly' } = req.params;
+      const { /* period = 'monthly' */ } = req.params;
       const { startDate, endDate } = req.query;
       
       let start: Date, end: Date;
@@ -242,7 +242,7 @@ export class FinancialDashboardController {
    */
   async getRevenueForecast(req: Request, res: Response): Promise<void> {
     try {
-      const { months = 6 } = req.query;
+      const { /* months = 6 */ } = req.query;
       // TODO: Implement revenue forecasting logic
       res.json({
         forecast: [],
@@ -610,7 +610,7 @@ export class FinancialDashboardController {
   async sendReport(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const { recipients } = req.body;
+      const { /* recipients */ } = req.body;
       
       const report = await FinancialReport.findByPk(id);
       
@@ -630,7 +630,7 @@ export class FinancialDashboardController {
    */
   async getCohortAnalysis(req: Request, res: Response): Promise<void> {
     try {
-      const { months = 12 } = req.query;
+      const { /* months = 12 */ } = req.query;
       
       // TODO: Implement cohort analysis logic
       res.json({

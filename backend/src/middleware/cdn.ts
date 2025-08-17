@@ -64,7 +64,7 @@ export const cdnMiddleware = (_req: Request, res: Response, next: NextFunction) 
 };
 
 // Static file caching headers
-export const staticCacheMiddleware = (_req: Request, res: Response, next: NextFunction) => {
+export const staticCacheMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const ext = path.extname(req.path).toLowerCase();
   let maxAge = cdnConfig.maxAge.default;
 
@@ -136,7 +136,7 @@ function rewriteUrls(obj: any): any {
 }
 
 // Image optimization middleware
-export const imageOptimizationMiddleware = (_req: Request, res: Response, next: NextFunction) => {
+export const imageOptimizationMiddleware = (req: Request, res: Response, next: NextFunction) => {
   // Parse query parameters for image transformation
   const { w, h, q, format } = req.query;
 
@@ -184,7 +184,7 @@ export const preloadMiddleware = (_req: Request, res: Response, next: NextFuncti
 };
 
 // Service Worker for offline support
-export const serviceWorkerMiddleware = (_req: Request, res: Response, next: NextFunction) => {
+export const serviceWorkerMiddleware = (req: Request, res: Response, next: NextFunction) => {
   if (req.path === '/service-worker.js') {
     res.setHeader('Service-Worker-Allowed', '/');
     res.setHeader('Cache-Control', 'no-cache');
