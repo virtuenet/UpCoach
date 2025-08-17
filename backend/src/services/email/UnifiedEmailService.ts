@@ -7,6 +7,7 @@ import nodemailer, { Transporter } from 'nodemailer';
 import { promises as fs } from 'fs';
 import path from 'path';
 import handlebars from 'handlebars';
+import * as crypto from 'crypto';
 import { logger } from '../../utils/logger';
 import { User } from '../../models/User';
 import { FinancialReport } from '../../models';
@@ -57,6 +58,7 @@ export class UnifiedEmailService {
   private queuedEmails: EmailOptions[] = [];
   private isProcessing = false;
   private cache: UnifiedCacheService;
+  private queueProcessInterval?: NodeJS.Timeout;
 
   constructor() {
     this.cache = getCacheService();
@@ -252,7 +254,7 @@ export class UnifiedEmailService {
    * Start queue processor interval
    */
   private startQueueProcessor(): void {
-    setInterval(() => {
+    this.queueProcessInterval = setInterval(() => {
       if (this.queuedEmails.length > 0) {
         this.processQueue();
       }
@@ -473,12 +475,24 @@ export class UnifiedEmailService {
   }
 
   /**
-   * Generate tracking ID for email
+   * Generate secure tracking ID for email
    */
   private generateTrackingId(recipient: string | string[]): string {
     const recipientStr = Array.isArray(recipient) ? recipient[0] : recipient;
     const timestamp = Date.now();
-    return Buffer.from(`${recipientStr}:${timestamp}`).toString('base64');
+    const secret = process.env.EMAIL_TRACKING_SECRET || crypto.randomBytes(32).toString('hex');
+    
+    // Create a cryptographically secure hash
+    const hash = crypto
+      .createHmac('sha256', secret)
+      .update(`${recipientStr}:${timestamp}`)
+      .digest('hex');
+    
+    // Store the mapping in cache for reverse lookup
+    const trackingData = { email: recipientStr, timestamp, hash };
+    this.cache.set(`email:tracking:${hash}`, trackingData, 86400); // 24 hours TTL
+    
+    return hash;
   }
 
   /**
@@ -497,18 +511,33 @@ export class UnifiedEmailService {
   }
 
   /**
-   * Track email open
+   * Track email open securely
    */
   async trackOpen(trackingId: string): Promise<void> {
     try {
-      const decoded = Buffer.from(trackingId, 'base64').toString();
-      const [email, timestamp] = decoded.split(':');
+      // Validate tracking ID format (should be a hex string)
+      if (!/^[a-f0-9]{64}$/i.test(trackingId)) {
+        logger.warn('Invalid tracking ID format');
+        return;
+      }
+      
+      // Retrieve tracking data from cache
+      const trackingData = await this.cache.get<{
+        email: string;
+        timestamp: number;
+        hash: string;
+      }>(`email:tracking:${trackingId}`);
+      
+      if (!trackingData) {
+        logger.warn('Tracking ID not found or expired');
+        return;
+      }
       
       this.metrics.opened++;
       
       logger.info('Email opened:', {
-        email,
-        timestamp: new Date(parseInt(timestamp)),
+        email: trackingData.email,
+        timestamp: new Date(trackingData.timestamp),
       });
     } catch (error) {
       logger.error('Failed to track email open:', error);
@@ -516,19 +545,50 @@ export class UnifiedEmailService {
   }
 
   /**
-   * Track email click
+   * Track email click securely
    */
   async trackClick(trackingId: string, url: string): Promise<void> {
     try {
-      const decoded = Buffer.from(trackingId, 'base64').toString();
-      const [email, timestamp] = decoded.split(':');
+      // Validate tracking ID format
+      if (!/^[a-f0-9]{64}$/i.test(trackingId)) {
+        logger.warn('Invalid tracking ID format');
+        return;
+      }
+      
+      // Validate URL to prevent open redirect vulnerabilities
+      try {
+        const urlObj = new URL(url);
+        const allowedDomains = (process.env.ALLOWED_REDIRECT_DOMAINS || 'localhost,upcoach.ai')
+          .split(',')
+          .map(d => d.trim());
+        
+        if (!allowedDomains.some(domain => urlObj.hostname.endsWith(domain))) {
+          logger.warn('Attempted redirect to unauthorized domain:', urlObj.hostname);
+          return;
+        }
+      } catch (urlError) {
+        logger.warn('Invalid URL provided:', url);
+        return;
+      }
+      
+      // Retrieve tracking data from cache
+      const trackingData = await this.cache.get<{
+        email: string;
+        timestamp: number;
+        hash: string;
+      }>(`email:tracking:${trackingId}`);
+      
+      if (!trackingData) {
+        logger.warn('Tracking ID not found or expired');
+        return;
+      }
       
       this.metrics.clicked++;
       
       logger.info('Email link clicked:', {
-        email,
+        email: trackingData.email,
         url,
-        timestamp: new Date(parseInt(timestamp)),
+        timestamp: new Date(trackingData.timestamp),
       });
     } catch (error) {
       logger.error('Failed to track email click:', error);
@@ -560,6 +620,47 @@ export class UnifiedEmailService {
       logger.error('Email service test failed:', error);
       return false;
     }
+  }
+
+  /**
+   * Gracefully shutdown the service
+   */
+  async shutdown(): Promise<void> {
+    logger.info('Shutting down UnifiedEmailService...');
+    
+    // Stop queue processor
+    if (this.queueProcessInterval) {
+      clearInterval(this.queueProcessInterval);
+      this.queueProcessInterval = undefined;
+    }
+    
+    // Process remaining queued emails with timeout
+    if (this.queuedEmails.length > 0) {
+      logger.info(`Processing ${this.queuedEmails.length} remaining emails...`);
+      const timeout = setTimeout(() => {
+        logger.warn('Email queue processing timeout during shutdown');
+      }, 5000);
+      
+      try {
+        await this.processQueue();
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+    
+    // Close transporter connection
+    if (this.transporter) {
+      try {
+        this.transporter.close();
+      } catch (error) {
+        logger.error('Error closing email transporter:', error);
+      }
+    }
+    
+    // Clear template cache
+    this.templateCache.clear();
+    
+    logger.info('UnifiedEmailService shutdown complete');
   }
 }
 

@@ -13,6 +13,7 @@ import { errorMiddleware } from './middleware/errorHandler';
 import { notFoundHandler } from './middleware/notFoundHandler';
 import { logger } from './utils/logger';
 import { SchedulerService } from './services/SchedulerService';
+import { gracefulShutdown } from './utils/shutdown';
 
 // Extend Express Request interface
 declare global {
@@ -224,11 +225,21 @@ async function initializeServices() {
 }
 
 // Start server
-app.listen(PORT, async () => {
+const server = app.listen(PORT, async () => {
   console.log(`Server is running on port ${PORT}`);
   
   // Initialize services after server starts
   await initializeServices();
+  
+  // Initialize graceful shutdown
+  gracefulShutdown.setServer(server);
+  gracefulShutdown.initialize();
+  
+  // Register additional cleanup if needed
+  gracefulShutdown.onShutdown('SchedulerService', async () => {
+    logger.info('Shutting down SchedulerService...');
+    // Add scheduler shutdown logic here if needed
+  }, 25);
 });
 
 export default app; 

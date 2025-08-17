@@ -35,6 +35,7 @@ export class NotificationService extends EventEmitter {
   private static instance: NotificationService;
   private progressTrackers: Map<string, ProgressNotification> = new Map();
   private cache = getCacheService();
+  private cleanupInterval?: NodeJS.Timeout;
 
   private constructor() {
     super();
@@ -142,7 +143,7 @@ export class NotificationService extends EventEmitter {
     await this.cache.set(
       `progress:${operationId}`,
       progressNotification,
-      300 // 5 minutes TTL
+      { ttl: 300 } // 5 minutes TTL
     );
 
     // Clean up completed operations after delay
@@ -239,7 +240,7 @@ export class NotificationService extends EventEmitter {
 
       // Store in cache for polling clients
       const key = `notification:${notification.userId}:${Date.now()}`;
-      await this.cache.set(key, notification, 300); // 5 minutes TTL
+      await this.cache.set(key, notification, { ttl: 300 }); // 5 minutes TTL
 
       // Log notification
       logger.info('Notification sent', {
@@ -297,8 +298,8 @@ export class NotificationService extends EventEmitter {
    * Get recent notifications for a user
    */
   async getRecentNotifications(
-    userId: string,
-    limit: number = 10
+    _userId: string,
+    _limit: number = 10
   ): Promise<NotificationOptions[]> {
     // For now, return empty array as cache.keys is not implemented
     // TODO: Implement when cache service supports key pattern search
@@ -317,7 +318,7 @@ export class NotificationService extends EventEmitter {
    * Setup cleanup interval
    */
   private setupCleanup(): void {
-    setInterval(() => {
+    this.cleanupInterval = setInterval(() => {
       // Clean up old progress trackers
       for (const [id, progress] of this.progressTrackers) {
         if (progress.status === 'completed') {
@@ -325,6 +326,24 @@ export class NotificationService extends EventEmitter {
         }
       }
     }, 60000); // Every minute
+  }
+
+  /**
+   * Gracefully shutdown the service
+   */
+  public shutdown(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = undefined;
+    }
+    
+    // Clear all listeners
+    this.removeAllListeners();
+    
+    // Clear progress trackers
+    this.progressTrackers.clear();
+    
+    logger.info('NotificationService shutdown complete');
   }
 }
 
