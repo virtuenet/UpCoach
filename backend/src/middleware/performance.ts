@@ -183,7 +183,7 @@ export const healthCheckHandler = (req: Request, res: Response) => {
 };
 
 // Ready check endpoint (for Kubernetes)
-export const readyCheckHandler = async (req: Request, res: Response) => {
+export const readyCheckHandler = async (_req: Request, res: Response) => {
   try {
     // Check database connection
     // const dbHealthy = await checkDatabaseConnection();
@@ -204,7 +204,7 @@ export const readyCheckHandler = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(503).json({
       status: 'not ready',
-      error: error.message,
+      error: (error as Error).message,
     });
   }
 };

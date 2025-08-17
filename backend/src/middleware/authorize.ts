@@ -15,7 +15,7 @@ const roleHierarchy: Record<Role, number> = {
 };
 
 export function authorize(resourceType: ResourceType, requiredRole: Role | Role[]) {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, _res: Response, next: NextFunction) => {
     try {
       const userId = req.user?.id;
       if (!userId) {
@@ -163,7 +163,7 @@ export async function checkPermission(
 // Middleware to load user's organization context
 export async function loadOrganizationContext(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) {
   try {

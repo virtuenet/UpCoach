@@ -15,7 +15,7 @@ export function i18nMiddleware(req: Request, res: Response, next: NextFunction) 
   }
 
   // Set locale for this request
-  i18n.setLocale(req, locale);
+  i18n.setLocale(locale);
   
   // Store locale in response locals for views
   res.locals.locale = locale;
@@ -40,8 +40,8 @@ export function i18nMiddleware(req: Request, res: Response, next: NextFunction) 
 }
 
 // API to get current locale
-export function getLocale(req: Request): string {
-  return i18n.getLocale(req);
+export function getLocale(_req: Request): string {
+  return i18n.getLocale();
 }
 
 // API to set locale
@@ -50,7 +50,7 @@ export function setLocale(req: Request, res: Response, locale: string): boolean 
     return false;
   }
 
-  i18n.setLocale(req, locale);
+  i18n.setLocale(locale);
   res.cookie('locale', locale, {
     maxAge: 365 * 24 * 60 * 60 * 1000,
     httpOnly: true,

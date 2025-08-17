@@ -156,7 +156,7 @@ export function csrfProtection(options: CsrfOptions = {}) {
         }
 
         // Verify token
-        const [token, hash] = storedToken.split(':');
+        const [_token, hash] = storedToken.split(':');
         if (!verifyToken(providedToken, hash, secret)) {
           logger.warn('CSRF token verification failed', { path: req.path });
           return res.status(403).json({ 

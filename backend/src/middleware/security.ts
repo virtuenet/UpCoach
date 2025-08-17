@@ -59,7 +59,7 @@ export function securityHeaders() {
   return helmet({
     // Content Security Policy
     contentSecurityPolicy: {
-      directives: cspConfig,
+      directives: cspConfig as any,
     },
     
     // Strict Transport Security
