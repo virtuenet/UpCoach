@@ -3,7 +3,7 @@
  */
 
 import { Model as SequelizeModel } from 'sequelize';
-import { Model as SequelizeTypescriptModel } from 'sequelize-typescript';
+// import { Model as SequelizeTypescriptModel } from 'sequelize-typescript';
 
 // Type to make regular sequelize models compatible with sequelize-typescript
 export type CompatibleModel<T extends SequelizeModel> = T & {

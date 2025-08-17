@@ -1,3 +1,4 @@
+import { Request, Response } from "express";
 import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import { validateRequest } from '../middleware/validation';
@@ -10,7 +11,7 @@ import { Referral } from '../models/Referral';
 const router = Router();
 
 // Get user's referral stats
-router.get('/stats', authenticateToken, async (req, res) => {
+router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
     const stats = await referralService.getUserReferralStats(Number(userId));
@@ -36,7 +37,7 @@ router.post(
     body('programId').optional().isString().isIn(['standard', 'premium', 'coach']),
   ],
   validateRequest,
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const userId = req.user!.id;
       const { programId = 'standard' } = req.body;
@@ -75,7 +76,7 @@ router.post(
     body('code').notEmpty().isString().isLength({ min: 4, max: 20 }),
   ],
   validateRequest,
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const { code } = req.body;
       
@@ -119,7 +120,7 @@ router.post(
     body('code').notEmpty().isString().isLength({ min: 4, max: 20 }),
   ],
   validateRequest,
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const userId = req.user!.id;
       const { code } = req.body;
@@ -157,7 +158,7 @@ router.get(
     query('period').optional().isIn(['week', 'month', 'all']),
   ],
   validateRequest,
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const period = (req.query.period as 'week' | 'month' | 'all') || 'month';
       const leaderboard = await referralService.getReferralLeaderboard(period);
@@ -180,7 +181,7 @@ router.get(
 );
 
 // Get referral history
-router.get('/history', authenticateToken, async (req, res) => {
+router.get('/history', authenticateToken, async (req: Request, res: Response) => {
   try {
     const userId = req.user!.id;
     const stats = await referralService.getUserReferralStats(Number(userId));
@@ -215,7 +216,7 @@ router.post(
     body('utmParams').optional().isObject(),
   ],
   validateRequest,
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const { code, landingPage, utmParams } = req.body;
       const ipAddress = req.ip;
@@ -258,7 +259,7 @@ router.post(
     body('message').optional().isString().isLength({ max: 500 }),
   ],
   validateRequest,
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const userId = req.user!.id;
       const { emails, message } = req.body;
@@ -308,7 +309,7 @@ router.post(
     body('paymentAmount').isFloat({ min: 0 }),
   ],
   validateRequest,
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       // Check if user is admin
       if (req.user!.role !== 'admin') {

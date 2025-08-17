@@ -6,26 +6,26 @@ import {
   CostTracking,
   FinancialSnapshot,
   FinancialReport,
-  RevenueAnalytics,
+  
   BillingEvent,
 } from '../../models';
 import { Op } from 'sequelize';
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
 import { ApiError } from '../../utils/apiError';
 import { reportingService } from '../../services/financial/ReportingService';
-import { emailService } from '../../services/email/UnifiedEmailService';
+import emailService from '../../services/email/UnifiedEmailService';
 import { SchedulerService } from '../../services/SchedulerService';
 
 export class FinancialDashboardController {
   /**
    * Get dashboard metrics
    */
-  async getDashboardMetrics(req: Request, res: Response): Promise<void> {
+  async getDashboardMetrics(_req: Request, res: Response): Promise<void> {
     try {
       const metrics = await financialService.getDashboardMetrics();
       res.json(metrics);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -64,14 +64,14 @@ export class FinancialDashboardController {
         arr,
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get subscription metrics
    */
-  async getSubscriptionMetrics(req: Request, res: Response): Promise<void> {
+  async getSubscriptionMetrics(_req: Request, res: Response): Promise<void> {
     try {
       const active = await Subscription.count({
         where: { status: ['active', 'trialing'] },
@@ -102,7 +102,7 @@ export class FinancialDashboardController {
         netNew: new_subs - churned,
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -137,7 +137,7 @@ export class FinancialDashboardController {
         }, {} as Record<string, number>),
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -163,14 +163,14 @@ export class FinancialDashboardController {
       const pnl = await financialService.getProfitLossStatement(start, end);
       res.json(pnl);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get MRR metrics
    */
-  async getMRRMetrics(req: Request, res: Response): Promise<void> {
+  async getMRRMetrics(_req: Request, res: Response): Promise<void> {
     try {
       const currentMRR = await financialService.calculateMRR();
       const lastMonthMRR = await financialService.calculateMRR(endOfMonth(subMonths(new Date(), 1)));
@@ -193,19 +193,19 @@ export class FinancialDashboardController {
         breakdown,
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get ARR metrics
    */
-  async getARRMetrics(req: Request, res: Response): Promise<void> {
+  async getARRMetrics(_req: Request, res: Response): Promise<void> {
     try {
       const arr = await financialService.calculateARR();
       res.json({ arr });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -221,19 +221,19 @@ export class FinancialDashboardController {
       const revenueByPlan = await financialService.getRevenueByPlan(start, end);
       res.json(revenueByPlan);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get revenue by country
    */
-  async getRevenueByCountry(req: Request, res: Response): Promise<void> {
+  async getRevenueByCountry(_req: Request, res: Response): Promise<void> {
     try {
       // TODO: Implement revenue by country logic
       res.json([]);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -250,7 +250,7 @@ export class FinancialDashboardController {
         confidence: 0,
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -280,14 +280,14 @@ export class FinancialDashboardController {
         totalPages: Math.ceil(count / Number(limit)),
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get active subscriptions
    */
-  async getActiveSubscriptions(req: Request, res: Response): Promise<void> {
+  async getActiveSubscriptions(_req: Request, res: Response): Promise<void> {
     try {
       const subscriptions = await Subscription.findAll({
         where: {
@@ -298,7 +298,7 @@ export class FinancialDashboardController {
 
       res.json(subscriptions);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -324,14 +324,14 @@ export class FinancialDashboardController {
 
       res.json(churnData);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get LTV analytics
    */
-  async getLTVAnalytics(req: Request, res: Response): Promise<void> {
+  async getLTVAnalytics(_req: Request, res: Response): Promise<void> {
     try {
       const ltv = await financialService.calculateLTV();
       const arpu = await financialService.calculateARPU();
@@ -342,7 +342,7 @@ export class FinancialDashboardController {
         avgLifetimeMonths: 24, // This should be calculated from historical data
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -375,7 +375,7 @@ export class FinancialDashboardController {
         totalPages: Math.ceil(count / Number(limit)),
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -387,7 +387,7 @@ export class FinancialDashboardController {
       const cost = await CostTracking.create(req.body);
       res.status(201).json(cost);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -406,7 +406,7 @@ export class FinancialDashboardController {
       await cost.update(req.body);
       res.json(cost);
     } catch (error) {
-      res.status(error.statusCode || 500).json({ error: error.message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
@@ -425,7 +425,7 @@ export class FinancialDashboardController {
       await cost.destroy();
       res.status(204).send();
     } catch (error) {
-      res.status(error.statusCode || 500).json({ error: error.message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
@@ -452,14 +452,14 @@ export class FinancialDashboardController {
 
       res.json(costs);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get cost optimization suggestions
    */
-  async getCostOptimizationSuggestions(req: Request, res: Response): Promise<void> {
+  async getCostOptimizationSuggestions(_req: Request, res: Response): Promise<void> {
     try {
       // TODO: Implement cost optimization logic
       res.json({
@@ -467,7 +467,7 @@ export class FinancialDashboardController {
         potentialSavings: 0,
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -491,7 +491,7 @@ export class FinancialDashboardController {
 
       res.json(snapshots);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -504,7 +504,7 @@ export class FinancialDashboardController {
       const snapshot = await financialService.generateDailySnapshot(date ? new Date(date) : new Date());
       res.status(201).json(snapshot);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -521,7 +521,7 @@ export class FinancialDashboardController {
 
       res.json(snapshot);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -551,7 +551,7 @@ export class FinancialDashboardController {
         totalPages: Math.ceil(count / Number(limit)),
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -563,7 +563,7 @@ export class FinancialDashboardController {
       const report = await FinancialReport.create(req.body);
       res.status(201).json(report);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -581,7 +581,7 @@ export class FinancialDashboardController {
 
       res.json(report);
     } catch (error) {
-      res.status(error.statusCode || 500).json({ error: error.message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
@@ -600,7 +600,7 @@ export class FinancialDashboardController {
       // TODO: Implement report download logic
       res.status(501).json({ error: 'Not implemented' });
     } catch (error) {
-      res.status(error.statusCode || 500).json({ error: error.message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
@@ -621,7 +621,7 @@ export class FinancialDashboardController {
       // TODO: Implement report sending logic
       res.status(501).json({ error: 'Not implemented' });
     } catch (error) {
-      res.status(error.statusCode || 500).json({ error: error.message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
@@ -637,7 +637,7 @@ export class FinancialDashboardController {
         cohorts: [],
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -654,14 +654,14 @@ export class FinancialDashboardController {
         data: [],
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get unit economics
    */
-  async getUnitEconomics(req: Request, res: Response): Promise<void> {
+  async getUnitEconomics(_req: Request, res: Response): Promise<void> {
     try {
       const ltv = await financialService.calculateLTV();
       const cac = await financialService.calculateCAC(
@@ -678,7 +678,7 @@ export class FinancialDashboardController {
         paybackPeriod: cac > 0 ? cac / arpu : 0,
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -694,14 +694,14 @@ export class FinancialDashboardController {
       const cac = await financialService.calculateCAC(start, end);
       res.json({ cac });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get LTV to CAC ratio
    */
-  async getLTVtoCACRatio(req: Request, res: Response): Promise<void> {
+  async getLTVtoCACRatio(_req: Request, res: Response): Promise<void> {
     try {
       const ltv = await financialService.calculateLTV();
       const cac = await financialService.calculateCAC(
@@ -715,7 +715,7 @@ export class FinancialDashboardController {
         ratio: cac > 0 ? ltv / cac : 0,
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -745,7 +745,7 @@ export class FinancialDashboardController {
         totalPages: Math.ceil(count / Number(limit)),
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -763,14 +763,14 @@ export class FinancialDashboardController {
 
       res.json(event);
     } catch (error) {
-      res.status(error.statusCode || 500).json({ error: error.message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get automation status
    */
-  async getAutomationStatus(req: Request, res: Response): Promise<void> {
+  async getAutomationStatus(_req: Request, res: Response): Promise<void> {
     try {
       const jobs = SchedulerService.getJobStatus();
       const lastReports = await FinancialReport.findAll({
@@ -787,7 +787,7 @@ export class FinancialDashboardController {
         },
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -817,7 +817,7 @@ export class FinancialDashboardController {
         message: `${type} automation triggered successfully` 
       });
     } catch (error) {
-      res.status(error.statusCode || 500).json({ error: error.message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
@@ -832,26 +832,30 @@ export class FinancialDashboardController {
         throw new ApiError(400, 'Email address is required');
       }
 
-      await emailService.sendTestEmail(email);
+      await emailService.send({
+        to: email,
+        subject: 'Test Email from Financial Dashboard',
+        text: 'This is a test email to verify email service is working correctly.'
+      });
       
       res.json({ 
         success: true, 
         message: `Test email sent to ${email}` 
       });
     } catch (error) {
-      res.status(error.statusCode || 500).json({ error: error.message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get scheduled jobs
    */
-  async getScheduledJobs(req: Request, res: Response): Promise<void> {
+  async getScheduledJobs(_req: Request, res: Response): Promise<void> {
     try {
       const jobs = SchedulerService.getJobStatus();
       res.json(jobs);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -867,7 +871,7 @@ export class FinancialDashboardController {
         message: `Job ${name} start requested` 
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
@@ -884,7 +888,7 @@ export class FinancialDashboardController {
         message: stopped ? `Job ${name} stopped` : `Job ${name} not found` 
       });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 } 

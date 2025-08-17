@@ -28,5 +28,8 @@ module.exports = {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
   testTimeout: 30000,
-  setupFilesAfterEnv: ['<rootDir>/src/tests/setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  maxWorkers: 1,
+  forceExit: true,
+  detectOpenHandles: true,
 };

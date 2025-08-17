@@ -348,7 +348,7 @@ export class UserService {
     }
   }
 
-  static async verifyGoogleToken(idToken: string): Promise<any> {
+  static async verifyGoogleToken(_idToken: string): Promise<any> {
     try {
       // In production, you would verify the token with Google
       // For now, we'll throw an error to indicate it needs implementation
@@ -429,19 +429,5 @@ export class UserService {
       logger.error('Error updating Google ID:', error);
       throw new ApiError(500, 'Failed to update Google ID');
     }
-  }
-
-  private static mapRowToUser(row: any): UserResponseDto {
-    return {
-      id: row.id,
-      email: row.email,
-      name: row.name,
-      avatarUrl: row.avatar_url,
-      role: row.role,
-      isEmailVerified: row.is_email_verified,
-      preferences: {},
-      createdAt: row.created_at,
-      updatedAt: row.updated_at
-    };
   }
 } 

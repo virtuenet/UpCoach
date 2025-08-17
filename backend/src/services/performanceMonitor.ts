@@ -36,7 +36,7 @@ class PerformanceMonitor extends EventEmitter {
   private alertRules: AlertRule[] = []
   private samplingRate = 1 // 100% sampling by default
   private maxMetricsAge = 3600000 // 1 hour
-  private cleanupInterval: NodeJS.Timeout
+  private cleanupInterval!: NodeJS.Timeout
   private metricsBuffer: PerformanceMetric[] = []
   private bufferFlushInterval = 5000 // 5 seconds
 
@@ -90,7 +90,7 @@ class PerformanceMonitor extends EventEmitter {
       const metricName = name || `${target.constructor.name}.${propertyName}`
 
       descriptor.value = async function (...args: any[]) {
-        return await this.measure(
+        return await performanceMonitor.measure(
           metricName,
           () => originalMethod.apply(this, args),
           tags
@@ -246,7 +246,6 @@ class PerformanceMonitor extends EventEmitter {
     return (req: any, res: any, next: any) => {
       const start = performance.now()
       const startCpu = process.cpuUsage()
-      const startMem = process.memoryUsage()
 
       // Override res.end to capture metrics
       const originalEnd = res.end
@@ -281,7 +280,7 @@ class PerformanceMonitor extends EventEmitter {
     }
 
     // Add aggregated metrics
-    for (const [name, metrics] of this.metrics.entries()) {
+    for (const [name, _metrics] of this.metrics.entries()) {
       report.metrics[name] = this.getAggregatedMetrics(name)
     }
 
@@ -309,7 +308,7 @@ class PerformanceMonitor extends EventEmitter {
     }
 
     // Custom metrics
-    for (const [name, metrics] of this.metrics.entries()) {
+    for (const [name, _metrics] of this.metrics.entries()) {
       const agg = this.getAggregatedMetrics(name)
       if (agg) {
         const metricName = name.replace(/[^a-zA-Z0-9_]/g, '_')

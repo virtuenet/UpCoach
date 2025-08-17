@@ -1,5 +1,5 @@
 import { User } from '../../models/User';
-import { Transaction, Op } from 'sequelize';
+import { Transaction } from 'sequelize';
 import { logger } from '../../utils/logger';
 import emailService from '../email/UnifiedEmailService';
 import { analyticsService } from '../analytics/AnalyticsService';
@@ -503,10 +503,10 @@ export class ReferralService {
   }
 
   private async applyRefereeReward(
-    refereeId: number,
+    _refereeId: number,
     program: ReferralProgram,
-    referral: Referral,
-    transaction?: Transaction
+    _referral: Referral,
+    _transaction?: Transaction
   ): Promise<number> {
     let discountAmount = 0;
 
@@ -528,7 +528,7 @@ export class ReferralService {
   private async applyReferrerReward(
     referrerId: number,
     amount: number,
-    referral: Referral
+    _referral: Referral
   ): Promise<void> {
     // In production, this would add credit to user account or process payout
     const user = await User.findByPk(referrerId);
@@ -538,7 +538,7 @@ export class ReferralService {
     }
   }
 
-  private async scheduleReferrerReward(referral: Referral): Promise<void> {
+  private async scheduleReferrerReward(_referral: Referral): Promise<void> {
     // In production, this would create a scheduled job
     // to process reward after referee's first payment
   }
@@ -550,7 +550,7 @@ export class ReferralService {
     ]);
 
     if (referrer) {
-      await emailService.sendEmail({
+      await emailService.send({
         to: referrer.email,
         subject: 'Your referral joined UpCoach! 🎉',
         template: 'referral-success',
@@ -569,7 +569,7 @@ export class ReferralService {
   ): Promise<void> {
     const referrer = await User.findByPk(referral.referrerId);
     if (referrer) {
-      await emailService.sendEmail({
+      await emailService.send({
         to: referrer.email,
         subject: 'You earned a referral reward! 💰',
         template: 'referral-reward',
@@ -614,7 +614,7 @@ export class ReferralService {
 
   private async updateReferralInDatabase(
     referral: Referral,
-    transaction?: Transaction
+    _transaction?: Transaction
   ): Promise<void> {
     await getCacheService().set(`referral:${referral.code}`, referral);
   }

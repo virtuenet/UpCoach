@@ -1,9 +1,8 @@
-import { Op, Sequelize, QueryTypes, Transaction } from 'sequelize';
+import { QueryTypes, Transaction } from 'sequelize';
 import { sequelize } from '../../models';
 import { logger } from '../../utils/logger';
 import emailService from '../email/UnifiedEmailService';
 import { analyticsService } from '../analytics/AnalyticsService';
-import { getCacheService } from '../cache/UnifiedCacheService';
 import { format, differenceInDays, startOfDay } from 'date-fns';
 
 interface AchievementProgress {
@@ -118,8 +117,8 @@ export class GamificationService {
       }
     );
 
-    if ((result[0] as any[])?.length > 0) {
-      const newLevel = (result[0] as any[])[0].current_level;
+    if ((result[0] as unknown as any[])?.length > 0) {
+      const newLevel = (result[0] as unknown as any[])[0].current_level;
       await this.onLevelUp(userId, newLevel);
     }
   }
@@ -139,7 +138,7 @@ export class GamificationService {
       const level = levelInfo[0] as any;
       
       // Send notification
-      await emailService.sendEmail({
+      await emailService.send({
         to: await this.getUserEmail(userId),
         subject: 'Congratulations! You leveled up! 🎉',
         template: 'level-up',
@@ -882,7 +881,7 @@ export class GamificationService {
         await t.commit();
 
         // Send confirmation
-        await emailService.sendEmail({
+        await emailService.send({
           to: await this.getUserEmail(userId),
           subject: 'Reward Purchased! 🎁',
           template: 'reward-purchase',
@@ -917,7 +916,7 @@ export class GamificationService {
 
   private async notifyAchievementUnlock(userId: number, achievement: any): Promise<void> {
     // Send email notification
-    await emailService.sendEmail({
+    await emailService.send({
       to: await this.getUserEmail(userId),
       subject: 'Achievement Unlocked! 🏆',
       template: 'achievement-unlocked',

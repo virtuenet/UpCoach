@@ -6,26 +6,26 @@ import { Task } from './Task';
 import { Mood } from './Mood';
 import { Chat } from './Chat';
 import { ChatMessage } from './ChatMessage';
-import { PersonalityProfile } from './personality/PersonalityProfile';
-import { Avatar } from './personality/Avatar';
-import { UserAvatarPreference } from './personality/UserAvatarPreference';
-import { KpiTracker } from './analytics/KpiTracker';
-import { UserAnalytics } from './analytics/UserAnalytics';
-import { CoachMemory } from './coaching/CoachMemory';
-import { Article } from './cms/Article';
-import { Category } from './cms/Category';
-import { Comment } from './cms/Comment';
-import { ContentAnalytics } from './cms/ContentAnalytics';
-import { Course } from './cms/Course';
-import { Media } from './cms/Media';
-import { Template } from './cms/Template';
-import { Content } from './cms/Content';
-import { ContentCategory } from './cms/ContentCategory';
-import { ContentTag } from './cms/ContentTag';
-import { ContentMedia } from './cms/ContentMedia';
-import { Experiment } from './experiments/Experiment';
-import { ExperimentAssignment } from './experiments/ExperimentAssignment';
-import { ExperimentEvent } from './experiments/ExperimentEvent';
+// import { PersonalityProfile } from './personality/PersonalityProfile';
+// import { Avatar } from './personality/Avatar';
+// import { UserAvatarPreference } from './personality/UserAvatarPreference';
+// import { KpiTracker } from './analytics/KpiTracker';
+// import { UserAnalytics } from './analytics/UserAnalytics';
+// import { CoachMemory } from './coaching/CoachMemory';
+// import { Article } from './cms/Article';
+// import { Category } from './cms/Category';
+// import { Comment } from './cms/Comment';
+// import { ContentAnalytics } from './cms/ContentAnalytics';
+// import { Course } from './cms/Course';
+// import { Media } from './cms/Media';
+// import { Template } from './cms/Template';
+// import { Content } from './cms/Content';
+// import { ContentCategory } from './cms/ContentCategory';
+// import { ContentTag } from './cms/ContentTag';
+// import { ContentMedia } from './cms/ContentMedia';
+// import { Experiment } from './experiments/Experiment';
+// import { ExperimentAssignment } from './experiments/ExperimentAssignment';
+// import { ExperimentEvent } from './experiments/ExperimentEvent';
 import { 
   Transaction,
   TransactionStatus,
@@ -55,9 +55,9 @@ import {
   ReportFormat
 } from './financial/FinancialReport';
 import { RevenueAnalytics } from './financial/RevenueAnalytics';
-import { UserProfile } from './UserProfile';
-import { AIInteraction } from './AIInteraction';
-import { AIFeedback } from './AIFeedback';
+// import { UserProfile } from './UserProfile';
+// import { AIInteraction } from './AIInteraction';
+// import { AIFeedback } from './AIFeedback';
 
 // Load environment variables
 dotenv.config();

@@ -237,7 +237,7 @@ export async function executeSecureQuery(
     return result;
   } catch (error) {
     logger.error('Secure query execution failed', {
-      error: error.message,
+      error: (error as Error).message,
       queryType: type
     });
     throw new Error('Database query failed');

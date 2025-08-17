@@ -6,14 +6,14 @@ import { ChatMessage } from '../../models/ChatMessage';
 import { Chat } from '../../models/Chat';
 import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
-import { aiService } from './AIService';
+// import { aiService } from './AIService';
 import { predictiveAnalytics } from './PredictiveAnalytics';
 import { recommendationEngine } from './RecommendationEngine';
-import { sequelize } from '../../config/database';
+// import { sequelize } from '../../config/database';
 
 export interface Insight {
   id: string;
-  type: InsightType;
+  type: InsightType, _type: InsightType;
   title: string;
   description: string;
   category: InsightCategory;

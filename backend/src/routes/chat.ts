@@ -4,7 +4,7 @@ import { asyncHandler } from '../middleware/errorHandler';
 import { ApiError } from '../utils/apiError';
 import { db } from '../services/database';
 import { logger } from '../utils/logger';
-import { config } from '../config/environment';
+// import { config } from '../config/environment';
 import { aiService } from '../services/ai/AIService';
 import { userProfilingService } from '../services/ai/UserProfilingService';
 import { AuthenticatedRequest } from '../types/auth';

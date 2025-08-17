@@ -4,7 +4,7 @@ import { UserProfile } from '../models/UserProfile';
 import { Goal } from '../models/Goal';
 import { logger } from '../utils/logger';
 import { analyticsService } from '../services/analytics/AnalyticsService';
-import { emailAutomationService } from '../services/email/emailService';
+import emailService from '../services/email/UnifiedEmailService';
 import { aiService } from '../services/ai/AIService';
 import { sequelize } from '../config/database';
 
@@ -286,7 +286,7 @@ export class OnboardingController {
   private async generateAIPersonality(data: OnboardingData): Promise<any> {
     const personality = {
       style: data.preferences.coachingStyle,
-      traits: [],
+      traits: [] as string[],
       communication: {
         tone: '',
         approach: '',
@@ -325,7 +325,8 @@ export class OnboardingController {
   private async triggerPostOnboardingActions(userId: number, data: OnboardingData) {
     try {
       // Start onboarding email campaign
-      await emailAutomationService.triggerCampaign(userId.toString(), 'user_registered');
+      // TODO: Implement email campaign trigger
+      // await emailService.triggerCampaign(userId.toString(), 'user_registered');
 
       // Create initial AI coaching session
       await aiService.createInitialSession(Number(userId), {
@@ -334,8 +335,8 @@ export class OnboardingController {
       });
 
       // Schedule first check-in based on commitment level
-      const checkInDelay = data.availability.commitmentLevel === 'daily' ? 24 : 48; // hours
-      // In production, schedule check-in notification
+      const _checkInDelay = data.availability.commitmentLevel === 'daily' ? 24 : 48; // hours
+      // In production, schedule check-in notification using _checkInDelay
 
       logger.info('Post-onboarding actions triggered', { userId });
     } catch (error) {

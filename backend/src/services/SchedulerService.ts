@@ -273,12 +273,12 @@ export class SchedulerService {
   }
 
   // Helper methods (simplified implementations)
-  private static async analyzeCostTrends(startDate: Date, endDate: Date): Promise<any> {
+  private static async analyzeCostTrends(_startDate: Date, _endDate: Date): Promise<any> {
     // Implementation would analyze cost trends over time
     return { trend: 'stable', variance: 5 };
   }
 
-  private static async generateCostRecommendations(costMetrics: any[]): Promise<string[]> {
+  private static async generateCostRecommendations(_costMetrics: any[]): Promise<string[]> {
     // Implementation would generate AI-powered recommendations
     return ['Consider optimizing infrastructure costs', 'Review vendor contracts'];
   }
@@ -333,22 +333,22 @@ export class SchedulerService {
     return {};
   }
 
-  private static async projectRevenue(data: any): Promise<any> {
+  private static async projectRevenue(_data: any): Promise<any> {
     // Implementation would project revenue based on historical data
     return { q1: 100000, q2: 120000, q3: 140000, q4: 160000 };
   }
 
-  private static async projectCosts(data: any): Promise<any> {
+  private static async projectCosts(_data: any): Promise<any> {
     // Implementation would project costs
     return { q1: 80000, q2: 85000, q3: 90000, q4: 95000 };
   }
 
-  private static async projectGrowth(data: any): Promise<any> {
+  private static async projectGrowth(_data: any): Promise<any> {
     // Implementation would project growth metrics
     return { mrrGrowth: 15, userGrowth: 25 };
   }
 
-  private static async identifyProjectionRisks(data: any): Promise<string[]> {
+  private static async identifyProjectionRisks(_data: any): Promise<string[]> {
     // Implementation would identify risks in projections
     return ['Market saturation risk', 'Competition pressure'];
   }

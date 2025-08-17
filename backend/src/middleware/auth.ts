@@ -159,7 +159,7 @@ export const optionalAuthMiddleware = async (
 export const requireRole = (roles: string | string[]) => {
   const allowedRoles = Array.isArray(roles) ? roles : [roles];
   
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (_req: Request, _res: Response, next: NextFunction): void => {
     if (!req.user) {
       res.status(401).json({
         error: 'Authentication required',
@@ -185,7 +185,7 @@ export const requireRole = (roles: string | string[]) => {
 export const authorizeRoles = requireRole;
 
 export const requireOwnership = (resourceIdParam: string = 'id') => {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  return async (_req: Request, _res: Response, next: NextFunction): Promise<void> => {
     try {
       if (!req.user) {
         res.status(401).json({

@@ -1,12 +1,6 @@
 import {
   Model,
   DataTypes,
-  Association,
-  HasManyGetAssociationsMixin,
-  HasManyAddAssociationMixin,
-  HasManyHasAssociationMixin,
-  HasManyCountAssociationsMixin,
-  HasManyCreateAssociationMixin,
 } from 'sequelize';
 import { sequelize } from '../index';
 

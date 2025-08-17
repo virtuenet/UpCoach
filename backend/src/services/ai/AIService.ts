@@ -7,7 +7,7 @@ import { ContextManager } from './ContextManager';
 import { PersonalityEngine } from './PersonalityEngine';
 import { CircuitBreaker } from './CircuitBreaker';
 import { RetryMechanism } from './RetryMechanism';
-import { UnifiedCacheService, getCacheService } from '../cache/UnifiedCacheService';
+import { getCacheService } from '../cache/UnifiedCacheService';
 
 export interface AIMessage {
   role: 'system' | 'user' | 'assistant';
@@ -171,7 +171,7 @@ export class AIService {
       return response;
     } catch (error) {
       this.metrics.totalErrors++;
-      logger.error('AI Service error:', error);
+      logger.error('AI Service error:', (error as Error));
       throw new Error(`Failed to generate AI response: ${error.message}`);
     }
   }
@@ -203,7 +203,7 @@ export class AIService {
         provider: 'openai'
       };
     } catch (error) {
-      logger.error('OpenAI API error:', error);
+      logger.error('OpenAI API error:', (error as Error));
       throw error;
     }
   }
@@ -243,7 +243,7 @@ export class AIService {
         provider: 'claude'
       };
     } catch (error) {
-      logger.error('Claude API error:', error);
+      logger.error('Claude API error:', (error as Error));
       throw error;
     }
   }
@@ -318,7 +318,7 @@ export class AIService {
     try {
       return JSON.parse(response.content);
     } catch (error) {
-      logger.error('Failed to parse analysis response:', error);
+      logger.error('Failed to parse analysis response:', (error as Error));
       return { error: 'Failed to parse analysis', raw: response.content };
     }
   }
@@ -328,7 +328,7 @@ export class AIService {
     userId: string,
     promptType: 'goal' | 'habit' | 'reflection' | 'motivation'
   ): Promise<string> {
-    const userContext = await this.contextManager.getUserContext(userId);
+    const _userContext = await this.contextManager.getUserContext(userId);
     return this.promptEngine.generatePersonalizedPrompt(basePrompt, userContext, promptType);
   }
 
@@ -347,15 +347,15 @@ export class AIService {
   // Create initial coaching session for new users
   async createInitialSession(userId: number, onboardingData: any): Promise<void> {
     try {
-      const userContext = await this.contextManager.getUserContext(String(userId));
-      const personality = await this.personalityEngine.getPersonality(String(userId));
+      const _userContext = await this.contextManager.getUserContext(String(userId));
+      const _personality = await this.personalityEngine.getPersonality(String(userId));
       
       // Context will be built dynamically when needed
       // The context manager will fetch fresh data on each request
 
       logger.info(`Created initial AI session for user ${userId}`);
     } catch (error) {
-      logger.error('Failed to create initial AI session:', error);
+      logger.error('Failed to create initial AI session:', (error as Error));
     }
   }
   
@@ -423,7 +423,7 @@ export class AIService {
       await this.openai.models.list();
       health.openai = true;
     } catch (error) {
-      logger.error('OpenAI health check failed:', error);
+      logger.error('OpenAI health check failed:', (error as Error));
     }
     
     // Test Claude
@@ -431,7 +431,7 @@ export class AIService {
       // Claude doesn't have a simple health check endpoint
       health.claude = !!this.anthropic;
     } catch (error) {
-      logger.error('Claude health check failed:', error);
+      logger.error('Claude health check failed:', (error as Error));
     }
     
     // Test cache

@@ -1,11 +1,10 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { OrganizationService } from '../services/enterprise/OrganizationService';
 import { SSOService } from '../services/enterprise/SSOService';
 import { TeamService } from '../services/enterprise/TeamService';
 import { catchAsync } from '../utils/catchAsync';
 import { AppError } from '../utils/errors';
-import { logger } from '../utils/logger';
-import { emailService } from '../services/email/UnifiedEmailService';
+import emailService from '../services/email/UnifiedEmailService';
 
 export class EnterpriseController {
   private organizationService: OrganizationService;
@@ -112,12 +111,16 @@ export class EnterpriseController {
     const inviter = await this.teamService.getUserById(parseInt(invitedBy as string));
     
     // Send invitation email
-    await emailService.sendInvitationEmail(
-      email,
-      organization!.name,
-      inviter.fullName || inviter.email,
-      token
-    );
+    await emailService.send({
+      to: email,
+      subject: `Invitation to join ${organization!.name}`,
+      template: 'team-invitation',
+      data: {
+        organizationName: organization!.name,
+        inviterName: inviter.fullName || inviter.email,
+        invitationToken: token
+      }
+    });
 
     const inviteUrl = `${process.env.FRONTEND_URL}/accept-invite?token=${token}`;
 

@@ -9,7 +9,7 @@ import Stripe from 'stripe';
 const router = Router();
 const financialController = new FinancialDashboardController();
 const stripe = new Stripe(config.stripe.secretKey || '', {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-06-30.basil',
 });
 
 // Stripe webhook endpoint with proper signature validation

@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { UnauthorizedError, ForbiddenError } from '../utils/errors';
 
 export function requireRole(...allowedRoles: string[]) {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     if (!req.user) {
       throw new UnauthorizedError('Authentication required');
     }
@@ -15,7 +15,7 @@ export function requireRole(...allowedRoles: string[]) {
   };
 }
 
-export function requireAdmin(req: Request, res: Response, next: NextFunction) {
+export function requireAdmin(req: Request, _res: Response, next: NextFunction) {
   if (!req.user) {
     throw new UnauthorizedError('Authentication required');
   }

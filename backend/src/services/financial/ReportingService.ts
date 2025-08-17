@@ -522,11 +522,11 @@ export class ReportingService {
     return {};
   }
 
-  private async getQuarterlyMetrics(start: Date, end: Date): Promise<any> {
+  private async getQuarterlyMetrics(_start: Date, _end: Date): Promise<any> {
     return {};
   }
 
-  private async getYearToDateMetrics(start: Date, end: Date): Promise<any> {
+  private async getYearToDateMetrics(_start: Date, _end: Date): Promise<any> {
     return {};
   }
 
@@ -534,19 +534,19 @@ export class ReportingService {
     return {};
   }
 
-  private async generateProjections(fromDate: Date): Promise<any> {
+  private async generateProjections(_fromDate: Date): Promise<any> {
     return {};
   }
 
-  private generateQuarterlyHighlights(metrics: any): any[] {
+  private generateQuarterlyHighlights(_metrics: any): any[] {
     return [];
   }
 
-  private identifyRisks(metrics: any): any[] {
+  private identifyRisks(_metrics: any): any[] {
     return [];
   }
 
-  private identifyOpportunities(metrics: any): any[] {
+  private identifyOpportunities(_metrics: any): any[] {
     return [];
   }
 }

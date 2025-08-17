@@ -1,10 +1,10 @@
 import { aiService } from './AIService';
 import { contextManager } from './ContextManager';
 import { personalityEngine } from './PersonalityEngine';
-import { recommendationEngine } from './RecommendationEngine';
+// import { recommendationEngine } from './RecommendationEngine';
 import { logger } from '../../utils/logger';
-import { ChatMessage } from '../../models/ChatMessage';
-import { Chat } from '../../models/Chat';
+// import { ChatMessage } from '../../models/ChatMessage';
+// import { Chat } from '../../models/Chat';
 
 export interface ConversationState {
   topic: string;

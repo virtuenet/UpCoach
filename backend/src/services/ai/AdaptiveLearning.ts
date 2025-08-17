@@ -1,10 +1,10 @@
 import { UserProfile } from '../../models/UserProfile';
 import { Goal } from '../../models/Goal';
-import { Task } from '../../models/Task';
+// import { Task } from '../../models/Task';
 import { logger } from '../../utils/logger';
 import { aiService } from './AIService';
-import { predictiveAnalytics } from './PredictiveAnalytics';
-import { recommendationEngine } from './RecommendationEngine';
+// import { predictiveAnalytics } from './PredictiveAnalytics';
+// import { recommendationEngine } from './RecommendationEngine';
 
 export interface LearningPath {
   id: string;
@@ -139,7 +139,7 @@ export class AdaptiveLearning {
     bestLearningTimes: string[];
   }> {
     // Analyze historical performance
-    const performance = await this.getHistoricalPerformance(userId);
+    const _performance = await this.getHistoricalPerformance(userId);
     
     // Determine learning style weights
     const learningStyle = this.calculateLearningStyle(profile, performance);
@@ -753,7 +753,7 @@ Ensure progressive difficulty and logical skill building.`;
     await this.updatePerformanceMetrics(userId, pathId, progress);
 
     // Check if adaptation is needed
-    const performance = await this.calculateCurrentPerformance(userId, pathId);
+    const _performance = await this.calculateCurrentPerformance(userId, pathId);
     if (this.shouldAdapt(performance)) {
       await this.adaptLearningPath(userId, pathId, performance);
     }
@@ -918,7 +918,7 @@ Ensure progressive difficulty and logical skill building.`;
     profile: UserProfile,
     performance: PerformanceMetrics[]
   ): number {
-    const baseLength = profile.coachingPreferences.sessionDuration || 30;
+    const baseLength = profile?.coachingPreferences.sessionDuration || 30;
     
     if (performance.length > 0) {
       const avgTimeSpent = performance.reduce((sum, p) => sum + p.timeSpent, 0) / performance.length;
@@ -931,7 +931,7 @@ Ensure progressive difficulty and logical skill building.`;
   }
 
   private identifyBestLearningTimes(profile: UserProfile): string[] {
-    return profile.coachingPreferences.preferredTimes || ['morning', 'evening'];
+    return profile?.coachingPreferences.preferredTimes || ['morning', 'evening'];
   }
 
   private determinePathType(goal: Goal): 'skill' | 'habit' | 'knowledge' | 'wellness' {

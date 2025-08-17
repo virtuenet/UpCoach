@@ -13,8 +13,6 @@ import {
 } from '../../models';
 import { logger } from '../../utils/logger';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
 export class StripeWebhookService {
   /**
    * Handle incoming Stripe webhook

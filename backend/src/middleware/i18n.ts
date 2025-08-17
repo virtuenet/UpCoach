@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import i18n, { isValidLanguage } from '../config/i18n';
-import { logger } from '../utils/logger';
+// import { logger } from '../utils/logger';
 
 export function i18nMiddleware(req: Request, res: Response, next: NextFunction) {
   // Get language from multiple sources

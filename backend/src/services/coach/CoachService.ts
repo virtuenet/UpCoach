@@ -926,7 +926,7 @@ export class CoachService {
     const coachUser = await User.findByPk(coach.userId);
 
     if (client) {
-      await emailService.sendEmail({
+      await emailService.send({
         to: client.email,
         subject: 'Session Booking Confirmation',
         template: 'session-booking-client',
@@ -944,7 +944,7 @@ export class CoachService {
     }
 
     if (coachUser) {
-      await emailService.sendEmail({
+      await emailService.send({
         to: coachUser.email,
         subject: 'New Session Booking',
         template: 'session-booking-coach',
@@ -966,7 +966,7 @@ export class CoachService {
     const client = await User.findByPk(session.clientId);
     
     if (client) {
-      await emailService.sendEmail({
+      await emailService.send({
         to: client.email,
         subject: 'Payment Confirmation',
         template: 'payment-confirmation',
@@ -988,7 +988,7 @@ export class CoachService {
     const client = await User.findByPk(clientPackage.clientId);
     
     if (client) {
-      await emailService.sendEmail({
+      await emailService.send({
         to: client.email,
         subject: 'Package Purchase Confirmation',
         template: 'package-purchase',
@@ -1019,7 +1019,7 @@ export class CoachService {
 
     // Send to client
     if (client && cancelledBy !== 'client') {
-      await emailService.sendEmail({
+      await emailService.send({
         to: client.email,
         subject: 'Session Cancelled',
         template: 'session-cancellation',
@@ -1036,7 +1036,7 @@ export class CoachService {
 
     // Send to coach
     if (coachUser && cancelledBy !== 'coach') {
-      await emailService.sendEmail({
+      await emailService.send({
         to: coachUser.email,
         subject: 'Session Cancelled',
         template: 'session-cancellation',

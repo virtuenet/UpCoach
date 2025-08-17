@@ -107,7 +107,7 @@ export function securityHeaders() {
  * Additional custom security headers
  */
 export function customSecurityHeaders() {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     // Permissions Policy (formerly Feature Policy)
     res.setHeader('Permissions-Policy', [
       'accelerometer=()',
@@ -185,7 +185,7 @@ export function secureCors() {
     );
   }
   
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     const origin = req.headers.origin;
     
     if (origin && allowedOrigins.includes(origin)) {
@@ -215,7 +215,7 @@ export function secureCors() {
  * Request ID middleware for tracking
  */
 export function requestId() {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     const id = req.headers['x-request-id'] || 
                req.headers['x-correlation-id'] || 
                `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -231,7 +231,7 @@ export function requestId() {
  * Security monitoring middleware
  */
 export function securityMonitoring() {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     // Log security-relevant events
     const securityEvents = [
       '/api/auth/login',

@@ -31,12 +31,12 @@ class UploadService {
 
   private getStorage() {
     return multer.diskStorage({
-      destination: async (req, file, cb) => {
+      destination: async (_req, file, cb) => {
         const dir = path.join(this.uploadDir, this.getSubdirectory(file.mimetype));
         await fs.mkdir(dir, { recursive: true });
         cb(null, dir);
       },
-      filename: (req, file, cb) => {
+      filename: (_req, file, cb) => {
         const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
         cb(null, uniqueName);
       },
@@ -56,7 +56,7 @@ class UploadService {
       limits: {
         fileSize: 50 * 1024 * 1024, // 50MB
       },
-      fileFilter: (req, file, cb) => {
+      fileFilter: (_req, file, cb) => {
         const allowedMimes = [
           'image/jpeg',
           'image/png',

@@ -1,7 +1,6 @@
 import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
 import axios from 'axios';
-import { analyticsService } from '../analytics/AnalyticsService';
 
 interface MarketingEvent {
   userId: string;
@@ -369,7 +368,7 @@ export class MarketingAutomationService {
     return abTest.variants[0].content as CampaignContent;
   }
 
-  private async matchesBehavior(userId: string, behavior: BehaviorFilter): Promise<boolean> {
+  private async matchesBehavior(_userId: string, behavior: BehaviorFilter): Promise<boolean> {
     // Query user behavior from analytics
     // TODO: Implement getUserActionCount in analyticsService
     const count = 0; // await analyticsService.getUserActionCount(
@@ -455,7 +454,7 @@ class SegmentEngine {
 
     // Goal-based segments
     const completedGoals = user.goals?.filter((g: any) => g.status === 'completed');
-    if (completedGoals?.length > 0) {
+    if (completedGoals && completedGoals.length > 0) {
       segments.push('goal_achievers');
     }
 
@@ -463,7 +462,7 @@ class SegmentEngine {
   }
 
   async updateUserSegments(userId: string): Promise<void> {
-    const segments = await this.getUserSegments(userId);
+    const _segments = await this.getUserSegments(userId);
     
     // Store segments in cache or database
     // TODO: Implement updateUserProperty in analyticsService

@@ -327,7 +327,7 @@ export class PublishingService {
     if (reviewerId) {
       const reviewer = await User.findByPk(reviewerId);
       if (reviewer) {
-        await emailService.sendEmail({
+        await emailService.send({
           to: reviewer.email,
           subject: 'New article for review',
           template: 'article-review',
@@ -419,7 +419,7 @@ export class PublishingService {
       rejected: 'article-rejected',
     };
 
-    await emailService.sendEmail({
+    await emailService.send({
       to: author.email,
       subject: `Your article has been ${action}`,
       template: templates[action] || 'article-update',
@@ -442,7 +442,7 @@ export class PublishingService {
     });
 
     for (const subscriber of subscribers) {
-      await emailService.sendEmail({
+      await emailService.send({
         to: subscriber.email,
         subject: `New article: ${article.title}`,
         template: 'new-article',

@@ -201,7 +201,7 @@ export class PersonalityService {
    */
   private static async getAvatarRecommendations(
     traits: PersonalityTraits,
-    profile: PersonalityProfile
+    _profile: PersonalityProfile
   ): Promise<{ avatar: Avatar; compatibilityScore: number; reasons: string[] }[]> {
     const traitRecord: Record<string, number> = {
       openness: traits.openness,
@@ -228,7 +228,6 @@ export class PersonalityService {
     compatibilityScore: number
   ): string[] {
     const reasons: string[] = [];
-    const dominantTrait = this.getDominantTrait(traits);
     
     // Add specific reasons based on trait compatibility
     if (traits.extraversion > 70 && avatar.personality.characteristics.includes('Energetic')) {
