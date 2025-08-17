@@ -97,7 +97,7 @@ export interface Trend {
 
 export class InsightGenerator {
   private insightCache: Map<string, Insight[]>;
-  private generationStrategies: Map<InsightType, (data: any) => Promise<Insight[]>>;
+  private generationStrategies!: Map<InsightType, (data: any) => Promise<Insight[]>>;
 
   constructor() {
     this.insightCache = new Map();
@@ -132,7 +132,7 @@ export class InsightGenerator {
       // Generate insights of all types
       const allInsights: Insight[] = [];
       
-      for (const [type, strategy] of this.generationStrategies) {
+      for (const [_type, strategy] of this.generationStrategies) {
         const insights = await strategy(userData);
         allInsights.push(...insights);
       }
@@ -224,7 +224,7 @@ export class InsightGenerator {
   }
 
   private async calculateMetrics(
-    userId: string,
+    _userId: string,
     goals: Goal[],
     tasks: Task[],
     moods: Mood[]
