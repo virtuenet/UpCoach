@@ -109,7 +109,7 @@ export class UserProfilingService {
 
     // Calculate streaks
     const currentStreak = await this.calculateCurrentStreak(profile.userId);
-    const longestStreak = Math.max(currentStreak, profile.progressMetrics.longestStreak || 0);
+    const longestStreak = Math.max(currentStreak, profile.progressMetrics?.longestStreak || 0);
 
     // Get session metrics
     const sessions = await Chat.findAll({
@@ -135,8 +135,10 @@ export class UserProfilingService {
     };
 
     // Update behavior patterns
-    profile.behaviorPatterns.completionRate = Math.round(completionRate * 100);
-    profile.behaviorPatterns.avgSessionDuration = avgSessionDuration;
+    if (profile.behaviorPatterns) {
+      profile.behaviorPatterns.completionRate = Math.round(completionRate * 100);
+      profile.behaviorPatterns.avgSessionDuration = avgSessionDuration;
+    }
 
     await profile.save();
   }
@@ -157,9 +159,11 @@ export class UserProfilingService {
       // Analyze message patterns
       const patterns = await this.analyzeMessagePatterns(recentMessages);
       
-      profile.behaviorPatterns.preferredTopics = patterns.topics;
-      profile.behaviorPatterns.responseTime = patterns.avgResponseTime;
-      profile.behaviorPatterns.engagementLevel = patterns.engagementLevel;
+      if (profile.behaviorPatterns) {
+        profile.behaviorPatterns.preferredTopics = patterns.topics;
+        profile.behaviorPatterns.responseTime = patterns.avgResponseTime;
+        profile.behaviorPatterns.engagementLevel = patterns.engagementLevel;
+      }
     }
 
     // Analyze mood patterns
@@ -204,19 +208,19 @@ export class UserProfilingService {
     }
 
     if (insights.strengths.length > 0) {
-      profile.strengths = [...new Set([...profile.strengths, ...insights.strengths])];
+      profile.strengths = [...new Set([...(profile.strengths || []), ...insights.strengths])];
     }
 
     if (insights.growthAreas.length > 0) {
-      profile.growthAreas = [...new Set([...profile.growthAreas, ...insights.growthAreas])];
+      profile.growthAreas = [...new Set([...(profile.growthAreas || []), ...insights.growthAreas])];
     }
 
     if (insights.motivators.length > 0) {
-      profile.motivators = [...new Set([...profile.motivators, ...insights.motivators])];
+      profile.motivators = [...new Set([...(profile.motivators || []), ...insights.motivators])];
     }
 
     if (insights.obstacles.length > 0) {
-      profile.obstacles = [...new Set([...profile.obstacles, ...insights.obstacles])];
+      profile.obstacles = [...new Set([...(profile.obstacles || []), ...insights.obstacles])];
     }
 
     await profile.save();
@@ -230,7 +234,7 @@ export class UserProfilingService {
         completedAt: {
           [Op.ne]: null
         }
-      },
+      } as any,
       order: [['completedAt', 'DESC']]
     });
 
@@ -446,61 +450,61 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
     if (profile.learningStyle !== 'balanced') {
       insights.push({
         category: 'Learning Style',
-        insight: `You appear to be a ${profile.learningStyle} learner. We'll adapt coaching to include more ${this.getLearningStyleRecommendations(profile.learningStyle)}.`,
+        insight: `You appear to be a ${profile.learningStyle} learner. We'll adapt coaching to include more ${this.getLearningStyleRecommendations(profile.learningStyle || 'balanced')}.`,
         confidence: 0.8,
         evidence: ['Based on your interaction patterns', 'Derived from content preferences']
       });
     }
 
     // Consistency insight
-    if (profile.behaviorPatterns.consistencyScore > 70) {
+    if (profile.behaviorPatterns?.consistencyScore && profile.behaviorPatterns.consistencyScore > 70) {
       insights.push({
         category: 'Consistency',
         insight: 'Your consistency is excellent! You engage regularly, which is key to achieving your goals.',
         confidence: 0.9,
-        evidence: [`${profile.behaviorPatterns.consistencyScore}% consistency score`, `${profile.progressMetrics.currentStreak} day streak`]
+        evidence: [`${profile.behaviorPatterns?.consistencyScore}% consistency score`, `${profile.progressMetrics?.currentStreak} day streak`]
       });
-    } else if (profile.behaviorPatterns.consistencyScore < 40) {
+    } else if (profile.behaviorPatterns?.consistencyScore && profile.behaviorPatterns.consistencyScore < 40) {
       insights.push({
         category: 'Consistency',
         insight: 'Building consistency could accelerate your progress. Consider setting daily reminders.',
         confidence: 0.85,
-        evidence: [`${profile.behaviorPatterns.consistencyScore}% consistency score`, 'Irregular engagement patterns']
+        evidence: [`${profile.behaviorPatterns?.consistencyScore}% consistency score`, 'Irregular engagement patterns']
       });
     }
 
     // Engagement insight
-    if (profile.behaviorPatterns.engagementLevel > 70) {
+    if (profile.behaviorPatterns?.engagementLevel && profile.behaviorPatterns.engagementLevel > 70) {
       insights.push({
         category: 'Engagement',
         insight: 'Your high engagement level shows strong commitment. Keep up the great work!',
         confidence: 0.85,
-        evidence: [`${profile.behaviorPatterns.engagementLevel}% engagement level`, 'Active participation in sessions']
+        evidence: [`${profile.behaviorPatterns?.engagementLevel}% engagement level`, 'Active participation in sessions']
       });
     }
 
     // Topic preferences
-    if (profile.behaviorPatterns.preferredTopics.length > 0) {
+    if (profile.behaviorPatterns?.preferredTopics && profile.behaviorPatterns.preferredTopics.length > 0) {
       insights.push({
         category: 'Focus Areas',
-        insight: `You're most interested in ${profile.behaviorPatterns.preferredTopics.join(', ')}. We'll prioritize content in these areas.`,
+        insight: `You're most interested in ${profile.behaviorPatterns?.preferredTopics?.join(', ')}. We'll prioritize content in these areas.`,
         confidence: 0.75,
         evidence: ['Derived from conversation history', 'Based on goal categories']
       });
     }
 
     // Strengths
-    if (profile.strengths.length > 0) {
+    if (profile.strengths && profile.strengths.length > 0) {
       insights.push({
         category: 'Strengths',
-        insight: `Your key strengths include ${profile.strengths.slice(0, 3).join(', ')}. Leverage these for faster progress.`,
+        insight: `Your key strengths include ${profile.strengths?.slice(0, 3).join(', ')}. Leverage these for faster progress.`,
         confidence: 0.8,
         evidence: ['Identified through behavioral analysis', 'Consistent demonstration in activities']
       });
     }
 
     // Growth opportunities
-    if (profile.growthAreas.length > 0) {
+    if (profile.growthAreas && profile.growthAreas.length > 0) {
       insights.push({
         category: 'Growth Opportunities',
         insight: `Focus on developing ${profile.growthAreas[0]} to unlock your next level of growth.`,

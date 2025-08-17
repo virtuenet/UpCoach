@@ -2,8 +2,8 @@ import { Op } from 'sequelize';
 import CoachMemory from '../../models/coaching/CoachMemory';
 import UserAnalytics from '../../models/analytics/UserAnalytics';
 import KpiTracker from '../../models/analytics/KpiTracker';
-import { Avatar } from '../../models/personality/Avatar';
-import { UserAvatarPreference } from '../../models/personality/UserAvatarPreference';
+// import { Avatar } from '../../models/personality/Avatar';
+// import { UserAvatarPreference } from '../../models/personality/UserAvatarPreference';
 
 /**
  * Coach Intelligence Service
@@ -153,7 +153,7 @@ export class CoachIntelligenceService {
    */
   async generateCoachingRecommendations(
     userId: string,
-    avatarId: string
+    _avatarId: string
   ): Promise<CoachingRecommendation[]> {
     const recommendations: CoachingRecommendation[] = [];
     
@@ -185,7 +185,7 @@ export class CoachIntelligenceService {
     });
 
     // Get avatar information
-    const avatar = await Avatar.findByPk(avatarId);
+    // const avatar = await Avatar.findByPk(avatarId);
 
     if (analytics) {
       // Engagement recommendations
@@ -546,9 +546,9 @@ export class CoachIntelligenceService {
 
   private async updateUserAnalytics(
     userId: string,
-    memory: CoachMemory,
-    sessionDuration: number,
-    userFeedback?: any
+    _memory: CoachMemory,
+    _sessionDuration: number,
+    _userFeedback?: any
   ): Promise<void> {
     // This will trigger recalculation of analytics
     await this.calculateUserAnalytics(userId, 'daily');
@@ -583,17 +583,17 @@ export class CoachIntelligenceService {
   }
 
   // Additional helper methods would be implemented here...
-  private calculateStreakCount(memories: CoachMemory[]): number {
+  private calculateStreakCount(_memories: CoachMemory[]): number {
     // TODO: Implement streak calculation
     return 0;
   }
 
-  private calculateResponsiveness(memories: CoachMemory[]): number {
+  private calculateResponsiveness(_memories: CoachMemory[]): number {
     // TODO: Implement responsiveness calculation
     return 0.7;
   }
 
-  private calculateParticipationScore(memories: CoachMemory[]): number {
+  private calculateParticipationScore(_memories: CoachMemory[]): number {
     // TODO: Implement participation scoring
     return 0.8;
   }
@@ -607,47 +607,47 @@ export class CoachIntelligenceService {
     return totalActions > 0 ? completedActions / totalActions : 0.5;
   }
 
-  private calculateAvatarEffectiveness(memories: CoachMemory[]): number {
+  private calculateAvatarEffectiveness(_memories: CoachMemory[]): number {
     // TODO: Implement avatar effectiveness calculation
     return 0.7;
   }
 
-  private calculateSkillImprovement(memories: CoachMemory[]): number {
+  private calculateSkillImprovement(_memories: CoachMemory[]): number {
     // TODO: Implement skill improvement tracking
     return 0.6;
   }
 
-  private calculateConfidenceIncrease(memories: CoachMemory[]): number {
+  private calculateConfidenceIncrease(_memories: CoachMemory[]): number {
     // TODO: Implement confidence tracking
     return 0.7;
   }
 
-  private calculateStressReduction(memories: CoachMemory[]): number {
+  private calculateStressReduction(_memories: CoachMemory[]): number {
     // TODO: Implement stress level tracking
     return 0.5;
   }
 
-  private calculateHabitFormation(goals: KpiTracker[]): number {
+  private calculateHabitFormation(_goals: KpiTracker[]): number {
     // TODO: Implement habit formation tracking
     return 0.6;
   }
 
-  private calculatePreferredTime(memories: CoachMemory[]): string {
+  private calculatePreferredTime(_memories: CoachMemory[]): string {
     // TODO: Analyze session times
     return 'morning';
   }
 
-  private analyzeCommunicationStyle(memories: CoachMemory[]): string {
+  private analyzeCommunicationStyle(_memories: CoachMemory[]): string {
     // TODO: Analyze communication patterns
     return 'supportive';
   }
 
-  private extractTopicsOfInterest(memories: CoachMemory[]): string[] {
+  private extractTopicsOfInterest(_memories: CoachMemory[]): string[] {
     // TODO: Extract and rank topics
     return ['goal-setting', 'productivity', 'wellness'];
   }
 
-  private extractChallengeAreas(memories: CoachMemory[]): string[] {
+  private extractChallengeAreas(_memories: CoachMemory[]): string[] {
     // TODO: Identify challenge patterns
     return ['time-management', 'consistency'];
   }
@@ -660,7 +660,7 @@ export class CoachIntelligenceService {
     }));
   }
 
-  private analyzeLearningPreferences(memories: CoachMemory[]): any {
+  private analyzeLearningPreferences(_memories: CoachMemory[]): any {
     // TODO: Analyze learning style preferences
     return {
       visualLearner: 0.4,
@@ -669,37 +669,37 @@ export class CoachIntelligenceService {
     };
   }
 
-  private calculateSatisfactionScore(memories: CoachMemory[]): number {
+  private calculateSatisfactionScore(_memories: CoachMemory[]): number {
     // TODO: Calculate satisfaction from feedback
     return 7.5;
   }
 
-  private calculateRetentionProbability(memories: CoachMemory[], goals: KpiTracker[]): number {
+  private calculateRetentionProbability(_memories: CoachMemory[], _goals: KpiTracker[]): number {
     // TODO: Implement retention probability model
     return 0.8;
   }
 
-  private calculateChurnRisk(memories: CoachMemory[], goals: KpiTracker[]): number {
+  private calculateChurnRisk(_memories: CoachMemory[], _goals: KpiTracker[]): number {
     // TODO: Implement churn risk calculation
     return 0.2;
   }
 
-  private identifyStrengthAreas(memories: CoachMemory[], goals: KpiTracker[]): string[] {
+  private identifyStrengthAreas(_memories: CoachMemory[], _goals: KpiTracker[]): string[] {
     // TODO: Identify user strengths
     return ['goal-setting', 'communication'];
   }
 
-  private identifyImprovementAreas(memories: CoachMemory[], goals: KpiTracker[]): string[] {
+  private identifyImprovementAreas(_memories: CoachMemory[], _goals: KpiTracker[]): string[] {
     // TODO: Identify improvement areas
     return ['consistency', 'follow-through'];
   }
 
-  private predictOutcomes(memories: CoachMemory[], goals: KpiTracker[]): string[] {
+  private predictOutcomes(_memories: CoachMemory[], _goals: KpiTracker[]): string[] {
     // TODO: Predict likely outcomes
     return ['Likely to achieve primary goal', 'May need additional support for consistency'];
   }
 
-  private identifyRiskFactors(memories: CoachMemory[], goals: KpiTracker[]): string[] {
+  private identifyRiskFactors(_memories: CoachMemory[], _goals: KpiTracker[]): string[] {
     // TODO: Identify risk factors
     return ['Low engagement', 'Overambitious goals'];
   }
