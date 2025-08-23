@@ -1,9 +1,9 @@
+import Grid from "@mui/material/Grid";
 import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Card,
   CardContent,
-  Grid,
   TextField,
   Button,
   FormControl,
@@ -397,7 +397,7 @@ const CoachContentEditor: React.FC = () => {
 
         <Grid container spacing={3}>
           {/* Main Content Area */}
-          <Grid item xs={12} md={8}>
+          <Grid xs={12} md={8}>
             <Card>
               <CardContent>
                 <Tabs
@@ -568,7 +568,7 @@ const CoachContentEditor: React.FC = () => {
           </Grid>
 
           {/* Sidebar */}
-          <Grid item xs={12} md={4}>
+          <Grid xs={12} md={4}>
             {/* Validation Messages */}
             {validationMessages.length > 0 && (
               <Card sx={{ mb: 2 }}>

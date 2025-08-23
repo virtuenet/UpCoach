@@ -7,7 +7,7 @@ import aiRouter from '../../../routes/ai';
 // Mock dependencies
 jest.mock('../../../middleware/auth', () => ({
   authenticate: jest.fn((req, res, next) => {
-    req.user = { id: 'test-user-123' };
+    (req as any).user = { id: 'test-user-123' };
     next();
   })
 }));
@@ -41,7 +41,7 @@ describe('AI Controller Integration Tests', () => {
       };
 
       jest.spyOn(aiController as any, 'getRecommendations').mockImplementation((req, res) => {
-        res.json({
+        (res as any).json({
           success: true,
           data: mockRecommendations
         });

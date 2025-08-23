@@ -175,7 +175,7 @@ export class CircuitBreakerWrapper extends EventEmitter {
    * Set fallback function
    */
   fallback<T>(fn: () => T | Promise<T>) {
-    this.breaker.fallback(fn);
+    this.breaker.fallback(async () => await Promise.resolve(fn()));
     return this;
   }
 }

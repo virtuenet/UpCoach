@@ -24,7 +24,7 @@ const createConversationSchema = z.object({
 
 // Get all conversations for the current user
 router.get('/conversations', asyncHandler(async (req: Request, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
 
   const conversations = await db.query(`
     SELECT 
@@ -42,7 +42,7 @@ router.get('/conversations', asyncHandler(async (req: Request, res: Response) =>
     ORDER BY COALESCE(MAX(m.created_at), c.created_at) DESC
   `, [userId]);
 
-  res.json({
+  (res as any).json({
     success: true,
     data: {
       conversations: conversations.rows,
@@ -52,7 +52,7 @@ router.get('/conversations', asyncHandler(async (req: Request, res: Response) =>
 
 // Get a specific conversation with messages
 router.get('/conversations/:id', asyncHandler(async (req: Request, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const { id } = req.params;
 
   // Get conversation
@@ -74,7 +74,7 @@ router.get('/conversations/:id', asyncHandler(async (req: Request, res: Response
     ORDER BY created_at ASC
   `, [id]);
 
-  res.json({
+  (res as any).json({
     success: true,
     data: {
       conversation: {
@@ -87,7 +87,7 @@ router.get('/conversations/:id', asyncHandler(async (req: Request, res: Response
 
 // Create a new conversation
 router.post('/conversations', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const validatedData = createConversationSchema.parse(req.body);
 
   const conversationData = {
@@ -112,7 +112,7 @@ router.post('/conversations', asyncHandler(async (req: AuthenticatedRequest, res
 
 // Send a message and get AI response
 router.post('/message', asyncHandler(async (req: Request, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const validatedData = chatMessageSchema.parse(req.body);
   const aiProvider = validatedData.aiProvider;
 
@@ -213,7 +213,7 @@ router.post('/message', asyncHandler(async (req: Request, res: Response) => {
       tokens: response.usage?.total_tokens || 0,
     });
 
-    res.json({
+    (res as any).json({
       success: true,
       data: {
         conversationId,
@@ -239,7 +239,7 @@ router.post('/message', asyncHandler(async (req: Request, res: Response) => {
 
 // Update conversation title
 router.put('/conversations/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const { id } = req.params;
   const validatedData = createConversationSchema.parse(req.body);
 
@@ -262,7 +262,7 @@ router.put('/conversations/:id', asyncHandler(async (req: AuthenticatedRequest, 
 
   logger.info('Conversation updated:', { conversationId: id, userId });
 
-  res.json({
+  (res as any).json({
     success: true,
     message: 'Conversation updated successfully',
     data: {
@@ -273,7 +273,7 @@ router.put('/conversations/:id', asyncHandler(async (req: AuthenticatedRequest, 
 
 // Delete a conversation (soft delete)
 router.delete('/conversations/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const { id } = req.params;
 
   // Check if conversation exists and belongs to user
@@ -292,7 +292,7 @@ router.delete('/conversations/:id', asyncHandler(async (req: AuthenticatedReques
 
   logger.info('Conversation deleted:', { conversationId: id, userId });
 
-  res.json({
+  (res as any).json({
     success: true,
     message: 'Conversation deleted successfully',
   });
@@ -300,7 +300,7 @@ router.delete('/conversations/:id', asyncHandler(async (req: AuthenticatedReques
 
 // Get chat statistics
 router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
 
   const stats = await db.query(`
     SELECT 
@@ -329,7 +329,7 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, res
     ORDER BY date
   `, [userId]);
 
-  res.json({
+  (res as any).json({
     success: true,
     data: {
       overview: stats.rows[0],

@@ -85,7 +85,7 @@ export class AIAnalyticsController {
       const previousCost = (previousTokens / 1000) * costPerThousandTokens;
       const costTrend = ((totalCost - previousCost) / previousCost) * 100;
 
-      res.json({
+      (res as any).json({
         totalInteractions,
         activeUsers,
         avgResponseTime: Math.round(avgResponseTime * 10) / 10,
@@ -132,7 +132,7 @@ export class AIAnalyticsController {
         type: 'SELECT'
       });
 
-      res.json(interactions.map((interaction: any) => ({
+      (res as any).json(interactions.map((interaction: any) => ({
         id: interaction.id,
         userId: interaction.user_id,
         userName: interaction.user_name || 'Unknown User',
@@ -188,19 +188,19 @@ export class AIAnalyticsController {
         };
       });
 
-      res.json(filledData);
+      (res as any).json(filledData);
     } catch (error) {
       logger.error('Failed to get AI usage data:', error);
       res.status(500).json({ error: 'Failed to fetch AI usage data' });
     }
   }
 
-  async getAIHealthStatus(_req: Request, res: Response): Promise<void> {
+  async getAIHealthStatus_(req: Request, res: Response): Promise<void> {
     try {
       const health = await aiService.healthCheck();
       const metrics = aiService.getMetrics();
 
-      res.json({
+      (res as any).json({
         status: 'operational',
         services: health,
         performance: {
@@ -219,10 +219,10 @@ export class AIAnalyticsController {
     }
   }
 
-  async clearAICache(_req: Request, res: Response): Promise<void> {
+  async clearAICache_(req: Request, res: Response): Promise<void> {
     try {
       await aiService.clearCache();
-      res.json({ message: 'AI cache cleared successfully' });
+      (res as any).json({ message: 'AI cache cleared successfully' });
     } catch (error) {
       logger.error('Failed to clear AI cache:', error);
       res.status(500).json({ error: 'Failed to clear AI cache' });

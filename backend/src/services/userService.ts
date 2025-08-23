@@ -410,7 +410,7 @@ export class UserService {
         createdAt: user.created_at,
         updatedAt: user.updated_at
       } as unknown as User;
-    } catch (error: any) {
+    } catch (error) {
       if (error.code === '23505') {
         throw new ApiError(409, 'User with this email already exists');
       }

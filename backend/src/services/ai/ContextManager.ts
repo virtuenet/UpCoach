@@ -94,7 +94,7 @@ export class ContextManager {
       const recentMessages = await ChatMessage.findAll({
         where: {
           chatId: {
-            [Op.in]: sequelize.literal(
+            [Op.in as any]: sequelize.literal(
               `(SELECT id FROM chats WHERE user_id = '${userId}' ORDER BY updated_at DESC LIMIT 5)`
             )
           }

@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, keepPreviousData, useQueryClient } from '@tanstack/react-query'
 import { useDropzone } from 'react-dropzone'
 import { 
   Upload, 
@@ -45,18 +45,18 @@ export default function MediaLibraryPage() {
   const [newFolderName, setNewFolderName] = useState('')
 
   // Fetch media
-  const { data: mediaData, isLoading, error } = useQuery({
+  const { data: mediaData, isPending: isLoading, error } = useQuery({
     queryKey: ['media', searchTerm, typeFilter, folderFilter, currentPage],
     queryFn: () => mediaApi.getMedia({
       search: searchTerm || undefined,
       type: typeFilter === 'all' ? undefined : typeFilter,
-      folder: folderFilter === 'all' ? undefined : (folderFilter === 'none' ? null : folderFilter),
+      folder: folderFilter === 'all' ? undefined : (folderFilter === 'none' ? undefined : folderFilter),
       page: currentPage,
       limit: 20,
       sortBy: 'createdAt',
       sortOrder: 'DESC',
     }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   })
 
   // Fetch folders
@@ -77,12 +77,12 @@ export default function MediaLibraryPage() {
       mediaApi.uploadFiles(files, options),
     onSuccess: () => {
       toast.success('Files uploaded successfully!')
-      queryClient.invalidateQueries(['media'])
-      queryClient.invalidateQueries(['storage-stats'])
+      queryClient.invalidateQueries({ queryKey: ['media'] })
+      queryClient.invalidateQueries({ queryKey: ['storage-stats'] })
       setShowUpload(false)
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to upload files')
+      toast.error(error instanceof Error ? error.message : 'Failed to upload files')
     },
   })
 
@@ -91,12 +91,12 @@ export default function MediaLibraryPage() {
     mutationFn: mediaApi.deleteMedia,
     onSuccess: () => {
       toast.success('Media deleted successfully')
-      queryClient.invalidateQueries(['media'])
-      queryClient.invalidateQueries(['storage-stats'])
+      queryClient.invalidateQueries({ queryKey: ['media'] })
+      queryClient.invalidateQueries({ queryKey: ['storage-stats'] })
       setSelectedItems([])
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to delete media')
+      toast.error(error instanceof Error ? error.message : 'Failed to delete media')
     },
   })
 
@@ -105,11 +105,11 @@ export default function MediaLibraryPage() {
     mutationFn: ({ id, data }: { id: string, data: any }) => mediaApi.updateMedia(id, data),
     onSuccess: () => {
       toast.success('Media updated successfully')
-      queryClient.invalidateQueries(['media'])
+      queryClient.invalidateQueries({ queryKey: ['media'] })
       setEditingItem(null)
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to update media')
+      toast.error(error instanceof Error ? error.message : 'Failed to update media')
     },
   })
 
@@ -118,12 +118,12 @@ export default function MediaLibraryPage() {
     mutationFn: mediaApi.createFolder,
     onSuccess: () => {
       toast.success('Folder created successfully')
-      queryClient.invalidateQueries(['media-folders'])
+      queryClient.invalidateQueries({ queryKey: ['media-folders'] })
       setShowCreateFolder(false)
       setNewFolderName('')
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to create folder')
+      toast.error(error instanceof Error ? error.message : 'Failed to create folder')
     },
   })
 
@@ -133,12 +133,12 @@ export default function MediaLibraryPage() {
       mediaApi.moveToFolder(mediaIds, folder),
     onSuccess: () => {
       toast.success('Media moved successfully')
-      queryClient.invalidateQueries(['media'])
+      queryClient.invalidateQueries({ queryKey: ['media'] })
       setShowMoveModal(false)
       setSelectedItems([])
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to move media')
+      toast.error(error instanceof Error ? error.message : 'Failed to move media')
     },
   })
 
@@ -244,7 +244,7 @@ export default function MediaLibraryPage() {
       <div className="max-w-7xl mx-auto py-6">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <h3 className="text-lg font-medium text-red-800">Error loading media library</h3>
-          <p className="text-red-700 mt-2">{error.message || 'Failed to load media library'}</p>
+          <p className="text-red-700 mt-2">{error instanceof Error ? error.message : 'Failed to load media library'}</p>
         </div>
       </div>
     )
@@ -582,7 +582,7 @@ export default function MediaLibraryPage() {
           onChange={setNewFolderName}
           onSave={handleCreateFolder}
           onClose={() => setShowCreateFolder(false)}
-          isLoading={createFolderMutation.isLoading}
+          isPending={createFolderMutation.isPending}
         />
       )}
 
@@ -591,7 +591,7 @@ export default function MediaLibraryPage() {
           folders={folders}
           onMove={handleMoveToFolder}
           onClose={() => setShowMoveModal(false)}
-          isLoading={moveMutation.isLoading}
+          isPending={moveMutation.isPending}
         />
       )}
 
@@ -600,7 +600,7 @@ export default function MediaLibraryPage() {
           item={editingItem}
           onSave={handleUpdateMedia}
           onClose={() => setEditingItem(null)}
-          isLoading={updateMutation.isLoading}
+          isPending={updateMutation.isPending}
         />
       )}
     </div>
@@ -750,12 +750,12 @@ const MediaListItem = ({ item, isSelected, onSelect, onEdit, onDelete }: {
 }
 
 // Create folder modal
-const CreateFolderModal = ({ value, onChange, onSave, onClose, isLoading }: {
+const CreateFolderModal = ({ value, onChange, onSave, onClose, isPending }: {
   value: string
   onChange: (value: string) => void
   onSave: () => void
   onClose: () => void
-  isLoading: boolean
+  isPending: boolean
 }) => {
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
@@ -779,10 +779,10 @@ const CreateFolderModal = ({ value, onChange, onSave, onClose, isLoading }: {
           </button>
           <button
             onClick={onSave}
-            disabled={!value.trim() || isLoading}
+            disabled={!value.trim() || isPending}
             className="px-4 py-2 text-sm font-medium text-white bg-secondary-600 rounded-md hover:bg-secondary-700 disabled:opacity-50"
           >
-            {isLoading ? 'Creating...' : 'Create'}
+            {isPending ? 'Creating...' : 'Create'}
           </button>
         </div>
       </div>
@@ -791,11 +791,11 @@ const CreateFolderModal = ({ value, onChange, onSave, onClose, isLoading }: {
 }
 
 // Move to folder modal
-const MoveToFolderModal = ({ folders, onMove, onClose, isLoading }: {
+const MoveToFolderModal = ({ folders, onMove, onClose, isPending }: {
   folders: string[]
   onMove: (folder: string | null) => void
   onClose: () => void
-  isLoading: boolean
+  isPending: boolean
 }) => {
   const [selectedFolder, setSelectedFolder] = useState<string>('')
 
@@ -822,10 +822,10 @@ const MoveToFolderModal = ({ folders, onMove, onClose, isLoading }: {
           </button>
           <button
             onClick={() => onMove(selectedFolder || null)}
-            disabled={isLoading}
+            disabled={isPending}
             className="px-4 py-2 text-sm font-medium text-white bg-secondary-600 rounded-md hover:bg-secondary-700 disabled:opacity-50"
           >
-            {isLoading ? 'Moving...' : 'Move'}
+            {isPending ? 'Moving...' : 'Move'}
           </button>
         </div>
       </div>
@@ -834,11 +834,11 @@ const MoveToFolderModal = ({ folders, onMove, onClose, isLoading }: {
 }
 
 // Edit media modal
-const EditMediaModal = ({ item, onSave, onClose, isLoading }: {
+const EditMediaModal = ({ item, onSave, onClose, isPending }: {
   item: MediaItem
   onSave: (data: any) => void
   onClose: () => void
-  isLoading: boolean
+  isPending: boolean
 }) => {
   const [formData, setFormData] = useState({
     alt: item.alt || '',
@@ -922,10 +922,10 @@ const EditMediaModal = ({ item, onSave, onClose, isLoading }: {
           </button>
           <button
             onClick={handleSave}
-            disabled={isLoading}
+            disabled={isPending}
             className="px-4 py-2 text-sm font-medium text-white bg-secondary-600 rounded-md hover:bg-secondary-700 disabled:opacity-50"
           >
-            {isLoading ? 'Saving...' : 'Save Changes'}
+            {isPending ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>

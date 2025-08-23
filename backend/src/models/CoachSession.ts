@@ -12,7 +12,7 @@ import {
 } from 'sequelize-typescript';
 import { User } from './User';
 import { CoachProfile } from './CoachProfile';
-import { Op, literal } from 'sequelize';
+import { Op } from 'sequelize';
 
 export enum SessionType {
   VIDEO = 'video',
@@ -335,7 +335,7 @@ export class CoachSession extends Model {
   ): Promise<CoachSession[]> {
     const where: any = {
       status: {
-        [Op.in]: [SessionStatus.PENDING, SessionStatus.CONFIRMED],
+        [Op.in as any]: [SessionStatus.PENDING, SessionStatus.CONFIRMED],
       },
       scheduledAt: {
         [Op.gte]: new Date(),
@@ -376,11 +376,11 @@ export class CoachSession extends Model {
       where: {
         coachId,
         status: {
-          [Op.in]: [SessionStatus.PENDING, SessionStatus.CONFIRMED, SessionStatus.IN_PROGRESS],
+          [Op.in as any]: [SessionStatus.PENDING, SessionStatus.CONFIRMED, SessionStatus.IN_PROGRESS],
         },
-        [Op.and]: [
+        [Op.and as any]: [
           {
-            [Op.or]: [
+            [Op.or as any]: [
               // Session overlaps start
               {
                 scheduledAt: { [Op.lte]: scheduledAt },

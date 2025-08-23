@@ -299,7 +299,7 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
     while (await UnifiedContent.findOne({ 
       where: { 
         slug, 
-        id: { [Op.ne]: this.id } 
+        id: { [Op.ne as any]: this.id } 
       } 
     })) {
       slug = `${baseSlug}-${counter}`;
@@ -380,7 +380,7 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
     return UnifiedContent.findAll({
       where: { 
         status: 'published',
-        featuredImageUrl: { [Op.ne]: null }
+        featuredImageUrl: { [Op.ne as any]: null }
       },
       order: [['publishedAt', 'DESC']],
       limit,
@@ -401,7 +401,7 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
     const where: any = {};
     
     if (query) {
-      where[Op.or] = [
+      where[Op.or as any] = [
         { title: { [Op.iLike]: `%${query}%` } },
         { content: { [Op.iLike]: `%${query}%` } },
         { excerpt: { [Op.iLike]: `%${query}%` } },

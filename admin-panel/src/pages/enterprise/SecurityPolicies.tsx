@@ -1,3 +1,4 @@
+import Grid from "@mui/material/Grid";
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -5,7 +6,6 @@ import {
   CardContent,
   Typography,
   Button,
-  Grid,
   TextField,
   Select,
   MenuItem,
@@ -145,7 +145,7 @@ const SecurityPolicies: React.FC = () => {
       setPolicyDialog(false);
       resetForm();
       loadPolicies();
-    } catch (error: any) {
+    } catch (error) {
       enqueueSnackbar(
         error.response?.data?.message || "Failed to create policy",
         {
@@ -166,7 +166,7 @@ const SecurityPolicies: React.FC = () => {
       setEditingPolicy(null);
       resetForm();
       loadPolicies();
-    } catch (error: any) {
+    } catch (error) {
       enqueueSnackbar(
         error.response?.data?.message || "Failed to update policy",
         {
@@ -183,7 +183,7 @@ const SecurityPolicies: React.FC = () => {
       await api.delete(`/enterprise/policies/${policyId}`);
       enqueueSnackbar("Policy deleted successfully", { variant: "success" });
       loadPolicies();
-    } catch (error: any) {
+    } catch (error) {
       enqueueSnackbar(
         error.response?.data?.message || "Failed to delete policy",
         {
@@ -204,7 +204,7 @@ const SecurityPolicies: React.FC = () => {
         { variant: "success" },
       );
       loadPolicies();
-    } catch (error: any) {
+    } catch (error) {
       enqueueSnackbar(
         error.response?.data?.message || "Failed to toggle policy",
         {
@@ -343,7 +343,7 @@ const SecurityPolicies: React.FC = () => {
       ) : (
         <Grid container spacing={3}>
           {policies.map((policy) => (
-            <Grid item xs={12} key={policy.id}>
+            <Grid xs={12} key={policy.id}>
               <Card>
                 <CardContent>
                   <Box
@@ -409,7 +409,7 @@ const SecurityPolicies: React.FC = () => {
                     </AccordionSummary>
                     <AccordionDetails>
                       <Grid container spacing={2}>
-                        <Grid item xs={12} md={6}>
+                        <Grid xs={12} md={6}>
                           <Typography variant="subtitle2" gutterBottom>
                             Rules Configuration
                           </Typography>
@@ -425,7 +425,7 @@ const SecurityPolicies: React.FC = () => {
                             {JSON.stringify(policy.rules, null, 2)}
                           </pre>
                         </Grid>
-                        <Grid item xs={12} md={6}>
+                        <Grid xs={12} md={6}>
                           <Typography variant="subtitle2" gutterBottom>
                             Applies To
                           </Typography>
@@ -441,7 +441,7 @@ const SecurityPolicies: React.FC = () => {
                             {JSON.stringify(policy.appliesTo, null, 2)}
                           </pre>
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid xs={12}>
                           <Typography variant="caption" color="textSecondary">
                             Created by {policy.createdBy} on{" "}
                             {formatDate(policy.createdAt)}
@@ -474,7 +474,7 @@ const SecurityPolicies: React.FC = () => {
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             <Grid container spacing={3}>
-              <Grid item xs={12}>
+              <Grid xs={12}>
                 <TextField
                   fullWidth
                   label="Policy Name"
@@ -485,7 +485,7 @@ const SecurityPolicies: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid xs={12} md={6}>
                 <FormControl fullWidth>
                   <InputLabel>Policy Type</InputLabel>
                   <Select
@@ -505,7 +505,7 @@ const SecurityPolicies: React.FC = () => {
                 </FormControl>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid xs={12} md={6}>
                 <FormControl fullWidth>
                   <InputLabel>Enforcement Level</InputLabel>
                   <Select
@@ -537,12 +537,12 @@ const SecurityPolicies: React.FC = () => {
 
               {/* Policy Type Specific Rules */}
               {policyForm.type === "security" && (
-                <Grid item xs={12}>
+                <Grid xs={12}>
                   <Typography variant="h6" gutterBottom>
                     Password Policy
                   </Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
+                    <Grid xs={12} md={6}>
                       <TextField
                         fullWidth
                         type="number"
@@ -562,7 +562,7 @@ const SecurityPolicies: React.FC = () => {
                         }
                       />
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid xs={12} md={6}>
                       <TextField
                         fullWidth
                         type="number"
@@ -582,7 +582,7 @@ const SecurityPolicies: React.FC = () => {
                         }
                       />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid xs={12}>
                       <FormControlLabel
                         control={
                           <Switch
@@ -606,7 +606,7 @@ const SecurityPolicies: React.FC = () => {
                         label="Require uppercase letters"
                       />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid xs={12}>
                       <FormControlLabel
                         control={
                           <Switch
@@ -630,7 +630,7 @@ const SecurityPolicies: React.FC = () => {
                         label="Require numbers"
                       />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid xs={12}>
                       <FormControlLabel
                         control={
                           <Switch
@@ -661,7 +661,7 @@ const SecurityPolicies: React.FC = () => {
                     Session Policy
                   </Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
+                    <Grid xs={12} md={6}>
                       <TextField
                         fullWidth
                         type="number"
@@ -683,7 +683,7 @@ const SecurityPolicies: React.FC = () => {
                         }
                       />
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid xs={12} md={6}>
                       <TextField
                         fullWidth
                         type="number"
@@ -703,7 +703,7 @@ const SecurityPolicies: React.FC = () => {
                         }
                       />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid xs={12}>
                       <FormControlLabel
                         control={
                           <Switch
@@ -730,12 +730,12 @@ const SecurityPolicies: React.FC = () => {
               )}
 
               {policyForm.type === "data_retention" && (
-                <Grid item xs={12}>
+                <Grid xs={12}>
                   <Typography variant="h6" gutterBottom>
                     Data Retention Settings
                   </Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
+                    <Grid xs={12} md={6}>
                       <TextField
                         fullWidth
                         type="number"
@@ -755,7 +755,7 @@ const SecurityPolicies: React.FC = () => {
                         }
                       />
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid xs={12} md={6}>
                       <TextField
                         fullWidth
                         type="number"
@@ -775,7 +775,7 @@ const SecurityPolicies: React.FC = () => {
                         }
                       />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid xs={12}>
                       <FormControlLabel
                         control={
                           <Switch
@@ -799,7 +799,7 @@ const SecurityPolicies: React.FC = () => {
                         label="Allow data export"
                       />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid xs={12}>
                       <FormControlLabel
                         control={
                           <Switch
@@ -828,7 +828,7 @@ const SecurityPolicies: React.FC = () => {
               )}
 
               {/* Applies To Section */}
-              <Grid item xs={12}>
+              <Grid xs={12}>
                 <Typography variant="h6" gutterBottom>
                   Policy Scope
                 </Typography>

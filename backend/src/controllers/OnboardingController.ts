@@ -39,7 +39,7 @@ export class OnboardingController {
     const transaction = await sequelize.transaction();
 
     try {
-      const userId = req.user!.id;
+      const userId = (req as any).user!.id;
       const onboardingData: OnboardingData = req.body;
 
       // Update user profile
@@ -148,7 +148,7 @@ export class OnboardingController {
         coachingStyle: onboardingData.preferences.coachingStyle,
       });
 
-      res.json({
+      (res as any).json({
         success: true,
         data: {
           message: 'Onboarding completed successfully',
@@ -161,7 +161,7 @@ export class OnboardingController {
       });
     } catch (error) {
       await transaction.rollback();
-      logger.error('Failed to complete onboarding', { error, userId: req.user!.id });
+      logger.error('Failed to complete onboarding', { error, userId: (req as any).user!.id });
       res.status(500).json({
         success: false,
         error: 'Failed to complete onboarding',
@@ -172,7 +172,7 @@ export class OnboardingController {
   // Get onboarding status
   async getOnboardingStatus(req: Request, res: Response) {
     try {
-      const userId = req.user!.id;
+      const userId = (req as any).user!.id;
       const user = await User.findByPk(userId, {
         include: [
           { model: UserProfile, as: 'profile' },
@@ -195,12 +195,12 @@ export class OnboardingController {
         progress: this.calculateOnboardingProgress(user),
       };
 
-      res.json({
+      (res as any).json({
         success: true,
         data: status,
       });
     } catch (error) {
-      logger.error('Failed to get onboarding status', { error, userId: req.user!.id });
+      logger.error('Failed to get onboarding status', { error, userId: (req as any).user!.id });
       res.status(500).json({
         success: false,
         error: 'Failed to get onboarding status',
@@ -211,7 +211,7 @@ export class OnboardingController {
   // Skip onboarding (for returning users)
   async skipOnboarding(req: Request, res: Response) {
     try {
-      const userId = req.user!.id;
+      const userId = (req as any).user!.id;
       const user = await User.findByPk(userId, {
         include: [
           { model: UserProfile, as: 'profile' },
@@ -245,14 +245,14 @@ export class OnboardingController {
       // Track skip
       await analyticsService.trackUserAction(Number(userId), 'Onboarding Skipped');
 
-      res.json({
+      (res as any).json({
         success: true,
         data: {
           message: 'Onboarding skipped',
         },
       });
     } catch (error) {
-      logger.error('Failed to skip onboarding', { error, userId: req.user!.id });
+      logger.error('Failed to skip onboarding', { error, userId: (req as any).user!.id });
       res.status(500).json({
         success: false,
         error: 'Failed to skip onboarding',

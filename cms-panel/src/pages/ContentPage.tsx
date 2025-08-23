@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, keepPreviousData, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import { Search, Plus, Edit, Trash2, Eye, Calendar, Filter, MoreVertical } from 'lucide-react'
-import { contentApi, Article } from '../api/content'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
+import { contentApi, Article } from '../api/content'
 
 export default function ContentPage() {
   const navigate = useNavigate()
@@ -34,17 +34,17 @@ export default function ContentPage() {
       sortBy,
       sortOrder,
     }),
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   })
 
   const deleteMutation = useMutation({
     mutationFn: contentApi.deleteArticle,
     onSuccess: () => {
       toast.success('Article deleted successfully')
-      queryClient.invalidateQueries(['articles'])
+      queryClient.invalidateQueries({ queryKey: ['articles'] })
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to delete article')
+      toast.error(error instanceof Error ? error.message : 'Failed to delete article')
     },
   })
 
@@ -52,10 +52,10 @@ export default function ContentPage() {
     mutationFn: contentApi.publishArticle,
     onSuccess: () => {
       toast.success('Article published successfully')
-      queryClient.invalidateQueries(['articles'])
+      queryClient.invalidateQueries({ queryKey: ['articles'] })
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to publish article')
+      toast.error(error instanceof Error ? error.message : 'Failed to publish article')
     },
   })
 
@@ -63,10 +63,10 @@ export default function ContentPage() {
     mutationFn: contentApi.archiveArticle,
     onSuccess: () => {
       toast.success('Article archived successfully')
-      queryClient.invalidateQueries(['articles'])
+      queryClient.invalidateQueries({ queryKey: ['articles'] })
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to archive article')
+      toast.error(error instanceof Error ? error.message : 'Failed to archive article')
     },
   })
 
@@ -113,7 +113,7 @@ export default function ContentPage() {
             <div className="ml-3">
               <h3 className="text-sm font-medium text-red-800">Error loading articles</h3>
               <div className="mt-2 text-sm text-red-700">
-                {error.message || 'Failed to load articles. Please try again.'}
+                {error instanceof Error ? error.message : 'Failed to load articles. Please try again.'}
               </div>
             </div>
           </div>
@@ -358,7 +358,7 @@ export default function ContentPage() {
                           {article.status === 'draft' && (
                             <button
                               onClick={() => handlePublish(article)}
-                              disabled={publishMutation.isLoading}
+                              disabled={publishMutation.isPending}
                               className="text-green-600 hover:text-green-900"
                               title="Publish"
                             >
@@ -369,7 +369,7 @@ export default function ContentPage() {
                           {article.status === 'published' && (
                             <button
                               onClick={() => handleArchive(article)}
-                              disabled={archiveMutation.isLoading}
+                              disabled={archiveMutation.isPending}
                               className="text-yellow-600 hover:text-yellow-900"
                               title="Archive"
                             >
@@ -379,7 +379,7 @@ export default function ContentPage() {
                           
                           <button
                             onClick={() => handleDelete(article)}
-                            disabled={deleteMutation.isLoading}
+                            disabled={deleteMutation.isPending}
                             className="text-red-600 hover:text-red-900"
                             title="Delete"
                           >

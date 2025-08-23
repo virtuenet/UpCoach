@@ -22,7 +22,7 @@ export const errorMiddleware = (
   error: ApiError,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void => {
   let { statusCode = 500, message } = error;
 

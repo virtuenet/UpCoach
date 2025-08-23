@@ -1,3 +1,4 @@
+import Grid from "@mui/material/Grid";
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -6,7 +7,6 @@ import {
   Typography,
   TextField,
   Button,
-  Grid,
   Tab,
   Tabs,
   Avatar,
@@ -148,7 +148,7 @@ const OrganizationSettings: React.FC = () => {
       setInviteDialog(false);
       setInviteForm({ email: "", role: "member", teamIds: [] });
       loadOrganizationData();
-    } catch (error: any) {
+    } catch (error) {
       enqueueSnackbar(
         error.response?.data?.message || "Failed to send invitation",
         {
@@ -167,7 +167,7 @@ const OrganizationSettings: React.FC = () => {
       setTeamDialog(false);
       setTeamForm({ name: "", description: "", department: "" });
       loadOrganizationData();
-    } catch (error: any) {
+    } catch (error) {
       enqueueSnackbar(
         error.response?.data?.message || "Failed to create team",
         {
@@ -186,7 +186,7 @@ const OrganizationSettings: React.FC = () => {
 
       enqueueSnackbar("Member removed successfully", { variant: "success" });
       loadOrganizationData();
-    } catch (error: any) {
+    } catch (error) {
       enqueueSnackbar(
         error.response?.data?.message || "Failed to remove member",
         {
@@ -211,7 +211,7 @@ const OrganizationSettings: React.FC = () => {
         allowedDomains: [],
       });
       loadOrganizationData();
-    } catch (error: any) {
+    } catch (error) {
       enqueueSnackbar(
         error.response?.data?.message || "Failed to configure SSO",
         {
@@ -239,7 +239,7 @@ const OrganizationSettings: React.FC = () => {
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Grid container spacing={3} alignItems="center">
-            <Grid item>
+            <Grid>
               <Avatar
                 sx={{ width: 80, height: 80, bgcolor: "primary.main" }}
                 src={organization?.logoUrl}
@@ -247,7 +247,7 @@ const OrganizationSettings: React.FC = () => {
                 <Business fontSize="large" />
               </Avatar>
             </Grid>
-            <Grid item xs>
+            <Grid xs>
               <Typography variant="h5">{organization?.name}</Typography>
               <Typography color="textSecondary">
                 {organization?.website}
@@ -267,7 +267,7 @@ const OrganizationSettings: React.FC = () => {
                 <Chip label={`${stats?.totalTeams} Teams`} size="small" />
               </Box>
             </Grid>
-            <Grid item>
+            <Grid>
               <Button
                 variant="contained"
                 startIcon={<CloudUpload />}
@@ -385,7 +385,7 @@ const OrganizationSettings: React.FC = () => {
 
           <Grid container spacing={2}>
             {teams.map((team) => (
-              <Grid item xs={12} md={6} key={team.id}>
+              <Grid xs={12} md={6} key={team.id}>
                 <Card>
                   <CardContent>
                     <Box
@@ -444,7 +444,7 @@ const OrganizationSettings: React.FC = () => {
             ) : (
               <Grid container spacing={2}>
                 {ssoProviders.map((provider) => (
-                  <Grid item xs={12} md={6} key={provider.id}>
+                  <Grid xs={12} md={6} key={provider.id}>
                     <Card>
                       <CardContent>
                         <Box
@@ -498,7 +498,7 @@ const OrganizationSettings: React.FC = () => {
         {/* Settings Tab */}
         <TabPanel value={tabValue} index={3}>
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Organization Name"
@@ -506,14 +506,14 @@ const OrganizationSettings: React.FC = () => {
                 disabled
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Website"
                 value={organization?.website || ""}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Industry</InputLabel>
                 <Select value={organization?.industry || ""}>
@@ -526,7 +526,7 @@ const OrganizationSettings: React.FC = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Organization Size</InputLabel>
                 <Select value={organization?.size || ""}>
@@ -537,14 +537,14 @@ const OrganizationSettings: React.FC = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12}>
+            <Grid xs={12}>
               <TextField
                 fullWidth
                 label="Billing Email"
                 value={organization?.billingEmail || ""}
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid xs={12}>
               <Button variant="contained" color="primary">
                 Save Changes
               </Button>

@@ -1,4 +1,5 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from '../utils/EventEmitter';
+import * as React from 'react';
 
 interface SessionConfig {
   sessionTimeout: number; // in milliseconds
@@ -9,16 +10,17 @@ interface SessionConfig {
   onSessionExtended?: () => void;
 }
 
-class SessionManager extends EventEmitter {
+class SessionManager {
   private config: SessionConfig;
   private lastActivity: number;
-  private checkTimer: NodeJS.Timeout | null = null;
+  private checkTimer: ReturnType<typeof setTimeout> | null = null;
   private warningShown: boolean = false;
   private sessionActive: boolean = false;
   private activityListeners: Array<() => void> = [];
+  private emitter: EventEmitter;
 
   constructor(config?: Partial<SessionConfig>) {
-    super();
+    this.emitter = new EventEmitter();
     
     this.config = {
       sessionTimeout: parseInt(process.env.REACT_APP_SESSION_TIMEOUT || '1800000', 10), // 30 minutes default
@@ -269,6 +271,19 @@ class SessionManager extends EventEmitter {
       lastActivity: new Date(this.lastActivity)
     };
   }
+
+  // EventEmitter delegation methods
+  on(event: string, listener: Function) {
+    return this.emitter.on(event, listener);
+  }
+
+  off(event: string, listener: Function) {
+    return this.emitter.off(event, listener);
+  }
+
+  emit(event: string, ...args: any[]) {
+    return this.emitter.emit(event, ...args);
+  }
 }
 
 // Create singleton instance
@@ -310,10 +325,10 @@ export function useSessionManager() {
     const interval = setInterval(updateStatus, 1000);
     
     return () => {
-      manager.removeListener('warningShown', updateStatus);
-      manager.removeListener('warningHidden', updateStatus);
-      manager.removeListener('sessionExtended', updateStatus);
-      manager.removeListener('sessionExpired', updateStatus);
+      manager.off('warningShown', updateStatus);
+      manager.off('warningHidden', updateStatus);
+      manager.off('sessionExtended', updateStatus);
+      manager.off('sessionExpired', updateStatus);
       clearInterval(interval);
     };
   }, []);
@@ -326,7 +341,6 @@ export function useSessionManager() {
   };
 }
 
-// Import React for the hook
-import * as React from 'react';
+// React is already imported at the top
 
 export default SessionManager;

@@ -24,7 +24,7 @@ export class ContentTagController {
       if (isActive !== undefined) where.isActive = isActive === 'true';
       
       if (search) {
-        where[Op.or] = [
+        where[Op.or as any] = [
           { name: { [Op.iLike]: `%${search}%` } },
           { description: { [Op.iLike]: `%${search}%` } }
         ];
@@ -37,7 +37,7 @@ export class ContentTagController {
         offset
       });
 
-      res.json({
+      (res as any).json({
         tags,
         pagination: {
           page: Number(page),
@@ -79,7 +79,7 @@ export class ContentTagController {
         return res.status(404).json({ error: 'Tag not found' });
       }
 
-      res.json(tag);
+      (res as any).json(tag);
     } catch (error) {
       console.error('Error fetching tag:', error);
       res.status(500).json({ error: 'Failed to fetch tag' });
@@ -135,7 +135,7 @@ export class ContentTagController {
         let slug = baseSlug;
         let counter = 1;
         
-        while (await ContentTag.findOne({ where: { slug, id: { [Op.ne]: id } } })) {
+        while (await ContentTag.findOne({ where: { slug, id: { [Op.ne as any]: id } } })) {
           slug = `${baseSlug}-${counter}`;
           counter++;
         }
@@ -143,7 +143,7 @@ export class ContentTagController {
       }
 
       await tag.update(updates);
-      res.json(tag);
+      (res as any).json(tag);
     } catch (error) {
       console.error('Error updating tag:', error);
       res.status(500).json({ error: 'Failed to update tag' });
@@ -166,7 +166,7 @@ export class ContentTagController {
       }
 
       await tag.destroy();
-      res.json({ message: 'Tag deleted successfully' });
+      (res as any).json({ message: 'Tag deleted successfully' });
     } catch (error) {
       console.error('Error deleting tag:', error);
       res.status(500).json({ error: 'Failed to delete tag' });
@@ -227,7 +227,7 @@ export class ContentTagController {
         where: { id: sourceTagIds }
       });
 
-      res.json({ message: 'Tags merged successfully' });
+      (res as any).json({ message: 'Tags merged successfully' });
     } catch (error) {
       console.error('Error merging tags:', error);
       res.status(500).json({ error: 'Failed to merge tags' });
@@ -248,7 +248,7 @@ export class ContentTagController {
         limit: Number(limit)
       });
 
-      res.json(tags);
+      (res as any).json(tags);
     } catch (error) {
       console.error('Error fetching popular tags:', error);
       res.status(500).json({ error: 'Failed to fetch popular tags' });
@@ -261,7 +261,7 @@ export class ContentTagController {
       const { query } = req.query;
 
       if (!query || String(query).trim().length < 2) {
-        return res.json([]);
+        return (res as any).json([]);
       }
 
       const tags = await ContentTag.findAll({
@@ -274,7 +274,7 @@ export class ContentTagController {
         attributes: ['id', 'name', 'slug', 'color']
       });
 
-      res.json(tags);
+      (res as any).json(tags);
     } catch (error) {
       console.error('Error fetching tag suggestions:', error);
       res.status(500).json({ error: 'Failed to fetch tag suggestions' });

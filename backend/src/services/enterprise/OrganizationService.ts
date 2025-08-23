@@ -138,7 +138,7 @@ export class OrganizationService {
     if (data.name && data.name !== organization.name) {
       const newSlug = generateSlug(data.name);
       const slugExists = await Organization.findOne({
-        where: { slug: newSlug, id: { [Op.ne]: organizationId } },
+        where: { slug: newSlug, id: { [Op.ne as any]: organizationId } },
       });
 
       if (!slugExists) {

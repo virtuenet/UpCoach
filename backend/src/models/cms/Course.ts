@@ -125,7 +125,7 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
     let slug = baseSlug;
     let counter = 1;
     
-    while (await Course.findOne({ where: { slug, id: { [Op.ne]: this.id } } })) {
+    while (await Course.findOne({ where: { slug, id: { [Op.ne as any]: this.id } } })) {
       slug = `${baseSlug}-${counter}`;
       counter++;
     }
@@ -252,7 +252,7 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
     const whereClause: any = { status: 'published' };
 
     if (query) {
-      whereClause[Op.or] = [
+      whereClause[Op.or as any] = [
         { title: { [Op.iLike]: `%${query}%` } },
         { description: { [Op.iLike]: `%${query}%` } },
         { tags: { [Op.contains]: [query] } },

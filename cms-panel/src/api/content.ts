@@ -108,8 +108,8 @@ export const contentApi = {
   getArticles: async (params: GetArticlesParams = {}): Promise<ArticlesResponse> => {
     const response = await apiClient.get('/cms/articles', { params })
     return {
-      data: response.data,
-      pagination: response.pagination || {
+      data: response.data.data || response.data,
+      pagination: response.data.pagination || {
         currentPage: 1,
         totalPages: 1,
         totalItems: response.data?.length || 0,
@@ -157,7 +157,7 @@ export const contentApi = {
   } = {}): Promise<Article[]> => {
     const params = { q: query, ...filters }
     if (filters.tags) {
-      params.tags = filters.tags.join(',')
+      (params as any).tags = filters.tags.join(',')
     }
     const response = await apiClient.get('/cms/articles/search', { params })
     return response.data

@@ -2,6 +2,10 @@ import { Request, Response, NextFunction } from 'express';
 import { ApiError } from '../utils/apiError';
 import { logger } from '../utils/logger';
 import { ZodError } from 'zod';
+import { ApiErrorResponse, ErrorDetails, SequelizeError } from '../types';
+import multer from 'multer';
+
+type MulterError = multer.MulterError;
 
 // Extend Request interface to include id
 declare global {
@@ -27,7 +31,7 @@ export const errorMiddleware = (
 ): void => {
   let statusCode = 500;
   let message = 'Internal Server Error';
-  let details: any = undefined;
+  let details: ErrorDetails | undefined = undefined;
 
   // Handle different error types
   if (error instanceof ApiError) {
@@ -48,7 +52,7 @@ export const errorMiddleware = (
     statusCode = 400;
     message = 'Database validation error';
     details = {
-      errors: (error as any).errors?.map((err: any) => ({
+      errors: (error as SequelizeError).errors?.map((err) => ({
         field: err.path,
         message: err.message,
         value: err.value,
@@ -57,8 +61,9 @@ export const errorMiddleware = (
   } else if (error.name === 'SequelizeUniqueConstraintError') {
     statusCode = 409;
     message = 'Resource already exists';
+    const sequelizeError = error as SequelizeError;
     details = {
-      fields: (error as any).fields,
+      fields: Object.keys(sequelizeError.fields || {}),
     };
   } else if (error.name === 'SequelizeForeignKeyConstraintError') {
     statusCode = 400;
@@ -71,9 +76,9 @@ export const errorMiddleware = (
     message = 'Token expired';
   } else if (error.name === 'MulterError') {
     statusCode = 400;
-    if ((error as any).code === 'LIMIT_FILE_SIZE') {
+    if ((error as MulterError).code === 'LIMIT_FILE_SIZE') {
       message = 'File too large';
-    } else if ((error as any).code === 'LIMIT_FILE_COUNT') {
+    } else if ((error as MulterError).code === 'LIMIT_FILE_COUNT') {
       message = 'Too many files';
     } else {
       message = 'File upload error';
@@ -107,7 +112,7 @@ export const errorMiddleware = (
   }
 
   // Send error response
-  const response: any = {
+  const response: ApiErrorResponse = {
     success: false,
     error: message,
     ...(details && { details }),

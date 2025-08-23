@@ -7,7 +7,7 @@ import { Chat } from '../../models/Chat';
 import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
 import { aiService } from './AIService';
-import { sequelize } from '../../config/database';
+// import { sequelize } from '../../config/database';
 
 export interface Prediction {
   type: 'success' | 'churn' | 'engagement' | 'goal_completion' | 'habit_formation';
@@ -80,7 +80,7 @@ export class PredictiveAnalytics {
       }
 
       // Incomplete tasks
-      const incompletionRate = userData.tasks.filter(t => t.status !== 'completed').length / 
+      const incompletionRate = userData.tasks.filter((t: any) => t.status !== 'completed').length / 
                               Math.max(1, userData.tasks.length);
       if (incompletionRate > 0.7) {
         indicators.push('High task incompletion rate');
@@ -100,7 +100,7 @@ export class PredictiveAnalytics {
       }
 
       // No recent goals
-      const recentGoals = userData.goals.filter(g => 
+      const recentGoals = userData.goals.filter((g: any) => 
         new Date(g.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
       );
       if (recentGoals.length === 0) {
@@ -319,7 +319,7 @@ export class PredictiveAnalytics {
     }
 
     // Progress rate
-    const completedGoals = userData.goals.filter(g => g.status === 'completed');
+    const completedGoals = userData.goals.filter((g: any) => g.status === 'completed');
     indicators.progressRate = userData.goals.length > 0 ? 
       completedGoals.length / userData.goals.length : 0;
 
@@ -356,8 +356,8 @@ export class PredictiveAnalytics {
     probability += indicators.resilience * 0.1;
 
     // Adjust for patterns
-    const positivePatterns = patterns.filter(p => p.impact === 'positive');
-    const negativePatterns = patterns.filter(p => p.impact === 'negative');
+    const positivePatterns = patterns.filter((p: BehaviorPattern) => p.impact === 'positive');
+    const negativePatterns = patterns.filter((p: BehaviorPattern) => p.impact === 'negative');
     
     probability += positivePatterns.length * 0.05;
     probability -= negativePatterns.length * 0.05;
@@ -397,10 +397,10 @@ export class PredictiveAnalytics {
   }
 
   private calculateEngagementMetrics(userData: any): any {
-    const recentTasks = userData.tasks.filter(t => 
+    const recentTasks = userData.tasks.filter((t: any) => 
       new Date(t.createdAt) > new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
     );
-    const olderTasks = userData.tasks.filter(t => 
+    const olderTasks = userData.tasks.filter((t: any) => 
       new Date(t.createdAt) <= new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) &&
       new Date(t.createdAt) > new Date(Date.now() - 28 * 24 * 60 * 60 * 1000)
     );
@@ -434,7 +434,7 @@ export class PredictiveAnalytics {
   private generateMitigationStrategies(
     indicators: string[],
     severity: 'low' | 'medium' | 'high',
-    userData: any
+    _userData: any
   ): string[] {
     const strategies = [];
 
@@ -477,7 +477,7 @@ export class PredictiveAnalytics {
       const weekStart = new Date(Date.now() - (i + 1) * 7 * 24 * 60 * 60 * 1000);
       const weekEnd = new Date(Date.now() - i * 7 * 24 * 60 * 60 * 1000);
       
-      const weekTasks = tasks.filter(t => 
+      const weekTasks = tasks.filter((t: any) => 
         new Date(t.createdAt) >= weekStart && 
         new Date(t.createdAt) < weekEnd &&
         t.status === 'completed'
@@ -491,14 +491,14 @@ export class PredictiveAnalytics {
     
     // Estimate progress per week (assuming each task contributes equally)
     const progressPerTask = goal.progress / Math.max(1, 
-      tasks.filter(t => t.status === 'completed').length
+      tasks.filter((t: any) => t.status === 'completed').length
     );
     
     return avgProgress * progressPerTask;
   }
 
   private analyzeCompletionPatterns(tasks: Task[]): any {
-    const completedTasks = tasks.filter(t => t.status === 'completed');
+    const completedTasks = tasks.filter((t: any) => t.status === 'completed');
     const totalTasks = tasks.length;
 
     const consistency = totalTasks > 0 ? completedTasks.length / totalTasks : 0;
@@ -547,7 +547,7 @@ export class PredictiveAnalytics {
     if (goal.progress > 60) {
       accelerators.push('Already past the halfway point - momentum advantage');
     }
-    if (tasks.filter(t => t.priority === 'high' && t.status === 'completed').length > 3) {
+    if (tasks.filter((t: any) => t.priority === 'high' && t.status === 'completed').length > 3) {
       accelerators.push('Successfully completing high-priority tasks');
     }
 
@@ -570,7 +570,7 @@ export class PredictiveAnalytics {
     const prompt = `Analyze this goal and identify obstacles and accelerators:
 Goal: ${goal.title}
 Progress: ${goal.progress}%
-Tasks completed: ${tasks.filter(t => t.status === 'completed').length}/${tasks.length}
+Tasks completed: ${tasks.filter((t: any) => t.status === 'completed').length}/${tasks.length}
 
 Provide JSON with:
 - obstacles: array of 2-3 specific obstacles
@@ -598,7 +598,7 @@ Provide JSON with:
   }
 
   private analyzeTaskPatterns(tasks: Task[]): BehaviorPattern {
-    const completedTasks = tasks.filter(t => t.status === 'completed');
+    const completedTasks = tasks.filter((t: any) => t.status === 'completed');
     const frequency = tasks.length > 0 ? completedTasks.length / tasks.length : 0;
 
     // Analyze trend
@@ -642,9 +642,9 @@ Provide JSON with:
     }
 
     // Calculate average mood
-    const moodValues = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1 };
+    const moodValues: Record<string, number> = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1 };
     const avgMood = moods.reduce((sum, m) => 
-      sum + (moodValues[m.mood] || 3), 0
+      sum + (moodValues[m.mood as string] || 3), 0
     ) / moods.length;
 
     const frequency = Math.min(1, moods.length / 30); // Expecting daily tracking
@@ -654,11 +654,11 @@ Provide JSON with:
     const olderMoods = moods.slice(7, 14);
     
     const recentAvg = recentMoods.reduce((sum, m) => 
-      sum + (moodValues[m.mood] || 3), 0
+      sum + (moodValues[m.mood as string] || 3), 0
     ) / Math.max(1, recentMoods.length);
     
     const olderAvg = olderMoods.reduce((sum, m) => 
-      sum + (moodValues[m.mood] || 3), 0
+      sum + (moodValues[m.mood as string] || 3), 0
     ) / Math.max(1, olderMoods.length);
 
     let trend: 'increasing' | 'stable' | 'decreasing' = 'stable';
@@ -681,7 +681,7 @@ Provide JSON with:
     };
   }
 
-  private async analyzeEngagementPatterns(userId: string): Promise<BehaviorPattern> {
+  private async analyzeEngagementPatterns(_userId: string): Promise<BehaviorPattern> {
     // This would analyze chat messages, session duration, etc.
     // Simplified for now
     return {
@@ -694,8 +694,8 @@ Provide JSON with:
   }
 
   private analyzeGoalPatterns(goals: Goal[]): BehaviorPattern {
-    const completedGoals = goals.filter(g => g.status === 'completed');
-    const activeGoals = goals.filter(g => g.status === 'in_progress');
+    const completedGoals = goals.filter((g: any) => g.status === 'completed');
+    const activeGoals = goals.filter((g: any) => g.status === 'in_progress');
     
     const completionRate = goals.length > 0 ? completedGoals.length / goals.length : 0;
     const frequency = Math.min(1, goals.length / 12); // Expecting monthly goals
@@ -705,7 +705,7 @@ Provide JSON with:
     const diversity = goalTypes.size / Math.max(1, goals.length);
 
     let trend: 'increasing' | 'stable' | 'decreasing' = 'stable';
-    const recentGoals = goals.filter(g => 
+    const recentGoals = goals.filter((g: any) => 
       new Date(g.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     );
     if (recentGoals.length > goals.length / 4) trend = 'increasing';
@@ -730,7 +730,7 @@ Provide JSON with:
   private async analyzeTimePatterns(userData: any): Promise<BehaviorPattern> {
     // Analyze when user is most active
     const taskTimes = userData.tasks.map((t: any) => new Date(t.createdAt).getHours());
-    const hourCounts = taskTimes.reduce((acc: any, hour) => {
+    const hourCounts = taskTimes.reduce((acc: any, hour: number) => {
       acc[hour] = (acc[hour] || 0) + 1;
       return acc;
     }, {} as Record<number, number>);
@@ -755,12 +755,12 @@ Provide JSON with:
   private calculateMoodTrend(moods: Mood[]): number {
     if (moods.length < 2) return 0;
 
-    const moodValues = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1 };
+    const moodValues: Record<string, number> = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1 };
     
     // Simple linear regression
     const points = moods.map((m, i) => ({
       x: i,
-      y: moodValues[m.mood] || 3
+      y: moodValues[m.mood as string] || 3
     }));
 
     const n = points.length;
@@ -791,8 +791,8 @@ Provide JSON with:
     let resilienceScore = 0.5;
 
     // Check if user continues after incomplete tasks
-    const incompleteTasks = userData.tasks.filter(t => t.status !== 'completed');
-    const tasksAfterIncomplete = userData.tasks.filter((t, i) => 
+    const incompleteTasks = userData.tasks.filter((t: any) => t.status !== 'completed');
+    const tasksAfterIncomplete = userData.tasks.filter((_t: any, i: number) => 
       i > 0 && userData.tasks[i-1].status !== 'completed'
     );
 
@@ -805,7 +805,7 @@ Provide JSON with:
       m.mood === 'stressed' || m.mood === 'sad'
     );
     if (moodDips.length > 0) {
-      const recoveries = moodDips.filter((m, i) => 
+      const recoveries = moodDips.filter((_m: any, i: number) => 
         i < userData.moods.length - 1 && 
         (userData.moods[i+1].mood === 'happy' || userData.moods[i+1].mood === 'content')
       );
@@ -816,7 +816,7 @@ Provide JSON with:
   }
 
   private extractPositiveFactors(
-    userData: any,
+    _userData: any,
     patterns: BehaviorPattern[],
     indicators: any
   ): string[] {
@@ -832,7 +832,7 @@ Provide JSON with:
       factors.push('Excellent resilience and recovery from setbacks');
     }
 
-    const positivePatterns = patterns.filter(p => p.impact === 'positive');
+    const positivePatterns = patterns.filter((p: BehaviorPattern) => p.impact === 'positive');
     positivePatterns.forEach(p => {
       if (p.insights.length > 0) {
         factors.push(p.insights[0]);
@@ -859,7 +859,7 @@ Provide JSON with:
       factors.push('Declining mood patterns');
     }
 
-    const negativePatterns = patterns.filter(p => p.impact === 'negative');
+    const negativePatterns = patterns.filter((p: BehaviorPattern) => p.impact === 'negative');
     negativePatterns.forEach(p => {
       if (p.insights.length > 0) {
         factors.push(p.insights[0]);
@@ -870,7 +870,7 @@ Provide JSON with:
   }
 
   private async generatePersonalizedRecommendations(
-    userData: any,
+    _userData: any,
     patterns: BehaviorPattern[],
     indicators: any,
     probability: number
@@ -896,7 +896,7 @@ Provide JSON with:
     }
 
     // Declining patterns
-    const decliningPatterns = patterns.filter(p => p.trend === 'decreasing');
+    const decliningPatterns = patterns.filter((p: BehaviorPattern) => p.trend === 'decreasing');
     if (decliningPatterns.length > 2) {
       recommendations.push('Schedule a reflection session to reassess priorities');
       recommendations.push('Consider if your goals still align with your values');
@@ -913,7 +913,7 @@ Provide JSON with:
 
   async generateInterventionPlan(
     userId: string,
-    riskType: 'churn' | 'burnout' | 'stagnation'
+    _riskType: 'churn' | 'burnout' | 'stagnation'
   ): Promise<{
     interventions: Array<{
       timing: string;

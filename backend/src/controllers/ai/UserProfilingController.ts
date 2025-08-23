@@ -5,7 +5,7 @@ import { logger } from '../../utils/logger';
 export class UserProfilingController {
   async getProfile(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || req.params.userId;
+      const userId = (req as any).user?.id || req.params.userId;
       
       if (!userId) {
         return res.status(400).json({ error: 'User ID required' });
@@ -13,7 +13,7 @@ export class UserProfilingController {
 
       const profile = await userProfilingService.createOrUpdateProfile(userId);
       
-      res.json({
+      (res as any).json({
         success: true,
         profile: {
           id: profile.id,
@@ -39,7 +39,7 @@ export class UserProfilingController {
 
   async getInsights(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || req.params.userId;
+      const userId = (req as any).user?.id || req.params.userId;
       
       if (!userId) {
         return res.status(400).json({ error: 'User ID required' });
@@ -47,7 +47,7 @@ export class UserProfilingController {
 
       const insights = await userProfilingService.getProfileInsights(userId);
       
-      res.json({
+      (res as any).json({
         success: true,
         insights,
         generatedAt: new Date()
@@ -60,7 +60,7 @@ export class UserProfilingController {
 
   async getRecommendations(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || req.params.userId;
+      const userId = (req as any).user?.id || req.params.userId;
       
       if (!userId) {
         return res.status(400).json({ error: 'User ID required' });
@@ -68,7 +68,7 @@ export class UserProfilingController {
 
       const recommendations = await userProfilingService.getPersonalizedRecommendations(userId);
       
-      res.json({
+      (res as any).json({
         success: true,
         recommendations,
         generatedAt: new Date()
@@ -81,7 +81,7 @@ export class UserProfilingController {
 
   async assessReadiness(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || req.params.userId;
+      const userId = (req as any).user?.id || req.params.userId;
       
       if (!userId) {
         return res.status(400).json({ error: 'User ID required' });
@@ -89,7 +89,7 @@ export class UserProfilingController {
 
       const assessment = await userProfilingService.assessReadinessLevel(userId);
       
-      res.json({
+      (res as any).json({
         success: true,
         assessment,
         assessedAt: new Date()
@@ -102,7 +102,7 @@ export class UserProfilingController {
 
   async updatePreferences(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || req.params.userId;
+      const userId = (req as any).user?.id || req.params.userId;
       
       if (!userId) {
         return res.status(400).json({ error: 'User ID required' });
@@ -128,7 +128,7 @@ export class UserProfilingController {
 
       const profile = await userProfilingService.updateUserPreferences(userId, preferences);
       
-      res.json({
+      (res as any).json({
         success: true,
         message: 'Preferences updated successfully',
         profile: {
@@ -145,7 +145,7 @@ export class UserProfilingController {
 
   async refreshProfile(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || req.params.userId;
+      const userId = (req as any).user?.id || req.params.userId;
       
       if (!userId) {
         return res.status(400).json({ error: 'User ID required' });
@@ -154,7 +154,7 @@ export class UserProfilingController {
       // Force refresh by clearing cache and regenerating
       const profile = await userProfilingService.createOrUpdateProfile(userId);
       
-      res.json({
+      (res as any).json({
         success: true,
         message: 'Profile refreshed successfully',
         profile: {

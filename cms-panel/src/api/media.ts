@@ -111,8 +111,8 @@ export const mediaApi = {
   getMedia: async (params: GetMediaParams = {}): Promise<MediaResponse> => {
     const response = await apiClient.get('/cms/media', { params })
     return {
-      data: response.data,
-      pagination: response.pagination || {
+      data: response.data.data || response.data,
+      pagination: response.data.pagination || {
         currentPage: 1,
         totalPages: 1,
         totalItems: response.data?.length || 0,

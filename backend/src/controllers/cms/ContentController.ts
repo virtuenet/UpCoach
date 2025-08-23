@@ -36,7 +36,7 @@ export class ContentController {
       if (isPremium !== undefined) where.isPremium = isPremium === 'true';
       
       if (search) {
-        where[Op.or] = [
+        where[Op.or as any] = [
           { title: { [Op.iLike]: `%${search}%` } },
           { content: { [Op.iLike]: `%${search}%` } },
           { excerpt: { [Op.iLike]: `%${search}%` } }
@@ -73,7 +73,7 @@ export class ContentController {
         offset
       });
 
-      res.json({
+      (res as any).json({
         contents,
         pagination: {
           page: Number(page),
@@ -128,7 +128,7 @@ export class ContentController {
       // Increment view count
       await content.increment('viewCount');
 
-      res.json(content);
+      (res as any).json(content);
     } catch (error) {
       console.error('Error fetching content:', error);
       res.status(500).json({ error: 'Failed to fetch content' });
@@ -179,7 +179,7 @@ export class ContentController {
         type: type || 'article',
         status: status || 'draft',
         categoryId,
-        authorId: req.user!.id,
+        authorId: (req as any).user!.id,
         featuredImageUrl,
         metaTitle: metaTitle || title,
         metaDescription: metaDescription || excerpt,
@@ -227,7 +227,7 @@ export class ContentController {
       }
 
       // Check permissions
-      if (content.authorId !== req.user!.id && req.user!.role !== 'admin') {
+      if (content.authorId !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
         return res.status(403).json({ error: 'Unauthorized to update this content' });
       }
 
@@ -237,7 +237,7 @@ export class ContentController {
         let slug = baseSlug;
         let counter = 1;
         
-        while (await Content.findOne({ where: { slug, id: { [Op.ne]: id } } })) {
+        while (await Content.findOne({ where: { slug, id: { [Op.ne as any]: id } } })) {
           slug = `${baseSlug}-${counter}`;
           counter++;
         }
@@ -275,7 +275,7 @@ export class ContentController {
         ]
       });
 
-      res.json(updatedContent);
+      (res as any).json(updatedContent);
     } catch (error) {
       console.error('Error updating content:', error);
       res.status(500).json({ error: 'Failed to update content' });
@@ -293,12 +293,12 @@ export class ContentController {
       }
 
       // Check permissions
-      if (content.authorId !== req.user!.id && req.user!.role !== 'admin') {
+      if (content.authorId !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
         return res.status(403).json({ error: 'Unauthorized to delete this content' });
       }
 
       await content.destroy();
-      res.json({ message: 'Content deleted successfully' });
+      (res as any).json({ message: 'Content deleted successfully' });
     } catch (error) {
       console.error('Error deleting content:', error);
       res.status(500).json({ error: 'Failed to delete content' });
@@ -315,12 +315,12 @@ export class ContentController {
       }
 
       // Check permissions
-      if (req.user!.role !== 'admin') {
+      if ((req as any).user!.role !== 'admin') {
         const contents = await Content.findAll({
           where: { id: ids }
         });
         
-        const unauthorized = contents.some(c => c.authorId !== req.user!.id);
+        const unauthorized = contents.some(c => c.authorId !== (req as any).user!.id);
         if (unauthorized) {
           return res.status(403).json({ error: 'Unauthorized to update some content' });
         }
@@ -330,7 +330,7 @@ export class ContentController {
         where: { id: ids }
       });
 
-      res.json({ message: `Updated ${ids.length} content items` });
+      (res as any).json({ message: `Updated ${ids.length} content items` });
     } catch (error) {
       console.error('Error bulk updating content:', error);
       res.status(500).json({ error: 'Failed to bulk update content' });
@@ -360,7 +360,7 @@ export class ContentController {
       // TODO: Add more detailed analytics from content_views table
       // This would include views over time, unique visitors, etc.
 
-      res.json(analytics);
+      (res as any).json(analytics);
     } catch (error) {
       console.error('Error fetching content analytics:', error);
       res.status(500).json({ error: 'Failed to fetch content analytics' });

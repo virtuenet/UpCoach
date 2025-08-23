@@ -48,7 +48,7 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
           });
           toast.success("Successfully logged in!");
-        } catch (error: any) {
+        } catch (error) {
           set({ isLoading: false });
           toast.error(error.message || "Login failed");
           throw error;

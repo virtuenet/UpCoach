@@ -9,7 +9,7 @@ interface PerformanceMetric {
   value: number
   unit: string
   timestamp: Date
-  tags?: Record<string, string>
+  tags?: Record<string, any>
 }
 
 interface RequestMetrics {
@@ -51,7 +51,7 @@ class PerformanceMonitor extends EventEmitter {
   async measure<T>(
     name: string,
     fn: () => Promise<T>,
-    tags?: Record<string, string>
+    tags?: Record<string, any>
   ): Promise<T> {
     const start = performance.now()
     
@@ -84,7 +84,7 @@ class PerformanceMonitor extends EventEmitter {
   }
 
   // Decorator for measuring method performance
-  measureMethod(name?: string, tags?: Record<string, string>) {
+  measureMethod(name?: string, tags?: Record<string, any>) {
     return (target: any, propertyName: string, descriptor: PropertyDescriptor) => {
       const originalMethod = descriptor.value
       const metricName = name || `${target.constructor.name}.${propertyName}`
@@ -438,7 +438,7 @@ class PerformanceMonitor extends EventEmitter {
 export const performanceMonitor = new PerformanceMonitor()
 
 // Export decorators
-export const measure = (name?: string, tags?: Record<string, string>) => {
+export const measure = (name?: string, tags?: Record<string, any>) => {
   return performanceMonitor.measureMethod(name, tags)
 }
 

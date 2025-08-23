@@ -130,7 +130,7 @@ export const performanceMiddleware = (req: Request, res: Response, next: NextFun
     }
 
     // Call original end
-    return originalEnd.apply(res, args);
+    return originalEnd.apply(res, args as [any, BufferEncoding, (() => void)?]);
   };
 
   next();
@@ -161,9 +161,9 @@ export const trackCacheMiss = (cacheType: string) => {
 // Metrics endpoint handler
 export const metricsHandler = async (req: Request, res: Response) => {
   try {
-    res.set('Content-Type', register.contentType);
+    (res as any).set('Content-Type', register.contentType);
     const metrics = await register.metrics();
-    res.send(metrics);
+    (res as any).send(metrics);
   } catch (error) {
     res.status(500).send('Error generating metrics');
   }
@@ -179,11 +179,11 @@ export const healthCheckHandler = (req: Request, res: Response) => {
     cpu: process.cpuUsage(),
   };
   
-  res.json(health);
+  (res as any).json(health);
 };
 
 // Ready check endpoint (for Kubernetes)
-export const readyCheckHandler = async (_req: Request, res: Response) => {
+export const readyCheckHandler = async (req: Request, res: Response) => {
   try {
     // Check database connection
     // const dbHealthy = await checkDatabaseConnection();
@@ -200,7 +200,7 @@ export const readyCheckHandler = async (_req: Request, res: Response) => {
       },
     };
     
-    res.json(ready);
+    (res as any).json(ready);
   } catch (error) {
     res.status(503).json({
       status: 'not ready',

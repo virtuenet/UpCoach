@@ -68,7 +68,7 @@ export class Category extends Model<CategoryAttributes, CategoryCreationAttribut
     let slug = baseSlug;
     let counter = 1;
     
-    while (await Category.findOne({ where: { slug, id: { [Op.ne]: this.id } } })) {
+    while (await Category.findOne({ where: { slug, id: { [Op.ne as any]: this.id } } })) {
       slug = `${baseSlug}-${counter}`;
       counter++;
     }
@@ -218,7 +218,7 @@ export class Category extends Model<CategoryAttributes, CategoryCreationAttribut
     return Category.findAll({
       where: {
         isActive: true,
-        [Op.or]: [
+        [Op.or as any]: [
           { name: { [Op.iLike]: `%${query}%` } },
           { description: { [Op.iLike]: `%${query}%` } },
         ],

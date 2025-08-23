@@ -1,10 +1,10 @@
-import { Request, Response } from 'express';
+// // import { Request, Response } from 'express';
 import { sequelize } from '../../models';
 import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
 import { AppError } from '../../utils/errors';
 import crypto from 'crypto';
-import jwt from 'jsonwebtoken';
+// import jwt from 'jsonwebtoken';
 import { SAML } from '@node-saml/node-saml';
 // @ts-ignore - openid-client types may not be available
 import { Issuer, generators } from 'openid-client';
@@ -121,7 +121,7 @@ export class SSOService {
   async initiateSAMLLogin(configId: number): Promise<string> {
     const saml = await this.getSAMLProvider(configId);
     
-    const loginUrl = await saml.getAuthorizeUrlAsync('', '', '');
+    const loginUrl = await saml.getAuthorizeUrlAsync('', { } as any, {} as any);
     
     logger.info('SAML login initiated', { configId });
     
@@ -378,9 +378,9 @@ export class SSOService {
       const saml = await this.getSAMLProvider(session.sso_configuration_id);
       // @ts-ignore - method name may vary
       if (saml.getLogoutUrlAsync) {
-        return await saml.getLogoutUrlAsync({ nameID: session.idp_session_id });
-      } else if (saml.getLogoutUrl) {
-        return await saml.getLogoutUrl({ nameID: session.idp_session_id });
+        return await saml.getLogoutUrlAsync(session.idp_session_id, {} as any, {} as any);
+      } else if ((saml as any).getLogoutUrl) {
+        return await (saml as any).getLogoutUrl({ nameID: session.idp_session_id });
       }
       return null;
     }
@@ -409,9 +409,9 @@ export class SSOService {
     const user = await User.create({
       email: attributes.email,
       name: attributes.fullName || `${attributes.firstName} ${attributes.lastName}` || attributes.email,
-      password: 'sso-user-no-password', // SSO users don't need passwords
-      emailVerified: true, // SSO users are pre-verified
-    }, { transaction });
+      role: defaultRole || 'user', // Add role field
+      // SSO users are pre-verified
+    } as any, { transaction });
 
     // Add to organization
     await sequelize.query(

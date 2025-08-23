@@ -6,7 +6,7 @@ import { useAuthStore } from './stores/authStore';
 
 // Mock react-router-dom BrowserRouter to avoid conflicts
 vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
+  const actual = await vi.importActual<any>('react-router-dom');
   return {
     ...actual,
     BrowserRouter: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -34,8 +34,8 @@ vi.mock('./pages/DashboardPage', () => ({
 }));
 
 vi.mock('./components/Layout', () => ({
-  default: ({ children }: { children: React.ReactNode }) => {
-    // Mock the Layout component but pass through the children
+  default: () => {
+    // Mock the Layout component
     const { Outlet } = require('react-router-dom');
     return (
       <div data-testid="layout">

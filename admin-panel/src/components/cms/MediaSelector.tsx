@@ -1,3 +1,4 @@
+import Grid from "@mui/material/Grid";
 import React, { useState, useEffect } from "react";
 import {
   X,
@@ -5,7 +6,6 @@ import {
   Image,
   Search,
   FolderOpen,
-  Grid,
   List,
   Check,
   File,

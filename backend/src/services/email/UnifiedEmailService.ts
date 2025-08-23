@@ -46,7 +46,7 @@ export interface EmailMetrics {
 }
 
 export class UnifiedEmailService {
-  private transporter: Transporter;
+  private transporter!: Transporter;
   private templateCache: Map<string, handlebars.TemplateDelegate> = new Map();
   private metrics: EmailMetrics = {
     sent: 0,
@@ -78,7 +78,7 @@ export class UnifiedEmailService {
       },
     };
 
-    this.transporter = nodemailer.createTransporter(config);
+    this.transporter = nodemailer.createTransport(config);
 
     // Verify connection
     this.transporter.verify((error) => {
@@ -114,11 +114,11 @@ export class UnifiedEmailService {
     });
 
     // Conditional helpers
-    handlebars.registerHelper('ifEquals', function(arg1: any, arg2: any, options: any) {
+    handlebars.registerHelper('ifEquals', function(this: any, arg1: any, arg2: any, options: any) {
       return arg1 === arg2 ? options.fn(this) : options.inverse(this);
     });
 
-    handlebars.registerHelper('ifGreaterThan', function(arg1: number, arg2: number, options: any) {
+    handlebars.registerHelper('ifGreaterThan', function(this: any, arg1: number, arg2: number, options: any) {
       return arg1 > arg2 ? options.fn(this) : options.inverse(this);
     });
   }
@@ -411,7 +411,7 @@ export class UnifiedEmailService {
     data?: any
   ): Promise<boolean> {
     // Map triggers to templates
-    const triggerTemplates: Record<string, string> = {
+    const triggerTemplates: Record<string, any> = {
       'goal_completed': 'goal-completion',
       'streak_milestone': 'streak-achievement',
       'subscription_expired': 'subscription-reminder',
@@ -447,7 +447,7 @@ export class UnifiedEmailService {
    * Get automated email subject based on trigger
    */
   private getAutomatedSubject(trigger: string, data?: any): string {
-    const subjects: Record<string, string> = {
+    const subjects: Record<string, any> = {
       'goal_completed': `🎉 Congratulations! You've completed your goal`,
       'streak_milestone': `🔥 Amazing! ${data?.days || 0} day streak`,
       'subscription_expired': 'Your UpCoach subscription has expired',
@@ -490,7 +490,7 @@ export class UnifiedEmailService {
     
     // Store the mapping in cache for reverse lookup
     const trackingData = { email: recipientStr, timestamp, hash };
-    this.cache.set(`email:tracking:${hash}`, trackingData, 86400); // 24 hours TTL
+    this.cache.set(`email:tracking:${hash}`, trackingData, { ttl: 86400 }); // 24 hours TTL
     
     return hash;
   }
@@ -566,7 +566,7 @@ export class UnifiedEmailService {
           logger.warn('Attempted redirect to unauthorized domain:', urlObj.hostname);
           return;
         }
-      } catch (urlError) {
+      } catch (_urlError) {
         logger.warn('Invalid URL provided:', url);
         return;
       }

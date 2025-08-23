@@ -105,7 +105,7 @@ export class Template extends Model<TemplateAttributes, TemplateCreationAttribut
   static async searchTemplates(query: string, category?: string): Promise<Template[]> {
     const whereClause: any = {
       isActive: true,
-      [Op.or]: [
+      [Op.or as any]: [
         { name: { [Op.iLike]: `%${query}%` } },
         { description: { [Op.iLike]: `%${query}%` } },
         { tags: { [Op.overlap]: [query] } },

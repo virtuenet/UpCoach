@@ -20,10 +20,10 @@ export class FinancialDashboardController {
   /**
    * Get dashboard metrics
    */
-  async getDashboardMetrics(_req: Request, res: Response): Promise<void> {
+  async getDashboardMetrics_(req: Request, res: Response): Promise<void> {
     try {
       const metrics = await financialService.getDashboardMetrics();
-      res.json(metrics);
+      (res as any).json(metrics);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
@@ -56,7 +56,7 @@ export class FinancialDashboardController {
       const mrr = await financialService.calculateMRR();
       const arr = await financialService.calculateARR();
 
-      res.json({
+      (res as any).json({
         gross: revenue || 0,
         refunds: refunds || 0,
         net: netRevenue,
@@ -71,7 +71,7 @@ export class FinancialDashboardController {
   /**
    * Get subscription metrics
    */
-  async getSubscriptionMetrics(_req: Request, res: Response): Promise<void> {
+  async getSubscriptionMetrics_(req: Request, res: Response): Promise<void> {
     try {
       const active = await Subscription.count({
         where: { status: ['active', 'trialing'] },
@@ -94,7 +94,7 @@ export class FinancialDashboardController {
         new Date()
       );
 
-      res.json({
+      (res as any).json({
         active,
         new: new_subs,
         churned,
@@ -129,7 +129,7 @@ export class FinancialDashboardController {
 
       const totalCosts = costs.reduce((sum, cost) => sum + parseFloat(cost.getDataValue('total')), 0);
 
-      res.json({
+      (res as any).json({
         total: totalCosts,
         byCategory: costs.reduce((acc, cost) => {
           acc[cost.category] = parseFloat(cost.getDataValue('total'));
@@ -161,7 +161,7 @@ export class FinancialDashboardController {
       }
 
       const pnl = await financialService.getProfitLossStatement(start, end);
-      res.json(pnl);
+      (res as any).json(pnl);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
@@ -170,7 +170,7 @@ export class FinancialDashboardController {
   /**
    * Get MRR metrics
    */
-  async getMRRMetrics(_req: Request, res: Response): Promise<void> {
+  async getMRRMetrics_(req: Request, res: Response): Promise<void> {
     try {
       const currentMRR = await financialService.calculateMRR();
       const lastMonthMRR = await financialService.calculateMRR(endOfMonth(subMonths(new Date(), 1)));
@@ -185,7 +185,7 @@ export class FinancialDashboardController {
         endOfMonth(new Date())
       );
 
-      res.json({
+      (res as any).json({
         current: currentMRR,
         previous: lastMonthMRR,
         growth,
@@ -200,10 +200,10 @@ export class FinancialDashboardController {
   /**
    * Get ARR metrics
    */
-  async getARRMetrics(_req: Request, res: Response): Promise<void> {
+  async getARRMetrics_(req: Request, res: Response): Promise<void> {
     try {
       const arr = await financialService.calculateARR();
-      res.json({ arr });
+      (res as any).json({ arr });
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
@@ -219,7 +219,7 @@ export class FinancialDashboardController {
       const end = endDate ? new Date(endDate as string) : endOfMonth(new Date());
 
       const revenueByPlan = await financialService.getRevenueByPlan(start, end);
-      res.json(revenueByPlan);
+      (res as any).json(revenueByPlan);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
@@ -228,10 +228,10 @@ export class FinancialDashboardController {
   /**
    * Get revenue by country
    */
-  async getRevenueByCountry(_req: Request, res: Response): Promise<void> {
+  async getRevenueByCountry_(req: Request, res: Response): Promise<void> {
     try {
       // TODO: Implement revenue by country logic
-      res.json([]);
+      (res as any).json([]);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
@@ -244,7 +244,7 @@ export class FinancialDashboardController {
     try {
       const { /* months = 6 */ } = req.query;
       // TODO: Implement revenue forecasting logic
-      res.json({
+      (res as any).json({
         forecast: [],
         accuracy: 0,
         confidence: 0,
@@ -273,7 +273,7 @@ export class FinancialDashboardController {
         order: [['createdAt', 'DESC']],
       });
 
-      res.json({
+      (res as any).json({
         subscriptions: rows,
         total: count,
         page: Number(page),
@@ -287,7 +287,7 @@ export class FinancialDashboardController {
   /**
    * Get active subscriptions
    */
-  async getActiveSubscriptions(_req: Request, res: Response): Promise<void> {
+  async getActiveSubscriptions_(req: Request, res: Response): Promise<void> {
     try {
       const subscriptions = await Subscription.findAll({
         where: {
@@ -296,7 +296,7 @@ export class FinancialDashboardController {
         order: [['createdAt', 'DESC']],
       });
 
-      res.json(subscriptions);
+      (res as any).json(subscriptions);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
@@ -322,7 +322,7 @@ export class FinancialDashboardController {
         });
       }
 
-      res.json(churnData);
+      (res as any).json(churnData);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
@@ -331,12 +331,12 @@ export class FinancialDashboardController {
   /**
    * Get LTV analytics
    */
-  async getLTVAnalytics(_req: Request, res: Response): Promise<void> {
+  async getLTVAnalytics_(req: Request, res: Response): Promise<void> {
     try {
       const ltv = await financialService.calculateLTV();
       const arpu = await financialService.calculateARPU();
       
-      res.json({
+      (res as any).json({
         ltv,
         arpu,
         avgLifetimeMonths: 24, // This should be calculated from historical data
@@ -368,7 +368,7 @@ export class FinancialDashboardController {
         order: [['periodStart', 'DESC']],
       });
 
-      res.json({
+      (res as any).json({
         costs: rows,
         total: count,
         page: Number(page),
@@ -404,7 +404,7 @@ export class FinancialDashboardController {
       }
 
       await cost.update(req.body);
-      res.json(cost);
+      (res as any).json(cost);
     } catch (error) {
       res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
@@ -450,7 +450,7 @@ export class FinancialDashboardController {
         group: ['category'],
       });
 
-      res.json(costs);
+      (res as any).json(costs);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
@@ -459,10 +459,10 @@ export class FinancialDashboardController {
   /**
    * Get cost optimization suggestions
    */
-  async getCostOptimizationSuggestions(_req: Request, res: Response): Promise<void> {
+  async getCostOptimizationSuggestions_(req: Request, res: Response): Promise<void> {
     try {
       // TODO: Implement cost optimization logic
-      res.json({
+      (res as any).json({
         suggestions: [],
         potentialSavings: 0,
       });
@@ -489,7 +489,7 @@ export class FinancialDashboardController {
         order: [['date', 'DESC']],
       });
 
-      res.json(snapshots);
+      (res as any).json(snapshots);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
@@ -519,7 +519,7 @@ export class FinancialDashboardController {
         order: [['date', 'DESC']],
       });
 
-      res.json(snapshot);
+      (res as any).json(snapshot);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
@@ -544,7 +544,7 @@ export class FinancialDashboardController {
         order: [['createdAt', 'DESC']],
       });
 
-      res.json({
+      (res as any).json({
         reports: rows,
         total: count,
         page: Number(page),
@@ -579,7 +579,7 @@ export class FinancialDashboardController {
         throw new ApiError(404, 'Report not found');
       }
 
-      res.json(report);
+      (res as any).json(report);
     } catch (error) {
       res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
@@ -633,7 +633,7 @@ export class FinancialDashboardController {
       const { /* months = 12 */ } = req.query;
       
       // TODO: Implement cohort analysis logic
-      res.json({
+      (res as any).json({
         cohorts: [],
       });
     } catch (error) {
@@ -649,7 +649,7 @@ export class FinancialDashboardController {
       const { month } = req.params;
       
       // TODO: Implement cohort details logic
-      res.json({
+      (res as any).json({
         cohort: month,
         data: [],
       });
@@ -661,7 +661,7 @@ export class FinancialDashboardController {
   /**
    * Get unit economics
    */
-  async getUnitEconomics(_req: Request, res: Response): Promise<void> {
+  async getUnitEconomics_(req: Request, res: Response): Promise<void> {
     try {
       const ltv = await financialService.calculateLTV();
       const cac = await financialService.calculateCAC(
@@ -670,7 +670,7 @@ export class FinancialDashboardController {
       );
       const arpu = await financialService.calculateARPU();
 
-      res.json({
+      (res as any).json({
         ltv,
         cac,
         ltvToCacRatio: cac > 0 ? ltv / cac : 0,
@@ -692,7 +692,7 @@ export class FinancialDashboardController {
       const end = endDate ? new Date(endDate as string) : new Date();
 
       const cac = await financialService.calculateCAC(start, end);
-      res.json({ cac });
+      (res as any).json({ cac });
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
@@ -701,7 +701,7 @@ export class FinancialDashboardController {
   /**
    * Get LTV to CAC ratio
    */
-  async getLTVtoCACRatio(_req: Request, res: Response): Promise<void> {
+  async getLTVtoCACRatio_(req: Request, res: Response): Promise<void> {
     try {
       const ltv = await financialService.calculateLTV();
       const cac = await financialService.calculateCAC(
@@ -709,7 +709,7 @@ export class FinancialDashboardController {
         new Date()
       );
 
-      res.json({
+      (res as any).json({
         ltv,
         cac,
         ratio: cac > 0 ? ltv / cac : 0,
@@ -738,7 +738,7 @@ export class FinancialDashboardController {
         order: [['createdAt', 'DESC']],
       });
 
-      res.json({
+      (res as any).json({
         events: rows,
         total: count,
         page: Number(page),
@@ -761,7 +761,7 @@ export class FinancialDashboardController {
         throw new ApiError(404, 'Billing event not found');
       }
 
-      res.json(event);
+      (res as any).json(event);
     } catch (error) {
       res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
@@ -770,7 +770,7 @@ export class FinancialDashboardController {
   /**
    * Get automation status
    */
-  async getAutomationStatus(_req: Request, res: Response): Promise<void> {
+  async getAutomationStatus_(req: Request, res: Response): Promise<void> {
     try {
       const jobs = SchedulerService.getJobStatus();
       const lastReports = await FinancialReport.findAll({
@@ -778,7 +778,7 @@ export class FinancialDashboardController {
         limit: 5,
       });
 
-      res.json({
+      (res as any).json({
         scheduledJobs: jobs,
         recentReports: lastReports,
         emailService: {
@@ -812,7 +812,7 @@ export class FinancialDashboardController {
           throw new ApiError(400, 'Invalid automation type');
       }
 
-      res.json({ 
+      (res as any).json({ 
         success: true, 
         message: `${type} automation triggered successfully` 
       });
@@ -838,7 +838,7 @@ export class FinancialDashboardController {
         text: 'This is a test email to verify email service is working correctly.'
       });
       
-      res.json({ 
+      (res as any).json({ 
         success: true, 
         message: `Test email sent to ${email}` 
       });
@@ -850,10 +850,10 @@ export class FinancialDashboardController {
   /**
    * Get scheduled jobs
    */
-  async getScheduledJobs(_req: Request, res: Response): Promise<void> {
+  async getScheduledJobs_(req: Request, res: Response): Promise<void> {
     try {
       const jobs = SchedulerService.getJobStatus();
-      res.json(jobs);
+      (res as any).json(jobs);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
@@ -866,7 +866,7 @@ export class FinancialDashboardController {
     try {
       const { name } = req.params;
       // Note: This would need to be implemented in SchedulerService
-      res.json({ 
+      (res as any).json({ 
         success: true, 
         message: `Job ${name} start requested` 
       });
@@ -883,7 +883,7 @@ export class FinancialDashboardController {
       const { name } = req.params;
       const stopped = SchedulerService.stopJob(name);
       
-      res.json({ 
+      (res as any).json({ 
         success: stopped, 
         message: stopped ? `Job ${name} stopped` : `Job ${name} not found` 
       });

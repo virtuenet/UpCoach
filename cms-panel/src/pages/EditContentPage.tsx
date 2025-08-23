@@ -6,10 +6,10 @@ import { z } from 'zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Save, ArrowLeft, Eye, Trash2, Archive, Upload, Calendar, Settings } from 'lucide-react'
 import DOMPurify from 'isomorphic-dompurify'
-import { contentApi } from '../api/content'
 import RichTextEditor from '../components/RichTextEditor'
 import LoadingSpinner from '../components/LoadingSpinner'
 import toast from 'react-hot-toast'
+import { contentApi } from '../api/content'
 import { format } from 'date-fns'
 
 const contentSchema = z.object({
@@ -55,27 +55,30 @@ export default function EditContentPage() {
   })
 
   // Fetch article data
-  const { data: article, isLoading: articleLoading, error } = useQuery({
+  const { data: article, isPending: articleLoading, error } = useQuery({
     queryKey: ['article', id],
     queryFn: () => contentApi.getArticle(id!, false),
     enabled: !!id,
-    onSuccess: (data) => {
-      // Populate form with article data
-      reset({
-        title: data.title,
-        excerpt: data.excerpt,
-        content: data.content,
-        categoryId: data.categoryId,
-        tags: data.seoKeywords?.join(', ') || '',
-        status: data.status,
-        featuredImage: data.featuredImage || '',
-        seoTitle: data.seoTitle || '',
-        seoDescription: data.seoDescription || '',
-        allowComments: data.settings?.allowComments ?? true,
-        isFeatured: data.settings?.isFeatured ?? false,
-      })
-    },
   })
+
+  // Populate form with article data when loaded
+  useEffect(() => {
+    if (article) {
+      reset({
+        title: article.title,
+        excerpt: article.excerpt,
+        content: article.content,
+        categoryId: article.categoryId,
+        tags: article.seoKeywords?.join(', ') || '',
+        status: article.status as 'draft' | 'published',
+        featuredImage: article.featuredImage || '',
+        seoTitle: article.seoTitle || '',
+        seoDescription: article.seoDescription || '',
+        allowComments: article.settings?.allowComments ?? true,
+        isFeatured: article.settings?.isFeatured ?? false,
+      })
+    }
+  }, [article, reset])
 
   // Fetch categories
   const { data: categories = [] } = useQuery({
@@ -94,11 +97,11 @@ export default function EditContentPage() {
     mutationFn: (data: any) => contentApi.updateArticle(id!, data),
     onSuccess: () => {
       toast.success('Article updated successfully!')
-      queryClient.invalidateQueries(['article', id])
-      queryClient.invalidateQueries(['articles'])
+      queryClient.invalidateQueries({ queryKey: ['article', id] })
+      queryClient.invalidateQueries({ queryKey: ['articles'] })
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to update article')
+      toast.error(error instanceof Error ? error.message : 'Failed to update article')
     },
   })
 
@@ -106,11 +109,11 @@ export default function EditContentPage() {
     mutationFn: () => contentApi.publishArticle(id!),
     onSuccess: () => {
       toast.success('Article published successfully!')
-      queryClient.invalidateQueries(['article', id])
-      queryClient.invalidateQueries(['articles'])
+      queryClient.invalidateQueries({ queryKey: ['article', id] })
+      queryClient.invalidateQueries({ queryKey: ['articles'] })
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to publish article')
+      toast.error(error instanceof Error ? error.message : 'Failed to publish article')
     },
   })
 
@@ -118,11 +121,11 @@ export default function EditContentPage() {
     mutationFn: () => contentApi.archiveArticle(id!),
     onSuccess: () => {
       toast.success('Article archived successfully!')
-      queryClient.invalidateQueries(['article', id])
-      queryClient.invalidateQueries(['articles'])
+      queryClient.invalidateQueries({ queryKey: ['article', id] })
+      queryClient.invalidateQueries({ queryKey: ['articles'] })
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to archive article')
+      toast.error(error instanceof Error ? error.message : 'Failed to archive article')
     },
   })
 
@@ -133,7 +136,7 @@ export default function EditContentPage() {
       navigate('/content')
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to delete article')
+      toast.error(error instanceof Error ? error.message : 'Failed to delete article')
     },
   })
 
@@ -579,7 +582,7 @@ export default function EditContentPage() {
                       <button
                         type="button"
                         onClick={handleArchive}
-                        disabled={archiveMutation.isLoading}
+                        disabled={archiveMutation.isPending}
                         className="flex items-center px-4 py-2 text-sm font-medium text-orange-700 bg-orange-100 border border-orange-300 rounded-lg hover:bg-orange-200 disabled:opacity-50"
                       >
                         <Archive className="h-4 w-4 mr-2" />
@@ -589,7 +592,7 @@ export default function EditContentPage() {
                     <button
                       type="button"
                       onClick={handleDelete}
-                      disabled={deleteMutation.isLoading}
+                      disabled={deleteMutation.isPending}
                       className="flex items-center px-4 py-2 text-sm font-medium text-red-700 bg-red-100 border border-red-300 rounded-lg hover:bg-red-200 disabled:opacity-50"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
@@ -601,14 +604,13 @@ export default function EditContentPage() {
             )}
 
             {/* Actions */}
-            {activeTab !== 'analytics' && (
-              <div className="flex items-center justify-between pt-6 border-t border-gray-200">
+            <div className="flex items-center justify-between pt-6 border-t border-gray-200">
                 <div className="flex items-center space-x-3">
                   {article.status === 'draft' && (
                     <button
                       type="button"
                       onClick={handlePublish}
-                      disabled={publishMutation.isLoading}
+                      disabled={publishMutation.isPending}
                       className="flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50"
                     >
                       <Upload className="h-4 w-4 mr-2" />
@@ -647,7 +649,6 @@ export default function EditContentPage() {
                   </button>
                 </div>
               </div>
-            )}
           </form>
         )}
       </div>

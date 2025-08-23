@@ -5,11 +5,11 @@ import { validationResult } from 'express-validator';
 
 export class ForumController {
   // Get all forum categories
-  async getCategories(_req: Request, res: Response) {
+  async getCategories_(req: Request, res: Response) {
     try {
       const categories = await forumService.getCategories();
       
-      res.json({
+      (res as any).json({
         success: true,
         data: categories,
       });
@@ -45,7 +45,7 @@ export class ForumController {
         sortBy: sortBy as 'latest' | 'popular' | 'unanswered',
       });
 
-      res.json({
+      (res as any).json({
         success: true,
         data: result.threads,
         pagination: {
@@ -68,7 +68,7 @@ export class ForumController {
   async getThread(req: Request, res: Response) {
     try {
       const { threadId } = req.params;
-      const userId = req.user?.id;
+      const userId = (req as any).user?.id;
 
       const thread = await forumService.getThread(threadId, userId);
 
@@ -79,7 +79,7 @@ export class ForumController {
         });
       }
 
-      res.json({
+      (res as any).json({
         success: true,
         data: thread,
       });
@@ -104,7 +104,7 @@ export class ForumController {
       }
 
       const { categoryId, title, content, tags } = req.body;
-      const userId = req.user!.id;
+      const userId = (req as any).user!.id;
 
       const thread = await forumService.createThread({
         categoryId,
@@ -119,7 +119,7 @@ export class ForumController {
         data: thread,
       });
     } catch (error) {
-      logger.error('Failed to create thread', { error, userId: req.user!.id });
+      logger.error('Failed to create thread', { error, userId: (req as any).user!.id });
       res.status(500).json({
         success: false,
         error: 'Failed to create thread',
@@ -139,7 +139,7 @@ export class ForumController {
       }
 
       const { threadId, content, parentId } = req.body;
-      const userId = req.user!.id;
+      const userId = (req as any).user!.id;
 
       const post = await forumService.createPost({
         threadId,
@@ -153,7 +153,7 @@ export class ForumController {
         data: post,
       });
     } catch (error) {
-      logger.error('Failed to create post', { error, userId: req.user!.id });
+      logger.error('Failed to create post', { error, userId: (req as any).user!.id });
       res.status(500).json({
         success: false,
         error: (error as Error).message || 'Failed to create post',
@@ -166,7 +166,7 @@ export class ForumController {
     try {
       const { postId } = req.params;
       const { voteType } = req.body;
-      const userId = req.user!.id;
+      const userId = (req as any).user!.id;
 
       if (![1, -1].includes(voteType)) {
         return res.status(400).json({
@@ -177,7 +177,7 @@ export class ForumController {
 
       const score = await forumService.votePost(postId, userId, voteType);
 
-      res.json({
+      (res as any).json({
         success: true,
         data: { score },
       });
@@ -195,11 +195,11 @@ export class ForumController {
     try {
       const { postId } = req.params;
       const { content } = req.body;
-      const userId = req.user!.id;
+      const userId = (req as any).user!.id;
 
       const post = await forumService.editPost(postId, userId, content);
 
-      res.json({
+      (res as any).json({
         success: true,
         data: post,
       });
@@ -216,12 +216,12 @@ export class ForumController {
   async deletePost(req: Request, res: Response) {
     try {
       const { postId } = req.params;
-      const userId = req.user!.id;
-      const isAdmin = req.user!.role === 'admin';
+      const userId = (req as any).user!.id;
+      const isAdmin = (req as any).user!.role === 'admin';
 
       await forumService.deletePost(postId, userId, isAdmin);
 
-      res.json({
+      (res as any).json({
         success: true,
         message: 'Post deleted successfully',
       });
@@ -239,11 +239,11 @@ export class ForumController {
   async markAsSolution(req: Request, res: Response) {
     try {
       const { postId } = req.params;
-      const userId = req.user!.id;
+      const userId = (req as any).user!.id;
 
       await forumService.markAsSolution(postId, userId);
 
-      res.json({
+      (res as any).json({
         success: true,
         message: 'Post marked as solution',
       });

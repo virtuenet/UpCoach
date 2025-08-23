@@ -14,7 +14,7 @@ export class CoachContentController {
   // Get coach's content dashboard
   async getDashboard(req: Request, res: Response) {
     try {
-      const coachId = req.user!.id;
+      const coachId = (req as any).user!.id;
 
       // Get coach's content stats
       const [totalArticles, publishedArticles, draftArticles, totalViews] = await Promise.all([
@@ -44,7 +44,7 @@ export class CoachContentController {
         limit: 5,
       });
 
-      res.json({
+      (res as any).json({
         success: true,
         data: {
           stats: {
@@ -69,7 +69,7 @@ export class CoachContentController {
   // Get coach's articles
   async getArticles(req: Request, res: Response) {
     try {
-      const coachId = req.user!.id;
+      const coachId = (req as any).user!.id;
       const { status, search, page = 1, limit = 10 } = req.query;
 
       const where: any = { authorId: coachId };
@@ -79,7 +79,7 @@ export class CoachContentController {
       }
 
       if (search) {
-        where[Op.or] = [
+        where[Op.or as any] = [
           { title: { [Op.iLike]: `%${search}%` } },
           { summary: { [Op.iLike]: `%${search}%` } },
         ];
@@ -97,7 +97,7 @@ export class CoachContentController {
         offset,
       });
 
-      res.json({
+      (res as any).json({
         success: true,
         data: rows,
         pagination: {
@@ -119,7 +119,7 @@ export class CoachContentController {
   // Create new article
   async createArticle(req: Request, res: Response) {
     try {
-      const coachId = req.user!.id;
+      const coachId = (req as any).user!.id;
       const articleData = {
         ...req.body,
         authorId: coachId,
@@ -147,7 +147,7 @@ export class CoachContentController {
   // Update article
   async updateArticle(req: Request, res: Response) {
     try {
-      const coachId = req.user!.id;
+      const coachId = (req as any).user!.id;
       const { id } = req.params;
 
       const article = await ContentArticle.findOne({
@@ -174,7 +174,7 @@ export class CoachContentController {
       // Create version snapshot
       await article.createVersion(Number(coachId), 'Updated by coach');
 
-      res.json({
+      (res as any).json({
         success: true,
         data: article,
       });
@@ -190,7 +190,7 @@ export class CoachContentController {
   // Submit article for review
   async submitForReview(req: Request, res: Response) {
     try {
-      const coachId = req.user!.id;
+      const coachId = (req as any).user!.id;
       const { id } = req.params;
       const { reviewerNotes } = req.body;
 
@@ -230,7 +230,7 @@ export class CoachContentController {
         await article.createVersion(Number(coachId), `Submitted for review: ${reviewerNotes}`);
       }
 
-      res.json({
+      (res as any).json({
         success: true,
         data: article,
         message: 'Article submitted for review successfully',
@@ -247,7 +247,7 @@ export class CoachContentController {
   // Schedule article publishing
   async scheduleArticle(req: Request, res: Response) {
     try {
-      const coachId = req.user!.id;
+      const coachId = (req as any).user!.id;
       const { id } = req.params;
       const { publishDate, options } = req.body;
 
@@ -276,7 +276,7 @@ export class CoachContentController {
         { ...options, createdBy: coachId }
       );
 
-      res.json({
+      (res as any).json({
         success: true,
         data: schedule,
         message: 'Article scheduled successfully',
@@ -293,7 +293,7 @@ export class CoachContentController {
   // Get article analytics
   async getArticleAnalytics(req: Request, res: Response) {
     try {
-      const coachId = req.user!.id;
+      const coachId = (req as any).user!.id;
       const { id } = req.params;
       const {} = req.query;
 
@@ -342,7 +342,7 @@ export class CoachContentController {
         },
       };
 
-      res.json({
+      (res as any).json({
         success: true,
         data: analytics,
       });
@@ -358,7 +358,7 @@ export class CoachContentController {
   // Upload media for articles
   async uploadMedia(req: Request, res: Response) {
     try {
-      const coachId = req.user!.id;
+      const coachId = (req as any).user!.id;
       const { file } = req;
 
       if (!file) {
@@ -382,7 +382,7 @@ export class CoachContentController {
         isPublic: false,
       });
 
-      res.json({
+      (res as any).json({
         success: true,
         data: media,
       });
@@ -398,7 +398,7 @@ export class CoachContentController {
   // Get coach's media library
   async getMediaLibrary(req: Request, res: Response) {
     try {
-      const coachId = req.user!.id;
+      const coachId = (req as any).user!.id;
       const { type, page = 1, limit = 20 } = req.query;
 
       const where: any = { uploadedBy: coachId };
@@ -416,7 +416,7 @@ export class CoachContentController {
         offset,
       });
 
-      res.json({
+      (res as any).json({
         success: true,
         data: rows,
         pagination: {
@@ -436,14 +436,14 @@ export class CoachContentController {
   }
 
   // Get available categories for coaches
-  async getCategories(_req: Request, res: Response) {
+  async getCategories_(req: Request, res: Response) {
     try {
       const categories = await ContentCategory.findAll({
         where: { isActive: true },
         order: [['name', 'ASC']],
       });
 
-      res.json({
+      (res as any).json({
         success: true,
         data: categories,
       });
@@ -459,7 +459,7 @@ export class CoachContentController {
   // Get coach's content performance overview
   async getPerformanceOverview(req: Request, res: Response) {
     try {
-      const coachId = req.user!.id;
+      const coachId = (req as any).user!.id;
       const { period = '30d' } = req.query;
 
       // Calculate date range
@@ -513,7 +513,7 @@ export class CoachContentController {
       const previousViews = previousArticles.reduce((sum, article) => sum + article.viewCount, 0);
       const viewsGrowth = previousViews > 0 ? ((totalViews - previousViews) / previousViews) * 100 : 0;
 
-      res.json({
+      (res as any).json({
         success: true,
         data: {
           period,

@@ -101,10 +101,10 @@ export const SessionWarningModal: React.FC<SessionWarningModalProps> = ({
 
     return () => {
       // Cleanup
-      sessionManager.removeListener('warningShown', handleWarningShown);
-      sessionManager.removeListener('warningHidden', handleWarningHidden);
-      sessionManager.removeListener('sessionExpired', handleSessionExpired);
-      sessionManager.removeListener('sessionExtended', handleSessionExtended);
+      sessionManager.off('warningShown', handleWarningShown);
+      sessionManager.off('warningHidden', handleWarningHidden);
+      sessionManager.off('sessionExpired', handleSessionExpired);
+      sessionManager.off('sessionExtended', handleSessionExtended);
       
       if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current);
@@ -290,9 +290,9 @@ export function useSessionWarning() {
     sessionManager.on('sessionExpired', handleExpired);
     
     return () => {
-      sessionManager.removeListener('warningShown', handleWarning);
-      sessionManager.removeListener('warningHidden', handleHidden);
-      sessionManager.removeListener('sessionExpired', handleExpired);
+      sessionManager.off('warningShown', handleWarning);
+      sessionManager.off('warningHidden', handleHidden);
+      sessionManager.off('sessionExpired', handleExpired);
     };
   }, []);
   

@@ -1,5 +1,6 @@
 // Content Versioning Service
-import { apiClient } from './api'
+import { useState, useEffect } from 'react'
+import { apiClient } from '../api/client'
 
 export interface ContentVersion {
   id: string

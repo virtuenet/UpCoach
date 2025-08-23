@@ -13,15 +13,15 @@ const router = Router();
 // Get user's referral stats
 router.get('/stats', authenticateToken, async (req: Request, res: Response) => {
   try {
-    const userId = req.user!.id;
+    const userId = (req as any).user!.id;
     const stats = await referralService.getUserReferralStats(Number(userId));
 
-    res.json({
+    (res as any).json({
       success: true,
       data: stats,
     });
   } catch (error) {
-    logger.error('Failed to get referral stats', { error, userId: req.user!.id });
+    logger.error('Failed to get referral stats', { error, userId: (req as any).user!.id });
     res.status(500).json({
       success: false,
       error: 'Failed to retrieve referral statistics',
@@ -39,7 +39,7 @@ router.post(
   validateRequest,
   async (req: Request, res: Response) => {
     try {
-      const userId = req.user!.id;
+      const userId = (req as any).user!.id;
       const { programId = 'standard' } = req.body;
 
       const referral = await referralService.createReferralCode(Number(userId), programId);
@@ -59,11 +59,11 @@ router.post(
           shareUrl: `${process.env.FRONTEND_URL}/signup?ref=${referral.code}`,
         },
       });
-    } catch (error: any) {
-      logger.error('Failed to create referral code', { error, userId: req.user!.id });
+    } catch (error) {
+      logger.error('Failed to create referral code', { error, userId: (req as any).user!.id });
       res.status(400).json({
         success: false,
-        error: error.message || 'Failed to create referral code',
+        error: error instanceof Error ? error.message : 'Failed to create referral code',
       });
     }
   }
@@ -92,7 +92,7 @@ router.post(
 
       const isValid = referral.isActive();
       
-      res.json({
+      (res as any).json({
         success: true,
         data: {
           valid: isValid,
@@ -122,7 +122,7 @@ router.post(
   validateRequest,
   async (req: Request, res: Response) => {
     try {
-      const userId = req.user!.id;
+      const userId = (req as any).user!.id;
       const { code } = req.body;
 
       const result = await referralService.applyReferralCode(Number(userId), code);
@@ -134,7 +134,7 @@ router.post(
         });
       }
 
-      res.json({
+      (res as any).json({
         success: true,
         data: {
           discount: result.discount,
@@ -142,7 +142,7 @@ router.post(
         },
       });
     } catch (error) {
-      logger.error('Failed to apply referral code', { error, userId: req.user!.id });
+      logger.error('Failed to apply referral code', { error, userId: (req as any).user!.id });
       res.status(500).json({
         success: false,
         error: 'Failed to apply referral code',
@@ -163,7 +163,7 @@ router.get(
       const period = (req.query.period as 'week' | 'month' | 'all') || 'month';
       const leaderboard = await referralService.getReferralLeaderboard(period);
 
-      res.json({
+      (res as any).json({
         success: true,
         data: {
           period,
@@ -183,10 +183,10 @@ router.get(
 // Get referral history
 router.get('/history', authenticateToken, async (req: Request, res: Response) => {
   try {
-    const userId = req.user!.id;
+    const userId = (req as any).user!.id;
     const stats = await referralService.getUserReferralStats(Number(userId));
 
-    res.json({
+    (res as any).json({
       success: true,
       data: {
         referrals: stats.referrals,
@@ -199,7 +199,7 @@ router.get('/history', authenticateToken, async (req: Request, res: Response) =>
       },
     });
   } catch (error) {
-    logger.error('Failed to get referral history', { error, userId: req.user!.id });
+    logger.error('Failed to get referral history', { error, userId: (req as any).user!.id });
     res.status(500).json({
       success: false,
       error: 'Failed to retrieve referral history',
@@ -236,7 +236,7 @@ router.post(
         },
       });
 
-      res.json({
+      (res as any).json({
         success: true,
       });
     } catch (error) {
@@ -261,7 +261,7 @@ router.post(
   validateRequest,
   async (req: Request, res: Response) => {
     try {
-      const userId = req.user!.id;
+      const userId = (req as any).user!.id;
       const { emails, message } = req.body;
 
       // Get user's active referral code
@@ -283,7 +283,7 @@ router.post(
         recipients: emails.length,
       });
 
-      res.json({
+      (res as any).json({
         success: true,
         data: {
           sent: emails.length,
@@ -291,7 +291,7 @@ router.post(
         },
       });
     } catch (error) {
-      logger.error('Failed to share referral', { error, userId: req.user!.id });
+      logger.error('Failed to share referral', { error, userId: (req as any).user!.id });
       res.status(500).json({
         success: false,
         error: 'Failed to share referral code',
@@ -312,7 +312,7 @@ router.post(
   async (req: Request, res: Response) => {
     try {
       // Check if user is admin
-      if (req.user!.role !== 'admin') {
+      if ((req as any).user!.role !== 'admin') {
         return res.status(403).json({
           success: false,
           error: 'Unauthorized',
@@ -322,7 +322,7 @@ router.post(
       const { refereeId, paymentAmount } = req.body;
       await referralService.processReferrerReward(Number(refereeId), paymentAmount);
 
-      res.json({
+      (res as any).json({
         success: true,
         data: {
           message: 'Referral reward processed successfully',

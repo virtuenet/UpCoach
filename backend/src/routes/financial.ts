@@ -49,7 +49,7 @@ router.post('/webhook/stripe',
         eventType: event.type,
         eventId: event.id 
       });
-    } catch (err) {
+    } catch (_err) {
       logger.error('Webhook signature verification failed', { 
         error: err.message,
         signature: sig.substring(0, 20) + '...' // Log partial signature for debugging
@@ -67,7 +67,7 @@ router.post('/webhook/stripe',
       await stripeWebhookService.handleWebhook(event);
       
       // Return 200 to acknowledge receipt
-      res.json({ 
+      (res as any).json({ 
         received: true,
         eventId: event.id,
         eventType: event.type

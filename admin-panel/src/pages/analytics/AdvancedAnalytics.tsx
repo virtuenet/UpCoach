@@ -1,10 +1,10 @@
+import Grid from "@mui/material/Grid";
 import React, { useState, useEffect } from "react";
 import {
   Box,
   Card,
   CardContent,
   Typography,
-  Grid,
   Button,
   Tab,
   Tabs,
@@ -481,7 +481,7 @@ const AdvancedAnalytics: React.FC = () => {
           </Box>
 
           <Grid container spacing={3}>
-            <Grid item xs={12} md={4}>
+            <Grid xs={12} md={4}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -514,7 +514,7 @@ const AdvancedAnalytics: React.FC = () => {
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={8}>
+            <Grid xs={12} md={8}>
               {selectedFunnel && funnelAnalytics.length > 0 && (
                 <Card>
                   <CardContent>
@@ -622,7 +622,7 @@ const AdvancedAnalytics: React.FC = () => {
                 .sort((a, b) => b.date.localeCompare(a.date))[0];
 
               return (
-                <Grid item xs={12} md={4} key={feature as string}>
+                <Grid xs={12} md={4} key={feature as string}>
                   <Card>
                     <CardContent>
                       <Typography variant="h6">{feature}</Typography>
@@ -682,7 +682,7 @@ const AdvancedAnalytics: React.FC = () => {
           </Box>
 
           <Grid container spacing={3}>
-            <Grid item xs={12}>
+            <Grid xs={12}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -731,7 +731,7 @@ const AdvancedAnalytics: React.FC = () => {
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -761,7 +761,7 @@ const AdvancedAnalytics: React.FC = () => {
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>

@@ -161,7 +161,7 @@ export class Media extends Model<MediaAttributes, MediaCreationAttributes> imple
     const whereClause: any = {};
 
     if (query) {
-      whereClause[Op.or] = [
+      whereClause[Op.or as any] = [
         { originalName: { [Op.iLike]: `%${query}%` } },
         { alt: { [Op.iLike]: `%${query}%` } },
         { caption: { [Op.iLike]: `%${query}%` } },
@@ -211,7 +211,7 @@ export class Media extends Model<MediaAttributes, MediaCreationAttributes> imple
     const result = await Media.findAll({
       attributes: ['folder'],
       where: {
-        folder: { [Op.ne]: null }
+        folder: { [Op.ne as any]: null }
       },
       group: ['folder'],
       raw: true,

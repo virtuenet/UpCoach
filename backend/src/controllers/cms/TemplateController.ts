@@ -40,7 +40,7 @@ export class TemplateController {
       }
 
       if (search) {
-        whereClause[Op.or] = [
+        whereClause[Op.or as any] = [
           { name: { [Op.iLike]: `%${search}%` } },
           { description: { [Op.iLike]: `%${search}%` } },
         ];
@@ -53,12 +53,12 @@ export class TemplateController {
 
       // Filter by ownership and public templates
       if (includePublic === 'true') {
-        whereClause[Op.or] = [
-          { createdById: req.user!.id },
+        whereClause[Op.or as any] = [
+          { createdById: (req as any).user!.id },
           { isPublic: true },
         ];
       } else {
-        whereClause.createdById = req.user!.id;
+        whereClause.createdById = (req as any).user!.id;
       }
 
       const templates = await Template.findAndCountAll({
@@ -68,7 +68,7 @@ export class TemplateController {
         offset,
       });
 
-      res.json({
+      (res as any).json({
         success: true,
         data: templates.rows,
         pagination: {
@@ -97,7 +97,7 @@ export class TemplateController {
 
       const templates = await Template.getPopularTemplates(category as string);
 
-      res.json({
+      (res as any).json({
         success: true,
         data: templates.slice(0, Number(limit)),
       });
@@ -128,7 +128,7 @@ export class TemplateController {
 
       const templates = await Template.searchTemplates(query as string, category as string);
 
-      res.json({
+      (res as any).json({
         success: true,
         data: templates,
       });
@@ -179,7 +179,7 @@ export class TemplateController {
         isActive: true,
         version: '1.0.0',
         tags: tags || [],
-        createdById: req.user!.id,
+        createdById: (req as any).user!.id,
         usage: {
           timesUsed: 0,
           lastUsed: null,
@@ -219,7 +219,7 @@ export class TemplateController {
       }
 
       // Check access permissions
-      if (!template.isPublic && template.createdById !== req.user!.id && req.user!.role !== 'admin') {
+      if (!template.isPublic && template.createdById !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
         res.status(403).json({
           success: false,
           message: 'Access denied to this template',
@@ -227,7 +227,7 @@ export class TemplateController {
         return;
       }
 
-      res.json({
+      (res as any).json({
         success: true,
         data: template,
       });
@@ -267,7 +267,7 @@ export class TemplateController {
       }
 
       // Check permissions
-      if (existingTemplate.createdById !== req.user!.id && req.user!.role !== 'admin') {
+      if (existingTemplate.createdById !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
         res.status(403).json({
           success: false,
           message: 'Not authorized to edit this template',
@@ -286,7 +286,7 @@ export class TemplateController {
         version: '1.0.1', // Increment version on updates
       });
 
-      res.json({
+      (res as any).json({
         success: true,
         data: existingTemplate,
         message: 'Template updated successfully',
@@ -318,7 +318,7 @@ export class TemplateController {
       }
 
       // Check permissions
-      if (template.createdById !== req.user!.id && req.user!.role !== 'admin') {
+      if (template.createdById !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
         res.status(403).json({
           success: false,
           message: 'Not authorized to delete this template',
@@ -329,7 +329,7 @@ export class TemplateController {
       // Soft delete by marking as inactive
       await template.update({ isActive: false });
 
-      res.json({
+      (res as any).json({
         success: true,
         message: 'Template deleted successfully',
       });
@@ -350,7 +350,7 @@ export class TemplateController {
     try {
       const { id } = req.params;
 
-      const duplicated = await Template.duplicateTemplate(id, req.user!.id);
+      const duplicated = await Template.duplicateTemplate(id, (req as any).user!.id);
 
       res.status(201).json({
         success: true,
@@ -385,7 +385,7 @@ export class TemplateController {
       }
 
       // Check access permissions
-      if (!template.isPublic && template.createdById !== req.user!.id && req.user!.role !== 'admin') {
+      if (!template.isPublic && template.createdById !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
         res.status(403).json({
           success: false,
           message: 'Access denied to this template',
@@ -397,7 +397,7 @@ export class TemplateController {
         title,
         customContent,
         autoPublish,
-        userId: req.user!.id,
+        userId: (req as any).user!.id,
       });
 
       res.status(201).json({
@@ -420,9 +420,9 @@ export class TemplateController {
    */
   static async getUserTemplates(req: Request, res: Response): Promise<void> {
     try {
-      const templates = await Template.getTemplatesByUser(req.user!.id);
+      const templates = await Template.getTemplatesByUser((req as any).user!.id);
 
-      res.json({
+      (res as any).json({
         success: true,
         data: templates,
       });
@@ -439,7 +439,7 @@ export class TemplateController {
   /**
    * Get template categories
    */
-  static async getCategories(_req: Request, res: Response): Promise<void> {
+  static async getCategories_(req: Request, res: Response): Promise<void> {
     try {
       const categories = [
         {
@@ -472,7 +472,7 @@ export class TemplateController {
         },
       ];
 
-      res.json({
+      (res as any).json({
         success: true,
         data: categories,
       });
@@ -504,7 +504,7 @@ export class TemplateController {
       }
 
       // Check access permissions
-      if (!template.isPublic && template.createdById !== req.user!.id && req.user!.role !== 'admin') {
+      if (!template.isPublic && template.createdById !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
         res.status(403).json({
           success: false,
           message: 'Access denied to this template',
@@ -523,11 +523,11 @@ export class TemplateController {
       const previewData = await template.createContentFromTemplate({
         title: mockData.title,
         customContent: mockData,
-        userId: req.user!.id,
+        userId: (req as any).user!.id,
         autoPublish: false,
       });
 
-      res.json({
+      (res as any).json({
         success: true,
         data: {
           preview: previewData,
@@ -600,7 +600,7 @@ export class TemplateController {
         ],
       };
 
-      res.json({
+      (res as any).json({
         success: true,
         data: suggestions[category as keyof typeof suggestions] || [],
       });

@@ -10,8 +10,7 @@ import {
   UpdatedAt,
 } from 'sequelize-typescript';
 import { Op } from 'sequelize';
-import { makeCompatible, UserModel } from './ModelCompatibility';
-const User = makeCompatible(UserModel);
+import { UserModel as User } from './ModelCompatibility';
 import { AIFeedback } from './AIFeedback';
 
 @Table({
@@ -84,7 +83,7 @@ export class AIInteraction extends Model {
   })
   metadata?: any;
 
-  @HasMany(() => AIFeedback)
+  @HasMany(() => AIFeedback as any)
   feedback?: AIFeedback[];
 
   @CreatedAt

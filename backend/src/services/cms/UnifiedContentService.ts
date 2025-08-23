@@ -16,7 +16,7 @@ import {
 import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
 import { getCacheService } from '../cache/UnifiedCacheService';
-import { getEmailService } from '../email/UnifiedEmailService';
+import emailService from '../email/UnifiedEmailService';
 import cron from 'node-cron';
 import { sequelize } from '../../models';
 
@@ -366,7 +366,7 @@ export class UnifiedContentService {
         } catch (error) {
           logger.error('Failed to publish scheduled content', {
             contentId: content.id,
-            error: error.message,
+            error: (error as Error).message,
           });
         }
       }
@@ -412,12 +412,12 @@ export class UnifiedContentService {
     const where: WhereOptions = {};
 
     if (filter.type) {
-      where.type = Array.isArray(filter.type) ? { [Op.in]: filter.type } : filter.type;
+      where.type = Array.isArray(filter.type) ? { [Op.in as any]: filter.type } : filter.type;
     }
 
     if (filter.status) {
       where.status = Array.isArray(filter.status)
-        ? { [Op.in]: filter.status }
+        ? { [Op.in as any]: filter.status }
         : filter.status;
     }
 
@@ -427,7 +427,7 @@ export class UnifiedContentService {
     if (filter.isPrivate !== undefined) where.isPrivate = filter.isPrivate;
 
     if (filter.search) {
-      where[Op.or] = [
+      where[Op.or as any] = [
         { title: { [Op.iLike]: `%${filter.search}%` } },
         { content: { [Op.iLike]: `%${filter.search}%` } },
         { excerpt: { [Op.iLike]: `%${filter.search}%` } },
@@ -489,9 +489,9 @@ export class UnifiedContentService {
     // Find content with similar tags or in same category
     const related = await UnifiedContent.findAll({
       where: {
-        id: { [Op.ne]: contentId },
+        id: { [Op.ne as any]: contentId },
         status: 'published',
-        [Op.or]: [
+        [Op.or as any]: [
           { categoryId: content.categoryId },
           { type: content.type },
         ],
@@ -584,14 +584,14 @@ export class UnifiedContentService {
     // Calculate average read time from view interactions
     const viewsWithDuration = views.filter(v => v.metadata?.duration);
     const avgReadTime = viewsWithDuration.length > 0
-      ? viewsWithDuration.reduce((sum, v) => sum + (v.metadata.duration || 0), 0) / viewsWithDuration.length
+      ? viewsWithDuration.reduce((sum, v) => sum + (v.metadata?.duration || 0), 0) / viewsWithDuration.length
       : 0;
 
     // Calculate completion rate (views with duration > 80% of estimated reading time)
     const content = await UnifiedContent.findByPk(contentId);
     const estimatedReadTime = content?.readingTime || 5;
     const completedViews = viewsWithDuration.filter(
-      v => (v.metadata.duration || 0) > estimatedReadTime * 60 * 0.8
+      v => (v.metadata?.duration || 0) > estimatedReadTime * 60 * 0.8
     ).length;
     const completionRate = viewsWithDuration.length > 0
       ? (completedViews / viewsWithDuration.length) * 100
@@ -740,7 +740,7 @@ export class UnifiedContentService {
     if (!content) return;
 
     const tags = await UnifiedTag.findAll({
-      where: { id: { [Op.in]: tagIds } },
+      where: { id: { [Op.in as any]: tagIds } },
       transaction,
     });
 
@@ -769,7 +769,7 @@ export class UnifiedContentService {
 
     // Get current tags
     const currentTags = content.tags || [];
-    const currentTagIds = currentTags.map(t => t.id);
+    // const currentTagIds = currentTags.map(t => t.id);
 
     // Find tags to remove
     const tagsToRemove = currentTags.filter(t => !tagIds.includes(t.id));
@@ -793,7 +793,7 @@ export class UnifiedContentService {
     await UnifiedMedia.update(
       { contentId },
       {
-        where: { id: { [Op.in]: mediaIds } },
+        where: { id: { [Op.in as any]: mediaIds } },
         transaction,
       }
     );
@@ -809,7 +809,7 @@ export class UnifiedContentService {
   ): Promise<void> {
     // Remove old associations
     await UnifiedMedia.update(
-      { contentId: null },
+      { contentId: null } as any,
       {
         where: { contentId },
         transaction,

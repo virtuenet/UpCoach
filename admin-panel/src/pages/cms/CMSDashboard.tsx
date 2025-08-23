@@ -1,9 +1,9 @@
+import Grid from "@mui/material/Grid";
 import React, { useEffect, useState } from "react";
 import {
   Box,
   Card,
   CardContent,
-  Grid,
   Typography,
   Button,
   IconButton,
@@ -174,7 +174,7 @@ const CMSDashboard: React.FC = () => {
 
       {/* Stats Overview */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={2}>
+        <Grid xs={12} sm={6} md={2}>
           <StatCard
             title="Total Articles"
             value={stats?.totalArticles || 0}
@@ -182,7 +182,7 @@ const CMSDashboard: React.FC = () => {
             color="primary"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={2}>
+        <Grid xs={12} sm={6} md={2}>
           <StatCard
             title="Published"
             value={stats?.publishedArticles || 0}
@@ -190,7 +190,7 @@ const CMSDashboard: React.FC = () => {
             color="success"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={2}>
+        <Grid xs={12} sm={6} md={2}>
           <StatCard
             title="Drafts"
             value={stats?.draftArticles || 0}
@@ -198,7 +198,7 @@ const CMSDashboard: React.FC = () => {
             color="warning"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={2}>
+        <Grid xs={12} sm={6} md={2}>
           <StatCard
             title="Total Views"
             value={stats?.totalViews || 0}
@@ -206,7 +206,7 @@ const CMSDashboard: React.FC = () => {
             color="info"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={2}>
+        <Grid xs={12} sm={6} md={2}>
           <StatCard
             title="Categories"
             value={stats?.totalCategories || 0}
@@ -214,7 +214,7 @@ const CMSDashboard: React.FC = () => {
             color="secondary"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={2}>
+        <Grid xs={12} sm={6} md={2}>
           <StatCard
             title="Scheduled"
             value={stats?.scheduledPosts || 0}
@@ -226,7 +226,7 @@ const CMSDashboard: React.FC = () => {
 
       {/* Quick Actions */}
       <Grid container spacing={2} sx={{ mb: 4 }}>
-        <Grid item>
+        <Grid>
           <Button
             variant="outlined"
             startIcon={<CategoryIcon />}
@@ -235,7 +235,7 @@ const CMSDashboard: React.FC = () => {
             Manage Categories
           </Button>
         </Grid>
-        <Grid item>
+        <Grid>
           <Button
             variant="outlined"
             startIcon={<UploadIcon />}
@@ -244,7 +244,7 @@ const CMSDashboard: React.FC = () => {
             Media Library
           </Button>
         </Grid>
-        <Grid item>
+        <Grid>
           <Button
             variant="outlined"
             startIcon={<ScheduleIcon />}
@@ -253,7 +253,7 @@ const CMSDashboard: React.FC = () => {
             Content Calendar
           </Button>
         </Grid>
-        <Grid item>
+        <Grid>
           <Button
             variant="outlined"
             startIcon={<AnalyticsIcon />}

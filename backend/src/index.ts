@@ -3,7 +3,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
-import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { config } from './config/environment';
 import { initializeDatabase } from './config/database';
@@ -14,6 +13,8 @@ import { notFoundHandler } from './middleware/notFoundHandler';
 import { logger } from './utils/logger';
 import { SchedulerService } from './services/SchedulerService';
 import { gracefulShutdown } from './utils/shutdown';
+import { apiLimiter, webhookLimiter } from './middleware/rateLimiter';
+import { enhancedSecurityHeaders } from './middleware/securityNonce';
 
 // Extend Express Request interface
 declare global {
@@ -34,18 +35,15 @@ const PORT = config.port;
 // Trust proxy (important for rate limiting behind reverse proxy)
 app.set('trust proxy', 1);
 
-// Security middleware
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-    },
-  },
-  crossOriginEmbedderPolicy: false,
-}));
+// Enhanced security headers with nonce-based CSP
+const isDevelopment = process.env.NODE_ENV === 'development';
+app.use(enhancedSecurityHeaders(isDevelopment));
+
+// Apply general rate limiting to all API routes
+app.use('/api/', apiLimiter);
+
+// Apply specific rate limiting to webhook endpoints
+app.use('/webhook/', webhookLimiter);
 
 app.use(compression());
 
@@ -157,7 +155,7 @@ app.get('/health', async (_req, res) => {
 
 // API Documentation endpoint
 app.get('/api', (_req, res) => {
-  res.json({
+  (res as any).json({
     name: 'UpCoach Backend API',
     version: '1.0.0',
     description: 'Personal coaching and development platform API',

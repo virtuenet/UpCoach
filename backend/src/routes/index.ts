@@ -72,7 +72,7 @@ export const setupRoutes = (app: Application): void => {
 
   // API info endpoint
   app.get(`${apiPrefix}`, (req, res) => {
-    res.json({
+    (res as any).json({
       name: 'UpCoach Backend API',
       version: '1.0.0',
       description: 'Personal coaching and development platform API',

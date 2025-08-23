@@ -67,7 +67,7 @@ export const authMiddleware = async (
       return;
     }
     
-    req.user = {
+    (req as any).user = {
       id: decoded.id,
       email: decoded.email,
       role: decoded.role,
@@ -109,7 +109,7 @@ export const adminMiddleware = (
   res: Response,
   next: NextFunction
 ): void => {
-  if (!req.user || req.user.role !== 'admin') {
+  if (!(req as any).user || (req as any).user.role !== 'admin') {
     res.status(403).json({
       success: false,
       error: 'Admin access required',
@@ -139,7 +139,7 @@ export const optionalAuthMiddleware = async (
         
         // Validate token structure
         if (decoded.id && decoded.email && decoded.role) {
-          req.user = {
+          (req as any).user = {
             id: decoded.id,
             email: decoded.email,
             role: decoded.role,
@@ -160,7 +160,7 @@ export const requireRole = (roles: string | string[]) => {
   const allowedRoles = Array.isArray(roles) ? roles : [roles];
   
   return (req: Request, res: Response, next: NextFunction): void => {
-    if (!req.user) {
+    if (!(req as any).user) {
       res.status(401).json({
         error: 'Authentication required',
         message: 'Access token required',
@@ -168,7 +168,7 @@ export const requireRole = (roles: string | string[]) => {
       return;
     }
 
-    const userRole = req.user.role || 'user';
+    const userRole = (req as any).user.role || 'user';
     if (!allowedRoles.includes(userRole)) {
       res.status(403).json({
         error: 'Insufficient permissions',
@@ -187,7 +187,7 @@ export const authorizeRoles = requireRole;
 export const requireOwnership = (resourceIdParam: string = 'id') => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      if (!req.user) {
+      if (!(req as any).user) {
         res.status(401).json({
           error: 'Authentication required',
           message: 'Access token required',
@@ -196,10 +196,10 @@ export const requireOwnership = (resourceIdParam: string = 'id') => {
       }
 
       const resourceId = req.params[resourceIdParam];
-      const userId = req.user.id;
+      const userId = (req as any).user.id;
 
       // Admin users can access any resource
-      if (req.user.role === 'admin') {
+      if ((req as any).user.role === 'admin') {
         return next();
       }
 

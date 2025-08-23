@@ -231,7 +231,7 @@ Provide practical strategies and emotional support.`,
 
   private extractContextValue(context: any, variable: string): string {
     // Map variable names to context paths
-    const mappings: Record<string, string> = {
+    const mappings: Record<string, any> = {
       goal_description: 'currentGoal.description',
       current_state: 'currentGoal.currentState',
       timeline: 'currentGoal.timeline',

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import { logger } from '../utils/logger';
+import { nonceMiddleware, enhancedSecurityHeaders } from './securityNonce';
 
 /**
  * Content Security Policy configuration
@@ -9,7 +10,7 @@ const cspConfig = {
   defaultSrc: ["'self'"],
   scriptSrc: [
     "'self'",
-    "'unsafe-inline'", // Required for some inline scripts (should be removed in production)
+    // "'unsafe-inline'" removed for security - using nonces instead
     "https://cdn.jsdelivr.net",
     "https://unpkg.com",
     "https://www.google-analytics.com",
@@ -17,7 +18,7 @@ const cspConfig = {
   ],
   styleSrc: [
     "'self'",
-    "'unsafe-inline'", // Required for inline styles (should be replaced with nonces)
+    // "'unsafe-inline'" removed for security - using nonces instead
     "https://fonts.googleapis.com",
     "https://cdn.jsdelivr.net",
   ],
@@ -107,7 +108,7 @@ export function securityHeaders() {
  * Additional custom security headers
  */
 export function customSecurityHeaders() {
-  return (req: Request, _res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     // Permissions Policy (formerly Feature Policy)
     res.setHeader('Permissions-Policy', [
       'accelerometer=()',
@@ -185,7 +186,7 @@ export function secureCors() {
     );
   }
   
-  return (req: Request, _res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     const origin = req.headers.origin;
     
     if (origin && allowedOrigins.includes(origin)) {
@@ -215,7 +216,7 @@ export function secureCors() {
  * Request ID middleware for tracking
  */
 export function requestId() {
-  return (req: Request, _res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     const id = req.headers['x-request-id'] || 
                req.headers['x-correlation-id'] || 
                `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -231,7 +232,7 @@ export function requestId() {
  * Security monitoring middleware
  */
 export function securityMonitoring() {
-  return (req: Request, _res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     // Log security-relevant events
     const securityEvents = [
       '/api/auth/login',
@@ -249,7 +250,7 @@ export function securityMonitoring() {
         ip: req.ip,
         userAgent: req.headers['user-agent'],
         requestId: req.id,
-        userId: req.user?.id,
+        userId: (req as any).user?.id,
       });
     }
     

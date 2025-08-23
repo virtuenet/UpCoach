@@ -10,7 +10,7 @@ export class GamificationController {
       const userId = (req as any).userId;
       const stats = await gamificationService.getUserStats(userId);
 
-      res.json({
+      (res as any).json({
         success: true,
         data: stats,
       });
@@ -41,7 +41,7 @@ export class GamificationController {
           category
         );
 
-        res.json({
+        (res as any).json({
           success: true,
           data: achievements,
         });
@@ -83,7 +83,7 @@ export class GamificationController {
           }
         );
 
-        res.json({
+        (res as any).json({
           success: true,
           message: 'Achievement claimed successfully',
         });
@@ -112,7 +112,7 @@ export class GamificationController {
         }
       );
 
-      res.json({
+      (res as any).json({
         success: true,
         data: streaks,
       });
@@ -180,7 +180,7 @@ export class GamificationController {
           }
         );
 
-        res.json({
+        (res as any).json({
           success: true,
           data: challenges,
         });
@@ -209,7 +209,7 @@ export class GamificationController {
 
         await gamificationService.joinChallenge(userId, challengeId);
 
-        res.json({
+        (res as any).json({
           success: true,
           message: 'Successfully joined challenge',
         });
@@ -245,7 +245,7 @@ export class GamificationController {
           limit
         );
 
-        res.json({
+        (res as any).json({
           success: true,
           data: leaderboard,
         });
@@ -333,7 +333,7 @@ export class GamificationController {
           }
         );
 
-        res.json({
+        (res as any).json({
           success: true,
           data: items,
           pagination: {
@@ -368,15 +368,15 @@ export class GamificationController {
 
         await gamificationService.purchaseReward(userId, itemId);
 
-        res.json({
+        (res as any).json({
           success: true,
           message: 'Reward purchased successfully',
         });
-      } catch (error: any) {
+      } catch (error) {
         logger.error('Error purchasing reward', { error });
         res.status(400).json({
           success: false,
-          error: error.message || 'Failed to purchase reward',
+          error: error instanceof Error ? error.message : 'Failed to purchase reward',
         });
       }
     },
@@ -407,7 +407,7 @@ export class GamificationController {
         }
       );
 
-      res.json({
+      (res as any).json({
         success: true,
         data: rewards,
       });
@@ -442,7 +442,7 @@ export class GamificationController {
           metadata
         );
 
-        res.json({
+        (res as any).json({
           success: true,
           message: 'Activity tracked successfully',
         });
@@ -476,7 +476,7 @@ export class GamificationController {
           activityDate ? new Date(activityDate) : new Date()
         );
 
-        res.json({
+        (res as any).json({
           success: true,
           message: 'Streak updated successfully',
         });

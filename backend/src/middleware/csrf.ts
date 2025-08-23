@@ -89,7 +89,7 @@ export function csrfProtection(options: CsrfOptions = {}) {
     }
 
     // Skip for API calls with valid JWT (API-to-API communication)
-    if (req.headers.authorization && req.user) {
+    if (req.headers.authorization && (req as any).user) {
       return next();
     }
 
@@ -204,7 +204,7 @@ export function csrfToken(options: CsrfOptions = {}) {
         const token = generateCsrfToken();
         
         // Set cookie with secure options
-        res.cookie(cookieName, token, {
+        (res as any).cookie(cookieName, token, {
           httpOnly: false, // Must be readable by JavaScript
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict',

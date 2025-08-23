@@ -139,7 +139,7 @@ export class AdaptiveLearning {
     bestLearningTimes: string[];
   }> {
     // Analyze historical performance
-    const _performance = await this.getHistoricalPerformance(userId);
+    const performance = await this.getHistoricalPerformance(userId);
     
     // Determine learning style weights
     const learningStyle = this.calculateLearningStyle(profile, performance);
@@ -167,10 +167,10 @@ export class AdaptiveLearning {
 
   private calculateLearningStyle(
     profile: UserProfile,
-    performance: PerformanceMetrics[]
+    _performance: PerformanceMetrics[]
   ): LearningStyle {
     // Base learning style from profile
-    const baseStyle = {
+    const baseStyle: Record<string, number> = {
       visual: 0.25,
       auditory: 0.25,
       kinesthetic: 0.25,
@@ -473,7 +473,7 @@ Ensure progressive difficulty and logical skill building.`;
 
   private async adaptPathToUser(
     basePath: LearningPath,
-    profile: UserProfile,
+    _profile: UserProfile,
     learningAnalysis: any,
     options?: any
   ): Promise<LearningPath> {
@@ -753,7 +753,7 @@ Ensure progressive difficulty and logical skill building.`;
     await this.updatePerformanceMetrics(userId, pathId, progress);
 
     // Check if adaptation is needed
-    const _performance = await this.calculateCurrentPerformance(userId, pathId);
+    const performance = await this.calculateCurrentPerformance(userId, pathId);
     if (this.shouldAdapt(performance)) {
       await this.adaptLearningPath(userId, pathId, performance);
     }
@@ -764,7 +764,7 @@ Ensure progressive difficulty and logical skill building.`;
 
   private async updatePerformanceMetrics(
     userId: string,
-    pathId: string,
+    _pathId: string,
     progress: any
   ): Promise<void> {
     const history = this.performanceHistory.get(userId) || [];
@@ -804,7 +804,7 @@ Ensure progressive difficulty and logical skill building.`;
 
   private async calculateCurrentPerformance(
     userId: string,
-    pathId: string
+    _pathId: string
   ): Promise<PerformanceMetrics> {
     const history = this.performanceHistory.get(userId) || [];
     if (history.length === 0) {
@@ -895,7 +895,7 @@ Ensure progressive difficulty and logical skill building.`;
     return this.performanceHistory.get(userId) || [];
   }
 
-  private async assessCurrentCapabilities(userId: string): Promise<string[]> {
+  private async assessCurrentCapabilities(_userId: string): Promise<string[]> {
     // This would analyze user's completed goals, tasks, and assessments
     // For now, return placeholder capabilities
     return ['basic goal setting', 'habit tracking', 'self-reflection'];
@@ -903,7 +903,7 @@ Ensure progressive difficulty and logical skill building.`;
 
   private determineOptimalDifficulty(
     performance: PerformanceMetrics[],
-    profile: UserProfile
+    _profile: UserProfile
   ): string {
     if (performance.length === 0) return 'beginner';
 
@@ -918,7 +918,7 @@ Ensure progressive difficulty and logical skill building.`;
     profile: UserProfile,
     performance: PerformanceMetrics[]
   ): number {
-    const baseLength = profile?.coachingPreferences.sessionDuration || 30;
+    const baseLength = profile?.coachingPreferences?.sessionDuration || 30;
     
     if (performance.length > 0) {
       const avgTimeSpent = performance.reduce((sum, p) => sum + p.timeSpent, 0) / performance.length;
@@ -931,7 +931,7 @@ Ensure progressive difficulty and logical skill building.`;
   }
 
   private identifyBestLearningTimes(profile: UserProfile): string[] {
-    return profile?.coachingPreferences.preferredTimes || ['morning', 'evening'];
+    return profile?.coachingPreferences?.preferredTimes || ['morning', 'evening'];
   }
 
   private determinePathType(goal: Goal): 'skill' | 'habit' | 'knowledge' | 'wellness' {
@@ -1005,7 +1005,7 @@ Ensure progressive difficulty and logical skill building.`;
     });
   }
 
-  private getDefaultPathStructure(goal: Goal): any {
+  private getDefaultPathStructure(_goal: Goal): any {
     return {
       modules: [
         {
@@ -1058,15 +1058,15 @@ Ensure progressive difficulty and logical skill building.`;
     if (!nextModule) return null;
 
     // Check prerequisites
-    const prereqsMet = nextModule.prerequisites.every(prereqIndex => 
+    const prereqsMet = nextModule.prerequisites.every((prereqIndex: any) => 
       path.modules[prereqIndex]?.completed
     );
 
     if (!prereqsMet) {
       // Find prerequisite module
       for (const prereqIndex of nextModule.prerequisites) {
-        if (!path.modules[prereqIndex]?.completed) {
-          return path.modules[prereqIndex];
+        if (!path.modules[prereqIndex as any]?.completed) {
+          return path.modules[prereqIndex as any];
         }
       }
     }

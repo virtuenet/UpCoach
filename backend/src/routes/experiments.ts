@@ -179,7 +179,7 @@ router.post(
 
 // Health check endpoint
 router.get('/health', (req, res) => {
-  res.json({
+  (res as any).json({
     success: true,
     service: 'ab-testing',
     timestamp: new Date().toISOString(),

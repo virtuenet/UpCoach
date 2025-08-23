@@ -33,7 +33,7 @@ export class ContentCategoryController {
       // Build hierarchical structure
       const rootCategories = categories.filter(cat => !cat.parentId);
 
-      res.json(rootCategories);
+      (res as any).json(rootCategories);
     } catch (error) {
       console.error('Error fetching categories:', error);
       res.status(500).json({ error: 'Failed to fetch categories' });
@@ -74,7 +74,7 @@ export class ContentCategoryController {
         return res.status(404).json({ error: 'Category not found' });
       }
 
-      res.json(category);
+      (res as any).json(category);
     } catch (error) {
       console.error('Error fetching category:', error);
       res.status(500).json({ error: 'Failed to fetch category' });
@@ -142,7 +142,7 @@ export class ContentCategoryController {
         let slug = baseSlug;
         let counter = 1;
         
-        while (await ContentCategory.findOne({ where: { slug, id: { [Op.ne]: id } } })) {
+        while (await ContentCategory.findOne({ where: { slug, id: { [Op.ne as any]: id } } })) {
           slug = `${baseSlug}-${counter}`;
           counter++;
         }
@@ -163,7 +163,7 @@ export class ContentCategoryController {
         ]
       });
 
-      res.json(updatedCategory);
+      (res as any).json(updatedCategory);
     } catch (error) {
       console.error('Error updating category:', error);
       res.status(500).json({ error: 'Failed to update category' });
@@ -197,7 +197,7 @@ export class ContentCategoryController {
       }
 
       await category.destroy();
-      res.json({ message: 'Category deleted successfully' });
+      (res as any).json({ message: 'Category deleted successfully' });
     } catch (error) {
       console.error('Error deleting category:', error);
       res.status(500).json({ error: 'Failed to delete category' });
@@ -221,7 +221,7 @@ export class ContentCategoryController {
         );
       }
 
-      res.json({ message: 'Categories reordered successfully' });
+      (res as any).json({ message: 'Categories reordered successfully' });
     } catch (error) {
       console.error('Error reordering categories:', error);
       res.status(500).json({ error: 'Failed to reorder categories' });
@@ -229,7 +229,7 @@ export class ContentCategoryController {
   }
 
   // Get category content count
-  static async getContentCount(_req: Request, res: Response) {
+  static async getContentCount_(req: Request, res: Response) {
     try {
       const categories = await ContentCategory.findAll({
         attributes: [
@@ -249,7 +249,7 @@ export class ContentCategoryController {
         where: { isActive: true }
       });
 
-      res.json(categories);
+      (res as any).json(categories);
     } catch (error) {
       console.error('Error fetching category content count:', error);
       res.status(500).json({ error: 'Failed to fetch category content count' });

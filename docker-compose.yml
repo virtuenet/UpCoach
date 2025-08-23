@@ -57,8 +57,8 @@ services:
   # Admin Panel
   admin-panel:
     build:
-      context: ./admin-panel
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./admin-panel/Dockerfile
     container_name: upcoach-admin
     environment:
       NODE_ENV: ${NODE_ENV:-development}
@@ -76,8 +76,8 @@ services:
   # CMS Panel
   cms-panel:
     build:
-      context: ./cms-panel
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./cms-panel/Dockerfile
     container_name: upcoach-cms
     environment:
       NODE_ENV: ${NODE_ENV:-development}

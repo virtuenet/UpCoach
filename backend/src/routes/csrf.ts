@@ -13,7 +13,7 @@ router.get('/csrf-token', csrfToken(), async (req: Request, res: Response) => {
     // Generate token using the middleware
     const token = await (req as any).csrfToken();
     
-    res.json({
+    (res as any).json({
       success: true,
       token,
       expiresIn: parseInt(process.env.CSRF_TOKEN_EXPIRY || '3600', 10)

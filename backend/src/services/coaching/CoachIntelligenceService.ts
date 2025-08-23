@@ -523,7 +523,7 @@ export class CoachIntelligenceService {
     const relatedMemories = await CoachMemory.findAll({
       where: {
         userId: context.userId,
-        id: { [Op.ne]: memory.id },
+        id: { [Op.ne as any]: memory.id },
         tags: { [Op.overlap]: memory.tags },
       },
       limit: 5,
@@ -704,12 +704,12 @@ export class CoachIntelligenceService {
     return ['Low engagement', 'Overambitious goals'];
   }
 
-  private calculateDataQualityScore(memories: CoachMemory[], goals: KpiTracker[]): number {
+  private calculateDataQualityScore(_memories: CoachMemory[], _goals: KpiTracker[]): number {
     // TODO: Calculate data quality
     return 0.8;
   }
 
-  private analyzeEmotionalPatterns(memories: CoachMemory[]): any {
+  private analyzeEmotionalPatterns(_memories: CoachMemory[]): any {
     // TODO: Analyze emotional patterns
     return {
       concerningTrends: [],
@@ -717,27 +717,27 @@ export class CoachIntelligenceService {
     };
   }
 
-  private calculateWeeklyGoalProgress(goals: KpiTracker[], weekStart: Date, weekEnd: Date): number {
+  private calculateWeeklyGoalProgress(_goals: KpiTracker[], _weekStart: Date, _weekEnd: Date): number {
     // TODO: Calculate weekly progress
     return 0.7;
   }
 
-  private calculateMoodTrend(memories: CoachMemory[]): string {
+  private calculateMoodTrend(_memories: CoachMemory[]): string {
     // TODO: Calculate mood trend
     return 'improving';
   }
 
-  private extractAchievements(memories: CoachMemory[], goals: KpiTracker[]): string[] {
+  private extractAchievements(_memories: CoachMemory[], _goals: KpiTracker[]): string[] {
     // TODO: Extract achievements
     return ['Completed daily meditation goal', 'Improved time management'];
   }
 
-  private extractChallenges(memories: CoachMemory[], goals: KpiTracker[]): string[] {
+  private extractChallenges(_memories: CoachMemory[], _goals: KpiTracker[]): string[] {
     // TODO: Extract challenges
     return ['Maintaining consistency', 'Balancing multiple priorities'];
   }
 
-  private async generateWeeklyInsights(memories: CoachMemory[], analytics: UserAnalytics | null): Promise<MemoryInsight[]> {
+  private async generateWeeklyInsights(_memories: CoachMemory[], _analytics: UserAnalytics | null): Promise<MemoryInsight[]> {
     // TODO: Generate insights
     return [
       {
@@ -751,7 +751,7 @@ export class CoachIntelligenceService {
     ];
   }
 
-  private generateNextWeekFocus(insights: MemoryInsight[], recommendations: CoachingRecommendation[]): string[] {
+  private generateNextWeekFocus(_insights: MemoryInsight[], _recommendations: CoachingRecommendation[]): string[] {
     // TODO: Generate focus areas
     return ['Maintain current progress', 'Address consistency challenges', 'Explore new goal areas'];
   }

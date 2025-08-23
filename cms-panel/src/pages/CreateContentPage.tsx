@@ -6,10 +6,10 @@ import { z } from 'zod'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { Save, ArrowLeft, Eye, Image, Settings, Calendar } from 'lucide-react'
 import DOMPurify from 'isomorphic-dompurify'
-import { contentApi } from '../api/content'
 import RichTextEditor from '../components/RichTextEditor'
 import LoadingSpinner from '../components/LoadingSpinner'
 import toast from 'react-hot-toast'
+import { contentApi } from '../api/content'
 
 const contentSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters').max(200, 'Title must be less than 200 characters'),
@@ -51,7 +51,7 @@ export default function CreateContentPage() {
   })
 
   // Fetch categories
-  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
+  const { data: categories = [], isPending: categoriesLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: contentApi.getCategories,
   })
@@ -63,7 +63,7 @@ export default function CreateContentPage() {
       navigate(`/content/edit/${data.id}`)
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to create article')
+      toast.error(error instanceof Error ? error.message : 'Failed to create article')
     },
   })
 

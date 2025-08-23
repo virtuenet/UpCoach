@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { FileText, BookOpen, Eye, Users, TrendingUp, Calendar, Target, Award } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { contentApi } from '../api/content'
 import { mediaApi } from '../api/media'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { format, subDays } from 'date-fns'
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { contentApi } from '../api/content'
 
 interface StatCardProps {
   title: string
@@ -127,7 +127,7 @@ const ActivityFeed = ({ activities }: { activities: ActivityItem[] }) => {
 
 export default function DashboardPage() {
   // Fetch dashboard stats
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats, isPending: statsLoading } = useQuery({
     queryKey: ['cms-dashboard-stats'],
     queryFn: async () => {
       // Mock data - in production would fetch from actual API

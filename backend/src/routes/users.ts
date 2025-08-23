@@ -18,14 +18,14 @@ const updateProfileSchema = z.object({
 
 // Get current user profile
 router.get('/profile', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const userProfile = await UserService.getProfile(userId);
   
   if (!userProfile) {
     throw new ApiError(404, 'User profile not found');
   }
 
-  res.json({
+  (res as any).json({
     success: true,
     data: {
       user: userProfile,
@@ -35,7 +35,7 @@ router.get('/profile', asyncHandler(async (req: AuthenticatedRequest, res: Respo
 
 // Update current user profile
 router.put('/profile', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const validatedData = updateProfileSchema.parse(req.body);
 
   const updatedUser = await UserService.update(userId, validatedData);
@@ -46,7 +46,7 @@ router.put('/profile', asyncHandler(async (req: AuthenticatedRequest, res: Respo
 
   logger.info('User profile updated:', { userId });
 
-  res.json({
+  (res as any).json({
     success: true,
     message: 'Profile updated successfully',
     data: {
@@ -57,10 +57,10 @@ router.put('/profile', asyncHandler(async (req: AuthenticatedRequest, res: Respo
 
 // Get user statistics
 router.get('/statistics', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const statistics = await UserService.getUserStatistics(userId);
 
-  res.json({
+  (res as any).json({
     success: true,
     data: {
       statistics,
@@ -70,13 +70,13 @@ router.get('/statistics', asyncHandler(async (req: AuthenticatedRequest, res: Re
 
 // Deactivate current user account
 router.delete('/account', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   
   await UserService.deactivate(userId);
 
   logger.info('User account deactivated:', { userId });
 
-  res.json({
+  (res as any).json({
     success: true,
     message: 'Account deactivated successfully',
   });
@@ -86,7 +86,7 @@ router.delete('/account', asyncHandler(async (req: AuthenticatedRequest, res: Re
 router.get('/all', requireRole(['admin']), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   // This would require implementing a method to list all users
   // For now, we'll return a placeholder
-  res.json({
+  (res as any).json({
     success: true,
     message: 'Admin endpoint - list all users',
     data: {
@@ -110,7 +110,7 @@ router.get('/:id', requireRole(['admin']), asyncHandler(async (req: Authenticate
     throw new ApiError(404, 'User not found');
   }
 
-  res.json({
+  (res as any).json({
     success: true,
     data: {
       user: UserService.toResponseDto(user),
@@ -123,15 +123,15 @@ router.delete('/:id', requireRole(['admin']), asyncHandler(async (req: Authentic
   const { id } = req.params;
   
   // Prevent admin from deactivating themselves
-  if (id === req.user!.id) {
+  if (id === (req as any).user!.id) {
     throw new ApiError(400, 'Cannot deactivate your own account');
   }
 
   await UserService.deactivate(id);
 
-  logger.info('User deactivated by admin:', { userId: id, adminId: req.user!.id });
+  logger.info('User deactivated by admin:', { userId: id, adminId: (req as any).user!.id });
 
-  res.json({
+  (res as any).json({
     success: true,
     message: 'User deactivated successfully',
   });

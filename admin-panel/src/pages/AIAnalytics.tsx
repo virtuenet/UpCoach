@@ -1,9 +1,9 @@
+import Grid from "@mui/material/Grid";
 import React, { useEffect, useState } from "react";
 import {
   Box,
   Card,
   CardContent,
-  Grid,
   Typography,
   LinearProgress,
   Chip,
@@ -150,7 +150,7 @@ const AIAnalytics: React.FC = () => {
 
       {/* Key Metrics */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <StatCard
             title="Total Interactions"
             value={formatNumber(metrics?.totalInteractions || 0)}
@@ -159,7 +159,7 @@ const AIAnalytics: React.FC = () => {
             color="primary"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <StatCard
             title="Active AI Users"
             value={formatNumber(metrics?.activeUsers || 0)}
@@ -168,7 +168,7 @@ const AIAnalytics: React.FC = () => {
             color="secondary"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <StatCard
             title="Avg Response Time"
             value={`${metrics?.avgResponseTime || 0}s`}
@@ -177,7 +177,7 @@ const AIAnalytics: React.FC = () => {
             color="info"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <StatCard
             title="AI Costs (Month)"
             value={formatCurrency(metrics?.tokenUsage.cost || 0)}
@@ -190,7 +190,7 @@ const AIAnalytics: React.FC = () => {
 
       {/* Usage Charts */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={8}>
+        <Grid xs={12} md={8}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -236,7 +236,7 @@ const AIAnalytics: React.FC = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid xs={12} md={4}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -278,7 +278,7 @@ const AIAnalytics: React.FC = () => {
 
       {/* Satisfaction & Performance */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -306,7 +306,7 @@ const AIAnalytics: React.FC = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -406,7 +406,7 @@ const AIAnalytics: React.FC = () => {
               AI Service Cost Breakdown
             </Typography>
             <Grid container spacing={3} sx={{ mt: 1 }}>
-              <Grid item xs={12} md={4}>
+              <Grid xs={12} md={4}>
                 <Box sx={{ textAlign: "center" }}>
                   <Typography variant="h3" color="primary">
                     {formatNumber(metrics?.tokenUsage.total || 0)}
@@ -416,7 +416,7 @@ const AIAnalytics: React.FC = () => {
                   </Typography>
                 </Box>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid xs={12} md={4}>
                 <Box sx={{ textAlign: "center" }}>
                   <Typography variant="h3" color="secondary">
                     {formatCurrency(metrics?.tokenUsage.cost || 0)}
@@ -426,7 +426,7 @@ const AIAnalytics: React.FC = () => {
                   </Typography>
                 </Box>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid xs={12} md={4}>
                 <Box sx={{ textAlign: "center" }}>
                   <Typography variant="h3" color="success.main">
                     $

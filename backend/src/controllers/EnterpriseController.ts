@@ -20,7 +20,7 @@ export class EnterpriseController {
   // Organization Management
   createOrganization = catchAsync(async (req: Request, res: Response) => {
     const { name, website, industry, size, billingEmail } = req.body;
-    const ownerId = req.user!.id;
+    const ownerId = (req as any).user!.id;
 
     const organization = await this.organizationService.createOrganization({
       name,
@@ -46,7 +46,7 @@ export class EnterpriseController {
       updates
     );
 
-    res.json({
+    (res as any).json({
       success: true,
       data: { organization },
     });
@@ -60,7 +60,7 @@ export class EnterpriseController {
       this.organizationService.getOrganizationStats(parseInt(organizationId)),
     ]);
 
-    res.json({
+    (res as any).json({
       success: true,
       data: { organization, stats },
     });
@@ -81,7 +81,7 @@ export class EnterpriseController {
       }
     );
 
-    res.json({
+    (res as any).json({
       success: true,
       data: result,
     });
@@ -90,7 +90,7 @@ export class EnterpriseController {
   inviteMember = catchAsync(async (req: Request, res: Response) => {
     const { organizationId } = req.params;
     const { email, role, teamIds } = req.body;
-    const invitedBy = req.user!.id;
+    const invitedBy = (req as any).user!.id;
 
     const { invitationId, token } = await this.organizationService.inviteMember(
       parseInt(organizationId as string),
@@ -136,11 +136,11 @@ export class EnterpriseController {
 
   acceptInvitation = catchAsync(async (req: Request, res: Response) => {
     const { token } = req.body;
-    const userId = req.user!.id;
+    const userId = (req as any).user!.id;
 
     await this.organizationService.acceptInvitation(token, parseInt(userId as string));
 
-    res.json({
+    (res as any).json({
       success: true,
       message: 'Invitation accepted successfully',
     });
@@ -148,7 +148,7 @@ export class EnterpriseController {
 
   removeMember = catchAsync(async (req: Request, res: Response) => {
     const { organizationId, userId } = req.params;
-    const removedBy = req.user!.id;
+    const removedBy = (req as any).user!.id;
 
     await this.organizationService.removeMember(
       parseInt(organizationId as string),
@@ -156,7 +156,7 @@ export class EnterpriseController {
       parseInt(removedBy as string)
     );
 
-    res.json({
+    (res as any).json({
       success: true,
       message: 'Member removed successfully',
     });
@@ -187,7 +187,7 @@ export class EnterpriseController {
 
     const team = await this.teamService.updateTeam(parseInt(teamId), updates);
 
-    res.json({
+    (res as any).json({
       success: true,
       data: { team },
     });
@@ -200,7 +200,7 @@ export class EnterpriseController {
       parseInt(organizationId)
     );
 
-    res.json({
+    (res as any).json({
       success: true,
       data: { teams },
     });
@@ -209,7 +209,7 @@ export class EnterpriseController {
   addTeamMember = catchAsync(async (req: Request, res: Response) => {
     const { teamId } = req.params;
     const { userId, role } = req.body;
-    const addedBy = req.user!.id;
+    const addedBy = (req as any).user!.id;
 
     await this.teamService.addTeamMember(
       parseInt(teamId as string),
@@ -218,7 +218,7 @@ export class EnterpriseController {
       parseInt(addedBy as string)
     );
 
-    res.json({
+    (res as any).json({
       success: true,
       message: 'Team member added successfully',
     });
@@ -232,7 +232,7 @@ export class EnterpriseController {
       parseInt(userId)
     );
 
-    res.json({
+    (res as any).json({
       success: true,
       message: 'Team member removed successfully',
     });
@@ -264,7 +264,7 @@ export class EnterpriseController {
       parseInt(organizationId)
     );
 
-    res.json({
+    (res as any).json({
       success: true,
       data: { providers },
     });
@@ -276,7 +276,7 @@ export class EnterpriseController {
 
     await this.ssoService.updateSSOConfiguration(parseInt(configId), updates);
 
-    res.json({
+    (res as any).json({
       success: true,
       message: 'SSO configuration updated successfully',
     });
@@ -342,14 +342,14 @@ export class EnterpriseController {
       const logoutUrl = await this.ssoService.initiateSSOLogout(sessionId);
       
       if (logoutUrl) {
-        return res.json({
+        return (res as any).json({
           success: true,
           data: { logoutUrl },
         });
       }
     }
 
-    res.json({
+    (res as any).json({
       success: true,
       message: 'Logged out successfully',
     });
@@ -359,7 +359,7 @@ export class EnterpriseController {
   createPolicy = catchAsync(async (req: Request, res: Response) => {
     const { organizationId } = req.params;
     const { name, type, rules, enforcementLevel, appliesTo } = req.body;
-    const createdBy = req.user!.id;
+    const createdBy = (req as any).user!.id;
 
     const policy = await this.teamService.createPolicy({
       organizationId: parseInt(organizationId),
@@ -384,7 +384,7 @@ export class EnterpriseController {
       parseInt(organizationId)
     );
 
-    res.json({
+    (res as any).json({
       success: true,
       data: { policies },
     });
@@ -407,7 +407,7 @@ export class EnterpriseController {
       }
     );
 
-    res.json({
+    (res as any).json({
       success: true,
       data: logs,
     });

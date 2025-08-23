@@ -493,7 +493,7 @@ class ContentPersonalizer {
   }
 
   private replaceMergeTags(text: string, user: User): string {
-    const tags: Record<string, string> = {
+    const tags: Record<string, any> = {
       '{first_name}': user.name.split(' ')[0],
       '{name}': user.name,
       '{email}': user.email,

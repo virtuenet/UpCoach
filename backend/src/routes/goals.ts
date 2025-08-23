@@ -67,7 +67,7 @@ const goalFiltersSchema = z.object({
 
 // Get all goals for the current user
 router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const filters = goalFiltersSchema.parse(req.query);
 
   // Build query
@@ -160,7 +160,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) =>
   const total = parseInt(countResult.rows[0].count);
   const totalPages = Math.ceil(total / filters.limit);
 
-  res.json({
+  (res as any).json({
     success: true,
     data: {
       goals: result.rows,
@@ -176,7 +176,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) =>
 
 // Get a single goal by ID with milestones
 router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const { id } = req.params;
 
   const goal = await db.findOne('goals', { id, user_id: userId });
@@ -193,7 +193,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response)
     ORDER BY sort_order ASC, created_at ASC
   `, [id]);
 
-  res.json({
+  (res as any).json({
     success: true,
     data: {
       goal: {
@@ -206,7 +206,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response)
 
 // Create a new goal
 router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const validatedData = createGoalSchema.parse(req.body);
 
   const goalData = {
@@ -235,7 +235,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) =
 
 // Update a goal
 router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const { id } = req.params;
   const validatedData = updateGoalSchema.parse(req.body);
 
@@ -272,7 +272,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response)
 
   logger.info('Goal updated:', { goalId: id, userId });
 
-  res.json({
+  (res as any).json({
     success: true,
     message: 'Goal updated successfully',
     data: {
@@ -283,7 +283,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response)
 
 // Delete a goal
 router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const { id } = req.params;
 
   // Check if goal exists and belongs to user
@@ -297,7 +297,7 @@ router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Respon
 
   logger.info('Goal deleted:', { goalId: id, userId });
 
-  res.json({
+  (res as any).json({
     success: true,
     message: 'Goal deleted successfully',
   });
@@ -305,7 +305,7 @@ router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Respon
 
 // Create a milestone for a goal
 router.post('/:id/milestones', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const { id: goalId } = req.params;
   const validatedData = createMilestoneSchema.parse(req.body);
 
@@ -338,7 +338,7 @@ router.post('/:id/milestones', asyncHandler(async (req: AuthenticatedRequest, re
 
 // Update a milestone
 router.put('/:goalId/milestones/:milestoneId', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const { goalId, milestoneId } = req.params;
   const validatedData = updateMilestoneSchema.parse(req.body);
 
@@ -374,7 +374,7 @@ router.put('/:goalId/milestones/:milestoneId', asyncHandler(async (req: Authenti
 
   logger.info('Milestone updated:', { milestoneId, goalId, userId });
 
-  res.json({
+  (res as any).json({
     success: true,
     message: 'Milestone updated successfully',
     data: {
@@ -385,7 +385,7 @@ router.put('/:goalId/milestones/:milestoneId', asyncHandler(async (req: Authenti
 
 // Delete a milestone
 router.delete('/:goalId/milestones/:milestoneId', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const { goalId, milestoneId } = req.params;
 
   // Check if goal exists and belongs to user
@@ -407,7 +407,7 @@ router.delete('/:goalId/milestones/:milestoneId', asyncHandler(async (req: Authe
 
   logger.info('Milestone deleted:', { milestoneId, goalId, userId });
 
-  res.json({
+  (res as any).json({
     success: true,
     message: 'Milestone deleted successfully',
   });
@@ -415,7 +415,7 @@ router.delete('/:goalId/milestones/:milestoneId', asyncHandler(async (req: Authe
 
 // Get goal statistics
 router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
 
   const stats = await db.query(`
     SELECT 
@@ -450,7 +450,7 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, res
     GROUP BY category
   `, [userId]);
 
-  res.json({
+  (res as any).json({
     success: true,
     data: {
       overview: stats.rows[0],

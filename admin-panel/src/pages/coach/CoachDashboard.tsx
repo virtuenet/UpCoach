@@ -1,7 +1,7 @@
+import Grid from "@mui/material/Grid";
 import React, { useState, useEffect } from "react";
 import {
   Box,
-  Grid,
   Card,
   CardContent,
   Typography,
@@ -150,7 +150,7 @@ const CoachDashboard: React.FC = () => {
 
       {/* Stats Overview */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <StatCard
             title="Total Articles"
             value={stats.totalArticles}
@@ -158,7 +158,7 @@ const CoachDashboard: React.FC = () => {
             color="primary"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <StatCard
             title="Published"
             value={stats.publishedArticles}
@@ -166,7 +166,7 @@ const CoachDashboard: React.FC = () => {
             color="success"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <StatCard
             title="Drafts"
             value={stats.draftArticles}
@@ -174,7 +174,7 @@ const CoachDashboard: React.FC = () => {
             color="warning"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <StatCard
             title="Total Views"
             value={stats.totalViews.toLocaleString()}
@@ -187,7 +187,7 @@ const CoachDashboard: React.FC = () => {
       {/* Performance Charts */}
       {performance && (
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} md={8}>
+          <Grid xs={12} md={8}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -210,7 +210,7 @@ const CoachDashboard: React.FC = () => {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid xs={12} md={4}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -248,7 +248,7 @@ const CoachDashboard: React.FC = () => {
 
       <Grid container spacing={3}>
         {/* Recent Articles */}
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Card>
             <CardContent>
               <Box
@@ -321,7 +321,7 @@ const CoachDashboard: React.FC = () => {
         </Grid>
 
         {/* Popular Articles */}
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Card>
             <CardContent>
               <Box
@@ -379,7 +379,7 @@ const CoachDashboard: React.FC = () => {
           Quick Actions
         </Typography>
         <Grid container spacing={2}>
-          <Grid item>
+          <Grid>
             <Button
               variant="outlined"
               startIcon={<ScheduleIcon />}
@@ -388,7 +388,7 @@ const CoachDashboard: React.FC = () => {
               Content Calendar
             </Button>
           </Grid>
-          <Grid item>
+          <Grid>
             <Button
               variant="outlined"
               startIcon={<AnalyticsIcon />}

@@ -136,8 +136,8 @@ export class UserProfilingService {
 
     // Update behavior patterns
     if (profile.behaviorPatterns) {
-      profile.behaviorPatterns.completionRate = Math.round(completionRate * 100);
-      profile.behaviorPatterns.avgSessionDuration = avgSessionDuration;
+      profile.behaviorPatterns?.completionRate = Math.round(completionRate * 100);
+      profile.behaviorPatterns?.avgSessionDuration = avgSessionDuration;
     }
 
     await profile.save();
@@ -160,9 +160,9 @@ export class UserProfilingService {
       const patterns = await this.analyzeMessagePatterns(recentMessages);
       
       if (profile.behaviorPatterns) {
-        profile.behaviorPatterns.preferredTopics = patterns.topics;
-        profile.behaviorPatterns.responseTime = patterns.avgResponseTime;
-        profile.behaviorPatterns.engagementLevel = patterns.engagementLevel;
+        profile.behaviorPatterns?.preferredTopics = patterns.topics;
+        profile.behaviorPatterns?.responseTime = patterns.avgResponseTime;
+        profile.behaviorPatterns?.engagementLevel = patterns.engagementLevel;
       }
     }
 
@@ -232,7 +232,7 @@ export class UserProfilingService {
         userId,
         status: 'completed',
         completedAt: {
-          [Op.ne]: null
+          [Op.ne as any]: null
         }
       } as any,
       order: [['completedAt', 'DESC']]
@@ -457,14 +457,14 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
     }
 
     // Consistency insight
-    if (profile.behaviorPatterns?.consistencyScore && profile.behaviorPatterns.consistencyScore > 70) {
+    if (profile.behaviorPatterns?.consistencyScore && profile.behaviorPatterns?.consistencyScore > 70) {
       insights.push({
         category: 'Consistency',
         insight: 'Your consistency is excellent! You engage regularly, which is key to achieving your goals.',
         confidence: 0.9,
         evidence: [`${profile.behaviorPatterns?.consistencyScore}% consistency score`, `${profile.progressMetrics?.currentStreak} day streak`]
       });
-    } else if (profile.behaviorPatterns?.consistencyScore && profile.behaviorPatterns.consistencyScore < 40) {
+    } else if (profile.behaviorPatterns?.consistencyScore && profile.behaviorPatterns?.consistencyScore < 40) {
       insights.push({
         category: 'Consistency',
         insight: 'Building consistency could accelerate your progress. Consider setting daily reminders.',
@@ -474,7 +474,7 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
     }
 
     // Engagement insight
-    if (profile.behaviorPatterns?.engagementLevel && profile.behaviorPatterns.engagementLevel > 70) {
+    if (profile.behaviorPatterns?.engagementLevel && profile.behaviorPatterns?.engagementLevel > 70) {
       insights.push({
         category: 'Engagement',
         insight: 'Your high engagement level shows strong commitment. Keep up the great work!',
@@ -484,7 +484,7 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
     }
 
     // Topic preferences
-    if (profile.behaviorPatterns?.preferredTopics && profile.behaviorPatterns.preferredTopics.length > 0) {
+    if (profile.behaviorPatterns?.preferredTopics && profile.behaviorPatterns?.preferredTopics.length > 0) {
       insights.push({
         category: 'Focus Areas',
         insight: `You're most interested in ${profile.behaviorPatterns?.preferredTopics?.join(', ')}. We'll prioritize content in these areas.`,
@@ -517,7 +517,7 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
   }
 
   private getLearningStyleRecommendations(style: string): string {
-    const recommendations = {
+    const recommendations: Record<string, any> = {
       visual: 'visual aids, charts, and progress visualizations',
       auditory: 'voice notes, discussions, and audio content',
       kinesthetic: 'hands-on exercises and practical applications',
@@ -547,7 +547,9 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
     }
 
     if (preferences.focusAreas) {
-      profile.coachingPreferences.focusAreas = preferences.focusAreas;
+      if (profile.coachingPreferences) {
+        profile.coachingPreferences?.focusAreas = preferences.focusAreas;
+      }
     }
 
     await profile.save();
@@ -559,31 +561,31 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
     const recommendations: string[] = [];
 
     // Based on completion rate
-    if (profile.behaviorPatterns.completionRate < 50) {
+    if (profile.behaviorPatterns?.completionRate && profile.behaviorPatterns?.completionRate < 50) {
       recommendations.push('Break down your goals into smaller, more manageable tasks');
       recommendations.push('Start with just one small habit to build momentum');
     }
 
     // Based on consistency
-    if (profile.behaviorPatterns.consistencyScore < 40) {
+    if (profile.behaviorPatterns?.consistencyScore && profile.behaviorPatterns?.consistencyScore < 40) {
       recommendations.push('Set a specific time each day for your coaching check-in');
       recommendations.push('Use reminders to maintain your momentum');
     }
 
     // Based on engagement
-    if (profile.behaviorPatterns.engagementLevel < 30) {
+    if (profile.behaviorPatterns?.engagementLevel && profile.behaviorPatterns?.engagementLevel < 30) {
       recommendations.push('Try voice journaling for a more natural interaction');
       recommendations.push('Explore different coaching methods to find what resonates');
     }
 
     // Based on streak
-    if (profile.progressMetrics.currentStreak > 7) {
+    if (profile.progressMetrics?.currentStreak && profile.progressMetrics?.currentStreak > 7) {
       recommendations.push('Your streak is impressive! Consider increasing your goal difficulty');
       recommendations.push('Share your success to inspire others and reinforce your commitment');
     }
 
     // Based on preferred topics
-    profile.behaviorPatterns.preferredTopics.forEach(topic => {
+    profile.behaviorPatterns?.preferredTopics?.forEach(topic => {
       switch (topic) {
         case 'productivity':
           recommendations.push('Try time-blocking technique for better task management');
@@ -615,20 +617,20 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
     let score = 0;
     
     // Account age (max 20 points)
-    score += Math.min(profile.progressMetrics.accountAge / 5, 20);
+    score += Math.min((profile.progressMetrics?.accountAge || 0) / 5, 20);
     
     // Consistency (max 30 points)
-    score += (profile.behaviorPatterns.consistencyScore / 100) * 30;
+    score += ((profile.behaviorPatterns?.consistencyScore || 0) / 100) * 30;
     
     // Completion rate (max 25 points)
-    score += (profile.behaviorPatterns.completionRate / 100) * 25;
+    score += ((profile.behaviorPatterns?.completionRate || 0) / 100) * 25;
     
     // Engagement (max 15 points)
-    score += (profile.behaviorPatterns.engagementLevel / 100) * 15;
+    score += ((profile.behaviorPatterns?.engagementLevel || 0) / 100) * 15;
     
     // Goals completed (max 10 points)
-    const goalCompletionRate = profile.progressMetrics.totalGoalsSet > 0
-      ? profile.progressMetrics.goalsCompleted / profile.progressMetrics.totalGoalsSet
+    const goalCompletionRate = (profile.progressMetrics?.totalGoalsSet || 0) > 0
+      ? (profile.progressMetrics?.goalsCompleted || 0) / (profile.progressMetrics?.totalGoalsSet || 1)
       : 0;
     score += goalCompletionRate * 10;
 

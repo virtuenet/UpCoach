@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { body, param, query, validationResult, ValidationChain } from 'express-validator';
+import { body, param, query, validationResult, ValidationChain, FieldValidationError } from 'express-validator';
 import { logger } from '../utils/logger';
 
 /**
@@ -22,10 +22,13 @@ export const validateRequest = (
     res.status(400).json({
       success: false,
       error: 'Validation failed',
-      errors: errors.array().map(err => ({
-        field: (err as any).param || (err as any).path || 'unknown',
-        message: err.msg,
-      })),
+      errors: errors.array().map(err => {
+        const fieldError = err as FieldValidationError;
+        return {
+          field: 'path' in fieldError ? fieldError.path : 'param' in fieldError ? fieldError.param : 'unknown',
+          message: fieldError.msg,
+        };
+      }),
     });
     return;
   }
@@ -90,7 +93,8 @@ export const validators = {
       .withMessage('End date must be in ISO 8601 format')
       .toDate()
       .custom((endDate, { req }) => {
-        if (req.query?.startDate && endDate < new Date(req.query.startDate)) {
+        const request = req as Request;
+        if (request.query?.startDate && endDate < new Date(request.query.startDate as string)) {
           throw new Error('End date must be after start date');
         }
         return true;
@@ -233,7 +237,7 @@ export const preventSQLInjection = (req: Request, res: Response, next: NextFunct
     /(\bAND\b\s*\d+\s*=\s*\d+)/gi,
   ];
   
-  const checkValue = (value: any): boolean => {
+  const checkValue = (value: unknown): boolean => {
     if (typeof value === 'string') {
       return suspiciousPatterns.some(pattern => pattern.test(value));
     }

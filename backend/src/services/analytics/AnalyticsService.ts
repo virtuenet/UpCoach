@@ -110,7 +110,7 @@ export class AnalyticsService {
 
   // Track page view
   async trackPageView(req: Request, pagePath: string, pageTitle?: string): Promise<void> {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     const sessionId = (req as any).session?.id || req.get('x-session-id');
     const ip = req.ip;
     const userAgent = req.get('user-agent');

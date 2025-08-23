@@ -4,14 +4,16 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Copy dependency files
-COPY package*.json ./
+COPY admin-panel/package*.json ./
 RUN npm ci
 
 # Stage 2: Build the application
 FROM node:18-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY shared ./shared
+COPY admin-panel ./admin-panel
+WORKDIR /app/admin-panel
 
 # Build the app
 RUN npm run build

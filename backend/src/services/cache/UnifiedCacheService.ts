@@ -8,6 +8,7 @@ import { createHash } from 'crypto';
 import { logger } from '../../utils/logger';
 import * as zlib from 'zlib';
 import { promisify } from 'util';
+import { LRUCache } from 'lru-cache';
 
 const gzip = promisify(zlib.gzip);
 const gunzip = promisify(zlib.gunzip);
@@ -40,7 +41,7 @@ interface MemoryCacheEntry {
 
 export class UnifiedCacheService {
   private redis: Redis | null = null;
-  private inMemoryCache: Map<string, MemoryCacheEntry> = new Map();
+  private inMemoryCache: LRUCache<string, MemoryCacheEntry>;
   private stats: CacheStats = {
     hits: 0,
     misses: 0,
@@ -73,6 +74,27 @@ export class UnifiedCacheService {
     this.compressionThreshold = options.compressionThreshold || 1024; // 1KB
     this.memoryMaxSize = options.memoryMaxSize || 1000; // Max entries in memory
     this.defaultPrefix = options.defaultPrefix || 'cache:';
+
+    // Initialize LRU cache with automatic eviction
+    this.inMemoryCache = new LRUCache<string, MemoryCacheEntry>({
+      max: this.memoryMaxSize,
+      ttl: this.defaultTTL * 1000, // Convert to milliseconds
+      updateAgeOnGet: true,
+      updateAgeOnHas: true,
+      // Calculate size based on serialized value
+      sizeCalculation: (value: MemoryCacheEntry) => {
+        try {
+          const size = JSON.stringify(value.value).length;
+          return Math.ceil(size / 100); // Rough size estimate
+        } catch {
+          return 1;
+        }
+      },
+      // Dispose callback for cleanup
+      dispose: (value: MemoryCacheEntry, key: string) => {
+        logger.debug('LRU cache evicted key', { key });
+      },
+    });
 
     this.initializeRedis(options.redisUrl);
     this.startMemoryCleanup();
@@ -166,29 +188,35 @@ export class UnifiedCacheService {
   }
 
   private cleanupMemoryCache(): void {
-    const now = Date.now();
-    const keysToDelete: string[] = [];
-
-    for (const [key, entry] of this.inMemoryCache.entries()) {
-      if (entry.expiry < now) {
-        keysToDelete.push(key);
-      }
-    }
-
-    keysToDelete.forEach(key => this.inMemoryCache.delete(key));
-
-    // If still over limit, remove oldest entries
-    if (this.inMemoryCache.size > this.memoryMaxSize) {
-      const entriesToRemove = this.inMemoryCache.size - this.memoryMaxSize;
-      const keys = Array.from(this.inMemoryCache.keys());
-      keys.slice(0, entriesToRemove).forEach(key => this.inMemoryCache.delete(key));
+    // LRU cache handles its own cleanup and eviction
+    // This method now just prunes expired entries
+    this.inMemoryCache.purgeStale();
+    
+    // Log cache statistics
+    const stats = {
+      size: this.inMemoryCache.size,
+      calculatedSize: this.inMemoryCache.calculatedSize,
+      hitRate: this.stats.hits > 0 ? 
+        (this.stats.memoryHits / (this.stats.memoryHits + this.stats.memoryMisses)) : 0
+    };
+    
+    if (this.inMemoryCache.size > this.memoryMaxSize * 0.9) {
+      logger.warn('Memory cache approaching size limit', stats);
     }
   }
 
   private startMemoryCleanup(): void {
     this.cleanupInterval = setInterval(() => {
       this.cleanupMemoryCache();
-    }, 60000); // Clean up every minute
+      // Also report cache statistics periodically
+      if (this.stats.hits + this.stats.misses > 0) {
+        this.stats.hitRate = this.stats.hits / (this.stats.hits + this.stats.misses);
+        logger.info('Cache statistics', {
+          ...this.stats,
+          memoryCacheSize: this.inMemoryCache.size,
+        });
+      }
+    }, 60000); // Clean up and report every minute
   }
 
   async get<T>(key: string, options?: CacheOptions): Promise<T | null> {

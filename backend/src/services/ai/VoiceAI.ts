@@ -634,7 +634,7 @@ Context:
 User profile:
 - Learning style: ${profile.learningStyle}
 - Communication preference: ${profile.communicationPreference}
-- Current goals: ${profile.progressMetrics.totalGoalsSet} active
+- Current goals: ${profile.progressMetrics?.totalGoalsSet} active
 
 Please provide:
 1. A warm, personalized response addressing their reflection

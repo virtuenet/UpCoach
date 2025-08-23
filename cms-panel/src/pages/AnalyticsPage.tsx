@@ -31,7 +31,6 @@ import {
   Legend, 
   ResponsiveContainer 
 } from 'recharts'
-import { contentApi } from '../api/content'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { format, startOfWeek, endOfWeek, subDays, subWeeks } from 'date-fns'
 
@@ -240,7 +239,7 @@ export default function AnalyticsPage() {
         />
         <StatCard
           title="Avg. Read Time"
-          value={`${Math.round(analytics?.averageReadTime / 60)}m`}
+          value={`${Math.round((analytics?.averageReadTime || 0) / 60)}m`}
           change={5.2}
           icon={Clock}
           color="purple"

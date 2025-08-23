@@ -117,11 +117,11 @@ export class MediaController {
           caption,
           credit,
         },
-        uploadedBy: req.user!.id,
+        uploadedBy: (req as any).user!.id,
         isPublic: true,
       });
 
-      res.json(media);
+      (res as any).json(media);
     } catch (error) {
       console.error('Error processing upload:', error);
       res.status(500).json({ error: 'Failed to process upload' });
@@ -175,14 +175,14 @@ export class MediaController {
           size: file.size,
           width,
           height,
-          uploadedBy: req.user!.id,
+          uploadedBy: (req as any).user!.id,
           isPublic: true,
         });
 
         mediaItems.push(media);
       }
 
-      res.json(mediaItems);
+      (res as any).json(mediaItems);
     } catch (error) {
       console.error('Error processing multiple uploads:', error);
       res.status(500).json({ error: 'Failed to process uploads' });
@@ -212,7 +212,7 @@ export class MediaController {
       if (uploadedBy) where.uploadedBy = uploadedBy;
       
       if (search) {
-        where[Op.or] = [
+        where[Op.or as any] = [
           { filename: { [Op.iLike]: `%${search}%` } },
           { originalFilename: { [Op.iLike]: `%${search}%` } },
           { 'metadata.alt': { [Op.iLike]: `%${search}%` } },
@@ -234,7 +234,7 @@ export class MediaController {
         ]
       });
 
-      res.json({
+      (res as any).json({
         media,
         pagination: {
           page: Number(page),
@@ -273,7 +273,7 @@ export class MediaController {
         return res.status(404).json({ error: 'Media not found' });
       }
 
-      res.json(media);
+      (res as any).json(media);
     } catch (error) {
       console.error('Error fetching media:', error);
       res.status(500).json({ error: 'Failed to fetch media' });
@@ -292,7 +292,7 @@ export class MediaController {
       }
 
       // Check permissions
-      if (media.uploadedBy !== req.user!.id && req.user!.role !== 'admin') {
+      if (media.uploadedBy !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
         return res.status(403).json({ error: 'Unauthorized to update this media' });
       }
 
@@ -301,7 +301,7 @@ export class MediaController {
         isPublic: isPublic !== undefined ? isPublic : media.isPublic
       });
 
-      res.json(media);
+      (res as any).json(media);
     } catch (error) {
       console.error('Error updating media:', error);
       res.status(500).json({ error: 'Failed to update media' });
@@ -319,7 +319,7 @@ export class MediaController {
       }
 
       // Check permissions
-      if (media.uploadedBy !== req.user!.id && req.user!.role !== 'admin') {
+      if (media.uploadedBy !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
         return res.status(403).json({ error: 'Unauthorized to delete this media' });
       }
 
@@ -334,7 +334,7 @@ export class MediaController {
       }
 
       await media.destroy();
-      res.json({ message: 'Media deleted successfully' });
+      (res as any).json({ message: 'Media deleted successfully' });
     } catch (error) {
       console.error('Error deleting media:', error);
       res.status(500).json({ error: 'Failed to delete media' });
@@ -342,7 +342,7 @@ export class MediaController {
   }
 
   // Get media library stats
-  static async getStats(_req: Request, res: Response) {
+  static async getStats_(req: Request, res: Response) {
     try {
       const totalCount = await ContentMedia.count();
       const totalSize = await ContentMedia.sum('size');
@@ -368,7 +368,7 @@ export class MediaController {
         ]
       });
 
-      res.json({
+      (res as any).json({
         totalCount,
         totalSize,
         typeStats,

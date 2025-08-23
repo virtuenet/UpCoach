@@ -3,7 +3,7 @@ import { contextManager } from './ContextManager';
 import { personalityEngine } from './PersonalityEngine';
 // import { recommendationEngine } from './RecommendationEngine';
 import { logger } from '../../utils/logger';
-// import { ChatMessage } from '../../models/ChatMessage';
+import { ChatMessage } from '../../models/ChatMessage';
 // import { Chat } from '../../models/Chat';
 
 export interface ConversationState {
@@ -24,7 +24,7 @@ export interface ConversationIntent {
 
 export class ConversationalAI {
   private conversationStates: Map<string, ConversationState>;
-  private intentPatterns: Map<string, RegExp[]>;
+  private intentPatterns: Map<string, RegExp[]> = new Map();
 
   constructor() {
     this.conversationStates = new Map();
@@ -128,7 +128,7 @@ export class ConversationalAI {
     }
   }
 
-  private async detectIntent(message: string, context?: any): Promise<ConversationIntent> {
+  private async detectIntent(message: string, _context?: any): Promise<ConversationIntent> {
     const detectedIntents: { intent: string; score: number }[] = [];
 
     // Pattern matching
@@ -233,7 +233,7 @@ Provide a JSON response with:
         limit: 20
       });
 
-      return messages.map(m => ({
+      return messages.map((m: any) => ({
         role: m.role,
         content: m.content,
         timestamp: m.createdAt
@@ -246,7 +246,7 @@ Provide a JSON response with:
 
   private async analyzeConversationFlow(
     history: any[],
-    currentMessage: string
+    _currentMessage: string
   ): Promise<any> {
     // Analyze conversation patterns
     const analysis = {
@@ -290,7 +290,7 @@ Provide a JSON response with:
     intent: ConversationIntent,
     state: ConversationState,
     flowAnalysis: any,
-    context?: any
+    _context?: any
   ): Promise<any> {
     // Get user context
     const userContext = await contextManager.getUserContext(userId);
@@ -344,7 +344,7 @@ Provide a JSON response with:
   ): string {
     const basePrompt = personalityEngine.getSystemPrompt(personality);
     
-    const intentPrompts = {
+    const intentPrompts: Record<string, any> = {
       goal_setting: `Focus on helping the user clarify and structure their goals using the SMART framework. Ask probing questions to understand their deeper motivations.`,
       habit_formation: `Guide the user through habit formation using proven techniques like habit stacking and environmental design. Make it feel achievable.`,
       emotional_support: `Provide empathetic support while gently guiding toward constructive solutions. Validate feelings before offering advice.`,
@@ -414,7 +414,7 @@ Current context:
 
   private getOptimalTemperature(intent: ConversationIntent, state: ConversationState): number {
     // Lower temperature for factual/planning, higher for creative/emotional
-    const temperatureMap = {
+    const temperatureMap: Record<string, number> = {
       goal_setting: 0.7,
       habit_formation: 0.6,
       emotional_support: 0.8,
@@ -499,7 +499,7 @@ Current context:
       ]
     };
 
-    const baseSuggestions = intentSuggestions[intent.primary] || [];
+    const baseSuggestions = (intentSuggestions as Record<string, string[]>)[intent.primary] || [];
     
     // Select based on conversation depth
     if (state.depth < 3) {
@@ -555,7 +555,7 @@ Current context:
   }
 
   private getSuggestedResponseType(intent: string): string {
-    const responseTypes = {
+    const responseTypes: Record<string, any> = {
       goal_setting: 'clarifying_questions',
       habit_formation: 'structured_guidance',
       emotional_support: 'empathetic_validation',
@@ -570,7 +570,7 @@ Current context:
   }
 
   async generateSmartResponse(
-    userId: string,
+    _userId: string,
     message: string,
     options: {
       tone?: string;

@@ -62,7 +62,7 @@ export class AdvancedAnalyticsController {
           periodType
         );
 
-        res.json({
+        (res as any).json({
           success: true,
           data: retention,
         });
@@ -94,7 +94,7 @@ export class AdvancedAnalyticsController {
           metricType
         );
 
-        res.json({
+        (res as any).json({
           success: true,
           data: comparison,
         });
@@ -170,7 +170,7 @@ export class AdvancedAnalyticsController {
           endDate
         );
 
-        res.json({
+        (res as any).json({
           success: true,
           data: analytics,
         });
@@ -206,7 +206,7 @@ export class AdvancedAnalyticsController {
           sessionId
         );
 
-        res.json({
+        (res as any).json({
           success: true,
           message: 'Activity tracked successfully',
         });
@@ -242,7 +242,7 @@ export class AdvancedAnalyticsController {
           attribution
         );
 
-        res.json({
+        (res as any).json({
           success: true,
           message: 'Funnel step tracked successfully',
         });
@@ -282,7 +282,7 @@ export class AdvancedAnalyticsController {
           endDate
         );
 
-        res.json({
+        (res as any).json({
           success: true,
           data: adoption,
         });
@@ -302,7 +302,7 @@ export class AdvancedAnalyticsController {
       const userId = (req as any).userId;
       const stage = await advancedAnalyticsService.getUserLifecycleStage(userId);
 
-      res.json({
+      (res as any).json({
         success: true,
         data: { stage },
       });
@@ -359,7 +359,7 @@ export class AdvancedAnalyticsController {
           }
         );
 
-        res.json({
+        (res as any).json({
           success: true,
           data: result,
         });
@@ -374,7 +374,7 @@ export class AdvancedAnalyticsController {
   ];
 
   // Get all cohorts
-  getCohorts = async (_req: Request, res: Response) => {
+  getCohorts = async (req: Request, res: Response) => {
     try {
       const { sequelize } = require('../models');
       const { QueryTypes } = require('sequelize');
@@ -405,7 +405,7 @@ export class AdvancedAnalyticsController {
         { type: QueryTypes.SELECT }
       );
 
-      res.json({
+      (res as any).json({
         success: true,
         data: cohorts,
       });
@@ -419,7 +419,7 @@ export class AdvancedAnalyticsController {
   };
 
   // Get all funnels
-  getFunnels = async (_req: Request, res: Response) => {
+  getFunnels = async (req: Request, res: Response) => {
     try {
       const { sequelize } = require('../models');
       const { QueryTypes } = require('sequelize');
@@ -444,7 +444,7 @@ export class AdvancedAnalyticsController {
         { type: QueryTypes.SELECT }
       );
 
-      res.json({
+      (res as any).json({
         success: true,
         data: funnels,
       });

@@ -46,8 +46,8 @@ export class ExperimentsController {
         targetMetric,
         successCriteria,
         segmentation,
-        createdBy: req.user!.id,
-        updatedBy: req.user!.id,
+        createdBy: (req as any).user!.id,
+        updatedBy: (req as any).user!.id,
         status: 'draft',
       });
 
@@ -93,7 +93,7 @@ export class ExperimentsController {
         order: [[sortBy as string, sortOrder as string]],
       });
 
-      res.json({
+      (res as any).json({
         success: true,
         data: {
           experiments,
@@ -130,7 +130,7 @@ export class ExperimentsController {
         return;
       }
 
-      res.json({
+      (res as any).json({
         success: true,
         data: experiment,
       });
@@ -158,7 +158,7 @@ export class ExperimentsController {
       }
 
       const { id } = req.params;
-      const updateData = { ...req.body, updatedBy: req.user!.id };
+      const updateData = { ...req.body, updatedBy: (req as any).user!.id };
 
       const experiment = await Experiment.findByPk(id);
       if (!experiment) {
@@ -180,7 +180,7 @@ export class ExperimentsController {
 
       await experiment.update(updateData);
 
-      res.json({
+      (res as any).json({
         success: true,
         data: experiment,
         message: 'Experiment updated successfully',
@@ -231,10 +231,10 @@ export class ExperimentsController {
       await experiment.update({
         status: 'active',
         startDate: new Date(),
-        updatedBy: req.user!.id,
+        updatedBy: (req as any).user!.id,
       });
 
-      res.json({
+      (res as any).json({
         success: true,
         data: experiment,
         message: 'Experiment started successfully',
@@ -275,10 +275,10 @@ export class ExperimentsController {
       await experiment.update({
         status: 'completed',
         endDate: new Date(),
-        updatedBy: req.user!.id,
+        updatedBy: (req as any).user!.id,
       });
 
-      res.json({
+      (res as any).json({
         success: true,
         data: experiment,
         message: 'Experiment stopped successfully',
@@ -298,12 +298,12 @@ export class ExperimentsController {
   async getVariant(req: Request, res: Response): Promise<void> {
     try {
       const { experimentId } = req.params;
-      const userId = req.user!.id;
+      const userId = (req as any).user!.id;
       const context = req.body.context || {};
 
       const variant = await this.abTestingService.getVariant(userId, experimentId, context);
 
-      res.json({
+      (res as any).json({
         success: true,
         data: variant,
       });
@@ -323,7 +323,7 @@ export class ExperimentsController {
     try {
       const { experimentId } = req.params;
       const { eventType, eventValue, properties } = req.body;
-      const userId = req.user!.id;
+      const userId = (req as any).user!.id;
 
       const success = await this.abTestingService.trackConversion(
         userId,
@@ -333,7 +333,7 @@ export class ExperimentsController {
         properties
       );
 
-      res.json({
+      (res as any).json({
         success,
         message: success ? 'Conversion tracked successfully' : 'Failed to track conversion',
       });
@@ -362,7 +362,7 @@ export class ExperimentsController {
         return;
       }
 
-      res.json({
+      (res as any).json({
         success: true,
         data: analytics,
       });
@@ -401,7 +401,7 @@ export class ExperimentsController {
 
       await experiment.destroy();
 
-      res.json({
+      (res as any).json({
         success: true,
         message: 'Experiment deleted successfully',
       });

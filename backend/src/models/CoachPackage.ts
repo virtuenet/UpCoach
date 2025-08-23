@@ -109,7 +109,7 @@ export class CoachPackage extends Model {
   })
   isActive!: boolean;
 
-  @HasMany(() => ClientCoachPackage)
+  @HasMany(() => ClientCoachPackage as any)
   clientPackages!: ClientCoachPackage[];
 
   @CreatedAt
@@ -163,7 +163,7 @@ export class CoachPackage extends Model {
       where: {
         coachId,
         isActive: true,
-        [Op.or]: [
+        [Op.or as any]: [
           { totalAvailable: null },
           { totalSold: { [Op.lt]: sequelize.col('total_available') } },
         ],
@@ -363,7 +363,7 @@ export class ClientCoachPackage extends Model {
       {
         where: {
           status: 'active',
-          [Op.or]: [
+          [Op.or as any]: [
             { expiryDate: { [Op.lte]: new Date() } },
             { sessionsRemaining: 0 },
           ],

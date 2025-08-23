@@ -439,7 +439,7 @@ export class StripeWebhookService {
    * Map Stripe plan to internal plan
    */
   private mapStripePlanToInternal(stripePlan: string): any {
-    const planMap: Record<string, string> = {
+    const planMap: Record<string, any> = {
       'basic_monthly': 'basic',
       'pro_monthly': 'pro',
       'team_monthly': 'team',

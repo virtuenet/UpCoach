@@ -52,7 +52,7 @@ const taskFiltersSchema = z.object({
 
 // Get all tasks for the current user
 router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const filters = taskFiltersSchema.parse(req.query);
 
   // Build query
@@ -144,7 +144,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) =>
   const total = parseInt(countResult.rows[0].count);
   const totalPages = Math.ceil(total / filters.limit);
 
-  res.json({
+  (res as any).json({
     success: true,
     data: {
       tasks: result.rows,
@@ -160,7 +160,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) =>
 
 // Get a single task by ID
 router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const { id } = req.params;
 
   const task = await db.findOne('tasks', { id, user_id: userId });
@@ -169,7 +169,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response)
     throw new ApiError(404, 'Task not found');
   }
 
-  res.json({
+  (res as any).json({
     success: true,
     data: {
       task,
@@ -179,7 +179,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response)
 
 // Create a new task
 router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const validatedData = createTaskSchema.parse(req.body);
 
   const taskData = {
@@ -208,7 +208,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) =
 
 // Update a task
 router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const { id } = req.params;
   const validatedData = updateTaskSchema.parse(req.body);
 
@@ -242,7 +242,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response)
 
   logger.info('Task updated:', { taskId: id, userId });
 
-  res.json({
+  (res as any).json({
     success: true,
     message: 'Task updated successfully',
     data: {
@@ -253,7 +253,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response)
 
 // Delete a task
 router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
   const { id } = req.params;
 
   // Check if task exists and belongs to user
@@ -266,7 +266,7 @@ router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Respon
 
   logger.info('Task deleted:', { taskId: id, userId });
 
-  res.json({
+  (res as any).json({
     success: true,
     message: 'Task deleted successfully',
   });
@@ -274,7 +274,7 @@ router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Respon
 
 // Get task statistics
 router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  const userId = req.user!.id;
+  const userId = (req as any).user!.id;
 
   const stats = await db.query(`
     SELECT 
@@ -307,7 +307,7 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, res
     GROUP BY category
   `, [userId]);
 
-  res.json({
+  (res as any).json({
     success: true,
     data: {
       overview: stats.rows[0],

@@ -98,7 +98,7 @@ export class Comment extends Model<CommentAttributes, CommentCreationAttributes>
     return await Comment.findAll({
       where: {
         threadId,
-        status: { [Op.ne]: 'deleted' },
+        status: { [Op.ne as any]: 'deleted' },
       },
       order: [['createdAt', 'ASC']],
     });
@@ -112,7 +112,7 @@ export class Comment extends Model<CommentAttributes, CommentCreationAttributes>
     const whereClause: any = {
       contentType,
       contentId,
-      status: { [Op.ne]: 'deleted' },
+      status: { [Op.ne as any]: 'deleted' },
       parentId: null, // Only get top-level comments, replies will be nested
     };
 
@@ -134,7 +134,7 @@ export class Comment extends Model<CommentAttributes, CommentCreationAttributes>
           where: {
             threadId: comment.threadId,
             parentId: comment.id,
-            status: { [Op.ne]: 'deleted' },
+            status: { [Op.ne as any]: 'deleted' },
           },
           order: [['createdAt', 'ASC']],
         });
@@ -248,7 +248,7 @@ export class Comment extends Model<CommentAttributes, CommentCreationAttributes>
   }> {
     const [total, unresolved, suggestions, approvals, revisionRequests] = await Promise.all([
       Comment.count({
-        where: { contentType, contentId, status: { [Op.ne]: 'deleted' } }
+        where: { contentType, contentId, status: { [Op.ne as any]: 'deleted' } }
       }),
       Comment.count({
         where: { contentType, contentId, isResolved: false, status: 'active' }

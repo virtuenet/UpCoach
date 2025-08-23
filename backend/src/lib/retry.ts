@@ -50,7 +50,7 @@ export function setupRetry(
         error.response?.status === 504    // Gateway timeout
       );
     },
-    onRetry: (retryCount, error, requestConfig) => {
+    onRetry: (retryCount, _error, requestConfig) => {
       console.log(
         `Retry attempt ${retryCount} for ${requestConfig.method?.toUpperCase()} ${requestConfig.url}`
       );

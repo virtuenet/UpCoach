@@ -2,10 +2,10 @@ import { Goal } from '../../models/Goal';
 import { Task } from '../../models/Task';
 import { Mood } from '../../models/Mood';
 import { UserProfile } from '../../models/UserProfile';
-import { ChatMessage } from '../../models/ChatMessage';
+// // import { ChatMessage } from '../../models/ChatMessage';
 import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
-import { aiService } from './AIService';
+// // import { aiService } from './AIService';
 import { userProfilingService } from './UserProfilingService';
 
 export interface Recommendation {
@@ -159,7 +159,7 @@ export class RecommendationEngine {
     const { profile, tasks } = context.recentActivity;
 
     // Morning routine recommendation
-    if (context.timeOfDay === 'morning' && profile.behaviorPatterns.consistencyScore < 60) {
+    if (context.timeOfDay === 'morning' && profile.behaviorPatterns?.consistencyScore < 60) {
       recommendations.push({
         id: 'habit-morning-routine',
         type: 'habit',
@@ -203,7 +203,7 @@ export class RecommendationEngine {
     }
 
     // Hydration habit
-    if (profile.coachingPreferences.focusAreas.includes('wellbeing')) {
+    if (profile.coachingPreferences?.focusAreas.includes('wellbeing')) {
       recommendations.push({
         id: 'habit-hydration',
         type: 'habit',
@@ -225,7 +225,7 @@ export class RecommendationEngine {
     }
 
     // Focus session habit
-    if (profile.behaviorPatterns.preferredTopics.includes('productivity')) {
+    if (profile.behaviorPatterns?.preferredTopics?.includes('productivity')) {
       recommendations.push({
         id: 'habit-focus-sessions',
         type: 'habit',
@@ -583,17 +583,17 @@ export class RecommendationEngine {
     const patterns = profile.metadata?.timePreferences || {};
 
     // Analyze when user is most active
-    const preferredHours = patterns.preferredHours || [9, 14, 19];
+    // const preferredHours = patterns.preferredHours || [9, 14, 19];
     const mostActiveTime = patterns.mostActiveTime || 'morning';
 
-    const timingMap = {
+    const timingMap: Record<string, { bestTime: string; reason: string; alternativeTimes: string[] }> = {
       'deep-work': {
         bestTime: mostActiveTime === 'morning' ? '9:00 AM' : '2:00 PM',
         reason: `Your cognitive performance peaks in the ${mostActiveTime}`,
         alternativeTimes: ['10:00 AM', '3:00 PM', '7:00 PM']
       },
       'exercise': {
-        bestTime: profile.behaviorPatterns.avgSessionDuration > 30 ? '7:00 AM' : '5:30 PM',
+        bestTime: profile.behaviorPatterns?.avgSessionDuration && profile.behaviorPatterns?.avgSessionDuration > 30 ? '7:00 AM' : '5:30 PM',
         reason: 'Based on your energy patterns and session durations',
         alternativeTimes: ['6:00 AM', '12:00 PM', '6:00 PM']
       },
@@ -612,7 +612,7 @@ export class RecommendationEngine {
     return timingMap[activityType] || timingMap['deep-work'];
   }
 
-  async generateAdaptiveSchedule(userId: string, date: Date): Promise<{
+  async generateAdaptiveSchedule(userId: string, _date: Date): Promise<{
     schedule: Array<{
       time: string;
       activity: string;
@@ -629,7 +629,7 @@ export class RecommendationEngine {
     const tips = [];
 
     // Morning routine
-    if (profile.coachingPreferences.preferredTimes.includes('morning')) {
+    if (profile.coachingPreferences?.preferredTimes?.includes('morning')) {
       schedule.push({
         time: '7:00 AM',
         activity: 'Morning Routine',
@@ -657,13 +657,13 @@ export class RecommendationEngine {
     }
 
     // Add tips based on profile
-    if (profile.behaviorPatterns.consistencyScore < 50) {
+    if (profile.behaviorPatterns?.consistencyScore && profile.behaviorPatterns?.consistencyScore < 50) {
       tips.push('Start with just 2-3 activities to build consistency');
     }
-    if (profile.progressMetrics.currentStreak > 7) {
+    if (profile.progressMetrics?.currentStreak && profile.progressMetrics?.currentStreak > 7) {
       tips.push('Your streak is strong! Consider adding a challenge today');
     }
-    if (profile.behaviorPatterns.preferredTopics.includes('productivity')) {
+    if (profile.behaviorPatterns?.preferredTopics?.includes('productivity')) {
       tips.push('Block time for deep work during your peak hours');
     }
 

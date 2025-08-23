@@ -38,7 +38,7 @@ export const getArticles = async (req: Request, res: Response) => {
     if (author) where.authorId = author;
     if (tags) where.tags = { [Op.contains]: Array.isArray(tags) ? tags : [tags] };
     if (search) {
-      where[Op.or] = [
+      where[Op.or as any] = [
         { title: { [Op.iLike]: `%${search}%` } },
         { summary: { [Op.iLike]: `%${search}%` } },
       ];
@@ -76,7 +76,7 @@ export const getArticles = async (req: Request, res: Response) => {
       distinct: true,
     });
 
-    res.json({
+    (res as any).json({
       success: true,
       data: articles,
       pagination: {
@@ -120,7 +120,7 @@ export const createArticle = async (req: Request, res: Response) => {
       slug: articleSlug,
       summary,
       content,
-      authorId: Number(req.user!.id),
+      authorId: Number((req as any).user!.id),
       categoryId,
       featuredImage,
       tags: tags || [],
@@ -132,11 +132,11 @@ export const createArticle = async (req: Request, res: Response) => {
       visibility,
       publishDate,
       allowComments,
-      lastModifiedBy: Number(req.user!.id),
+      lastModifiedBy: Number((req as any).user!.id),
     });
 
     // Create initial version
-    await article.createVersion(Number(req.user!.id), 'Initial version');
+    await article.createVersion(Number((req as any).user!.id), 'Initial version');
 
     // Invalidate cache
     await getCacheService().invalidate('cms:articles:*');
@@ -160,7 +160,7 @@ export const getArticle = async (req: Request, res: Response) => {
     const cacheKey = `cms:article:${id}`;
     const cached = await getCacheService().get(cacheKey);
     if (cached) {
-      return res.json({ success: true, data: cached });
+      return (res as any).json({ success: true, data: cached });
     }
 
     const where: any = isNaN(Number(id)) ? { slug: id } : { id };
@@ -179,9 +179,9 @@ export const getArticle = async (req: Request, res: Response) => {
     }
 
     // Track view if public
-    if (isPublic && req.user) {
+    if (isPublic && (req as any).user) {
       await ContentInteraction.create({
-        userId: Number(req.user.id),
+        userId: Number((req as any).user.id),
         contentId: article.id,
         interactionType: 'view',
       });
@@ -191,7 +191,7 @@ export const getArticle = async (req: Request, res: Response) => {
     // Cache the result
     await getCacheService().set(cacheKey, article, { ttl: 3600 });
 
-    res.json({
+    (res as any).json({
       success: true,
       data: article,
     });
@@ -211,24 +211,24 @@ export const updateArticle = async (req: Request, res: Response) => {
     }
 
     // Check permissions
-    if (!article.canEdit(Number(req.user!.id), req.user!.role)) {
+    if (!article.canEdit(Number((req as any).user!.id), (req as any).user!.role)) {
       return res.status(403).json({ success: false, error: 'Permission denied' });
     }
 
     // Create version before updating
-    await article.createVersion(Number(req.user!.id), req.body.changeSummary);
+    await article.createVersion(Number((req as any).user!.id), req.body.changeSummary);
 
     // Update article
     await article.update({
       ...req.body,
-      lastModifiedBy: Number(req.user!.id),
+      lastModifiedBy: Number((req as any).user!.id),
     });
 
     // Invalidate cache
     await getCacheService().del(`cms:article:${id}`);
     await getCacheService().invalidate('cms:articles:*');
 
-    res.json({
+    (res as any).json({
       success: true,
       data: article,
     });
@@ -253,7 +253,7 @@ export const deleteArticle = async (req: Request, res: Response) => {
     await getCacheService().del(`cms:article:${id}`);
     await getCacheService().invalidate('cms:articles:*');
 
-    res.json({
+    (res as any).json({
       success: true,
       message: 'Article deleted successfully',
     });
@@ -272,7 +272,7 @@ export const publishArticle = async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, error: 'Article not found' });
     }
 
-    if (!article.canPublish(req.user!.role)) {
+    if (!article.canPublish((req as any).user!.role)) {
       return res.status(403).json({ success: false, error: 'Permission denied' });
     }
 
@@ -282,7 +282,7 @@ export const publishArticle = async (req: Request, res: Response) => {
     await getCacheService().del(`cms:article:${id}`);
     await getCacheService().invalidate('cms:articles:*');
 
-    res.json({
+    (res as any).json({
       success: true,
       data: article,
       message: 'Article published successfully',
@@ -302,7 +302,7 @@ export const unpublishArticle = async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, error: 'Article not found' });
     }
 
-    if (!article.canPublish(req.user!.role)) {
+    if (!article.canPublish((req as any).user!.role)) {
       return res.status(403).json({ success: false, error: 'Permission denied' });
     }
 
@@ -312,7 +312,7 @@ export const unpublishArticle = async (req: Request, res: Response) => {
     await getCacheService().del(`cms:article:${id}`);
     await getCacheService().invalidate('cms:articles:*');
 
-    res.json({
+    (res as any).json({
       success: true,
       data: article,
       message: 'Article unpublished successfully',
@@ -339,7 +339,7 @@ export const getArticleVersions = async (req: Request, res: Response) => {
       ],
     });
 
-    res.json({
+    (res as any).json({
       success: true,
       data: versions,
     });
@@ -370,20 +370,20 @@ export const revertArticleVersion = async (req: Request, res: Response) => {
     }
 
     // Create new version before reverting
-    await article.createVersion(Number(req.user!.id), `Reverted to version ${version}`);
+    await article.createVersion(Number((req as any).user!.id), `Reverted to version ${version}`);
 
     // Revert to selected version
     await article.update({
       title: versionData.title,
       content: versionData.content,
-      lastModifiedBy: Number(req.user!.id),
+      lastModifiedBy: Number((req as any).user!.id),
     });
 
     // Invalidate cache
     await getCacheService().del(`cms:article:${id}`);
     await getCacheService().invalidate('cms:articles:*');
 
-    res.json({
+    (res as any).json({
       success: true,
       data: article,
       message: `Reverted to version ${version}`,
@@ -421,7 +421,7 @@ export const uploadMedia = async (req: Request, res: Response) => {
             req.file.mimetype.startsWith('audio/') ? 'audio' : 'document',
       width: uploadResult.dimensions?.width,
       height: uploadResult.dimensions?.height,
-      uploadedBy: req.user!.id,
+      uploadedBy: (req as any).user!.id,
       isPublic: true,
       metadata: {
         ...uploadResult.metadata,
@@ -432,7 +432,7 @@ export const uploadMedia = async (req: Request, res: Response) => {
       },
     });
 
-    res.json({
+    (res as any).json({
       success: true,
       data: media,
     });
@@ -451,7 +451,7 @@ export const getMedia = async (req: Request, res: Response) => {
     if (folder) where.folder = folder;
     if (tags) where.tags = { [Op.contains]: Array.isArray(tags) ? tags : [tags] };
     if (search) {
-      where[Op.or] = [
+      where[Op.or as any] = [
         { filename: { [Op.iLike]: `%${search}%` } },
         { originalFilename: { [Op.iLike]: `%${search}%` } },
         { altText: { [Op.iLike]: `%${search}%` } },
@@ -465,7 +465,7 @@ export const getMedia = async (req: Request, res: Response) => {
       order: [['createdAt', 'DESC']],
     });
 
-    res.json({
+    (res as any).json({
       success: true,
       data: media,
       pagination: {
@@ -498,7 +498,7 @@ export const deleteMedia = async (req: Request, res: Response) => {
 
     await media.destroy();
 
-    res.json({
+    (res as any).json({
       success: true,
       message: 'Media deleted successfully',
     });
@@ -509,14 +509,14 @@ export const deleteMedia = async (req: Request, res: Response) => {
 };
 
 // Category Controllers
-export const getCategories = async (_req: Request, res: Response) => {
+export const getCategories = async (req: Request, res: Response) => {
   try {
     const categories = await ContentCategory.findAll({
       where: { isActive: true },
       order: [['orderIndex', 'ASC'], ['name', 'ASC']],
     });
 
-    res.json({
+    (res as any).json({
       success: true,
       data: categories,
     });
@@ -564,7 +564,7 @@ export const updateCategory = async (req: Request, res: Response) => {
 
     await category.update(req.body);
 
-    res.json({
+    (res as any).json({
       success: true,
       data: category,
     });
@@ -597,7 +597,7 @@ export const deleteCategory = async (req: Request, res: Response) => {
 
     await category.destroy();
 
-    res.json({
+    (res as any).json({
       success: true,
       message: 'Category deleted successfully',
     });
@@ -620,7 +620,7 @@ export const getTemplates = async (req: Request, res: Response) => {
       order: [['name', 'ASC']],
     });
 
-    res.json({
+    (res as any).json({
       success: true,
       data: templates,
     });
@@ -634,7 +634,7 @@ export const createTemplate = async (req: Request, res: Response) => {
   try {
     const template = await ContentTemplate.create({
       ...req.body,
-      createdBy: Number(req.user!.id),
+      createdBy: Number((req as any).user!.id),
     });
 
     res.status(201).json({
@@ -658,7 +658,7 @@ export const updateTemplate = async (req: Request, res: Response) => {
 
     await template.update(req.body);
 
-    res.json({
+    (res as any).json({
       success: true,
       data: template,
     });
@@ -682,7 +682,7 @@ export const analyzeContent = async (req: Request, res: Response) => {
       keywords: extractKeywords(content),
     };
 
-    res.json({
+    (res as any).json({
       success: true,
       data: analysis,
     });
@@ -699,7 +699,7 @@ export const previewContent = async (req: Request, res: Response) => {
     // Convert content to preview format
     const preview = await generatePreview(content, format);
 
-    res.json({
+    (res as any).json({
       success: true,
       data: preview,
     });
@@ -747,7 +747,7 @@ export const getContentAnalytics = async (req: Request, res: Response) => {
       }),
     };
 
-    res.json({
+    (res as any).json({
       success: true,
       data: analytics,
     });
@@ -767,9 +767,9 @@ export const getArticleAnalytics = async (req: Request, res: Response) => {
     }
 
     // Check permissions
-    if (req.user!.role !== 'admin' && 
-        req.user!.role !== 'editor' && 
-        article.authorId !== Number(req.user!.id)) {
+    if ((req as any).user!.role !== 'admin' && 
+        (req as any).user!.role !== 'editor' && 
+        article.authorId !== Number((req as any).user!.id)) {
       return res.status(403).json({ success: false, error: 'Permission denied' });
     }
 
@@ -806,7 +806,7 @@ export const getArticleAnalytics = async (req: Request, res: Response) => {
         : 0,
     };
 
-    res.json({
+    (res as any).json({
       success: true,
       data: analytics,
     });
@@ -826,7 +826,7 @@ export const scheduleContent = async (req: Request, res: Response) => {
       scheduledFor: scheduledDate,
       scheduleType: action as 'publish' | 'unpublish' | 'update',
       metadata: actionData,
-      createdBy: Number(req.user!.id),
+      createdBy: Number((req as any).user!.id),
     });
 
     res.status(201).json({
@@ -839,7 +839,7 @@ export const scheduleContent = async (req: Request, res: Response) => {
   }
 };
 
-export const getScheduledContent = async (_req: Request, res: Response) => {
+export const getScheduledContent = async (req: Request, res: Response) => {
   try {
     const schedules = await ContentSchedule.findAll({
       where: { status: 'pending' },
@@ -853,7 +853,7 @@ export const getScheduledContent = async (_req: Request, res: Response) => {
       order: [['scheduledFor', 'ASC']],
     });
 
-    res.json({
+    (res as any).json({
       success: true,
       data: schedules,
     });

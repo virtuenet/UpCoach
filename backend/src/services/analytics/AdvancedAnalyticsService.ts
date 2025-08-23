@@ -1,16 +1,13 @@
-import { Op, Sequelize, QueryTypes } from 'sequelize';
+import { QueryTypes } from 'sequelize';
 import { sequelize } from '../../models';
-import { User } from '../../models/User';
+// import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
-import { analyticsService } from './AnalyticsService';
+// import { analyticsService } from './AnalyticsService';
 import { getCacheService } from '../cache/UnifiedCacheService';
-import { format, subDays, subMonths, startOfDay, endOfDay } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { 
-  executeSecureQuery, 
-  buildInsertQuery, 
-  buildUpdateQuery,
-  validateQueryParams,
-  sanitizeIdentifier 
+  executeSecureQuery,
+  validateQueryParams
 } from '../../utils/sqlSecurity';
 
 interface CohortDefinition {
@@ -319,7 +316,7 @@ export class AdvancedAnalyticsService {
         }
       );
 
-      return result[0][0].id;
+      return (result as any)[0][0].id;
     } catch (error) {
       logger.error('Failed to create funnel', { error, name });
       throw error;
@@ -448,7 +445,7 @@ export class AdvancedAnalyticsService {
   async calculateRevenueAnalytics(date: Date): Promise<void> {
     try {
       const dateStr = format(date, 'yyyy-MM-dd');
-      const monthStart = format(new Date(date.getFullYear(), date.getMonth(), 1), 'yyyy-MM-dd');
+      const _monthStart = format(new Date(date.getFullYear(), date.getMonth(), 1), 'yyyy-MM-dd');
       
       await sequelize.query(
         `INSERT INTO revenue_analytics (
@@ -673,7 +670,7 @@ export class AdvancedAnalyticsService {
         }
       );
 
-      return result[0]?.lifecycle_stage || 'unknown';
+      return (result[0] as any)?.lifecycle_stage || 'unknown';
     } catch (error) {
       logger.error('Failed to get user lifecycle stage', { error, userId });
       return 'unknown';
@@ -695,9 +692,9 @@ export class AdvancedAnalyticsService {
       );
 
       for (const cohort of activeCohorts) {
-        await this.calculateRetention(cohort.id, 'day');
-        await this.calculateRetention(cohort.id, 'week');
-        await this.calculateRetention(cohort.id, 'month');
+        await this.calculateRetention((cohort as any).id, 'day');
+        await this.calculateRetention((cohort as any).id, 'week');
+        await this.calculateRetention((cohort as any).id, 'month');
       }
 
       // Calculate feature adoption rates

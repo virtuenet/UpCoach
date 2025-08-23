@@ -11,7 +11,7 @@ export class AIController {
   // Recommendations
   async getRecommendations(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || "" || req.params.userId;
+      const userId = (req as any).user?.id || "" || req.params.userId;
       const { types, limit } = req.query;
       
       const recommendations = await recommendationEngine.generateRecommendations(
@@ -20,7 +20,7 @@ export class AIController {
         limit ? parseInt(limit as string) : 5
       );
       
-      res.json({
+      (res as any).json({
         success: true,
         recommendations,
         generatedAt: new Date()
@@ -33,12 +33,12 @@ export class AIController {
 
   async getOptimalTiming(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || "";
+      const userId = (req as any).user?.id || "";
       const { activityType } = req.params;
       
       const timing = await recommendationEngine.getOptimalTiming(userId, activityType);
       
-      res.json({
+      (res as any).json({
         success: true,
         timing
       });
@@ -50,7 +50,7 @@ export class AIController {
 
   async getAdaptiveSchedule(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || "";
+      const userId = (req as any).user?.id || "";
       const { date } = req.query;
       
       const schedule = await recommendationEngine.generateAdaptiveSchedule(
@@ -58,7 +58,7 @@ export class AIController {
         date ? new Date(date as string) : new Date()
       );
       
-      res.json({
+      (res as any).json({
         success: true,
         schedule
       });
@@ -71,7 +71,7 @@ export class AIController {
   // Conversational AI
   async processMessage(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || "";
+      const userId = (req as any).user?.id || "";
       const { message, conversationId, context } = req.body;
       
       const result = await conversationalAI.processConversation(
@@ -81,7 +81,7 @@ export class AIController {
         context
       );
       
-      res.json({
+      (res as any).json({
         success: true,
         ...result
       });
@@ -93,7 +93,7 @@ export class AIController {
 
   async generateSmartResponse(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || "";
+      const userId = (req as any).user?.id || "";
       const { message, options } = req.body;
       
       const response = await conversationalAI.generateSmartResponse(
@@ -102,7 +102,7 @@ export class AIController {
         options
       );
       
-      res.json({
+      (res as any).json({
         success: true,
         response
       });
@@ -115,7 +115,7 @@ export class AIController {
   // Predictive Analytics
   async getPredictions(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || "" || req.params.userId;
+      const userId = (req as any).user?.id || "" || req.params.userId;
       
       const [successPrediction, churnRisk, behaviorPatterns] = await Promise.all([
         predictiveAnalytics.predictUserSuccess(userId),
@@ -123,7 +123,7 @@ export class AIController {
         predictiveAnalytics.analyzeBehaviorPatterns(userId)
       ]);
       
-      res.json({
+      (res as any).json({
         success: true,
         predictions: {
           success: successPrediction,
@@ -143,7 +143,7 @@ export class AIController {
       
       const prediction = await predictiveAnalytics.predictGoalCompletion(goalId);
       
-      res.json({
+      (res as any).json({
         success: true,
         prediction
       });
@@ -155,7 +155,7 @@ export class AIController {
 
   async getInterventionPlan(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || "";
+      const userId = (req as any).user?.id || "";
       const { riskType } = req.params;
       
       const plan = await predictiveAnalytics.generateInterventionPlan(
@@ -163,7 +163,7 @@ export class AIController {
         riskType as any
       );
       
-      res.json({
+      (res as any).json({
         success: true,
         interventionPlan: plan
       });
@@ -176,7 +176,7 @@ export class AIController {
   // Adaptive Learning
   async createLearningPath(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || "";
+      const userId = (req as any).user?.id || "";
       const { goalId, options } = req.body;
       
       const path = await adaptiveLearning.createPersonalizedLearningPath(
@@ -185,7 +185,7 @@ export class AIController {
         options
       );
       
-      res.json({
+      (res as any).json({
         success: true,
         learningPath: path
       });
@@ -197,11 +197,11 @@ export class AIController {
 
   async getLearningPaths(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || "";
+      const userId = (req as any).user?.id || "";
       
       const paths = await adaptiveLearning.getLearningPaths(userId);
       
-      res.json({
+      (res as any).json({
         success: true,
         learningPaths: paths
       });
@@ -213,7 +213,7 @@ export class AIController {
 
   async trackLearningProgress(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || "";
+      const userId = (req as any).user?.id || "";
       const { pathId, moduleId } = req.params;
       const { progress } = req.body;
       
@@ -224,7 +224,7 @@ export class AIController {
         progress
       );
       
-      res.json({
+      (res as any).json({
         success: true,
         message: 'Progress tracked successfully'
       });
@@ -236,12 +236,12 @@ export class AIController {
 
   async getNextModule(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || "";
+      const userId = (req as any).user?.id || "";
       const { pathId } = req.params;
       
       const module = await adaptiveLearning.getRecommendedNextModule(userId, pathId);
       
-      res.json({
+      (res as any).json({
         success: true,
         nextModule: module
       });
@@ -254,7 +254,7 @@ export class AIController {
   // Voice AI
   async analyzeVoice(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || "";
+      const userId = (req as any).user?.id || "";
       const audioBuffer = req.file?.buffer;
       
       if (!audioBuffer) {
@@ -269,7 +269,7 @@ export class AIController {
         { sessionType, previousContext }
       );
       
-      res.json({
+      (res as any).json({
         success: true,
         analysis
       });
@@ -281,7 +281,7 @@ export class AIController {
 
   async getVoiceCoaching(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || "";
+      const userId = (req as any).user?.id || "";
       const { voiceAnalysis, options } = req.body;
       
       const coaching = await voiceAI.generateVoiceCoaching(
@@ -290,7 +290,7 @@ export class AIController {
         options
       );
       
-      res.json({
+      (res as any).json({
         success: true,
         coaching
       });
@@ -302,7 +302,7 @@ export class AIController {
 
   async getVoiceInsights(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || "";
+      const userId = (req as any).user?.id || "";
       const { days } = req.query;
       
       const insights = await voiceAI.getVoiceInsightSummary(
@@ -310,7 +310,7 @@ export class AIController {
         days ? parseInt(days as string) : 30
       );
       
-      res.json({
+      (res as any).json({
         success: true,
         insights
       });
@@ -322,7 +322,7 @@ export class AIController {
 
   async compareVoiceSessions(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || "";
+      const userId = (req as any).user?.id || "";
       const { sessionId1, sessionId2 } = req.params;
       
       const comparison = await voiceAI.compareVoiceSessions(
@@ -331,7 +331,7 @@ export class AIController {
         sessionId2
       );
       
-      res.json({
+      (res as any).json({
         success: true,
         comparison
       });
@@ -344,7 +344,7 @@ export class AIController {
   // Insights
   async getInsightReport(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || "" || req.params.userId;
+      const userId = (req as any).user?.id || "" || req.params.userId;
       const { days, startDate, endDate } = req.query;
       
       const report = await insightGenerator.generateInsightReport(
@@ -356,7 +356,7 @@ export class AIController {
         }
       );
       
-      res.json({
+      (res as any).json({
         success: true,
         report
       });
@@ -368,11 +368,11 @@ export class AIController {
 
   async getActiveInsights(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || "";
+      const userId = (req as any).user?.id || "";
       
       const insights = await insightGenerator.getActiveInsights(userId);
       
-      res.json({
+      (res as any).json({
         success: true,
         insights
       });
@@ -384,12 +384,12 @@ export class AIController {
 
   async dismissInsight(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id || "";
+      const userId = (req as any).user?.id || "";
       const { insightId } = req.params;
       
       await insightGenerator.dismissInsight(userId, insightId);
       
-      res.json({
+      (res as any).json({
         success: true,
         message: 'Insight dismissed successfully'
       });

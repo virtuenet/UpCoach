@@ -29,7 +29,7 @@ const cdnConfig: CDNConfig = {
 };
 
 // CDN URL rewriter middleware
-export const cdnMiddleware = (_req: Request, res: Response, next: NextFunction) => {
+export const cdnMiddleware = (req: Request, res: Response, next: NextFunction) => {
   if (!cdnConfig.enabled) {
     return next();
   }
@@ -162,7 +162,7 @@ export const imageOptimizationMiddleware = (req: Request, res: Response, next: N
 };
 
 // Preload critical resources
-export const preloadMiddleware = (_req: Request, res: Response, next: NextFunction) => {
+export const preloadMiddleware = (req: Request, res: Response, next: NextFunction) => {
   // Add preload headers for critical resources
   const preloads: string[] = [];
 

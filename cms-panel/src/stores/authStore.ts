@@ -7,6 +7,7 @@ export interface User {
   id: string
   email: string
   fullName: string
+  name?: string // Added for compatibility
   role: 'coach' | 'content_creator' | 'admin'
   avatarUrl?: string
   bio?: string
@@ -18,6 +19,7 @@ interface AuthState {
   user: User | null
   token: string | null
   isLoading: boolean
+  isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => void
   checkAuth: () => Promise<void>
@@ -30,6 +32,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       isLoading: false,
+      isAuthenticated: false,
 
       login: async (email: string, password: string) => {
         try {
@@ -44,11 +47,12 @@ export const useAuthStore = create<AuthState>()(
             user: response.user,
             token: response.token,
             isLoading: false,
+            isAuthenticated: true,
           })
           toast.success('Welcome back!')
-        } catch (error: any) {
+        } catch (error) {
           set({ isLoading: false })
-          toast.error(error.message || 'Login failed')
+          toast.error(error instanceof Error ? error.message : 'Login failed')
           throw error
         }
       },

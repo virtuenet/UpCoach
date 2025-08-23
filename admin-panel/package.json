@@ -46,6 +46,7 @@
     "axios": "^1.5.0",
     "clsx": "^2.0.0",
     "date-fns": "^2.30.0",
+    "eventemitter3": "^5.0.1",
     "isomorphic-dompurify": "^2.26.0",
     "lucide-react": "^0.290.0",
     "notistack": "^3.0.2",

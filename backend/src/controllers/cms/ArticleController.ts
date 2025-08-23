@@ -41,7 +41,7 @@ export class ArticleController {
       }
 
       if (search) {
-        whereClause[Op.or] = [
+        whereClause[Op.or as any] = [
           { title: { [Op.iLike]: `%${search}%` } },
           { content: { [Op.iLike]: `%${search}%` } },
           { excerpt: { [Op.iLike]: `%${search}%` } },
@@ -62,7 +62,7 @@ export class ArticleController {
         offset,
       });
 
-      res.json({
+      (res as any).json({
         success: true,
         data: articles.rows,
         pagination: {
@@ -130,7 +130,7 @@ export class ArticleController {
         await ContentAnalytics.create({
           contentType: 'article',
           contentId: article.id,
-          userId: req.user?.id || null,
+          userId: (req as any).user?.id || null,
           sessionId: req.headers['x-session-id'] as string || 'anonymous',
           event: 'view',
           metadata: {
@@ -143,7 +143,7 @@ export class ArticleController {
         });
       }
 
-      res.json({
+      (res as any).json({
         success: true,
         data: article,
       });
@@ -193,7 +193,7 @@ export class ArticleController {
         excerpt,
         content,
         categoryId,
-        authorId: req.user!.id,
+        authorId: (req as any).user!.id,
         status,
         featuredImage,
         seoTitle,
@@ -278,7 +278,7 @@ export class ArticleController {
       }
 
       // Check if user can edit this article
-      if (article.authorId !== req.user!.id && req.user!.role !== 'admin') {
+      if (article.authorId !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
         res.status(403).json({
           success: false,
           message: 'Not authorized to edit this article',
@@ -306,7 +306,7 @@ export class ArticleController {
           ...article.metadata,
           wordCount: content.split(/\s+/).length,
           version: article.metadata.version + 1,
-          lastEditedBy: req.user!.id,
+          lastEditedBy: (req as any).user!.id,
         };
       }
 
@@ -335,7 +335,7 @@ export class ArticleController {
         ],
       });
 
-      res.json({
+      (res as any).json({
         success: true,
         data: updatedArticle,
         message: 'Article updated successfully',
@@ -367,7 +367,7 @@ export class ArticleController {
       }
 
       // Check if user can delete this article
-      if (article.authorId !== req.user!.id && req.user!.role !== 'admin') {
+      if (article.authorId !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
         res.status(403).json({
           success: false,
           message: 'Not authorized to delete this article',
@@ -377,7 +377,7 @@ export class ArticleController {
 
       await article.destroy();
 
-      res.json({
+      (res as any).json({
         success: true,
         message: 'Article deleted successfully',
       });
@@ -408,7 +408,7 @@ export class ArticleController {
       }
 
       // Check if user can publish this article
-      if (article.authorId !== req.user!.id && req.user!.role !== 'admin') {
+      if (article.authorId !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
         res.status(403).json({
           success: false,
           message: 'Not authorized to publish this article',
@@ -418,7 +418,7 @@ export class ArticleController {
 
       await article.publish();
 
-      res.json({
+      (res as any).json({
         success: true,
         data: article,
         message: 'Article published successfully',
@@ -450,7 +450,7 @@ export class ArticleController {
       }
 
       // Check if user can archive this article
-      if (article.authorId !== req.user!.id && req.user!.role !== 'admin') {
+      if (article.authorId !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
         res.status(403).json({
           success: false,
           message: 'Not authorized to archive this article',
@@ -460,7 +460,7 @@ export class ArticleController {
 
       await article.archive();
 
-      res.json({
+      (res as any).json({
         success: true,
         data: article,
         message: 'Article archived successfully',
@@ -485,7 +485,7 @@ export class ArticleController {
 
       const articles = await Article.getPopular(Number(limit));
 
-      res.json({
+      (res as any).json({
         success: true,
         data: articles,
       });
@@ -522,7 +522,7 @@ export class ArticleController {
 
       const articles = await Article.searchArticles(query as string, filters);
 
-      res.json({
+      (res as any).json({
         success: true,
         data: articles,
       });
@@ -554,7 +554,7 @@ export class ArticleController {
 
       const analytics = await ContentAnalytics.getContentPerformance('article', id);
 
-      res.json({
+      (res as any).json({
         success: true,
         data: {
           article: {

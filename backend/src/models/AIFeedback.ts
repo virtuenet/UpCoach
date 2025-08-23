@@ -112,7 +112,7 @@ export class AIFeedback extends Model {
   }
 
   static async getAverageRating(startDate?: Date, endDate?: Date): Promise<number> {
-    const where: any = { rating: { [Op.ne]: null } };
+    const where: any = { rating: { [Op.ne as any]: null } };
     
     if (startDate || endDate) {
       where.createdAt = {};

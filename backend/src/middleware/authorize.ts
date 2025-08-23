@@ -15,9 +15,9 @@ const roleHierarchy: Record<Role, number> = {
 };
 
 export function authorize(resourceType: ResourceType, requiredRole: Role | Role[]) {
-  return async (req: Request, _res: Response, next: NextFunction) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = req.user?.id;
+      const userId = (req as any).user?.id;
       if (!userId) {
         throw new AppError('Unauthorized', 401);
       }
@@ -167,7 +167,7 @@ export async function loadOrganizationContext(
   next: NextFunction
 ) {
   try {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id;
     if (!userId) {
       return next();
     }

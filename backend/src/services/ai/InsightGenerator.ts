@@ -13,7 +13,7 @@ import { recommendationEngine } from './RecommendationEngine';
 
 export interface Insight {
   id: string;
-  type: InsightType, _type: InsightType;
+  type: InsightType;
   title: string;
   description: string;
   category: InsightCategory;
@@ -321,7 +321,7 @@ export class InsightGenerator {
           dataPoints: moodPatterns.significantPattern.dataPoints,
           strength: moodPatterns.significantPattern.confidence
         }],
-        actionItems: moodPatterns.significantPattern.recommendations.map((rec, idx) => ({
+        actionItems: moodPatterns.significantPattern.recommendations.map((rec: any, idx: number) => ({
           id: `action_${Date.now()}_mood_${idx}`,
           action: rec,
           priority: idx === 0 ? 'high' : 'medium',
@@ -382,7 +382,7 @@ export class InsightGenerator {
           dataPoints: moodAnomaly.dataPoints,
           strength: moodAnomaly.confidence
         }],
-        actionItems: moodAnomaly.actions.map((action, idx) => ({
+        actionItems: moodAnomaly.actions.map((action: any, idx: number) => ({
           id: `action_${Date.now()}_anomaly_${idx}`,
           action: action,
           priority: 'urgent',
@@ -400,7 +400,7 @@ export class InsightGenerator {
     const insights: Insight[] = [];
 
     // Goal completion predictions
-    for (const goal of data.goals.filter(g => g.status === 'active')) {
+    for (const goal of data.goals.filter((g: any) => g.status === 'active')) {
       const prediction = await predictiveAnalytics.predictGoalCompletion(goal.id);
       
       if (prediction.probability < 0.5) {
@@ -563,7 +563,7 @@ export class InsightGenerator {
         evidence: [{
           type: 'data',
           description: 'Goals marked as completed',
-          dataPoints: data.goals.filter(g => g.status === 'completed').map(g => ({
+          dataPoints: data.goals.filter((g: any) => g.status === 'completed').map((g: any) => ({
             title: g.title,
             completedAt: g.updatedAt
           })),
@@ -661,7 +661,7 @@ export class InsightGenerator {
     const insights: Insight[] = [];
 
     // Learning opportunity based on patterns
-    if (data.profile && data.profile.behaviorPatterns.consistencyScore > 70) {
+    if (data.profile && data.profile.behaviorPatterns?.consistencyScore > 70) {
       insights.push({
         id: `opportunity_${Date.now()}_learning`,
         type: 'opportunity',
@@ -674,7 +674,7 @@ export class InsightGenerator {
           type: 'data',
           description: 'Consistency and engagement metrics',
           dataPoints: [{
-            consistencyScore: data.profile.behaviorPatterns.consistencyScore,
+            consistencyScore: data.profile.behaviorPatterns?.consistencyScore,
             completionRate: data.metrics.taskCompletionRate
           }],
           strength: 0.8
@@ -753,7 +753,7 @@ export class InsightGenerator {
           dataPoints: correlation.dataPoints,
           strength: Math.abs(correlation.coefficient)
         }],
-        actionItems: correlation.recommendations.map((rec, idx) => ({
+        actionItems: correlation.recommendations.map((rec: string, idx: number) => ({
           id: `action_${Date.now()}_corr_${idx}`,
           action: rec,
           priority: 'medium',
@@ -855,10 +855,10 @@ export class InsightGenerator {
       return { significantPattern: null };
     }
 
-    const moodValues = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1 };
+    const moodValues: Record<string, number> = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1, great: 5, good: 4, okay: 3, bad: 2, terrible: 1 };
     const moodScores = moods.map(m => ({
       date: new Date(m.createdAt),
-      score: moodValues[m.mood] || 3,
+      score: moodValues[m.mood as string] || 3,
       mood: m.mood
     }));
 
@@ -898,7 +898,7 @@ export class InsightGenerator {
   private detectMoodAnomaly(moods: Mood[]): any {
     if (moods.length < 7) return null;
 
-    const moodValues = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1 };
+    const moodValues: Record<string, number> = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1, great: 5, good: 4, okay: 3, bad: 2, terrible: 1 };
     const recentMoods = moods.slice(-7);
     
     const negativeCount = recentMoods.filter((m: any) => 
@@ -913,7 +913,7 @@ export class InsightGenerator {
         dataPoints: recentMoods.map(m => ({
           date: m.createdAt,
           mood: m.mood,
-          score: moodValues[m.mood] || 3
+          score: moodValues[m.mood as string] || 3
         })),
         actions: [
           'Consider reaching out to a friend or professional for support',
@@ -926,7 +926,7 @@ export class InsightGenerator {
     return null;
   }
 
-  private generateProgressProjection(goal: Goal, prediction: any): any {
+  private generateProgressProjection(goal: Goal, _prediction: any): any {
     const currentDate = new Date();
     const targetDate = new Date(goal.targetDate || currentDate.getTime() + 90 * 24 * 60 * 60 * 1000);
     
@@ -977,7 +977,7 @@ export class InsightGenerator {
   private calculateTaskMoodCorrelation(tasks: Task[], moods: Mood[]): any {
     // Group by day
     const dailyData: Record<string, { tasks: number; mood: number }> = {};
-    const moodValues = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1 };
+    const moodValues: Record<string, number> = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1, great: 5, good: 4, okay: 3, bad: 2, terrible: 1 };
 
     // Count completed tasks per day
     tasks.filter(t => t.status === 'completed').forEach(task => {
@@ -990,7 +990,7 @@ export class InsightGenerator {
     moods.forEach(mood => {
       const date = new Date(mood.createdAt).toDateString();
       if (dailyData[date]) {
-        dailyData[date].mood = moodValues[mood.mood] || 3;
+        dailyData[date].mood = moodValues[mood.mood as string] || 3;
       }
     });
 
@@ -1085,7 +1085,7 @@ export class InsightGenerator {
 
   private calculateTrend(
     items: any[],
-    dateField: string,
+    _dateField: string,
     filterFn?: (item: any) => boolean
   ): any {
     const filtered = filterFn ? items.filter(filterFn) : items;
@@ -1109,14 +1109,14 @@ export class InsightGenerator {
   }
 
   private calculateMoodTrend(moods: Mood[]): any {
-    const moodValues = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1 };
+    const moodValues: Record<string, number> = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1, great: 5, good: 4, okay: 3, bad: 2, terrible: 1 };
     
     const midpoint = Math.floor(moods.length / 2);
     const firstHalf = moods.slice(0, midpoint);
     const secondHalf = moods.slice(midpoint);
 
-    const firstAvg = firstHalf.reduce((sum, m) => sum + (moodValues[m.mood] || 3), 0) / firstHalf.length;
-    const secondAvg = secondHalf.reduce((sum, m) => sum + (moodValues[m.mood] || 3), 0) / secondHalf.length;
+    const firstAvg = firstHalf.reduce((sum, m) => sum + (moodValues[m.mood as string] || 3), 0) / firstHalf.length;
+    const secondAvg = secondHalf.reduce((sum, m) => sum + (moodValues[m.mood as string] || 3), 0) / secondHalf.length;
 
     const change = ((secondAvg - firstAvg) / firstAvg) * 100;
 
@@ -1180,8 +1180,8 @@ export class InsightGenerator {
   private calculateAverageMood(moods: Mood[]): number {
     if (moods.length === 0) return 3;
 
-    const moodValues = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1 };
-    const sum = moods.reduce((total, m) => total + (moodValues[m.mood] || 3), 0);
+    const moodValues: Record<string, number> = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1, great: 5, good: 4, okay: 3, bad: 2, terrible: 1 };
+    const sum = moods.reduce((total, m) => total + (moodValues[m.mood as string] || 3), 0);
     
     return sum / moods.length;
   }
@@ -1189,8 +1189,8 @@ export class InsightGenerator {
   private calculateMoodVariability(moods: Mood[]): number {
     if (moods.length < 2) return 0;
 
-    const moodValues = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1 };
-    const values = moods.map(m => moodValues[m.mood] || 3);
+    const moodValues: Record<string, number> = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1, great: 5, good: 4, okay: 3, bad: 2, terrible: 1 };
+    const values = moods.map(m => moodValues[m.mood as string] || 3);
     
     const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
     const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;

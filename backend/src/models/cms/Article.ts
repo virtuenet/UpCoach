@@ -98,7 +98,7 @@ export class Article extends Model<ArticleAttributes, ArticleCreationAttributes>
     let slug = baseSlug;
     let counter = 1;
     
-    while (await Article.findOne({ where: { slug, id: { [Op.ne]: this.id } } })) {
+    while (await Article.findOne({ where: { slug, id: { [Op.ne as any]: this.id } } })) {
       slug = `${baseSlug}-${counter}`;
       counter++;
     }
@@ -161,7 +161,7 @@ export class Article extends Model<ArticleAttributes, ArticleCreationAttributes>
     const whereClause: any = {};
 
     if (query) {
-      whereClause[Op.or] = [
+      whereClause[Op.or as any] = [
         { title: { [Op.iLike]: `%${query}%` } },
         { content: { [Op.iLike]: `%${query}%` } },
         { excerpt: { [Op.iLike]: `%${query}%` } },

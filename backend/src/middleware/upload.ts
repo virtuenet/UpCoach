@@ -1,5 +1,5 @@
 import multer from 'multer';
-import path from 'path';
+// import path from 'path';
 import { Request } from 'express';
 
 // Configure storage
@@ -54,7 +54,7 @@ const getFileSizeLimit = (mimetype: string): number => {
 
 // Custom file size validation
 const customFileSizeLimit = (req: Request, file: Express.Multer.File, callback: multer.FileFilterCallback) => {
-  const maxSize = getFileSizeLimit(file.mimetype);
+  const _maxSize = getFileSizeLimit(file.mimetype);
   
   // Note: This is called before the file is fully uploaded, so we can't check actual size here
   // We'll handle size validation in the controller after upload

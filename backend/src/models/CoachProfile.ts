@@ -247,13 +247,13 @@ export class CoachProfile extends Model {
   })
   metadata!: any;
 
-  @HasMany(() => CoachSession)
+  @HasMany(() => CoachSession as any)
   sessions!: CoachSession[];
 
-  @HasMany(() => CoachReview)
+  @HasMany(() => CoachReview as any)
   reviews!: CoachReview[];
 
-  @HasMany(() => CoachPackage)
+  @HasMany(() => CoachPackage as any)
   packages!: CoachPackage[];
 
   @CreatedAt
@@ -363,7 +363,7 @@ export class CoachProfile extends Model {
     }
 
     if (filters.search) {
-      where[Op.or] = [
+      where[Op.or as any] = [
         { displayName: { [Op.iLike]: `%${filters.search}%` } },
         { bio: { [Op.iLike]: `%${filters.search}%` } },
         { title: { [Op.iLike]: `%${filters.search}%` } },
