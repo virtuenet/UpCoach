@@ -397,12 +397,12 @@ const CoachContentEditor: React.FC = () => {
 
         <Grid container spacing={3}>
           {/* Main Content Area */}
-          <Grid xs={12} md={8}>
+          <Grid2 size={12}, md: {8}>
             <Card>
               <CardContent>
                 <Tabs
                   value={currentTab}
-                  onChange={(e, v) => setCurrentTab(v)}
+                  onChange={(_e, v) => setCurrentTab(v)}
                   sx={{ mb: 3 }}
                 >
                   <Tab label="Content" />
@@ -568,7 +568,7 @@ const CoachContentEditor: React.FC = () => {
           </Grid>
 
           {/* Sidebar */}
-          <Grid xs={12} md={4}>
+          <Grid xs={12}, md: {4}>
             {/* Validation Messages */}
             {validationMessages.length > 0 && (
               <Card sx={{ mb: 2 }}>

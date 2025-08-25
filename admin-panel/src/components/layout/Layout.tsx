@@ -3,7 +3,7 @@ import { Box, useMediaQuery, useTheme } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuthStore } from "../../stores/authStore";
 
 const MainContent = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'sidebarOpen'
@@ -29,7 +29,7 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, isLoading } = useAuthStore();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
@@ -39,7 +39,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   // Show loading state while checking auth
-  if (loading) {
+  if (isLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
         Loading...
@@ -51,7 +51,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} isMobile={isMobile} />
       <TopBar 
-        userName={user?.name || "Guest"} 
+        userName={user?.fullName || "Guest"} 
         userRole={user?.role || "user"}
         onMenuClick={handleSidebarToggle}
       />

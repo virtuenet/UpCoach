@@ -5,7 +5,6 @@ import {
   TrendingUp,
   Clock,
   CheckCircle,
-  Archive,
   PenTool,
   Calendar,
 } from "lucide-react";

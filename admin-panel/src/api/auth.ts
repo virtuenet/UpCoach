@@ -3,30 +3,48 @@ import type { User } from "../stores/authStore";
 
 export interface LoginResponse {
   user: User;
-  token: string;
-  refreshToken: string;
+  message?: string;
 }
 
 export const authApi = {
   login: async (email: string, password: string): Promise<LoginResponse> => {
-    const response = await apiClient.post("/auth/login", { email, password });
-    return response.data;
-  },
-
-  getProfile: async (token: string): Promise<User> => {
-    const response = await apiClient.get("/auth/profile", {
-      headers: { Authorization: `Bearer ${token}` },
+    // Credentials will be sent as httpOnly cookies
+    const response = await apiClient.post("/auth/login", { email, password }, {
+      withCredentials: true, // Include cookies in request
     });
     return response.data;
   },
 
-  logout: async (token: string): Promise<void> => {
-    await apiClient.post(
-      "/auth/logout",
-      {},
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      },
-    );
+  getProfile: async (): Promise<User> => {
+    // Cookie will be sent automatically with credentials
+    const response = await apiClient.get("/auth/profile", {
+      withCredentials: true,
+    });
+    return response.data;
+  },
+
+  logout: async (): Promise<void> => {
+    // This will clear the httpOnly cookie on the server
+    await apiClient.post("/auth/logout", {}, {
+      withCredentials: true,
+    });
+  },
+
+  refreshToken: async (): Promise<void> => {
+    // Refresh the auth token using the refresh token cookie
+    await apiClient.post("/auth/refresh", {}, {
+      withCredentials: true,
+    });
+  },
+
+  validateSession: async (): Promise<boolean> => {
+    try {
+      await apiClient.get("/auth/validate", {
+        withCredentials: true,
+      });
+      return true;
+    } catch {
+      return false;
+    }
   },
 };

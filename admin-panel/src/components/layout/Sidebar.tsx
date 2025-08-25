@@ -22,7 +22,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 
-const SidebarContainer = styled(Box)(({ theme }) => ({
+const SidebarContainer = styled(Box)(({ }) => ({
   width: 260,
   height: "100vh",
   position: "fixed",
@@ -36,13 +36,13 @@ const SidebarContainer = styled(Box)(({ theme }) => ({
   zIndex: 1200,
 }));
 
-const SidebarHeader = styled(Box)(({ theme }) => ({
+const SidebarHeader = styled(Box)(({ }) => ({
   padding: "20px",
   borderBottom: "1px solid #e5e7eb",
   backgroundColor: "#ffffff",
 }));
 
-const Logo = styled(Typography)(({ theme }) => ({
+const Logo = styled(Typography)(({ }) => ({
   color: "#000000",
   fontSize: "20px",
   fontWeight: 700,
@@ -75,7 +75,7 @@ const StyledListItem = styled(ListItem)<{ active?: boolean }>(
   }),
 );
 
-const SectionTitle = styled(Typography)(({ theme }) => ({
+const SectionTitle = styled(Typography)(({ }) => ({
   color: "#6b7280",
   fontSize: "12px",
   fontWeight: 600,

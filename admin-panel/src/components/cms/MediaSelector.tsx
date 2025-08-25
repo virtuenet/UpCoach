@@ -5,13 +5,14 @@ import {
   Upload,
   Image,
   Search,
-  FolderOpen,
+  
   List,
   Check,
   File,
   Video,
   Music,
 } from "lucide-react";
+import { sanitizeUrl, validateMediaUrl, createSafeImageProps, sanitizeFilename } from "../../utils/urlSanitizer";
 
 interface MediaItem {
   id: string;
@@ -151,7 +152,13 @@ const MediaSelector: React.FC<MediaSelectorProps> = ({
   const handleConfirm = () => {
     const selected = mediaItems.find((item) => selectedItems.includes(item.id));
     if (selected) {
-      onSelect(selected.url);
+      // Validate and sanitize URL before passing it
+      const sanitizedUrl = sanitizeUrl(selected.url);
+      if (sanitizedUrl !== '#' && validateMediaUrl(sanitizedUrl, selected.type)) {
+        onSelect(sanitizedUrl);
+      } else {
+        console.error('Invalid or unsafe media URL blocked');
+      }
     }
   };
 
@@ -277,8 +284,7 @@ const MediaSelector: React.FC<MediaSelectorProps> = ({
                       >
                         {item.type === "image" && item.thumbnailUrl ? (
                           <img
-                            src={item.thumbnailUrl}
-                            alt={item.filename}
+                            {...createSafeImageProps(item.thumbnailUrl, sanitizeFilename(item.filename))}
                             className="w-full h-40 object-cover"
                           />
                         ) : (

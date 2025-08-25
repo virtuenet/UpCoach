@@ -1,5 +1,4 @@
-import * as React from "react";
-import { Button } from "./button";
+import React from "react";
 
 export interface DateRange {
   from: Date | undefined;
@@ -17,11 +16,6 @@ export function DatePickerWithRange({
   onChange,
   className = "",
 }: DatePickerWithRangeProps) {
-  const formatDate = (date: Date | undefined) => {
-    if (!date) return "";
-    return date.toLocaleDateString();
-  };
-
   const handleFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = e.target.value ? new Date(e.target.value) : undefined;
     onChange?.({
@@ -38,20 +32,25 @@ export function DatePickerWithRange({
     });
   };
 
+  const formatDateForInput = (date: Date | undefined) => {
+    if (!date) return "";
+    return date.toISOString().split("T")[0];
+  };
+
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <input
         type="date"
-        value={value?.from ? value.from.toISOString().split("T")[0] : ""}
+        value={formatDateForInput(value?.from)}
         onChange={handleFromChange}
-        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
-      <span className="text-sm text-muted-foreground">to</span>
+      <span className="text-gray-500">to</span>
       <input
         type="date"
-        value={value?.to ? value.to.toISOString().split("T")[0] : ""}
+        value={formatDateForInput(value?.to)}
         onChange={handleToChange}
-        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
     </div>
   );

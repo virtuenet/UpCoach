@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "secondary" | "destructive" | "outline";

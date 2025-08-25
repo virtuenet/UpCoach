@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -38,7 +38,7 @@ import {
 } from "@/components/ui";
 import {
   Play,
-  Pause,
+  
   Square,
   MoreHorizontal,
   Plus,
@@ -252,7 +252,7 @@ export default function ExperimentsList({
                 className="pl-10"
               />
             </div>
-            <Select value={statusFilter} onValueChange={handleStatusFilter}>
+            <Select value={statusFilter} onChange={(e) => handleStatusFilter(e.target.value)}>
               <SelectTrigger className="w-48">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Filter by status" />
@@ -360,12 +360,13 @@ export default function ExperimentsList({
                           >
                             <BarChart3 className="h-4 w-4" />
                           </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+                          <DropdownMenu
+                            trigger={
                               <Button size="sm" variant="outline">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
-                            </DropdownMenuTrigger>
+                            }
+                          >
                             <DropdownMenuContent>
                               <DropdownMenuItem
                                 onClick={() => onEditExperiment(experiment)}

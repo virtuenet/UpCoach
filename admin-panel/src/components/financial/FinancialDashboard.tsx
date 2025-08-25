@@ -9,7 +9,8 @@ import {
 import { Button } from "../ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { DatePickerWithRange } from "../ui/date-picker-with-range";
-import { format } from "date-fns";
+import { DashboardSkeleton } from "../ui/dashboard-skeleton";
+
 import {
   ArrowUpIcon,
   ArrowDownIcon,
@@ -22,8 +23,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { financialApi, DashboardMetrics } from "../../services/financialApi";
-import LoadingSpinner from "../LoadingSpinner";
-import { DashboardSkeleton } from "../../../shared/components/ui/SkeletonLoader";
+// import { DashboardSkeleton } from "../../../shared/components/ui/SkeletonLoader"; // Component not found
 import { ProfitLossChart } from "./ProfitLossChart";
 import { MRRChart } from "./MRRChart";
 import { SubscriptionChart } from "./SubscriptionChart";
@@ -108,8 +108,15 @@ export function FinancialDashboard() {
         <div className="flex gap-2">
           <DatePickerWithRange
             className="w-[300px]"
-            date={dateRange}
-            onDateChange={setDateRange}
+            value={dateRange}
+            onChange={(range) => {
+              if (range) {
+                setDateRange({
+                  from: range.from || new Date(),
+                  to: range.to || new Date(),
+                });
+              }
+            }}
           />
           <Button
             variant="outline"

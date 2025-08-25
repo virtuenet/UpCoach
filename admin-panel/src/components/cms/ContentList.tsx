@@ -6,11 +6,8 @@ import {
   MoreVertical,
   Calendar,
   User,
-  Tag,
   FolderOpen,
-  Clock,
   CheckCircle,
-  XCircle,
   Archive,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";

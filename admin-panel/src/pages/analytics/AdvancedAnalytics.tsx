@@ -293,7 +293,7 @@ const AdvancedAnalytics: React.FC = () => {
         </Typography>
 
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-          <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)}>
+          <Tabs value={tabValue} onChange={(_e, v) => setTabValue(v)}>
             <Tab
               label="Cohort Analysis"
               icon={<People />}
@@ -481,7 +481,7 @@ const AdvancedAnalytics: React.FC = () => {
           </Box>
 
           <Grid container spacing={3}>
-            <Grid xs={12} md={4}>
+            <Grid xs={12}, md: {4}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -514,7 +514,7 @@ const AdvancedAnalytics: React.FC = () => {
               </Card>
             </Grid>
 
-            <Grid xs={12} md={8}>
+            <Grid xs={12}, md: {8}>
               {selectedFunnel && funnelAnalytics.length > 0 && (
                 <Card>
                   <CardContent>
@@ -528,7 +528,7 @@ const AdvancedAnalytics: React.FC = () => {
                         <YAxis />
                         <RechartsTooltip />
                         <Bar dataKey="users" fill="#8884d8">
-                          {funnelAnalytics.map((entry, index) => (
+                          {funnelAnalytics.map((_entry, index) => (
                             <Bar
                               key={`cell-${index}`}
                               fill={`rgba(136, 132, 216, ${1 - index * 0.2})`}
@@ -622,7 +622,7 @@ const AdvancedAnalytics: React.FC = () => {
                 .sort((a, b) => b.date.localeCompare(a.date))[0];
 
               return (
-                <Grid xs={12} md={4} key={feature as string}>
+                <Grid xs={12}, md: {4} key={feature as string}>
                   <Card>
                     <CardContent>
                       <Typography variant="h6">{feature}</Typography>
@@ -731,7 +731,7 @@ const AdvancedAnalytics: React.FC = () => {
               </Card>
             </Grid>
 
-            <Grid xs={12} md={6}>
+            <Grid xs={12}, md: {6}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -761,7 +761,7 @@ const AdvancedAnalytics: React.FC = () => {
               </Card>
             </Grid>
 
-            <Grid xs={12} md={6}>
+            <Grid xs={12}, md: {6}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>

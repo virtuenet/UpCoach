@@ -3,13 +3,7 @@ import {
   PieChart,
   Pie,
   Cell,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from "recharts";
 import { format } from "date-fns";
@@ -119,7 +113,7 @@ export function CostBreakdownChart({ dateRange }: CostBreakdownChartProps) {
                 fill="#8884d8"
                 dataKey="value"
               >
-                {pieData.map((entry: any, index: number) => (
+                {pieData.map((_entry: any, index: number) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={COLORS[index % COLORS.length]}

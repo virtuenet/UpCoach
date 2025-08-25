@@ -26,11 +26,11 @@ import {
   Target,
   AlertTriangle,
   CheckCircle,
-  Clock,
+  
   MessageSquare,
   BarChart3,
   Download,
-  Filter,
+  
   Search,
 } from "lucide-react";
 
@@ -104,7 +104,7 @@ const CoachAnalyticsDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState("weekly");
-  const [selectedCohort, setSelectedCohort] = useState("all");
+  const [selectedCohort, _setSelectedCohort] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -470,7 +470,7 @@ const CoachAnalyticsDashboard: React.FC = () => {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {moodChartData.map((entry, index) => (
+                  {moodChartData.map((_entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={colors[index % colors.length]}

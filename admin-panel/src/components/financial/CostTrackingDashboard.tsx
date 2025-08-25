@@ -7,9 +7,7 @@ import {
   Target,
   PieChart,
   BarChart3,
-  Filter,
   Download,
-  Calendar,
   Search,
 } from "lucide-react";
 import {
@@ -17,8 +15,6 @@ import {
   Area,
   BarChart,
   Bar,
-  LineChart,
-  Line,
   PieChart as RechartsPieChart,
   Pie,
   Cell,
@@ -39,17 +35,6 @@ const COLORS = [
   "#8884D8",
   "#82CA9D",
 ];
-
-interface CostEntry {
-  id: string;
-  category: string;
-  subcategory: string;
-  vendor: string;
-  amount: number;
-  date: string;
-  description: string;
-  status: string;
-}
 
 interface OptimizationRecommendation {
   category: string;
@@ -77,7 +62,6 @@ export const CostTrackingDashboard: React.FC = () => {
 
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedVendor, setSelectedVendor] = useState("all");
 
   useEffect(() => {
     fetchCostData();
@@ -308,7 +292,7 @@ export const CostTrackingDashboard: React.FC = () => {
           <div className="p-5">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <AlertTriangle className="h-6 w-6 text-yellow-600" />
+                <AlertTriangle className="h-6 w-6 text-green-600" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -382,7 +366,7 @@ export const CostTrackingDashboard: React.FC = () => {
                           fill="#8884d8"
                           dataKey="value"
                         >
-                          {breakdown.map((entry, index) => (
+                          {breakdown.map((_entry, index) => (
                             <Cell
                               key={`cell-${index}`}
                               fill={COLORS[index % COLORS.length]}
@@ -505,16 +489,16 @@ export const CostTrackingDashboard: React.FC = () => {
                         type="monotone"
                         dataKey="marketing"
                         stackId="1"
-                        stroke="#ff7300"
-                        fill="#ff7300"
+                        stroke="#ff7c7c"
+                        fill="#ff7c7c"
                         name="Marketing"
                       />
                       <Area
                         type="monotone"
                         dataKey="office"
                         stackId="1"
-                        stroke="#00ff00"
-                        fill="#00ff00"
+                        stroke="#8dd1e1"
+                        fill="#8dd1e1"
                         name="Office"
                       />
                     </AreaChart>
@@ -524,7 +508,7 @@ export const CostTrackingDashboard: React.FC = () => {
 
               <div className="grid gap-6 md:grid-cols-3">
                 {Object.entries(costData?.costsByCategory || {}).map(
-                  ([category, amount], index) => (
+                  ([category, amount]) => (
                     <div key={category} className="bg-gray-50 p-4 rounded-lg">
                       <h4 className="text-sm font-medium text-gray-900 mb-2">
                         {category

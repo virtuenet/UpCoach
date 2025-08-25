@@ -28,3 +28,19 @@ export * from './progress';
 export * from './slider';
 export * from './table';
 export * from './scroll-area';
+
+// Export advanced select components
+export {
+  Select as SelectContent,
+  SelectTrigger,
+  SelectValue,
+  SelectContent as SelectContentAdvanced,
+  SelectItem,
+} from './select-advanced';
+
+// Export alert dialog components
+export * from './alert-dialog';
+
+// Export pagination components
+export * from './pagination';export { DashboardSkeleton } from './dashboard-skeleton';
+export { SkipLink } from './skip-link';

@@ -9,7 +9,7 @@ class Logger {
 
   private log(level: LogLevel, message: string, context?: LogContext) {
     const timestamp = new Date().toISOString();
-    const logEntry = {
+    const _logEntry = {
       timestamp,
       level,
       message,
@@ -36,17 +36,17 @@ class Logger {
     // In production, you might want to send logs to a service
     if (!this.isDevelopment && level === 'error') {
       // Send to error tracking service
-      this.sendToErrorTracking(logEntry);
+      this.sendToErrorTracking(_logEntry);
     }
   }
 
-  private sendToErrorTracking(logEntry: any) {
+  private sendToErrorTracking(_logEntry: any) {
     // Integrate with your error tracking service (Sentry, LogRocket, etc.)
     // Example:
     // if (window.Sentry) {
     //   window.Sentry.captureMessage(logEntry.message, {
     //     level: 'error',
-    //     extra: logEntry,
+    //     extra: _logEntry,
     //   });
     // }
   }

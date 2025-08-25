@@ -235,7 +235,7 @@ const AdminCoachMarketplace: React.FC = () => {
 
       {/* Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6}, md: {3}>
           <Card>
             <CardContent>
               <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -261,7 +261,7 @@ const AdminCoachMarketplace: React.FC = () => {
           </Card>
         </Grid>
 
-        <Grid xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6}, md: {3}>
           <Card>
             <CardContent>
               <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -287,7 +287,7 @@ const AdminCoachMarketplace: React.FC = () => {
           </Card>
         </Grid>
 
-        <Grid xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6}, md: {3}>
           <Card>
             <CardContent>
               <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -315,7 +315,7 @@ const AdminCoachMarketplace: React.FC = () => {
           </Card>
         </Grid>
 
-        <Grid xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6}, md: {3}>
           <Card>
             <CardContent>
               <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -342,7 +342,7 @@ const AdminCoachMarketplace: React.FC = () => {
 
       {/* Tabs */}
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-        <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)}>
+        <Tabs value={tabValue} onChange={(_e, v) => setTabValue(v)}>
           <Tab label="Coaches" />
           <Tab label="Sessions" />
           <Tab label="Reviews" />
@@ -354,7 +354,7 @@ const AdminCoachMarketplace: React.FC = () => {
       <TabPanel value={tabValue} index={0}>
         <Box sx={{ mb: 3 }}>
           <Grid container spacing={2} alignItems="center">
-            <Grid xs={12} md={4}>
+            <Grid xs={12}, md: {4}>
               <TextField
                 fullWidth
                 placeholder="Search coaches..."
@@ -369,7 +369,7 @@ const AdminCoachMarketplace: React.FC = () => {
                 }}
               />
             </Grid>
-            <Grid xs={12} md={3}>
+            <Grid xs={12}, md: {3}>
               <FormControl fullWidth>
                 <InputLabel>Status</InputLabel>
                 <Select
@@ -383,7 +383,7 @@ const AdminCoachMarketplace: React.FC = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid xs={12} md={3}>
+            <Grid xs={12}, md: {3}>
               <FormControl fullWidth>
                 <InputLabel>Verification</InputLabel>
                 <Select
@@ -637,7 +637,7 @@ const AdminCoachMarketplace: React.FC = () => {
       {/* Analytics Tab */}
       <TabPanel value={tabValue} index={3}>
         <Grid container spacing={3}>
-          <Grid xs={12} md={6}>
+          <Grid xs={12}, md: {6}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -662,7 +662,7 @@ const AdminCoachMarketplace: React.FC = () => {
             </Card>
           </Grid>
 
-          <Grid xs={12} md={6}>
+          <Grid xs={12}, md: {6}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -682,7 +682,7 @@ const AdminCoachMarketplace: React.FC = () => {
             </Card>
           </Grid>
 
-          <Grid xs={12} md={6}>
+          <Grid xs={12}, md: {6}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -716,7 +716,7 @@ const AdminCoachMarketplace: React.FC = () => {
             </Card>
           </Grid>
 
-          <Grid xs={12} md={6}>
+          <Grid xs={12}, md: {6}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -751,14 +751,14 @@ const AdminCoachMarketplace: React.FC = () => {
         <DialogContent>
           {selectedCoach && (
             <Grid container spacing={2}>
-              <Grid xs={12} md={4}>
+              <Grid xs={12}, md: {4}>
                 <img
                   src={selectedCoach.profileImageUrl || "/default-avatar.png"}
                   alt={selectedCoach.displayName}
                   style={{ width: "100%", borderRadius: 8 }}
                 />
               </Grid>
-              <Grid xs={12} md={8}>
+              <Grid xs={12}, md: {8}>
                 <Typography variant="h6">
                   {selectedCoach.displayName}
                 </Typography>

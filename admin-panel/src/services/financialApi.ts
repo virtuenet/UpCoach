@@ -97,6 +97,13 @@ export interface FinancialSnapshot {
 }
 
 export const financialApi = {
+  getCostBreakdown: async (startDate?: string, endDate?: string) => {
+    const params = new URLSearchParams();
+    if (startDate) params.append("startDate", startDate);
+    if (endDate) params.append("endDate", endDate);
+    const response = await apiClient.get(`/analytics/costs/breakdown?${params}`);
+    return response.data;
+  },
   // Dashboard
   async getDashboardMetrics(): Promise<DashboardMetrics> {
     const response = await apiClient.get("/financial/dashboard");

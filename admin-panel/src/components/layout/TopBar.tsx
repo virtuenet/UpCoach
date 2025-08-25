@@ -13,7 +13,7 @@ import {
 import { Search, Notifications, Settings } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 
-const StyledAppBar = styled(AppBar)(({ theme }) => ({
+const StyledAppBar = styled(AppBar)(({ }) => ({
   backgroundColor: "#ffffff",
   borderBottom: "1px solid #e5e7eb",
   boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
@@ -24,7 +24,7 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
   zIndex: 1100,
 }));
 
-const SearchField = styled(TextField)(({ theme }) => ({
+const SearchField = styled(TextField)(({ }) => ({
   backgroundColor: "#f9fafb",
   borderRadius: "8px",
   "& .MuiOutlinedInput-root": {
@@ -49,7 +49,7 @@ const SearchField = styled(TextField)(({ theme }) => ({
   },
 }));
 
-const UserInfo = styled(Box)(({ theme }) => ({
+const UserInfo = styled(Box)(({ }) => ({
   display: "flex",
   alignItems: "center",
   gap: "12px",

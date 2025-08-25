@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import {
   Download,
   Mail,
-  Clock,
+  
   Play,
   Pause,
   RefreshCw,
@@ -33,7 +33,7 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState<Report[]>([]);
   const [scheduledJobs, setScheduledJobs] = useState<ScheduledJob[]>([]);
-  const [automationStatus, setAutomationStatus] = useState<any>(null);
+  const [_automationStatus, setAutomationStatus] = useState<any>(null);
   const [testEmail, setTestEmail] = useState("");
 
   useEffect(() => {

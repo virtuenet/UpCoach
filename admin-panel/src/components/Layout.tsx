@@ -1,4 +1,5 @@
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { SkipLink } from "./ui/skip-link";
 import {
   LayoutDashboard,
   Users,
@@ -16,7 +17,7 @@ import {
   Gift,
 } from "lucide-react";
 import { useAuthStore } from "../stores/authStore";
-import { SkipLink } from "../../shared/components/ui/SkipNavigation";
+// import { SkipLink } from "../../shared/components/ui/SkipNavigation"; // Component not found
 
 export default function Layout() {
   const navigate = useNavigate();
@@ -57,7 +58,7 @@ export default function Layout() {
 
   return (
     <>
-      <SkipLink href="#main-content" />
+      <SkipLink href="#main-content">Skip to main content</SkipLink>
       <SkipLink href="#navigation">Skip to navigation</SkipLink>
       <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
@@ -173,13 +174,13 @@ export default function Layout() {
               <div className="flex-shrink-0">
                 <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
                   <span className="text-white font-semibold text-sm">
-                    {user?.name?.charAt(0).toUpperCase() || "A"}
+                    {user?.fullName?.charAt(0).toUpperCase() || "A"}
                   </span>
                 </div>
               </div>
               <div className="ml-3">
                 <p className="text-sm font-medium text-black">
-                  {user?.name || "Admin User"}
+                  {user?.fullName || "Admin User"}
                 </p>
                 <p className="text-xs text-gray-600">
                   {user?.email || "admin@upcoach.app"}
@@ -243,13 +244,13 @@ export default function Layout() {
             <div className="flex items-center space-x-3">
               <div className="text-right">
                 <p className="text-sm font-medium text-black">
-                  {user?.name || "John Doe"}
+                  {user?.fullName || "John Doe"}
                 </p>
                 <p className="text-xs text-gray-600">{user?.role || "Admin"}</p>
               </div>
               <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
                 <span className="text-white font-semibold text-sm">
-                  {user?.name?.charAt(0).toUpperCase() || "J"}
+                  {user?.fullName?.charAt(0).toUpperCase() || "J"}
                 </span>
               </div>
             </div>

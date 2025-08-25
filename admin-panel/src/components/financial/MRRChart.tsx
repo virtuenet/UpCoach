@@ -1,18 +1,15 @@
 import { useState, useEffect } from "react";
 import {
-  LineChart,
-  Line,
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   Cell,
 } from "recharts";
-import { format } from "date-fns";
+
 import { financialApi } from "../../services/financialApi";
 
 export function MRRChart() {

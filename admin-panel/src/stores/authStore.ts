@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import { authApi } from "../api/auth";
 import toast from "react-hot-toast";
 
@@ -15,84 +14,85 @@ export interface User {
 
 interface AuthState {
   user: User | null;
-  token: string | null;
   isLoading: boolean;
+  isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   checkAuth: () => Promise<void>;
   updateUser: (data: Partial<User>) => void;
+  clearAuth: () => void;
 }
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
-      user: null,
-      token: null,
-      isLoading: false,
+// Remove persistence - auth will be managed by httpOnly cookies
+export const useAuthStore = create<AuthState>((set, get) => ({
+  user: null,
+  isLoading: false,
+  isAuthenticated: false,
 
-      login: async (email: string, password: string) => {
-        try {
-          set({ isLoading: true });
-          const response = await authApi.login(email, password);
+  login: async (email: string, password: string) => {
+    try {
+      set({ isLoading: true });
+      const response = await authApi.login(email, password);
 
-          if (
-            response.user.role !== "admin" &&
-            response.user.role !== "moderator"
-          ) {
-            throw new Error("Access denied. Admin privileges required.");
-          }
+      if (
+        response.user.role !== "admin" &&
+        response.user.role !== "moderator"
+      ) {
+        throw new Error("Access denied. Admin privileges required.");
+      }
 
-          set({
-            user: response.user,
-            token: response.token,
-            isLoading: false,
-          });
-          toast.success("Successfully logged in!");
-        } catch (error) {
-          set({ isLoading: false });
-          toast.error(error.message || "Login failed");
-          throw error;
-        }
-      },
+      // No token storage - it's in httpOnly cookie
+      set({
+        user: response.user,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+      toast.success("Successfully logged in!");
+    } catch (error: any) {
+      set({ isLoading: false, isAuthenticated: false });
+      toast.error(error.message || "Login failed");
+      throw error;
+    }
+  },
 
-      logout: () => {
-        set({ user: null, token: null });
-        localStorage.removeItem("auth-storage");
-        toast.success("Logged out successfully");
-      },
+  logout: async () => {
+    try {
+      // Call logout endpoint to clear httpOnly cookie
+      await authApi.logout();
+      set({ user: null, isAuthenticated: false });
+      toast.success("Logged out successfully");
+    } catch (error) {
+      // Even if logout fails, clear local state
+      set({ user: null, isAuthenticated: false });
+      toast.error("Logout failed, but session cleared");
+    }
+  },
 
-      checkAuth: async () => {
-        const { token } = get();
-        if (!token) {
-          set({ isLoading: false });
-          return;
-        }
+  checkAuth: async () => {
+    try {
+      set({ isLoading: true });
+      // This will use the httpOnly cookie automatically
+      const user = await authApi.getProfile();
 
-        try {
-          set({ isLoading: true });
-          const user = await authApi.getProfile(token);
+      if (user.role !== "admin" && user.role !== "moderator") {
+        set({ user: null, isAuthenticated: false, isLoading: false });
+        return;
+      }
 
-          if (user.role !== "admin" && user.role !== "moderator") {
-            set({ user: null, token: null, isLoading: false });
-            return;
-          }
+      set({ user, isAuthenticated: true, isLoading: false });
+    } catch (error) {
+      set({ user: null, isAuthenticated: false, isLoading: false });
+    }
+  },
 
-          set({ user, isLoading: false });
-        } catch (error) {
-          set({ user: null, token: null, isLoading: false });
-        }
-      },
+  updateUser: (data: Partial<User>) => {
+    const { user } = get();
+    if (user) {
+      set({ user: { ...user, ...data } });
+    }
+  },
 
-      updateUser: (data: Partial<User>) => {
-        const { user } = get();
-        if (user) {
-          set({ user: { ...user, ...data } });
-        }
-      },
-    }),
-    {
-      name: "auth-storage",
-      partialize: (state) => ({ token: state.token }),
-    },
-  ),
-);
+  clearAuth: () => {
+    set({ user: null, isAuthenticated: false });
+  },
+}));

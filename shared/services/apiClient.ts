@@ -3,11 +3,11 @@
  * Creates configured axios instances for admin and CMS panels
  */
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 
 export interface ApiClientConfig {
   baseURL: string;
   timeout?: number;
+  withCredentials?: boolean;
   getAuthToken?: () => string | null;
   getCSRFToken?: () => Promise<string | null>;
   skipCSRF?: boolean;
@@ -26,6 +26,7 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
   const client = axios.create({
     baseURL: config.baseURL,
     timeout: config.timeout || 30000,
+    withCredentials: config.withCredentials || false,
     headers: {
       'Content-Type': 'application/json',
     },

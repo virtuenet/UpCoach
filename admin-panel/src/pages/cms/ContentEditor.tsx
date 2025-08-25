@@ -304,12 +304,12 @@ const ContentEditor: React.FC = () => {
 
         <Grid container spacing={3}>
           {/* Main Content Area */}
-          <Grid xs={12} md={8}>
+          <Grid2 size={12}, md: {8}>
             <Card>
               <CardContent>
                 <Tabs
                   value={currentTab}
-                  onChange={(e, v) => setCurrentTab(v)}
+                  onChange={(_e, v) => setCurrentTab(v)}
                   sx={{ mb: 3 }}
                 >
                   <Tab label="Content" />
@@ -452,7 +452,7 @@ const ContentEditor: React.FC = () => {
                 {currentTab === 2 && (
                   <Box>
                     <Grid container spacing={2}>
-                      <Grid xs={12} md={6}>
+                      <Grid xs={12}, md: {6}>
                         <FormControl fullWidth sx={{ mb: 2 }}>
                           <InputLabel>Status</InputLabel>
                           <Select
@@ -473,7 +473,7 @@ const ContentEditor: React.FC = () => {
                         </FormControl>
                       </Grid>
 
-                      <Grid xs={12} md={6}>
+                      <Grid xs={12}, md: {6}>
                         <FormControl fullWidth sx={{ mb: 2 }}>
                           <InputLabel>Visibility</InputLabel>
                           <Select
@@ -567,7 +567,7 @@ const ContentEditor: React.FC = () => {
           </Grid>
 
           {/* Sidebar */}
-          <Grid xs={12} md={4}>
+          <Grid xs={12}, md: {4}>
             {/* Category & Tags */}
             <Card sx={{ mb: 2 }}>
               <CardContent>

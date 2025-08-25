@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Box,
-  Grid,
   TextField,
   Typography,
   Chip,
@@ -13,7 +12,6 @@ import {
   ListItemIcon,
   ListItemText,
   IconButton,
-  Tooltip,
   Button,
 } from "@mui/material";
 import {
@@ -21,7 +19,6 @@ import {
   Warning as WarningIcon,
   Info as InfoIcon,
   Refresh as RefreshIcon,
-  Help as HelpIcon,
 } from "@mui/icons-material";
 
 interface SEOHelperProps {
@@ -303,8 +300,8 @@ const SEOHelper: React.FC<SEOHelperProps> = ({
 
   return (
     <Box>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
+      <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+        <Box sx={{ flex: "1 1 45%" }}>
           <TextField
             fullWidth
             label="SEO Title"
@@ -394,9 +391,9 @@ const SEOHelper: React.FC<SEOHelperProps> = ({
               </Box>
             </Alert>
           )}
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} md={6}>
+        <Box sx={{ flex: "1 1 45%" }}>
           <Paper elevation={1} sx={{ p: 2 }}>
             <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
               <Typography variant="h6" sx={{ flexGrow: 1 }}>
@@ -478,8 +475,8 @@ const SEOHelper: React.FC<SEOHelperProps> = ({
               </>
             ) : null}
           </Paper>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </Box>
   );
 };
