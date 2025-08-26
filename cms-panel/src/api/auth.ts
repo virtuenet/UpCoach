@@ -1,5 +1,6 @@
 import { apiClient } from './client'
 import type { User } from '../stores/authStore'
+import { withRateLimit, RATE_LIMITS } from '../utils/rateLimiter'
 
 export interface LoginResponse {
   user: User
@@ -9,13 +10,15 @@ export interface LoginResponse {
 
 export const authApi = {
   login: async (email: string, password: string): Promise<LoginResponse> => {
-    const response = await apiClient.post('/auth/login', { 
-      email, 
-      password,
-      // Request secure cookie-based auth
-      secureCookies: true 
-    })
-    return response.data
+    return withRateLimit(async () => {
+      const response = await apiClient.post('/auth/login', { 
+        email, 
+        password,
+        // Request secure cookie-based auth
+        secureCookies: true 
+      })
+      return response.data
+    }, RATE_LIMITS.LOGIN)
   },
 
   getProfile: async (): Promise<User> => {

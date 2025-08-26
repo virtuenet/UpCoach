@@ -1,4 +1,6 @@
 import { apiClient } from './client'
+import { validateFile, escapeHTML } from '../utils/inputValidation'
+import { withRateLimit, RATE_LIMITS } from '../utils/rateLimiter'
 
 export interface MediaItem {
   id: string
@@ -85,24 +87,58 @@ export const mediaApi = {
     caption?: string
     tags?: string
   } = {}): Promise<UploadResponse> => {
-    const formData = new FormData()
-    
+    // Validate files before upload
     const fileArray = Array.from(files)
-    fileArray.forEach((file) => {
-      formData.append('files', file)
-    })
+    const validationErrors: string[] = []
     
-    if (options.folder) formData.append('folder', options.folder)
-    if (options.alt) formData.append('alt', options.alt)
-    if (options.caption) formData.append('caption', options.caption)
-    if (options.tags) formData.append('tags', options.tags)
+    for (const file of fileArray) {
+      const validation = validateFile(file, {
+        maxSize: 50 * 1024 * 1024, // 50MB
+        allowedTypes: [
+          'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+          'video/mp4', 'video/webm', 'video/ogg',
+          'audio/mpeg', 'audio/ogg', 'audio/wav',
+          'application/pdf', 'text/plain', 'text/csv'
+        ],
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'mp4', 'webm', 'ogg', 'mp3', 'wav', 'pdf', 'txt', 'csv']
+      })
+      
+      if (!validation.valid) {
+        validationErrors.push(`${file.name}: ${validation.errors.join(', ')}`)
+      }
+    }
+    
+    if (validationErrors.length > 0) {
+      throw new Error(`File validation failed: ${validationErrors.join('; ')}`)
+    }
 
-    const response = await apiClient.post('/cms/media/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-    return response.data
+    return withRateLimit(async () => {
+      const formData = new FormData()
+      
+      fileArray.forEach((file) => {
+        formData.append('files', file)
+      })
+      
+      // Sanitize and validate folder path
+      if (options.folder) {
+        const sanitizedFolder = options.folder.replace(/[^a-zA-Z0-9-_/]/g, '').replace(/\.\./, '')
+        if (sanitizedFolder.length > 0) {
+          formData.append('folder', sanitizedFolder)
+        }
+      }
+      
+      // Escape HTML in text fields
+      if (options.alt) formData.append('alt', escapeHTML(options.alt))
+      if (options.caption) formData.append('caption', escapeHTML(options.caption))
+      if (options.tags) formData.append('tags', escapeHTML(options.tags))
+
+      const response = await apiClient.post('/cms/media/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      return response.data
+    }, RATE_LIMITS.MEDIA_UPLOAD)
   },
 
   /**

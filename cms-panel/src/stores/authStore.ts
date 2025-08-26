@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { authApi } from '../api/auth'
 import { secureAuth } from '../services/secureAuth'
+import { logger } from '../utils/logger'
 import toast from 'react-hot-toast'
 
 export interface User {
@@ -43,7 +44,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         await get().checkAuth();
       }
     } catch (error) {
-      console.error('Failed to initialize auth:', error);
+      logger.error('Failed to initialize auth', error as Error);
     }
   },
 
@@ -81,7 +82,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       // Redirect to login page
       window.location.href = '/login';
     } catch (error) {
-      console.error('Logout error:', error);
+      logger.error('Logout error', error as Error);
       // Still clear local state even if server logout fails
       set({ user: null, isAuthenticated: false });
     }

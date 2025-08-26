@@ -4,6 +4,7 @@
  */
 
 import { apiClient } from '../api/client';
+import { logger } from '../utils/logger';
 
 export interface SecureAuthConfig {
   tokenCookieName?: string;
@@ -37,7 +38,7 @@ class SecureAuthService {
       // Add CSRF token to all requests
       apiClient.defaults.headers.common[this.config.csrfHeaderName] = this.csrfToken;
     } catch (error) {
-      console.error('Failed to initialize secure auth:', error);
+      logger.error('Failed to initialize secure auth', error as Error);
     }
   }
 
@@ -76,7 +77,7 @@ class SecureAuthService {
     try {
       await apiClient.post('/auth/logout');
     } catch (error) {
-      console.error('Failed to clear session:', error);
+      logger.error('Failed to clear session', error as Error);
     } finally {
       // Clear CSRF token
       this.csrfToken = null;
