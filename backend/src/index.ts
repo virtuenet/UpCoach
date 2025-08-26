@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import dotenv from 'dotenv';
+import rateLimit from 'express-rate-limit';
 import { config } from './config/environment';
 import { initializeDatabase } from './config/database';
 import { redis } from './services/redis';
@@ -47,23 +48,8 @@ app.use('/webhook/', webhookLimiter);
 
 app.use(compression());
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: config.rateLimit.windowMs,
-  max: config.rateLimit.maxRequests,
-  message: {
-    error: 'Too many requests',
-    message: 'Too many requests from this IP, please try again later.',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-  skip: (req) => {
-    // Skip rate limiting for health checks
-    return req.path === '/health';
-  },
-});
-
-app.use('/api/', limiter);
+// Rate limiting is already applied above via apiLimiter and webhookLimiter
+// Removed duplicate rate limiter to avoid conflicts
 
 // CORS configuration
 app.use(cors({
@@ -187,9 +173,38 @@ app.use(errorMiddleware);
 
 // Helper functions
 async function testDatabaseConnection(): Promise<boolean> {
+  const timeoutMs = 5000; // 5 second timeout
+  
   try {
-    // This will be implemented once we fix the database service
-    return true;
+    // Create a timeout promise
+    const timeoutPromise = new Promise<boolean>((_, reject) => {
+      setTimeout(() => reject(new Error('Database health check timeout')), timeoutMs);
+    });
+    
+    // Create the actual health check promise
+    const healthCheckPromise = (async () => {
+      const { sequelize } = await import('./config/database');
+      
+      // Test authentication
+      await sequelize.authenticate();
+      
+      // Test a simple query
+      const result = await sequelize.query('SELECT 1+1 as result', {
+        raw: true,
+        type: sequelize.QueryTypes.SELECT
+      });
+      
+      return result && result[0] && (result[0] as any).result === 2;
+    })();
+    
+    // Race between timeout and health check
+    const isHealthy = await Promise.race([healthCheckPromise, timeoutPromise]);
+    
+    if (isHealthy) {
+      logger.info('Database health check passed');
+    }
+    
+    return isHealthy;
   } catch (error) {
     logger.error('Database health check failed:', error);
     return false;
@@ -215,16 +230,16 @@ async function initializeServices() {
     // Initialize scheduler service
     SchedulerService.initialize();
     
-    console.log('All services initialized successfully');
+    logger.info('All services initialized successfully');
   } catch (error) {
-    console.error('Failed to initialize services:', error);
+    logger.error('Failed to initialize services:', error);
     process.exit(1);
   }
 }
 
 // Start server
 const server = app.listen(PORT, async () => {
-  console.log(`Server is running on port ${PORT}`);
+  logger.info(`Server is running on port ${PORT}`);
   
   // Initialize services after server starts
   await initializeServices();

@@ -73,7 +73,7 @@ export class ArticleController {
         },
       });
     } catch (error) {
-      console.error('Error fetching articles:', error);
+      logger.error('Error fetching articles:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to fetch articles',
@@ -148,7 +148,7 @@ export class ArticleController {
         data: article,
       });
     } catch (error) {
-      console.error('Error fetching article:', error);
+      logger.error('Error fetching article:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to fetch article',
@@ -242,7 +242,7 @@ export class ArticleController {
         message: 'Article created successfully',
       });
     } catch (error) {
-      console.error('Error creating article:', error);
+      logger.error('Error creating article:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to create article',
@@ -341,7 +341,7 @@ export class ArticleController {
         message: 'Article updated successfully',
       });
     } catch (error) {
-      console.error('Error updating article:', error);
+      logger.error('Error updating article:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to update article',
@@ -382,7 +382,7 @@ export class ArticleController {
         message: 'Article deleted successfully',
       });
     } catch (error) {
-      console.error('Error deleting article:', error);
+      logger.error('Error deleting article:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to delete article',
@@ -424,7 +424,7 @@ export class ArticleController {
         message: 'Article published successfully',
       });
     } catch (error) {
-      console.error('Error publishing article:', error);
+      logger.error('Error publishing article:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to publish article',
@@ -466,7 +466,7 @@ export class ArticleController {
         message: 'Article archived successfully',
       });
     } catch (error) {
-      console.error('Error archiving article:', error);
+      logger.error('Error archiving article:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to archive article',
@@ -490,7 +490,7 @@ export class ArticleController {
         data: articles,
       });
     } catch (error) {
-      console.error('Error fetching popular articles:', error);
+      logger.error('Error fetching popular articles:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to fetch popular articles',
@@ -527,7 +527,7 @@ export class ArticleController {
         data: articles,
       });
     } catch (error) {
-      console.error('Error searching articles:', error);
+      logger.error('Error searching articles:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to search articles',
@@ -567,7 +567,7 @@ export class ArticleController {
         },
       });
     } catch (error) {
-      console.error('Error fetching article analytics:', error);
+      logger.error('Error fetching article analytics:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to fetch article analytics',

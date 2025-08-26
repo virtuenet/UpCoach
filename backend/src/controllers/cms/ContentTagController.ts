@@ -47,7 +47,7 @@ export class ContentTagController {
         }
       });
     } catch (error) {
-      console.error('Error fetching tags:', error);
+      logger.error('Error fetching tags:', error);
       res.status(500).json({ error: 'Failed to fetch tags' });
     }
   }
@@ -81,7 +81,7 @@ export class ContentTagController {
 
       (res as any).json(tag);
     } catch (error) {
-      console.error('Error fetching tag:', error);
+      logger.error('Error fetching tag:', error);
       res.status(500).json({ error: 'Failed to fetch tag' });
     }
   }
@@ -113,7 +113,7 @@ export class ContentTagController {
 
       res.status(201).json(tag);
     } catch (error) {
-      console.error('Error creating tag:', error);
+      logger.error('Error creating tag:', error);
       res.status(500).json({ error: 'Failed to create tag' });
     }
   }
@@ -145,7 +145,7 @@ export class ContentTagController {
       await tag.update(updates);
       (res as any).json(tag);
     } catch (error) {
-      console.error('Error updating tag:', error);
+      logger.error('Error updating tag:', error);
       res.status(500).json({ error: 'Failed to update tag' });
     }
   }
@@ -168,7 +168,7 @@ export class ContentTagController {
       await tag.destroy();
       (res as any).json({ message: 'Tag deleted successfully' });
     } catch (error) {
-      console.error('Error deleting tag:', error);
+      logger.error('Error deleting tag:', error);
       res.status(500).json({ error: 'Failed to delete tag' });
     }
   }
@@ -229,7 +229,7 @@ export class ContentTagController {
 
       (res as any).json({ message: 'Tags merged successfully' });
     } catch (error) {
-      console.error('Error merging tags:', error);
+      logger.error('Error merging tags:', error);
       res.status(500).json({ error: 'Failed to merge tags' });
     }
   }
@@ -250,7 +250,7 @@ export class ContentTagController {
 
       (res as any).json(tags);
     } catch (error) {
-      console.error('Error fetching popular tags:', error);
+      logger.error('Error fetching popular tags:', error);
       res.status(500).json({ error: 'Failed to fetch popular tags' });
     }
   }
@@ -276,7 +276,7 @@ export class ContentTagController {
 
       (res as any).json(tags);
     } catch (error) {
-      console.error('Error fetching tag suggestions:', error);
+      logger.error('Error fetching tag suggestions:', error);
       res.status(500).json({ error: 'Failed to fetch tag suggestions' });
     }
   }

@@ -51,7 +51,7 @@ export function setupRetry(
       );
     },
     onRetry: (retryCount, _error, requestConfig) => {
-      console.log(
+      logger.info(
         `Retry attempt ${retryCount} for ${requestConfig.method?.toUpperCase()} ${requestConfig.url}`
       );
     },

@@ -96,7 +96,7 @@ export class MediaController {
           
           thumbnailUrl = `/uploads/media/${path.basename(thumbnailPath)}`;
         } catch (error) {
-          console.error('Error processing image:', error);
+          logger.error('Error processing image:', error);
         }
       }
 
@@ -123,7 +123,7 @@ export class MediaController {
 
       (res as any).json(media);
     } catch (error) {
-      console.error('Error processing upload:', error);
+      logger.error('Error processing upload:', error);
       res.status(500).json({ error: 'Failed to process upload' });
     }
   }
@@ -160,7 +160,7 @@ export class MediaController {
             
             thumbnailUrl = `/uploads/media/${path.basename(thumbnailPath)}`;
           } catch (error) {
-            console.error('Error processing image:', error);
+            logger.error('Error processing image:', error);
           }
         }
 
@@ -184,7 +184,7 @@ export class MediaController {
 
       (res as any).json(mediaItems);
     } catch (error) {
-      console.error('Error processing multiple uploads:', error);
+      logger.error('Error processing multiple uploads:', error);
       res.status(500).json({ error: 'Failed to process uploads' });
     }
   }
@@ -244,7 +244,7 @@ export class MediaController {
         }
       });
     } catch (error) {
-      console.error('Error fetching media:', error);
+      logger.error('Error fetching media:', error);
       res.status(500).json({ error: 'Failed to fetch media' });
     }
   }
@@ -275,7 +275,7 @@ export class MediaController {
 
       (res as any).json(media);
     } catch (error) {
-      console.error('Error fetching media:', error);
+      logger.error('Error fetching media:', error);
       res.status(500).json({ error: 'Failed to fetch media' });
     }
   }
@@ -303,7 +303,7 @@ export class MediaController {
 
       (res as any).json(media);
     } catch (error) {
-      console.error('Error updating media:', error);
+      logger.error('Error updating media:', error);
       res.status(500).json({ error: 'Failed to update media' });
     }
   }
@@ -330,13 +330,13 @@ export class MediaController {
           await fs.unlink(path.join(process.cwd(), media.thumbnailUrl));
         }
       } catch (error) {
-        console.error('Error deleting files:', error);
+        logger.error('Error deleting files:', error);
       }
 
       await media.destroy();
       (res as any).json({ message: 'Media deleted successfully' });
     } catch (error) {
-      console.error('Error deleting media:', error);
+      logger.error('Error deleting media:', error);
       res.status(500).json({ error: 'Failed to delete media' });
     }
   }
@@ -375,7 +375,7 @@ export class MediaController {
         recentUploads
       });
     } catch (error) {
-      console.error('Error fetching media stats:', error);
+      logger.error('Error fetching media stats:', error);
       res.status(500).json({ error: 'Failed to fetch media stats' });
     }
   }

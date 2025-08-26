@@ -83,7 +83,7 @@ export class ContentController {
         }
       });
     } catch (error) {
-      console.error('Error fetching content:', error);
+      logger.error('Error fetching content:', error);
       res.status(500).json({ error: 'Failed to fetch content' });
     }
   }
@@ -130,7 +130,7 @@ export class ContentController {
 
       (res as any).json(content);
     } catch (error) {
-      console.error('Error fetching content:', error);
+      logger.error('Error fetching content:', error);
       res.status(500).json({ error: 'Failed to fetch content' });
     }
   }
@@ -210,7 +210,7 @@ export class ContentController {
 
       res.status(201).json(completeContent);
     } catch (error) {
-      console.error('Error creating content:', error);
+      logger.error('Error creating content:', error);
       res.status(500).json({ error: 'Failed to create content' });
     }
   }
@@ -277,7 +277,7 @@ export class ContentController {
 
       (res as any).json(updatedContent);
     } catch (error) {
-      console.error('Error updating content:', error);
+      logger.error('Error updating content:', error);
       res.status(500).json({ error: 'Failed to update content' });
     }
   }
@@ -300,7 +300,7 @@ export class ContentController {
       await content.destroy();
       (res as any).json({ message: 'Content deleted successfully' });
     } catch (error) {
-      console.error('Error deleting content:', error);
+      logger.error('Error deleting content:', error);
       res.status(500).json({ error: 'Failed to delete content' });
     }
   }
@@ -332,7 +332,7 @@ export class ContentController {
 
       (res as any).json({ message: `Updated ${ids.length} content items` });
     } catch (error) {
-      console.error('Error bulk updating content:', error);
+      logger.error('Error bulk updating content:', error);
       res.status(500).json({ error: 'Failed to bulk update content' });
     }
   }
@@ -362,7 +362,7 @@ export class ContentController {
 
       (res as any).json(analytics);
     } catch (error) {
-      console.error('Error fetching content analytics:', error);
+      logger.error('Error fetching content analytics:', error);
       res.status(500).json({ error: 'Failed to fetch content analytics' });
     }
   }

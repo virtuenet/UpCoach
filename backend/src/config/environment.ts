@@ -107,9 +107,9 @@ const envSchema = z.object({
 const envResult = envSchema.safeParse(process.env);
 
 if (!envResult.success) {
-  console.error('❌ Environment validation failed:');
+  logger.error('❌ Environment validation failed:');
   envResult.error.issues.forEach((issue) => {
-    console.error(`  - ${issue.path.join('.')}: ${issue.message}`);
+    logger.error(`  - ${issue.path.join('.')}: ${issue.message}`);
   });
   process.exit(1);
 }
@@ -125,7 +125,7 @@ if (env.NODE_ENV === 'production') {
   
   secretValidation.forEach(({ name, value }) => {
     if (!validateSecret(value, 64)) {
-      console.error(`❌ Security validation failed for ${name}: Secret is weak or contains placeholder values`);
+      logger.error(`❌ Security validation failed for ${name}: Secret is weak or contains placeholder values`);
       process.exit(1);
     }
   });

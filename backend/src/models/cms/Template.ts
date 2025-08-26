@@ -229,17 +229,17 @@ export class Template extends Model<TemplateAttributes, TemplateCreationAttribut
       publishAt.setMinutes(publishAt.getMinutes() + this.automation.publishDelay);
 
       // In a real implementation, you would use a job queue like Bull or Agenda
-      console.log(`Scheduling content ${contentId} to publish at ${publishAt}`);
+      logger.info(`Scheduling content ${contentId} to publish at ${publishAt}`);
     }
 
     // Schedule social media posting
     if (this.automation.socialMediaPost) {
-      console.log(`Scheduling social media post for content ${contentId}`);
+      logger.info(`Scheduling social media post for content ${contentId}`);
     }
 
     // Schedule SEO optimization
     if (this.automation.seoOptimization) {
-      console.log(`Scheduling SEO optimization for content ${contentId}`);
+      logger.info(`Scheduling SEO optimization for content ${contentId}`);
     }
   }
 }

@@ -10,7 +10,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const migrateModels = async () => {
-  console.log('🔄 Starting CMS model consolidation...\n');
+  logger.info('🔄 Starting CMS model consolidation...\n');
 
   // Connect to database
   const sequelize = new Sequelize(process.env.DATABASE_URL || '', {
@@ -19,7 +19,7 @@ const migrateModels = async () => {
 
   try {
     await sequelize.authenticate();
-    console.log('✅ Database connected');
+    logger.info('✅ Database connected');
 
     // Create unified_contents table if not exists
     await sequelize.query(`
@@ -72,10 +72,10 @@ const migrateModels = async () => {
       );
     `);
 
-    console.log('✅ unified_contents table ready');
+    logger.info('✅ unified_contents table ready');
 
     // Migrate Articles
-    console.log('\n📝 Migrating articles...');
+    logger.info('\n📝 Migrating articles...');
     const [articles] = await sequelize.query(`
       SELECT * FROM articles WHERE deleted_at IS NULL
     `);
@@ -120,10 +120,10 @@ const migrateModels = async () => {
         }
       });
     }
-    console.log(`✅ Migrated ${(articles as any[]).length} articles`);
+    logger.info(`✅ Migrated ${(articles as any[]).length} articles`);
 
     // Migrate Contents
-    console.log('\n📄 Migrating contents...');
+    logger.info('\n📄 Migrating contents...');
     const [contents] = await sequelize.query(`
       SELECT * FROM contents
     `);
@@ -174,10 +174,10 @@ const migrateModels = async () => {
         }
       });
     }
-    console.log(`✅ Migrated ${(contents as any[]).length} contents`);
+    logger.info(`✅ Migrated ${(contents as any[]).length} contents`);
 
     // Migrate Courses
-    console.log('\n🎓 Migrating courses...');
+    logger.info('\n🎓 Migrating courses...');
     const [courses] = await sequelize.query(`
       SELECT * FROM courses
     `);
@@ -222,10 +222,10 @@ const migrateModels = async () => {
         }
       });
     }
-    console.log(`✅ Migrated ${(courses as any[]).length} courses`);
+    logger.info(`✅ Migrated ${(courses as any[]).length} courses`);
 
     // Migrate Templates
-    console.log('\n📋 Migrating templates...');
+    logger.info('\n📋 Migrating templates...');
     const [templates] = await sequelize.query(`
       SELECT * FROM templates
     `);
@@ -262,10 +262,10 @@ const migrateModels = async () => {
         }
       });
     }
-    console.log(`✅ Migrated ${(templates as any[]).length} templates`);
+    logger.info(`✅ Migrated ${(templates as any[]).length} templates`);
 
     // Create indexes
-    console.log('\n📊 Creating indexes...');
+    logger.info('\n📊 Creating indexes...');
     await sequelize.query(`
       CREATE INDEX IF NOT EXISTS idx_unified_contents_type ON unified_contents(type);
       CREATE INDEX IF NOT EXISTS idx_unified_contents_status ON unified_contents(status);
@@ -275,10 +275,10 @@ const migrateModels = async () => {
       CREATE INDEX IF NOT EXISTS idx_unified_contents_published ON unified_contents(published_at);
       CREATE INDEX IF NOT EXISTS idx_unified_contents_premium ON unified_contents(is_premium);
     `);
-    console.log('✅ Indexes created');
+    logger.info('✅ Indexes created');
 
     // Update model imports
-    console.log('\n🔧 Updating model imports...');
+    logger.info('\n🔧 Updating model imports...');
     
     // Create mapping file
     const mappingContent = `
@@ -301,16 +301,16 @@ export default UnifiedContent;
       mappingContent
     );
     
-    console.log('✅ Model mapping file created');
+    logger.info('✅ Model mapping file created');
 
-    console.log('\n✨ CMS model consolidation complete!');
-    console.log('\nNext steps:');
-    console.log('1. Update service files to use UnifiedContent model');
-    console.log('2. Test all CMS functionality');
-    console.log('3. Remove old model files once verified');
+    logger.info('\n✨ CMS model consolidation complete!');
+    logger.info('\nNext steps:');
+    logger.info('1. Update service files to use UnifiedContent model');
+    logger.info('2. Test all CMS functionality');
+    logger.info('3. Remove old model files once verified');
 
   } catch (error) {
-    console.error('❌ Migration failed:', error);
+    logger.error('❌ Migration failed:', error);
     process.exit(1);
   } finally {
     await sequelize.close();

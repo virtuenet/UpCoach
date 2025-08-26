@@ -79,7 +79,7 @@ export class TemplateController {
         },
       });
     } catch (error) {
-      console.error('Error fetching templates:', error);
+      logger.error('Error fetching templates:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to fetch templates',
@@ -102,7 +102,7 @@ export class TemplateController {
         data: templates.slice(0, Number(limit)),
       });
     } catch (error) {
-      console.error('Error fetching popular templates:', error);
+      logger.error('Error fetching popular templates:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to fetch popular templates',
@@ -133,7 +133,7 @@ export class TemplateController {
         data: templates,
       });
     } catch (error) {
-      console.error('Error searching templates:', error);
+      logger.error('Error searching templates:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to search templates',
@@ -193,7 +193,7 @@ export class TemplateController {
         message: 'Template created successfully',
       });
     } catch (error) {
-      console.error('Error creating template:', error);
+      logger.error('Error creating template:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to create template',
@@ -232,7 +232,7 @@ export class TemplateController {
         data: template,
       });
     } catch (error) {
-      console.error('Error fetching template:', error);
+      logger.error('Error fetching template:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to fetch template',
@@ -292,7 +292,7 @@ export class TemplateController {
         message: 'Template updated successfully',
       });
     } catch (error) {
-      console.error('Error updating template:', error);
+      logger.error('Error updating template:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to update template',
@@ -334,7 +334,7 @@ export class TemplateController {
         message: 'Template deleted successfully',
       });
     } catch (error) {
-      console.error('Error deleting template:', error);
+      logger.error('Error deleting template:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to delete template',
@@ -358,7 +358,7 @@ export class TemplateController {
         message: 'Template duplicated successfully',
       });
     } catch (error) {
-      console.error('Error duplicating template:', error);
+      logger.error('Error duplicating template:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to duplicate template',
@@ -406,7 +406,7 @@ export class TemplateController {
         message: 'Content created from template successfully',
       });
     } catch (error) {
-      console.error('Error creating content from template:', error);
+      logger.error('Error creating content from template:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to create content from template',
@@ -427,7 +427,7 @@ export class TemplateController {
         data: templates,
       });
     } catch (error) {
-      console.error('Error fetching user templates:', error);
+      logger.error('Error fetching user templates:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to fetch user templates',
@@ -477,7 +477,7 @@ export class TemplateController {
         data: categories,
       });
     } catch (error) {
-      console.error('Error fetching template categories:', error);
+      logger.error('Error fetching template categories:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to fetch template categories',
@@ -541,7 +541,7 @@ export class TemplateController {
         },
       });
     } catch (error) {
-      console.error('Error generating template preview:', error);
+      logger.error('Error generating template preview:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to generate template preview',
@@ -605,7 +605,7 @@ export class TemplateController {
         data: suggestions[category as keyof typeof suggestions] || [],
       });
     } catch (error) {
-      console.error('Error fetching automation suggestions:', error);
+      logger.error('Error fetching automation suggestions:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to fetch automation suggestions',

@@ -1,5 +1,6 @@
 import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
+import { logger } from '../utils/logger';
 
 dotenv.config();
 
@@ -51,15 +52,15 @@ export const sequelize = new Sequelize({
 export async function initializeDatabase(): Promise<void> {
   try {
     await sequelize.authenticate();
-    console.log('Database connection established successfully.');
+    logger.info('Database connection established successfully.');
     
     // Sync models with database
     if (env === 'development') {
       await sequelize.sync({ alter: true });
-      console.log('Database models synchronized.');
+      logger.info('Database models synchronized.');
     }
   } catch (error) {
-    console.error('Unable to connect to the database:', error);
+    logger.error('Unable to connect to the database:', error);
     throw error;
   }
 }
@@ -68,9 +69,9 @@ export async function initializeDatabase(): Promise<void> {
 export async function closeDatabase(): Promise<void> {
   try {
     await sequelize.close();
-    console.log('Database connection closed.');
+    logger.info('Database connection closed.');
   } catch (error) {
-    console.error('Error closing database connection:', error);
+    logger.error('Error closing database connection:', error);
     throw error;
   }
 }
@@ -87,7 +88,7 @@ export async function query(text: string, params?: any[]): Promise<any> {
     });
     const duration = Date.now() - start;
     
-    console.log('Executed query', {
+    logger.info('Executed query', {
       text: text.substring(0, 100) + (text.length > 100 ? '...' : ''),
       duration: `${duration}ms`,
       rows: Array.isArray(results) ? results.length : 0,
@@ -95,7 +96,7 @@ export async function query(text: string, params?: any[]): Promise<any> {
     
     return { rows: results, rowCount: Array.isArray(results) ? results.length : 0 };
   } catch (error) {
-    console.error('Database query error:', {
+    logger.error('Database query error:', {
       query: text.substring(0, 100) + (text.length > 100 ? '...' : ''),
       error: error instanceof Error ? error.message : String(error),
       params: params ? params.length : 0,
@@ -113,19 +114,19 @@ export async function transaction<T>(
   const t = await sequelize.transaction();
   
   try {
-    console.log('Transaction started');
+    logger.info('Transaction started');
     
     const result = await callback(t);
     
     await t.commit();
-    console.log('Transaction committed');
+    logger.info('Transaction committed');
     
     return result;
   } catch (error) {
     await t.rollback();
-    console.log('Transaction rolled back');
+    logger.info('Transaction rolled back');
     
-    console.error('Transaction error:', error);
+    logger.error('Transaction error:', error);
     throw error;
   }
 }
@@ -146,7 +147,7 @@ export async function healthCheck(): Promise<boolean> {
     const result = await query('SELECT 1 as health');
     return result.rows[0]?.health === 1;
   } catch (error) {
-    console.error('Database health check failed:', error);
+    logger.error('Database health check failed:', error);
     return false;
   }
 }
@@ -172,17 +173,12 @@ export const db = {
   healthCheck,
   getPoolStats,
   
-  // Helper methods for common operations
+  // Helper methods now use secure parameterized queries from dbSecurity
+  // Import at the top of the file: import { SecureDB } from '../utils/dbSecurity';
   async findOne<T>(table: string, conditions: Record<string, any>): Promise<T | null> {
-    const whereClause = Object.keys(conditions)
-      .map((key, index) => `${key} = $${index + 1}`)
-      .join(' AND ');
-    
-    const values = Object.values(conditions);
-    const text = `SELECT * FROM ${table} WHERE ${whereClause} LIMIT 1`;
-    
-    const result = await query(text, values);
-    return result.rows[0] || null;
+    // Use SecureDB for safe parameterized queries
+    const { SecureDB } = require('../utils/dbSecurity');
+    return SecureDB.findOne<T>(table, conditions);
   },
   
   async findMany<T>(
@@ -195,48 +191,23 @@ export const db = {
       orderDirection?: 'ASC' | 'DESC' 
     } = {}
   ): Promise<T[]> {
-    let text = `SELECT * FROM ${table}`;
-    const values: any[] = [];
+    // Use SecureDB for safe parameterized queries
+    const { SecureDB } = require('../utils/dbSecurity');
+    const orderBy = options.orderBy 
+      ? `${options.orderBy} ${options.orderDirection || 'ASC'}`
+      : undefined;
     
-    if (Object.keys(conditions).length > 0) {
-      const whereClause = Object.keys(conditions)
-        .map((key, index) => `${key} = $${index + 1}`)
-        .join(' AND ');
-      text += ` WHERE ${whereClause}`;
-      values.push(...Object.values(conditions));
-    }
-    
-    if (options.orderBy) {
-      text += ` ORDER BY ${options.orderBy} ${options.orderDirection || 'ASC'}`;
-    }
-    
-    if (options.limit) {
-      text += ` LIMIT $${values.length + 1}`;
-      values.push(options.limit);
-    }
-    
-    if (options.offset) {
-      text += ` OFFSET $${values.length + 1}`;
-      values.push(options.offset);
-    }
-    
-    const result = await query(text, values);
-    return result.rows;
+    return SecureDB.findAll<T>(table, conditions, {
+      limit: options.limit,
+      offset: options.offset,
+      orderBy
+    });
   },
   
   async insert<T>(table: string, data: Record<string, any>): Promise<T> {
-    const columns = Object.keys(data);
-    const values = Object.values(data);
-    const placeholders = values.map((_, index) => `$${index + 1}`).join(', ');
-    
-    const text = `
-      INSERT INTO ${table} (${columns.join(', ')})
-      VALUES (${placeholders})
-      RETURNING *
-    `;
-    
-    const result = await query(text, values);
-    return result.rows[0];
+    // Use SecureDB for safe parameterized queries
+    const { SecureDB } = require('../utils/dbSecurity');
+    return SecureDB.insert<T>(table, data);
   },
   
   async update<T>(
@@ -244,57 +215,35 @@ export const db = {
     data: Record<string, any>, 
     conditions: Record<string, any>
   ): Promise<T | null> {
-    const dataColumns = Object.keys(data);
-    const dataValues = Object.values(data);
-    const conditionColumns = Object.keys(conditions);
-    const conditionValues = Object.values(conditions);
+    // Use SecureDB for safe parameterized queries
+    const { SecureDB } = require('../utils/dbSecurity');
+    const affectedRows = await SecureDB.update(table, data, conditions);
     
-    const setClause = dataColumns
-      .map((key, index) => `${key} = $${index + 1}`)
-      .join(', ');
+    if (affectedRows > 0) {
+      // Fetch and return the updated record
+      return SecureDB.findOne<T>(table, conditions);
+    }
     
-    const whereClause = conditionColumns
-      .map((key, index) => `${key} = $${dataValues.length + index + 1}`)
-      .join(' AND ');
-    
-    const text = `
-      UPDATE ${table}
-      SET ${setClause}, updated_at = NOW()
-      WHERE ${whereClause}
-      RETURNING *
-    `;
-    
-    const allValues = [...dataValues, ...conditionValues];
-    const result = await query(text, allValues);
-    return result.rows[0] || null;
+    return null;
   },
   
   async delete(table: string, conditions: Record<string, any>): Promise<number> {
-    const whereClause = Object.keys(conditions)
-      .map((key, index) => `${key} = $${index + 1}`)
-      .join(' AND ');
-    
-    const values = Object.values(conditions);
-    const text = `DELETE FROM ${table} WHERE ${whereClause}`;
-    
-    const result = await query(text, values);
-    return result.rowCount || 0;
+    // Use SecureDB for safe parameterized queries
+    const { SecureDB } = require('../utils/dbSecurity');
+    return SecureDB.delete(table, conditions);
   },
   
   async count(table: string, conditions: Record<string, any> = {}): Promise<number> {
-    let text = `SELECT COUNT(*) as count FROM ${table}`;
-    const values: any[] = [];
-    
-    if (Object.keys(conditions).length > 0) {
-      const whereClause = Object.keys(conditions)
-        .map((key, index) => `${key} = $${index + 1}`)
-        .join(' AND ');
-      text += ` WHERE ${whereClause}`;
-      values.push(...Object.values(conditions));
-    }
-    
-    const result = await query(text, values);
-    return parseInt(result.rows[0].count);
+    // Use SecureDB for safe parameterized queries
+    const { SecureDB } = require('../utils/dbSecurity');
+    const results = await SecureDB.findAll(table, conditions);
+    return results.length;
+  },
+  
+  async exists(table: string, conditions: Record<string, any>): Promise<boolean> {
+    const { SecureDB } = require('../utils/dbSecurity');
+    const result = await SecureDB.findOne(table, conditions);
+    return result !== null;
   }
 };
 

@@ -57,7 +57,7 @@ describe('AI Services Performance Tests', () => {
       const duration = performance.now() - start;
 
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.aiResponse);
-      console.log(`AI response time: ${duration.toFixed(2)}ms`);
+      logger.info(`AI response time: ${duration.toFixed(2)}ms`);
     });
 
     test('handles concurrent requests efficiently', async () => {
@@ -75,7 +75,7 @@ describe('AI Services Performance Tests', () => {
 
       // Should handle 5 concurrent requests in reasonable time
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.aiResponse * 2);
-      console.log(`5 concurrent AI requests: ${duration.toFixed(2)}ms`);
+      logger.info(`5 concurrent AI requests: ${duration.toFixed(2)}ms`);
     });
 
     test('streaming response performs well', async () => {
@@ -106,7 +106,7 @@ describe('AI Services Performance Tests', () => {
 
       expect(chunkCount).toBe(10);
       expect(duration).toBeLessThan(1000); // Streaming should be fast
-      console.log(`Streaming 10 chunks: ${duration.toFixed(2)}ms`);
+      logger.info(`Streaming 10 chunks: ${duration.toFixed(2)}ms`);
     });
   });
 
@@ -117,7 +117,7 @@ describe('AI Services Performance Tests', () => {
       const duration = performance.now() - start;
 
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.profileCreation);
-      console.log(`Profile creation time: ${duration.toFixed(2)}ms`);
+      logger.info(`Profile creation time: ${duration.toFixed(2)}ms`);
     });
 
     test('updates profile efficiently', async () => {
@@ -131,7 +131,7 @@ describe('AI Services Performance Tests', () => {
 
       // Updates should be faster than creation
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.profileCreation / 2);
-      console.log(`Profile update time: ${duration.toFixed(2)}ms`);
+      logger.info(`Profile update time: ${duration.toFixed(2)}ms`);
     });
 
     test('retrieves insights quickly', async () => {
@@ -140,7 +140,7 @@ describe('AI Services Performance Tests', () => {
       const duration = performance.now() - start;
 
       expect(duration).toBeLessThan(300); // Quick retrieval
-      console.log(`Insight retrieval time: ${duration.toFixed(2)}ms`);
+      logger.info(`Insight retrieval time: ${duration.toFixed(2)}ms`);
     });
   });
 
@@ -155,7 +155,7 @@ describe('AI Services Performance Tests', () => {
       const duration = performance.now() - start;
 
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.recommendations);
-      console.log(`Recommendation generation: ${duration.toFixed(2)}ms`);
+      logger.info(`Recommendation generation: ${duration.toFixed(2)}ms`);
     });
 
     test('optimal timing calculation is fast', async () => {
@@ -164,7 +164,7 @@ describe('AI Services Performance Tests', () => {
       const duration = performance.now() - start;
 
       expect(duration).toBeLessThan(200); // Should be very fast
-      console.log(`Optimal timing calculation: ${duration.toFixed(2)}ms`);
+      logger.info(`Optimal timing calculation: ${duration.toFixed(2)}ms`);
     });
 
     test('adaptive scheduling performs well', async () => {
@@ -173,7 +173,7 @@ describe('AI Services Performance Tests', () => {
       const duration = performance.now() - start;
 
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.recommendations);
-      console.log(`Adaptive schedule generation: ${duration.toFixed(2)}ms`);
+      logger.info(`Adaptive schedule generation: ${duration.toFixed(2)}ms`);
     });
   });
 
@@ -184,7 +184,7 @@ describe('AI Services Performance Tests', () => {
       const duration = performance.now() - start;
 
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.predictions);
-      console.log(`Success prediction: ${duration.toFixed(2)}ms`);
+      logger.info(`Success prediction: ${duration.toFixed(2)}ms`);
     });
 
     test('analyzes behavior patterns efficiently', async () => {
@@ -193,7 +193,7 @@ describe('AI Services Performance Tests', () => {
       const duration = performance.now() - start;
 
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.predictions);
-      console.log(`Behavior analysis: ${duration.toFixed(2)}ms`);
+      logger.info(`Behavior analysis: ${duration.toFixed(2)}ms`);
     });
 
     test('batch predictions scale well', async () => {
@@ -207,7 +207,7 @@ describe('AI Services Performance Tests', () => {
       const duration = performance.now() - start;
 
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.batchOperations);
-      console.log(`10 user predictions: ${duration.toFixed(2)}ms`);
+      logger.info(`10 user predictions: ${duration.toFixed(2)}ms`);
     });
   });
 
@@ -218,7 +218,7 @@ describe('AI Services Performance Tests', () => {
       const duration = performance.now() - start;
 
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.insights);
-      console.log(`Insight generation: ${duration.toFixed(2)}ms`);
+      logger.info(`Insight generation: ${duration.toFixed(2)}ms`);
     });
 
     test('retrieves active insights quickly', async () => {
@@ -227,7 +227,7 @@ describe('AI Services Performance Tests', () => {
       const duration = performance.now() - start;
 
       expect(duration).toBeLessThan(200); // Should be from cache/DB
-      console.log(`Active insights retrieval: ${duration.toFixed(2)}ms`);
+      logger.info(`Active insights retrieval: ${duration.toFixed(2)}ms`);
     });
   });
 
@@ -252,7 +252,7 @@ describe('AI Services Performance Tests', () => {
 
       // Memory increase should be reasonable (< 50MB)
       expect(memoryIncrease).toBeLessThan(50 * 1024 * 1024);
-      console.log(`Memory increase: ${(memoryIncrease / 1024 / 1024).toFixed(2)}MB`);
+      logger.info(`Memory increase: ${(memoryIncrease / 1024 / 1024).toFixed(2)}MB`);
     });
   });
 
@@ -272,7 +272,7 @@ describe('AI Services Performance Tests', () => {
 
       // Cached call should be at least 5x faster
       expect(secondCallDuration).toBeLessThan(firstCallDuration / 5);
-      console.log(`First call: ${firstCallDuration.toFixed(2)}ms, Cached: ${secondCallDuration.toFixed(2)}ms`);
+      logger.info(`First call: ${firstCallDuration.toFixed(2)}ms, Cached: ${secondCallDuration.toFixed(2)}ms`);
     });
   });
 
@@ -289,7 +289,7 @@ describe('AI Services Performance Tests', () => {
 
       // Should use efficient bulk queries
       expect(duration).toBeLessThan(2000); // 2 seconds for 50 users
-      console.log(`Bulk fetch 50 profiles: ${duration.toFixed(2)}ms`);
+      logger.info(`Bulk fetch 50 profiles: ${duration.toFixed(2)}ms`);
     });
   });
 
@@ -309,7 +309,7 @@ describe('AI Services Performance Tests', () => {
       const successful = results.filter(r => r.status === 'fulfilled').length;
       const failed = results.filter(r => r.status === 'rejected').length;
 
-      console.log(`20 requests: ${successful} successful, ${failed} failed in ${duration.toFixed(2)}ms`);
+      logger.info(`20 requests: ${successful} successful, ${failed} failed in ${duration.toFixed(2)}ms`);
       
       // Should complete within reasonable time even with rate limiting
       expect(duration).toBeLessThan(10000); // 10 seconds

@@ -8,11 +8,11 @@ export async function initializeRedis() {
   });
 
   redisClient.on('error', (err) => {
-    console.error('Redis Client Error:', err);
+    logger.error('Redis Client Error:', err);
   });
 
   redisClient.on('connect', () => {
-    console.log('Redis Client Connected');
+    logger.info('Redis Client Connected');
   });
 
   await redisClient.connect();

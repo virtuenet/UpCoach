@@ -175,7 +175,7 @@ export function defineAssociations() {
 export async function initializeDatabase() {
   try {
     await sequelize.authenticate();
-    console.log('Database connection established successfully.');
+    logger.info('Database connection established successfully.');
     
     // Define associations
     defineAssociations();
@@ -183,10 +183,10 @@ export async function initializeDatabase() {
     // Sync models with database
     if (process.env.NODE_ENV !== 'production') {
       await sequelize.sync({ alter: true });
-      console.log('Database models synchronized.');
+      logger.info('Database models synchronized.');
     }
   } catch (error) {
-    console.error('Unable to connect to the database:', error);
+    logger.error('Unable to connect to the database:', error);
     throw error;
   }
 } 

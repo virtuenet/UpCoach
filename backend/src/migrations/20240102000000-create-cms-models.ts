@@ -552,7 +552,7 @@ export async function up(queryInterface: QueryInterface): Promise<void> {
   await queryInterface.addIndex('content_analytics', ['contentType', 'contentId', 'event']);
   await queryInterface.addIndex('content_analytics', ['metadata'], { using: 'gin' });
 
-  console.log('✅ CMS models created successfully');
+  logger.info('✅ CMS models created successfully');
 }
 
 export async function down(queryInterface: QueryInterface): Promise<void> {
@@ -563,5 +563,5 @@ export async function down(queryInterface: QueryInterface): Promise<void> {
   await queryInterface.dropTable('articles');
   await queryInterface.dropTable('categories');
 
-  console.log('✅ CMS models dropped successfully');
+  logger.info('✅ CMS models dropped successfully');
 } 

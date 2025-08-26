@@ -43,7 +43,7 @@ export function createCircuitBreaker<T extends (...args: any[]) => Promise<any>>
 
   // Add event listeners for monitoring
   breaker.on('open', () => {
-    console.warn(`Circuit breaker opened: ${breakerOptions.name}`);
+    logger.warn(`Circuit breaker opened: ${breakerOptions.name}`);
   });
 
   breaker.on('halfOpen', () => {
@@ -55,7 +55,7 @@ export function createCircuitBreaker<T extends (...args: any[]) => Promise<any>>
   });
 
   breaker.on('reject', () => {
-    console.warn(`Circuit breaker rejected request: ${breakerOptions.name}`);
+    logger.warn(`Circuit breaker rejected request: ${breakerOptions.name}`);
   });
 
   return breaker;

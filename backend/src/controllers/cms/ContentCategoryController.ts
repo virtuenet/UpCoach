@@ -35,7 +35,7 @@ export class ContentCategoryController {
 
       (res as any).json(rootCategories);
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      logger.error('Error fetching categories:', error);
       res.status(500).json({ error: 'Failed to fetch categories' });
     }
   }
@@ -76,7 +76,7 @@ export class ContentCategoryController {
 
       (res as any).json(category);
     } catch (error) {
-      console.error('Error fetching category:', error);
+      logger.error('Error fetching category:', error);
       res.status(500).json({ error: 'Failed to fetch category' });
     }
   }
@@ -120,7 +120,7 @@ export class ContentCategoryController {
 
       res.status(201).json(category);
     } catch (error) {
-      console.error('Error creating category:', error);
+      logger.error('Error creating category:', error);
       res.status(500).json({ error: 'Failed to create category' });
     }
   }
@@ -165,7 +165,7 @@ export class ContentCategoryController {
 
       (res as any).json(updatedCategory);
     } catch (error) {
-      console.error('Error updating category:', error);
+      logger.error('Error updating category:', error);
       res.status(500).json({ error: 'Failed to update category' });
     }
   }
@@ -199,7 +199,7 @@ export class ContentCategoryController {
       await category.destroy();
       (res as any).json({ message: 'Category deleted successfully' });
     } catch (error) {
-      console.error('Error deleting category:', error);
+      logger.error('Error deleting category:', error);
       res.status(500).json({ error: 'Failed to delete category' });
     }
   }
@@ -223,7 +223,7 @@ export class ContentCategoryController {
 
       (res as any).json({ message: 'Categories reordered successfully' });
     } catch (error) {
-      console.error('Error reordering categories:', error);
+      logger.error('Error reordering categories:', error);
       res.status(500).json({ error: 'Failed to reorder categories' });
     }
   }
@@ -251,7 +251,7 @@ export class ContentCategoryController {
 
       (res as any).json(categories);
     } catch (error) {
-      console.error('Error fetching category content count:', error);
+      logger.error('Error fetching category content count:', error);
       res.status(500).json({ error: 'Failed to fetch category content count' });
     }
   }

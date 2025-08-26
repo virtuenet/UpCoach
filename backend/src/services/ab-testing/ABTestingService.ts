@@ -128,7 +128,7 @@ export class ABTestingService {
         assignedAt: new Date(),
       };
     } catch (error) {
-      console.error('Error getting variant assignment:', error);
+      logger.error('Error getting variant assignment:', error);
       return null;
     }
   }
@@ -160,7 +160,7 @@ export class ABTestingService {
 
       return true;
     } catch (error) {
-      console.error('Error tracking conversion:', error);
+      logger.error('Error tracking conversion:', error);
       return false;
     }
   }
@@ -229,7 +229,7 @@ export class ABTestingService {
         recommendations,
       };
     } catch (error) {
-      console.error('Error getting experiment analytics:', error);
+      logger.error('Error getting experiment analytics:', error);
       return null;
     }
   }

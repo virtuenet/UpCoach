@@ -74,7 +74,7 @@ export class CoachIntelligenceController {
         },
       });
     } catch (error) {
-      console.error('Error processing coaching session:', error);
+      logger.error('Error processing coaching session:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to process coaching session',
@@ -135,7 +135,7 @@ export class CoachIntelligenceController {
         },
       });
     } catch (error) {
-      console.error('Error retrieving relevant memories:', error);
+      logger.error('Error retrieving relevant memories:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to retrieve relevant memories',
@@ -178,7 +178,7 @@ export class CoachIntelligenceController {
         },
       });
     } catch (error) {
-      console.error('Error generating coaching recommendations:', error);
+      logger.error('Error generating coaching recommendations:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to generate coaching recommendations',
@@ -213,7 +213,7 @@ export class CoachIntelligenceController {
         data: report,
       });
     } catch (error) {
-      console.error('Error generating weekly report:', error);
+      logger.error('Error generating weekly report:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to generate weekly report',
@@ -258,7 +258,7 @@ export class CoachIntelligenceController {
         },
       });
     } catch (error) {
-      console.error('Error retrieving user analytics:', error);
+      logger.error('Error retrieving user analytics:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to retrieve user analytics',
@@ -352,7 +352,7 @@ export class CoachIntelligenceController {
         },
       });
     } catch (error) {
-      console.error('Error retrieving user memories:', error);
+      logger.error('Error retrieving user memories:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to retrieve user memories',
@@ -390,7 +390,7 @@ export class CoachIntelligenceController {
         },
       });
     } catch (error) {
-      console.error('Error creating KPI tracker:', error);
+      logger.error('Error creating KPI tracker:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to create KPI tracker',
@@ -458,7 +458,7 @@ export class CoachIntelligenceController {
         },
       });
     } catch (error) {
-      console.error('Error retrieving KPI trackers:', error);
+      logger.error('Error retrieving KPI trackers:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to retrieve KPI trackers',
@@ -511,7 +511,7 @@ export class CoachIntelligenceController {
         },
       });
     } catch (error) {
-      console.error('Error updating KPI progress:', error);
+      logger.error('Error updating KPI progress:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to update KPI progress',
@@ -566,7 +566,7 @@ export class CoachIntelligenceController {
         },
       });
     } catch (error) {
-      console.error('Error retrieving cohort analytics:', error);
+      logger.error('Error retrieving cohort analytics:', error);
       res.status(500).json({
         success: false,
         message: 'Failed to retrieve cohort analytics',

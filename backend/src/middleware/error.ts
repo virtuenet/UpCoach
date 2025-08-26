@@ -49,7 +49,7 @@ export const errorMiddleware = (
 
   // Log error in development
   if (process.env.NODE_ENV === 'development') {
-    console.error('Error:', {
+    logger.error('Error:', {
       message: error.message,
       stack: error.stack,
       statusCode,

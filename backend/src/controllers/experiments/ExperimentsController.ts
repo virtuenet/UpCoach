@@ -57,7 +57,7 @@ export class ExperimentsController {
         message: 'Experiment created successfully',
       });
     } catch (error) {
-      console.error('Error creating experiment:', error);
+      logger.error('Error creating experiment:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to create experiment',
@@ -106,7 +106,7 @@ export class ExperimentsController {
         },
       });
     } catch (error) {
-      console.error('Error fetching experiments:', error);
+      logger.error('Error fetching experiments:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch experiments',
@@ -135,7 +135,7 @@ export class ExperimentsController {
         data: experiment,
       });
     } catch (error) {
-      console.error('Error fetching experiment:', error);
+      logger.error('Error fetching experiment:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch experiment',
@@ -186,7 +186,7 @@ export class ExperimentsController {
         message: 'Experiment updated successfully',
       });
     } catch (error) {
-      console.error('Error updating experiment:', error);
+      logger.error('Error updating experiment:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to update experiment',
@@ -240,7 +240,7 @@ export class ExperimentsController {
         message: 'Experiment started successfully',
       });
     } catch (error) {
-      console.error('Error starting experiment:', error);
+      logger.error('Error starting experiment:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to start experiment',
@@ -284,7 +284,7 @@ export class ExperimentsController {
         message: 'Experiment stopped successfully',
       });
     } catch (error) {
-      console.error('Error stopping experiment:', error);
+      logger.error('Error stopping experiment:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to stop experiment',
@@ -308,7 +308,7 @@ export class ExperimentsController {
         data: variant,
       });
     } catch (error) {
-      console.error('Error getting variant:', error);
+      logger.error('Error getting variant:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to get variant assignment',
@@ -338,7 +338,7 @@ export class ExperimentsController {
         message: success ? 'Conversion tracked successfully' : 'Failed to track conversion',
       });
     } catch (error) {
-      console.error('Error tracking conversion:', error);
+      logger.error('Error tracking conversion:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to track conversion',
@@ -367,7 +367,7 @@ export class ExperimentsController {
         data: analytics,
       });
     } catch (error) {
-      console.error('Error fetching analytics:', error);
+      logger.error('Error fetching analytics:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to fetch experiment analytics',
@@ -406,7 +406,7 @@ export class ExperimentsController {
         message: 'Experiment deleted successfully',
       });
     } catch (error) {
-      console.error('Error deleting experiment:', error);
+      logger.error('Error deleting experiment:', error);
       res.status(500).json({
         success: false,
         error: 'Failed to delete experiment',

@@ -111,7 +111,7 @@ class UploadService {
     try {
       await fs.unlink(filePath);
     } catch (error) {
-      console.error('Error deleting file:', error);
+      logger.error('Error deleting file:', error);
     }
   }
 

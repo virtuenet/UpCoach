@@ -109,7 +109,7 @@ export function initializeCMSModels(sequelize: Sequelize): void {
     as: 'content',
   });
   
-  console.log('✅ CMS models initialized with unified structure');
+  logger.info('✅ CMS models initialized with unified structure');
 }
 
 // Default export
