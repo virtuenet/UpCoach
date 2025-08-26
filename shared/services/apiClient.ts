@@ -3,6 +3,8 @@
  * Creates configured axios instances for admin and CMS panels
  */
 
+import axios, { AxiosInstance, AxiosError } from 'axios'
+
 
 export interface ApiClientConfig {
   baseURL: string;

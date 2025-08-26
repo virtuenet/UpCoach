@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 import { authApi } from '../api/auth'
+import { secureAuth } from '../services/secureAuth'
 import toast from 'react-hot-toast'
 
 export interface User {
@@ -17,84 +17,105 @@ export interface User {
 
 interface AuthState {
   user: User | null
-  token: string | null
   isLoading: boolean
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => void
   checkAuth: () => Promise<void>
   updateProfile: (data: Partial<User>) => void
+  initializeAuth: () => Promise<void>
 }
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
-      user: null,
-      token: null,
-      isLoading: false,
-      isAuthenticated: false,
+export const useAuthStore = create<AuthState>()((set, get) => ({
+  user: null,
+  isLoading: false,
+  isAuthenticated: false,
 
-      login: async (email: string, password: string) => {
-        try {
-          set({ isLoading: true })
-          const response = await authApi.login(email, password)
-          
-          if (response.user.role !== 'coach' && response.user.role !== 'content_creator' && response.user.role !== 'admin') {
-            throw new Error('Access denied. Coach or content creator privileges required.')
-          }
-
-          set({
-            user: response.user,
-            token: response.token,
-            isLoading: false,
-            isAuthenticated: true,
-          })
-          toast.success('Welcome back!')
-        } catch (error) {
-          set({ isLoading: false })
-          toast.error(error instanceof Error ? error.message : 'Login failed')
-          throw error
-        }
-      },
-
-      logout: () => {
-        set({ user: null, token: null })
-        localStorage.removeItem('cms-auth-storage')
-        toast.success('Logged out successfully')
-      },
-
-      checkAuth: async () => {
-        const { token } = get()
-        if (!token) {
-          set({ isLoading: false })
-          return
-        }
-
-        try {
-          set({ isLoading: true })
-          const user = await authApi.getProfile(token)
-          
-          if (user.role !== 'coach' && user.role !== 'content_creator' && user.role !== 'admin') {
-            set({ user: null, token: null, isLoading: false })
-            return
-          }
-
-          set({ user, isLoading: false })
-        } catch (error) {
-          set({ user: null, token: null, isLoading: false })
-        }
-      },
-
-      updateProfile: (data: Partial<User>) => {
-        const { user } = get()
-        if (user) {
-          set({ user: { ...user, ...data } })
-        }
-      },
-    }),
-    {
-      name: 'cms-auth-storage',
-      partialize: (state) => ({ token: state.token }),
+  initializeAuth: async () => {
+    try {
+      // Initialize secure auth service
+      await secureAuth.initialize();
+      secureAuth.setupInterceptor();
+      
+      // Check if user has valid session
+      const hasSession = await secureAuth.checkSession();
+      if (hasSession) {
+        await get().checkAuth();
+      }
+    } catch (error) {
+      console.error('Failed to initialize auth:', error);
     }
-  )
-) 
+  },
+
+  login: async (email: string, password: string) => {
+    try {
+      set({ isLoading: true });
+      const response = await authApi.login(email, password);
+      
+      if (response.user.role !== 'coach' && response.user.role !== 'content_creator' && response.user.role !== 'admin') {
+        throw new Error('Access denied. Coach or content creator privileges required.');
+      }
+
+      // Note: Token is now stored in httpOnly cookie by the server
+      // We only store user info in memory
+      set({
+        user: response.user,
+        isLoading: false,
+        isAuthenticated: true,
+      });
+      
+      toast.success('Welcome back!');
+    } catch (error) {
+      set({ isLoading: false, isAuthenticated: false });
+      toast.error(error instanceof Error ? error.message : 'Login failed');
+      throw error;
+    }
+  },
+
+  logout: async () => {
+    try {
+      await secureAuth.clearSession();
+      set({ user: null, isAuthenticated: false });
+      toast.success('Logged out successfully');
+      
+      // Redirect to login page
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still clear local state even if server logout fails
+      set({ user: null, isAuthenticated: false });
+    }
+  },
+
+  checkAuth: async () => {
+    try {
+      set({ isLoading: true });
+      
+      // Check if we have a valid session
+      const hasSession = await secureAuth.checkSession();
+      if (!hasSession) {
+        set({ user: null, isLoading: false, isAuthenticated: false });
+        return;
+      }
+
+      // Get user profile using cookie-based auth
+      const user = await authApi.getProfile();
+      
+      if (user.role !== 'coach' && user.role !== 'content_creator' && user.role !== 'admin') {
+        set({ user: null, isLoading: false, isAuthenticated: false });
+        return;
+      }
+
+      set({ user, isLoading: false, isAuthenticated: true });
+    } catch (error) {
+      set({ user: null, isLoading: false, isAuthenticated: false });
+    }
+  },
+
+  updateProfile: (data: Partial<User>) => {
+    const { user } = get();
+    if (user) {
+      set({ user: { ...user, ...data } });
+    }
+  },
+})) 

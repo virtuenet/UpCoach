@@ -1,6 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Toaster } from 'react-hot-toast'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import { useAuthStore } from './stores/authStore'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
@@ -13,17 +12,7 @@ import CoursesPage from './pages/CoursesPage'
 import CreateCoursePage from './pages/CreateCoursePage'
 import SettingsPage from './pages/SettingsPage'
 import Layout from './components/Layout'
-import ErrorBoundary from './components/ErrorBoundary'
 import SessionWrapper from './components/SessionWrapper'
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 1,
-    },
-  },
-})
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
@@ -31,52 +20,43 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+  const { initializeAuth } = useAuthStore()
+
+  useEffect(() => {
+    // Initialize secure authentication on app mount
+    initializeAuth()
+  }, [initializeAuth])
+
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <Router>
-          <SessionWrapper>
-            <div className="min-h-screen bg-gray-50">
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              <Route
-                path="/*"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Routes>
-                        <Route path="/" element={<DashboardPage />} />
-                        <Route path="/dashboard" element={<DashboardPage />} />
-                        <Route path="/content" element={<ContentPage />} />
-                        <Route path="/content/create" element={<CreateContentPage />} />
-                        <Route path="/content/edit/:id" element={<EditContentPage />} />
-                        <Route path="/courses" element={<CoursesPage />} />
-                        <Route path="/courses/create" element={<CreateCoursePage />} />
-                        <Route path="/media" element={<MediaLibraryPage />} />
-                        <Route path="/analytics" element={<AnalyticsPage />} />
-                        <Route path="/settings" element={<SettingsPage />} />
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                      </Routes>
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-            </div>
-          </SessionWrapper>
-        </Router>
-        <Toaster 
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#363636',
-              color: '#fff',
-            },
-          }}
-        />
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <SessionWrapper>
+      <div className="min-h-screen bg-gray-50">
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Routes>
+                    <Route path="/" element={<DashboardPage />} />
+                    <Route path="/dashboard" element={<DashboardPage />} />
+                    <Route path="/content" element={<ContentPage />} />
+                    <Route path="/content/create" element={<CreateContentPage />} />
+                    <Route path="/content/edit/:id" element={<EditContentPage />} />
+                    <Route path="/courses" element={<CoursesPage />} />
+                    <Route path="/courses/create" element={<CreateCoursePage />} />
+                    <Route path="/media" element={<MediaLibraryPage />} />
+                    <Route path="/analytics" element={<AnalyticsPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </div>
+    </SessionWrapper>
   )
 }
 

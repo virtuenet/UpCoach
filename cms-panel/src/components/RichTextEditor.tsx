@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
@@ -16,6 +17,7 @@ import {
   Heading1,
   Heading2,
 } from 'lucide-react'
+import UrlInputModal from './UrlInputModal'
 
 interface RichTextEditorProps {
   content: string
@@ -23,17 +25,35 @@ interface RichTextEditorProps {
 }
 
 export default function RichTextEditor({ content, onChange }: RichTextEditorProps) {
+  const [showLinkModal, setShowLinkModal] = useState(false)
+  const [showImageModal, setShowImageModal] = useState(false)
+
   const editor = useEditor({
     extensions: [
       StarterKit,
       Link.configure({
         openOnClick: false,
+        HTMLAttributes: {
+          target: '_blank',
+          rel: 'noopener noreferrer nofollow',
+        },
+        validate: (href) => /^https?:\/\//.test(href),
       }),
-      Image,
+      Image.configure({
+        HTMLAttributes: {
+          class: 'max-w-full h-auto',
+          loading: 'lazy',
+        },
+      }),
     ],
     content,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML())
+    },
+    editorProps: {
+      attributes: {
+        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none min-h-[200px] p-4',
+      },
     },
   })
 
@@ -41,18 +61,12 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
     return null
   }
 
-  const addLink = () => {
-    const url = window.prompt('Enter URL:')
-    if (url) {
-      editor.chain().focus().setLink({ href: url }).run()
-    }
+  const handleAddLink = (url: string) => {
+    editor.chain().focus().setLink({ href: url }).run()
   }
 
-  const addImage = () => {
-    const url = window.prompt('Enter image URL:')
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run()
-    }
+  const handleAddImage = (url: string) => {
+    editor.chain().focus().setImage({ src: url, alt: 'Content image' }).run()
   }
 
   return (
@@ -136,7 +150,7 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
           <div className="w-px h-6 bg-gray-300" />
           <button
             type="button"
-            onClick={addLink}
+            onClick={() => setShowLinkModal(true)}
             className={`p-2 rounded hover:bg-gray-200 ${
               editor.isActive('link') ? 'bg-gray-200' : ''
             }`}
@@ -145,7 +159,7 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
           </button>
           <button
             type="button"
-            onClick={addImage}
+            onClick={() => setShowImageModal(true)}
             className="p-2 rounded hover:bg-gray-200"
           >
             <ImageIcon className="h-4 w-4" />
@@ -168,6 +182,24 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
         </div>
       </div>
       <EditorContent editor={editor} className="tiptap-editor" />
+      
+      {/* URL Input Modals */}
+      <UrlInputModal
+        isOpen={showLinkModal}
+        onClose={() => setShowLinkModal(false)}
+        onSubmit={handleAddLink}
+        title="Add Link"
+        placeholder="https://example.com"
+      />
+      
+      <UrlInputModal
+        isOpen={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        onSubmit={handleAddImage}
+        title="Add Image"
+        placeholder="https://example.com/image.jpg"
+        validateImage={true}
+      />
     </div>
   )
 } 

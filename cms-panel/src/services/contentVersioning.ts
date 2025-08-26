@@ -1,6 +1,7 @@
 // Content Versioning Service
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { apiClient } from '../api/client'
+import { LRUCache, TTLCache } from '../utils/lruCache'
 
 export interface ContentVersion {
   id: string
@@ -39,8 +40,20 @@ export interface VersionComparison {
 }
 
 class ContentVersioningService {
-  private versions: Map<string, ContentVersion[]> = new Map()
-  private currentVersions: Map<string, string> = new Map()
+  // Use LRU cache to prevent unbounded memory growth
+  private versions: LRUCache<string, ContentVersion[]>
+  private currentVersions: LRUCache<string, string>
+  // Use TTL cache for auto-save drafts
+  private drafts: TTLCache<string, any>
+  private saveTimeouts: Map<string, NodeJS.Timeout> = new Map()
+  
+  constructor() {
+    // Limit cache to 50 content items to prevent memory leaks
+    this.versions = new LRUCache(50)
+    this.currentVersions = new LRUCache(50)
+    // Auto-expire drafts after 30 minutes
+    this.drafts = new TTLCache(100, 30 * 60 * 1000)
+  }
 
   // Create a new version
   async createVersion(
@@ -70,8 +83,12 @@ class ContentVersioningService {
       },
     }
 
-    // Store version
+    // Store version with size limit
     const updatedVersions = [...versions, newVersion]
+    // Keep only last 20 versions per content to prevent memory issues
+    if (updatedVersions.length > 20) {
+      updatedVersions.shift() // Remove oldest version
+    }
     this.versions.set(contentId, updatedVersions)
 
     // Save to backend
@@ -180,24 +197,65 @@ class ContentVersioningService {
     return versions.find(v => v.status === 'published') || null
   }
 
-  // Auto-save draft
+  // Auto-save draft with memory-safe caching
   async autoSaveDraft(
     contentId: string,
     content: any,
     author: { id: string; name: string; email: string }
   ): Promise<void> {
-    const key = `draft_${contentId}`
     const draft = {
       content,
       author,
       savedAt: new Date(),
     }
 
-    // Save to local storage
-    localStorage.setItem(key, JSON.stringify(draft))
+    // Use TTL cache instead of localStorage
+    this.drafts.set(contentId, draft)
 
-    // Debounced save to backend
-    this.debouncedSave(contentId, content, author)
+    // Clear existing timeout
+    const existingTimeout = this.saveTimeouts.get(contentId)
+    if (existingTimeout) {
+      clearTimeout(existingTimeout)
+    }
+
+    // Set new debounced save
+    const timeout = setTimeout(async () => {
+      try {
+        await this.createVersion(contentId, content, author)
+        this.saveTimeouts.delete(contentId)
+      } catch (error) {
+        console.error('Failed to auto-save version:', error)
+      }
+    }, 5000)
+
+    this.saveTimeouts.set(contentId, timeout)
+  }
+
+  // Get auto-saved draft
+  getAutoSavedDraft(contentId: string): any | null {
+    return this.drafts.get(contentId) || null
+  }
+
+  // Clear auto-saved draft
+  clearAutoSavedDraft(contentId: string): void {
+    this.drafts.delete(contentId)
+    const timeout = this.saveTimeouts.get(contentId)
+    if (timeout) {
+      clearTimeout(timeout)
+      this.saveTimeouts.delete(contentId)
+    }
+  }
+
+  // Cleanup method to prevent memory leaks
+  cleanup(): void {
+    // Clear all timeouts
+    this.saveTimeouts.forEach(timeout => clearTimeout(timeout))
+    this.saveTimeouts.clear()
+    
+    // Clear caches
+    this.versions.clear()
+    this.currentVersions.clear()
+    this.drafts.destroy()
   }
 
   // Merge versions (for conflict resolution)
@@ -334,24 +392,6 @@ class ContentVersioningService {
     }
   }
 
-  private debouncedSave = this.debounce(
-    async (contentId: string, content: any, author: any) => {
-      await this.createVersion(contentId, content, author)
-    },
-    5000
-  )
-
-  private debounce(func: Function, wait: number) {
-    let timeout: NodeJS.Timeout
-    return function executedFunction(...args: any[]) {
-      const later = () => {
-        clearTimeout(timeout)
-        func(...args)
-      }
-      clearTimeout(timeout)
-      timeout = setTimeout(later, wait)
-    }
-  }
 }
 
 // Export singleton instance
@@ -361,15 +401,43 @@ export const contentVersioning = new ContentVersioningService()
 export function useContentVersions(contentId: string) {
   const [versions, setVersions] = useState<ContentVersion[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
-    contentVersioning.getVersions(contentId).then(v => {
-      setVersions(v)
-      setLoading(false)
-    })
+    // Cleanup previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
+    // Create new abort controller
+    abortControllerRef.current = new AbortController()
+    setLoading(true)
+    setError(null)
+
+    contentVersioning.getVersions(contentId)
+      .then(v => {
+        if (!abortControllerRef.current?.signal.aborted) {
+          setVersions(v)
+          setLoading(false)
+        }
+      })
+      .catch(err => {
+        if (!abortControllerRef.current?.signal.aborted) {
+          setError(err)
+          setLoading(false)
+        }
+      })
+
+    // Cleanup on unmount or contentId change
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+    }
   }, [contentId])
 
-  return { versions, loading }
+  return { versions, loading, error }
 }
 
 export function useVersionComparison(
@@ -379,13 +447,79 @@ export function useVersionComparison(
 ) {
   const [comparison, setComparison] = useState<VersionComparison | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
-    contentVersioning.compareVersions(contentId, version1, version2).then(c => {
-      setComparison(c)
-      setLoading(false)
-    })
+    // Cleanup previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
+    // Create new abort controller
+    abortControllerRef.current = new AbortController()
+    setLoading(true)
+    setError(null)
+
+    contentVersioning.compareVersions(contentId, version1, version2)
+      .then(c => {
+        if (!abortControllerRef.current?.signal.aborted) {
+          setComparison(c)
+          setLoading(false)
+        }
+      })
+      .catch(err => {
+        if (!abortControllerRef.current?.signal.aborted) {
+          setError(err)
+          setLoading(false)
+        }
+      })
+
+    // Cleanup on unmount or parameter change
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+    }
   }, [contentId, version1, version2])
 
-  return { comparison, loading }
+  return { comparison, loading, error }
+}
+
+// Hook for auto-save functionality with cleanup
+export function useAutoSave(
+  contentId: string,
+  content: any,
+  author: { id: string; name: string; email: string },
+  enabled: boolean = true
+) {
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    if (!enabled) return
+
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
+
+    // Set new timeout
+    saveTimeoutRef.current = setTimeout(() => {
+      contentVersioning.autoSaveDraft(contentId, content, author)
+    }, 2000) // Auto-save after 2 seconds of inactivity
+
+    // Cleanup
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+    }
+  }, [contentId, content, author, enabled])
+
+  // Clear draft on unmount
+  useEffect(() => {
+    return () => {
+      contentVersioning.clearAutoSavedDraft(contentId)
+    }
+  }, [contentId])
 }

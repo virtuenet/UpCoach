@@ -9,14 +9,18 @@ export interface LoginResponse {
 
 export const authApi = {
   login: async (email: string, password: string): Promise<LoginResponse> => {
-    const response = await apiClient.post('/auth/login', { email, password })
+    const response = await apiClient.post('/auth/login', { 
+      email, 
+      password,
+      // Request secure cookie-based auth
+      secureCookies: true 
+    })
     return response.data
   },
 
-  getProfile: async (token: string): Promise<User> => {
-    const response = await apiClient.get('/auth/profile', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+  getProfile: async (): Promise<User> => {
+    // No need to pass token - it's in the httpOnly cookie
+    const response = await apiClient.get('/auth/profile')
     return response.data
   },
 
