@@ -1,0 +1,78 @@
+# OWASP ZAP Rules Configuration
+# Format: Rule_ID	Threshold	URL_Pattern
+
+# SQL Injection
+40018	MEDIUM	*
+40019	MEDIUM	*
+40020	MEDIUM	*
+40021	MEDIUM	*
+40022	MEDIUM	*
+40024	MEDIUM	*
+
+# XSS
+40003	MEDIUM	*
+40004	MEDIUM	*
+40012	MEDIUM	*
+40014	MEDIUM	*
+40016	MEDIUM	*
+40017	MEDIUM	*
+
+# Path Traversal
+6	MEDIUM	*
+
+# Remote File Include
+7	HIGH	*
+
+# Server Side Include
+40009	HIGH	*
+
+# CSRF
+10202	MEDIUM	*
+40013	MEDIUM	*
+40022	MEDIUM	*
+
+# XXE
+90023	HIGH	*
+
+# LDAP Injection
+40015	HIGH	*
+
+# Security Headers
+10020	LOW	*	# Missing X-Frame-Options
+10021	LOW	*	# Missing X-Content-Type-Options
+10023	LOW	*	# Information Disclosure
+10027	LOW	*	# Information Disclosure - Suspicious Comments
+10035	LOW	*	# Strict-Transport-Security Header
+10036	LOW	*	# Server Leaks Version
+10037	LOW	*	# Server Leaks Information
+10038	LOW	*	# Content Security Policy
+10054	LOW	*	# Cookie without SameSite
+10055	LOW	*	# Cookie without Secure flag
+10056	LOW	*	# Cookie without HttpOnly flag
+10098	LOW	*	# Cross-Domain Misconfiguration
+
+# Authentication & Session
+10011	MEDIUM	*	# Cookie without Secure Flag
+10015	MEDIUM	*	# Incomplete or No Cache-control
+10017	MEDIUM	*	# Cross-Domain JavaScript Source
+10029	MEDIUM	*	# Cookie Poisoning
+10057	MEDIUM	*	# Username Hash Found
+10061	MEDIUM	*	# X-AspNet-Version Response Header
+10062	MEDIUM	*	# PII Disclosure
+10096	MEDIUM	*	# Timestamp Disclosure
+10097	MEDIUM	*	# Hash Disclosure
+
+# API Security
+40025	MEDIUM	*	# Proxy Disclosure
+40026	MEDIUM	*	# Cross Site Tracing
+40028	MEDIUM	*	# ELMAH Information Leak
+40029	MEDIUM	*	# Trace.axd Information Leak
+40032	MEDIUM	*.viewstate	# .htaccess Information Leak
+
+# Exclusions for false positives
+10010	IGNORE	*/health	# Cookie No HttpOnly - health endpoint
+10011	IGNORE	*/health	# Cookie Without Secure - health endpoint
+10015	IGNORE	*/static/*	# Cache control for static files
+10049	IGNORE	*	# Non-Storable Content - usually false positive
+10063	IGNORE	*	# Feature Policy Header - optional
+10109	IGNORE	*	# Modern Web Application - React/Next.js specific

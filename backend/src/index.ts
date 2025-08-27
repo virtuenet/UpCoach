@@ -16,6 +16,9 @@ import { SchedulerService } from './services/SchedulerService';
 import { gracefulShutdown } from './utils/shutdown';
 import { apiLimiter, webhookLimiter } from './middleware/rateLimiter';
 import { enhancedSecurityHeaders } from './middleware/securityNonce';
+import { securityHeaders, ctMonitor, securityReportHandler } from './middleware/securityHeaders';
+import { sentryService } from './services/monitoring/SentryService';
+import { dataDogService } from './services/monitoring/DataDogService';
 
 // Extend Express Request interface
 declare global {
@@ -30,15 +33,75 @@ declare global {
 // Load environment variables
 dotenv.config();
 
+// Initialize monitoring services (before creating Express app)
+if (config.monitoring?.sentry?.enabled) {
+  sentryService.initialize({
+    dsn: config.monitoring.sentry.dsn,
+    environment: config.env,
+    release: config.monitoring.sentry.release,
+    tracesSampleRate: config.monitoring.sentry.tracesSampleRate || 0.1,
+    profilesSampleRate: config.monitoring.sentry.profilesSampleRate || 0.1,
+    debug: config.env === 'development',
+  });
+}
+
+if (config.monitoring?.datadog?.enabled) {
+  dataDogService.initialize({
+    enabled: true,
+    env: config.env,
+    service: 'upcoach-backend',
+    version: config.monitoring.datadog.version || process.env.npm_package_version,
+    analyticsEnabled: true,
+    logInjection: true,
+    profiling: config.env === 'production',
+    runtimeMetrics: true,
+    agentHost: config.monitoring.datadog.agentHost,
+    agentPort: config.monitoring.datadog.agentPort,
+    statsdHost: config.monitoring.datadog.statsdHost,
+    statsdPort: config.monitoring.datadog.statsdPort,
+  });
+}
+
 const app = express();
 const PORT = config.port;
+
+// Set up Sentry request handlers (must be first middleware)
+if (config.monitoring?.sentry?.enabled) {
+  sentryService.setupExpressMiddleware(app);
+}
 
 // Trust proxy (important for rate limiting behind reverse proxy)
 app.set('trust proxy', 1);
 
-// Enhanced security headers with nonce-based CSP
+// DataDog request tracing middleware
+if (config.monitoring?.datadog?.enabled) {
+  app.use(dataDogService.requestTracing());
+}
+
+// Enhanced security headers with HSTS, CSP, and Certificate Transparency
 const isDevelopment = process.env.NODE_ENV === 'development';
-app.use(enhancedSecurityHeaders(isDevelopment));
+app.use(securityHeaders({
+  enableHSTS: !isDevelopment,
+  enableCSP: true,
+  enableCertificateTransparency: !isDevelopment,
+  cspDirectives: {
+    'default-src': ["'self'"],
+    'script-src': ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+    'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+    'font-src': ["'self'", 'https://fonts.gstatic.com'],
+    'img-src': ["'self'", 'data:', 'https:'],
+    'connect-src': ["'self'", 'https://api.stripe.com', 'https://api.openai.com', 'wss:', config.corsOrigins.join(' ')],
+    'frame-src': ["'self'", 'https://js.stripe.com'],
+    'object-src': ["'none'"],
+    'base-uri': ["'self'"],
+    'form-action': ["'self'"],
+    'frame-ancestors': ["'none'"],
+    'upgrade-insecure-requests': isDevelopment ? [] : [''],
+  },
+}));
+
+// Certificate Transparency monitoring middleware
+app.use(ctMonitor.middleware());
 
 // Apply general rate limiting to all API routes
 app.use('/api/', apiLimiter);
@@ -101,6 +164,11 @@ app.use((req, res, next) => {
   res.setHeader('X-Request-ID', req.id);
   next();
 });
+
+// Security report endpoints
+app.post('/api/security/report/csp', securityReportHandler());
+app.post('/api/security/report/ct', securityReportHandler());
+app.post('/api/security/report/expect-ct', securityReportHandler());
 
 // Health check endpoint
 app.get('/health', async (_req, res) => {

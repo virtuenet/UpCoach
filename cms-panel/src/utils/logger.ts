@@ -35,9 +35,9 @@ class Logger {
 
   constructor(config: Partial<LoggerConfig> = {}) {
     this.config = {
-      minLevel: import.meta.env.DEV ? 'debug' : 'info',
-      enableConsole: import.meta.env.DEV,
-      enableRemote: !import.meta.env.DEV,
+      minLevel: (typeof import.meta !== 'undefined' && import.meta.env?.DEV) ? 'debug' : 'info',
+      enableConsole: typeof import.meta !== 'undefined' && import.meta.env?.DEV,
+      enableRemote: !(typeof import.meta !== 'undefined' && import.meta.env?.DEV),
       maxLocalLogs: 100,
       ...config,
     };
@@ -341,7 +341,7 @@ export const logAsync = async (
 };
 
 // Replace console in production
-if (!import.meta.env.DEV) {
+if (typeof import.meta !== 'undefined' && !import.meta.env?.DEV && typeof window !== 'undefined') {
   window.console.log = (...args) => logger.info(args.join(' '));
   window.console.debug = (...args) => logger.debug(args.join(' '));
   window.console.info = (...args) => logger.info(args.join(' '));

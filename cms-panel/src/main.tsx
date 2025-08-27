@@ -5,7 +5,11 @@ import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import App from './App.tsx'
 import ErrorBoundary from './components/ErrorBoundary.tsx'
+import { initializeSentry } from './services/monitoring/sentryInit'
 import './index.css'
+
+// Initialize Sentry monitoring
+initializeSentry()
 
 // Single QueryClient instance for the entire app
 const queryClient = new QueryClient({

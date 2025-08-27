@@ -1,0 +1,349 @@
+name: DAST Security Testing
+
+on:
+  schedule:
+    # Run DAST weekly on Sundays at 3 AM UTC
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'Target URL for DAST scan'
+        required: true
+        default: 'https://staging.upcoach.ai'
+      scan_type:
+        description: 'Type of scan to run'
+        required: true
+        default: 'baseline'
+        type: choice
+        options:
+          - baseline
+          - full
+          - api
+
+env:
+  ZAP_VERSION: '2.14.0'
+  NUCLEI_VERSION: '3.1.7'
+
+jobs:
+  # ==========================================
+  # OWASP ZAP Dynamic Security Testing
+  # ==========================================
+  
+  zap-scan:
+    name: OWASP ZAP Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run ZAP Baseline Scan
+        if: github.event.inputs.scan_type == 'baseline' || github.event_name == 'schedule'
+        uses: zaproxy/action-baseline@v0.10.0
+        with:
+          target: ${{ github.event.inputs.target_url || 'https://staging.upcoach.ai' }}
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a -j -l WARN'
+          allow_issue_writing: true
+          issue_title: 'ZAP Security Alert'
+          artifact_name: 'zap_baseline_report'
+      
+      - name: Run ZAP Full Scan
+        if: github.event.inputs.scan_type == 'full'
+        uses: zaproxy/action-full-scan@v0.8.0
+        with:
+          target: ${{ github.event.inputs.target_url }}
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a -j -l WARN'
+          allow_issue_writing: true
+          issue_title: 'ZAP Security Alert - Full Scan'
+          artifact_name: 'zap_full_report'
+      
+      - name: Run ZAP API Scan
+        if: github.event.inputs.scan_type == 'api'
+        uses: zaproxy/action-api-scan@v0.5.0
+        with:
+          target: ${{ github.event.inputs.target_url }}
+          format: 'openapi'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a -j -l WARN'
+          allow_issue_writing: true
+          issue_title: 'ZAP API Security Alert'
+          artifact_name: 'zap_api_report'
+  
+  # ==========================================
+  # Nuclei Security Scanner
+  # ==========================================
+  
+  nuclei-scan:
+    name: Nuclei Security Templates Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Nuclei
+        run: |
+          wget https://github.com/projectdiscovery/nuclei/releases/download/v${NUCLEI_VERSION}/nuclei_${NUCLEI_VERSION}_linux_amd64.zip
+          unzip nuclei_${NUCLEI_VERSION}_linux_amd64.zip
+          chmod +x nuclei
+          sudo mv nuclei /usr/local/bin/
+      
+      - name: Run Nuclei Scan
+        run: |
+          TARGET_URL="${{ github.event.inputs.target_url || 'https://staging.upcoach.ai' }}"
+          
+          # Update templates
+          nuclei -update-templates
+          
+          # Run security scans
+          nuclei -u $TARGET_URL \
+            -severity critical,high,medium \
+            -tags cve,owasp-top-10,misconfig,vuln,rce,xss,sqli,xxe,lfi \
+            -o nuclei-report.txt \
+            -json -jo nuclei-report.json \
+            -markdown-export nuclei-report \
+            -stats \
+            -timeout 10 \
+            -retries 2 \
+            -rate-limit 150
+      
+      - name: Upload Nuclei Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: nuclei-scan-results
+          path: |
+            nuclei-report.txt
+            nuclei-report.json
+            nuclei-report/
+        if: always()
+      
+      - name: Parse and Create Issues
+        if: always()
+        run: |
+          if [ -f nuclei-report.json ]; then
+            # Parse critical findings and create issues
+            jq -r '.[] | select(.info.severity == "critical" or .info.severity == "high") | 
+              "**[\(.info.severity | ascii_upcase)] \(.info.name)**\n\n" +
+              "**URL:** \(.matched)\n" +
+              "**Template:** \(.template_id)\n" +
+              "**Description:** \(.info.description // "N/A")\n" +
+              "**Reference:** \(.info.reference // ["N/A"] | join(", "))\n"' \
+              nuclei-report.json > critical-findings.md
+            
+            if [ -s critical-findings.md ]; then
+              echo "Critical/High severity findings detected!"
+              cat critical-findings.md
+            fi
+          fi
+  
+  # ==========================================
+  # SSL/TLS Security Check
+  # ==========================================
+  
+  ssl-check:
+    name: SSL/TLS Security Assessment
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install testssl.sh
+        run: |
+          git clone --depth=1 https://github.com/drwetter/testssl.sh.git
+          chmod +x testssl.sh/testssl.sh
+      
+      - name: Run SSL/TLS tests
+        run: |
+          TARGET_HOST=$(echo "${{ github.event.inputs.target_url || 'https://staging.upcoach.ai' }}" | sed 's|https://||' | sed 's|/.*||')
+          
+          ./testssl.sh/testssl.sh \
+            --severity HIGH \
+            --vulnerable \
+            --headers \
+            --protocols \
+            --ciphers \
+            --pfs \
+            --hsts \
+            --cert \
+            --json ssl-report.json \
+            --html ssl-report.html \
+            $TARGET_HOST
+      
+      - name: Upload SSL Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: ssl-security-report
+          path: |
+            ssl-report.json
+            ssl-report.html
+        if: always()
+  
+  # ==========================================
+  # API Security Testing
+  # ==========================================
+  
+  api-security:
+    name: API Security Testing
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install API Security Tools
+        run: |
+          pip install --upgrade pip
+          pip install astra-security
+          pip install jwt-tool
+          pip install requests pytest
+      
+      - name: Run API Security Tests
+        run: |
+          python .github/scripts/api_security_test.py \
+            --url "${{ github.event.inputs.target_url || 'https://staging.upcoach.ai' }}/api" \
+            --auth-endpoint "/auth/login" \
+            --test-user "${{ secrets.TEST_USER }}" \
+            --test-password "${{ secrets.TEST_PASSWORD }}"
+      
+      - name: Check for API vulnerabilities
+        run: |
+          # Test for common API security issues
+          TARGET_API="${{ github.event.inputs.target_url || 'https://staging.upcoach.ai' }}/api"
+          
+          # Check for missing security headers
+          curl -I $TARGET_API -o headers.txt
+          
+          echo "Checking security headers..."
+          for header in "X-Content-Type-Options" "X-Frame-Options" "X-XSS-Protection" "Strict-Transport-Security" "Content-Security-Policy"; do
+            if ! grep -qi "$header" headers.txt; then
+              echo "WARNING: Missing security header: $header"
+            fi
+          done
+          
+          # Check for rate limiting
+          echo "Testing rate limiting..."
+          for i in {1..100}; do
+            curl -s -o /dev/null -w "%{http_code}" $TARGET_API/health
+          done | sort | uniq -c
+      
+      - name: Upload API Security Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: api-security-report
+          path: |
+            api-security-*.json
+            headers.txt
+        if: always()
+  
+  # ==========================================
+  # Performance Security Testing
+  # ==========================================
+  
+  performance-security:
+    name: Performance & DoS Resilience Testing
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+      
+      - name: Run Load Test with Security Checks
+        run: |
+          k6 run .github/scripts/security_load_test.js \
+            --out json=load_test_results.json \
+            --summary-export=summary.json
+      
+      - name: Analyze Results for Security Issues
+        run: |
+          # Check for potential DoS vulnerabilities
+          if [ -f summary.json ]; then
+            ERROR_RATE=$(jq '.metrics.http_req_failed.values.rate' summary.json)
+            P95_DURATION=$(jq '.metrics.http_req_duration.values["p(95)"]' summary.json)
+            
+            echo "Error Rate: $ERROR_RATE"
+            echo "P95 Duration: $P95_DURATION ms"
+            
+            # Alert if error rate is too high or response time degrades significantly
+            if (( $(echo "$ERROR_RATE > 0.1" | bc -l) )); then
+              echo "WARNING: High error rate detected under load"
+            fi
+            
+            if (( $(echo "$P95_DURATION > 5000" | bc -l) )); then
+              echo "WARNING: Slow response times detected under load"
+            fi
+          fi
+      
+      - name: Upload Performance Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-security-report
+          path: |
+            load_test_results.json
+            summary.json
+        if: always()
+  
+  # ==========================================
+  # Security Report Aggregation
+  # ==========================================
+  
+  dast-report:
+    name: Generate DAST Security Report
+    runs-on: ubuntu-latest
+    needs: [zap-scan, nuclei-scan, ssl-check, api-security, performance-security]
+    if: always()
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: dast-artifacts
+      
+      - name: Generate DAST Report
+        run: |
+          echo "# DAST Security Testing Report" > dast-report.md
+          echo "**Date:** $(date)" >> dast-report.md
+          echo "**Target:** ${{ github.event.inputs.target_url || 'https://staging.upcoach.ai' }}" >> dast-report.md
+          echo "**Scan Type:** ${{ github.event.inputs.scan_type || 'baseline' }}" >> dast-report.md
+          echo "" >> dast-report.md
+          
+          echo "## Test Results Summary" >> dast-report.md
+          echo "| Test | Status | Critical Findings |" >> dast-report.md
+          echo "|------|--------|-------------------|" >> dast-report.md
+          
+          # Process results from each tool
+          for tool in zap nuclei ssl api performance; do
+            echo "| ${tool} | ${{ needs[${tool}-scan].result || needs[${tool}-security].result || needs[${tool}-check].result }} | See artifacts |" >> dast-report.md
+          done
+          
+          echo "" >> dast-report.md
+          echo "## Recommendations" >> dast-report.md
+          echo "1. Review all critical and high severity findings" >> dast-report.md
+          echo "2. Implement security headers if missing" >> dast-report.md
+          echo "3. Ensure rate limiting is properly configured" >> dast-report.md
+          echo "4. Update SSL/TLS configuration if issues found" >> dast-report.md
+          echo "5. Review and fix any API security vulnerabilities" >> dast-report.md
+      
+      - name: Upload DAST Summary Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: dast-summary-report
+          path: dast-report.md
+      
+      - name: Send notification
+        if: failure()
+        run: |
+          echo "Security vulnerabilities detected in DAST scan!"
+          echo "Please review the artifacts for detailed findings."

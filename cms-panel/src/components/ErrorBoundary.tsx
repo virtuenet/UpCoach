@@ -1,6 +1,7 @@
 import { Component, ReactNode, ErrorInfo } from 'react';
 import ErrorFallback from './ErrorBoundary/ErrorFallback';
 import { logger } from '../utils/logger';
+import { sentryFrontend } from '../services/monitoring/sentryInit';
 
 interface Props {
   children: ReactNode;
@@ -86,8 +87,13 @@ export default class ErrorBoundary extends Component<Props, State> {
       errorCount: this.state.errorCount,
     };
 
-    // Send to monitoring service
-    // Example: sendToMonitoring(errorReport);
+    // Send to Sentry monitoring service
+    sentryFrontend.captureException(error, {
+      component: 'ErrorBoundary',
+      level: this.props.level,
+      componentStack: errorInfo.componentStack,
+      errorCount: this.state.errorCount,
+    });
     
     // Store in session storage for debugging
     try {

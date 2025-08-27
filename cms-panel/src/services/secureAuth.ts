@@ -10,17 +10,33 @@ export interface SecureAuthConfig {
   tokenCookieName?: string;
   refreshCookieName?: string;
   csrfHeaderName?: string;
+  sessionCheckInterval?: number;
+  sessionWarningThreshold?: number;
+}
+
+export interface SessionInfo {
+  isValid: boolean;
+  expiresAt?: Date;
+  userId?: string;
+  role?: string;
+  lastActivity?: Date;
 }
 
 class SecureAuthService {
   private config: Required<SecureAuthConfig>;
   private csrfToken: string | null = null;
+  private sessionInfo: SessionInfo | null = null;
+  private sessionCheckTimer: any = null;
+  private activityListeners: Set<() => void> = new Set();
+  private sessionExpiryWarningShown = false;
   
   constructor(config: SecureAuthConfig = {}) {
     this.config = {
       tokenCookieName: config.tokenCookieName || 'cms-auth-token',
       refreshCookieName: config.refreshCookieName || 'cms-refresh-token',
-      csrfHeaderName: config.csrfHeaderName || 'X-CSRF-Token'
+      csrfHeaderName: config.csrfHeaderName || 'X-CSRF-Token',
+      sessionCheckInterval: config.sessionCheckInterval || 60000, // 1 minute
+      sessionWarningThreshold: config.sessionWarningThreshold || 300000 // 5 minutes
     };
     
     // Configure axios to send cookies
@@ -37,6 +53,17 @@ class SecureAuthService {
       
       // Add CSRF token to all requests
       apiClient.defaults.headers.common[this.config.csrfHeaderName] = this.csrfToken;
+      
+      // Start session monitoring
+      this.startSessionMonitoring();
+      
+      // Setup activity tracking
+      this.setupActivityTracking();
+      
+      // Setup cross-tab synchronization
+      this.setupCrossTabSync();
+      
+      logger.info('Secure auth service initialized');
     } catch (error) {
       logger.error('Failed to initialize secure auth', error as Error);
     }
@@ -48,8 +75,31 @@ class SecureAuthService {
   async checkSession(): Promise<boolean> {
     try {
       const response = await apiClient.get('/auth/session');
-      return response.data.valid === true;
+      
+      if (response.data.valid) {
+        this.sessionInfo = {
+          isValid: true,
+          expiresAt: response.data.expiresAt ? new Date(response.data.expiresAt) : undefined,
+          userId: response.data.userId,
+          role: response.data.role,
+          lastActivity: new Date()
+        };
+        
+        // Reset expiry warning flag if session is refreshed
+        if (this.sessionInfo.expiresAt) {
+          const timeUntilExpiry = this.sessionInfo.expiresAt.getTime() - Date.now();
+          if (timeUntilExpiry > this.config.sessionWarningThreshold) {
+            this.sessionExpiryWarningShown = false;
+          }
+        }
+        
+        return true;
+      }
+      
+      this.sessionInfo = null;
+      return false;
     } catch {
+      this.sessionInfo = null;
       return false;
     }
   }
@@ -79,9 +129,16 @@ class SecureAuthService {
     } catch (error) {
       logger.error('Failed to clear session', error as Error);
     } finally {
-      // Clear CSRF token
+      // Clear local state
       this.csrfToken = null;
+      this.sessionInfo = null;
       delete apiClient.defaults.headers.common[this.config.csrfHeaderName];
+      
+      // Stop session monitoring
+      this.stopSessionMonitoring();
+      
+      // Signal other tabs
+      this.broadcastLogout();
     }
   }
 
@@ -154,6 +211,185 @@ class SecureAuthService {
         return Promise.reject(error);
       }
     );
+  }
+
+  /**
+   * Start session monitoring
+   */
+  private startSessionMonitoring(): void {
+    this.stopSessionMonitoring();
+    
+    this.sessionCheckTimer = setInterval(async () => {
+      if (!this.sessionInfo?.expiresAt) return;
+      
+      const now = Date.now();
+      const expiresAt = this.sessionInfo.expiresAt.getTime();
+      const timeUntilExpiry = expiresAt - now;
+      
+      // Show warning if session is about to expire
+      if (timeUntilExpiry < this.config.sessionWarningThreshold && 
+          timeUntilExpiry > 0 && 
+          !this.sessionExpiryWarningShown) {
+        this.showSessionExpiryWarning(Math.floor(timeUntilExpiry / 60000));
+        this.sessionExpiryWarningShown = true;
+      }
+      
+      // Attempt to refresh if less than warning threshold
+      if (timeUntilExpiry < this.config.sessionWarningThreshold && timeUntilExpiry > 0) {
+        await this.refreshToken();
+      }
+      
+      // Session expired
+      if (timeUntilExpiry <= 0) {
+        this.handleSessionExpired();
+      }
+    }, this.config.sessionCheckInterval);
+  }
+
+  /**
+   * Stop session monitoring
+   */
+  private stopSessionMonitoring(): void {
+    if (this.sessionCheckTimer) {
+      clearInterval(this.sessionCheckTimer);
+      this.sessionCheckTimer = null;
+    }
+  }
+
+  /**
+   * Setup user activity tracking
+   */
+  private setupActivityTracking(): void {
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    let lastActivity = Date.now();
+    const ACTIVITY_THRESHOLD = 300000; // 5 minutes
+    
+    const handleActivity = () => {
+      const now = Date.now();
+      
+      if (now - lastActivity > ACTIVITY_THRESHOLD) {
+        lastActivity = now;
+        this.checkSession();
+        
+        // Notify activity listeners
+        this.activityListeners.forEach(listener => listener());
+      }
+    };
+    
+    events.forEach(event => {
+      window.addEventListener(event, handleActivity, { passive: true });
+    });
+  }
+
+  /**
+   * Setup cross-tab synchronization
+   */
+  private setupCrossTabSync(): void {
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'auth_logout' && event.newValue === 'true') {
+        // Another tab logged out
+        this.handleSessionExpired();
+      }
+      
+      if (event.key === 'auth_refresh' && event.newValue) {
+        // Another tab refreshed the session
+        this.checkSession();
+      }
+    });
+  }
+
+  /**
+   * Show session expiry warning
+   */
+  private showSessionExpiryWarning(minutes: number): void {
+    logger.warn(`Session expiring in ${minutes} minutes`);
+    
+    // Create warning notification (can be replaced with toast notification)
+    const event = new CustomEvent('sessionExpiryWarning', {
+      detail: { minutesRemaining: minutes }
+    });
+    window.dispatchEvent(event);
+  }
+
+  /**
+   * Handle session expired
+   */
+  private handleSessionExpired(): void {
+    logger.info('Session expired');
+    
+    // Clear local state
+    this.sessionInfo = null;
+    this.stopSessionMonitoring();
+    
+    // Dispatch event for app to handle
+    const event = new CustomEvent('sessionExpired');
+    window.dispatchEvent(event);
+    
+    // Redirect to login
+    setTimeout(() => {
+      window.location.href = '/login';
+    }, 2000);
+  }
+
+  /**
+   * Broadcast logout to other tabs
+   */
+  private broadcastLogout(): void {
+    try {
+      localStorage.setItem('auth_logout', 'true');
+      setTimeout(() => localStorage.removeItem('auth_logout'), 100);
+    } catch (e) {
+      // Ignore storage errors
+    }
+  }
+
+  /**
+   * Broadcast session refresh to other tabs
+   */
+  private broadcastRefresh(): void {
+    try {
+      localStorage.setItem('auth_refresh', Date.now().toString());
+      setTimeout(() => localStorage.removeItem('auth_refresh'), 100);
+    } catch (e) {
+      // Ignore storage errors
+    }
+  }
+
+  /**
+   * Get session info
+   */
+  getSessionInfo(): SessionInfo | null {
+    return this.sessionInfo;
+  }
+
+  /**
+   * Check if user has permission
+   */
+  hasPermission(permission: string): boolean {
+    if (!this.sessionInfo?.role) return false;
+    
+    const rolePermissions: Record<string, string[]> = {
+      admin: ['*'],
+      coach: ['content.*', 'media.*', 'analytics.view'],
+      content_creator: ['content.read', 'content.write', 'media.upload']
+    };
+    
+    const permissions = rolePermissions[this.sessionInfo.role] || [];
+    
+    return permissions.some(p => {
+      if (p === '*') return true;
+      if (p === permission) return true;
+      if (p.endsWith('.*') && permission.startsWith(p.slice(0, -2))) return true;
+      return false;
+    });
+  }
+
+  /**
+   * Add activity listener
+   */
+  onActivity(listener: () => void): () => void {
+    this.activityListeners.add(listener);
+    return () => this.activityListeners.delete(listener);
   }
 }
 

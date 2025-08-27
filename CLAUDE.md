@@ -11,6 +11,44 @@ UpCoach is an AI-powered coaching platform with:
 - **Landing Page**: Next.js marketing site (port 8005)
 - **CMS Panel**: React/Vite content management (port 8007)
 
+## Development Environment Setup
+
+### Prerequisites
+- Node.js 18+ (LTS recommended)
+- Docker Desktop 4.20+
+- Flutter 3.16+ with Dart 3.2+
+- PostgreSQL 14+ (via Docker)
+- Redis 7+ (via Docker)
+- Git 2.30+
+
+### Initial Setup
+```bash
+# Clone repository
+git clone <repository-url>
+cd upcoach-project
+
+# Copy environment variables
+cp .env.example .env
+cp .env.monitoring.example .env.monitoring
+
+# Install dependencies
+make install-all
+
+# Start Docker services
+open -a "Docker Desktop"  # macOS
+make build
+make up
+
+# Apply database migrations
+make db-migrate
+make db-seed  # Optional: Load test data
+```
+
+### IDE Configuration
+- **VS Code**: Install recommended extensions from `.vscode/extensions.json`
+- **WebStorm/IntelliJ**: Import project settings from `.idea/`
+- **Cursor**: Claude Code integration works out of the box
+
 ## Essential Commands
 
 ### Quick Development Start
@@ -57,13 +95,35 @@ make db-backup        # Create backup
 make build            # Build all Docker containers
 make up               # Start all services
 make down             # Stop all services
+make restart          # Restart all services
+make clean            # Clean Docker volumes and cache
+```
+
+### Security & Monitoring
+```bash
+# Security scanning
+make security-scan    # Run security audit
+make dast-scan        # Dynamic application security testing
+npm audit fix         # Fix npm vulnerabilities
+
+# Monitoring
+make monitor          # Start monitoring dashboard
+make health-check     # Check all services health
+make logs-tail        # Tail logs with filters
 ```
 
 ## Architecture & Key Patterns
 
 ### Backend API Structure
 - **Controllers**: Request handling and validation in `backend/src/controllers/`
+  - `TwoFactorAuthController.ts`: 2FA and WebAuthn management
 - **Services**: Business logic in `backend/src/services/`
+  - `TwoFactorAuthService.ts`: TOTP/SMS authentication
+  - `WebAuthnService.ts`: Passkey authentication
+  - `compliance/`: GDPR and data protection services
+  - `monitoring/`: Application performance monitoring
+- **Middleware**: Security and request processing
+  - `securityHeaders.ts`: CSP, HSTS, XSS protection
 - **Models**: Sequelize models in `backend/src/models/`
 - **Database**: PostgreSQL with migrations in `backend/src/database/migrations/`
 
@@ -86,10 +146,15 @@ make down             # Stop all services
 - `financial_snapshots`: Daily/monthly aggregated metrics
 - `billing_events`: Comprehensive audit trail
 
-### Authentication
+### Authentication & Security
 - Supabase for mobile and web authentication
 - JWT tokens for API authentication
 - Role-based access control (RBAC)
+- Two-Factor Authentication (TOTP, SMS)
+- WebAuthn/Passkeys support
+- Security headers (CSP, HSTS, X-Frame-Options)
+- Rate limiting and DDoS protection
+- Session management with Redis
 
 ## Development Workflow
 
@@ -149,6 +214,102 @@ Critical variables that must be set:
 - `STRIPE_SECRET_KEY` & `STRIPE_WEBHOOK_SECRET`: Payments
 - `OPENAI_API_KEY`: AI coaching features
 
+## Security & Compliance
+
+### Security Features
+- **Two-Factor Authentication**: TOTP and SMS-based 2FA
+- **WebAuthn**: Passwordless authentication with biometrics
+- **Security Headers**: Comprehensive CSP and HSTS policies
+- **Rate Limiting**: API endpoint protection
+- **Input Validation**: Sanitization and XSS prevention
+- **Encryption**: TLS 1.3 for transport, AES-256 for storage
+
+### Compliance
+- **GDPR**: Data protection and privacy controls
+- **CCPA**: California privacy compliance
+- **SOC 2**: Security controls and audit trails
+- **PCI DSS**: Payment card data protection (via Stripe)
+
+### Security Testing
+- **SAST**: Static application security testing in CI
+- **DAST**: Dynamic security testing with OWASP ZAP
+- **Dependency Scanning**: Automated vulnerability checks
+- **Penetration Testing**: Quarterly security audits
+
+For detailed security implementation, see:
+- `/docs/SECURITY_TESTING.md`
+- `/docs/TWO_FACTOR_AUTH.md`
+- `/docs/MONITORING_SECURITY.md`
+
+## CI/CD & Deployment
+
+### GitHub Actions Workflows
+
+#### Core Pipelines
+- **`ci.yml`**: Main CI pipeline for all services
+- **`backend-tests.yml`**: Backend unit and integration tests
+- **`visual-tests.yml`**: Playwright visual regression testing
+- **`security.yml`**: Security scanning and compliance checks
+- **`dast.yml`**: Dynamic application security testing
+- **`production-deploy.yml`**: Production deployment pipeline
+
+#### Deployment Process
+```bash
+# Development
+git push origin feature/branch  # Triggers CI checks
+
+# Staging
+git push origin main           # Auto-deploys to staging
+
+# Production
+git tag v1.2.3                 # Create release tag
+git push origin v1.2.3         # Triggers production deploy
+```
+
+### Rollback Procedures
+```bash
+# Immediate rollback
+make rollback VERSION=v1.2.2
+
+# Database rollback
+make db-rollback MIGRATION=20240101_feature
+
+# Feature flag disable
+make feature-toggle FEATURE=new-ui ENABLED=false
+```
+
+## Monitoring & Observability
+
+### Application Monitoring
+- **Health Checks**: `/api/health` endpoints for all services
+- **Metrics Collection**: Prometheus metrics at `/metrics`
+- **Error Tracking**: Sentry integration for error reporting
+- **Performance Monitoring**: APM with distributed tracing
+- **Log Aggregation**: Centralized logging with structured logs
+
+### Dashboards & Alerts
+- **Grafana Dashboards**: Real-time metrics visualization
+- **Alert Rules**: PagerDuty integration for critical issues
+- **SLA Monitoring**: 99.9% uptime tracking
+- **Cost Monitoring**: Cloud spend and resource usage
+
+### Monitoring Commands
+```bash
+# View real-time metrics
+make metrics-dashboard
+
+# Check service health
+curl http://localhost:8080/api/health
+
+# View error reports
+make sentry-dashboard
+
+# Generate performance report
+make performance-report
+```
+
+For monitoring setup, see `/docs/MONITORING_SECURITY.md`
+
 ## Testing Strategy
 
 ### Unit Tests
@@ -165,6 +326,18 @@ Critical variables that must be set:
 - Use `make db-seed` for consistent test data
 - Test users: admin@upcoach.ai, coach@upcoach.ai, user@upcoach.ai
 - All test users password: `testpass123`
+
+### Security Testing
+- **SAST**: CodeQL analysis on every PR
+- **DAST**: OWASP ZAP scanning in staging
+- **Dependency Audit**: Daily vulnerability checks
+- **Penetration Testing**: Quarterly assessments
+
+### Performance Testing
+- **Load Testing**: k6 scripts for API endpoints
+- **Stress Testing**: Identify breaking points
+- **Browser Performance**: Lighthouse CI integration
+- **Mobile Performance**: Flutter performance profiling
 
 ## Current Implementation Status
 
@@ -223,3 +396,294 @@ flutter pub run build_runner build --delete-conflicting-outputs
 - Response caching with Redis
 - Pagination for list endpoints
 - Rate limiting on public endpoints
+
+## Visual Development & Testing
+
+### Design System
+
+The project follows S-Tier SaaS design standards inspired by Stripe, Airbnb, and Linear. All UI development must adhere to:
+
+- **Design Principles**: `/context/design-principles.md` - Comprehensive checklist for world-class UI
+- **Component Library**: NextUI with custom Tailwind configuration
+
+### Quick Visual Check
+
+**IMMEDIATELY after implementing any front-end change:**
+
+1. **Identify what changed** - Review the modified components/pages
+2. **Navigate to affected pages** - Use `mcp__playwright__browser_navigate` to visit each changed view
+3. **Verify design compliance** - Compare against `/context/design-principles.md`
+4. **Validate feature implementation** - Ensure the change fulfills the user's specific request
+5. **Check acceptance criteria** - Review any provided context files or requirements
+6. **Capture evidence** - Take full page screenshot at desktop viewport (1440px) of each changed view
+7. **Check for errors** - Run `mcp__playwright__browser_console_messages` ⚠️
+
+This verification ensures changes meet design standards and user requirements.
+
+### Comprehensive Design Review
+
+For significant UI changes or before merging PRs, use the design review agent:
+
+```bash
+# Option 1: Use the slash command
+/design-review
+
+# Option 2: Invoke the agent directly
+@agent-design-review
+```
+
+The design review agent will:
+
+- Test all interactive states and user flows
+- Verify responsiveness (desktop/tablet/mobile)
+- Check accessibility (WCAG 2.1 AA compliance)
+- Validate visual polish and consistency
+- Test edge cases and error states
+- Provide categorized feedback (Blockers/High/Medium/Nitpicks)
+
+### Playwright MCP Integration
+
+#### Essential Commands for UI Testing
+
+```javascript
+// Navigation & Screenshots
+mcp__playwright__browser_navigate(url); // Navigate to page
+mcp__playwright__browser_take_screenshot(); // Capture visual evidence
+mcp__playwright__browser_resize(
+  width,
+  height
+); // Test responsiveness
+
+// Interaction Testing
+mcp__playwright__browser_click(element); // Test clicks
+mcp__playwright__browser_type(
+  element,
+  text
+); // Test input
+mcp__playwright__browser_hover(element); // Test hover states
+
+// Validation
+mcp__playwright__browser_console_messages(); // Check for errors
+mcp__playwright__browser_snapshot(); // Accessibility check
+mcp__playwright__browser_wait_for(
+  text / element
+); // Ensure loading
+```
+
+### Design Compliance Checklist
+
+When implementing UI features, verify:
+
+- [ ] **Visual Hierarchy**: Clear focus flow, appropriate spacing
+- [ ] **Consistency**: Uses design tokens, follows patterns
+- [ ] **Responsiveness**: Works on mobile (375px), tablet (768px), desktop (1440px)
+- [ ] **Accessibility**: Keyboard navigable, proper contrast, semantic HTML
+- [ ] **Performance**: Fast load times, smooth animations (150-300ms)
+- [ ] **Error Handling**: Clear error states, helpful messages
+- [ ] **Polish**: Micro-interactions, loading states, empty states
+
+## When to Use Automated Visual Testing
+
+### Use Quick Visual Check for:
+
+- Every front-end change, no matter how small
+- After implementing new components or features
+- When modifying existing UI elements
+- After fixing visual bugs
+- Before committing UI changes
+
+### Use Comprehensive Design Review for:
+
+- Major feature implementations
+- Before creating pull requests with UI changes
+- When refactoring component architecture
+- After significant design system updates
+- When accessibility compliance is critical
+
+### Skip Visual Testing for:
+
+- Backend-only changes (API, database)
+- Configuration file updates
+- Documentation changes
+- Test file modifications
+- Non-visual utility functions
+
+## Claude Code Agents
+
+### Available Specialized Agents
+
+Claude Code provides specialized agents to help with specific development tasks. Use these agents proactively when their expertise matches your task:
+
+#### Code Quality & Review
+- **`code-reviewer`**: Automated code review after writing code
+  ```bash
+  # Automatically triggered after significant code changes
+  # Reviews for best practices, performance, security
+  ```
+
+- **`code-review-expert`**: Deep code analysis and feedback
+  ```bash
+  # Use for comprehensive code review before commits
+  # Provides actionable improvement suggestions
+  ```
+
+- **`code-auditor-adversarial`**: Rigorous pre-merge validation
+  ```bash
+  # Use before merging to main branch
+  # Can block merges for critical issues
+  ```
+
+#### Testing & QA
+- **`qa-test-automation-lead`**: Comprehensive test planning
+  ```bash
+  # Use after feature implementation
+  # Creates test plans across Flutter, React Native, PWA
+  ```
+
+- **`test-lead`**: Coordinates all testing efforts
+  ```bash
+  # Use before releases or after major changes
+  # Orchestrates feedback from all review agents
+  ```
+
+#### TypeScript & Development
+- **`typescript-error-fixer`**: Systematic TS error resolution
+  ```bash
+  # Use when TypeScript build fails
+  # Iteratively fixes errors until 95% resolved
+  ```
+
+- **`codebase-simplifier`**: Reduces code complexity
+  ```bash
+  # Use to identify over-engineering
+  # Suggests consolidation opportunities
+  ```
+
+#### Security & Compliance
+- **`security-audit-expert`**: Security vulnerability analysis
+  ```bash
+  # Use after implementing auth features
+  # Reviews for OWASP Top 10 vulnerabilities
+  ```
+
+- **`legal-privacy-counsel`**: Legal documentation
+  ```bash
+  # Use for ToS, DPA, privacy policies
+  # Ensures GDPR/CCPA compliance
+  ```
+
+#### UI/UX & Design
+- **`design-review`**: Comprehensive design review
+  ```bash
+  # Use command: /design-review
+  # Tests responsiveness, accessibility, visual consistency
+  ```
+
+- **`ux-accessibility-auditor`**: WCAG compliance checking
+  ```bash
+  # Use for accessibility audits
+  # Provides Figma annotations and fixes
+  ```
+
+#### Documentation
+- **`docs-dx-engineer`**: Technical documentation
+  ```bash
+  # Use after API changes
+  # Updates OpenAPI specs, ADRs, onboarding docs
+  ```
+
+### Agent Usage Examples
+
+```bash
+# After implementing a new feature
+@code-reviewer          # Quick review
+@qa-test-automation-lead # Test plan creation
+
+# Before merging to main
+@code-auditor-adversarial # Final validation
+@security-audit-expert    # Security check
+
+# For UI changes
+/design-review          # Full design audit
+@ux-accessibility-auditor # Accessibility check
+
+# When fixing issues
+@typescript-error-fixer  # Fix TS errors
+@codebase-simplifier    # Reduce complexity
+```
+
+### Agent Integration Tips
+
+1. **Proactive Usage**: Agents are triggered automatically for relevant tasks
+2. **Parallel Execution**: Multiple agents can run concurrently
+3. **Context Aware**: Agents understand project structure and standards
+4. **Actionable Feedback**: Focus on specific, fixable issues
+
+## Code Review Standards
+
+### PR Requirements
+1. All tests must pass
+2. TypeScript build must succeed
+3. Security scan must pass
+4. Code coverage > 80%
+5. No critical vulnerabilities
+6. Design review for UI changes
+
+### Review Checklist
+- [ ] Code follows project conventions
+- [ ] Tests cover new functionality
+- [ ] Documentation updated
+- [ ] Security best practices followed
+- [ ] Performance impact assessed
+- [ ] Accessibility requirements met
+- [ ] Error handling implemented
+- [ ] Logging added for debugging
+
+## Release Process
+
+### Version Management
+- Semantic versioning (MAJOR.MINOR.PATCH)
+- Changelog maintenance in CHANGELOG.md
+- Git tags for all releases
+- Release notes in GitHub Releases
+
+### Release Checklist
+1. [ ] All tests passing
+2. [ ] Security scan completed
+3. [ ] Performance benchmarks met
+4. [ ] Documentation updated
+5. [ ] Database migrations tested
+6. [ ] Rollback plan documented
+7. [ ] Monitoring alerts configured
+8. [ ] Feature flags configured
+
+### Deployment Stages
+```bash
+# 1. Development
+make test-all           # Run all tests
+make security-scan      # Security checks
+
+# 2. Staging
+git push origin main    # Auto-deploy to staging
+make smoke-test         # Verify deployment
+
+# 3. Production
+make release VERSION=1.2.3  # Create release
+make deploy-prod            # Deploy to production
+make verify-prod            # Post-deployment checks
+```
+
+## Additional Context
+
+### Documentation
+- Design review agent configuration: `/.claude/agents/design-review-agent.md`
+- Design principles checklist: `/context/design-principles.md`
+- Security documentation: `/docs/SECURITY_TESTING.md`
+- Two-factor auth guide: `/docs/TWO_FACTOR_AUTH.md`
+- Monitoring setup: `/docs/MONITORING_SECURITY.md`
+
+### Configuration Files
+- Claude Code settings: `/.claude/settings.local.json`
+- GitHub Actions: `/.github/workflows/`
+- Security policies: `/.github/codeql/`
+- OWASP ZAP config: `/.zap/`

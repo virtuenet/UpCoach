@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import { z } from 'zod';
 import { validateSecret } from '../utils/secrets';
+import { logger } from '../utils/logger';
 
 // Load environment variables
 dotenv.config();
@@ -101,6 +102,21 @@ const envSchema = z.object({
   // CDN Configuration
   CDN_URL: z.string().optional(),
   CDN_ENABLED: z.string().transform(val => val === 'true').optional().default('false'),
+  
+  // Monitoring Configuration
+  SENTRY_DSN: z.string().optional(),
+  SENTRY_ENVIRONMENT: z.string().optional(),
+  SENTRY_RELEASE: z.string().optional(),
+  SENTRY_TRACES_SAMPLE_RATE: z.string().transform(Number).optional().default('0.1'),
+  SENTRY_PROFILES_SAMPLE_RATE: z.string().transform(Number).optional().default('0.1'),
+  
+  DATADOG_ENABLED: z.string().transform(val => val === 'true').optional().default('false'),
+  DATADOG_AGENT_HOST: z.string().optional().default('localhost'),
+  DATADOG_AGENT_PORT: z.string().transform(Number).optional().default('8126'),
+  DATADOG_STATSD_HOST: z.string().optional().default('localhost'),
+  DATADOG_STATSD_PORT: z.string().transform(Number).optional().default('8125'),
+  DATADOG_SERVICE: z.string().optional().default('upcoach-backend'),
+  DATADOG_VERSION: z.string().optional(),
 });
 
 // Validate environment variables
@@ -229,6 +245,27 @@ export const config = {
   cdn: {
     url: env.CDN_URL || '',
     enabled: env.CDN_ENABLED,
+  },
+  
+  // Monitoring
+  monitoring: {
+    sentry: {
+      enabled: !!env.SENTRY_DSN,
+      dsn: env.SENTRY_DSN || '',
+      environment: env.SENTRY_ENVIRONMENT || env.NODE_ENV,
+      release: env.SENTRY_RELEASE,
+      tracesSampleRate: env.SENTRY_TRACES_SAMPLE_RATE,
+      profilesSampleRate: env.SENTRY_PROFILES_SAMPLE_RATE,
+    },
+    datadog: {
+      enabled: env.DATADOG_ENABLED,
+      agentHost: env.DATADOG_AGENT_HOST,
+      agentPort: env.DATADOG_AGENT_PORT,
+      statsdHost: env.DATADOG_STATSD_HOST,
+      statsdPort: env.DATADOG_STATSD_PORT,
+      service: env.DATADOG_SERVICE,
+      version: env.DATADOG_VERSION,
+    },
   },
   
   // Feature flags

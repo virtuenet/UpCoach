@@ -18,6 +18,7 @@ import advancedAnalyticsRoutes from './advancedAnalytics';
 import gamificationRoutes from './gamification';
 import enterpriseRoutes from './enterprise';
 import csrfRoutes from './csrf';
+import twoFactorAuthRoutes from './twoFactorAuth';
 import { authMiddleware } from '../middleware/auth';
 
 export const setupRoutes = (app: Application): void => {
@@ -26,6 +27,9 @@ export const setupRoutes = (app: Application): void => {
   // Public routes (no authentication required)
   app.use(`${apiPrefix}/auth`, authRoutes);
   app.use(`${apiPrefix}`, csrfRoutes); // CSRF token endpoint
+  
+  // Two-Factor Authentication routes (mixed public and protected)
+  app.use(`${apiPrefix}/2fa`, twoFactorAuthRoutes);
 
   // Protected routes (authentication required)
   app.use(`${apiPrefix}/users`, authMiddleware, userRoutes);
