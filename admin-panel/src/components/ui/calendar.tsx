@@ -2,13 +2,14 @@ import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface CalendarProps {
-  selectedDate?: Date;
-  onDateSelect?: (date: Date) => void;
+export interface CalendarProps {
+  selected?: Date;
+  onSelect?: (date: Date | undefined) => void;
   className?: string;
+  initialFocus?: boolean;
 }
 
-const Calendar = ({ selectedDate, onDateSelect, className }: CalendarProps) => {
+const Calendar = ({ selected, onSelect, className, initialFocus }: CalendarProps) => {
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
 
   const daysInMonth = new Date(
@@ -47,13 +48,13 @@ const Calendar = ({ selectedDate, onDateSelect, className }: CalendarProps) => {
     // Days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-      const isSelected = selectedDate && 
-        date.toDateString() === selectedDate.toDateString();
+      const isSelected = selected && 
+        date.toDateString() === selected.toDateString();
 
       days.push(
         <button
           key={day}
-          onClick={() => onDateSelect?.(date)}
+          onClick={() => onSelect?.(date)}
           className={cn(
             'p-2 text-sm rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500',
             isSelected && 'bg-blue-600 text-white hover:bg-blue-700'

@@ -89,7 +89,7 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
       try {
         await ref.read(goalProvider.notifier).deleteGoal(_goal.id);
         if (mounted) {
-          Navigator.pop(context);
+          context.pop();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Goal deleted successfully'),
@@ -123,7 +123,7 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                 child: Row(
                   children: [
                     Icon(Icons.edit),
-                    SizedBox(width: 8),
+                    SizedBox(width: UIConstants.spacingSM),
                     Text('Edit'),
                   ],
                 ),
@@ -133,7 +133,7 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                 child: Row(
                   children: [
                     Icon(Icons.delete, color: AppTheme.errorColor),
-                    SizedBox(width: 8),
+                    SizedBox(width: UIConstants.spacingSM),
                     Text('Delete', style: TextStyle(color: AppTheme.errorColor)),
                   ],
                 ),
@@ -149,12 +149,12 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         children: [
           // Header card
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(UIConstants.spacingMD),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -165,14 +165,14 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                         height: 48,
                         decoration: BoxDecoration(
                           color: _getCategoryColor(_goal.category).withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                         ),
                         child: Icon(
                           _getCategoryIcon(_goal.category),
                           color: _getCategoryColor(_goal.category),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: UIConstants.spacingMD),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,14 +184,14 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: UIConstants.spacingXS),
                             Row(
                               children: [
                                 _buildChip(
                                   _goal.categoryLabel,
                                   _getCategoryColor(_goal.category),
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: UIConstants.spacingSM),
                                 _buildChip(
                                   _goal.priorityLabel,
                                   _getPriorityColor(_goal.priority),
@@ -205,7 +205,7 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                   ),
                   
                   if (_goal.description != null) ...[
-                    const SizedBox(height: 16),
+                    const SizedBox(height: UIConstants.spacingMD),
                     Text(
                       _goal.description!,
                       style: TextStyle(
@@ -215,7 +215,7 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                     ),
                   ],
                   
-                  const SizedBox(height: 16),
+                  const SizedBox(height: UIConstants.spacingMD),
                   
                   // Target date
                   Row(
@@ -227,7 +227,7 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                             ? AppTheme.errorColor 
                             : AppTheme.textSecondary,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: UIConstants.spacingSM),
                       Text(
                         'Target: ${DateFormat('MMMM d, yyyy').format(_goal.targetDate)}',
                         style: TextStyle(
@@ -255,12 +255,12 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
             ),
           ),
           
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           
           // Progress card
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(UIConstants.spacingMD),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -285,7 +285,7 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                     ],
                   ),
                   
-                  const SizedBox(height: 16),
+                  const SizedBox(height: UIConstants.spacingMD),
                   
                   if (_isEditingProgress) ...[
                     Slider(
@@ -342,7 +342,7 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                     ),
                   ],
                   
-                  const SizedBox(height: 16),
+                  const SizedBox(height: UIConstants.spacingMD),
                   
                   LinearProgressIndicator(
                     value: _goal.progress,
@@ -359,10 +359,10 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
           
           // Milestones card
           if (_goal.milestones.isNotEmpty) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(UIConstants.spacingMD),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -385,7 +385,7 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                       ],
                     ),
                     
-                    const SizedBox(height: 8),
+                    const SizedBox(height: UIConstants.spacingSM),
                     
                     LinearProgressIndicator(
                       value: _goal.milestoneProgress,
@@ -395,7 +395,7 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                       ),
                     ),
                     
-                    const SizedBox(height: 16),
+                    const SizedBox(height: UIConstants.spacingMD),
                     
                     ..._goal.milestones.map((milestone) {
                       final isCompleted = _goal.completedMilestones.contains(milestone);
@@ -419,12 +419,12 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
             ),
           ],
           
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           
           // Stats card
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(UIConstants.spacingMD),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -434,15 +434,15 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: UIConstants.spacingMD),
                   _buildStatRow('Status', _goal.statusLabel,
                       color: _getStatusColor(_goal.status)),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: UIConstants.spacingSM),
                   _buildStatRow(
                     'Created',
                     DateFormat('MMM d, yyyy').format(_goal.createdAt),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: UIConstants.spacingSM),
                   _buildStatRow(
                     'Last Updated',
                     DateFormat('MMM d, yyyy').format(_goal.updatedAt),
@@ -461,7 +461,7 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: color.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(UIConstants.radiusXL),
       ),
       child: Text(
         label,

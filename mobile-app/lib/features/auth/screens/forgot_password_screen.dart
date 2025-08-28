@@ -83,14 +83,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     color: AppColors.primaryColor,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: UIConstants.spacingLG),
                 Text(
                   'Check your email',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: UIConstants.spacingMD),
                 Text(
                   'We\'ve sent a password reset link to',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -98,20 +98,20 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                       ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: UIConstants.spacingXS),
                 Text(
                   _emailController.text,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: UIConstants.spacingXL),
                 CustomButton(
                   onPressed: () => context.go('/login'),
                   text: 'Back to Login',
                   width: double.infinity,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: UIConstants.spacingMD),
                 TextButton(
                   onPressed: () {
                     setState(() => _emailSent = false);
@@ -153,14 +153,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: UIConstants.spacingSM),
                 Text(
                   'No worries! Enter your email and we\'ll send you reset instructions.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.grey[600],
                       ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: UIConstants.spacingXL),
                 CustomTextField(
                   controller: _emailController,
                   label: 'Email',
@@ -178,14 +178,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: UIConstants.spacingLG),
                 CustomButton(
                   onPressed: _isLoading ? null : _handlePasswordReset,
                   text: 'Send Reset Link',
                   width: double.infinity,
                   isLoading: _isLoading,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: UIConstants.spacingMD),
                 Center(
                   child: TextButton(
                     onPressed: () => context.pop(),
@@ -197,7 +197,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           size: 16,
                           color: AppColors.primaryColor,
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: UIConstants.spacingXS),
                         Text(
                           'Back to Login',
                           style: TextStyle(

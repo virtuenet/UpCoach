@@ -106,7 +106,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
       );
 
       if (mounted) {
-        Navigator.pop(context);
+        context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Task created successfully'),
@@ -147,7 +147,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(UIConstants.spacingMD),
           children: [
             // Title
             TextFormField(
@@ -166,7 +166,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
               textCapitalization: TextCapitalization.sentences,
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             
             // Description
             TextFormField(
@@ -181,7 +181,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
               textCapitalization: TextCapitalization.sentences,
             ),
             
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
             
             // Category
             Text(
@@ -190,7 +190,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: UIConstants.spacingSM),
             Wrap(
               spacing: 8,
               children: TaskCategory.values.map((category) {
@@ -212,7 +212,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
               }).toList(),
             ),
             
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
             
             // Priority
             Text(
@@ -221,7 +221,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: UIConstants.spacingSM),
             Wrap(
               spacing: 8,
               children: TaskPriority.values.map((priority) {
@@ -240,7 +240,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
               }).toList(),
             ),
             
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
             
             // Due Date & Time
             Row(
@@ -248,7 +248,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
                 Expanded(
                   child: InkWell(
                     onTap: _selectDate,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                     child: InputDecorator(
                       decoration: const InputDecoration(
                         labelText: 'Due Date',
@@ -262,11 +262,11 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: UIConstants.spacingMD),
                 Expanded(
                   child: InkWell(
                     onTap: _dueDate == null ? null : _selectTime,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                     child: InputDecorator(
                       decoration: InputDecoration(
                         labelText: 'Time',
@@ -289,7 +289,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
               ],
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             
             // Tags
             TextFormField(
@@ -302,7 +302,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
               textCapitalization: TextCapitalization.words,
             ),
             
-            const SizedBox(height: 32),
+            const SizedBox(height: UIConstants.spacingXL),
             
             // Create button
             ElevatedButton.icon(

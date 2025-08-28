@@ -58,4 +58,7 @@ const PopoverContent = React.forwardRef<
 ));
 PopoverContent.displayName = 'PopoverContent';
 
-export { Popover, PopoverContent };
+// Export PopoverTrigger as a compatibility alias (not actually needed in this implementation)
+export const PopoverTrigger = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+
+export { Popover, PopoverContent, type PopoverProps };

@@ -49,7 +49,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       );
 
       if (mounted) {
-        Navigator.pop(context);
+        context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Profile updated successfully'),
@@ -101,7 +101,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(UIConstants.spacingLG),
           children: [
             // Profile Picture
             Center(
@@ -154,7 +154,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               ),
             ),
             
-            const SizedBox(height: 32),
+            const SizedBox(height: UIConstants.spacingXL),
             
             // Name Field
             TextFormField(
@@ -173,7 +173,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               textCapitalization: TextCapitalization.words,
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             
             // Email Field
             TextFormField(
@@ -195,7 +195,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               },
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             
             // Bio Field
             TextFormField(
@@ -211,7 +211,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               textCapitalization: TextCapitalization.sentences,
             ),
             
-            const SizedBox(height: 32),
+            const SizedBox(height: UIConstants.spacingXL),
             
             // Save Button
             ElevatedButton(
@@ -246,7 +246,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               leading: const Icon(Icons.camera_alt),
               title: const Text('Take Photo'),
               onTap: () {
-                Navigator.pop(context);
+                context.pop();
                 // TODO: Implement camera functionality
               },
             ),
@@ -254,7 +254,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               leading: const Icon(Icons.photo_library),
               title: const Text('Choose from Gallery'),
               onTap: () {
-                Navigator.pop(context);
+                context.pop();
                 // TODO: Implement gallery functionality
               },
             ),
@@ -266,7 +266,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   style: TextStyle(color: AppTheme.errorColor),
                 ),
                 onTap: () {
-                  Navigator.pop(context);
+                  context.pop();
                   // TODO: Implement remove photo functionality
                 },
               ),

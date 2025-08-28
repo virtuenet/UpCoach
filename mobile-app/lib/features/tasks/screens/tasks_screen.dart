@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../shared/constants/ui_constants.dart';
+import 'package:go_router/go_router.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../shared/models/task_model.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../shared/widgets/task_list_tile.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../providers/task_provider.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'create_task_screen.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'task_detail_screen.dart';
+import '../../../shared/constants/ui_constants.dart';
 
 class TasksScreen extends ConsumerStatefulWidget {
   const TasksScreen({super.key});
@@ -31,21 +41,11 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
   }
 
   void _navigateToCreateTask() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const CreateTaskScreen(),
-      ),
-    );
+    context.push('/tasks/create');
   }
 
   void _navigateToTaskDetail(TaskModel task) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TaskDetailScreen(task: task),
-      ),
-    );
+    context.push('/tasks/${task.id}', extra: task);
   }
 
   void _showFilterSheet() {
@@ -73,7 +73,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen>
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryColor,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                 ),
                 child: const Icon(
                   Icons.filter_list,
@@ -170,7 +170,7 @@ class _TaskListView extends ConsumerWidget {
               size: 64,
               color: AppTheme.textSecondary.withOpacity(0.5),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             Text(
               emptyMessage,
               style: TextStyle(
@@ -190,7 +190,7 @@ class _TaskListView extends ConsumerWidget {
         children: [
           if (showStats && stats != null) ...[
             _buildStatsSection(context, stats!),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
           ],
           if (tasks.isEmpty)
             Padding(
@@ -203,7 +203,7 @@ class _TaskListView extends ConsumerWidget {
                       size: 64,
                       color: AppTheme.textSecondary.withOpacity(0.5),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: UIConstants.spacingMD),
                     Text(
                       emptyMessage,
                       style: TextStyle(
@@ -233,11 +233,11 @@ class _TaskListView extends ConsumerWidget {
 
   Widget _buildStatsSection(BuildContext context, Map<String, dynamic> stats) {
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(UIConstants.spacingMD),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
         color: AppTheme.primaryColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(UIConstants.radiusXL),
         border: Border.all(
           color: AppTheme.primaryColor.withOpacity(0.3),
         ),
@@ -252,7 +252,7 @@ class _TaskListView extends ConsumerWidget {
               color: AppTheme.primaryColor,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -304,7 +304,7 @@ class _TaskListView extends ConsumerWidget {
           size: 32,
           color: color ?? AppTheme.primaryColor,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: UIConstants.spacingSM),
         Text(
           value,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -342,18 +342,18 @@ class _TaskFilterSheetState extends ConsumerState<_TaskFilterSheet> {
 
   void _applyFilter() {
     ref.read(taskProvider.notifier).updateFilter(_tempFilter);
-    Navigator.pop(context);
+    context.pop();
   }
 
   void _clearFilter() {
     ref.read(taskProvider.notifier).clearFilter();
-    Navigator.pop(context);
+    context.pop();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(UIConstants.spacingLG),
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -376,7 +376,7 @@ class _TaskFilterSheetState extends ConsumerState<_TaskFilterSheet> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: UIConstants.spacingLG),
           
           // Status filter
           Text(
@@ -385,7 +385,7 @@ class _TaskFilterSheetState extends ConsumerState<_TaskFilterSheet> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: UIConstants.spacingSM),
           Wrap(
             spacing: 8,
             children: TaskStatus.values.map((status) {
@@ -404,7 +404,7 @@ class _TaskFilterSheetState extends ConsumerState<_TaskFilterSheet> {
             }).toList(),
           ),
           
-          const SizedBox(height: 20),
+          const SizedBox(height: UIConstants.spacingLG),
           
           // Category filter
           Text(
@@ -413,7 +413,7 @@ class _TaskFilterSheetState extends ConsumerState<_TaskFilterSheet> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: UIConstants.spacingSM),
           Wrap(
             spacing: 8,
             children: TaskCategory.values.map((category) {
@@ -432,7 +432,7 @@ class _TaskFilterSheetState extends ConsumerState<_TaskFilterSheet> {
             }).toList(),
           ),
           
-          const SizedBox(height: 20),
+          const SizedBox(height: UIConstants.spacingLG),
           
           // Priority filter
           Text(
@@ -441,7 +441,7 @@ class _TaskFilterSheetState extends ConsumerState<_TaskFilterSheet> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: UIConstants.spacingSM),
           Wrap(
             spacing: 8,
             children: TaskPriority.values.map((priority) {
@@ -460,14 +460,14 @@ class _TaskFilterSheetState extends ConsumerState<_TaskFilterSheet> {
             }).toList(),
           ),
           
-          const SizedBox(height: 32),
+          const SizedBox(height: UIConstants.spacingXL),
           
           ElevatedButton(
             onPressed: _applyFilter,
             child: const Text('Apply Filter'),
           ),
           
-          const SizedBox(height: 20),
+          const SizedBox(height: UIConstants.spacingLG),
         ],
       ),
     );

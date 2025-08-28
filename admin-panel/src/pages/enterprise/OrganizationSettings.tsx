@@ -385,7 +385,7 @@ const OrganizationSettings: React.FC = () => {
 
           <Grid container spacing={2}>
             {teams.map((team) => (
-              <Grid xs={12}, md: {6} key={team.id}>
+              <Grid item xs={12} md={6} key={team.id}>
                 <Card>
                   <CardContent>
                     <Box
@@ -444,7 +444,7 @@ const OrganizationSettings: React.FC = () => {
             ) : (
               <Grid container spacing={2}>
                 {ssoProviders.map((provider) => (
-                  <Grid xs={12}, md: {6} key={provider.id}>
+                  <Grid item xs={12} md={6} key={provider.id}>
                     <Card>
                       <CardContent>
                         <Box
@@ -498,7 +498,7 @@ const OrganizationSettings: React.FC = () => {
         {/* Settings Tab */}
         <TabPanel value={tabValue} index={3}>
           <Grid container spacing={3}>
-            <Grid xs={12}, md: {6}>
+            <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Organization Name"
@@ -506,14 +506,14 @@ const OrganizationSettings: React.FC = () => {
                 disabled
               />
             </Grid>
-            <Grid xs={12}, md: {6}>
+            <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Website"
                 value={organization?.website || ""}
               />
             </Grid>
-            <Grid xs={12}, md: {6}>
+            <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Industry</InputLabel>
                 <Select value={organization?.industry || ""}>
@@ -526,7 +526,7 @@ const OrganizationSettings: React.FC = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid xs={12}, md: {6}>
+            <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Organization Size</InputLabel>
                 <Select value={organization?.size || ""}>
@@ -537,14 +537,14 @@ const OrganizationSettings: React.FC = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid xs={12}>
+            <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="Billing Email"
                 value={organization?.billingEmail || ""}
               />
             </Grid>
-            <Grid xs={12}>
+            <Grid item xs={12}>
               <Button variant="contained" color="primary">
                 Save Changes
               </Button>

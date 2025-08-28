@@ -49,7 +49,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} isMobile={isMobile} />
+      {sidebarOpen && <Sidebar />}
       <TopBar 
         userName={user?.fullName || "Guest"} 
         userRole={user?.role || "user"}

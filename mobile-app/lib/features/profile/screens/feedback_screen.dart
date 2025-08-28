@@ -128,15 +128,15 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(UIConstants.spacingMD),
           children: [
             // Feedback Type
             Card(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(UIConstants.radiusLG),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(UIConstants.spacingMD),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -144,14 +144,14 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                       'Feedback Type',
                       style: AppTextStyles.h4,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: UIConstants.spacingMD),
                     DropdownButtonFormField<String>(
                       value: _selectedType,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: AppColors.surface,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                           borderSide: BorderSide.none,
                         ),
                       ),
@@ -165,7 +165,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                                 size: 20,
                                 color: AppColors.textSecondary,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: UIConstants.spacingSM),
                               Text(type),
                             ],
                           ),
@@ -179,16 +179,16 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
 
             // Priority (only for bug reports)
             if (_selectedType == 'Bug Report' || _selectedType == 'Performance Issue')
               Card(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(UIConstants.spacingMD),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -196,7 +196,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                         'Priority',
                         style: AppTextStyles.h4,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: UIConstants.spacingMD),
                       Wrap(
                         spacing: 8,
                         children: _priorities.map((priority) {
@@ -221,15 +221,15 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
               ),
 
             if (_selectedType == 'Bug Report' || _selectedType == 'Performance Issue')
-              const SizedBox(height: 16),
+              const SizedBox(height: UIConstants.spacingMD),
 
             // Subject & Message
             Card(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(UIConstants.radiusLG),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(UIConstants.spacingMD),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -237,7 +237,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                       'Details',
                       style: AppTextStyles.h4,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: UIConstants.spacingMD),
                     TextFormField(
                       controller: _subjectController,
                       decoration: const InputDecoration(
@@ -251,7 +251,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: UIConstants.spacingMD),
                     TextFormField(
                       controller: _messageController,
                       decoration: const InputDecoration(
@@ -274,15 +274,15 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
 
             // Attachments
             Card(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(UIConstants.radiusLG),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(UIConstants.spacingMD),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -302,7 +302,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: UIConstants.spacingSM),
                     Text(
                       'Add screenshots or images to help explain your feedback',
                       style: TextStyle(
@@ -310,7 +310,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                         fontSize: 14,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: UIConstants.spacingMD),
                     if (_attachments.isNotEmpty) ...[
                       SizedBox(
                         height: 100,
@@ -323,7 +323,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                               child: Stack(
                                 children: [
                                   ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                                     child: Image.file(
                                       _attachments[index],
                                       width: 100,
@@ -354,7 +354,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: UIConstants.spacingMD),
                     ],
                     Row(
                       children: [
@@ -365,7 +365,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                             label: const Text('Camera'),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: UIConstants.spacingMD),
                         Expanded(
                           child: OutlinedButton.icon(
                             onPressed: () => _pickImage(ImageSource.gallery),
@@ -379,16 +379,16 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
 
             // Device Info (for bug reports)
             if (_selectedType == 'Bug Report' || _selectedType == 'Performance Issue')
               Card(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(UIConstants.spacingMD),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -399,14 +399,14 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                             size: 20,
                             color: AppColors.textSecondary,
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: UIConstants.spacingSM),
                           Text(
                             'Device Information',
                             style: AppTextStyles.h4,
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: UIConstants.spacingSM),
                       Text(
                         'The following information will be included to help diagnose the issue:',
                         style: TextStyle(
@@ -414,7 +414,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                           fontSize: 14,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: UIConstants.spacingMD),
                       _buildInfoRow('Device', '${Platform.operatingSystem} ${Platform.operatingSystemVersion}'),
                       _buildInfoRow('App Version', '1.0.0'),
                       _buildInfoRow('Build Number', '100'),
@@ -423,7 +423,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                 ),
               ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
 
             // Submit Button
             ElevatedButton(
@@ -431,7 +431,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                 ),
               ),
               child: _isSubmitting
@@ -451,7 +451,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                     ),
                   ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: UIConstants.spacingXL),
           ],
         ),
       ),

@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
 import { z } from 'zod';
 import { validateSecret } from '../utils/secrets';
-import { logger } from '../utils/logger';
 
 // Load environment variables
 dotenv.config();
@@ -123,9 +122,9 @@ const envSchema = z.object({
 const envResult = envSchema.safeParse(process.env);
 
 if (!envResult.success) {
-  logger.error('❌ Environment validation failed:');
+  console.error('❌ Environment validation failed:');
   envResult.error.issues.forEach((issue) => {
-    logger.error(`  - ${issue.path.join('.')}: ${issue.message}`);
+    console.error(`  - ${issue.path.join('.')}: ${issue.message}`);
   });
   process.exit(1);
 }
@@ -141,7 +140,7 @@ if (env.NODE_ENV === 'production') {
   
   secretValidation.forEach(({ name, value }) => {
     if (!validateSecret(value, 64)) {
-      logger.error(`❌ Security validation failed for ${name}: Secret is weak or contains placeholder values`);
+      console.error(`❌ Security validation failed for ${name}: Secret is weak or contains placeholder values`);
       process.exit(1);
     }
   });

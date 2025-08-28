@@ -21,7 +21,7 @@ class VoiceJournalList extends ConsumerWidget {
               size: 80,
               color: Colors.grey.shade400,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             Text(
               'No voice journals yet',
               style: TextStyle(
@@ -30,7 +30,7 @@ class VoiceJournalList extends ConsumerWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: UIConstants.spacingSM),
             Text(
               'Tap the Record tab to create your first voice journal',
               style: TextStyle(
@@ -45,7 +45,7 @@ class VoiceJournalList extends ConsumerWidget {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       itemCount: voiceJournalState.entries.length,
       itemBuilder: (context, index) {
         final entry = voiceJournalState.entries[index];
@@ -79,10 +79,10 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -106,7 +106,7 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                   ),
                 ),
                 
-                const SizedBox(width: 12),
+                const SizedBox(width: UIConstants.spacingMD),
                 
                 // Title and Date
                 Expanded(
@@ -122,7 +122,7 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: UIConstants.spacingXS),
                       Text(
                         _formatDate(widget.entry.createdAt),
                         style: TextStyle(
@@ -154,7 +154,7 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                       child: Row(
                         children: [
                           Icon(Icons.edit),
-                          SizedBox(width: 8),
+                          SizedBox(width: UIConstants.spacingSM),
                           Text('Rename'),
                         ],
                       ),
@@ -165,7 +165,7 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                         child: Row(
                           children: [
                             Icon(Icons.transcribe),
-                            SizedBox(width: 8),
+                            SizedBox(width: UIConstants.spacingSM),
                             Text('Transcribe'),
                           ],
                         ),
@@ -175,7 +175,7 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                       child: Row(
                         children: [
                           Icon(Icons.share),
-                          SizedBox(width: 8),
+                          SizedBox(width: UIConstants.spacingSM),
                           Text('Share'),
                         ],
                       ),
@@ -185,7 +185,7 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                       child: Row(
                         children: [
                           Icon(Icons.delete, color: Colors.red),
-                          SizedBox(width: 8),
+                          SizedBox(width: UIConstants.spacingSM),
                           Text('Delete', style: TextStyle(color: Colors.red)),
                         ],
                       ),
@@ -195,13 +195,13 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
               ],
             ),
             
-            const SizedBox(height: 12),
+            const SizedBox(height: UIConstants.spacingMD),
             
             // Duration and File Size
             Row(
               children: [
                 Icon(Icons.access_time, size: 16, color: Colors.grey.shade600),
-                const SizedBox(width: 4),
+                const SizedBox(width: UIConstants.spacingXS),
                 Text(
                   _formatDuration(Duration(seconds: widget.entry.durationSeconds)),
                   style: TextStyle(
@@ -209,9 +209,9 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                     color: Colors.grey.shade600,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: UIConstants.spacingMD),
                 Icon(Icons.storage, size: 16, color: Colors.grey.shade600),
-                const SizedBox(width: 4),
+                const SizedBox(width: UIConstants.spacingXS),
                 Text(
                   _formatFileSize(widget.entry.fileSizeBytes),
                   style: TextStyle(
@@ -220,19 +220,19 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                   ),
                 ),
                 if (widget.entry.isTranscribed) ...[
-                  const SizedBox(width: 16),
+                  const SizedBox(width: UIConstants.spacingMD),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.green.shade100,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                       border: Border.all(color: Colors.green.shade300),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.transcribe, size: 12, color: Colors.green.shade700),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: UIConstants.spacingXS),
                         Text(
                           'Transcribed',
                           style: TextStyle(
@@ -250,7 +250,7 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
             
             // Transcription (if available and expanded)
             if (widget.entry.isTranscribed && widget.entry.transcriptionText != null) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: UIConstants.spacingMD),
               GestureDetector(
                 onTap: () {
                   setState(() {
@@ -259,10 +259,10 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                 },
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(UIConstants.spacingMD),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                     border: Border.all(color: Colors.grey.shade200),
                   ),
                   child: Column(
@@ -271,7 +271,7 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                       Row(
                         children: [
                           Icon(Icons.transcribe, size: 16, color: Colors.grey.shade700),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: UIConstants.spacingXS),
                           Text(
                             'Transcription',
                             style: TextStyle(
@@ -289,7 +289,7 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                                 color: Colors.grey.shade600,
                               ),
                             ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: UIConstants.spacingSM),
                           Icon(
                             _isExpanded ? Icons.expand_less : Icons.expand_more,
                             color: Colors.grey.shade600,
@@ -297,13 +297,13 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                         ],
                       ),
                       if (_isExpanded) ...[
-                        const SizedBox(height: 8),
+                        const SizedBox(height: UIConstants.spacingSM),
                         Text(
                           widget.entry.transcriptionText!,
                           style: const TextStyle(fontSize: 14),
                         ),
                       ] else ...[
-                        const SizedBox(height: 4),
+                        const SizedBox(height: UIConstants.spacingXS),
                         Text(
                           widget.entry.transcriptionText!,
                           style: const TextStyle(fontSize: 14),
@@ -319,7 +319,7 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
             
             // Transcription Button (if not transcribed)
             if (!widget.entry.isTranscribed) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: UIConstants.spacingMD),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -402,7 +402,7 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => context.pop(),
             child: const Text('Cancel'),
           ),
           TextButton(
@@ -411,7 +411,7 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                 widget.entry.id,
                 controller.text.trim(),
               );
-              Navigator.pop(context);
+              context.pop();
             },
             child: const Text('Save'),
           ),
@@ -435,13 +435,13 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
         content: Text('Are you sure you want to delete "${widget.entry.title}"? This action cannot be undone.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => context.pop(),
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
               ref.read(voiceJournalProvider.notifier).deleteEntry(widget.entry.id);
-              Navigator.pop(context);
+              context.pop();
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),

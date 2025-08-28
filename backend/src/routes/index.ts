@@ -75,7 +75,7 @@ export const setupRoutes = (app: Application): void => {
   app.use(`${apiPrefix}/enterprise`, enterpriseRoutes);
 
   // API info endpoint
-  app.get(`${apiPrefix}`, (req, res) => {
+  app.get(`${apiPrefix}`, (_req, res) => {
     (res as any).json({
       name: 'UpCoach Backend API',
       version: '1.0.0',

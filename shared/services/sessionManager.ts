@@ -23,8 +23,8 @@ class SessionManager {
     this.emitter = new EventEmitter();
     
     this.config = {
-      sessionTimeout: parseInt(process.env.REACT_APP_SESSION_TIMEOUT || '1800000', 10), // 30 minutes default
-      warningTime: parseInt(process.env.REACT_APP_SESSION_WARNING || '120000', 10), // 2 minutes default
+      sessionTimeout: 1800000, // 30 minutes default
+      warningTime: 120000, // 2 minutes default
       checkInterval: 10000, // Check every 10 seconds
       ...config
     };

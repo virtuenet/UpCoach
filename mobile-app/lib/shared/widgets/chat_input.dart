@@ -57,7 +57,7 @@ class _ChatInputState extends State<ChatInput> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
@@ -105,7 +105,7 @@ class _ChatInputState extends State<ChatInput> {
               ),
             ),
             
-            const SizedBox(width: 8),
+            const SizedBox(width: UIConstants.spacingSM),
             
             // Send button
             AnimatedContainer(

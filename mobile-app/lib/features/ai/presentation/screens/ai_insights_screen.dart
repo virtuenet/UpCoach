@@ -36,7 +36,7 @@ class AIInsightsScreen extends ConsumerWidget {
     return RefreshIndicator(
       onRefresh: () => ref.refresh(activeInsightsProvider.future),
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         itemCount: insights.length,
         itemBuilder: (context, index) {
           final insight = insights[index];
@@ -59,12 +59,12 @@ class AIInsightsScreen extends ConsumerWidget {
             size: 80,
             color: AppColors.primary.withOpacity(0.3),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           Text(
             'No Active Insights',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: UIConstants.spacingSM),
           Text(
             'Check back later for personalized insights',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -86,12 +86,12 @@ class AIInsightsScreen extends ConsumerWidget {
             size: 60,
             color: AppColors.error,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           Text(
             'Failed to load insights',
             style: Theme.of(context).textTheme.titleLarge,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: UIConstants.spacingSM),
           Text(
             error,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -131,27 +131,27 @@ class _InsightCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         onTap: () => _showInsightDetails(context),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(UIConstants.spacingMD),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(UIConstants.spacingSM),
                     decoration: BoxDecoration(
                       color: color.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                     ),
                     child: Icon(icon, color: color, size: 24),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: UIConstants.spacingMD),
                   Expanded(
                     child: Text(
                       insight['title'] ?? 'Insight',
@@ -167,7 +167,7 @@ class _InsightCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: UIConstants.spacingMD),
               Text(
                 insight['description'] ?? '',
                 style: Theme.of(context).textTheme.bodyMedium,
@@ -176,7 +176,7 @@ class _InsightCard extends StatelessWidget {
               ),
               if (insight['actionItems'] != null && 
                   (insight['actionItems'] as List).isNotEmpty) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: UIConstants.spacingMD),
                 Row(
                   children: [
                     Icon(
@@ -184,7 +184,7 @@ class _InsightCard extends StatelessWidget {
                       size: 16,
                       color: AppColors.warning,
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: UIConstants.spacingXS),
                     Text(
                       '${(insight['actionItems'] as List).length} action items',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -250,7 +250,7 @@ class _InsightCard extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(UIConstants.spacingLG),
           child: SingleChildScrollView(
             controller: scrollController,
             child: Column(
@@ -266,30 +266,30 @@ class _InsightCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: UIConstants.spacingLG),
                 Text(
                   insight['title'] ?? 'Insight',
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: UIConstants.spacingMD),
                 Text(
                   insight['description'] ?? '',
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 if (insight['actionItems'] != null) ...[
-                  const SizedBox(height: 24),
+                  const SizedBox(height: UIConstants.spacingLG),
                   Text(
                     'Action Items',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: UIConstants.spacingMD),
                   ...(insight['actionItems'] as List).map((item) => Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Icon(Icons.check_circle_outline, size: 20),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: UIConstants.spacingSM),
                         Expanded(
                           child: Text(
                             item.toString(),

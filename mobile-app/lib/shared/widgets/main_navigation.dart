@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
+import '../constants/ui_constants.dart';
+import 'responsive_builder.dart';
 
 class MainNavigation extends StatelessWidget {
   final Widget child;
@@ -33,7 +35,82 @@ class MainNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
     final int currentIndex = _getCurrentIndex(location);
+    final isTabletOrDesktop = ResponsiveBuilder.isTablet(context) || ResponsiveBuilder.isDesktop(context);
 
+    if (isTabletOrDesktop) {
+      // Side navigation for tablets and desktop
+      return Scaffold(
+        body: Row(
+          children: [
+            NavigationRail(
+              selectedIndex: currentIndex,
+              onDestinationSelected: (index) {
+                switch (index) {
+                  case 0:
+                    context.go('/home');
+                    break;
+                  case 1:
+                    context.go('/chat');
+                    break;
+                  case 2:
+                    context.go('/tasks');
+                    break;
+                  case 3:
+                    context.go('/goals');
+                    break;
+                  case 4:
+                    context.go('/mood');
+                    break;
+                  case 5:
+                    context.go('/profile');
+                    break;
+                }
+              },
+              extended: ResponsiveBuilder.isDesktop(context),
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              destinations: const [
+                NavigationRailDestination(
+                  icon: Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home),
+                  label: Text('Home'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.chat_bubble_outline),
+                  selectedIcon: Icon(Icons.chat_bubble),
+                  label: Text('Chat'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.task_outlined),
+                  selectedIcon: Icon(Icons.task),
+                  label: Text('Tasks'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.flag_outlined),
+                  selectedIcon: Icon(Icons.flag),
+                  label: Text('Goals'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.mood_outlined),
+                  selectedIcon: Icon(Icons.mood),
+                  label: Text('Mood'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.person_outline),
+                  selectedIcon: Icon(Icons.person),
+                  label: Text('Profile'),
+                ),
+              ],
+            ),
+            const VerticalDivider(thickness: 1, width: 1),
+            Expanded(
+              child: child,
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Bottom navigation for mobile
     return Scaffold(
       body: child,
       bottomNavigationBar: Container(
@@ -129,7 +206,7 @@ class _NavItem extends StatelessWidget {
           color: isSelected 
               ? AppTheme.primaryColor.withOpacity(0.1)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -141,7 +218,7 @@ class _NavItem extends StatelessWidget {
                   : AppTheme.textSecondary,
               size: 24,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: UIConstants.spacingXS),
             Text(
               label,
               style: TextStyle(

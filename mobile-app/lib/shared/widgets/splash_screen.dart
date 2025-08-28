@@ -103,7 +103,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 );
               },
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
             AnimatedBuilder(
               animation: _fadeAnimation,
               builder: (context, child) {
@@ -119,7 +119,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           letterSpacing: 1.2,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: UIConstants.spacingSM),
                       Text(
                         'AI-Powered Personal Coaching',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(

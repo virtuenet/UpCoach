@@ -1,5 +1,4 @@
 import {
-  BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
@@ -8,7 +7,6 @@ import { GlobalErrorBoundary } from "./components/ErrorBoundary/GlobalErrorBound
 import { AsyncErrorBoundary } from "./components/ErrorBoundary/AsyncErrorBoundary";
 import { useState, useEffect, lazy, Suspense } from "react";
 import SessionWrapper from "./components/SessionWrapper";
-import { useAuthStore } from "./stores/authStore";
 import { useKeyboardNavigation, useSkipLinks } from "./hooks/useAccessibility";
 import "./styles/layout-fixes.css";
 import "./styles/accessibility.css";
@@ -53,15 +51,18 @@ function App() {
   useSkipLinks();
 
   useEffect(() => {
-    // Check if user is logged in on app start
-    const checkAuth = async () => {
-      try {
-        await useAuthStore.getState().checkAuth();
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    checkAuth();
+    // Temporarily skip auth check for design review
+    // const checkAuth = async () => {
+    //   try {
+    //     await useAuthStore.getState().checkAuth();
+    //   } finally {
+    //     setIsLoading(false);
+    //   }
+    // };
+    // checkAuth();
+    
+    // Skip auth check and set loading to false immediately for design review
+    setIsLoading(false);
   }, []);
 
   if (isLoading) {
@@ -70,11 +71,10 @@ function App() {
 
   return (
     <GlobalErrorBoundary level="global">
-      <Router>
-        <SessionWrapper>
-          <AsyncErrorBoundary>
-            <Suspense fallback={<LoadingFallback />}>
-              <Routes>
+      <SessionWrapper>
+        <AsyncErrorBoundary>
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
               <Route path="/login" element={<LoginPage />} />
 
               {/* Protected routes */}
@@ -112,9 +112,8 @@ function App() {
               </Route>
             </Routes>
           </Suspense>
-          </AsyncErrorBoundary>
-        </SessionWrapper>
-      </Router>
+        </AsyncErrorBoundary>
+      </SessionWrapper>
     </GlobalErrorBoundary>
   );
 }

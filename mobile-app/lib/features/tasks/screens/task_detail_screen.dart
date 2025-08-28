@@ -211,7 +211,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
       try {
         await ref.read(taskProvider.notifier).deleteTask(_task.id);
         if (mounted) {
-          Navigator.pop(context);
+          context.pop();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Task deleted successfully'),
@@ -260,7 +260,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
 
   Widget _buildDetailView() {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       children: [
         // Task completion status
         Card(
@@ -287,12 +287,12 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           ),
         ),
         
-        const SizedBox(height: 16),
+        const SizedBox(height: UIConstants.spacingMD),
         
         // Task details
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(UIConstants.spacingMD),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -303,25 +303,25 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: UIConstants.spacingSM),
                   Text(
                     _task.description!,
                     style: const TextStyle(fontSize: 16),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: UIConstants.spacingMD),
                 ],
                 
                 _buildInfoRow('Category', _task.categoryLabel, 
                     icon: _getCategoryIcon(_task.category)),
-                const SizedBox(height: 12),
+                const SizedBox(height: UIConstants.spacingMD),
                 
                 _buildInfoRow('Priority', _task.priorityLabel,
                     color: _getPriorityColor(_task.priority)),
-                const SizedBox(height: 12),
+                const SizedBox(height: UIConstants.spacingMD),
                 
                 _buildInfoRow('Status', _getStatusLabel(_task.status),
                     color: _getStatusColor(_task.status)),
-                const SizedBox(height: 12),
+                const SizedBox(height: UIConstants.spacingMD),
                 
                 if (_task.dueDate != null) ...[
                   _buildInfoRow(
@@ -330,7 +330,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                     icon: Icons.calendar_today,
                     color: _getDueDateColor(),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: UIConstants.spacingMD),
                 ],
                 
                 if (_task.tags.isNotEmpty) ...[
@@ -340,7 +340,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: UIConstants.spacingSM),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
@@ -355,12 +355,12 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           ),
         ),
         
-        const SizedBox(height: 16),
+        const SizedBox(height: UIConstants.spacingMD),
         
         // Timestamps
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(UIConstants.spacingMD),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -369,14 +369,14 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                   DateFormat('MMM d, yyyy - h:mm a').format(_task.createdAt),
                   icon: Icons.access_time,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: UIConstants.spacingMD),
                 _buildInfoRow(
                   'Last Updated',
                   DateFormat('MMM d, yyyy - h:mm a').format(_task.updatedAt),
                   icon: Icons.update,
                 ),
                 if (_task.completedAt != null) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: UIConstants.spacingMD),
                   _buildInfoRow(
                     'Completed',
                     DateFormat('MMM d, yyyy - h:mm a').format(_task.completedAt!),
@@ -389,7 +389,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           ),
         ),
         
-        const SizedBox(height: 32),
+        const SizedBox(height: UIConstants.spacingXL),
         
         // Delete button
         OutlinedButton.icon(
@@ -407,7 +407,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
 
   Widget _buildEditView() {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       children: [
         // Title
         TextFormField(
@@ -420,7 +420,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           textCapitalization: TextCapitalization.sentences,
         ),
         
-        const SizedBox(height: 16),
+        const SizedBox(height: UIConstants.spacingMD),
         
         // Description
         TextFormField(
@@ -435,7 +435,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           textCapitalization: TextCapitalization.sentences,
         ),
         
-        const SizedBox(height: 24),
+        const SizedBox(height: UIConstants.spacingLG),
         
         // Status
         Text(
@@ -444,7 +444,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: UIConstants.spacingSM),
         Wrap(
           spacing: 8,
           children: TaskStatus.values.map((status) {
@@ -462,7 +462,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           }).toList(),
         ),
         
-        const SizedBox(height: 24),
+        const SizedBox(height: UIConstants.spacingLG),
         
         // Category
         Text(
@@ -471,7 +471,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: UIConstants.spacingSM),
         Wrap(
           spacing: 8,
           children: TaskCategory.values.map((category) {
@@ -493,7 +493,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           }).toList(),
         ),
         
-        const SizedBox(height: 24),
+        const SizedBox(height: UIConstants.spacingLG),
         
         // Priority
         Text(
@@ -502,7 +502,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: UIConstants.spacingSM),
         Wrap(
           spacing: 8,
           children: TaskPriority.values.map((priority) {
@@ -521,7 +521,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           }).toList(),
         ),
         
-        const SizedBox(height: 24),
+        const SizedBox(height: UIConstants.spacingLG),
         
         // Due Date & Time
         Row(
@@ -529,7 +529,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             Expanded(
               child: InkWell(
                 onTap: _selectDate,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                 child: InputDecorator(
                   decoration: const InputDecoration(
                     labelText: 'Due Date',
@@ -543,11 +543,11 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                 ),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: UIConstants.spacingMD),
             Expanded(
               child: InkWell(
                 onTap: _dueDate == null ? null : _selectTime,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                 child: InputDecorator(
                   decoration: InputDecoration(
                     labelText: 'Time',
@@ -570,7 +570,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           ],
         ),
         
-        const SizedBox(height: 16),
+        const SizedBox(height: UIConstants.spacingMD),
         
         // Tags
         TextFormField(
@@ -583,7 +583,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           textCapitalization: TextCapitalization.words,
         ),
         
-        const SizedBox(height: 32),
+        const SizedBox(height: UIConstants.spacingXL),
         
         // Action buttons
         Row(
@@ -599,7 +599,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                 child: const Text('Cancel'),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: UIConstants.spacingMD),
             Expanded(
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _saveChanges,
@@ -632,7 +632,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             size: 20,
             color: color ?? AppTheme.textSecondary,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: UIConstants.spacingSM),
         ],
         Text(
           '$label: ',

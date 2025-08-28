@@ -1,10 +1,10 @@
 import express from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
+// import helmet from 'helmet'; // Imported below where used
 import morgan from 'morgan';
 import compression from 'compression';
 import dotenv from 'dotenv';
-import rateLimit from 'express-rate-limit';
+// import rateLimit from 'express-rate-limit'; // Imported via rateLimiter middleware
 import { config } from './config/environment';
 import { initializeDatabase } from './config/database';
 import { redis } from './services/redis';
@@ -15,7 +15,7 @@ import { logger } from './utils/logger';
 import { SchedulerService } from './services/SchedulerService';
 import { gracefulShutdown } from './utils/shutdown';
 import { apiLimiter, webhookLimiter } from './middleware/rateLimiter';
-import { enhancedSecurityHeaders } from './middleware/securityNonce';
+// import { enhancedSecurityHeaders } from './middleware/securityNonce'; // Not currently used
 import { securityHeaders, ctMonitor, securityReportHandler } from './middleware/securityHeaders';
 import { sentryService } from './services/monitoring/SentryService';
 import { dataDogService } from './services/monitoring/DataDogService';
@@ -259,7 +259,7 @@ async function testDatabaseConnection(): Promise<boolean> {
       // Test a simple query
       const result = await sequelize.query('SELECT 1+1 as result', {
         raw: true,
-        type: sequelize.QueryTypes.SELECT
+        type: (sequelize as any).QueryTypes?.SELECT || 'SELECT'
       });
       
       return result && result[0] && (result[0] as any).result === 2;
@@ -272,7 +272,7 @@ async function testDatabaseConnection(): Promise<boolean> {
       logger.info('Database health check passed');
     }
     
-    return isHealthy;
+    return isHealthy || false;
   } catch (error) {
     logger.error('Database health check failed:', error);
     return false;

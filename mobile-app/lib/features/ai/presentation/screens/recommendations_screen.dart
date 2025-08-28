@@ -92,7 +92,7 @@ class RecommendationsScreen extends ConsumerWidget {
     return RefreshIndicator(
       onRefresh: () => ref.refresh(recommendationsProvider.future),
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         itemCount: groupedRecommendations.length,
         itemBuilder: (context, index) {
           final type = groupedRecommendations.keys.elementAt(index);
@@ -101,9 +101,9 @@ class RecommendationsScreen extends ConsumerWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (index > 0) const SizedBox(height: 24),
+              if (index > 0) const SizedBox(height: UIConstants.spacingLG),
               _buildSectionHeader(context, type),
-              const SizedBox(height: 12),
+              const SizedBox(height: UIConstants.spacingMD),
               ...items.map((rec) => _RecommendationCard(
                 recommendation: rec,
                 onTap: () => _handleRecommendationTap(context, rec),
@@ -124,7 +124,7 @@ class RecommendationsScreen extends ConsumerWidget {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       itemCount: predictions.length,
       itemBuilder: (context, index) {
         final prediction = predictions[index];
@@ -140,7 +140,7 @@ class RecommendationsScreen extends ConsumerWidget {
     return Row(
       children: [
         Icon(icon, color: AppColors.primary, size: 24),
-        const SizedBox(width: 8),
+        const SizedBox(width: UIConstants.spacingSM),
         Text(
           title,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -161,12 +161,12 @@ class RecommendationsScreen extends ConsumerWidget {
             size: 80,
             color: AppColors.primary.withOpacity(0.3),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           Text(
             'No Recommendations Yet',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: UIConstants.spacingSM),
           Text(
             'Keep tracking your progress to get personalized recommendations',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -189,12 +189,12 @@ class RecommendationsScreen extends ConsumerWidget {
             size: 80,
             color: AppColors.primary.withOpacity(0.3),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           Text(
             'No Predictions Available',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: UIConstants.spacingSM),
           Text(
             'We need more data to make accurate predictions',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -217,12 +217,12 @@ class RecommendationsScreen extends ConsumerWidget {
             size: 60,
             color: AppColors.error,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           Text(
             'Failed to load recommendations',
             style: Theme.of(context).textTheme.titleLarge,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: UIConstants.spacingSM),
           Text(
             error,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -301,13 +301,13 @@ class _RecommendationCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(UIConstants.spacingMD),
           child: Row(
             children: [
               Container(
@@ -318,7 +318,7 @@ class _RecommendationCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: UIConstants.spacingMD),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -329,7 +329,7 @@ class _RecommendationCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: UIConstants.spacingXS),
                     Text(
                       recommendation.description,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -339,7 +339,7 @@ class _RecommendationCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     if (recommendation.tags != null && recommendation.tags!.isNotEmpty) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: UIConstants.spacingSM),
                       Wrap(
                         spacing: 6,
                         children: recommendation.tags!.map((tag) => Chip(
@@ -386,24 +386,24 @@ class _PredictionCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(UIConstants.spacingSM),
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                   ),
                   child: Icon(icon, color: color, size: 24),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: UIConstants.spacingMD),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -425,7 +425,7 @@ class _PredictionCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: UIConstants.spacingMD),
             Row(
               children: [
                 Expanded(
@@ -435,7 +435,7 @@ class _PredictionCard extends StatelessWidget {
                     valueColor: AlwaysStoppedAnimation<Color>(color),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: UIConstants.spacingMD),
                 Text(
                   '${(prediction.probability * 100).toInt()}%',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -446,14 +446,14 @@ class _PredictionCard extends StatelessWidget {
               ],
             ),
             if (prediction.factors != null && prediction.factors!.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: UIConstants.spacingMD),
               Text(
                 'Key Factors:',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: UIConstants.spacingXS),
               ...prediction.factors!.map((factor) => Padding(
                 padding: const EdgeInsets.only(top: 2),
                 child: Row(
@@ -534,7 +534,7 @@ class _RecommendationDetailSheet extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(UIConstants.spacingLG),
         child: SingleChildScrollView(
           controller: scrollController,
           child: Column(
@@ -550,21 +550,21 @@ class _RecommendationDetailSheet extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: UIConstants.spacingLG),
               Text(
                 recommendation.title,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: UIConstants.spacingMD),
               Text(
                 recommendation.description,
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: UIConstants.spacingLG),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/ai-coach');
+                  context.pop();
+                  context.go('/ai-coach');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,

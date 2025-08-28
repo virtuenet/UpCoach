@@ -13,7 +13,7 @@ import {
 import { Search, Notifications, Settings } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 
-const StyledAppBar = styled(AppBar)(({ }) => ({
+const StyledAppBar = styled(AppBar)(() => ({
   backgroundColor: "#ffffff",
   borderBottom: "1px solid #e5e7eb",
   boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
@@ -24,7 +24,7 @@ const StyledAppBar = styled(AppBar)(({ }) => ({
   zIndex: 1100,
 }));
 
-const SearchField = styled(TextField)(({ }) => ({
+const SearchField = styled(TextField)(() => ({
   backgroundColor: "#f9fafb",
   borderRadius: "8px",
   "& .MuiOutlinedInput-root": {
@@ -49,7 +49,7 @@ const SearchField = styled(TextField)(({ }) => ({
   },
 }));
 
-const UserInfo = styled(Box)(({ }) => ({
+const UserInfo = styled(Box)(() => ({
   display: "flex",
   alignItems: "center",
   gap: "12px",
@@ -62,10 +62,11 @@ const UserInfo = styled(Box)(({ }) => ({
   },
 }));
 
-interface TopBarProps {
+export interface TopBarProps {
   userName?: string;
-  userRole?: string;
+  userRole?: string | 'admin' | 'moderator' | 'coach' | 'user';
   userAvatar?: string;
+  onMenuClick?: () => void;
 }
 
 const TopBar: React.FC<TopBarProps> = ({

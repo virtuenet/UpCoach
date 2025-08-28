@@ -43,6 +43,7 @@ import {
   Title as HeadingIcon,
   Schedule as ScheduleIcon,
   Analytics as AnalyticsIcon,
+  Delete as DeleteIcon,
 } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
 import { Editor } from "@tinymce/tinymce-react";
@@ -304,7 +305,7 @@ const ContentEditor: React.FC = () => {
 
         <Grid container spacing={3}>
           {/* Main Content Area */}
-          <Grid2 size={12}, md: {8}>
+          <Grid item xs={12} md={8}>
             <Card>
               <CardContent>
                 <Tabs
@@ -452,7 +453,7 @@ const ContentEditor: React.FC = () => {
                 {currentTab === 2 && (
                   <Box>
                     <Grid container spacing={2}>
-                      <Grid xs={12}, md: {6}>
+                      <Grid item xs={12} md={6}>
                         <FormControl fullWidth sx={{ mb: 2 }}>
                           <InputLabel>Status</InputLabel>
                           <Select
@@ -473,7 +474,7 @@ const ContentEditor: React.FC = () => {
                         </FormControl>
                       </Grid>
 
-                      <Grid xs={12}, md: {6}>
+                      <Grid item xs={12} md={6}>
                         <FormControl fullWidth sx={{ mb: 2 }}>
                           <InputLabel>Visibility</InputLabel>
                           <Select
@@ -493,7 +494,7 @@ const ContentEditor: React.FC = () => {
                         </FormControl>
                       </Grid>
 
-                      <Grid xs={12}>
+                      <Grid item xs={12}>
                         <DateTimePicker
                           label="Publish Date"
                           value={content.publishDate}
@@ -512,7 +513,7 @@ const ContentEditor: React.FC = () => {
                         />
                       </Grid>
 
-                      <Grid xs={12}>
+                      <Grid item xs={12}>
                         <FormControlLabel
                           control={
                             <Switch
@@ -529,7 +530,7 @@ const ContentEditor: React.FC = () => {
                         />
                       </Grid>
 
-                      <Grid xs={12}>
+                      <Grid item xs={12}>
                         <FormControlLabel
                           control={
                             <Switch
@@ -546,7 +547,7 @@ const ContentEditor: React.FC = () => {
                         />
                       </Grid>
 
-                      <Grid xs={12}>
+                      <Grid item xs={12}>
                         <FormControlLabel
                           control={
                             <Switch
@@ -567,7 +568,7 @@ const ContentEditor: React.FC = () => {
           </Grid>
 
           {/* Sidebar */}
-          <Grid xs={12}, md: {4}>
+          <Grid item xs={12} md={4}>
             {/* Category & Tags */}
             <Card sx={{ mb: 2 }}>
               <CardContent>

@@ -31,16 +31,16 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(title: 'Voice Coach'),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           children: [
             _buildIntroCard(),
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
             _buildRecordingSection(),
             if (_isAnalyzing) ...[
-              const SizedBox(height: 24),
+              const SizedBox(height: UIConstants.spacingLG),
               const Center(child: LoadingIndicator()),
-              const SizedBox(height: 8),
+              const SizedBox(height: UIConstants.spacingSM),
               Text(
                 'Analyzing your voice...',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -49,7 +49,7 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
               ),
             ],
             if (voiceAnalysis != null && !_isAnalyzing) ...[
-              const SizedBox(height: 24),
+              const SizedBox(height: UIConstants.spacingLG),
               _buildAnalysisResults(voiceAnalysis),
             ],
           ],
@@ -62,10 +62,10 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           children: [
             Icon(
@@ -73,12 +73,12 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
               size: 48,
               color: AppColors.primary,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             Text(
               'AI Voice Analysis',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: UIConstants.spacingSM),
             Text(
               'Record your voice to get insights about your emotional state, stress levels, and energy. Our AI coach will provide personalized feedback based on your voice patterns.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -96,17 +96,17 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(UIConstants.spacingLG),
         child: Column(
           children: [
             Text(
               _isRecording ? 'Recording...' : 'Tap to Record',
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             VoiceRecordingWidget(
               onRecordingComplete: (file) {
                 setState(() {
@@ -126,7 +126,7 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
               },
             ),
             if (!_isRecording) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: UIConstants.spacingMD),
               Text(
                 'Speak naturally for 10-30 seconds',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -144,13 +144,13 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
     return Column(
       children: [
         _buildEmotionCard(analysis),
-        const SizedBox(height: 16),
+        const SizedBox(height: UIConstants.spacingMD),
         _buildMetricsCard(analysis),
         if (analysis.insights != null && analysis.insights!.isNotEmpty) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           _buildInsightsCard(analysis),
         ],
-        const SizedBox(height: 16),
+        const SizedBox(height: UIConstants.spacingMD),
         _buildCoachingCard(analysis),
       ],
     );
@@ -163,17 +163,17 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Icon(Icons.sentiment_satisfied, color: AppColors.primary),
-                const SizedBox(width: 8),
+                const SizedBox(width: UIConstants.spacingSM),
                 Text(
                   'Emotional Analysis',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -182,7 +182,7 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             ...emotions.map((emotion) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: Column(
@@ -203,7 +203,7 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: UIConstants.spacingXS),
                   LinearProgressIndicator(
                     value: emotion.value,
                     backgroundColor: AppColors.surface,
@@ -224,10 +224,10 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           children: [
             _buildMetricRow(
@@ -236,14 +236,14 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
               Icons.warning,
               AppColors.warning,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             _buildMetricRow(
               'Energy Level',
               analysis.energyLevel,
               Icons.battery_charging_full,
               AppColors.success,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             _buildMetricRow(
               'Voice Clarity',
               analysis.clarity,
@@ -260,7 +260,7 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
     return Row(
       children: [
         Icon(icon, color: color, size: 24),
-        const SizedBox(width: 12),
+        const SizedBox(width: UIConstants.spacingMD),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -269,7 +269,7 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
                 label,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: UIConstants.spacingXS),
               LinearProgressIndicator(
                 value: value,
                 backgroundColor: AppColors.surface,
@@ -278,7 +278,7 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
             ],
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: UIConstants.spacingMD),
         Text(
           '${(value * 100).toInt()}%',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -293,17 +293,17 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Icon(Icons.lightbulb, color: AppColors.warning),
-                const SizedBox(width: 8),
+                const SizedBox(width: UIConstants.spacingSM),
                 Text(
                   'Voice Insights',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -312,14 +312,14 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: UIConstants.spacingMD),
             ...analysis.insights!.map((insight) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Icon(Icons.check_circle, size: 20, color: AppColors.success),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: UIConstants.spacingSM),
                   Expanded(
                     child: Text(
                       insight,
@@ -340,17 +340,17 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
       elevation: 2,
       color: AppColors.primary.withOpacity(0.1),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Icon(Icons.psychology, color: AppColors.primary),
-                const SizedBox(width: 8),
+                const SizedBox(width: UIConstants.spacingSM),
                 Text(
                   'AI Coach Recommendations',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -359,14 +359,14 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: UIConstants.spacingMD),
             Text(
               _getCoachingAdvice(analysis),
               style: Theme.of(context).textTheme.bodyMedium,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             ElevatedButton.icon(
-              onPressed: () => Navigator.pushNamed(context, '/ai-coach'),
+              onPressed: () => context.go('/ai-coach'),
               icon: const Icon(Icons.chat),
               label: const Text('Chat with AI Coach'),
               style: ElevatedButton.styleFrom(

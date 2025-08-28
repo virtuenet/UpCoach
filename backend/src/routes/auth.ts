@@ -279,10 +279,10 @@ router.post('/forgot-password', passwordResetLimiter, asyncHandler(async (req: R
   // Always return success to prevent email enumeration
   if (user) {
     // Generate reset token
-    const resetToken = await UserService.generatePasswordResetToken(user.id);
+    const resetToken = await UserService.generatePasswordResetToken(Number(user.id));
     
     // Send reset email
-    await emailService.sendPasswordResetEmail(user.email, resetToken);
+    await emailService.sendPasswordResetEmail(user as any, resetToken);
     
     logger.info('Password reset requested:', { userId: user.id, email: user.email });
   }
@@ -321,7 +321,7 @@ router.post('/reset-password', passwordResetLimiter, asyncHandler(async (req: Re
 
 // Google OAuth endpoint
 router.post('/google', asyncHandler(async (req: Request, res: Response) => {
-  const { idToken, accessToken } = req.body;
+  const { idToken } = req.body;
 
   if (!idToken) {
     throw new ApiError(400, 'Google ID token is required');

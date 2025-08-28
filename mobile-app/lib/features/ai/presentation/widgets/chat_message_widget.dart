@@ -22,13 +22,13 @@ class ChatMessageWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) _buildAvatar(),
-          const SizedBox(width: 8),
+          const SizedBox(width: UIConstants.spacingSM),
           Flexible(
             child: Column(
               crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(UIConstants.spacingMD),
                   decoration: BoxDecoration(
                     color: isUser ? AppColors.primary : AppColors.surface,
                     borderRadius: BorderRadius.only(
@@ -53,7 +53,7 @@ class ChatMessageWidget extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: UIConstants.spacingXS),
                 Text(
                   _formatTime(message.timestamp ?? DateTime.now()),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -64,7 +64,7 @@ class ChatMessageWidget extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: UIConstants.spacingSM),
           if (isUser) _buildUserAvatar(),
         ],
       ),

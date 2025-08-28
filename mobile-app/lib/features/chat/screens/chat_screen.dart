@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../shared/widgets/chat_message_bubble.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../shared/widgets/chat_input.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../providers/chat_provider.dart';
+import '../../../shared/constants/ui_constants.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
@@ -99,7 +105,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           if (chatState.error != null)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(UIConstants.spacingMD),
               color: AppTheme.errorColor.withOpacity(0.1),
               child: Row(
                 children: [
@@ -108,7 +114,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     color: AppTheme.errorColor,
                     size: 20,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: UIConstants.spacingSM),
                   Expanded(
                     child: Text(
                       chatState.error!,
@@ -169,7 +175,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 color: AppTheme.primaryColor,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
             Text(
               'Welcome to AI Coach!',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -177,7 +183,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 color: AppTheme.textPrimary,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: UIConstants.spacingMD),
             Text(
               'Start a conversation to get personalized coaching and guidance tailored to your goals.',
               textAlign: TextAlign.center,
@@ -186,7 +192,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 height: 1.5,
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: UIConstants.spacingXL),
             _buildSuggestedPrompts(),
           ],
         ),
@@ -212,14 +218,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             color: AppTheme.textPrimary,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: UIConstants.spacingMD),
         ...prompts.map((prompt) => Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: OutlinedButton(
             onPressed: () => _handleSendMessage(prompt),
             style: OutlinedButton.styleFrom(
               alignment: Alignment.centerLeft,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(UIConstants.spacingMD),
             ),
             child: Text(prompt),
           ),
@@ -292,7 +298,7 @@ class _ConversationsListSheet extends ConsumerWidget {
           
           // Header
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(UIConstants.spacingLG),
             child: Row(
               children: [
                 Text(
@@ -304,7 +310,7 @@ class _ConversationsListSheet extends ConsumerWidget {
                 const Spacer(),
                 TextButton.icon(
                   onPressed: () {
-                    Navigator.pop(context);
+                    context.pop();
                     ref.read(chatProvider.notifier).createNewConversation();
                   },
                   icon: const Icon(Icons.add),
@@ -342,7 +348,7 @@ class _ConversationsListSheet extends ConsumerWidget {
                             color: isSelected 
                                 ? AppTheme.primaryColor 
                                 : AppTheme.textSecondary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(UIConstants.radiusXL),
                           ),
                           child: Icon(
                             Icons.chat_bubble_outline,
@@ -369,7 +375,7 @@ class _ConversationsListSheet extends ConsumerWidget {
                               child: const Row(
                                 children: [
                                   Icon(Icons.delete_outline),
-                                  SizedBox(width: 8),
+                                  SizedBox(width: UIConstants.spacingSM),
                                   Text('Delete'),
                                 ],
                               ),
@@ -383,7 +389,7 @@ class _ConversationsListSheet extends ConsumerWidget {
                           },
                         ),
                         onTap: () {
-                          Navigator.pop(context);
+                          context.pop();
                           ref.read(chatProvider.notifier)
                               .selectConversation(conversation.id);
                         },

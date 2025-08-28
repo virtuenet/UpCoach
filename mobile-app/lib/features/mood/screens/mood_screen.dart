@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../shared/constants/ui_constants.dart';
+import 'package:go_router/go_router.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'package:intl/intl.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../shared/models/mood_model.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../providers/mood_provider.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'create_mood_screen.dart';
+import '../../../shared/constants/ui_constants.dart';
 
 class MoodScreen extends ConsumerStatefulWidget {
   const MoodScreen({super.key});
@@ -15,21 +24,11 @@ class MoodScreen extends ConsumerStatefulWidget {
 
 class _MoodScreenState extends ConsumerState<MoodScreen> {
   void _navigateToCreateMood() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const CreateMoodScreen(),
-      ),
-    );
+    context.push('/mood/create');
   }
 
   void _navigateToEditMood(MoodModel mood) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CreateMoodScreen(existingMood: mood),
-      ),
-    );
+    context.push('/mood/create', extra: mood);
   }
 
   @override
@@ -87,8 +86,8 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
 
   Widget _buildTodaysMoodCard(MoodModel? mood) {
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.all(UIConstants.spacingMD),
+      padding: const EdgeInsets.all(UIConstants.spacingLG),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: mood != null
@@ -97,7 +96,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(UIConstants.radiusXL),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -126,14 +125,14 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: UIConstants.spacingMD),
                 Row(
                   children: [
                     Text(
                       mood.levelEmoji,
                       style: const TextStyle(fontSize: 48),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: UIConstants.spacingMD),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,7 +146,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                             ),
                           ),
                           if (mood.categories.isNotEmpty) ...[
-                            const SizedBox(height: 8),
+                            const SizedBox(height: UIConstants.spacingSM),
                             Wrap(
                               spacing: 8,
                               runSpacing: 4,
@@ -159,7 +158,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                                   ),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(20),
+                                    borderRadius: BorderRadius.circular(UIConstants.radiusXL),
                                   ),
                                   child: Text(
                                     MoodModel.getCategoryLabel(category),
@@ -178,7 +177,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                   ],
                 ),
                 if (mood.note != null && mood.note!.isNotEmpty) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: UIConstants.spacingMD),
                   Text(
                     mood.note!,
                     style: TextStyle(
@@ -198,7 +197,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                   size: 64,
                   color: Colors.white,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: UIConstants.spacingMD),
                 Text(
                   'How are you feeling today?',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -206,7 +205,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: UIConstants.spacingSM),
                 Text(
                   'Tap below to log your mood',
                   style: TextStyle(
@@ -223,7 +222,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -233,7 +232,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -267,7 +266,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
     return Column(
       children: [
         Icon(icon, size: 32, color: color),
-        const SizedBox(height: 8),
+        const SizedBox(height: UIConstants.spacingSM),
         Text(
           value,
           style: TextStyle(
@@ -294,7 +293,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -304,7 +303,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: List.generate(7, (index) {
@@ -331,7 +330,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                         color: AppTheme.textSecondary,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: UIConstants.spacingSM),
                     Container(
                       width: 40,
                       height: 40,
@@ -348,7 +347,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: UIConstants.spacingXS),
                     Text(
                       date.day.toString(),
                       style: TextStyle(
@@ -402,7 +401,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
         minChildSize: 0.5,
         maxChildSize: 0.9,
         builder: (context, scrollController) => Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(UIConstants.spacingLG),
           decoration: const BoxDecoration(
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
@@ -419,14 +418,14 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: UIConstants.spacingLG),
               Text(
                 'Mood Insights',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: UIConstants.spacingLG),
               if (insights != null) ...[
                 _buildInsightCard(
                   'Most Common Mood',

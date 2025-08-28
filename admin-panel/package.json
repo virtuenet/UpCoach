@@ -28,6 +28,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@hookform/resolvers": "^3.3.0",
+    "@upcoach/design-system": "file:../packages/design-system",
     "@mui/icons-material": "^7.3.0",
     "@mui/material": "^7.3.0",
     "@mui/x-date-pickers": "^8.10.2",

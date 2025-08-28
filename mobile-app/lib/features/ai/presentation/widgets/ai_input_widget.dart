@@ -48,7 +48,7 @@ class _AIInputWidgetState extends State<AIInputWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
         color: AppColors.surface,
         boxShadow: [
@@ -93,7 +93,7 @@ class _AIInputWidgetState extends State<AIInputWidget> {
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: UIConstants.spacingSM),
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               child: IconButton(

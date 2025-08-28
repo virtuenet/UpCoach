@@ -59,15 +59,15 @@ class TaskListTile extends StatelessWidget {
         elevation: task.isCompleted ? 0 : 2,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(UIConstants.radiusLG),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(UIConstants.spacingMD),
             child: Row(
               children: [
                 // Checkbox
                 InkWell(
                   onTap: onToggleComplete,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                   child: Container(
                     width: 24,
                     height: 24,
@@ -92,7 +92,7 @@ class TaskListTile extends StatelessWidget {
                         : null,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: UIConstants.spacingMD),
                 
                 // Task details
                 Expanded(
@@ -115,7 +115,7 @@ class TaskListTile extends StatelessWidget {
                       ),
                       
                       if (task.description != null) ...[
-                        const SizedBox(height: 4),
+                        const SizedBox(height: UIConstants.spacingXS),
                         Text(
                           task.description!,
                           maxLines: 2,
@@ -130,7 +130,7 @@ class TaskListTile extends StatelessWidget {
                         ),
                       ],
                       
-                      const SizedBox(height: 8),
+                      const SizedBox(height: UIConstants.spacingSM),
                       
                       // Task metadata
                       Wrap(
@@ -192,7 +192,7 @@ class TaskListTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         border: Border.all(
           color: color.withOpacity(0.3),
           width: 1,
@@ -203,7 +203,7 @@ class TaskListTile extends StatelessWidget {
         children: [
           if (icon != null) ...[
             Icon(icon, size: 12, color: color),
-            const SizedBox(width: 4),
+            const SizedBox(width: UIConstants.spacingXS),
           ],
           Text(
             label,

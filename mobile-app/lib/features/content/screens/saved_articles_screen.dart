@@ -121,7 +121,7 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
             children: [
               // Search Bar
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(UIConstants.spacingMD),
                 color: AppColors.surface,
                 child: TextField(
                   onChanged: (value) => setState(() => _searchQuery = value),
@@ -131,7 +131,7 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                       borderSide: BorderSide.none,
                     ),
                     suffixIcon: _searchQuery.isNotEmpty
@@ -190,14 +190,14 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
                             size: 64,
                             color: AppColors.textSecondary,
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: UIConstants.spacingMD),
                           Text(
                             _searchQuery.isNotEmpty || _selectedCategory != 'All'
                               ? 'No articles found'
                               : 'No saved articles yet',
                             style: AppTextStyles.h3,
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: UIConstants.spacingSM),
                           Text(
                             _searchQuery.isNotEmpty || _selectedCategory != 'All'
                               ? 'Try different search terms or filters'
@@ -213,7 +213,7 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
                         ref.refresh(savedArticlesProvider);
                       },
                       child: ListView.builder(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(UIConstants.spacingMD),
                         itemCount: filteredArticles.length,
                         itemBuilder: (context, index) {
                           final article = filteredArticles[index];
@@ -222,13 +222,13 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
                             margin: const EdgeInsets.only(bottom: 16),
                             elevation: 2,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                             ),
                             child: InkWell(
                               onTap: () {
                                 context.push('/content/article/${article.id}');
                               },
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -261,7 +261,7 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
                                     ),
                                   
                                   Padding(
-                                    padding: const EdgeInsets.all(16),
+                                    padding: const EdgeInsets.all(UIConstants.spacingMD),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
@@ -275,7 +275,7 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
                                               ),
                                               decoration: BoxDecoration(
                                                 color: AppColors.primary.withOpacity(0.1),
-                                                borderRadius: BorderRadius.circular(16),
+                                                borderRadius: BorderRadius.circular(UIConstants.radiusXL),
                                               ),
                                               child: Text(
                                                 article.category.name,
@@ -286,13 +286,13 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
                                                 ),
                                               ),
                                             ),
-                                            const SizedBox(width: 8),
+                                            const SizedBox(width: UIConstants.spacingSM),
                                             Icon(
                                               Icons.visibility,
                                               size: 14,
                                               color: AppColors.textSecondary,
                                             ),
-                                            const SizedBox(width: 4),
+                                            const SizedBox(width: UIConstants.spacingXS),
                                             Text(
                                               '${article.viewCount} views',
                                               style: TextStyle(
@@ -302,7 +302,7 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
                                             ),
                                           ],
                                         ),
-                                        const SizedBox(height: 12),
+                                        const SizedBox(height: UIConstants.spacingMD),
                                         
                                         // Title
                                         Text(
@@ -311,7 +311,7 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                         ),
-                                        const SizedBox(height: 8),
+                                        const SizedBox(height: UIConstants.spacingSM),
                                         
                                         // Summary
                                         Text(
@@ -320,7 +320,7 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
                                           maxLines: 3,
                                           overflow: TextOverflow.ellipsis,
                                         ),
-                                        const SizedBox(height: 12),
+                                        const SizedBox(height: UIConstants.spacingMD),
                                         
                                         // Bottom Row
                                         Row(
@@ -349,7 +349,7 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
                                                         ),
                                                       ),
                                                     ),
-                                                  const SizedBox(width: 8),
+                                                  const SizedBox(width: UIConstants.spacingSM),
                                                   Expanded(
                                                     child: Column(
                                                       crossAxisAlignment: CrossAxisAlignment.start,

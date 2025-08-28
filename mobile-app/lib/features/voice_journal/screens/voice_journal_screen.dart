@@ -97,7 +97,7 @@ class _VoiceJournalScreenState extends ConsumerState<VoiceJournalScreen>
                 child: Row(
                   children: [
                     Icon(Icons.settings),
-                    SizedBox(width: 8),
+                    SizedBox(width: UIConstants.spacingSM),
                     Text('Settings'),
                   ],
                 ),
@@ -107,7 +107,7 @@ class _VoiceJournalScreenState extends ConsumerState<VoiceJournalScreen>
                 child: Row(
                   children: [
                     Icon(Icons.file_download),
-                    SizedBox(width: 8),
+                    SizedBox(width: UIConstants.spacingSM),
                     Text('Export'),
                   ],
                 ),
@@ -117,7 +117,7 @@ class _VoiceJournalScreenState extends ConsumerState<VoiceJournalScreen>
                 child: Row(
                   children: [
                     Icon(Icons.file_upload),
-                    SizedBox(width: 8),
+                    SizedBox(width: UIConstants.spacingSM),
                     Text('Import'),
                   ],
                 ),
@@ -149,17 +149,17 @@ class _VoiceJournalScreenState extends ConsumerState<VoiceJournalScreen>
               if (voiceJournalState.error != null)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(UIConstants.spacingMD),
+                  margin: const EdgeInsets.all(UIConstants.spacingMD),
                   decoration: BoxDecoration(
                     color: Colors.red.shade100,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                     border: Border.all(color: Colors.red.shade300),
                   ),
                   child: Row(
                     children: [
                       Icon(Icons.error, color: Colors.red.shade700),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: UIConstants.spacingSM),
                       Expanded(
                         child: Text(
                           voiceJournalState.error!,
@@ -235,7 +235,7 @@ class _VoiceJournalScreenState extends ConsumerState<VoiceJournalScreen>
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => context.pop(),
             child: const Text('Close'),
           ),
         ],

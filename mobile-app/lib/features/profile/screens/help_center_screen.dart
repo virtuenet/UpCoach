@@ -139,7 +139,7 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
         children: [
           // Search Bar
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(UIConstants.spacingMD),
             color: AppColors.surface,
             child: TextField(
               onChanged: (value) => setState(() => _searchQuery = value),
@@ -149,7 +149,7 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                   borderSide: BorderSide.none,
                 ),
                 suffixIcon: _searchQuery.isNotEmpty
@@ -164,7 +164,7 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
           
           // Quick Actions
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(UIConstants.spacingMD),
             child: Row(
               children: [
                 Expanded(
@@ -175,7 +175,7 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
                     onTap: () => _contactSupport(),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: UIConstants.spacingMD),
                 Expanded(
                   child: _QuickActionCard(
                     icon: Icons.play_circle,
@@ -201,7 +201,7 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
                     selected: _selectedCategory == 'All',
                     onSelected: (_) => setState(() => _selectedCategory = 'All'),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: UIConstants.spacingSM),
                   ..._categories.map((category) => Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: FilterChip(
@@ -213,7 +213,7 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
           ],
           
           // FAQ List or Categories Grid
@@ -229,7 +229,7 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
 
   Widget _buildCategoriesGrid() {
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 16,
@@ -244,13 +244,13 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
         return Card(
           elevation: 2,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(UIConstants.radiusLG),
           ),
           child: InkWell(
             onTap: () => setState(() => _selectedCategory = category.name),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(UIConstants.radiusLG),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(UIConstants.spacingMD),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -259,13 +259,13 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
                     size: 32,
                     color: category.color,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: UIConstants.spacingSM),
                   Text(
                     category.name,
                     style: AppTextStyles.h4,
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: UIConstants.spacingXS),
                   Text(
                     '$faqCount articles',
                     style: AppTextStyles.bodySecondary,
@@ -292,12 +292,12 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
               size: 64,
               color: AppColors.textSecondary,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             Text(
               'No results found',
               style: AppTextStyles.h3,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: UIConstants.spacingSM),
             Text(
               'Try different search terms',
               style: AppTextStyles.bodySecondary,
@@ -308,7 +308,7 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
     }
     
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       itemCount: faqs.length,
       itemBuilder: (context, index) {
         final faq = faqs[index];
@@ -316,7 +316,7 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(UIConstants.radiusLG),
           ),
           child: Theme(
             data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
@@ -357,7 +357,7 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
                           fontSize: 12,
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: UIConstants.spacingMD),
                       IconButton(
                         icon: const Icon(Icons.thumb_up_outlined),
                         onPressed: () => _rateFAQ(faq, true),
@@ -386,7 +386,7 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(UIConstants.spacingLG),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -397,13 +397,13 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
             ListTile(
               leading: const Icon(Icons.email),
               title: const Text('Email Support'),
               subtitle: const Text('support@upcoach.ai'),
               onTap: () {
-                Navigator.pop(context);
+                context.pop();
                 _launchEmail();
               },
             ),
@@ -412,7 +412,7 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
               title: const Text('Live Chat'),
               subtitle: const Text('Chat with our support team'),
               onTap: () {
-                Navigator.pop(context);
+                context.pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Live chat coming soon')),
                 );
@@ -423,8 +423,8 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
               title: const Text('Submit a Ticket'),
               subtitle: const Text('Create a support request'),
               onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/feedback');
+                context.pop();
+                context.go('/feedback');
               },
             ),
           ],
@@ -507,13 +507,13 @@ class _QuickActionCard extends StatelessWidget {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(UIConstants.spacingMD),
           child: Column(
             children: [
               Icon(
@@ -521,7 +521,7 @@ class _QuickActionCard extends StatelessWidget {
                 size: 32,
                 color: AppColors.primary,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: UIConstants.spacingSM),
               Text(
                 title,
                 style: const TextStyle(
@@ -530,7 +530,7 @@ class _QuickActionCard extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: UIConstants.spacingXS),
               Text(
                 subtitle,
                 style: TextStyle(

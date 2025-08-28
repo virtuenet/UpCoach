@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../shared/widgets/responsive_builder.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'package:intl/intl.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../features/auth/providers/auth_provider.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../features/tasks/providers/task_provider.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../features/goals/providers/goal_provider.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../features/mood/providers/mood_provider.dart';
+import '../../../shared/constants/ui_constants.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -62,13 +71,13 @@ class HomeScreen extends ConsumerWidget {
             
             // Content
             SliverPadding(
-              padding: const EdgeInsets.all(16),
+              padding: ResponsiveBuilder.getScreenPadding(context),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   // Date and Greeting
                   Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(UIConstants.spacingMD),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -78,7 +87,7 @@ class HomeScreen extends ConsumerWidget {
                               color: AppTheme.textSecondary,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: UIConstants.spacingSM),
                           Text(
                             _getGreetingMessage(),
                             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -90,7 +99,7 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                   
-                  const SizedBox(height: 16),
+                  const SizedBox(height: UIConstants.spacingMD),
                   
                   // Quick Actions
                   Text(
@@ -99,45 +108,99 @@ class HomeScreen extends ConsumerWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _QuickActionCard(
-                          icon: Icons.add_task,
-                          label: 'Add Task',
-                          color: Colors.blue,
-                          onTap: () {
-                            Navigator.pushNamed(context, '/tasks');
-                          },
-                        ),
+                  const SizedBox(height: UIConstants.spacingMD),
+                  ResponsiveBuilder.isDesktop(context)
+                    ? Row(
+                        children: [
+                          Expanded(
+                            child: _QuickActionCard(
+                              icon: Icons.add_task,
+                              label: 'Add Task',
+                              color: Colors.blue,
+                              onTap: () {
+                                context.go('/tasks');
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: UIConstants.spacingMD),
+                          Expanded(
+                            child: _QuickActionCard(
+                              icon: Icons.flag,
+                              label: 'Set Goal',
+                              color: Colors.green,
+                              onTap: () {
+                                context.go('/goals');
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: UIConstants.spacingMD),
+                          Expanded(
+                            child: _QuickActionCard(
+                              icon: Icons.mood,
+                              label: 'Log Mood',
+                              color: Colors.orange,
+                              onTap: () {
+                                context.go('/mood');
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: UIConstants.spacingMD),
+                          Expanded(
+                            child: _QuickActionCard(
+                              icon: Icons.insights,
+                              label: 'AI Coach',
+                              color: Colors.purple,
+                              onTap: () {
+                                context.go('/chat');
+                              },
+                            ),
+                          ),
+                        ],
+                      )
+                    : GridView.count(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: ResponsiveBuilder.isTablet(context) ? 3 : 2,
+                        crossAxisSpacing: UIConstants.spacingMD,
+                        mainAxisSpacing: UIConstants.spacingMD,
+                        childAspectRatio: 1.2,
+                        children: [
+                          _QuickActionCard(
+                            icon: Icons.add_task,
+                            label: 'Add Task',
+                            color: Colors.blue,
+                            onTap: () {
+                              context.go('/tasks');
+                            },
+                          ),
+                          _QuickActionCard(
+                            icon: Icons.flag,
+                            label: 'Set Goal',
+                            color: Colors.green,
+                            onTap: () {
+                              context.go('/goals');
+                            },
+                          ),
+                          _QuickActionCard(
+                            icon: Icons.mood,
+                            label: 'Log Mood',
+                            color: Colors.orange,
+                            onTap: () {
+                              context.go('/mood');
+                            },
+                          ),
+                          _QuickActionCard(
+                            icon: Icons.insights,
+                            label: 'AI Coach',
+                            color: Colors.purple,
+                            onTap: () {
+                              context.go('/chat');
+                            },
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _QuickActionCard(
-                          icon: Icons.flag,
-                          label: 'Set Goal',
-                          color: Colors.green,
-                          onTap: () {
-                            Navigator.pushNamed(context, '/goals');
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _QuickActionCard(
-                          icon: Icons.mood,
-                          label: 'Log Mood',
-                          color: Colors.orange,
-                          onTap: () {
-                            Navigator.pushNamed(context, '/mood');
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
                   
-                  const SizedBox(height: 24),
+                  const SizedBox(height: UIConstants.spacingLG),
                   
                   // Today's Overview
                   Text(
@@ -146,7 +209,7 @@ class HomeScreen extends ConsumerWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: UIConstants.spacingMD),
                   
                   // Mood Status
                   if (todaysMood != null)
@@ -170,7 +233,7 @@ class HomeScreen extends ConsumerWidget {
                         subtitle: Text('Logged ${DateFormat('h:mm a').format(todaysMood.timestamp)}'),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () {
-                          Navigator.pushNamed(context, '/mood');
+                          context.go('/mood');
                         },
                       ),
                     )
@@ -190,22 +253,22 @@ class HomeScreen extends ConsumerWidget {
                         subtitle: const Text('How are you feeling today?'),
                         trailing: const Icon(Icons.add),
                         onTap: () {
-                          Navigator.pushNamed(context, '/mood');
+                          context.go('/mood');
                         },
                       ),
                     ),
                   
-                  const SizedBox(height: 12),
+                  const SizedBox(height: UIConstants.spacingMD),
                   
                   // Tasks Summary
                   _buildTasksSummary(context, taskState),
                   
-                  const SizedBox(height: 12),
+                  const SizedBox(height: UIConstants.spacingMD),
                   
                   // Goals Summary
                   _buildGoalsSummary(context, goalState),
                   
-                  const SizedBox(height: 24),
+                  const SizedBox(height: UIConstants.spacingLG),
                   
                   // Recent Activity
                   Text(
@@ -214,7 +277,7 @@ class HomeScreen extends ConsumerWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: UIConstants.spacingMD),
                   
                   if (taskState.tasks.isEmpty && goalState.goals.isEmpty && moodState.moodEntries.isEmpty)
                     Card(
@@ -227,14 +290,14 @@ class HomeScreen extends ConsumerWidget {
                               size: 64,
                               color: AppTheme.textSecondary.withOpacity(0.5),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: UIConstants.spacingMD),
                             Text(
                               'Start your journey',
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: UIConstants.spacingSM),
                             Text(
                               'Create your first task, set a goal, or log your mood to get started!',
                               textAlign: TextAlign.center,
@@ -292,7 +355,7 @@ class HomeScreen extends ConsumerWidget {
         subtitle: Text('$completedToday completed today'),
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
-          Navigator.pushNamed(context, '/tasks');
+          context.go('/tasks');
         },
       ),
     );
@@ -317,7 +380,7 @@ class HomeScreen extends ConsumerWidget {
         subtitle: Text('$completedGoals completed'),
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
-          Navigator.pushNamed(context, '/goals');
+          context.go('/goals');
         },
       ),
     );
@@ -429,9 +492,9 @@ class _QuickActionCard extends StatelessWidget {
     return Card(
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(UIConstants.spacingMD),
           child: Column(
             children: [
               Container(
@@ -443,7 +506,7 @@ class _QuickActionCard extends StatelessWidget {
                 ),
                 child: Icon(icon, color: color, size: 24),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: UIConstants.spacingSM),
               Text(
                 label,
                 style: const TextStyle(

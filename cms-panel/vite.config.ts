@@ -11,12 +11,12 @@ import {
 export default defineConfig({
   plugins: [
     react(),
-    // Add security headers plugin with CSP nonce support
-    viteSecurityHeaders(
-      process.env.NODE_ENV === 'production' 
-        ? productionSecurityConfig 
-        : developmentSecurityConfig
-    ),
+    // Temporarily disabled security headers plugin to resolve SSR issues during design review
+    // viteSecurityHeaders(
+    //   process.env.NODE_ENV === 'production' 
+    //     ? productionSecurityConfig 
+    //     : developmentSecurityConfig
+    // ),
   ],
   resolve: {
     alias: {
@@ -24,13 +24,11 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3002,
+    port: 7002,
     host: true,
-    // Security headers are now handled by the plugin
   },
   preview: {
-    port: 3002,
+    port: 7002,
     host: true,
-    // Security headers are now handled by the plugin
   },
 }) 

@@ -350,7 +350,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               ),
               obscureText: true,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             TextField(
               controller: newPasswordController,
               decoration: const InputDecoration(
@@ -359,7 +359,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               ),
               obscureText: true,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             TextField(
               controller: confirmPasswordController,
               decoration: const InputDecoration(

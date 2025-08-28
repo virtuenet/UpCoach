@@ -21,9 +21,9 @@
     "clean": "rm -rf dist coverage"
   },
   "dependencies": {
-    "@upcoach/shared": "workspace:*",
-    "@upcoach/types": "workspace:*",
-    "@upcoach/utils": "workspace:*",
+    "@upcoach/shared": "file:../../packages/shared",
+    "@upcoach/types": "file:../../packages/types",
+    "@upcoach/utils": "file:../../packages/utils",
     "express": "^4.18.2",
     "sequelize": "^6.35.0",
     "pg": "^8.11.3",

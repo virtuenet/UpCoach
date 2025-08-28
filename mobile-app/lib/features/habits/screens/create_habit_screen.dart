@@ -84,7 +84,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(UIConstants.spacingMD),
           children: [
             // Basic Information
             _buildSection(
@@ -106,7 +106,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
                   },
                   textCapitalization: TextCapitalization.sentences,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: UIConstants.spacingMD),
                 TextFormField(
                   controller: _descriptionController,
                   decoration: const InputDecoration(
@@ -121,7 +121,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
               ],
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
 
             // Habit Type
             _buildSection(
@@ -129,7 +129,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
               children: [
                 _buildTypeSelector(),
                 if (_selectedType != HabitType.simple) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: UIConstants.spacingMD),
                   Row(
                     children: [
                       Expanded(
@@ -152,7 +152,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: UIConstants.spacingMD),
                       Expanded(
                         flex: 3,
                         child: TextFormField(
@@ -171,7 +171,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
               ],
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
 
             // Frequency
             _buildSection(
@@ -179,11 +179,11 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
               children: [
                 _buildFrequencySelector(),
                 if (_selectedFrequency == HabitFrequency.weekly) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: UIConstants.spacingMD),
                   _buildWeekdaySelector(),
                 ],
                 if (_selectedFrequency == HabitFrequency.custom) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: UIConstants.spacingMD),
                   TextFormField(
                     controller: _customIntervalController,
                     decoration: const InputDecoration(
@@ -209,21 +209,21 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
               ],
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
 
             // Customization
             _buildSection(
               title: 'Customization',
               children: [
                 _buildCategorySelector(),
-                const SizedBox(height: 16),
+                const SizedBox(height: UIConstants.spacingMD),
                 _buildIconSelector(),
-                const SizedBox(height: 16),
+                const SizedBox(height: UIConstants.spacingMD),
                 _buildColorSelector(),
               ],
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
 
             // Schedule (Optional)
             _buildSection(
@@ -276,7 +276,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
               ],
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
 
             // Reminders
             _buildSection(
@@ -317,7 +317,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
               ],
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: UIConstants.spacingXL),
           ],
         ),
       ),
@@ -336,7 +336,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
             color: AppTheme.primaryColor,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: UIConstants.spacingMD),
         ...children,
       ],
     );
@@ -391,7 +391,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
           'Select Days:',
           style: TextStyle(fontWeight: FontWeight.w500),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: UIConstants.spacingSM),
         Wrap(
           spacing: 8,
           children: List.generate(7, (index) {
@@ -449,7 +449,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
           'Icon:',
           style: TextStyle(fontWeight: FontWeight.w500),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: UIConstants.spacingSM),
         Container(
           height: 60,
           child: ListView.builder(
@@ -470,7 +470,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
                   margin: const EdgeInsets.only(right: 8),
                   decoration: BoxDecoration(
                     color: isSelected ? AppTheme.primaryColor.withOpacity(0.2) : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                     border: Border.all(
                       color: isSelected ? AppTheme.primaryColor : Colors.grey.shade300,
                       width: 2,
@@ -499,7 +499,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
           'Color:',
           style: TextStyle(fontWeight: FontWeight.w500),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: UIConstants.spacingSM),
         Wrap(
           spacing: 8,
           runSpacing: 8,

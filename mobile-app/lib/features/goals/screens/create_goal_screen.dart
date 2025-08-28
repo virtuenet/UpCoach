@@ -92,7 +92,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
       );
 
       if (mounted) {
-        Navigator.pop(context);
+        context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Goal created successfully'),
@@ -133,7 +133,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(UIConstants.spacingMD),
           children: [
             // Title
             TextFormField(
@@ -152,7 +152,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
               textCapitalization: TextCapitalization.sentences,
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             
             // Description
             TextFormField(
@@ -167,7 +167,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
               textCapitalization: TextCapitalization.sentences,
             ),
             
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
             
             // Category
             Text(
@@ -176,7 +176,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: UIConstants.spacingSM),
             Wrap(
               spacing: 8,
               children: GoalCategory.values.map((category) {
@@ -198,7 +198,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
               }).toList(),
             ),
             
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
             
             // Priority
             Text(
@@ -207,7 +207,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: UIConstants.spacingSM),
             Wrap(
               spacing: 8,
               children: GoalPriority.values.map((priority) {
@@ -226,12 +226,12 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
               }).toList(),
             ),
             
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
             
             // Target Date
             InkWell(
               onTap: _selectDate,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(UIConstants.radiusLG),
               child: InputDecorator(
                 decoration: const InputDecoration(
                   labelText: 'Target Date',
@@ -245,7 +245,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
               ),
             ),
             
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
             
             // Milestones
             Text(
@@ -254,7 +254,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: UIConstants.spacingSM),
             
             // Milestone input
             Row(
@@ -270,7 +270,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                     onFieldSubmitted: (_) => _addMilestone(),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: UIConstants.spacingSM),
                 IconButton(
                   onPressed: _addMilestone,
                   icon: const Icon(Icons.add_circle),
@@ -279,12 +279,12 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
               ],
             ),
             
-            const SizedBox(height: 8),
+            const SizedBox(height: UIConstants.spacingSM),
             
             // Milestones list
             if (_milestones.isEmpty)
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(UIConstants.spacingMD),
                 child: Text(
                   'No milestones added yet',
                   style: TextStyle(
@@ -310,7 +310,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                 );
               }),
             
-            const SizedBox(height: 32),
+            const SizedBox(height: UIConstants.spacingXL),
             
             // Create button
             ElevatedButton.icon(

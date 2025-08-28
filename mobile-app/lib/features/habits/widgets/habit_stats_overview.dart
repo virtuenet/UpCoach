@@ -27,7 +27,7 @@ class HabitStatsOverview extends StatelessWidget {
               size: 80,
               color: Colors.grey.shade400,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             Text(
               'No statistics available',
               style: TextStyle(
@@ -36,7 +36,7 @@ class HabitStatsOverview extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: UIConstants.spacingSM),
             Text(
               'Create some habits to see your progress',
               style: TextStyle(
@@ -52,7 +52,7 @@ class HabitStatsOverview extends StatelessWidget {
     final overallStats = _calculateOverallStats();
     
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -67,7 +67,7 @@ class HabitStatsOverview extends StatelessWidget {
                   color: AppTheme.primaryColor,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: UIConstants.spacingMD),
               Expanded(
                 child: _StatCard(
                   title: 'Total Streaks',
@@ -79,7 +79,7 @@ class HabitStatsOverview extends StatelessWidget {
             ],
           ),
           
-          const SizedBox(height: 12),
+          const SizedBox(height: UIConstants.spacingMD),
           
           Row(
             children: [
@@ -91,7 +91,7 @@ class HabitStatsOverview extends StatelessWidget {
                   color: Colors.green,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: UIConstants.spacingMD),
               Expanded(
                 child: _StatCard(
                   title: 'Achievements',
@@ -103,7 +103,7 @@ class HabitStatsOverview extends StatelessWidget {
             ],
           ),
           
-          const SizedBox(height: 24),
+          const SizedBox(height: UIConstants.spacingLG),
           
           // Today's Progress
           const Text(
@@ -113,13 +113,13 @@ class HabitStatsOverview extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           _TodayProgressCard(
             habits: habits,
             completions: completions,
           ),
           
-          const SizedBox(height: 24),
+          const SizedBox(height: UIConstants.spacingLG),
           
           // Weekly Activity Chart
           const Text(
@@ -129,13 +129,13 @@ class HabitStatsOverview extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           _WeeklyActivityChart(
             habits: habits,
             completions: completions,
           ),
           
-          const SizedBox(height: 24),
+          const SizedBox(height: UIConstants.spacingLG),
           
           // Category Breakdown
           const Text(
@@ -145,10 +145,10 @@ class HabitStatsOverview extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           _CategoryBreakdown(habits: habits),
           
-          const SizedBox(height: 24),
+          const SizedBox(height: UIConstants.spacingLG),
           
           // Top Performing Habits
           const Text(
@@ -158,13 +158,13 @@ class HabitStatsOverview extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           _TopHabits(
             habits: habits,
             completions: completions,
           ),
           
-          const SizedBox(height: 24),
+          const SizedBox(height: UIConstants.spacingLG),
           
           // Recent Achievements
           if (achievements.isNotEmpty) ...[
@@ -175,7 +175,7 @@ class HabitStatsOverview extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             _RecentAchievements(achievements: achievements),
           ],
         ],
@@ -225,10 +225,10 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Column(
@@ -248,7 +248,7 @@ class _StatCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: UIConstants.spacingSM),
           Text(
             title,
             style: TextStyle(
@@ -285,7 +285,7 @@ class _TodayProgressCard extends StatelessWidget {
     final progress = totalHabits > 0 ? completedHabits / totalHabits : 0.0;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(UIConstants.spacingLG),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -295,7 +295,7 @@ class _TodayProgressCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(UIConstants.radiusXL),
       ),
       child: Row(
         children: [
@@ -324,7 +324,7 @@ class _TodayProgressCard extends StatelessWidget {
             ],
           ),
           
-          const SizedBox(width: 20),
+          const SizedBox(width: UIConstants.spacingLG),
           
           // Stats
           Expanded(
@@ -339,7 +339,7 @@ class _TodayProgressCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: UIConstants.spacingSM),
                 Text(
                   '$completedHabits of $totalHabits habits completed',
                   style: const TextStyle(
@@ -347,7 +347,7 @@ class _TodayProgressCard extends StatelessWidget {
                     fontSize: 14,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: UIConstants.spacingXS),
                 Text(
                   totalHabits == 0 
                       ? 'No habits scheduled for today'
@@ -398,10 +398,10 @@ class _WeeklyActivityChart extends StatelessWidget {
 
     return Container(
       height: 200,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: SfCartesianChart(
@@ -440,10 +440,10 @@ class _CategoryBreakdown extends StatelessWidget {
 
     if (categoryCount.isEmpty) {
       return Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(UIConstants.spacingLG),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(UIConstants.radiusLG),
           border: Border.all(color: Colors.grey.shade200),
         ),
         child: const Center(
@@ -453,10 +453,10 @@ class _CategoryBreakdown extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
@@ -477,7 +477,7 @@ class _CategoryBreakdown extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: UIConstants.spacingMD),
                 Expanded(
                   child: Text(
                     _getCategoryName(category),
@@ -494,7 +494,7 @@ class _CategoryBreakdown extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: UIConstants.spacingSM),
                 Text(
                   '${(percentage * 100).round()}%',
                   style: TextStyle(
@@ -575,10 +575,10 @@ class _TopHabits extends StatelessWidget {
 
     if (topHabits.isEmpty) {
       return Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(UIConstants.spacingLG),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(UIConstants.radiusLG),
           border: Border.all(color: Colors.grey.shade200),
         ),
         child: const Center(
@@ -588,10 +588,10 @@ class _TopHabits extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
@@ -604,7 +604,7 @@ class _TopHabits extends StatelessWidget {
                   habit.icon,
                   style: const TextStyle(fontSize: 20),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: UIConstants.spacingMD),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -633,13 +633,13 @@ class _TopHabits extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.orange.shade100,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Text('🔥', style: TextStyle(fontSize: 12)),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: UIConstants.spacingXS),
                         Text(
                           '${habit.currentStreak}',
                           style: TextStyle(
@@ -673,10 +673,10 @@ class _RecentAchievements extends StatelessWidget {
     final topAchievements = recentAchievements.take(3).toList();
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
@@ -689,7 +689,7 @@ class _RecentAchievements extends StatelessWidget {
                   achievement.icon.isNotEmpty ? achievement.icon : '🏆',
                   style: const TextStyle(fontSize: 24),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: UIConstants.spacingMD),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

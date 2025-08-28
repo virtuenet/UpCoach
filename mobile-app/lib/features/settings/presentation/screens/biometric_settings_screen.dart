@@ -27,16 +27,16 @@ class _BiometricSettingsScreenState extends ConsumerState<BiometricSettingsScree
         centerTitle: true,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         children: [
           _buildBiometricCard(l10n, biometricAvailable, biometricEnabled),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           if (biometricEnabled.value ?? false) ...[
             _buildAuthTimeoutCard(l10n),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
           ],
           _buildAvailableBiometricsCard(l10n, availableBiometrics),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           _buildSecurityTips(l10n),
         ],
       ),
@@ -50,7 +50,7 @@ class _BiometricSettingsScreenState extends ConsumerState<BiometricSettingsScree
   ) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -61,7 +61,7 @@ class _BiometricSettingsScreenState extends ConsumerState<BiometricSettingsScree
                   color: AppColors.primaryColor,
                   size: 28,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: UIConstants.spacingMD),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,7 +70,7 @@ class _BiometricSettingsScreenState extends ConsumerState<BiometricSettingsScree
                         'Biometric Authentication',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: UIConstants.spacingXS),
                       Text(
                         'Use your fingerprint or face to unlock the app',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -82,15 +82,15 @@ class _BiometricSettingsScreenState extends ConsumerState<BiometricSettingsScree
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             biometricAvailable.when(
               data: (isAvailable) {
                 if (!isAvailable) {
                   return Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(UIConstants.spacingMD),
                     decoration: BoxDecoration(
                       color: Colors.orange.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                     ),
                     child: Row(
                       children: [
@@ -99,7 +99,7 @@ class _BiometricSettingsScreenState extends ConsumerState<BiometricSettingsScree
                           color: Colors.orange,
                           size: 20,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: UIConstants.spacingSM),
                         Expanded(
                           child: Text(
                             'Biometric authentication is not available on this device',
@@ -136,7 +136,7 @@ class _BiometricSettingsScreenState extends ConsumerState<BiometricSettingsScree
     
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -144,14 +144,14 @@ class _BiometricSettingsScreenState extends ConsumerState<BiometricSettingsScree
               'Re-authentication Required',
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: UIConstants.spacingSM),
             Text(
               'How often should you re-authenticate?',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Colors.grey[600],
                   ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             FutureBuilder<int>(
               future: biometricService.getAuthRequiredAfter(),
               builder: (context, snapshot) {
@@ -195,7 +195,7 @@ class _BiometricSettingsScreenState extends ConsumerState<BiometricSettingsScree
   ) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -203,7 +203,7 @@ class _BiometricSettingsScreenState extends ConsumerState<BiometricSettingsScree
               'Available Biometric Methods',
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             availableBiometrics.when(
               data: (biometrics) {
                 if (biometrics.isEmpty) {
@@ -255,7 +255,7 @@ class _BiometricSettingsScreenState extends ConsumerState<BiometricSettingsScree
   Widget _buildSecurityTips(AppLocalizations l10n) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -266,14 +266,14 @@ class _BiometricSettingsScreenState extends ConsumerState<BiometricSettingsScree
                   color: Colors.amber,
                   size: 24,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: UIConstants.spacingSM),
                 Text(
                   'Security Tips',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: UIConstants.spacingMD),
             _buildTip('Enable biometric authentication for quick and secure access'),
             _buildTip('Your biometric data is stored securely on your device'),
             _buildTip('We never have access to your biometric information'),

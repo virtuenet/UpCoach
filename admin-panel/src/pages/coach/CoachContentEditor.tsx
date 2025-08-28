@@ -36,6 +36,8 @@ import {
   CheckCircle as CheckIcon,
   Warning as WarningIcon,
   Info as InfoIcon,
+  Delete as DeleteIcon,
+  Image as ImageIcon,
 } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
 import { Editor } from "@tinymce/tinymce-react";
@@ -397,7 +399,7 @@ const CoachContentEditor: React.FC = () => {
 
         <Grid container spacing={3}>
           {/* Main Content Area */}
-          <Grid2 size={12}, md: {8}>
+          <Grid item xs={12} md={8}>
             <Card>
               <CardContent>
                 <Tabs
@@ -568,7 +570,7 @@ const CoachContentEditor: React.FC = () => {
           </Grid>
 
           {/* Sidebar */}
-          <Grid xs={12}, md: {4}>
+          <Grid item xs={12} md={4}>
             {/* Validation Messages */}
             {validationMessages.length > 0 && (
               <Card sx={{ mb: 2 }}>

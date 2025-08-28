@@ -45,7 +45,8 @@ const dbConfig = {
 const config = dbConfig[env as keyof typeof dbConfig];
 
 export const sequelize = new Sequelize({
-  ...config
+  ...config,
+  logging: config.logging || false
 });
 
 // Initialize database connection
@@ -54,11 +55,12 @@ export async function initializeDatabase(): Promise<void> {
     await sequelize.authenticate();
     logger.info('Database connection established successfully.');
     
-    // Sync models with database
-    if (env === 'development') {
-      await sequelize.sync({ alter: true });
-      logger.info('Database models synchronized.');
-    }
+    // Sync models with database - temporarily disabled for debugging
+    // if (env === 'development') {
+    //   await sequelize.sync({ alter: true });
+    //   logger.info('Database models synchronized.');
+    // }
+    logger.info('Database sync disabled for debugging.');
   } catch (error) {
     logger.error('Unable to connect to the database:', error);
     throw error;
@@ -178,7 +180,7 @@ export const db = {
   async findOne<T>(table: string, conditions: Record<string, any>): Promise<T | null> {
     // Use SecureDB for safe parameterized queries
     const { SecureDB } = require('../utils/dbSecurity');
-    return SecureDB.findOne<T>(table, conditions);
+    return SecureDB.findOne(table, conditions) as Promise<T | null>;
   },
   
   async findMany<T>(
@@ -197,7 +199,7 @@ export const db = {
       ? `${options.orderBy} ${options.orderDirection || 'ASC'}`
       : undefined;
     
-    return SecureDB.findAll<T>(table, conditions, {
+    return SecureDB.findAll(table, conditions, {
       limit: options.limit,
       offset: options.offset,
       orderBy
@@ -207,7 +209,7 @@ export const db = {
   async insert<T>(table: string, data: Record<string, any>): Promise<T> {
     // Use SecureDB for safe parameterized queries
     const { SecureDB } = require('../utils/dbSecurity');
-    return SecureDB.insert<T>(table, data);
+    return SecureDB.insert(table, data) as Promise<T>;
   },
   
   async update<T>(
@@ -221,7 +223,7 @@ export const db = {
     
     if (affectedRows > 0) {
       // Fetch and return the updated record
-      return SecureDB.findOne<T>(table, conditions);
+      return SecureDB.findOne(table, conditions) as Promise<T | null>;
     }
     
     return null;

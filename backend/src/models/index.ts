@@ -1,5 +1,6 @@
 import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
+import { logger } from '../utils/logger';
 import { User } from './User';
 import { Goal } from './Goal';
 import { Task } from './Task';
@@ -137,7 +138,7 @@ export { AIFeedback } from './AIFeedback';
 // Define associations
 export function defineAssociations() {
   // Import models for associations
-  const { Transaction, Subscription, BillingEvent, Article, Course, Category, Media, ContentAnalytics } = sequelize.models;
+  const { Transaction, Subscription, BillingEvent, Article, Course, Category, ContentAnalytics } = sequelize.models;
   
   // Financial associations
   if (Transaction && Subscription) {
@@ -180,11 +181,12 @@ export async function initializeDatabase() {
     // Define associations
     defineAssociations();
     
-    // Sync models with database
-    if (process.env.NODE_ENV !== 'production') {
-      await sequelize.sync({ alter: true });
-      logger.info('Database models synchronized.');
-    }
+    // Sync models with database - temporarily disabled for debugging
+    // if (process.env.NODE_ENV !== 'production') {
+    //   await sequelize.sync({ alter: true });
+    //   logger.info('Database models synchronized.');
+    // }
+    logger.info('Database sync disabled for debugging.');
   } catch (error) {
     logger.error('Unable to connect to the database:', error);
     throw error;

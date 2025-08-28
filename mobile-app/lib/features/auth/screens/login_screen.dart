@@ -67,13 +67,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       backgroundColor: AppTheme.lightBackground,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(UIConstants.spacingLG),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 60),
+                const SizedBox(height: UIConstants.spacing3XL),
                 
                 // Logo and Title
                 Center(
@@ -84,7 +84,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         height: 80,
                         decoration: BoxDecoration(
                           color: AppTheme.primaryColor,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(UIConstants.radiusXL),
                         ),
                         child: const Icon(
                           Icons.psychology_alt,
@@ -92,7 +92,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: UIConstants.spacingLG),
                       Text(
                         'Welcome Back',
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -100,7 +100,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           color: AppTheme.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: UIConstants.spacingSM),
                       Text(
                         'Sign in to continue your coaching journey',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -112,7 +112,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
                 
-                const SizedBox(height: 48),
+                const SizedBox(height: UIConstants.spacing2XL),
                 
                 // Email Field
                 TextFormField(
@@ -127,7 +127,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
                 
-                const SizedBox(height: 20),
+                const SizedBox(height: UIConstants.spacingLG),
                 
                 // Password Field
                 TextFormField(
@@ -155,15 +155,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
                 
-                const SizedBox(height: 32),
+                const SizedBox(height: UIConstants.spacingXL),
                 
                 // Error Message
                 if (authState.error != null) ...[
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(UIConstants.spacingMD),
                     decoration: BoxDecoration(
                       color: AppTheme.errorColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                       border: Border.all(
                         color: AppTheme.errorColor.withOpacity(0.3),
                       ),
@@ -176,7 +176,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: UIConstants.spacingLG),
                 ],
                 
                 // Login Button
@@ -194,7 +194,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       : const Text('Sign In'),
                 ),
                 
-                const SizedBox(height: 24),
+                const SizedBox(height: UIConstants.spacingLG),
                 
                 // Forgot Password
                 Center(
@@ -226,11 +226,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ],
                 ),
                 
-                const SizedBox(height: 24),
+                const SizedBox(height: UIConstants.spacingLG),
                 
                 // Google Sign In Button
                 OutlinedButton.icon(
-                  onPressed: _isLoading
+                  onPressed: authState.isLoading
                       ? null
                       : () async {
                           final success = await ref
@@ -252,7 +252,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   label: const Text('Continue with Google'),
                 ),
                 
-                const SizedBox(height: 32),
+                const SizedBox(height: UIConstants.spacingXL),
                 
                 // Sign Up Link
                 Row(

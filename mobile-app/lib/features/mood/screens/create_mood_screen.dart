@@ -84,7 +84,7 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
       }
 
       if (mounted) {
-        Navigator.pop(context);
+        context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -142,7 +142,7 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
       try {
         await ref.read(moodProvider.notifier).deleteMoodEntry(widget.existingMood!.id);
         if (mounted) {
-          Navigator.pop(context);
+          context.pop();
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Mood entry deleted'),
@@ -181,7 +181,7 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         children: [
           // Mood Level Selection
           Text(
@@ -190,7 +190,7 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: UIConstants.spacingLG),
           
           // Mood level selector
           Container(
@@ -247,7 +247,7 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
             textAlign: TextAlign.center,
           ),
           
-          const SizedBox(height: 32),
+          const SizedBox(height: UIConstants.spacingXL),
           
           // Mood Categories
           Text(
@@ -256,7 +256,7 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: UIConstants.spacingMD),
           
           Wrap(
             spacing: 8,
@@ -268,7 +268,7 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(MoodModel.getCategoryEmoji(category)),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: UIConstants.spacingXS),
                     Text(MoodModel.getCategoryLabel(category)),
                   ],
                 ),
@@ -287,7 +287,7 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
             }).toList(),
           ),
           
-          const SizedBox(height: 32),
+          const SizedBox(height: UIConstants.spacingXL),
           
           // Activities
           Text(
@@ -296,7 +296,7 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: UIConstants.spacingMD),
           
           Row(
             children: [
@@ -311,7 +311,7 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
                   onSubmitted: (_) => _addActivity(),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: UIConstants.spacingSM),
               IconButton(
                 onPressed: _addActivity,
                 icon: const Icon(Icons.add_circle),
@@ -321,7 +321,7 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
           ),
           
           if (_activities.isNotEmpty) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: UIConstants.spacingSM),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -335,7 +335,7 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
             ),
           ],
           
-          const SizedBox(height: 32),
+          const SizedBox(height: UIConstants.spacingXL),
           
           // Note
           Text(
@@ -344,7 +344,7 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: UIConstants.spacingMD),
           
           TextFormField(
             controller: _noteController,
@@ -357,7 +357,7 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
             textCapitalization: TextCapitalization.sentences,
           ),
           
-          const SizedBox(height: 32),
+          const SizedBox(height: UIConstants.spacingXL),
           
           // Save button
           ElevatedButton.icon(

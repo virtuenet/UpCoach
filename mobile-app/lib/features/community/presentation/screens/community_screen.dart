@@ -120,7 +120,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                 child: Text('Error: $error'),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
             
             // Latest Threads
             Padding(
@@ -176,7 +176,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
       },
       child: groupsAsyncValue.when(
         data: (groups) => ListView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(UIConstants.spacingMD),
           itemCount: groups.length,
           itemBuilder: (context, index) {
             final group = groups[index];
@@ -211,9 +211,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.error_outline, size: 48),
-              const SizedBox(height: 16),
+              const SizedBox(height: UIConstants.spacingMD),
               Text('Failed to load groups: $error'),
-              const SizedBox(height: 16),
+              const SizedBox(height: UIConstants.spacingMD),
               ElevatedButton(
                 onPressed: () {
                   ref.invalidate(communityGroupsProvider);
@@ -236,7 +236,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
       },
       child: activityAsyncValue.when(
         data: (activities) => ListView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(UIConstants.spacingMD),
           itemCount: activities.length,
           itemBuilder: (context, index) {
             return ActivityFeedItem(
@@ -301,12 +301,12 @@ class ForumCategoryCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 140,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         decoration: BoxDecoration(
           color: Color(int.parse(
             category.color?.replaceAll('#', '0xFF') ?? '0xFF6B7280',
           )),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -316,7 +316,7 @@ class ForumCategoryCard extends StatelessWidget {
               color: Colors.white,
               size: 32,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: UIConstants.spacingSM),
             Text(
               category.name,
               style: const TextStyle(

@@ -105,7 +105,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                 child: Row(
                   children: [
                     Icon(Icons.category),
-                    SizedBox(width: 8),
+                    SizedBox(width: UIConstants.spacingSM),
                     Text('Categories'),
                   ],
                 ),
@@ -115,7 +115,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                 child: Row(
                   children: [
                     Icon(Icons.analytics),
-                    SizedBox(width: 8),
+                    SizedBox(width: UIConstants.spacingSM),
                     Text('Analytics'),
                   ],
                 ),
@@ -125,7 +125,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                 child: Row(
                   children: [
                     Icon(Icons.emoji_events),
-                    SizedBox(width: 8),
+                    SizedBox(width: UIConstants.spacingSM),
                     Text('Achievements'),
                   ],
                 ),
@@ -135,7 +135,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                 child: Row(
                   children: [
                     Icon(Icons.settings),
-                    SizedBox(width: 8),
+                    SizedBox(width: UIConstants.spacingSM),
                     Text('Settings'),
                   ],
                 ),
@@ -182,7 +182,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
               if (_selectedCategory != null)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(UIConstants.spacingMD),
                   color: AppTheme.primaryColor.withOpacity(0.1),
                   child: Row(
                     children: [
@@ -210,17 +210,17 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
               if (habitState.error != null)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(UIConstants.spacingMD),
+                  margin: const EdgeInsets.all(UIConstants.spacingMD),
                   decoration: BoxDecoration(
                     color: Colors.red.shade100,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                     border: Border.all(color: Colors.red.shade300),
                   ),
                   child: Row(
                     children: [
                       Icon(Icons.error, color: Colors.red.shade700),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: UIConstants.spacingSM),
                       Expanded(
                         child: Text(
                           habitState.error!,
@@ -290,7 +290,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
               size: 80,
               color: Colors.grey.shade400,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             Text(
               _searchController.text.isNotEmpty || _selectedCategory != null
                   ? 'No habits found'
@@ -301,7 +301,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: UIConstants.spacingSM),
             Text(
               _searchController.text.isNotEmpty || _selectedCategory != null
                   ? 'Try adjusting your search or filters'
@@ -318,7 +318,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       itemCount: habits.length,
       itemBuilder: (context, index) {
         final habit = habits[index];
@@ -340,7 +340,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
     showModalBottomSheet(
       context: context,
       builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -352,7 +352,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -365,14 +365,14 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                     setState(() {
                       _selectedCategory = selected ? category : null;
                     });
-                    Navigator.pop(context);
+                    context.pop();
                   },
                   selectedColor: AppTheme.primaryColor.withOpacity(0.2),
                   checkmarkColor: AppTheme.primaryColor,
                 );
               }).toList(),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             SizedBox(
               width: double.infinity,
               child: TextButton(
@@ -380,7 +380,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                   setState(() {
                     _selectedCategory = null;
                   });
-                  Navigator.pop(context);
+                  context.pop();
                 },
                 child: const Text('Clear Filter'),
               ),
@@ -436,13 +436,13 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => context.pop(),
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () async {
               final success = await habitNotifier.deleteHabit(habit.id);
-              Navigator.pop(context);
+              context.pop();
               
               if (success) {
                 ScaffoldMessenger.of(context).showSnackBar(

@@ -24,16 +24,16 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
         centerTitle: true,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         children: [
           _buildEnableCard(l10n, isEnabled),
           if (isEnabled.value ?? false) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             _buildWidgetTypeCard(l10n, currentType),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             _buildPreviewCard(l10n, currentType),
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           _buildInstructionsCard(l10n),
         ],
       ),
@@ -43,7 +43,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
   Widget _buildEnableCard(AppLocalizations l10n, AsyncValue<bool> isEnabled) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -54,7 +54,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
                   color: AppColors.primaryColor,
                   size: 28,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: UIConstants.spacingMD),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,7 +63,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
                         'Enable Widgets',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: UIConstants.spacingXS),
                       Text(
                         'Show UpCoach information on your home screen',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -75,7 +75,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             isEnabled.when(
               data: (enabled) => SwitchListTile(
                 value: enabled,
@@ -95,7 +95,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
   Widget _buildWidgetTypeCard(AppLocalizations l10n, AsyncValue<String> currentType) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -103,14 +103,14 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
               'Widget Type',
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: UIConstants.spacingSM),
             Text(
               'Choose what information to display',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Colors.grey[600],
                   ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             currentType.when(
               data: (type) => Column(
                 children: availableWidgets.map((config) {
@@ -121,7 +121,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
                     title: Row(
                       children: [
                         Icon(config.icon, size: 20, color: AppColors.primaryColor),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: UIConstants.spacingSM),
                         Text(config.title),
                       ],
                     ),
@@ -147,7 +147,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
   Widget _buildPreviewCard(AppLocalizations l10n, AsyncValue<String> currentType) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -155,13 +155,13 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
               'Widget Preview',
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             currentType.when(
               data: (type) => Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(UIConstants.spacingMD),
                 decoration: BoxDecoration(
                   color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                   border: Border.all(color: Colors.grey[300]!),
                 ),
                 child: _buildPreviewContent(type),
@@ -207,7 +207,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: AppColors.primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(UIConstants.radiusLG),
               ),
               child: Text(
                 '3/5',
@@ -220,7 +220,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: UIConstants.spacingMD),
         _buildGoalItem('Complete fitness assessment', 0.8, 'in_progress'),
         _buildGoalItem('Read 10 books this year', 0.5, 'in_progress'),
         _buildGoalItem('Learn Spanish basics', 1.0, 'completed'),
@@ -238,7 +238,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
             size: 16,
             color: status == 'completed' ? Colors.green : Colors.grey,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: UIConstants.spacingSM),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -282,7 +282,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
             Row(
               children: [
                 Icon(Icons.check_circle, size: 16, color: Colors.green),
-                const SizedBox(width: 4),
+                const SizedBox(width: UIConstants.spacingXS),
                 Text(
                   '2',
                   style: TextStyle(
@@ -291,9 +291,9 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
                     fontSize: 12,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: UIConstants.spacingSM),
                 Icon(Icons.pending, size: 16, color: Colors.orange),
-                const SizedBox(width: 4),
+                const SizedBox(width: UIConstants.spacingXS),
                 Text(
                   '3',
                   style: TextStyle(
@@ -306,7 +306,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: UIConstants.spacingMD),
         _buildTaskItem('Morning meditation', 'high', false),
         _buildTaskItem('Review project proposal', 'medium', false),
         _buildTaskItem('Team sync meeting', 'high', true),
@@ -327,7 +327,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
             size: 20,
             color: isCompleted ? Colors.green : Colors.grey,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: UIConstants.spacingSM),
           Container(
             width: 4,
             height: 16,
@@ -336,7 +336,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: UIConstants.spacingSM),
           Expanded(
             child: Text(
               title,
@@ -361,21 +361,21 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
           size: 48,
           color: Colors.orange,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: UIConstants.spacingSM),
         Text(
           '7 Day Streak!',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: UIConstants.spacingXS),
         Text(
           'Keep it up!',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Colors.grey[600],
               ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: UIConstants.spacingSM),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(7, (index) {
@@ -413,7 +413,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
                 fontWeight: FontWeight.bold,
               ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: UIConstants.spacingMD),
         Stack(
           alignment: Alignment.center,
           children: [
@@ -435,7 +435,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: UIConstants.spacingMD),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -471,7 +471,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
   Widget _buildInstructionsCard(AppLocalizations l10n) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -482,25 +482,25 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
                   color: AppColors.primaryColor,
                   size: 24,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: UIConstants.spacingSM),
                 Text(
                   'How to Add Widget',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: UIConstants.spacingMD),
             _buildInstruction('1. Long press on your home screen'),
             _buildInstruction('2. Tap the + button or "Add Widget"'),
             _buildInstruction('3. Search for "UpCoach"'),
             _buildInstruction('4. Select your preferred widget size'),
             _buildInstruction('5. Place the widget on your home screen'),
-            const SizedBox(height: 12),
+            const SizedBox(height: UIConstants.spacingMD),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(UIConstants.spacingMD),
               decoration: BoxDecoration(
                 color: Colors.blue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(UIConstants.radiusMD),
               ),
               child: Row(
                 children: [
@@ -509,7 +509,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
                     color: Colors.blue,
                     size: 20,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: UIConstants.spacingSM),
                   Expanded(
                     child: Text(
                       'Widget data updates automatically when you use the app',

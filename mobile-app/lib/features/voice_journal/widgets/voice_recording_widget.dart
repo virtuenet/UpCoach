@@ -99,7 +99,7 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
                 labelText: 'Journal Entry Title (Optional)',
                 hintText: 'What\'s on your mind?',
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                 ),
                 prefixIcon: const Icon(Icons.title),
               ),
@@ -127,7 +127,7 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
             margin: const EdgeInsets.only(bottom: 32),
             decoration: BoxDecoration(
               color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(UIConstants.radiusLG),
               border: Border.all(color: Colors.grey.shade300),
             ),
             child: _isRecording
@@ -136,7 +136,7 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.graphic_eq, color: AppTheme.primaryColor),
-                        SizedBox(width: 8),
+                        SizedBox(width: UIConstants.spacingSM),
                         Text(
                           'Recording audio waveform...',
                           style: TextStyle(color: AppTheme.primaryColor),
@@ -194,7 +194,7 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: UIConstants.spacingLG),
 
                 // Recording Status Text
                 Text(
@@ -206,7 +206,7 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: UIConstants.spacingXL),
 
                 // Action Buttons (shown when recording)
                 if (_isRecording) ...[
@@ -271,10 +271,10 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
           // Tips Section
           if (!_isRecording)
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(UIConstants.spacingMD),
               decoration: BoxDecoration(
                 color: AppTheme.primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                 border: Border.all(
                   color: AppTheme.primaryColor.withOpacity(0.3),
                 ),
@@ -289,7 +289,7 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
                         color: AppTheme.primaryColor,
                         size: 20,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: UIConstants.spacingSM),
                       Text(
                         'Recording Tips',
                         style: TextStyle(
@@ -299,7 +299,7 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: UIConstants.spacingSM),
                   const Text(
                     '• Find a quiet space for better audio quality\n'
                     '• Speak clearly and at a normal pace\n'

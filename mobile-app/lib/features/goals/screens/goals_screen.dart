@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../shared/constants/ui_constants.dart';
+import 'package:go_router/go_router.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../shared/models/goal_model.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../providers/goal_provider.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'create_goal_screen.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'goal_detail_screen.dart';
+import '../../../shared/constants/ui_constants.dart';
 
 class GoalsScreen extends ConsumerStatefulWidget {
   const GoalsScreen({super.key});
@@ -31,21 +40,11 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
   }
 
   void _navigateToCreateGoal() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const CreateGoalScreen(),
-      ),
-    );
+    context.push('/goals/create');
   }
 
   void _navigateToGoalDetail(GoalModel goal) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => GoalDetailScreen(goal: goal),
-      ),
-    );
+    context.push('/goals/${goal.id}', extra: goal);
   }
 
   @override
@@ -129,7 +128,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
               });
             },
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: UIConstants.spacingSM),
           ...GoalCategory.values.map((category) => Padding(
             padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
@@ -199,7 +198,7 @@ class _GoalListView extends ConsumerWidget {
               size: 64,
               color: AppTheme.textSecondary.withOpacity(0.5),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             Text(
               emptyMessage,
               style: TextStyle(
@@ -219,7 +218,7 @@ class _GoalListView extends ConsumerWidget {
         children: [
           if (showStats && stats != null) ...[
             _buildStatsSection(context, stats!),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
           ],
           if (goals.isEmpty)
             Padding(
@@ -232,7 +231,7 @@ class _GoalListView extends ConsumerWidget {
                       size: 64,
                       color: AppTheme.textSecondary.withOpacity(0.5),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: UIConstants.spacingMD),
                     Text(
                       emptyMessage,
                       style: TextStyle(
@@ -256,8 +255,8 @@ class _GoalListView extends ConsumerWidget {
 
   Widget _buildStatsSection(BuildContext context, Map<String, dynamic> stats) {
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(UIConstants.spacingMD),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -267,7 +266,7 @@ class _GoalListView extends ConsumerWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(UIConstants.radiusXL),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -279,7 +278,7 @@ class _GoalListView extends ConsumerWidget {
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -321,7 +320,7 @@ class _GoalListView extends ConsumerWidget {
           size: 32,
           color: Colors.white,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: UIConstants.spacingSM),
         Text(
           value,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -356,9 +355,9 @@ class _GoalCard extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(UIConstants.spacingMD),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -370,14 +369,14 @@ class _GoalCard extends ConsumerWidget {
                     height: 48,
                     decoration: BoxDecoration(
                       color: _getCategoryColor(goal.category).withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                     ),
                     child: Icon(
                       _getCategoryIcon(goal.category),
                       color: _getCategoryColor(goal.category),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: UIConstants.spacingMD),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -404,7 +403,7 @@ class _GoalCard extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: _getStatusColor(goal.status).withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(UIConstants.radiusXL),
                     ),
                     child: Text(
                       goal.statusLabel,
@@ -419,7 +418,7 @@ class _GoalCard extends ConsumerWidget {
               ),
               
               if (goal.description != null) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: UIConstants.spacingMD),
                 Text(
                   goal.description!,
                   maxLines: 2,
@@ -430,7 +429,7 @@ class _GoalCard extends ConsumerWidget {
                 ),
               ],
               
-              const SizedBox(height: 16),
+              const SizedBox(height: UIConstants.spacingMD),
               
               // Progress bar
               Column(
@@ -456,7 +455,7 @@ class _GoalCard extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: UIConstants.spacingSM),
                   LinearProgressIndicator(
                     value: goal.progress,
                     backgroundColor: Colors.grey.shade200,
@@ -467,7 +466,7 @@ class _GoalCard extends ConsumerWidget {
                 ],
               ),
               
-              const SizedBox(height: 12),
+              const SizedBox(height: UIConstants.spacingMD),
               
               // Bottom info
               Row(
@@ -482,7 +481,7 @@ class _GoalCard extends ConsumerWidget {
                           size: 16,
                           color: AppTheme.textSecondary,
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: UIConstants.spacingXS),
                         Text(
                           '${goal.completedMilestonesCount}/${goal.totalMilestones} milestones',
                           style: TextStyle(
@@ -503,7 +502,7 @@ class _GoalCard extends ConsumerWidget {
                             ? AppTheme.errorColor 
                             : AppTheme.textSecondary,
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: UIConstants.spacingXS),
                       Text(
                         goal.isOverdue 
                             ? 'Overdue' 

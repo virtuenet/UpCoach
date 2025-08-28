@@ -113,7 +113,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildLevelBadge(stats.level),
-                  const SizedBox(width: 20),
+                  const SizedBox(width: UIConstants.spacingLG),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,7 +126,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: UIConstants.spacingSM),
                         LinearPercentIndicator(
                           lineHeight: 20.0,
                           percent: stats.levelProgress / 100,
@@ -138,7 +138,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
                           progressColor: Colors.amber,
                           barRadius: const Radius.circular(10),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: UIConstants.spacingXS),
                         Text(
                           '${stats.totalPoints} / ${stats.nextLevelPoints} points',
                           style: const TextStyle(
@@ -201,7 +201,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
     return Column(
       children: [
         Icon(icon, color: Colors.white70, size: 24),
-        const SizedBox(height: 4),
+        const SizedBox(height: UIConstants.spacingXS),
         Text(
           value,
           style: const TextStyle(
@@ -249,7 +249,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
                         .toList();
                     
                     return GridView.builder(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(UIConstants.spacingMD),
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
                         childAspectRatio: 0.8,
@@ -285,7 +285,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
     return challengesAsync.when(
       data: (challenges) {
         return ListView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(UIConstants.spacingMD),
           itemCount: challenges.length,
           itemBuilder: (context, index) {
             final challenge = challenges[index];
@@ -304,7 +304,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(challenge.description),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: UIConstants.spacingSM),
                     if (challenge.participationStatus != null)
                       LinearProgressIndicator(
                         value: challenge.completionPercentage / 100,

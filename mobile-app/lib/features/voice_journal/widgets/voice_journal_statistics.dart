@@ -22,7 +22,7 @@ class VoiceJournalStatistics extends ConsumerWidget {
               size: 80,
               color: Colors.grey.shade400,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             Text(
               'No statistics available',
               style: TextStyle(
@@ -31,7 +31,7 @@ class VoiceJournalStatistics extends ConsumerWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: UIConstants.spacingSM),
             Text(
               'Start recording voice journals to see your statistics',
               style: TextStyle(
@@ -46,7 +46,7 @@ class VoiceJournalStatistics extends ConsumerWidget {
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -61,7 +61,7 @@ class VoiceJournalStatistics extends ConsumerWidget {
                   color: AppTheme.primaryColor,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: UIConstants.spacingMD),
               Expanded(
                 child: _StatCard(
                   title: 'Total Minutes',
@@ -73,7 +73,7 @@ class VoiceJournalStatistics extends ConsumerWidget {
             ],
           ),
           
-          const SizedBox(height: 12),
+          const SizedBox(height: UIConstants.spacingMD),
           
           Row(
             children: [
@@ -85,7 +85,7 @@ class VoiceJournalStatistics extends ConsumerWidget {
                   color: Colors.green,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: UIConstants.spacingMD),
               Expanded(
                 child: _StatCard(
                   title: 'Favorites',
@@ -97,7 +97,7 @@ class VoiceJournalStatistics extends ConsumerWidget {
             ],
           ),
           
-          const SizedBox(height: 24),
+          const SizedBox(height: UIConstants.spacingLG),
           
           // Transcription Accuracy
           if (statistics['transcribedEntries'] > 0) ...[
@@ -108,11 +108,11 @@ class VoiceJournalStatistics extends ConsumerWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             _TranscriptionQualityCard(
               averageConfidence: statistics['averageConfidence'],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
           ],
           
           // Weekly Activity Chart
@@ -123,10 +123,10 @@ class VoiceJournalStatistics extends ConsumerWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           _WeeklyActivityChart(entries: voiceJournalState.entries),
           
-          const SizedBox(height: 24),
+          const SizedBox(height: UIConstants.spacingLG),
           
           // Monthly Breakdown
           const Text(
@@ -136,10 +136,10 @@ class VoiceJournalStatistics extends ConsumerWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           _MonthlyBreakdown(entries: voiceJournalState.entries),
           
-          const SizedBox(height: 24),
+          const SizedBox(height: UIConstants.spacingLG),
           
           // Recent Activity
           const Text(
@@ -149,7 +149,7 @@ class VoiceJournalStatistics extends ConsumerWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           _RecentActivity(entries: voiceJournalState.entries),
         ],
       ),
@@ -173,10 +173,10 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Column(
@@ -196,7 +196,7 @@ class _StatCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: UIConstants.spacingSM),
           Text(
             title,
             style: TextStyle(
@@ -231,10 +231,10 @@ class _TranscriptionQualityCard extends StatelessWidget {
     
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
         color: Colors.blue.shade50,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         border: Border.all(color: Colors.blue.shade200),
       ),
       child: Column(
@@ -243,7 +243,7 @@ class _TranscriptionQualityCard extends StatelessWidget {
           Row(
             children: [
               Icon(Icons.psychology, color: Colors.blue.shade700),
-              const SizedBox(width: 8),
+              const SizedBox(width: UIConstants.spacingSM),
               Text(
                 'Average Transcription Accuracy',
                 style: TextStyle(
@@ -254,7 +254,7 @@ class _TranscriptionQualityCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: UIConstants.spacingMD),
           Row(
             children: [
               Text(
@@ -265,7 +265,7 @@ class _TranscriptionQualityCard extends StatelessWidget {
                   color: Colors.blue.shade700,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: UIConstants.spacingMD),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,7 +278,7 @@ class _TranscriptionQualityCard extends StatelessWidget {
                         color: Colors.blue.shade700,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: UIConstants.spacingXS),
                     LinearProgressIndicator(
                       value: averageConfidence,
                       backgroundColor: Colors.blue.shade100,
@@ -289,7 +289,7 @@ class _TranscriptionQualityCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: UIConstants.spacingMD),
           Text(
             percentage >= 80 
                 ? 'Your recordings have excellent audio quality for transcription!'
@@ -331,10 +331,10 @@ class _WeeklyActivityChart extends StatelessWidget {
 
     return Container(
       height: 200,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: SfCartesianChart(
@@ -377,10 +377,10 @@ class _MonthlyBreakdown extends StatelessWidget {
     }).length;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
@@ -436,7 +436,7 @@ class _MonthlyBreakdown extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           if (lastMonth > 0)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -447,7 +447,7 @@ class _MonthlyBreakdown extends StatelessWidget {
                   color: thisMonth > lastMonth ? Colors.green : 
                          thisMonth < lastMonth ? Colors.red : Colors.grey,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: UIConstants.spacingSM),
                 Text(
                   thisMonth > lastMonth 
                       ? '+${((thisMonth - lastMonth) / lastMonth * 100).round()}% from last month'
@@ -479,10 +479,10 @@ class _RecentActivity extends StatelessWidget {
     
     if (recentEntries.isEmpty) {
       return Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(UIConstants.spacingLG),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(UIConstants.radiusLG),
           border: Border.all(color: Colors.grey.shade200),
         ),
         child: const Center(
@@ -495,10 +495,10 @@ class _RecentActivity extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
@@ -515,7 +515,7 @@ class _RecentActivity extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: UIConstants.spacingMD),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

@@ -135,7 +135,7 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.insights),
-            onPressed: () => Navigator.pushNamed(context, '/ai/insights'),
+            onPressed: () => context.go('/ai/insights'),
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -153,7 +153,7 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
                 ? _buildEmptyState()
                 : ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(UIConstants.spacingMD),
                     itemCount: messages.length + (_isLoading ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == messages.length && _isLoading) {
@@ -190,12 +190,12 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
             size: 80,
             color: AppColors.primary.withOpacity(0.5),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           Text(
             'Start Your AI Coaching Session',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: UIConstants.spacingSM),
           Text(
             'Ask me anything about your goals, habits, or progress',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -203,7 +203,7 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: UIConstants.spacingXL),
           _buildSuggestionChips(),
         ],
       ),

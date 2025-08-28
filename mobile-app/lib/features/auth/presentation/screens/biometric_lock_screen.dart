@@ -71,7 +71,7 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen>
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(UIConstants.spacingLG),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -90,7 +90,7 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen>
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: UIConstants.spacingXL),
                 Text(
                   'UpCoach',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -98,7 +98,7 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen>
                         color: AppColors.primaryColor,
                       ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: UIConstants.spacingSM),
                 Text(
                   'Authentication Required',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -128,7 +128,7 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen>
                     );
                   },
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: UIConstants.spacingXL),
                 Text(
                   _isAuthenticating
                       ? 'Authenticating...'
@@ -148,23 +148,23 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen>
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: UIConstants.spacingMD),
                     OutlinedButton(
                       onPressed: _isAuthenticating ? null : _usePassword,
                       child: Text('Use Password Instead'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                         ),
                       ),
                     ),
                     if (widget.onCancel != null) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: UIConstants.spacingSM),
                       TextButton(
                         onPressed: widget.onCancel,
                         child: Text(l10n.cancel),
@@ -172,7 +172,7 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen>
                     ],
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: UIConstants.spacingLG),
               ],
             ),
           ),

@@ -110,13 +110,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       backgroundColor: AppTheme.lightBackground,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(UIConstants.spacingLG),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 20),
+                const SizedBox(height: UIConstants.spacingLG),
                 
                 // Logo and Title
                 Center(
@@ -127,7 +127,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         height: 80,
                         decoration: BoxDecoration(
                           color: AppTheme.primaryColor,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(UIConstants.radiusXL),
                         ),
                         child: const Icon(
                           Icons.psychology_alt,
@@ -135,7 +135,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: UIConstants.spacingLG),
                       Text(
                         'Create Account',
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -143,7 +143,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           color: AppTheme.textPrimary,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: UIConstants.spacingSM),
                       Text(
                         'Start your personal coaching journey today',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -169,7 +169,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                 ),
                 
-                const SizedBox(height: 16),
+                const SizedBox(height: UIConstants.spacingMD),
                 
                 // Last Name Field
                 TextFormField(
@@ -183,7 +183,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                 ),
                 
-                const SizedBox(height: 16),
+                const SizedBox(height: UIConstants.spacingMD),
                 
                 // Email Field
                 TextFormField(
@@ -198,7 +198,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                 ),
                 
-                const SizedBox(height: 16),
+                const SizedBox(height: UIConstants.spacingMD),
                 
                 // Password Field
                 TextFormField(
@@ -225,7 +225,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                 ),
                 
-                const SizedBox(height: 16),
+                const SizedBox(height: UIConstants.spacingMD),
                 
                 // Confirm Password Field
                 TextFormField(
@@ -253,7 +253,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                 ),
                 
-                const SizedBox(height: 24),
+                const SizedBox(height: UIConstants.spacingLG),
                 
                 // Terms and Conditions
                 Row(
@@ -306,15 +306,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ],
                 ),
                 
-                const SizedBox(height: 24),
+                const SizedBox(height: UIConstants.spacingLG),
                 
                 // Error Message
                 if (authState.error != null) ...[
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(UIConstants.spacingMD),
                     decoration: BoxDecoration(
                       color: AppTheme.errorColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                       border: Border.all(
                         color: AppTheme.errorColor.withOpacity(0.3),
                       ),
@@ -327,7 +327,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: UIConstants.spacingLG),
                 ],
                 
                 // Register Button
@@ -345,7 +345,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       : const Text('Create Account'),
                 ),
                 
-                const SizedBox(height: 24),
+                const SizedBox(height: UIConstants.spacingLG),
                 
                 // Divider
                 Row(
@@ -365,7 +365,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ],
                 ),
                 
-                const SizedBox(height: 24),
+                const SizedBox(height: UIConstants.spacingLG),
                 
                 // Google Sign In Button
                 OutlinedButton.icon(
@@ -381,7 +381,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   label: const Text('Continue with Google'),
                 ),
                 
-                const SizedBox(height: 32),
+                const SizedBox(height: UIConstants.spacingXL),
                 
                 // Sign In Link
                 Row(

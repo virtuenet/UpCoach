@@ -1,7 +1,8 @@
-import React, { Component, ReactNode, ErrorInfo } from 'react';
+import { Component, ReactNode, ErrorInfo } from 'react';
 import { Button } from './ui/button';
 import { AlertCircle, RefreshCw } from 'lucide-react';
-import { sentryFrontend } from '../services/monitoring/sentryInit';
+// Temporarily disabled for development
+// import { sentryFrontend } from '../services/monitoring/sentryInit';
 
 interface Props {
   children: ReactNode;
@@ -35,11 +36,11 @@ export default class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     
-    // Send to Sentry monitoring
-    sentryFrontend.captureException(error, {
-      component: 'ErrorBoundary',
-      componentStack: errorInfo.componentStack,
-    });
+    // Send to Sentry monitoring (temporarily disabled for development)
+    // sentryFrontend.captureException(error, {
+    //   component: 'ErrorBoundary',
+    //   componentStack: errorInfo.componentStack,
+    // });
 
     this.setState({ errorInfo });
   }

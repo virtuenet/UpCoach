@@ -16,10 +16,10 @@
     "clean": "rm -rf dist coverage"
   },
   "dependencies": {
-    "@upcoach/shared": "workspace:*",
-    "@upcoach/types": "workspace:*",
-    "@upcoach/utils": "workspace:*",
-    "@upcoach/ui": "workspace:*",
+    "@upcoach/shared": "file:../../packages/shared",
+    "@upcoach/types": "file:../../packages/types",
+    "@upcoach/utils": "file:../../packages/utils",
+    "@upcoach/ui": "file:../../packages/ui",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0",

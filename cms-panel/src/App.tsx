@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect } from 'react'
+import { ThemeProvider } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
 import { useAuthStore } from './stores/authStore'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
@@ -13,6 +15,7 @@ import CreateCoursePage from './pages/CreateCoursePage'
 import SettingsPage from './pages/SettingsPage'
 import Layout from './components/Layout'
 import SessionWrapper from './components/SessionWrapper'
+import theme from './theme'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
@@ -28,8 +31,9 @@ function App() {
   }, [initializeAuth])
 
   return (
-    <SessionWrapper>
-      <div className="min-h-screen bg-gray-50">
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <SessionWrapper>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route
@@ -55,8 +59,8 @@ function App() {
             }
           />
         </Routes>
-      </div>
-    </SessionWrapper>
+      </SessionWrapper>
+    </ThemeProvider>
   )
 }
 

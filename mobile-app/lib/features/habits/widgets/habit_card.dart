@@ -31,13 +31,13 @@ class HabitCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(UIConstants.spacingMD),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -50,7 +50,7 @@ class HabitCard extends StatelessWidget {
                     height: 50,
                     decoration: BoxDecoration(
                       color: Color(int.parse('0xFF${habit.color.substring(1)}')).withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                     ),
                     child: Center(
                       child: Text(
@@ -60,7 +60,7 @@ class HabitCard extends StatelessWidget {
                     ),
                   ),
                   
-                  const SizedBox(width: 12),
+                  const SizedBox(width: UIConstants.spacingMD),
                   
                   // Habit info
                   Expanded(
@@ -81,12 +81,12 @@ class HabitCard extends StatelessWidget {
                               ),
                             ),
                             if (streakText.isNotEmpty) ...[
-                              const SizedBox(width: 8),
+                              const SizedBox(width: UIConstants.spacingSM),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: Colors.orange.shade100,
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                                 ),
                                 child: Text(
                                   streakText,
@@ -100,7 +100,7 @@ class HabitCard extends StatelessWidget {
                             ],
                           ],
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: UIConstants.spacingXS),
                         Row(
                           children: [
                             Text(
@@ -110,12 +110,12 @@ class HabitCard extends StatelessWidget {
                                 color: Colors.grey.shade600,
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: UIConstants.spacingSM),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: _getCategoryColor(habit.category).withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                               ),
                               child: Text(
                                 _getCategoryName(habit.category),
@@ -153,7 +153,7 @@ class HabitCard extends StatelessWidget {
                         child: Row(
                           children: [
                             Icon(habit.isActive ? Icons.pause : Icons.play_arrow),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: UIConstants.spacingSM),
                             Text(habit.isActive ? 'Pause' : 'Resume'),
                           ],
                         ),
@@ -163,7 +163,7 @@ class HabitCard extends StatelessWidget {
                         child: Row(
                           children: [
                             Icon(Icons.edit),
-                            SizedBox(width: 8),
+                            SizedBox(width: UIConstants.spacingSM),
                             Text('Edit'),
                           ],
                         ),
@@ -173,7 +173,7 @@ class HabitCard extends StatelessWidget {
                         child: Row(
                           children: [
                             Icon(Icons.delete, color: Colors.red),
-                            SizedBox(width: 8),
+                            SizedBox(width: UIConstants.spacingSM),
                             Text('Delete', style: TextStyle(color: Colors.red)),
                           ],
                         ),
@@ -183,7 +183,7 @@ class HabitCard extends StatelessWidget {
                 ],
               ),
               
-              const SizedBox(height: 12),
+              const SizedBox(height: UIConstants.spacingMD),
               
               // Progress indicator
               if (habit.type != HabitType.simple) ...[
@@ -199,7 +199,7 @@ class HabitCard extends StatelessWidget {
                         minHeight: 6,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: UIConstants.spacingMD),
                     Text(
                       _getProgressText(habit, completions, today),
                       style: const TextStyle(
@@ -209,7 +209,7 @@ class HabitCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: UIConstants.spacingSM),
               ],
               
               // Description (if available)
@@ -223,7 +223,7 @@ class HabitCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: UIConstants.spacingSM),
               ],
               
               // Action buttons
@@ -234,7 +234,7 @@ class HabitCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: habit.isActive ? Colors.green.shade100 : Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -244,7 +244,7 @@ class HabitCard extends StatelessWidget {
                           size: 16,
                           color: habit.isActive ? Colors.green.shade700 : Colors.grey.shade600,
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: UIConstants.spacingXS),
                         Text(
                           habit.isActive ? 'Active' : 'Paused',
                           style: TextStyle(
@@ -266,7 +266,7 @@ class HabitCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.green.shade100,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(UIConstants.radiusXL),
                           border: Border.all(color: Colors.green.shade300),
                         ),
                         child: Row(
@@ -277,7 +277,7 @@ class HabitCard extends StatelessWidget {
                               size: 16,
                               color: Colors.green.shade700,
                             ),
-                            const SizedBox(width: 4),
+                            const SizedBox(width: UIConstants.spacingXS),
                             Text(
                               'Completed',
                               style: TextStyle(
@@ -307,7 +307,7 @@ class HabitCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                       ),
                       child: Text(
                         'Not today',
@@ -491,10 +491,10 @@ class _CompletionDialogState extends State<_CompletionDialog> {
               ),
               keyboardType: TextInputType.number,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
           ],
           
-          const SizedBox(height: 16),
+          const SizedBox(height: UIConstants.spacingMD),
           
           TextField(
             controller: _notesController,
@@ -509,7 +509,7 @@ class _CompletionDialogState extends State<_CompletionDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.pop(),
           child: const Text('Cancel'),
         ),
         ElevatedButton(
@@ -533,6 +533,6 @@ class _CompletionDialogState extends State<_CompletionDialog> {
     }
 
     widget.onComplete(value, _notesController.text, duration);
-    Navigator.pop(context);
+    context.pop();
   }
 } 

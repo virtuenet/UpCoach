@@ -31,7 +31,7 @@ class DailyHabitsView extends StatelessWidget {
               size: 80,
               color: Colors.grey.shade400,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             Text(
               'No habits for today',
               style: TextStyle(
@@ -40,7 +40,7 @@ class DailyHabitsView extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: UIConstants.spacingSM),
             Text(
               'Take a well-deserved break or add some habits!',
               style: TextStyle(
@@ -65,7 +65,7 @@ class DailyHabitsView extends StatelessWidget {
         // Progress Header
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(UIConstants.spacingLG),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -86,7 +86,7 @@ class DailyHabitsView extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: UIConstants.spacingMD),
               
               // Circular Progress
               Stack(
@@ -125,7 +125,7 @@ class DailyHabitsView extends StatelessWidget {
                 ],
               ),
               
-              const SizedBox(height: 12),
+              const SizedBox(height: UIConstants.spacingMD),
               
               Text(
                 _getMotivationalMessage(completionRate),
@@ -143,7 +143,7 @@ class DailyHabitsView extends StatelessWidget {
         // Habits List
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(UIConstants.spacingMD),
             itemCount: todayHabits.length,
             itemBuilder: (context, index) {
               final habit = todayHabits[index];
@@ -198,10 +198,10 @@ class _DailyHabitCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           children: [
             Row(
@@ -212,7 +212,7 @@ class _DailyHabitCard extends StatelessWidget {
                   height: 50,
                   decoration: BoxDecoration(
                     color: Color(int.parse('0xFF${habit.color.substring(1)}')).withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                   ),
                   child: Center(
                     child: Text(
@@ -222,7 +222,7 @@ class _DailyHabitCard extends StatelessWidget {
                   ),
                 ),
                 
-                const SizedBox(width: 12),
+                const SizedBox(width: UIConstants.spacingMD),
                 
                 // Habit info
                 Expanded(
@@ -238,7 +238,7 @@ class _DailyHabitCard extends StatelessWidget {
                           color: isCompleted ? Colors.grey.shade600 : null,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: UIConstants.spacingXS),
                       Text(
                         habit.typeDescription,
                         style: TextStyle(
@@ -247,11 +247,11 @@ class _DailyHabitCard extends StatelessWidget {
                         ),
                       ),
                       if (habit.currentStreak > 0) ...[
-                        const SizedBox(height: 4),
+                        const SizedBox(height: UIConstants.spacingXS),
                         Row(
                           children: [
                             const Text('🔥', style: TextStyle(fontSize: 14)),
-                            const SizedBox(width: 4),
+                            const SizedBox(width: UIConstants.spacingXS),
                             Text(
                               '${habit.currentStreak} day streak',
                               style: TextStyle(
@@ -270,7 +270,7 @@ class _DailyHabitCard extends StatelessWidget {
                 // Completion button/status
                 if (isCompleted)
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(UIConstants.spacingSM),
                     decoration: BoxDecoration(
                       color: Colors.green.shade100,
                       shape: BoxShape.circle,
@@ -285,7 +285,7 @@ class _DailyHabitCard extends StatelessWidget {
                   GestureDetector(
                     onTap: () => _showCompletionDialog(context),
                     child: Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(UIConstants.spacingSM),
                       decoration: BoxDecoration(
                         color: Color(int.parse('0xFF${habit.color.substring(1)}')).withOpacity(0.2),
                         shape: BoxShape.circle,
@@ -302,7 +302,7 @@ class _DailyHabitCard extends StatelessWidget {
             
             // Progress indicator for non-simple habits
             if (habit.type != HabitType.simple) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: UIConstants.spacingMD),
               Row(
                 children: [
                   Expanded(
@@ -315,7 +315,7 @@ class _DailyHabitCard extends StatelessWidget {
                       minHeight: 6,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: UIConstants.spacingMD),
                   Text(
                     _getProgressText(),
                     style: const TextStyle(
@@ -329,7 +329,7 @@ class _DailyHabitCard extends StatelessWidget {
             
             // Action buttons when completed
             if (isCompleted) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: UIConstants.spacingMD),
               Row(
                 children: [
                   Expanded(
@@ -343,7 +343,7 @@ class _DailyHabitCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: UIConstants.spacingMD),
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () => _showCompletionDialog(context),
@@ -467,10 +467,10 @@ class _CompletionDialogState extends State<_CompletionDialog> {
               ),
               keyboardType: TextInputType.number,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
           ],
           
-          if (widget.habit.type != HabitType.time) const SizedBox(height: 16),
+          if (widget.habit.type != HabitType.time) const SizedBox(height: UIConstants.spacingMD),
           
           TextField(
             controller: _notesController,
@@ -485,7 +485,7 @@ class _CompletionDialogState extends State<_CompletionDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.pop(),
           child: const Text('Cancel'),
         ),
         ElevatedButton(
@@ -513,6 +513,6 @@ class _CompletionDialogState extends State<_CompletionDialog> {
     }
 
     widget.onComplete(value, _notesController.text, duration);
-    Navigator.pop(context);
+    context.pop();
   }
 } 

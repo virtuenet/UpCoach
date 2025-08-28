@@ -25,13 +25,13 @@ class ChatMessageBubble extends StatelessWidget {
         children: [
           if (!message.isUser) ...[
             _buildAvatar(context),
-            const SizedBox(width: 8),
+            const SizedBox(width: UIConstants.spacingSM),
           ],
           Flexible(
             child: _buildMessageBubble(context),
           ),
           if (message.isUser) ...[
-            const SizedBox(width: 8),
+            const SizedBox(width: UIConstants.spacingSM),
             _buildAvatar(context),
           ],
         ],
@@ -47,7 +47,7 @@ class ChatMessageBubble extends StatelessWidget {
         color: message.isUser 
             ? AppTheme.primaryColor 
             : AppTheme.secondaryColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(UIConstants.radiusXL),
       ),
       child: Icon(
         message.isUser 
@@ -66,7 +66,7 @@ class ChatMessageBubble extends StatelessWidget {
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.75,
         ),
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         decoration: BoxDecoration(
           color: _getBubbleColor(context),
           borderRadius: _getBorderRadius(),
@@ -81,7 +81,7 @@ class ChatMessageBubble extends StatelessWidget {
               _buildTypingIndicator()
             else if (message.content.isNotEmpty)
               _buildMessageContent(context),
-            const SizedBox(height: 4),
+            const SizedBox(height: UIConstants.spacingXS),
             _buildMessageFooter(context),
           ],
         ),
@@ -139,7 +139,7 @@ class ChatMessageBubble extends StatelessWidget {
           ),
         ),
         if (message.hasFailed) ...[
-          const SizedBox(width: 8),
+          const SizedBox(width: UIConstants.spacingSM),
           GestureDetector(
             onTap: onRetry,
             child: Row(
@@ -150,7 +150,7 @@ class ChatMessageBubble extends StatelessWidget {
                   size: 14,
                   color: AppTheme.errorColor,
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: UIConstants.spacingXS),
                 Text(
                   'Retry',
                   style: TextStyle(
@@ -163,7 +163,7 @@ class ChatMessageBubble extends StatelessWidget {
             ),
           ),
         ] else if (message.isPending) ...[
-          const SizedBox(width: 8),
+          const SizedBox(width: UIConstants.spacingSM),
           SizedBox(
             width: 12,
             height: 12,
@@ -175,7 +175,7 @@ class ChatMessageBubble extends StatelessWidget {
             ),
           ),
         ] else if (message.isUser) ...[
-          const SizedBox(width: 8),
+          const SizedBox(width: UIConstants.spacingSM),
           Icon(
             Icons.check,
             size: 14,
@@ -248,7 +248,7 @@ class ChatMessageBubble extends StatelessWidget {
               title: const Text('Copy'),
               onTap: () {
                 Clipboard.setData(ClipboardData(text: message.content));
-                Navigator.pop(context);
+                context.pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Message copied to clipboard')),
                 );
@@ -259,7 +259,7 @@ class ChatMessageBubble extends StatelessWidget {
                 leading: const Icon(Icons.refresh),
                 title: const Text('Retry'),
                 onTap: () {
-                  Navigator.pop(context);
+                  context.pop();
                   onRetry!();
                 },
               ),

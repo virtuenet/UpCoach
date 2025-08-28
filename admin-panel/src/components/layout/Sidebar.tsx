@@ -22,7 +22,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 
-const SidebarContainer = styled(Box)(({ }) => ({
+const SidebarContainer = styled(Box)(() => ({
   width: 260,
   height: "100vh",
   position: "fixed",
@@ -36,13 +36,13 @@ const SidebarContainer = styled(Box)(({ }) => ({
   zIndex: 1200,
 }));
 
-const SidebarHeader = styled(Box)(({ }) => ({
+const SidebarHeader = styled(Box)(() => ({
   padding: "20px",
   borderBottom: "1px solid #e5e7eb",
   backgroundColor: "#ffffff",
 }));
 
-const Logo = styled(Typography)(({ }) => ({
+const Logo = styled(Typography)(() => ({
   color: "#000000",
   fontSize: "20px",
   fontWeight: 700,
@@ -53,7 +53,7 @@ const Logo = styled(Typography)(({ }) => ({
 }));
 
 const StyledListItem = styled(ListItem)<{ active?: boolean }>(
-  ({ theme, active }) => ({
+  ({ active }) => ({
     padding: "12px 20px",
     color: "#000000",
     cursor: "pointer",
@@ -75,7 +75,7 @@ const StyledListItem = styled(ListItem)<{ active?: boolean }>(
   }),
 );
 
-const SectionTitle = styled(Typography)(({ }) => ({
+const SectionTitle = styled(Typography)(() => ({
   color: "#6b7280",
   fontSize: "12px",
   fontWeight: 600,
@@ -193,7 +193,7 @@ const Sidebar: React.FC = () => {
   return (
     <SidebarContainer>
       <SidebarHeader>
-        <Logo component={Link} to="/">
+        <Logo component={Link as any} to="/">
           <Build sx={{ fontSize: 28 }} />
           UpCoach Admin
         </Logo>
@@ -207,7 +207,7 @@ const Sidebar: React.FC = () => {
               {items.map((item) => (
                 <StyledListItem
                   key={item.path}
-                  component={Link}
+                  component={Link as any}
                   to={item.path}
                   active={currentPath === item.path}
                   disableRipple

@@ -1,5 +1,10 @@
 import winston from 'winston';
-import { config } from '../config/environment';
+import dotenv from 'dotenv';
+
+// Load environment variables directly to avoid circular dependency
+dotenv.config();
+
+const env = process.env.NODE_ENV || 'development';
 
 // Constants for log size limits
 const MAX_LOG_SIZE = 10000; // Maximum characters per log entry
@@ -128,21 +133,21 @@ const consoleFormat = winston.format.combine(
 
 // Create logger instance
 const logger = winston.createLogger({
-  level: config.logging.level,
+  level: process.env.LOG_LEVEL || 'info',
   format: logFormat,
   defaultMeta: { service: 'upcoach-api' },
   transports: [
     // Console transport for all environments
     new winston.transports.Console({
-      format: config.env === 'production' ? logFormat : consoleFormat,
+      format: env === 'production' ? logFormat : consoleFormat,
     }),
   ],
 });
 
 // Add file transport for production
-if (config.env === 'production' && config.logging.file) {
+if (env === 'production' && process.env.LOG_FILE) {
   logger.add(new winston.transports.File({
-    filename: config.logging.file,
+    filename: process.env.LOG_FILE || 'app.log',
     format: logFormat,
   }));
   

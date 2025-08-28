@@ -1,16 +1,29 @@
 import 'package:flutter/material.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'package:go_router/go_router.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'dart:io';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../features/auth/providers/auth_provider.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../providers/profile_provider.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../services/profile_service.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'edit_profile_screen.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'settings_screen.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'help_center_screen.dart';
+import '../../../shared/constants/ui_constants.dart';
 import 'feedback_screen.dart';
+import '../../../shared/constants/ui_constants.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -38,12 +51,7 @@ class ProfileScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
-                ),
-              );
+              context.push('/profile/settings');
             },
           ),
         ],
@@ -57,7 +65,7 @@ class ProfileScreen extends ConsumerWidget {
           children: [
             // Profile Header
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(UIConstants.spacingLG),
               child: Column(
                 children: [
                   // Avatar
@@ -108,7 +116,7 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: UIConstants.spacingMD),
                   
                   // Name
                   Text(
@@ -129,7 +137,7 @@ class ProfileScreen extends ConsumerWidget {
                   
                   // Bio
                   if (user.bio != null && user.bio!.isNotEmpty) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: UIConstants.spacingMD),
                     Text(
                       user.bio!,
                       style: const TextStyle(fontSize: 16),
@@ -137,17 +145,12 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                   ],
                   
-                  const SizedBox(height: 20),
+                  const SizedBox(height: UIConstants.spacingLG),
                   
                   // Edit Profile Button
                   OutlinedButton.icon(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const EditProfileScreen(),
-                        ),
-                      );
+                      context.push('/profile/edit');
                     },
                     icon: const Icon(Icons.edit),
                     label: const Text('Edit Profile'),
@@ -200,40 +203,21 @@ class ProfileScreen extends ConsumerWidget {
                   icon: Icons.person_outline,
                   title: 'Personal Information',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const EditProfileScreen(),
-                      ),
-                    );
+                    context.push('/profile/edit');
                   },
                 ),
                 _MenuItem(
                   icon: Icons.lock_outline,
                   title: 'Security',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SettingsScreen(
-                          initialTab: 1,
-                        ),
-                      ),
-                    );
+                    context.push('/profile/settings', extra: {'initialTab': 1});
                   },
                 ),
                 _MenuItem(
                   icon: Icons.notifications_outlined,
                   title: 'Notifications',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SettingsScreen(
-                          initialTab: 2,
-                        ),
-                      ),
-                    );
+                    context.push('/profile/settings', extra: {'initialTab': 2});
                   },
                 ),
               ],
@@ -247,24 +231,14 @@ class ProfileScreen extends ConsumerWidget {
                   icon: Icons.help_outline,
                   title: 'Help Center',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const HelpCenterScreen(),
-                      ),
-                    );
+                    context.push('/profile/help');
                   },
                 ),
                 _MenuItem(
                   icon: Icons.feedback_outlined,
                   title: 'Send Feedback',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const FeedbackScreen(),
-                      ),
-                    );
+                    context.push('/feedback');
                   },
                 ),
                 _MenuItem(
@@ -280,7 +254,7 @@ class ProfileScreen extends ConsumerWidget {
                         height: 60,
                         decoration: BoxDecoration(
                           color: AppTheme.primaryColor,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                         ),
                         child: const Icon(
                           Icons.psychology,
@@ -299,7 +273,7 @@ class ProfileScreen extends ConsumerWidget {
               ],
             ),
             
-            const SizedBox(height: 20),
+            const SizedBox(height: UIConstants.spacingLG),
             
             // Sign Out Button
             Padding(
@@ -344,7 +318,7 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
             
-            const SizedBox(height: 20),
+            const SizedBox(height: UIConstants.spacingLG),
             
             // App Version
             Center(
@@ -375,7 +349,7 @@ class ProfileScreen extends ConsumerWidget {
           size: 32,
           color: AppTheme.primaryColor,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: UIConstants.spacingSM),
         Text(
           value,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -429,7 +403,7 @@ class ProfileScreen extends ConsumerWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(UIConstants.spacingLG),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -440,12 +414,12 @@ class ProfileScreen extends ConsumerWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: UIConstants.spacingLG),
             ListTile(
               leading: const Icon(Icons.camera_alt),
               title: const Text('Take Photo'),
               onTap: () {
-                Navigator.pop(context);
+                context.pop();
                 _pickImage(ImageSource.camera, ref);
               },
             ),
@@ -453,7 +427,7 @@ class ProfileScreen extends ConsumerWidget {
               leading: const Icon(Icons.photo_library),
               title: const Text('Choose from Gallery'),
               onTap: () {
-                Navigator.pop(context);
+                context.pop();
                 _pickImage(ImageSource.gallery, ref);
               },
             ),
@@ -461,7 +435,7 @@ class ProfileScreen extends ConsumerWidget {
               leading: const Icon(Icons.delete, color: Colors.red),
               title: const Text('Remove Photo', style: TextStyle(color: Colors.red)),
               onTap: () {
-                Navigator.pop(context);
+                context.pop();
                 _removePhoto(ref);
               },
             ),

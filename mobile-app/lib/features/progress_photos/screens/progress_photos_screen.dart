@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../core/theme/app_theme.dart';
@@ -62,7 +63,7 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
                 child: Row(
                   children: [
                     Icon(Icons.add),
-                    SizedBox(width: 8),
+                    SizedBox(width: UIConstants.spacingSM),
                     Text('Add Category'),
                   ],
                 ),
@@ -72,7 +73,7 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
                 child: Row(
                   children: [
                     Icon(Icons.settings),
-                    SizedBox(width: 8),
+                    SizedBox(width: UIConstants.spacingSM),
                     Text('Settings'),
                   ],
                 ),
@@ -82,7 +83,7 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
                 child: Row(
                   children: [
                     Icon(Icons.download),
-                    SizedBox(width: 8),
+                    SizedBox(width: UIConstants.spacingSM),
                     Text('Export'),
                   ],
                 ),
@@ -144,7 +145,7 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
               leading: const Icon(Icons.camera_alt),
               title: const Text('Take Photo'),
               onTap: () {
-                Navigator.pop(context);
+                context.pop();
                 _takePhoto();
               },
             ),
@@ -152,14 +153,14 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
               leading: const Icon(Icons.photo_library),
               title: const Text('Choose from Gallery'),
               onTap: () {
-                Navigator.pop(context);
+                context.pop();
                 _pickPhoto();
               },
             ),
             ListTile(
               leading: const Icon(Icons.cancel),
               title: const Text('Cancel'),
-              onTap: () => Navigator.pop(context),
+              onTap: () => context.pop(),
             ),
           ],
         ),
@@ -219,14 +220,14 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
                 width: 200,
                 height: 200,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                   image: DecorationImage(
                     image: FileImage(File(imagePath)),
                     fit: BoxFit.cover,
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: UIConstants.spacingMD),
               
               // Title
               TextField(
@@ -236,7 +237,7 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: UIConstants.spacingMD),
               
               // Category
               DropdownButtonFormField<String>(
@@ -257,7 +258,7 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
                   });
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: UIConstants.spacingMD),
               
               // Notes
               TextField(
@@ -272,7 +273,7 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => context.pop(),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
@@ -283,7 +284,7 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
                   selectedCategory,
                   notesController.text,
                 );
-                Navigator.pop(context);
+                context.pop();
               },
               child: const Text('Save'),
             ),
@@ -303,11 +304,10 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
   }
 
   void _viewPhoto(ProgressPhoto photo) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => _PhotoDetailScreen(photo: photo),
-      ),
+    // For now, show photo in a dialog since _PhotoDetailScreen is internal
+    showDialog(
+      context: context,
+      builder: (context) => _PhotoDetailScreen(photo: photo),
     );
   }
 
@@ -357,7 +357,7 @@ class _GalleryView extends StatelessWidget {
               size: 80,
               color: Colors.grey.shade400,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             Text(
               'No progress photos yet',
               style: TextStyle(
@@ -366,7 +366,7 @@ class _GalleryView extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: UIConstants.spacingSM),
             Text(
               'Tap the camera button to add your first photo',
               style: TextStyle(
@@ -381,7 +381,7 @@ class _GalleryView extends StatelessWidget {
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12,
@@ -426,7 +426,7 @@ class _TimelineView extends StatelessWidget {
     final sortedPhotos = photos..sort((a, b) => b.takenAt.compareTo(a.takenAt));
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       itemCount: sortedPhotos.length,
       itemBuilder: (context, index) {
         final photo = sortedPhotos[index];
@@ -469,7 +469,7 @@ class _CompareViewState extends State<_CompareView> {
     }
 
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       child: Column(
         children: [
           // Photo selection
@@ -487,7 +487,7 @@ class _CompareViewState extends State<_CompareView> {
                   },
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: UIConstants.spacingMD),
               Expanded(
                 child: _PhotoSelector(
                   title: 'After',
@@ -503,7 +503,7 @@ class _CompareViewState extends State<_CompareView> {
             ],
           ),
           
-          const SizedBox(height: 24),
+          const SizedBox(height: UIConstants.spacingLG),
           
           // Comparison view
           if (_beforePhoto != null && _afterPhoto != null) ...[
@@ -555,7 +555,7 @@ class _PhotoCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(UIConstants.spacingSM),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -632,11 +632,11 @@ class _TimelineItem extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(UIConstants.spacingMD),
           child: Row(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                 child: Image.file(
                   File(photo.imagePath),
                   width: 80,
@@ -650,7 +650,7 @@ class _TimelineItem extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: UIConstants.spacingMD),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -670,12 +670,12 @@ class _TimelineItem extends StatelessWidget {
                         color: Colors.grey.shade600,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: UIConstants.spacingXS),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppTheme.primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                       ),
                       child: Text(
                         photo.category,
@@ -687,7 +687,7 @@ class _TimelineItem extends StatelessWidget {
                       ),
                     ),
                     if (photo.notes != null) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: UIConstants.spacingSM),
                       Text(
                         photo.notes!,
                         style: TextStyle(
@@ -737,7 +737,7 @@ class _PhotoSelector extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: UIConstants.spacingSM),
         GestureDetector(
           onTap: () => _showPhotoSelection(context),
           child: Container(
@@ -745,11 +745,11 @@ class _PhotoSelector extends StatelessWidget {
             height: 150,
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(UIConstants.radiusMD),
             ),
             child: selectedPhoto != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                     child: Image.file(
                       File(selectedPhoto!.imagePath),
                       fit: BoxFit.cover,
@@ -763,7 +763,7 @@ class _PhotoSelector extends StatelessWidget {
                         size: 40,
                         color: Colors.grey.shade400,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: UIConstants.spacingSM),
                       Text(
                         'Select Photo',
                         style: TextStyle(
@@ -782,7 +782,7 @@ class _PhotoSelector extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -793,7 +793,7 @@ class _PhotoSelector extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UIConstants.spacingMD),
             SizedBox(
               height: 200,
               child: GridView.builder(
@@ -808,10 +808,10 @@ class _PhotoSelector extends StatelessWidget {
                   return GestureDetector(
                     onTap: () {
                       onPhotoSelected(photo);
-                      Navigator.pop(context);
+                      context.pop();
                     },
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                       child: Image.file(
                         File(photo.imagePath),
                         fit: BoxFit.cover,
@@ -854,10 +854,10 @@ class _ComparisonView extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: UIConstants.spacingSM),
                     Expanded(
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                         child: Image.file(
                           File(beforePhoto.imagePath),
                           fit: BoxFit.cover,
@@ -865,7 +865,7 @@ class _ComparisonView extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: UIConstants.spacingSM),
                     Text(
                       _formatDate(beforePhoto.takenAt),
                       style: TextStyle(
@@ -876,7 +876,7 @@ class _ComparisonView extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: UIConstants.spacingMD),
               Expanded(
                 child: Column(
                   children: [
@@ -887,10 +887,10 @@ class _ComparisonView extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: UIConstants.spacingSM),
                     Expanded(
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                         child: Image.file(
                           File(afterPhoto.imagePath),
                           fit: BoxFit.cover,
@@ -898,7 +898,7 @@ class _ComparisonView extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: UIConstants.spacingSM),
                     Text(
                       _formatDate(afterPhoto.takenAt),
                       style: TextStyle(
@@ -912,7 +912,7 @@ class _ComparisonView extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: UIConstants.spacingMD),
         _ProgressStats(
           beforePhoto: beforePhoto,
           afterPhoto: afterPhoto,
@@ -940,10 +940,10 @@ class _ProgressStats extends StatelessWidget {
     final daysDifference = afterPhoto.takenAt.difference(beforePhoto.takenAt).inDays;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
         color: AppTheme.primaryColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
       ),
       child: Column(
         children: [
@@ -954,7 +954,7 @@ class _ProgressStats extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: UIConstants.spacingMD),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -1001,7 +1001,7 @@ class _StatItem extends StatelessWidget {
           color: AppTheme.primaryColor,
           size: 24,
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: UIConstants.spacingXS),
         Text(
           value,
           style: const TextStyle(
@@ -1063,7 +1063,7 @@ class _PhotoDetailScreen extends StatelessWidget {
           ),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(UIConstants.spacingMD),
             color: Colors.black87,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1077,7 +1077,7 @@ class _PhotoDetailScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                const SizedBox(height: 8),
+                const SizedBox(height: UIConstants.spacingSM),
                 Text(
                   _formatDate(photo.takenAt),
                   style: const TextStyle(
@@ -1085,12 +1085,12 @@ class _PhotoDetailScreen extends StatelessWidget {
                     fontSize: 14,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: UIConstants.spacingSM),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                   ),
                   child: Text(
                     photo.category,
@@ -1102,7 +1102,7 @@ class _PhotoDetailScreen extends StatelessWidget {
                   ),
                 ),
                 if (photo.notes != null) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: UIConstants.spacingMD),
                   Text(
                     photo.notes!,
                     style: const TextStyle(

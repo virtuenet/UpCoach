@@ -22,7 +22,7 @@ export default defineConfig({
     },
   },
   server: {
-    port: 8006,
+    port: 7001,
     host: true,
     headers: {
       // Security headers for dev server
@@ -33,7 +33,7 @@ export default defineConfig({
     },
   },
   preview: {
-    port: 8006,
+    port: 7001,
     host: true,
     headers: {
       // Security headers for preview server
