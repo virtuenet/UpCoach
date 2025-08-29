@@ -49,7 +49,7 @@ const resetPasswordSchema = z.object({
 });
 
 // Register endpoint
-router.post('/register', authLimiter, asyncHandler(async (req: Request, res: Response) => {
+router.post('/register', authLimiter, asyncHandler(async (req: Request, _res: Response) => {
   const validatedData = registerSchema.parse(req.body);
 
   // Validate password strength
@@ -79,7 +79,7 @@ router.post('/register', authLimiter, asyncHandler(async (req: Request, res: Res
 
   logger.info('User registered successfully:', { userId: user.id, email: user.email });
 
-  res.status(201).json({
+  _res.status(201).json({
     success: true,
     message: 'Registration successful',
     data: {
@@ -90,7 +90,7 @@ router.post('/register', authLimiter, asyncHandler(async (req: Request, res: Res
 }));
 
 // Login endpoint
-router.post('/login', authLimiter, asyncHandler(async (req: Request, res: Response) => {
+router.post('/login', authLimiter, asyncHandler(async (req: Request, _res: Response) => {
   const validatedData = loginSchema.parse(req.body);
 
   // Verify user credentials
@@ -114,7 +114,7 @@ router.post('/login', authLimiter, asyncHandler(async (req: Request, res: Respon
 
   logger.info('User logged in successfully:', { userId: user.id, email: user.email });
 
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'Login successful',
     data: {
@@ -125,7 +125,7 @@ router.post('/login', authLimiter, asyncHandler(async (req: Request, res: Respon
 }));
 
 // Refresh token endpoint
-router.post('/refresh', asyncHandler(async (req: Request, res: Response) => {
+router.post('/refresh', asyncHandler(async (req: Request, _res: Response) => {
   const { refreshToken } = refreshTokenSchema.parse(req.body);
 
   // Verify refresh token
@@ -154,7 +154,7 @@ router.post('/refresh', asyncHandler(async (req: Request, res: Response) => {
 
   logger.info('Tokens refreshed successfully:', { userId });
 
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'Tokens refreshed successfully',
     data: {
@@ -164,7 +164,7 @@ router.post('/refresh', asyncHandler(async (req: Request, res: Response) => {
 }));
 
 // Logout endpoint
-router.post('/logout', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.post('/logout', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const authHeader = req.headers.authorization;
   
@@ -180,14 +180,14 @@ router.post('/logout', authMiddleware, asyncHandler(async (req: AuthenticatedReq
 
   logger.info('User logged out successfully:', { userId });
 
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'Logout successful',
   });
 }));
 
 // Change password endpoint
-router.post('/change-password', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.post('/change-password', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const validatedData = changePasswordSchema.parse(req.body);
 
@@ -211,21 +211,21 @@ router.post('/change-password', authMiddleware, asyncHandler(async (req: Authent
 
   logger.info('Password changed successfully:', { userId });
 
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'Password changed successfully. Please log in again.',
   });
 }));
 
 // Verify token endpoint (for client-side token validation)
-router.get('/verify', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.get('/verify', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const user = await UserService.findById((req as any).user!.id);
   
   if (!user) {
     throw new ApiError(401, 'User not found');
   }
 
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'Token is valid',
     data: {
@@ -235,7 +235,7 @@ router.get('/verify', authMiddleware, asyncHandler(async (req: AuthenticatedRequ
 }));
 
 // Get current user profile (alternative to /users/profile)
-router.get('/profile', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.get('/profile', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const userProfile = await UserService.getProfile(userId);
   
@@ -243,7 +243,7 @@ router.get('/profile', authMiddleware, asyncHandler(async (req: AuthenticatedReq
     throw new ApiError(404, 'User profile not found');
   }
 
-  (res as any).json({
+  _res.json({
     success: true,
     data: {
       user: userProfile,
@@ -252,7 +252,7 @@ router.get('/profile', authMiddleware, asyncHandler(async (req: AuthenticatedReq
 }));
 
 // Logout from all devices
-router.post('/logout-all', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.post('/logout-all', authMiddleware, asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
 
   // Remove all refresh tokens for this user
@@ -263,14 +263,14 @@ router.post('/logout-all', authMiddleware, asyncHandler(async (req: Authenticate
 
   logger.info('User logged out from all devices:', { userId });
 
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'Logged out from all devices successfully',
   });
 }));
 
 // Forgot password endpoint
-router.post('/forgot-password', passwordResetLimiter, asyncHandler(async (req: Request, res: Response) => {
+router.post('/forgot-password', passwordResetLimiter, asyncHandler(async (req: Request, _res: Response) => {
   const { email } = forgotPasswordSchema.parse(req.body);
 
   // Check if user exists
@@ -287,14 +287,14 @@ router.post('/forgot-password', passwordResetLimiter, asyncHandler(async (req: R
     logger.info('Password reset requested:', { userId: user.id, email: user.email });
   }
 
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'If an account exists with this email, a password reset link has been sent.',
   });
 }));
 
 // Reset password endpoint
-router.post('/reset-password', passwordResetLimiter, asyncHandler(async (req: Request, res: Response) => {
+router.post('/reset-password', passwordResetLimiter, asyncHandler(async (req: Request, _res: Response) => {
   const { token, newPassword } = resetPasswordSchema.parse(req.body);
 
   // Validate password strength
@@ -313,14 +313,14 @@ router.post('/reset-password', passwordResetLimiter, asyncHandler(async (req: Re
 
   logger.info('Password reset successfully:', { userId });
 
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'Password reset successfully. Please log in with your new password.',
   });
 }));
 
 // Google OAuth endpoint
-router.post('/google', asyncHandler(async (req: Request, res: Response) => {
+router.post('/google', asyncHandler(async (req: Request, _res: Response) => {
   const { idToken } = req.body;
 
   if (!idToken) {
@@ -360,7 +360,7 @@ router.post('/google', asyncHandler(async (req: Request, res: Response) => {
 
   logger.info('User logged in with Google:', { userId: user.id, email: user.email });
 
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'Login successful',
     data: {

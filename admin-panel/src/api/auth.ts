@@ -1,5 +1,3 @@
-import { apiClient } from "./client";
-import type { User } from "../stores/authStore";
 
 export interface LoginResponse {
   user: User;

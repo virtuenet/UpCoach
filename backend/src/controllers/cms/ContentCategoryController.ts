@@ -3,10 +3,11 @@ import { ContentCategory } from '../../models/cms/ContentCategory';
 import { Content } from '../../models/cms/Content';
 import { Op } from 'sequelize';
 import slugify from 'slugify';
+import { logger } from '../../utils/logger';
 
 export class ContentCategoryController {
   // Get all categories with hierarchy
-  static async getAll(req: Request, res: Response) {
+  static async getAll(req: Request, _res: Response) {
     try {
       const { isActive = true } = req.query;
 
@@ -33,15 +34,15 @@ export class ContentCategoryController {
       // Build hierarchical structure
       const rootCategories = categories.filter(cat => !cat.parentId);
 
-      (res as any).json(rootCategories);
+      _res.json(rootCategories);
     } catch (error) {
       logger.error('Error fetching categories:', error);
-      res.status(500).json({ error: 'Failed to fetch categories' });
+      _res.status(500).json({ error: 'Failed to fetch categories' });
     }
   }
 
   // Get single category
-  static async getOne(req: Request, res: Response) {
+  static async getOne(req: Request, _res: Response) {
     try {
       const { id } = req.params;
       
@@ -71,18 +72,18 @@ export class ContentCategoryController {
       });
 
       if (!category) {
-        return res.status(404).json({ error: 'Category not found' });
+        return _res.status(404).json({ error: 'Category not found' });
       }
 
-      (res as any).json(category);
+      _res.json(category);
     } catch (error) {
       logger.error('Error fetching category:', error);
-      res.status(500).json({ error: 'Failed to fetch category' });
+      _res.status(500).json({ error: 'Failed to fetch category' });
     }
   }
 
   // Create new category
-  static async create(req: Request, res: Response) {
+  static async create(req: Request, _res: Response) {
     try {
       const {
         name,
@@ -118,22 +119,22 @@ export class ContentCategoryController {
         metadata
       });
 
-      res.status(201).json(category);
+      _res.status(201).json(category);
     } catch (error) {
       logger.error('Error creating category:', error);
-      res.status(500).json({ error: 'Failed to create category' });
+      _res.status(500).json({ error: 'Failed to create category' });
     }
   }
 
   // Update category
-  static async update(req: Request, res: Response) {
+  static async update(req: Request, _res: Response) {
     try {
       const { id } = req.params;
       const updates = req.body;
 
       const category = await ContentCategory.findByPk(id);
       if (!category) {
-        return res.status(404).json({ error: 'Category not found' });
+        return _res.status(404).json({ error: 'Category not found' });
       }
 
       // Update slug if name changed
@@ -151,7 +152,7 @@ export class ContentCategoryController {
 
       // Prevent circular parent reference
       if (updates.parentId === id) {
-        return res.status(400).json({ error: 'Category cannot be its own parent' });
+        return _res.status(400).json({ error: 'Category cannot be its own parent' });
       }
 
       await category.update(updates);
@@ -163,15 +164,15 @@ export class ContentCategoryController {
         ]
       });
 
-      (res as any).json(updatedCategory);
+      _res.json(updatedCategory);
     } catch (error) {
       logger.error('Error updating category:', error);
-      res.status(500).json({ error: 'Failed to update category' });
+      _res.status(500).json({ error: 'Failed to update category' });
     }
   }
 
   // Delete category
-  static async delete(req: Request, res: Response) {
+  static async delete(req: Request, _res: Response) {
     try {
       const { id } = req.params;
 
@@ -183,34 +184,34 @@ export class ContentCategoryController {
       });
 
       if (!category) {
-        return res.status(404).json({ error: 'Category not found' });
+        return _res.status(404).json({ error: 'Category not found' });
       }
 
       // Check if category has children
       if (category.children && category.children.length > 0) {
-        return res.status(400).json({ error: 'Cannot delete category with child categories' });
+        return _res.status(400).json({ error: 'Cannot delete category with child categories' });
       }
 
       // Check if category has content
       if (category.contents && category.contents.length > 0) {
-        return res.status(400).json({ error: 'Cannot delete category with associated content' });
+        return _res.status(400).json({ error: 'Cannot delete category with associated content' });
       }
 
       await category.destroy();
-      (res as any).json({ message: 'Category deleted successfully' });
+      _res.json({ message: 'Category deleted successfully' });
     } catch (error) {
       logger.error('Error deleting category:', error);
-      res.status(500).json({ error: 'Failed to delete category' });
+      _res.status(500).json({ error: 'Failed to delete category' });
     }
   }
 
   // Reorder categories
-  static async reorder(req: Request, res: Response) {
+  static async reorder(req: Request, _res: Response) {
     try {
       const { categories } = req.body; // Array of { id, order }
 
       if (!Array.isArray(categories)) {
-        return res.status(400).json({ error: 'Categories array is required' });
+        return _res.status(400).json({ error: 'Categories array is required' });
       }
 
       // Update order for each category
@@ -221,15 +222,15 @@ export class ContentCategoryController {
         );
       }
 
-      (res as any).json({ message: 'Categories reordered successfully' });
+      _res.json({ message: 'Categories reordered successfully' });
     } catch (error) {
       logger.error('Error reordering categories:', error);
-      res.status(500).json({ error: 'Failed to reorder categories' });
+      _res.status(500).json({ error: 'Failed to reorder categories' });
     }
   }
 
   // Get category content count
-  static async getContentCount_(req: Request, res: Response) {
+  static async getContentCount_(req: Request, _res: Response) {
     try {
       const categories = await ContentCategory.findAll({
         attributes: [
@@ -249,10 +250,10 @@ export class ContentCategoryController {
         where: { isActive: true }
       });
 
-      (res as any).json(categories);
+      _res.json(categories);
     } catch (error) {
       logger.error('Error fetching category content count:', error);
-      res.status(500).json({ error: 'Failed to fetch category content count' });
+      _res.status(500).json({ error: 'Failed to fetch category content count' });
     }
   }
 }

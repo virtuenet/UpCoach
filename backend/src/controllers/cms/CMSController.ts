@@ -16,7 +16,7 @@ import { logger } from '../../utils/logger';
 import slugify from 'slugify';
 
 // Article Controllers
-export const getArticles = async (req: Request, res: Response) => {
+export const getArticles = async (req: Request, _res: Response) => {
   try {
     const {
       page = 1,
@@ -76,7 +76,7 @@ export const getArticles = async (req: Request, res: Response) => {
       distinct: true,
     });
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: articles,
       pagination: {
@@ -88,11 +88,11 @@ export const getArticles = async (req: Request, res: Response) => {
     });
   } catch (error) {
     logger.error('Failed to get articles:', error);
-    res.status(500).json({ success: false, error: 'Failed to get articles' });
+    _res.status(500).json({ success: false, error: 'Failed to get articles' });
   }
 };
 
-export const createArticle = async (req: Request, res: Response) => {
+export const createArticle = async (req: Request, _res: Response) => {
   try {
     const {
       title,
@@ -141,17 +141,17 @@ export const createArticle = async (req: Request, res: Response) => {
     // Invalidate cache
     await getCacheService().invalidate('cms:articles:*');
 
-    res.status(201).json({
+    _res.status(201).json({
       success: true,
       data: article,
     });
   } catch (error) {
     logger.error('Failed to create article:', error);
-    res.status(500).json({ success: false, error: 'Failed to create article' });
+    _res.status(500).json({ success: false, error: 'Failed to create article' });
   }
 };
 
-export const getArticle = async (req: Request, res: Response) => {
+export const getArticle = async (req: Request, _res: Response) => {
   try {
     const { id } = req.params;
     const isPublic = req.path.includes('/public');
@@ -160,7 +160,7 @@ export const getArticle = async (req: Request, res: Response) => {
     const cacheKey = `cms:article:${id}`;
     const cached = await getCacheService().get(cacheKey);
     if (cached) {
-      return (res as any).json({ success: true, data: cached });
+      return _res.json({ success: true, data: cached });
     }
 
     const where: any = isNaN(Number(id)) ? { slug: id } : { id };
@@ -175,7 +175,7 @@ export const getArticle = async (req: Request, res: Response) => {
     });
 
     if (!article) {
-      return res.status(404).json({ success: false, error: 'Article not found' });
+      return _res.status(404).json({ success: false, error: 'Article not found' });
     }
 
     // Track view if public
@@ -191,28 +191,28 @@ export const getArticle = async (req: Request, res: Response) => {
     // Cache the result
     await getCacheService().set(cacheKey, article, { ttl: 3600 });
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: article,
     });
   } catch (error) {
     logger.error('Failed to get article:', error);
-    res.status(500).json({ success: false, error: 'Failed to get article' });
+    _res.status(500).json({ success: false, error: 'Failed to get article' });
   }
 };
 
-export const updateArticle = async (req: Request, res: Response) => {
+export const updateArticle = async (req: Request, _res: Response) => {
   try {
     const { id } = req.params;
     const article = await ContentArticle.findByPk(id);
 
     if (!article) {
-      return res.status(404).json({ success: false, error: 'Article not found' });
+      return _res.status(404).json({ success: false, error: 'Article not found' });
     }
 
     // Check permissions
     if (!article.canEdit(Number((req as any).user!.id), (req as any).user!.role)) {
-      return res.status(403).json({ success: false, error: 'Permission denied' });
+      return _res.status(403).json({ success: false, error: 'Permission denied' });
     }
 
     // Create version before updating
@@ -228,23 +228,23 @@ export const updateArticle = async (req: Request, res: Response) => {
     await getCacheService().del(`cms:article:${id}`);
     await getCacheService().invalidate('cms:articles:*');
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: article,
     });
   } catch (error) {
     logger.error('Failed to update article:', error);
-    res.status(500).json({ success: false, error: 'Failed to update article' });
+    _res.status(500).json({ success: false, error: 'Failed to update article' });
   }
 };
 
-export const deleteArticle = async (req: Request, res: Response) => {
+export const deleteArticle = async (req: Request, _res: Response) => {
   try {
     const { id } = req.params;
     const article = await ContentArticle.findByPk(id);
 
     if (!article) {
-      return res.status(404).json({ success: false, error: 'Article not found' });
+      return _res.status(404).json({ success: false, error: 'Article not found' });
     }
 
     await article.destroy();
@@ -253,27 +253,27 @@ export const deleteArticle = async (req: Request, res: Response) => {
     await getCacheService().del(`cms:article:${id}`);
     await getCacheService().invalidate('cms:articles:*');
 
-    (res as any).json({
+    _res.json({
       success: true,
       message: 'Article deleted successfully',
     });
   } catch (error) {
     logger.error('Failed to delete article:', error);
-    res.status(500).json({ success: false, error: 'Failed to delete article' });
+    _res.status(500).json({ success: false, error: 'Failed to delete article' });
   }
 };
 
-export const publishArticle = async (req: Request, res: Response) => {
+export const publishArticle = async (req: Request, _res: Response) => {
   try {
     const { id } = req.params;
     const article = await ContentArticle.findByPk(id);
 
     if (!article) {
-      return res.status(404).json({ success: false, error: 'Article not found' });
+      return _res.status(404).json({ success: false, error: 'Article not found' });
     }
 
     if (!article.canPublish((req as any).user!.role)) {
-      return res.status(403).json({ success: false, error: 'Permission denied' });
+      return _res.status(403).json({ success: false, error: 'Permission denied' });
     }
 
     await article.publish();
@@ -282,28 +282,28 @@ export const publishArticle = async (req: Request, res: Response) => {
     await getCacheService().del(`cms:article:${id}`);
     await getCacheService().invalidate('cms:articles:*');
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: article,
       message: 'Article published successfully',
     });
   } catch (error) {
     logger.error('Failed to publish article:', error);
-    res.status(500).json({ success: false, error: 'Failed to publish article' });
+    _res.status(500).json({ success: false, error: 'Failed to publish article' });
   }
 };
 
-export const unpublishArticle = async (req: Request, res: Response) => {
+export const unpublishArticle = async (req: Request, _res: Response) => {
   try {
     const { id } = req.params;
     const article = await ContentArticle.findByPk(id);
 
     if (!article) {
-      return res.status(404).json({ success: false, error: 'Article not found' });
+      return _res.status(404).json({ success: false, error: 'Article not found' });
     }
 
     if (!article.canPublish((req as any).user!.role)) {
-      return res.status(403).json({ success: false, error: 'Permission denied' });
+      return _res.status(403).json({ success: false, error: 'Permission denied' });
     }
 
     await article.unpublish();
@@ -312,18 +312,18 @@ export const unpublishArticle = async (req: Request, res: Response) => {
     await getCacheService().del(`cms:article:${id}`);
     await getCacheService().invalidate('cms:articles:*');
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: article,
       message: 'Article unpublished successfully',
     });
   } catch (error) {
     logger.error('Failed to unpublish article:', error);
-    res.status(500).json({ success: false, error: 'Failed to unpublish article' });
+    _res.status(500).json({ success: false, error: 'Failed to unpublish article' });
   }
 };
 
-export const getArticleVersions = async (req: Request, res: Response) => {
+export const getArticleVersions = async (req: Request, _res: Response) => {
   try {
     const { id } = req.params;
     
@@ -339,23 +339,23 @@ export const getArticleVersions = async (req: Request, res: Response) => {
       ],
     });
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: versions,
     });
   } catch (error) {
     logger.error('Failed to get article versions:', error);
-    res.status(500).json({ success: false, error: 'Failed to get versions' });
+    _res.status(500).json({ success: false, error: 'Failed to get versions' });
   }
 };
 
-export const revertArticleVersion = async (req: Request, res: Response) => {
+export const revertArticleVersion = async (req: Request, _res: Response) => {
   try {
     const { id, version } = req.params;
     
     const article = await ContentArticle.findByPk(id);
     if (!article) {
-      return res.status(404).json({ success: false, error: 'Article not found' });
+      return _res.status(404).json({ success: false, error: 'Article not found' });
     }
 
     const versionData = await ContentVersion.findOne({
@@ -366,7 +366,7 @@ export const revertArticleVersion = async (req: Request, res: Response) => {
     });
 
     if (!versionData) {
-      return res.status(404).json({ success: false, error: 'Version not found' });
+      return _res.status(404).json({ success: false, error: 'Version not found' });
     }
 
     // Create new version before reverting
@@ -383,22 +383,22 @@ export const revertArticleVersion = async (req: Request, res: Response) => {
     await getCacheService().del(`cms:article:${id}`);
     await getCacheService().invalidate('cms:articles:*');
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: article,
       message: `Reverted to version ${version}`,
     });
   } catch (error) {
     logger.error('Failed to revert article version:', error);
-    res.status(500).json({ success: false, error: 'Failed to revert version' });
+    _res.status(500).json({ success: false, error: 'Failed to revert version' });
   }
 };
 
 // Media Controllers
-export const uploadMedia = async (req: Request, res: Response) => {
+export const uploadMedia = async (req: Request, _res: Response) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ success: false, error: 'No file uploaded' });
+      return _res.status(400).json({ success: false, error: 'No file uploaded' });
     }
 
     const { folder = 'general', altText, caption, tags } = req.body;
@@ -432,17 +432,17 @@ export const uploadMedia = async (req: Request, res: Response) => {
       },
     });
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: media,
     });
   } catch (error) {
     logger.error('Failed to upload media:', error);
-    res.status(500).json({ success: false, error: 'Failed to upload media' });
+    _res.status(500).json({ success: false, error: 'Failed to upload media' });
   }
 };
 
-export const getMedia = async (req: Request, res: Response) => {
+export const getMedia = async (req: Request, _res: Response) => {
   try {
     const { page = 1, limit = 50, folder, tags, search } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
@@ -465,7 +465,7 @@ export const getMedia = async (req: Request, res: Response) => {
       order: [['createdAt', 'DESC']],
     });
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: media,
       pagination: {
@@ -477,17 +477,17 @@ export const getMedia = async (req: Request, res: Response) => {
     });
   } catch (error) {
     logger.error('Failed to get media:', error);
-    res.status(500).json({ success: false, error: 'Failed to get media' });
+    _res.status(500).json({ success: false, error: 'Failed to get media' });
   }
 };
 
-export const deleteMedia = async (req: Request, res: Response) => {
+export const deleteMedia = async (req: Request, _res: Response) => {
   try {
     const { id } = req.params;
     const media = await ContentMedia.findByPk(id);
 
     if (!media) {
-      return res.status(404).json({ success: false, error: 'Media not found' });
+      return _res.status(404).json({ success: false, error: 'Media not found' });
     }
 
     // Delete from storage
@@ -498,35 +498,35 @@ export const deleteMedia = async (req: Request, res: Response) => {
 
     await media.destroy();
 
-    (res as any).json({
+    _res.json({
       success: true,
       message: 'Media deleted successfully',
     });
   } catch (error) {
     logger.error('Failed to delete media:', error);
-    res.status(500).json({ success: false, error: 'Failed to delete media' });
+    _res.status(500).json({ success: false, error: 'Failed to delete media' });
   }
 };
 
 // Category Controllers
-export const getCategories = async (req: Request, res: Response) => {
+export const getCategories = async (_req: Request, _res: Response) => {
   try {
     const categories = await ContentCategory.findAll({
       where: { isActive: true },
       order: [['orderIndex', 'ASC'], ['name', 'ASC']],
     });
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: categories,
     });
   } catch (error) {
     logger.error('Failed to get categories:', error);
-    res.status(500).json({ success: false, error: 'Failed to get categories' });
+    _res.status(500).json({ success: false, error: 'Failed to get categories' });
   }
 };
 
-export const createCategory = async (req: Request, res: Response) => {
+export const createCategory = async (req: Request, _res: Response) => {
   try {
     const { name, description, parentId, icon, color, orderIndex } = req.body;
     
@@ -543,44 +543,44 @@ export const createCategory = async (req: Request, res: Response) => {
       isActive: true,
     });
 
-    res.status(201).json({
+    _res.status(201).json({
       success: true,
       data: category,
     });
   } catch (error) {
     logger.error('Failed to create category:', error);
-    res.status(500).json({ success: false, error: 'Failed to create category' });
+    _res.status(500).json({ success: false, error: 'Failed to create category' });
   }
 };
 
-export const updateCategory = async (req: Request, res: Response) => {
+export const updateCategory = async (req: Request, _res: Response) => {
   try {
     const { id } = req.params;
     const category = await ContentCategory.findByPk(id);
 
     if (!category) {
-      return res.status(404).json({ success: false, error: 'Category not found' });
+      return _res.status(404).json({ success: false, error: 'Category not found' });
     }
 
     await category.update(req.body);
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: category,
     });
   } catch (error) {
     logger.error('Failed to update category:', error);
-    res.status(500).json({ success: false, error: 'Failed to update category' });
+    _res.status(500).json({ success: false, error: 'Failed to update category' });
   }
 };
 
-export const deleteCategory = async (req: Request, res: Response) => {
+export const deleteCategory = async (req: Request, _res: Response) => {
   try {
     const { id } = req.params;
     const category = await ContentCategory.findByPk(id);
 
     if (!category) {
-      return res.status(404).json({ success: false, error: 'Category not found' });
+      return _res.status(404).json({ success: false, error: 'Category not found' });
     }
 
     // Check if category has articles
@@ -589,7 +589,7 @@ export const deleteCategory = async (req: Request, res: Response) => {
     });
 
     if (articleCount > 0) {
-      return res.status(400).json({
+      return _res.status(400).json({
         success: false,
         error: `Cannot delete category with ${articleCount} articles`,
       });
@@ -597,18 +597,18 @@ export const deleteCategory = async (req: Request, res: Response) => {
 
     await category.destroy();
 
-    (res as any).json({
+    _res.json({
       success: true,
       message: 'Category deleted successfully',
     });
   } catch (error) {
     logger.error('Failed to delete category:', error);
-    res.status(500).json({ success: false, error: 'Failed to delete category' });
+    _res.status(500).json({ success: false, error: 'Failed to delete category' });
   }
 };
 
 // Template Controllers
-export const getTemplates = async (req: Request, res: Response) => {
+export const getTemplates = async (req: Request, _res: Response) => {
   try {
     const { type } = req.query;
     const where: any = { isActive: true };
@@ -620,56 +620,56 @@ export const getTemplates = async (req: Request, res: Response) => {
       order: [['name', 'ASC']],
     });
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: templates,
     });
   } catch (error) {
     logger.error('Failed to get templates:', error);
-    res.status(500).json({ success: false, error: 'Failed to get templates' });
+    _res.status(500).json({ success: false, error: 'Failed to get templates' });
   }
 };
 
-export const createTemplate = async (req: Request, res: Response) => {
+export const createTemplate = async (req: Request, _res: Response) => {
   try {
     const template = await ContentTemplate.create({
       ...req.body,
       createdBy: Number((req as any).user!.id),
     });
 
-    res.status(201).json({
+    _res.status(201).json({
       success: true,
       data: template,
     });
   } catch (error) {
     logger.error('Failed to create template:', error);
-    res.status(500).json({ success: false, error: 'Failed to create template' });
+    _res.status(500).json({ success: false, error: 'Failed to create template' });
   }
 };
 
-export const updateTemplate = async (req: Request, res: Response) => {
+export const updateTemplate = async (req: Request, _res: Response) => {
   try {
     const { id } = req.params;
     const template = await ContentTemplate.findByPk(id);
 
     if (!template) {
-      return res.status(404).json({ success: false, error: 'Template not found' });
+      return _res.status(404).json({ success: false, error: 'Template not found' });
     }
 
     await template.update(req.body);
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: template,
     });
   } catch (error) {
     logger.error('Failed to update template:', error);
-    res.status(500).json({ success: false, error: 'Failed to update template' });
+    _res.status(500).json({ success: false, error: 'Failed to update template' });
   }
 };
 
 // Content Analysis & Tools
-export const analyzeContent = async (req: Request, res: Response) => {
+export const analyzeContent = async (req: Request, _res: Response) => {
   try {
     const { content, title } = req.body;
 
@@ -682,35 +682,35 @@ export const analyzeContent = async (req: Request, res: Response) => {
       keywords: extractKeywords(content),
     };
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: analysis,
     });
   } catch (error) {
     logger.error('Failed to analyze content:', error);
-    res.status(500).json({ success: false, error: 'Failed to analyze content' });
+    _res.status(500).json({ success: false, error: 'Failed to analyze content' });
   }
 };
 
-export const previewContent = async (req: Request, res: Response) => {
+export const previewContent = async (req: Request, _res: Response) => {
   try {
     const { content, format = 'html' } = req.body;
 
     // Convert content to preview format
     const preview = await generatePreview(content, format);
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: preview,
     });
   } catch (error) {
     logger.error('Failed to preview content:', error);
-    res.status(500).json({ success: false, error: 'Failed to preview content' });
+    _res.status(500).json({ success: false, error: 'Failed to preview content' });
   }
 };
 
 // Analytics
-export const getContentAnalytics = async (req: Request, res: Response) => {
+export const getContentAnalytics = async (req: Request, _res: Response) => {
   try {
     const {} = req.query;
 
@@ -747,30 +747,30 @@ export const getContentAnalytics = async (req: Request, res: Response) => {
       }),
     };
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: analytics,
     });
   } catch (error) {
     logger.error('Failed to get content analytics:', error);
-    res.status(500).json({ success: false, error: 'Failed to get analytics' });
+    _res.status(500).json({ success: false, error: 'Failed to get analytics' });
   }
 };
 
-export const getArticleAnalytics = async (req: Request, res: Response) => {
+export const getArticleAnalytics = async (req: Request, _res: Response) => {
   try {
     const { id } = req.params;
     
     const article = await ContentArticle.findByPk(id);
     if (!article) {
-      return res.status(404).json({ success: false, error: 'Article not found' });
+      return _res.status(404).json({ success: false, error: 'Article not found' });
     }
 
     // Check permissions
     if ((req as any).user!.role !== 'admin' && 
         (req as any).user!.role !== 'editor' && 
         article.authorId !== Number((req as any).user!.id)) {
-      return res.status(403).json({ success: false, error: 'Permission denied' });
+      return _res.status(403).json({ success: false, error: 'Permission denied' });
     }
 
     const interactions = await ContentInteraction.findAll({
@@ -806,18 +806,18 @@ export const getArticleAnalytics = async (req: Request, res: Response) => {
         : 0,
     };
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: analytics,
     });
   } catch (error) {
     logger.error('Failed to get article analytics:', error);
-    res.status(500).json({ success: false, error: 'Failed to get analytics' });
+    _res.status(500).json({ success: false, error: 'Failed to get analytics' });
   }
 };
 
 // Scheduling
-export const scheduleContent = async (req: Request, res: Response) => {
+export const scheduleContent = async (req: Request, _res: Response) => {
   try {
     const { articleId, scheduledDate, action, actionData } = req.body;
 
@@ -829,17 +829,17 @@ export const scheduleContent = async (req: Request, res: Response) => {
       createdBy: Number((req as any).user!.id),
     });
 
-    res.status(201).json({
+    _res.status(201).json({
       success: true,
       data: schedule,
     });
   } catch (error) {
     logger.error('Failed to schedule content:', error);
-    res.status(500).json({ success: false, error: 'Failed to schedule content' });
+    _res.status(500).json({ success: false, error: 'Failed to schedule content' });
   }
 };
 
-export const getScheduledContent = async (req: Request, res: Response) => {
+export const getScheduledContent = async (_req: Request, _res: Response) => {
   try {
     const schedules = await ContentSchedule.findAll({
       where: { status: 'pending' },
@@ -853,13 +853,13 @@ export const getScheduledContent = async (req: Request, res: Response) => {
       order: [['scheduledFor', 'ASC']],
     });
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: schedules,
     });
   } catch (error) {
     logger.error('Failed to get scheduled content:', error);
-    res.status(500).json({ success: false, error: 'Failed to get schedules' });
+    _res.status(500).json({ success: false, error: 'Failed to get schedules' });
   }
 };
 

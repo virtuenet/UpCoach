@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function DataGrid({ data, columns }: any) {
   return (
     <div className="overflow-x-auto">

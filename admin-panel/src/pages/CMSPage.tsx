@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import {
   FileText,
   FolderOpen,
@@ -14,7 +13,6 @@ import {
   MoreVertical,
   TrendingUp,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import ContentList from "../components/cms/ContentList";
 import ContentStats from "../components/cms/ContentStats";
 

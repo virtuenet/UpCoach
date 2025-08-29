@@ -8,6 +8,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import sharp from 'sharp';
 import crypto from 'crypto';
+import { logger } from '../../utils/logger';
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -63,10 +64,10 @@ export class MediaController {
   static uploadMultiple = upload.array('files', 10);
 
   // Process uploaded file
-  static async processUpload(req: Request, res: Response) {
+  static async processUpload(req: Request, _res: Response) {
     try {
       if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
+        return _res.status(400).json({ error: 'No file uploaded' });
       }
 
       const file = req.file;
@@ -121,18 +122,18 @@ export class MediaController {
         isPublic: true,
       });
 
-      (res as any).json(media);
+      _res.json(media);
     } catch (error) {
       logger.error('Error processing upload:', error);
-      res.status(500).json({ error: 'Failed to process upload' });
+      _res.status(500).json({ error: 'Failed to process upload' });
     }
   }
 
   // Process multiple uploads
-  static async processMultipleUploads(req: Request, res: Response) {
+  static async processMultipleUploads(req: Request, _res: Response) {
     try {
       if (!req.files || !Array.isArray(req.files)) {
-        return res.status(400).json({ error: 'No files uploaded' });
+        return _res.status(400).json({ error: 'No files uploaded' });
       }
 
       const { contentId } = req.body;
@@ -182,15 +183,15 @@ export class MediaController {
         mediaItems.push(media);
       }
 
-      (res as any).json(mediaItems);
+      _res.json(mediaItems);
     } catch (error) {
       logger.error('Error processing multiple uploads:', error);
-      res.status(500).json({ error: 'Failed to process uploads' });
+      _res.status(500).json({ error: 'Failed to process uploads' });
     }
   }
 
   // Get all media with filters
-  static async getAll(req: Request, res: Response) {
+  static async getAll(req: Request, _res: Response) {
     try {
       const {
         page = 1,
@@ -234,7 +235,7 @@ export class MediaController {
         ]
       });
 
-      (res as any).json({
+      _res.json({
         media,
         pagination: {
           page: Number(page),
@@ -245,12 +246,12 @@ export class MediaController {
       });
     } catch (error) {
       logger.error('Error fetching media:', error);
-      res.status(500).json({ error: 'Failed to fetch media' });
+      _res.status(500).json({ error: 'Failed to fetch media' });
     }
   }
 
   // Get single media item
-  static async getOne(req: Request, res: Response) {
+  static async getOne(req: Request, _res: Response) {
     try {
       const { id } = req.params;
 
@@ -270,30 +271,30 @@ export class MediaController {
       });
 
       if (!media) {
-        return res.status(404).json({ error: 'Media not found' });
+        return _res.status(404).json({ error: 'Media not found' });
       }
 
-      (res as any).json(media);
+      _res.json(media);
     } catch (error) {
       logger.error('Error fetching media:', error);
-      res.status(500).json({ error: 'Failed to fetch media' });
+      _res.status(500).json({ error: 'Failed to fetch media' });
     }
   }
 
   // Update media metadata
-  static async update(req: Request, res: Response) {
+  static async update(req: Request, _res: Response) {
     try {
       const { id } = req.params;
       const { metadata, isPublic } = req.body;
 
       const media = await ContentMedia.findByPk(id);
       if (!media) {
-        return res.status(404).json({ error: 'Media not found' });
+        return _res.status(404).json({ error: 'Media not found' });
       }
 
       // Check permissions
       if (media.uploadedBy !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
-        return res.status(403).json({ error: 'Unauthorized to update this media' });
+        return _res.status(403).json({ error: 'Unauthorized to update this media' });
       }
 
       await media.update({
@@ -301,26 +302,26 @@ export class MediaController {
         isPublic: isPublic !== undefined ? isPublic : media.isPublic
       });
 
-      (res as any).json(media);
+      _res.json(media);
     } catch (error) {
       logger.error('Error updating media:', error);
-      res.status(500).json({ error: 'Failed to update media' });
+      _res.status(500).json({ error: 'Failed to update media' });
     }
   }
 
   // Delete media
-  static async delete(req: Request, res: Response) {
+  static async delete(req: Request, _res: Response) {
     try {
       const { id } = req.params;
 
       const media = await ContentMedia.findByPk(id);
       if (!media) {
-        return res.status(404).json({ error: 'Media not found' });
+        return _res.status(404).json({ error: 'Media not found' });
       }
 
       // Check permissions
       if (media.uploadedBy !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
-        return res.status(403).json({ error: 'Unauthorized to delete this media' });
+        return _res.status(403).json({ error: 'Unauthorized to delete this media' });
       }
 
       // Delete files from disk
@@ -334,15 +335,15 @@ export class MediaController {
       }
 
       await media.destroy();
-      (res as any).json({ message: 'Media deleted successfully' });
+      _res.json({ message: 'Media deleted successfully' });
     } catch (error) {
       logger.error('Error deleting media:', error);
-      res.status(500).json({ error: 'Failed to delete media' });
+      _res.status(500).json({ error: 'Failed to delete media' });
     }
   }
 
   // Get media library stats
-  static async getStats_(req: Request, res: Response) {
+  static async getStats_(req: Request, _res: Response) {
     try {
       const totalCount = await ContentMedia.count();
       const totalSize = await ContentMedia.sum('size');
@@ -368,7 +369,7 @@ export class MediaController {
         ]
       });
 
-      (res as any).json({
+      _res.json({
         totalCount,
         totalSize,
         typeStats,
@@ -376,7 +377,7 @@ export class MediaController {
       });
     } catch (error) {
       logger.error('Error fetching media stats:', error);
-      res.status(500).json({ error: 'Failed to fetch media stats' });
+      _res.status(500).json({ error: 'Failed to fetch media stats' });
     }
   }
 }

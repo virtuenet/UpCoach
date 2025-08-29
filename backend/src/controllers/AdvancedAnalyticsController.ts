@@ -12,11 +12,11 @@ export class AdvancedAnalyticsController {
     body('startDate').optional().isISO8601(),
     body('endDate').optional().isISO8601(),
     body('filters').optional().isObject(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const userId = (req as any).userId;
@@ -29,13 +29,13 @@ export class AdvancedAnalyticsController {
           userId
         );
 
-        res.status(201).json({
+        _res.status(201).json({
           success: true,
           data: { cohortId },
         });
       } catch (error) {
         logger.error('Error creating cohort', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to create cohort',
         });
@@ -47,11 +47,11 @@ export class AdvancedAnalyticsController {
   getCohortRetention = [
     param('cohortId').isInt(),
     query('periodType').optional().isIn(['day', 'week', 'month']),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const cohortId = parseInt(req.params.cohortId);
@@ -62,13 +62,13 @@ export class AdvancedAnalyticsController {
           periodType
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           data: retention,
         });
       } catch (error) {
         logger.error('Error getting cohort retention', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to get cohort retention',
         });
@@ -81,11 +81,11 @@ export class AdvancedAnalyticsController {
     body('cohortIds').isArray({ min: 2 }),
     body('cohortIds.*').isInt(),
     body('metricType').isIn(['retention', 'revenue', 'engagement']),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const { cohortIds, metricType } = req.body;
@@ -94,13 +94,13 @@ export class AdvancedAnalyticsController {
           metricType
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           data: comparison,
         });
       } catch (error) {
         logger.error('Error comparing cohorts', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to compare cohorts',
         });
@@ -116,11 +116,11 @@ export class AdvancedAnalyticsController {
     body('steps.*.name').notEmpty().isString(),
     body('steps.*.eventType').notEmpty().isString(),
     body('steps.*.filters').optional().isObject(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const { name, description, steps } = req.body;
@@ -130,13 +130,13 @@ export class AdvancedAnalyticsController {
           description
         );
 
-        res.status(201).json({
+        _res.status(201).json({
           success: true,
           data: { funnelId },
         });
       } catch (error) {
         logger.error('Error creating funnel', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to create funnel',
         });
@@ -149,11 +149,11 @@ export class AdvancedAnalyticsController {
     param('funnelId').isInt(),
     query('startDate').optional().isISO8601(),
     query('endDate').optional().isISO8601(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const funnelId = parseInt(req.params.funnelId);
@@ -170,13 +170,13 @@ export class AdvancedAnalyticsController {
           endDate
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           data: analytics,
         });
       } catch (error) {
         logger.error('Error getting funnel analytics', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to get funnel analytics',
         });
@@ -189,11 +189,11 @@ export class AdvancedAnalyticsController {
     body('activityType').notEmpty().isString(),
     body('data').optional().isObject(),
     body('sessionId').optional().isString(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const userId = (req as any).userId;
@@ -206,13 +206,13 @@ export class AdvancedAnalyticsController {
           sessionId
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           message: 'Activity tracked successfully',
         });
       } catch (error) {
         logger.error('Error tracking activity', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to track activity',
         });
@@ -225,11 +225,11 @@ export class AdvancedAnalyticsController {
     body('funnelId').isInt(),
     body('stepIndex').isInt({ min: 0 }),
     body('attribution').optional().isObject(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const userId = (req as any).userId;
@@ -242,13 +242,13 @@ export class AdvancedAnalyticsController {
           attribution
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           message: 'Funnel step tracked successfully',
         });
       } catch (error) {
         logger.error('Error tracking funnel step', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to track funnel step',
         });
@@ -261,11 +261,11 @@ export class AdvancedAnalyticsController {
     query('featureName').optional().isString(),
     query('startDate').optional().isISO8601(),
     query('endDate').optional().isISO8601(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const featureName = req.query.featureName as string;
@@ -282,13 +282,13 @@ export class AdvancedAnalyticsController {
           endDate
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           data: adoption,
         });
       } catch (error) {
         logger.error('Error getting feature adoption', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to get feature adoption',
         });
@@ -297,18 +297,18 @@ export class AdvancedAnalyticsController {
   ];
 
   // Get user lifecycle stage
-  getUserLifecycleStage = async (req: Request, res: Response) => {
+  getUserLifecycleStage = async (req: Request, _res: Response) => {
     try {
       const userId = (req as any).userId;
       const stage = await advancedAnalyticsService.getUserLifecycleStage(userId);
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: { stage },
       });
     } catch (error) {
       logger.error('Error getting user lifecycle stage', { error });
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to get user lifecycle stage',
       });
@@ -320,11 +320,11 @@ export class AdvancedAnalyticsController {
     query('startDate').optional().isISO8601(),
     query('endDate').optional().isISO8601(),
     query('groupBy').optional().isIn(['day', 'week', 'month']),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const startDate = req.query.startDate
@@ -359,13 +359,13 @@ export class AdvancedAnalyticsController {
           }
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           data: result,
         });
       } catch (error) {
         logger.error('Error getting revenue analytics', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to get revenue analytics',
         });
@@ -374,7 +374,7 @@ export class AdvancedAnalyticsController {
   ];
 
   // Get all cohorts
-  getCohorts = async (req: Request, res: Response) => {
+  getCohorts = async (_req: Request, _res: Response) => {
     try {
       const { sequelize } = require('../models');
       const { QueryTypes } = require('sequelize');
@@ -405,13 +405,13 @@ export class AdvancedAnalyticsController {
         { type: QueryTypes.SELECT }
       );
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: cohorts,
       });
     } catch (error) {
       logger.error('Error getting cohorts', { error });
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to get cohorts',
       });
@@ -419,7 +419,7 @@ export class AdvancedAnalyticsController {
   };
 
   // Get all funnels
-  getFunnels = async (req: Request, res: Response) => {
+  getFunnels = async (_req: Request, _res: Response) => {
     try {
       const { sequelize } = require('../models');
       const { QueryTypes } = require('sequelize');
@@ -444,13 +444,13 @@ export class AdvancedAnalyticsController {
         { type: QueryTypes.SELECT }
       );
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: funnels,
       });
     } catch (error) {
       logger.error('Error getting funnels', { error });
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to get funnels',
       });

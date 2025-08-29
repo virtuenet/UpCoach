@@ -1,7 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
-import { AxiosRequestConfig, AxiosResponse, CancelTokenSource } from 'axios';
 import axios from 'axios';
-import { apiClient } from '../api/client';
 
 interface UseApiRequestOptions {
   immediate?: boolean;

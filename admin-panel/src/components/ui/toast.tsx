@@ -1,6 +1,4 @@
 import React from 'react';
-import { X, AlertCircle, CheckCircle, Info, AlertTriangle, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface ToastAction {
   label: string;

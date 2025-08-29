@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
   PieChart,
   Pie,
@@ -6,8 +5,6 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { format } from "date-fns";
-import { financialApi } from "../../services/financialApi";
 
 interface CostBreakdownChartProps {
   dateRange: {

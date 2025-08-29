@@ -3,17 +3,17 @@ import { userProfilingService } from '../../services/ai/UserProfilingService';
 import { logger } from '../../utils/logger';
 
 export class UserProfilingController {
-  async getProfile(req: Request, res: Response, next: NextFunction) {
+  async getProfile(req: Request, _res: Response, next: NextFunction) {
     try {
       const userId = (req as any).user?.id || req.params.userId;
       
       if (!userId) {
-        return res.status(400).json({ error: 'User ID required' });
+        return _res.status(400).json({ error: 'User ID required' });
       }
 
       const profile = await userProfilingService.createOrUpdateProfile(userId);
       
-      (res as any).json({
+      _res.json({
         success: true,
         profile: {
           id: profile.id,
@@ -37,17 +37,17 @@ export class UserProfilingController {
     }
   }
 
-  async getInsights(req: Request, res: Response, next: NextFunction) {
+  async getInsights(req: Request, _res: Response, next: NextFunction) {
     try {
       const userId = (req as any).user?.id || req.params.userId;
       
       if (!userId) {
-        return res.status(400).json({ error: 'User ID required' });
+        return _res.status(400).json({ error: 'User ID required' });
       }
 
       const insights = await userProfilingService.getProfileInsights(userId);
       
-      (res as any).json({
+      _res.json({
         success: true,
         insights,
         generatedAt: new Date()
@@ -58,17 +58,17 @@ export class UserProfilingController {
     }
   }
 
-  async getRecommendations(req: Request, res: Response, next: NextFunction) {
+  async getRecommendations(req: Request, _res: Response, next: NextFunction) {
     try {
       const userId = (req as any).user?.id || req.params.userId;
       
       if (!userId) {
-        return res.status(400).json({ error: 'User ID required' });
+        return _res.status(400).json({ error: 'User ID required' });
       }
 
       const recommendations = await userProfilingService.getPersonalizedRecommendations(userId);
       
-      (res as any).json({
+      _res.json({
         success: true,
         recommendations,
         generatedAt: new Date()
@@ -79,17 +79,17 @@ export class UserProfilingController {
     }
   }
 
-  async assessReadiness(req: Request, res: Response, next: NextFunction) {
+  async assessReadiness(req: Request, _res: Response, next: NextFunction) {
     try {
       const userId = (req as any).user?.id || req.params.userId;
       
       if (!userId) {
-        return res.status(400).json({ error: 'User ID required' });
+        return _res.status(400).json({ error: 'User ID required' });
       }
 
       const assessment = await userProfilingService.assessReadinessLevel(userId);
       
-      (res as any).json({
+      _res.json({
         success: true,
         assessment,
         assessedAt: new Date()
@@ -100,12 +100,12 @@ export class UserProfilingController {
     }
   }
 
-  async updatePreferences(req: Request, res: Response, next: NextFunction) {
+  async updatePreferences(req: Request, _res: Response, next: NextFunction) {
     try {
       const userId = (req as any).user?.id || req.params.userId;
       
       if (!userId) {
-        return res.status(400).json({ error: 'User ID required' });
+        return _res.status(400).json({ error: 'User ID required' });
       }
 
       const preferences = req.body;
@@ -115,20 +115,20 @@ export class UserProfilingController {
       const allowedCommunicationPreferences = ['supportive', 'direct', 'analytical', 'motivational', 'empathetic'];
       
       if (preferences.learningStyle && !allowedLearningStyles.includes(preferences.learningStyle)) {
-        return res.status(400).json({ 
+        return _res.status(400).json({ 
           error: 'Invalid learning style. Must be one of: ' + allowedLearningStyles.join(', ') 
         });
       }
       
       if (preferences.communicationPreference && !allowedCommunicationPreferences.includes(preferences.communicationPreference)) {
-        return res.status(400).json({ 
+        return _res.status(400).json({ 
           error: 'Invalid communication preference. Must be one of: ' + allowedCommunicationPreferences.join(', ') 
         });
       }
 
       const profile = await userProfilingService.updateUserPreferences(userId, preferences);
       
-      (res as any).json({
+      _res.json({
         success: true,
         message: 'Preferences updated successfully',
         profile: {
@@ -143,18 +143,18 @@ export class UserProfilingController {
     }
   }
 
-  async refreshProfile(req: Request, res: Response, next: NextFunction) {
+  async refreshProfile(req: Request, _res: Response, next: NextFunction) {
     try {
       const userId = (req as any).user?.id || req.params.userId;
       
       if (!userId) {
-        return res.status(400).json({ error: 'User ID required' });
+        return _res.status(400).json({ error: 'User ID required' });
       }
 
       // Force refresh by clearing cache and regenerating
       const profile = await userProfilingService.createOrUpdateProfile(userId);
       
-      (res as any).json({
+      _res.json({
         success: true,
         message: 'Profile refreshed successfully',
         profile: {

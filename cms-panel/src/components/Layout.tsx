@@ -9,7 +9,6 @@ import {
   X, 
   LogOut,
   Users,
-  FolderOpen,
   Image,
   BookOpen
 } from 'lucide-react'

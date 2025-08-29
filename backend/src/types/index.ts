@@ -3,7 +3,7 @@
  * This file consolidates all common types to replace 'any' usage
  */
 
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { Model } from 'sequelize';
 
 // ============================================
@@ -13,7 +13,7 @@ import { Model } from 'sequelize';
 export type UserRole = 'admin' | 'coach' | 'user';
 
 export interface User {
-  id: number;
+  id: string;
   email: string;
   name: string;
   role: UserRole;
@@ -25,18 +25,19 @@ export interface User {
 
 export interface AuthenticatedRequest extends Request {
   user: {
-    id: number;
+    id: string;
     email: string;
     role: UserRole;
+    name?: string;
   };
-  userId?: number;
+  userId?: string;
   nonce?: string;
   organization?: Organization;
   organizationRole?: string;
 }
 
 export interface TokenPayload {
-  userId: number;
+  userId: string;
   email: string;
   role: UserRole;
   type: 'access' | 'refresh';
@@ -374,16 +375,5 @@ export interface UploadedFile {
 // ============================================
 // Export all types
 // ============================================
-
-export default {
-  // Re-export for convenience
-  UserRole,
-  SessionType,
-  SessionStatus,
-  SubscriptionStatus,
-  ContentType,
-  ContentStatus,
-  LearningStyle,
-  CommunicationPreference,
-  NotificationType,
-};
+// Note: Types are exported individually above.
+// Default export removed as these are type definitions, not runtime values.

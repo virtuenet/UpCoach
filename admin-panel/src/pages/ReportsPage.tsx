@@ -1,5 +1,3 @@
-import { useState, useEffect } from "react";
-import { format } from "date-fns";
 import {
   Download,
   Mail,
@@ -11,7 +9,6 @@ import {
   Calendar,
   Settings,
 } from "lucide-react";
-import { financialApi } from "../services/financialApi";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 interface Report {

@@ -1,4 +1,4 @@
-import React from 'react';
+// React import removed as not used
 
 export default function DashboardPageV2() {
   return (

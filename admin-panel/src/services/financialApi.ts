@@ -1,4 +1,3 @@
-import { apiClient } from "../api/client";
 
 export interface DashboardMetrics {
   revenue: {

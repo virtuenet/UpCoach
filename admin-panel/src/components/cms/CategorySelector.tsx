@@ -1,5 +1,3 @@
-import React, { useState, useEffect } from "react";
-import { ChevronDown, FolderOpen } from "lucide-react";
 
 interface Category {
   id: string;

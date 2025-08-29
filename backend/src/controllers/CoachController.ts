@@ -20,11 +20,11 @@ export class CoachController {
     query('order').optional().isIn(['ASC', 'DESC']),
     query('page').optional().isInt({ min: 1 }),
     query('limit').optional().isInt({ min: 1, max: 100 }),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const filters = {
@@ -46,7 +46,7 @@ export class CoachController {
 
         const result = await coachService.searchCoaches(filters, page, limit);
 
-        (res as any).json({
+        _res.json({
           success: true,
           data: result.coaches,
           pagination: {
@@ -58,7 +58,7 @@ export class CoachController {
         });
       } catch (error) {
         logger.error('Error searching coaches', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to search coaches',
         });
@@ -69,30 +69,30 @@ export class CoachController {
   // Get coach details
   getCoachDetails = [
     param('id').isInt(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const coachId = parseInt(req.params.id);
         const coach = await coachService.getCoachDetails(coachId);
 
         if (!coach) {
-          return res.status(404).json({
+          return _res.status(404).json({
             success: false,
             error: 'Coach not found',
           });
         }
 
-        (res as any).json({
+        _res.json({
           success: true,
           data: coach,
         });
       } catch (error) {
         logger.error('Error getting coach details', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to get coach details',
         });
@@ -105,11 +105,11 @@ export class CoachController {
     param('id').isInt(),
     query('startDate').isISO8601(),
     query('endDate').isISO8601(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const coachId = parseInt(req.params.id);
@@ -118,7 +118,7 @@ export class CoachController {
 
         // Validate date range
         if (endDate < startDate) {
-          return res.status(400).json({
+          return _res.status(400).json({
             success: false,
             error: 'End date must be after start date',
           });
@@ -127,7 +127,7 @@ export class CoachController {
         const maxDays = 30;
         const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
         if (daysDiff > maxDays) {
-          return res.status(400).json({
+          return _res.status(400).json({
             success: false,
             error: `Date range cannot exceed ${maxDays} days`,
           });
@@ -139,13 +139,13 @@ export class CoachController {
           endDate
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           data: availability,
         });
       } catch (error) {
         logger.error('Error getting coach availability', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to get coach availability',
         });
@@ -163,11 +163,11 @@ export class CoachController {
     body('description').optional().isString(),
     body('timezone').notEmpty().isString(),
     body('packageId').optional().isInt(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const clientId = (req as any).userId; // From auth middleware
@@ -179,13 +179,13 @@ export class CoachController {
 
         const session = await coachService.bookSession(booking);
 
-        res.status(201).json({
+        _res.status(201).json({
           success: true,
           data: session,
         });
       } catch (error) {
         logger.error('Error booking session', { error });
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           error: error instanceof Error ? error.message : 'Failed to book session',
         });
@@ -197,11 +197,11 @@ export class CoachController {
   processPayment = [
     param('id').isInt(),
     body('paymentMethodId').notEmpty().isString(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const sessionId = parseInt(req.params.id);
@@ -209,13 +209,13 @@ export class CoachController {
 
         await coachService.processSessionPayment(sessionId, paymentMethodId);
 
-        (res as any).json({
+        _res.json({
           success: true,
           message: 'Payment processed successfully',
         });
       } catch (error) {
         logger.error('Error processing payment', { error });
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           error: error instanceof Error ? error.message : 'Failed to process payment',
         });
@@ -232,11 +232,11 @@ export class CoachController {
     body('communicationRating').optional().isInt({ min: 1, max: 5 }),
     body('knowledgeRating').optional().isInt({ min: 1, max: 5 }),
     body('helpfulnessRating').optional().isInt({ min: 1, max: 5 }),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const sessionId = parseInt(req.params.sessionId);
@@ -248,13 +248,13 @@ export class CoachController {
           req.body
         );
 
-        res.status(201).json({
+        _res.status(201).json({
           success: true,
           data: review,
         });
       } catch (error) {
         logger.error('Error submitting review', { error });
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           error: error instanceof Error ? error.message : 'Failed to submit review',
         });
@@ -265,23 +265,23 @@ export class CoachController {
   // Get coach packages
   getCoachPackages = [
     param('coachId').isInt(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const coachId = parseInt(req.params.coachId);
         const packages = await coachService.getCoachPackages(coachId);
 
-        (res as any).json({
+        _res.json({
           success: true,
           data: packages,
         });
       } catch (error) {
         logger.error('Error getting coach packages', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to get coach packages',
         });
@@ -293,11 +293,11 @@ export class CoachController {
   purchasePackage = [
     param('id').isInt(),
     body('paymentMethodId').notEmpty().isString(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const packageId = parseInt(req.params.id);
@@ -310,13 +310,13 @@ export class CoachController {
           paymentMethodId
         );
 
-        res.status(201).json({
+        _res.status(201).json({
           success: true,
           data: clientPackage,
         });
       } catch (error) {
         logger.error('Error purchasing package', { error });
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           error: error instanceof Error ? error.message : 'Failed to purchase package',
         });
@@ -325,7 +325,7 @@ export class CoachController {
   ];
 
   // Get coach dashboard (for coaches)
-  getCoachDashboard = async (req: Request, res: Response) => {
+  getCoachDashboard = async (req: Request, _res: Response) => {
     try {
       const userId = (req as any).userId;
       
@@ -336,7 +336,7 @@ export class CoachController {
       });
 
       if (!coachProfile) {
-        return res.status(404).json({
+        return _res.status(404).json({
           success: false,
           error: 'Coach profile not found',
         });
@@ -344,13 +344,13 @@ export class CoachController {
 
       const dashboard = await coachService.getCoachDashboard(coachProfile.id);
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: dashboard,
       });
     } catch (error) {
       logger.error('Error getting coach dashboard', { error });
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to get coach dashboard',
       });
@@ -362,11 +362,11 @@ export class CoachController {
     query('status').optional().isString(),
     query('page').optional().isInt({ min: 1 }),
     query('limit').optional().isInt({ min: 1, max: 100 }),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const clientId = (req as any).userId;
@@ -381,7 +381,7 @@ export class CoachController {
           limit
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           data: sessions.sessions,
           pagination: {
@@ -393,7 +393,7 @@ export class CoachController {
         });
       } catch (error) {
         logger.error('Error getting client sessions', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to get client sessions',
         });
@@ -402,7 +402,7 @@ export class CoachController {
   ];
 
   // Admin: Get all coaches
-  adminGetCoaches = async (req: Request, res: Response) => {
+  adminGetCoaches = async (req: Request, _res: Response) => {
     try {
       const { CoachProfile } = require('../models/CoachProfile');
       const { User } = require('../models/User');
@@ -417,13 +417,13 @@ export class CoachController {
         order: [['createdAt', 'DESC']],
       });
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: coaches,
       });
     } catch (error) {
       logger.error('Error getting coaches for admin', { error });
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to get coaches',
       });
@@ -431,7 +431,7 @@ export class CoachController {
   };
 
   // Admin: Get all sessions
-  adminGetSessions = async (req: Request, res: Response) => {
+  adminGetSessions = async (req: Request, _res: Response) => {
     try {
       const { CoachSession } = require('../models/CoachSession');
       const { CoachProfile } = require('../models/CoachProfile');
@@ -453,13 +453,13 @@ export class CoachController {
         limit: 100,
       });
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: sessions,
       });
     } catch (error) {
       logger.error('Error getting sessions for admin', { error });
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to get sessions',
       });
@@ -467,7 +467,7 @@ export class CoachController {
   };
 
   // Admin: Get all reviews
-  adminGetReviews = async (req: Request, res: Response) => {
+  adminGetReviews = async (req: Request, _res: Response) => {
     try {
       const { CoachReview } = require('../models/CoachReview');
       const { CoachProfile } = require('../models/CoachProfile');
@@ -489,13 +489,13 @@ export class CoachController {
         limit: 100,
       });
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: reviews,
       });
     } catch (error) {
       logger.error('Error getting reviews for admin', { error });
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to get reviews',
       });
@@ -503,17 +503,17 @@ export class CoachController {
   };
 
   // Admin: Get marketplace stats
-  adminGetStats = async (req: Request, res: Response) => {
+  adminGetStats = async (req: Request, _res: Response) => {
     try {
       const stats = await coachService.getMarketplaceStats();
       
-      (res as any).json({
+      _res.json({
         success: true,
         data: stats,
       });
     } catch (error) {
       logger.error('Error getting marketplace stats', { error });
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to get marketplace stats',
       });
@@ -524,11 +524,11 @@ export class CoachController {
   adminUpdateCoachStatus = [
     param('id').isInt(),
     body('isActive').isBoolean(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const coachId = parseInt(req.params.id);
@@ -540,13 +540,13 @@ export class CoachController {
           { where: { id: coachId } }
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           message: 'Coach status updated successfully',
         });
       } catch (error) {
         logger.error('Error updating coach status', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to update coach status',
         });
@@ -558,11 +558,11 @@ export class CoachController {
   adminVerifyCoach = [
     param('id').isInt(),
     body('isVerified').isBoolean(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const coachId = parseInt(req.params.id);
@@ -574,13 +574,13 @@ export class CoachController {
           { where: { id: coachId } }
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           message: 'Coach verification updated successfully',
         });
       } catch (error) {
         logger.error('Error verifying coach', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to verify coach',
         });
@@ -592,11 +592,11 @@ export class CoachController {
   adminFeatureCoach = [
     param('id').isInt(),
     body('isFeatured').isBoolean(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const coachId = parseInt(req.params.id);
@@ -608,13 +608,13 @@ export class CoachController {
           { where: { id: coachId } }
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           message: 'Coach feature status updated successfully',
         });
       } catch (error) {
         logger.error('Error featuring coach', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to update coach feature status',
         });
@@ -625,11 +625,11 @@ export class CoachController {
   // Admin: Delete review
   adminDeleteReview = [
     param('id').isInt(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const reviewId = parseInt(req.params.id);
@@ -639,13 +639,13 @@ export class CoachController {
           where: { id: reviewId },
         });
 
-        (res as any).json({
+        _res.json({
           success: true,
           message: 'Review deleted successfully',
         });
       } catch (error) {
         logger.error('Error deleting review', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to delete review',
         });
@@ -657,11 +657,11 @@ export class CoachController {
   cancelSession = [
     param('id').isInt(),
     body('reason').optional().isString(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const sessionId = parseInt(req.params.id);
@@ -671,13 +671,13 @@ export class CoachController {
 
         await coachService.cancelSession(sessionId, userId, userRole, reason);
 
-        (res as any).json({
+        _res.json({
           success: true,
           message: 'Session cancelled successfully',
         });
       } catch (error) {
         logger.error('Error cancelling session', { error });
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           error: error instanceof Error ? error.message : 'Failed to cancel session',
         });

@@ -6,7 +6,7 @@ import { logger } from '../utils/logger';
 import { aiService } from '../services/ai/AIService';
 
 export class AIAnalyticsController {
-  async getAIMetrics(req: Request, res: Response): Promise<void> {
+  async getAIMetrics(req: Request, _res: Response): Promise<void> {
     try {
       const { range = 'week' } = req.query;
       const days = range === 'month' ? 30 : range === 'year' ? 365 : 7;
@@ -85,7 +85,7 @@ export class AIAnalyticsController {
       const previousCost = (previousTokens / 1000) * costPerThousandTokens;
       const costTrend = ((totalCost - previousCost) / previousCost) * 100;
 
-      (res as any).json({
+      _res.json({
         totalInteractions,
         activeUsers,
         avgResponseTime: Math.round(avgResponseTime * 10) / 10,
@@ -103,11 +103,11 @@ export class AIAnalyticsController {
       });
     } catch (error) {
       logger.error('Failed to get AI metrics:', error);
-      res.status(500).json({ error: 'Failed to fetch AI metrics' });
+      _res.status(500).json({ error: 'Failed to fetch AI metrics' });
     }
   }
 
-  async getAIInteractions(req: Request, res: Response): Promise<void> {
+  async getAIInteractions(req: Request, _res: Response): Promise<void> {
     try {
       const { limit = 20 } = req.query;
 
@@ -132,7 +132,7 @@ export class AIAnalyticsController {
         type: 'SELECT'
       });
 
-      (res as any).json(interactions.map((interaction: any) => ({
+      _res.json(interactions.map((interaction: any) => ({
         id: interaction.id,
         userId: interaction.user_id,
         userName: interaction.user_name || 'Unknown User',
@@ -145,11 +145,11 @@ export class AIAnalyticsController {
       })));
     } catch (error) {
       logger.error('Failed to get AI interactions:', error);
-      res.status(500).json({ error: 'Failed to fetch AI interactions' });
+      _res.status(500).json({ error: 'Failed to fetch AI interactions' });
     }
   }
 
-  async getAIUsageData(req: Request, res: Response): Promise<void> {
+  async getAIUsageData(req: Request, _res: Response): Promise<void> {
     try {
       const { range = 'week' } = req.query;
       const days = range === 'month' ? 30 : range === 'year' ? 365 : 7;
@@ -188,19 +188,19 @@ export class AIAnalyticsController {
         };
       });
 
-      (res as any).json(filledData);
+      _res.json(filledData);
     } catch (error) {
       logger.error('Failed to get AI usage data:', error);
-      res.status(500).json({ error: 'Failed to fetch AI usage data' });
+      _res.status(500).json({ error: 'Failed to fetch AI usage data' });
     }
   }
 
-  async getAIHealthStatus_(req: Request, res: Response): Promise<void> {
+  async getAIHealthStatus_(_req: Request, _res: Response): Promise<void> {
     try {
       const health = await aiService.healthCheck();
       const metrics = aiService.getMetrics();
 
-      (res as any).json({
+      _res.json({
         status: 'operational',
         services: health,
         performance: {
@@ -212,20 +212,20 @@ export class AIAnalyticsController {
       });
     } catch (error) {
       logger.error('Failed to get AI health status:', error);
-      res.status(500).json({ 
+      _res.status(500).json({ 
         status: 'degraded',
         error: 'Failed to fetch AI health status' 
       });
     }
   }
 
-  async clearAICache_(req: Request, res: Response): Promise<void> {
+  async clearAICache_(_req: Request, _res: Response): Promise<void> {
     try {
       await aiService.clearCache();
-      (res as any).json({ message: 'AI cache cleared successfully' });
+      _res.json({ message: 'AI cache cleared successfully' });
     } catch (error) {
       logger.error('Failed to clear AI cache:', error);
-      res.status(500).json({ error: 'Failed to clear AI cache' });
+      _res.status(500).json({ error: 'Failed to clear AI cache' });
     }
   }
 }

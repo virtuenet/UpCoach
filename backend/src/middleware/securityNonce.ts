@@ -20,10 +20,10 @@ export function generateNonce(): string {
 /**
  * Middleware to add nonce to request and response locals
  */
-export function nonceMiddleware(req: Request, res: Response, next: NextFunction): void {
+export function nonceMiddleware(req: Request, _res: Response, next: NextFunction): void {
   const nonce = generateNonce();
   req.nonce = nonce;
-  res.locals.nonce = nonce;
+  _res.locals.nonce = nonce;
   next();
 }
 
@@ -57,26 +57,26 @@ export function generateCSPWithNonce(nonce: string, isDevelopment: boolean = fal
  * Enhanced security headers middleware with nonce-based CSP
  */
 export function enhancedSecurityHeaders(isDevelopment: boolean = false) {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     // Generate nonce for this request
     const nonce = req.nonce || generateNonce();
     req.nonce = nonce;
-    res.locals.nonce = nonce;
+    _res.locals.nonce = nonce;
 
     // Set CSP header with nonce
     const cspHeader = generateCSPWithNonce(nonce, isDevelopment);
-    res.setHeader('Content-Security-Policy', cspHeader);
+    _res.setHeader('Content-Security-Policy', cspHeader);
 
     // Additional security headers
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
-    res.setHeader('X-XSS-Protection', '1; mode=block');
-    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    _res.setHeader('X-Content-Type-Options', 'nosniff');
+    _res.setHeader('X-Frame-Options', 'DENY');
+    _res.setHeader('X-XSS-Protection', '1; mode=block');
+    _res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    _res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
     
     // HSTS header for production
     if (!isDevelopment) {
-      res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+      _res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
     }
 
     next();

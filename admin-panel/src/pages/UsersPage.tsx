@@ -1,7 +1,3 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Search, Edit, Trash2, Eye } from "lucide-react";
-import { usersApi } from "../api/users";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 interface User {

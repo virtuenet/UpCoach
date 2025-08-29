@@ -118,7 +118,7 @@ export function useInfiniteApiQuery<T = any>(
     queryKey,
     queryFn: queryFn as any,
     initialPageParam: 1,
-    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextPage : undefined,
+    getNextPageParam: (lastPage: { data: any[]; nextPage?: number; hasMore: boolean }) => lastPage.hasMore ? lastPage.nextPage : undefined,
     ...options,
   } as any);
 }
@@ -238,8 +238,6 @@ export function useContentItem(id: string) {
  * Hook for creating content with optimistic update
  */
 export function useCreateContent() {
-  const queryClient = useQueryClient();
-
   return useApiMutation(
     (data: any) => validatedApi.post('/content', data),
     {
@@ -254,7 +252,7 @@ export function useCreateContent() {
           };
         });
       },
-      invalidateQueries: [queryKeys.content()],
+      invalidateQueries: [[...queryKeys.content()]],
       successMessage: 'Content created successfully',
       errorMessage: 'Failed to create content',
     }
@@ -265,8 +263,6 @@ export function useCreateContent() {
  * Hook for updating content with optimistic update
  */
 export function useUpdateContent(id: string) {
-  const queryClient = useQueryClient();
-
   return useApiMutation(
     (data: any) => validatedApi.put(`/content/${id}`, data),
     {
@@ -285,7 +281,7 @@ export function useUpdateContent(id: string) {
           };
         });
       },
-      invalidateQueries: [queryKeys.contentItem(id), queryKeys.contentList()],
+      invalidateQueries: [[...queryKeys.contentItem(id)], [...queryKeys.contentList()]],
       successMessage: 'Content updated successfully',
       errorMessage: 'Failed to update content',
     }
@@ -296,8 +292,6 @@ export function useUpdateContent(id: string) {
  * Hook for deleting content
  */
 export function useDeleteContent() {
-  const queryClient = useQueryClient();
-
   return useApiMutation(
     (id: string) => validatedApi.delete(`/content/${id}`),
     {
@@ -312,7 +306,7 @@ export function useDeleteContent() {
           };
         });
       },
-      invalidateQueries: [queryKeys.content()],
+      invalidateQueries: [[...queryKeys.content()]],
       successMessage: 'Content deleted successfully',
       errorMessage: 'Failed to delete content',
     }
@@ -392,7 +386,7 @@ export function useFileUpload() {
       });
     },
     {
-      invalidateQueries: [queryKeys.media()],
+      invalidateQueries: [[...queryKeys.media()]],
       successMessage: 'File uploaded successfully',
       errorMessage: 'Failed to upload file',
     }
@@ -439,7 +433,7 @@ export function useSearch(query: string, type: 'content' | 'users' | 'media') {
     {
       enabled: query.length >= 2, // Only search with 2+ characters
       staleTime: 60000, // 1 minute
-      keepPreviousData: true,
+      placeholderData: (previousData) => previousData,
     }
   );
 }

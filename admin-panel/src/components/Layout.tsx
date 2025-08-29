@@ -1,5 +1,3 @@
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { SkipLink } from "./ui/skip-link";
 import {
   LayoutDashboard,
   Users,
@@ -16,7 +14,6 @@ import {
   Brain,
   Gift,
 } from "lucide-react";
-import { useAuthStore } from "../stores/authStore";
 // import { SkipLink } from "../../shared/components/ui/SkipNavigation"; // Component not found
 
 export default function Layout() {

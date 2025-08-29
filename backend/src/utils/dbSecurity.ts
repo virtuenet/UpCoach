@@ -102,7 +102,7 @@ export class SecureDB {
       const bindings: any[] = [];
       
       if (keys.length > 0) {
-        const whereClause = keys.map((key, index) => {
+        const whereClause = keys.map((key, _index) => {
           bindings.push(conditions[key]);
           return `"${key}" = $${bindings.length}`;
         }).join(' AND ');
@@ -156,7 +156,7 @@ export class SecureDB {
       
       const [result] = await sequelize.query(query, {
         bind: Object.values(data),
-        type: QueryTypes.INSERT,
+        type: QueryTypes.SELECT,
         logging: (sql) => logger.debug('SecureDB insert', { sql })
       });
       
@@ -170,7 +170,7 @@ export class SecureDB {
   /**
    * Safely update records with parameterized queries
    */
-  static async update<T>(
+  static async update(
     table: string, 
     data: Record<string, any>, 
     conditions: Record<string, any>
@@ -236,11 +236,12 @@ export class SecureDB {
       const whereClause = keys.map((key, index) => `"${key}" = $${index + 1}`).join(' AND ');
       const query = `DELETE FROM "${safeTable}" WHERE ${whereClause}`;
       
-      const [, affectedRows] = await sequelize.query(query, {
+      const result = await sequelize.query(query, {
         bind: Object.values(conditions),
         type: QueryTypes.DELETE,
         logging: (sql) => logger.debug('SecureDB delete', { sql })
       });
+      const affectedRows = Array.isArray(result) && result.length > 1 ? result[1] : 0;
       
       return affectedRows;
     } catch (error) {

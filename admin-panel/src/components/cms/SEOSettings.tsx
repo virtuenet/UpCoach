@@ -1,5 +1,4 @@
 import React from "react";
-import { Search, AlertCircle } from "lucide-react";
 
 interface SEOSettingsProps {
   metaTitle?: string;

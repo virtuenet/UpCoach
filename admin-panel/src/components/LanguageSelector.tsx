@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import {
   IconButton,
   Menu,
@@ -9,9 +8,6 @@ import {
   Typography,
   Box,
 } from "@mui/material";
-import { Translate } from "@mui/icons-material";
-import { useTranslation } from "react-i18next";
-import { languages, changeLanguage, getCurrentLanguage } from "../i18n";
 
 export const LanguageSelector: React.FC = () => {
   const { t } = useTranslation();

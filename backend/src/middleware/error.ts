@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { logger } from '../utils/logger';
 
 export interface ApiError extends Error {
   statusCode?: number;
@@ -61,7 +62,7 @@ export const errorMiddleware = (
   }
 
   // Send error response
-  res.status(statusCode).json({
+  _res.status(statusCode).json({
     success: false,
     message,
     ...(process.env.NODE_ENV === 'development' && {
@@ -75,8 +76,8 @@ export const errorMiddleware = (
   });
 };
 
-export const notFoundMiddleware = (req: Request, res: Response): void => {
-  res.status(404).json({
+export const notFoundMiddleware = (req: Request, _res: Response): void => {
+  __res.status(404).json({
     success: false,
     message: `Route ${req.originalUrl} not found`,
     timestamp: new Date().toISOString(),
@@ -84,7 +85,7 @@ export const notFoundMiddleware = (req: Request, res: Response): void => {
 };
 
 export const asyncHandler = (fn: Function) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 }; 

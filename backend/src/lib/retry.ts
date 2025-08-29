@@ -5,6 +5,7 @@
 
 import axios, { AxiosInstance } from 'axios';
 import axiosRetry, { IAxiosRetryConfig } from 'axios-retry';
+import { logger } from '../utils/logger';
 
 export interface RetryOptions extends IAxiosRetryConfig {
   maxRetries?: number;

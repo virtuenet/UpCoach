@@ -134,7 +134,7 @@ export class DataDogService {
    * Express middleware for request tracing
    */
   requestTracing() {
-    return (req: Request, res: Response, next: NextFunction) => {
+    return (req: Request, _res: Response, next: NextFunction) => {
       if (!this.initialized) {
         return next();
       }
@@ -162,28 +162,28 @@ export class DataDogService {
       // Track response time
       const startTime = Date.now();
       
-      res.on('finish', () => {
+      _res.on('finish', () => {
         const duration = Date.now() - startTime;
         
         // Record response time histogram
         this.histogram('api.response_time', duration, {
           method: req.method,
           path: req.route?.path || 'unknown',
-          status_code: res.statusCode.toString(),
+          status_code: _res.statusCode.toString(),
         });
 
         // Track status codes
-        this.incrementMetric(`api.status_code.${res.statusCode}`, {
+        this.incrementMetric(`api.status_code.${_res.statusCode}`, {
           method: req.method,
           path: req.route?.path || 'unknown',
         });
 
         // Track errors
-        if (res.statusCode >= 400) {
+        if (_res.statusCode >= 400) {
           this.incrementMetric('api.error', {
             method: req.method,
             path: req.route?.path || 'unknown',
-            status_code: res.statusCode.toString(),
+            status_code: _res.statusCode.toString(),
           });
         }
       });

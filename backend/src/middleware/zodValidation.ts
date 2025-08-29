@@ -191,7 +191,7 @@ export function validate(
   // Generate schema identifier for metrics
   const schemaName = schema.description || `${source}_schema`;
 
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     const startTime = Date.now();
     
     try {
@@ -302,7 +302,7 @@ export function validate(
           });
         }
         
-        res.status(statusCode).json({
+        __res.status(statusCode).json({
           success: false,
           error: message,
           errors,
@@ -313,7 +313,7 @@ export function validate(
       
       // Handle unexpected errors
       logger.error('Unexpected validation error', error);
-      res.status(500).json({
+      __res.status(500).json({
         success: false,
         error: 'Internal validation error',
       });
@@ -331,7 +331,7 @@ export function validateMultiple(
     options?: ValidationOptions;
   }>
 ) {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     const allErrors: Array<{ source: ValidationSource; errors: Array<any> }> = [];
     
     for (const validation of validations) {
@@ -362,7 +362,7 @@ export function validateMultiple(
         errors: allErrors,
       });
       
-      res.status(statusCode).json({
+      __res.status(statusCode).json({
         success: false,
         error: 'Validation failed',
         validationErrors: allErrors,
@@ -397,7 +397,7 @@ export function validateAsync<T>(
   schema: ZodSchema<T>,
   customValidator?: (data: T) => Promise<boolean | { error: string }>
 ) {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     try {
       // First, validate with Zod
       const validatedData = await schema.parseAsync(req.body);
@@ -407,7 +407,7 @@ export function validateAsync<T>(
         const customResult = await customValidator(validatedData);
         
         if (customResult === false) {
-          res.status(400).json({
+          __res.status(400).json({
             success: false,
             error: 'Custom validation failed',
           });
@@ -415,7 +415,7 @@ export function validateAsync<T>(
         }
         
         if (typeof customResult === 'object' && customResult.error) {
-          res.status(400).json({
+          __res.status(400).json({
             success: false,
             error: customResult.error,
           });
@@ -429,7 +429,7 @@ export function validateAsync<T>(
       if (error instanceof ZodError) {
         const errors = formatZodError(error);
         
-        res.status(400).json({
+        __res.status(400).json({
           success: false,
           error: 'Validation failed',
           errors,
@@ -438,7 +438,7 @@ export function validateAsync<T>(
       }
       
       logger.error('Validation error', error);
-      res.status(500).json({
+      __res.status(500).json({
         success: false,
         error: 'Internal validation error',
       });
@@ -455,7 +455,7 @@ export function validateConditional(
   source: ValidationSource = 'body',
   options?: ValidationOptions
 ) {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     if (condition(req)) {
       validate(schema, source, options)(req, res, next);
     } else {
@@ -483,7 +483,7 @@ export function createValidator<T extends ZodSchema>(schema: T) {
  * Uses DOMPurify for robust HTML sanitization
  */
 export function sanitizeAndValidate(schema: ZodSchema) {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     try {
       // Use DOMPurify-based sanitization for robust XSS prevention
       req.body = sanitizeObject(req.body, true);
@@ -496,7 +496,7 @@ export function sanitizeAndValidate(schema: ZodSchema) {
     } catch (error) {
       if (error instanceof ZodError) {
         const errors = formatZodError(error);
-        res.status(400).json({
+        __res.status(400).json({
           success: false,
           error: 'Validation failed',
           errors,

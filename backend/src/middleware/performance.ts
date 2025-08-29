@@ -79,7 +79,7 @@ declare global {
 }
 
 // Performance monitoring middleware
-export const performanceMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const performanceMiddleware = (req: Request, _res: Response, next: NextFunction) => {
   // Start timing
   req.startTime = performance.now();
   activeRequests.inc();
@@ -93,15 +93,15 @@ export const performanceMiddleware = (req: Request, res: Response, next: NextFun
   httpRequestSize.observe({ method: req.method, route }, requestSize);
 
   // Intercept response end
-  const originalEnd = res.end;
-  res.end = function(...args: any[]): Response {
+  const originalEnd = _res.end;
+  _res.end = function(...args: any[]): Response {
     // Calculate duration
     const duration = req.startTime ? (performance.now() - req.startTime) / 1000 : 0;
     
     // Get response details
-    const statusCode = res.statusCode;
+    const statusCode = _res.statusCode;
     const status = statusCode >= 400 ? 'error' : 'success';
-    const responseSize = parseInt(res.get('content-length') || '0', 10);
+    const responseSize = parseInt(_res.get('content-length') || '0', 10);
 
     // Record metrics
     const labels = {
@@ -159,18 +159,18 @@ export const trackCacheMiss = (cacheType: string) => {
 };
 
 // Metrics endpoint handler
-export const metricsHandler = async (req: Request, res: Response) => {
+export const metricsHandler = async (req: Request, _res: Response) => {
   try {
-    (res as any).set('Content-Type', register.contentType);
+    _res.set('Content-Type', register.contentType);
     const metrics = await register.metrics();
-    (res as any).send(metrics);
+    _res.send(metrics);
   } catch (error) {
-    res.status(500).send('Error generating metrics');
+    _res.status(500).send('Error generating metrics');
   }
 };
 
 // Health check endpoint
-export const healthCheckHandler = (req: Request, res: Response) => {
+export const healthCheckHandler = (req: Request, _res: Response) => {
   const health = {
     status: 'healthy',
     timestamp: new Date().toISOString(),
@@ -179,11 +179,11 @@ export const healthCheckHandler = (req: Request, res: Response) => {
     cpu: process.cpuUsage(),
   };
   
-  (res as any).json(health);
+  _res.json(health);
 };
 
 // Ready check endpoint (for Kubernetes)
-export const readyCheckHandler = async (req: Request, res: Response) => {
+export const readyCheckHandler = async (req: Request, _res: Response) => {
   try {
     // Check database connection
     // const dbHealthy = await checkDatabaseConnection();
@@ -200,9 +200,9 @@ export const readyCheckHandler = async (req: Request, res: Response) => {
       },
     };
     
-    (res as any).json(ready);
+    _res.json(ready);
   } catch (error) {
-    res.status(503).json({
+    _res.status(503).json({
       status: 'not ready',
       error: (error as Error).message,
     });

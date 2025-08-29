@@ -32,14 +32,14 @@ export interface AuthenticatedRequest extends Request {
  */
 export const authMiddleware = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
     
     if (!token) {
-      res.status(401).json({
+      _res.status(401).json({
         success: false,
         error: 'Authentication required',
       });
@@ -49,7 +49,7 @@ export const authMiddleware = async (
     // Check if token is blacklisted
     const isBlacklisted = await redis.get(`blacklist:${token}`);
     if (isBlacklisted) {
-      res.status(401).json({
+      _res.status(401).json({
         success: false,
         error: 'Token has been revoked',
       });
@@ -60,7 +60,7 @@ export const authMiddleware = async (
     
     // Validate token structure
     if (!decoded.id || !decoded.email || !decoded.role) {
-      res.status(401).json({
+      _res.status(401).json({
         success: false,
         error: 'Invalid token structure',
       });
@@ -76,7 +76,7 @@ export const authMiddleware = async (
     next();
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
-      res.status(401).json({
+      _res.status(401).json({
         success: false,
         error: 'Token has expired',
         code: 'TOKEN_EXPIRED'
@@ -85,7 +85,7 @@ export const authMiddleware = async (
     }
     
     if (error instanceof jwt.JsonWebTokenError) {
-      res.status(401).json({
+      _res.status(401).json({
         success: false,
         error: 'Invalid token',
         code: 'INVALID_TOKEN'
@@ -94,7 +94,7 @@ export const authMiddleware = async (
     }
     
     logger.error('Auth middleware error:', error);
-    res.status(500).json({
+    _res.status(500).json({
       success: false,
       error: 'Authentication error',
     });
@@ -106,11 +106,11 @@ export const authMiddleware = async (
  */
 export const adminMiddleware = (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): void => {
   if (!(req as any).user || (req as any).user.role !== 'admin') {
-    res.status(403).json({
+    _res.status(403).json({
       success: false,
       error: 'Admin access required',
     });
@@ -159,9 +159,9 @@ export const optionalAuthMiddleware = async (
 export const requireRole = (roles: string | string[]) => {
   const allowedRoles = Array.isArray(roles) ? roles : [roles];
   
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     if (!(req as any).user) {
-      res.status(401).json({
+      _res.status(401).json({
         error: 'Authentication required',
         message: 'Access token required',
       });
@@ -170,7 +170,7 @@ export const requireRole = (roles: string | string[]) => {
 
     const userRole = (req as any).user.role || 'user';
     if (!allowedRoles.includes(userRole)) {
-      res.status(403).json({
+      _res.status(403).json({
         error: 'Insufficient permissions',
         message: `Required role: ${allowedRoles.join(' or ')}`,
       });
@@ -185,10 +185,10 @@ export const requireRole = (roles: string | string[]) => {
 export const authorizeRoles = requireRole;
 
 export const requireOwnership = (resourceIdParam: string = 'id') => {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     try {
       if (!(req as any).user) {
-        res.status(401).json({
+        _res.status(401).json({
           error: 'Authentication required',
           message: 'Access token required',
         });
@@ -209,7 +209,7 @@ export const requireOwnership = (resourceIdParam: string = 'id') => {
       const ownership = await checkResourceOwnership(resourceId, userId);
       
       if (!ownership) {
-        res.status(403).json({
+        _res.status(403).json({
           error: 'Access denied',
           message: 'You can only access your own resources',
         });
@@ -219,7 +219,7 @@ export const requireOwnership = (resourceIdParam: string = 'id') => {
       next();
     } catch (error) {
       logger.error('Ownership middleware error:', error);
-      res.status(500).json({
+      _res.status(500).json({
         error: 'Internal server error',
         message: 'Failed to verify resource ownership',
       });

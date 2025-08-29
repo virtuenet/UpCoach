@@ -1,7 +1,3 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
-import { goalsApi } from "../api/goals";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 interface Goal {

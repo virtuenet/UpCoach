@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import i18n, { isValidLanguage } from '../config/i18n';
 // import { logger } from '../utils/logger';
 
-export function i18nMiddleware(req: Request, res: Response, next: NextFunction) {
+export function i18nMiddleware(req: Request, _res: Response, next: NextFunction) {
   // Get language from multiple sources
   let locale = req.query.lang as string ||
                req.cookies?.locale ||
@@ -18,23 +18,23 @@ export function i18nMiddleware(req: Request, res: Response, next: NextFunction) 
   i18n.setLocale(locale);
   
   // Store locale in response locals for views
-  res.locals.locale = locale;
-  res.locals.__ = res.__ = (phrase: string, ...replace: any[]) => {
+  _res.locals.locale = locale;
+  _res.locals.__ = _res.__ = (phrase: string, ...replace: any[]) => {
     return i18n.__(phrase, ...replace);
   };
-  res.locals.__n = res.__n = (singular: string, plural: string, count: number) => {
+  _res.locals.__n = _res.__n = (singular: string, plural: string, count: number) => {
     return i18n.__n(singular, plural, count);
   };
 
   // Set locale cookie
-  (res as any).cookie('locale', locale, {
+  _res.cookie('locale', locale, {
     maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
     httpOnly: true,
     sameSite: 'lax',
   });
 
   // Set content-language header
-  res.setHeader('Content-Language', locale);
+  _res.setHeader('Content-Language', locale);
 
   next();
 }
@@ -45,13 +45,13 @@ export function getLocale(req: Request): string {
 }
 
 // API to set locale
-export function setLocale(req: Request, res: Response, locale: string): boolean {
+export function setLocale(req: Request, _res: Response, locale: string): boolean {
   if (!isValidLanguage(locale)) {
     return false;
   }
 
   i18n.setLocale(locale);
-  (res as any).cookie('locale', locale, {
+  _res.cookie('locale', locale, {
     maxAge: 365 * 24 * 60 * 60 * 1000,
     httpOnly: true,
     sameSite: 'lax',

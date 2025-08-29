@@ -1,5 +1,3 @@
-import React, { useState, useEffect, useRef } from "react";
-import { X, Tag } from "lucide-react";
 
 interface TagItem {
   id: string;

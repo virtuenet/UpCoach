@@ -29,13 +29,13 @@ const cdnConfig: CDNConfig = {
 };
 
 // CDN URL rewriter middleware
-export const cdnMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const cdnMiddleware = (req: Request, _res: Response, next: NextFunction) => {
   if (!cdnConfig.enabled) {
     return next();
   }
 
   // Add CDN helper to response locals
-  res.locals.cdn = (path: string): string => {
+  _res.locals.cdn = (path: string): string => {
     if (!path) return '';
     
     // Check if path should use CDN
@@ -51,9 +51,9 @@ export const cdnMiddleware = (req: Request, res: Response, next: NextFunction) =
     return path;
   };
 
-  // Override res.json to rewrite URLs in JSON responses
-  const originalJson = res.json.bind(res);
-  res.json = function(data: any) {
+  // Override _res.json to rewrite URLs in JSON responses
+  const originalJson = _res.json.bind(res);
+  _res.json = function(data: any) {
     if (cdnConfig.enabled && data) {
       data = rewriteUrls(data);
     }
@@ -64,7 +64,7 @@ export const cdnMiddleware = (req: Request, res: Response, next: NextFunction) =
 };
 
 // Static file caching headers
-export const staticCacheMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const staticCacheMiddleware = (req: Request, _res: Response, next: NextFunction) => {
   const ext = path.extname(req.path).toLowerCase();
   let maxAge = cdnConfig.maxAge.default;
 
@@ -92,11 +92,11 @@ export const staticCacheMiddleware = (req: Request, res: Response, next: NextFun
   }
 
   // Set cache headers
-  res.setHeader('Cache-Control', `public, max-age=${maxAge}, immutable`);
-  res.setHeader('X-Content-Type-Options', 'nosniff');
+  __res.setHeader('Cache-Control', `public, max-age=${maxAge}, immutable`);
+  __res.setHeader('X-Content-Type-Options', 'nosniff');
 
   // Add ETag support
-  res.setHeader('ETag', `"${req.path}-${Date.now()}"`);
+  __res.setHeader('ETag', `"${req.path}-${Date.now()}"`);
 
   next();
 };
@@ -136,7 +136,7 @@ function rewriteUrls(obj: any): any {
 }
 
 // Image optimization middleware
-export const imageOptimizationMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const imageOptimizationMiddleware = (req: Request, _res: Response, next: NextFunction) => {
   // Parse query parameters for image transformation
   const { w, h, q, format } = req.query;
 
@@ -150,19 +150,19 @@ export const imageOptimizationMiddleware = (req: Request, res: Response, next: N
     if (format) transforms.push(`f_${format}`);
 
     if (transforms.length > 0) {
-      res.setHeader('X-Image-Transform', transforms.join(','));
+      __res.setHeader('X-Image-Transform', transforms.join(','));
     }
 
     // Add responsive image hints
-    res.setHeader('Accept-CH', 'DPR, Width, Viewport-Width');
-    res.setHeader('Vary', 'Accept, DPR, Width');
+    __res.setHeader('Accept-CH', 'DPR, Width, Viewport-Width');
+    __res.setHeader('Vary', 'Accept, DPR, Width');
   }
 
   next();
 };
 
 // Preload critical resources
-export const preloadMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const preloadMiddleware = (req: Request, _res: Response, next: NextFunction) => {
   // Add preload headers for critical resources
   const preloads: string[] = [];
 
@@ -177,17 +177,17 @@ export const preloadMiddleware = (req: Request, res: Response, next: NextFunctio
   preloads.push(`<${cdnConfig.baseUrl}/js/app.js>; rel=preload; as=script`);
 
   if (preloads.length > 0) {
-    res.setHeader('Link', preloads.join(', '));
+    __res.setHeader('Link', preloads.join(', '));
   }
 
   next();
 };
 
 // Service Worker for offline support
-export const serviceWorkerMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const serviceWorkerMiddleware = (req: Request, _res: Response, next: NextFunction) => {
   if (req.path === '/service-worker.js') {
-    res.setHeader('Service-Worker-Allowed', '/');
-    res.setHeader('Cache-Control', 'no-cache');
+    __res.setHeader('Service-Worker-Allowed', '/');
+    __res.setHeader('Cache-Control', 'no-cache');
   }
   next();
 };

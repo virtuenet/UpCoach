@@ -8,8 +8,6 @@ import { useEffect } from 'react';
 import { useLocation, useNavigationType } from 'react-router-dom';
 import { createRoutesFromChildren, matchRoutes } from 'react-router';
 import * as Sentry from '@sentry/react';
-import { BrowserTracing } from '@sentry/tracing';
-import { CaptureConsole } from '@sentry/integrations';
 import { logger } from '../../utils/logger';
 
 export interface SentryFrontendConfig {
@@ -58,28 +56,12 @@ class SentryFrontendService {
         
         // Performance Monitoring
         integrations: [
-          new BrowserTracing({
-            // Set sampling rate for performance monitoring
-            tracingOrigins: [
-              'localhost',
-              /^https:\/\/api\.upcoach\.ai/,
-              /^https:\/\/.+\.upcoach\.ai/,
-            ],
-            // Track React Router
-            routingInstrumentation: Sentry.reactRouterV6Instrumentation(
-              React.useEffect,
-              useLocation,
-              useNavigationType,
-              createRoutesFromChildren,
-              matchRoutes
-            ),
-          }),
-          // Capture console errors
-          new CaptureConsole({
+          Sentry.browserTracingIntegration(),
+          Sentry.captureConsoleIntegration({
             levels: ['error', 'warn'],
           }),
           // Session Replay
-          new Sentry.Replay({
+          Sentry.replayIntegration({
             // Mask all text and inputs by default for privacy
             maskAllText: true,
             maskAllInputs: true,

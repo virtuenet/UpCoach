@@ -110,7 +110,9 @@ export const bookSessionSchema = z.object({
   coachId: z.number().int().positive(),
   sessionType: sessionTypeEnum,
   scheduledAt: z.string().datetime().or(z.date()).transform(val => new Date(val)),
-  durationMinutes: z.enum([30, 45, 60, 90, 120]),
+  durationMinutes: z.number().int().min(30).max(120).refine(val => [30, 45, 60, 90, 120].includes(val), {
+    message: 'Duration must be one of: 30, 45, 60, 90, or 120 minutes'
+  }),
   title: z.string().min(3, 'Title must be at least 3 characters').max(100),
   description: z.string().max(500).optional(),
   timezone: z.string().min(1, 'Timezone is required'),
@@ -171,7 +173,9 @@ export const coachPackageSchema = z.object({
   discount: z.number().min(0).max(50).optional(),
   features: z.array(z.string()).min(1, 'Add at least one feature'),
   sessionType: sessionTypeEnum,
-  durationMinutes: z.enum([30, 45, 60, 90, 120]),
+  durationMinutes: z.number().int().min(30).max(120).refine(val => [30, 45, 60, 90, 120].includes(val), {
+    message: 'Duration must be one of: 30, 45, 60, 90, or 120 minutes'
+  }),
   maxBookingsPerWeek: z.number().int().min(1).max(7).optional(),
 });
 

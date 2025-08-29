@@ -101,7 +101,7 @@ class TwoFactorAuthService {
 
       // Store temporarily in Redis (expires in 10 minutes)
       const tempKey = `2fa:setup:${userId}`;
-      await redis.setex(
+      await redis.setEx(
         tempKey,
         600, // 10 minutes
         JSON.stringify({
@@ -483,7 +483,7 @@ class TwoFactorAuthService {
     const attempts = await redis.get(key);
 
     if (!attempts) {
-      await redis.setex(key, 300, '1'); // 5 minutes window
+      await redis.setEx(key, 300, '1'); // 5 minutes window
       return true;
     }
 

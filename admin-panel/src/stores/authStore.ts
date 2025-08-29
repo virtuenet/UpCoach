@@ -1,5 +1,3 @@
-import { create } from "zustand";
-import { authApi } from "../api/auth";
 import toast from "react-hot-toast";
 
 export interface User {

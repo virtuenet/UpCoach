@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import {
   Users,
   CheckSquare,
@@ -7,7 +6,6 @@ import {
   TrendingUp,
   TrendingDown,
 } from "lucide-react";
-import { dashboardApi } from "../api/dashboard";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 interface StatCardProps {

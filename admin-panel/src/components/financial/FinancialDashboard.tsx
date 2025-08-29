@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -6,10 +5,6 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { Button } from "../ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { DatePickerWithRange } from "../ui/date-picker-with-range";
-import { DashboardSkeleton } from "../ui/dashboard-skeleton";
 
 import {
   ArrowUpIcon,
@@ -22,12 +17,7 @@ import {
   Download,
   Calendar,
 } from "lucide-react";
-import { financialApi, DashboardMetrics } from "../../services/financialApi";
 // import { DashboardSkeleton } from "../../../shared/components/ui/SkeletonLoader"; // Component not found
-import { ProfitLossChart } from "./ProfitLossChart";
-import { MRRChart } from "./MRRChart";
-import { SubscriptionChart } from "./SubscriptionChart";
-import { CostBreakdownChart } from "./CostBreakdownChart";
 
 export function FinancialDashboard() {
   const [loading, setLoading] = useState(true);

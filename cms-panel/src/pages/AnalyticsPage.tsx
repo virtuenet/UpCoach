@@ -2,16 +2,11 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { 
   TrendingUp, 
-  TrendingDown, 
   Eye, 
   Users, 
   Clock, 
-  FileText, 
-  BookOpen,
-  Calendar,
   ArrowUp,
   ArrowDown,
-  Filter,
   Download
 } from 'lucide-react'
 import { 
@@ -19,8 +14,6 @@ import {
   Line, 
   AreaChart, 
   Area, 
-  BarChart, 
-  Bar, 
   PieChart, 
   Pie, 
   Cell,
@@ -32,7 +25,7 @@ import {
   ResponsiveContainer 
 } from 'recharts'
 import LoadingSpinner from '../components/LoadingSpinner'
-import { format, startOfWeek, endOfWeek, subDays, subWeeks } from 'date-fns'
+import { format, subDays } from 'date-fns'
 
 interface AnalyticsCard {
   title: string
@@ -42,16 +35,6 @@ interface AnalyticsCard {
   color: 'blue' | 'green' | 'purple' | 'orange' | 'red'
 }
 
-interface ContentMetrics {
-  totalViews: number
-  uniqueUsers: number
-  averageReadTime: number
-  completionRate: number
-  engagementScore: number
-  topReferrers: string[]
-  deviceBreakdown: Record<string, number>
-  locationBreakdown: Record<string, number>
-}
 
 interface DashboardData {
   totalArticles: number
@@ -175,7 +158,7 @@ export default function AnalyticsPage() {
     fill: device === 'Desktop' ? '#3B82F6' : device === 'Mobile' ? '#10B981' : '#F59E0B'
   })) : []
 
-  const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6']
+  const _COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6']
 
   if (isLoading) {
     return (

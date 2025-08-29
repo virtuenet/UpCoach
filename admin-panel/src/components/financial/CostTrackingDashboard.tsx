@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from "react";
 import {
   DollarSign,
   TrendingUp,
@@ -25,7 +24,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { financialApi } from "../../services/financialApi";
 
 const COLORS = [
   "#0088FE",

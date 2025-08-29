@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from "react";
 import {
   Eye,
   Edit,
@@ -10,8 +9,6 @@ import {
   CheckCircle,
   Archive,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { formatDistanceToNow, format } from "date-fns";
 
 interface ContentItem {
   id: string;

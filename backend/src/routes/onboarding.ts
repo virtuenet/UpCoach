@@ -10,7 +10,7 @@ const router = Router();
 router.use(authenticateToken);
 
 // Get onboarding status
-router.get('/status', (req: Request, res: Response) => onboardingController.getOnboardingStatus(req, res));
+router.get('/status', (req: Request, _res: Response) => onboardingController.getOnboardingStatus(req, res));
 
 // Complete onboarding
 router.post(
@@ -28,10 +28,10 @@ router.post(
     body('availability.commitmentLevel').notEmpty().isIn(['daily', 'regular', 'weekly']),
   ],
   validateRequest,
-  (req: Request, res: Response) => onboardingController.completeOnboarding(req, res)
+  (req: Request, _res: Response) => onboardingController.completeOnboarding(req, res)
 );
 
 // Skip onboarding
-router.post('/skip', (req: Request, res: Response) => onboardingController.skipOnboarding(req, res));
+router.post('/skip', (req: Request, _res: Response) => onboardingController.skipOnboarding(req, res));
 
 export default router;

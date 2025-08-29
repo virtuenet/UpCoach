@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import {
   Users,
   CheckSquare,
@@ -7,7 +6,6 @@ import {
   TrendingUp,
   TrendingDown,
 } from "lucide-react";
-import { useApiGet, useParallelApiRequests } from "../hooks/useApiRequest";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 interface StatCardProps {

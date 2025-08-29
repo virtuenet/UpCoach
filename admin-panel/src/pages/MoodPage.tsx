@@ -1,7 +1,3 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import {} from "lucide-react";
-import { moodApi } from "../api/mood";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 interface MoodEntry {

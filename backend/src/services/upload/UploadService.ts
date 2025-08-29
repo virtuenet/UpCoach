@@ -3,6 +3,7 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import sharp from 'sharp';
 import fs from 'fs/promises';
+import { logger } from '../../utils/logger';
 
 export interface UploadedFile {
   filename: string;

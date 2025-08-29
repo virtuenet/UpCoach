@@ -35,7 +35,7 @@ interface OnboardingData {
 
 export class OnboardingController {
   // Complete onboarding process
-  async completeOnboarding(req: Request, res: Response) {
+  async completeOnboarding(req: Request, _res: Response) {
     const transaction = await sequelize.transaction();
 
     try {
@@ -46,7 +46,7 @@ export class OnboardingController {
       const user = await User.findByPk(userId);
       if (!user) {
         await transaction.rollback();
-        return res.status(404).json({
+        return _res.status(404).json({
           success: false,
           error: 'User not found',
         });
@@ -148,7 +148,7 @@ export class OnboardingController {
         coachingStyle: onboardingData.preferences.coachingStyle,
       });
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: {
           message: 'Onboarding completed successfully',
@@ -162,7 +162,7 @@ export class OnboardingController {
     } catch (error) {
       await transaction.rollback();
       logger.error('Failed to complete onboarding', { error, userId: (req as any).user!.id });
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to complete onboarding',
       });
@@ -170,7 +170,7 @@ export class OnboardingController {
   }
 
   // Get onboarding status
-  async getOnboardingStatus(req: Request, res: Response) {
+  async getOnboardingStatus(req: Request, _res: Response) {
     try {
       const userId = (req as any).user!.id;
       const user = await User.findByPk(userId, {
@@ -181,7 +181,7 @@ export class OnboardingController {
       });
 
       if (!user) {
-        return res.status(404).json({
+        return _res.status(404).json({
           success: false,
           error: 'User not found',
         });
@@ -195,13 +195,13 @@ export class OnboardingController {
         progress: this.calculateOnboardingProgress(user),
       };
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: status,
       });
     } catch (error) {
       logger.error('Failed to get onboarding status', { error, userId: (req as any).user!.id });
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to get onboarding status',
       });
@@ -209,7 +209,7 @@ export class OnboardingController {
   }
 
   // Skip onboarding (for returning users)
-  async skipOnboarding(req: Request, res: Response) {
+  async skipOnboarding(req: Request, _res: Response) {
     try {
       const userId = (req as any).user!.id;
       const user = await User.findByPk(userId, {
@@ -220,7 +220,7 @@ export class OnboardingController {
       });
 
       if (!user) {
-        return res.status(404).json({
+        return _res.status(404).json({
           success: false,
           error: 'User not found',
         });
@@ -245,7 +245,7 @@ export class OnboardingController {
       // Track skip
       await analyticsService.trackUserAction(Number(userId), 'Onboarding Skipped');
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: {
           message: 'Onboarding skipped',
@@ -253,7 +253,7 @@ export class OnboardingController {
       });
     } catch (error) {
       logger.error('Failed to skip onboarding', { error, userId: (req as any).user!.id });
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to skip onboarding',
       });

@@ -1,4 +1,3 @@
-import axios, { CancelTokenSource } from 'axios';
 
 /**
  * Global Request Manager

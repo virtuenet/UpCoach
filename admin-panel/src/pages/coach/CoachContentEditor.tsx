@@ -1,5 +1,4 @@
-import Grid from "@mui/material/Grid";
-import React, { useState, useEffect, useRef } from "react";
+import Grid from "@mui/material";
 import {
   Box,
   Card,
@@ -39,11 +38,6 @@ import {
   Delete as DeleteIcon,
   Image as ImageIcon,
 } from "@mui/icons-material";
-import { useParams, useNavigate } from "react-router-dom";
-import { Editor } from "@tinymce/tinymce-react";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import api from "../../services/api";
 import SEOHelper from "../../components/cms/SEOHelper";
 import ContentPreview from "../../components/cms/ContentPreview";

@@ -1,9 +1,5 @@
-import React, { useState } from "react";
-import { Box, useMediaQuery, useTheme } from "@mui/material";
-import { styled } from "@mui/material/styles";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
-import { useAuthStore } from "../../stores/authStore";
 
 const MainContent = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'sidebarOpen'
@@ -18,7 +14,7 @@ const MainContent = styled(Box, {
   },
 }))
 
-const ContentWrapper = styled(Box)(({ theme }) => ({
+const ContentWrapper = styled(Box)(({ theme: _theme }) => ({
   padding: "24px",
   maxWidth: "100%",
   margin: "0 auto",

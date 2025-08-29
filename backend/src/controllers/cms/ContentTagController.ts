@@ -3,10 +3,11 @@ import { ContentTag } from '../../models/cms/ContentTag';
 import { Content } from '../../models/cms/Content';
 import { Op } from 'sequelize';
 import slugify from 'slugify';
+import { logger } from '../../utils/logger';
 
 export class ContentTagController {
   // Get all tags
-  static async getAll(req: Request, res: Response) {
+  static async getAll(req: Request, _res: Response) {
     try {
       const {
         page = 1,
@@ -37,7 +38,7 @@ export class ContentTagController {
         offset
       });
 
-      (res as any).json({
+      _res.json({
         tags,
         pagination: {
           page: Number(page),
@@ -48,12 +49,12 @@ export class ContentTagController {
       });
     } catch (error) {
       logger.error('Error fetching tags:', error);
-      res.status(500).json({ error: 'Failed to fetch tags' });
+      _res.status(500).json({ error: 'Failed to fetch tags' });
     }
   }
 
   // Get single tag
-  static async getOne(req: Request, res: Response) {
+  static async getOne(req: Request, _res: Response) {
     try {
       const { id } = req.params;
       
@@ -76,18 +77,18 @@ export class ContentTagController {
       });
 
       if (!tag) {
-        return res.status(404).json({ error: 'Tag not found' });
+        return _res.status(404).json({ error: 'Tag not found' });
       }
 
-      (res as any).json(tag);
+      _res.json(tag);
     } catch (error) {
       logger.error('Error fetching tag:', error);
-      res.status(500).json({ error: 'Failed to fetch tag' });
+      _res.status(500).json({ error: 'Failed to fetch tag' });
     }
   }
 
   // Create new tag
-  static async create(req: Request, res: Response) {
+  static async create(req: Request, _res: Response) {
     try {
       const { name, description, color } = req.body;
 
@@ -111,22 +112,22 @@ export class ContentTagController {
         usageCount: 0
       });
 
-      res.status(201).json(tag);
+      _res.status(201).json(tag);
     } catch (error) {
       logger.error('Error creating tag:', error);
-      res.status(500).json({ error: 'Failed to create tag' });
+      _res.status(500).json({ error: 'Failed to create tag' });
     }
   }
 
   // Update tag
-  static async update(req: Request, res: Response) {
+  static async update(req: Request, _res: Response) {
     try {
       const { id } = req.params;
       const updates = req.body;
 
       const tag = await ContentTag.findByPk(id);
       if (!tag) {
-        return res.status(404).json({ error: 'Tag not found' });
+        return _res.status(404).json({ error: 'Tag not found' });
       }
 
       // Update slug if name changed
@@ -143,52 +144,52 @@ export class ContentTagController {
       }
 
       await tag.update(updates);
-      (res as any).json(tag);
+      _res.json(tag);
     } catch (error) {
       logger.error('Error updating tag:', error);
-      res.status(500).json({ error: 'Failed to update tag' });
+      _res.status(500).json({ error: 'Failed to update tag' });
     }
   }
 
   // Delete tag
-  static async delete(req: Request, res: Response) {
+  static async delete(req: Request, _res: Response) {
     try {
       const { id } = req.params;
 
       const tag = await ContentTag.findByPk(id);
       if (!tag) {
-        return res.status(404).json({ error: 'Tag not found' });
+        return _res.status(404).json({ error: 'Tag not found' });
       }
 
       // Check if tag is in use
       if (tag.usageCount > 0) {
-        return res.status(400).json({ error: 'Cannot delete tag that is in use' });
+        return _res.status(400).json({ error: 'Cannot delete tag that is in use' });
       }
 
       await tag.destroy();
-      (res as any).json({ message: 'Tag deleted successfully' });
+      _res.json({ message: 'Tag deleted successfully' });
     } catch (error) {
       logger.error('Error deleting tag:', error);
-      res.status(500).json({ error: 'Failed to delete tag' });
+      _res.status(500).json({ error: 'Failed to delete tag' });
     }
   }
 
   // Merge tags
-  static async merge(req: Request, res: Response) {
+  static async merge(req: Request, _res: Response) {
     try {
       const { sourceTagIds, targetTagId } = req.body;
 
       if (!Array.isArray(sourceTagIds) || sourceTagIds.length === 0) {
-        return res.status(400).json({ error: 'Source tag IDs are required' });
+        return _res.status(400).json({ error: 'Source tag IDs are required' });
       }
 
       if (!targetTagId) {
-        return res.status(400).json({ error: 'Target tag ID is required' });
+        return _res.status(400).json({ error: 'Target tag ID is required' });
       }
 
       const targetTag = await ContentTag.findByPk(targetTagId);
       if (!targetTag) {
-        return res.status(404).json({ error: 'Target tag not found' });
+        return _res.status(404).json({ error: 'Target tag not found' });
       }
 
       // Get all contents with source tags
@@ -227,15 +228,15 @@ export class ContentTagController {
         where: { id: sourceTagIds }
       });
 
-      (res as any).json({ message: 'Tags merged successfully' });
+      _res.json({ message: 'Tags merged successfully' });
     } catch (error) {
       logger.error('Error merging tags:', error);
-      res.status(500).json({ error: 'Failed to merge tags' });
+      _res.status(500).json({ error: 'Failed to merge tags' });
     }
   }
 
   // Get popular tags
-  static async getPopular(req: Request, res: Response) {
+  static async getPopular(req: Request, _res: Response) {
     try {
       const { limit = 20 } = req.query;
 
@@ -248,20 +249,20 @@ export class ContentTagController {
         limit: Number(limit)
       });
 
-      (res as any).json(tags);
+      _res.json(tags);
     } catch (error) {
       logger.error('Error fetching popular tags:', error);
-      res.status(500).json({ error: 'Failed to fetch popular tags' });
+      _res.status(500).json({ error: 'Failed to fetch popular tags' });
     }
   }
 
   // Get tag suggestions
-  static async getSuggestions(req: Request, res: Response) {
+  static async getSuggestions(req: Request, _res: Response) {
     try {
       const { query } = req.query;
 
       if (!query || String(query).trim().length < 2) {
-        return (res as any).json([]);
+        return _res.json([]);
       }
 
       const tags = await ContentTag.findAll({
@@ -274,10 +275,10 @@ export class ContentTagController {
         attributes: ['id', 'name', 'slug', 'color']
       });
 
-      (res as any).json(tags);
+      _res.json(tags);
     } catch (error) {
       logger.error('Error fetching tag suggestions:', error);
-      res.status(500).json({ error: 'Failed to fetch tag suggestions' });
+      _res.status(500).json({ error: 'Failed to fetch tag suggestions' });
     }
   }
 }

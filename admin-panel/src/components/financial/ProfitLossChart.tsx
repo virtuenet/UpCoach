@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -9,8 +8,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { format } from "date-fns";
-import { financialApi, ProfitLossStatement } from "../../services/financialApi";
 
 interface ProfitLossChartProps {
   dateRange: {

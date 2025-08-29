@@ -18,7 +18,7 @@ declare global {
 }
 
 export const asyncHandler = (fn: Function) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 };
@@ -130,5 +130,5 @@ export const errorMiddleware = (
     response.stack = error.stack;
   }
 
-  res.status(statusCode).json(response);
+  __res.status(statusCode).json(response);
 }; 

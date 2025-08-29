@@ -1,5 +1,3 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -50,7 +48,6 @@ import {
   Calendar,
   Users,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import experimentsService, {
   Experiment,
   ExperimentFilters,

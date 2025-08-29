@@ -4,7 +4,6 @@
  */
 
 import * as React from 'react';
-import { logger } from '../../utils/logger';
 
 export interface SentryFrontendConfig {
   dsn: string;

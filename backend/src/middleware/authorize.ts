@@ -15,7 +15,7 @@ const roleHierarchy: Record<Role, number> = {
 };
 
 export function authorize(resourceType: ResourceType, requiredRole: Role | Role[]) {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, _res: Response, next: NextFunction) => {
     try {
       const userId = (req as any).user?.id;
       if (!userId) {

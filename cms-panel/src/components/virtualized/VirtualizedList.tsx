@@ -118,7 +118,6 @@ export function VirtualizedList<T = any>({
   }
 
   const isVariableHeight = typeof itemHeight === 'function';
-  const ListComponent = isVariableHeight ? List : FixedSizeList;
 
   return (
     <div className={cn('h-full w-full', className)}>
@@ -131,11 +130,11 @@ export function VirtualizedList<T = any>({
             loadMoreItems={loadMoreItems}
             threshold={threshold}
           >
-            {({ onItemsRendered, ref }) => {
+            {({ onItemsRendered, ref }: { onItemsRendered: any; ref: any }) => {
               if (isVariableHeight) {
                 return (
                   <List
-                    ref={(list) => {
+                    ref={(list: any) => {
                       ref(list);
                       (listRef as any).current = list;
                     }}
@@ -154,7 +153,7 @@ export function VirtualizedList<T = any>({
               } else {
                 return (
                   <FixedSizeList
-                    ref={(list) => {
+                    ref={(list: any) => {
                       ref(list);
                       (listRef as any).current = list;
                     }}

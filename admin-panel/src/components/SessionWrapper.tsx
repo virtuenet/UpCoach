@@ -1,8 +1,4 @@
-import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../stores/authStore";
 import SessionWarningModal from "../../../shared/components/SessionWarningModal";
-import { getSessionManager } from "../../../shared/services/sessionManager";
 
 interface SessionWrapperProps {
   children: React.ReactNode;

@@ -15,7 +15,7 @@ interface WebhookConfig {
  * Generic webhook signature verification middleware
  */
 export function verifyWebhookSignature(config: WebhookConfig) {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, _res: Response, next: NextFunction) => {
     const {
       secret,
       algorithm = 'sha256',
@@ -30,7 +30,7 @@ export function verifyWebhookSignature(config: WebhookConfig) {
       
       if (!signature) {
         logger.error(`Missing webhook signature header: ${headerName}`);
-        return res.status(401).json({ 
+        return _res.status(401).json({ 
           error: 'Missing signature',
           code: 'MISSING_SIGNATURE' 
         });
@@ -45,7 +45,7 @@ export function verifyWebhookSignature(config: WebhookConfig) {
         const webhookTime = parseInt(timestamp, 10);
         
         if (isNaN(webhookTime)) {
-          return res.status(401).json({ 
+          return _res.status(401).json({ 
             error: 'Invalid timestamp',
             code: 'INVALID_TIMESTAMP' 
           });
@@ -57,7 +57,7 @@ export function verifyWebhookSignature(config: WebhookConfig) {
             age, 
             maxAge 
           });
-          return res.status(401).json({ 
+          return _res.status(401).json({ 
             error: 'Request too old',
             code: 'REQUEST_TOO_OLD' 
           });
@@ -80,7 +80,7 @@ export function verifyWebhookSignature(config: WebhookConfig) {
       
       if (signatureBuffer.length !== expectedBuffer.length) {
         logger.error('Signature length mismatch');
-        return res.status(401).json({ 
+        return _res.status(401).json({ 
           error: 'Invalid signature',
           code: 'INVALID_SIGNATURE' 
         });
@@ -88,7 +88,7 @@ export function verifyWebhookSignature(config: WebhookConfig) {
       
       if (!crypto.timingSafeEqual(signatureBuffer, expectedBuffer)) {
         logger.error('Webhook signature verification failed');
-        return res.status(401).json({ 
+        return _res.status(401).json({ 
           error: 'Invalid signature',
           code: 'INVALID_SIGNATURE' 
         });
@@ -101,7 +101,7 @@ export function verifyWebhookSignature(config: WebhookConfig) {
         
         if (wasProcessed) {
           logger.warn('Duplicate webhook detected', { eventId: req.body.id });
-          return res.status(200).json({ 
+          return _res.status(200).json({ 
             received: true,
             duplicate: true 
           });
@@ -115,7 +115,7 @@ export function verifyWebhookSignature(config: WebhookConfig) {
       next();
     } catch (error) {
       logger.error('Webhook verification error:', error);
-      res.status(500).json({ 
+      _res.status(500).json({ 
         error: 'Verification error',
         code: 'VERIFICATION_ERROR' 
       });
@@ -129,7 +129,7 @@ export function verifyWebhookSignature(config: WebhookConfig) {
 export function webhookRateLimit(maxRequests: number = 100, windowMs: number = 60000) {
   const requests = new Map<string, number[]>();
   
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     const identifier = req.ip || 'unknown';
     const now = Date.now();
     const windowStart = now - windowMs;
@@ -145,7 +145,7 @@ export function webhookRateLimit(maxRequests: number = 100, windowMs: number = 6
         identifier, 
         requests: recentRequests.length 
       });
-      return res.status(429).json({ 
+      return _res.status(429).json({ 
         error: 'Too many requests',
         code: 'RATE_LIMIT_EXCEEDED' 
       });
@@ -175,7 +175,7 @@ export function webhookRateLimit(maxRequests: number = 100, windowMs: number = 6
  * IP whitelist for webhooks
  */
 export function webhookIPWhitelist(allowedIPs: string[]) {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     const clientIP = req.ip || req.connection.remoteAddress || '';
     
     // Check if IP is in whitelist
@@ -189,7 +189,7 @@ export function webhookIPWhitelist(allowedIPs: string[]) {
     
     if (!isAllowed) {
       logger.warn('Webhook from unauthorized IP', { clientIP });
-      return res.status(403).json({ 
+      return _res.status(403).json({ 
         error: 'Unauthorized IP',
         code: 'UNAUTHORIZED_IP' 
       });

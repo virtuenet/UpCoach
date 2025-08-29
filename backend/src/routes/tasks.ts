@@ -51,7 +51,7 @@ const taskFiltersSchema = z.object({
 });
 
 // Get all tasks for the current user
-router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.get('/', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const filters = taskFiltersSchema.parse(req.query);
 
@@ -144,7 +144,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) =>
   const total = parseInt(countResult.rows[0].count);
   const totalPages = Math.ceil(total / filters.limit);
 
-  (res as any).json({
+  _res.json({
     success: true,
     data: {
       tasks: result.rows,
@@ -159,7 +159,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) =>
 }));
 
 // Get a single task by ID
-router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const { id } = req.params;
 
@@ -169,7 +169,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response)
     throw new ApiError(404, 'Task not found');
   }
 
-  (res as any).json({
+  _res.json({
     success: true,
     data: {
       task,
@@ -178,7 +178,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response)
 }));
 
 // Create a new task
-router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.post('/', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const validatedData = createTaskSchema.parse(req.body);
 
@@ -197,7 +197,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) =
 
   logger.info('Task created:', { taskId: task.id, userId });
 
-  res.status(201).json({
+  _res.status(201).json({
     success: true,
     message: 'Task created successfully',
     data: {
@@ -207,7 +207,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) =
 }));
 
 // Update a task
-router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const { id } = req.params;
   const validatedData = updateTaskSchema.parse(req.body);
@@ -242,7 +242,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response)
 
   logger.info('Task updated:', { taskId: id, userId });
 
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'Task updated successfully',
     data: {
@@ -252,7 +252,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response)
 }));
 
 // Delete a task
-router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const { id } = req.params;
 
@@ -266,14 +266,14 @@ router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Respon
 
   logger.info('Task deleted:', { taskId: id, userId });
 
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'Task deleted successfully',
   });
 }));
 
 // Get task statistics
-router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
 
   const stats = await db.query(`
@@ -307,7 +307,7 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, res
     GROUP BY category
   `, [userId]);
 
-  (res as any).json({
+  _res.json({
     success: true,
     data: {
       overview: stats.rows[0],

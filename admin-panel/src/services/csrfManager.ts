@@ -3,7 +3,6 @@
  * Handles CSRF token fetching, caching, automatic refresh, and validation
  */
 
-import { apiClient } from '../api/client';
 
 interface CSRFTokenResponse {
   token: string;

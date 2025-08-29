@@ -108,9 +108,9 @@ export function securityHeaders() {
  * Additional custom security headers
  */
 export function customSecurityHeaders() {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     // Permissions Policy (formerly Feature Policy)
-    res.setHeader('Permissions-Policy', [
+    _res.setHeader('Permissions-Policy', [
       'accelerometer=()',
       'ambient-light-sensor=()',
       'autoplay=()',
@@ -142,26 +142,26 @@ export function customSecurityHeaders() {
     
     // Clear Site Data (for logout)
     if (req.path === '/api/auth/logout') {
-      res.setHeader('Clear-Site-Data', '"cache", "cookies", "storage"');
+      _res.setHeader('Clear-Site-Data', '"cache", "cookies", "storage"');
     }
     
     // Cache Control for sensitive data
     if (req.path.includes('/api/') && !req.path.includes('/public')) {
-      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-      res.setHeader('Pragma', 'no-cache');
-      res.setHeader('Expires', '0');
-      res.setHeader('Surrogate-Control', 'no-store');
+      _res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      _res.setHeader('Pragma', 'no-cache');
+      _res.setHeader('Expires', '0');
+      _res.setHeader('Surrogate-Control', 'no-store');
     }
     
     // X-Download-Options
-    res.setHeader('X-Download-Options', 'noopen');
+    _res.setHeader('X-Download-Options', 'noopen');
     
     // X-DNS-Prefetch-Control
-    res.setHeader('X-DNS-Prefetch-Control', 'off');
+    _res.setHeader('X-DNS-Prefetch-Control', 'off');
     
     // Expect-CT (Certificate Transparency)
     if (process.env.NODE_ENV === 'production') {
-      res.setHeader('Expect-CT', 'max-age=86400, enforce');
+      _res.setHeader('Expect-CT', 'max-age=86400, enforce');
     }
     
     next();
@@ -186,25 +186,25 @@ export function secureCors() {
     );
   }
   
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     const origin = req.headers.origin;
     
     if (origin && allowedOrigins.includes(origin)) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
-      res.setHeader('Access-Control-Allow-Credentials', 'true');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-      res.setHeader('Access-Control-Allow-Headers', 
+      _res.setHeader('Access-Control-Allow-Origin', origin);
+      _res.setHeader('Access-Control-Allow-Credentials', 'true');
+      _res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+      _res.setHeader('Access-Control-Allow-Headers', 
         'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-CSRF-Token'
       );
-      res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+      _res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
       
       // Expose certain headers to the client
-      res.setHeader('Access-Control-Expose-Headers', 'X-CSRF-Token, X-Request-Id');
+      _res.setHeader('Access-Control-Expose-Headers', 'X-CSRF-Token, X-Request-Id');
     }
     
     // Handle preflight requests
     if (req.method === 'OPTIONS') {
-      res.sendStatus(204);
+      _res.sendStatus(204);
       return;
     }
     
@@ -216,13 +216,13 @@ export function secureCors() {
  * Request ID middleware for tracking
  */
 export function requestId() {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     const id = req.headers['x-request-id'] || 
                req.headers['x-correlation-id'] || 
                `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
     req.id = id as string;
-    res.setHeader('X-Request-Id', id);
+    _res.setHeader('X-Request-Id', id);
     
     next();
   };
@@ -232,7 +232,7 @@ export function requestId() {
  * Security monitoring middleware
  */
 export function securityMonitoring() {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     // Log security-relevant events
     const securityEvents = [
       '/api/auth/login',

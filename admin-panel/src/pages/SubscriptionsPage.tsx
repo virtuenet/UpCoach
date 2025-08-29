@@ -1,5 +1,3 @@
-import { useState, useEffect } from "react";
-import { format } from "date-fns";
 import {
   Table,
   TableBody,
@@ -8,11 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "../components/ui/table";
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { financialApi } from "../services/financialApi";
-import { DollarSign, Users, TrendingUp, AlertCircle } from "lucide-react";
 
 interface Subscription {
   id: string;

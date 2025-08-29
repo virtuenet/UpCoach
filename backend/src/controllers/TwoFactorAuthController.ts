@@ -7,13 +7,13 @@ import { Request, Response } from 'express';
 import { twoFactorAuthService } from '../services/TwoFactorAuthService';
 import { webAuthnService } from '../services/WebAuthnService';
 import { logger } from '../utils/logger';
-import { AuthRequest } from '../middleware/auth';
+import { AuthenticatedRequest } from '../types';
 
 export class TwoFactorAuthController {
   /**
    * Get 2FA status for current user
    */
-  async get2FAStatus(req: AuthRequest, res: Response) {
+  async get2FAStatus(req: AuthenticatedRequest, _res: Response) {
     try {
       const userId = req.user!.id;
       
@@ -33,7 +33,7 @@ export class TwoFactorAuthController {
         webAuthnService.getUserCredentialStats(userId),
       ]);
 
-      res.json({
+      _res.json({
         enabled: is2FAEnabled,
         method,
         hasBackupCodes: config?.backupCodes && config.backupCodes.length > 0,
@@ -46,7 +46,7 @@ export class TwoFactorAuthController {
         })),
         webAuthn: {
           credentials: webAuthnCredentials.map(c => ({
-            id: c.credentialID,
+            id: Buffer.from(c.credentialID).toString('base64'),
             name: c.name,
             createdAt: c.createdAt,
             lastUsedAt: c.lastUsedAt,
@@ -58,14 +58,14 @@ export class TwoFactorAuthController {
       });
     } catch (error) {
       logger.error('Error getting 2FA status', error);
-      res.status(500).json({ error: 'Failed to get 2FA status' });
+      _res.status(500).json({ error: 'Failed to get 2FA status' });
     }
   }
 
   /**
    * Setup TOTP - Generate secret and QR code
    */
-  async setupTOTP(req: AuthRequest, res: Response) {
+  async setupTOTP(req: AuthenticatedRequest, _res: Response) {
     try {
       const userId = req.user!.id;
       const email = req.user!.email;
@@ -73,7 +73,7 @@ export class TwoFactorAuthController {
       // Check if already enabled
       const isEnabled = await twoFactorAuthService.is2FAEnabled(userId);
       if (isEnabled) {
-        return res.status(400).json({ error: '2FA is already enabled' });
+        return _res.status(400).json({ error: '2FA is already enabled' });
       }
 
       const { secret, qrCode, backupCodes } = await twoFactorAuthService.generateTOTPSecret(
@@ -81,7 +81,7 @@ export class TwoFactorAuthController {
         email
       );
 
-      res.json({
+      _res.json({
         secret: secret.base32,
         qrCode,
         backupCodes,
@@ -89,20 +89,20 @@ export class TwoFactorAuthController {
       });
     } catch (error) {
       logger.error('Error setting up TOTP', error);
-      res.status(500).json({ error: 'Failed to setup 2FA' });
+      _res.status(500).json({ error: 'Failed to setup 2FA' });
     }
   }
 
   /**
    * Verify TOTP and enable 2FA
    */
-  async verifyAndEnableTOTP(req: AuthRequest, res: Response) {
+  async verifyAndEnableTOTP(req: AuthenticatedRequest, _res: Response) {
     try {
       const userId = req.user!.id;
       const { token } = req.body;
 
       if (!token) {
-        return res.status(400).json({ error: 'Verification code is required' });
+        return _res.status(400).json({ error: 'Verification code is required' });
       }
 
       const { success, backupCodes } = await twoFactorAuthService.verifyAndEnableTOTP(
@@ -111,35 +111,35 @@ export class TwoFactorAuthController {
       );
 
       if (!success) {
-        return res.status(400).json({ error: 'Invalid verification code' });
+        return _res.status(400).json({ error: 'Invalid verification code' });
       }
 
-      res.json({
+      _res.json({
         success: true,
         backupCodes,
         message: '2FA has been enabled successfully. Save your backup codes securely.',
       });
     } catch (error) {
       logger.error('Error verifying TOTP', error);
-      res.status(500).json({ error: 'Failed to enable 2FA' });
+      _res.status(500).json({ error: 'Failed to enable 2FA' });
     }
   }
 
   /**
    * Verify TOTP token for login
    */
-  async verifyTOTP(req: Request, res: Response) {
+  async verifyTOTP(req: Request, _res: Response) {
     try {
       const { userId, token } = req.body;
 
       if (!userId || !token) {
-        return res.status(400).json({ error: 'User ID and token are required' });
+        return _res.status(400).json({ error: 'User ID and token are required' });
       }
 
       // Check rate limit
       const canAttempt = await twoFactorAuthService.check2FARateLimit(userId);
       if (!canAttempt) {
-        return res.status(429).json({ error: 'Too many attempts. Please try again later.' });
+        return _res.status(429).json({ error: 'Too many attempts. Please try again later.' });
       }
 
       const verified = await twoFactorAuthService.verifyTOTP(userId, token);
@@ -152,38 +152,38 @@ export class TwoFactorAuthController {
         if (trustDevice && deviceName) {
           const fingerprint = twoFactorAuthService.generateDeviceFingerprint(
             req.get('user-agent') || '',
-            req.ip,
-            req.get('accept-language')
+            req.ip || 'unknown',
+            req.get('accept-language') || 'en'
           );
 
           await twoFactorAuthService.addTrustedDevice(userId, {
             name: deviceName,
             fingerprint,
             userAgent: req.get('user-agent') || '',
-            ipAddress: req.ip,
+            ipAddress: req.ip || 'unknown',
           });
         }
 
-        res.json({
+        _res.json({
           success: true,
           message: '2FA verification successful',
         });
       } else {
-        res.status(400).json({ error: 'Invalid verification code' });
+        _res.status(400).json({ error: 'Invalid verification code' });
       }
     } catch (error) {
       logger.error('Error verifying TOTP', error);
-      res.status(500).json({ error: 'Verification failed' });
+      _res.status(500).json({ error: 'Verification failed' });
     }
   }
 
   /**
    * Disable 2FA
    */
-  async disable2FA(req: AuthRequest, res: Response) {
+  async disable2FA(req: AuthenticatedRequest, _res: Response) {
     try {
       const userId = req.user!.id;
-      const { password, token } = req.body;
+      const { password: _password, token } = req.body;
 
       // Verify password first
       // TODO: Verify user password
@@ -191,25 +191,25 @@ export class TwoFactorAuthController {
       // Verify current 2FA token
       const verified = await twoFactorAuthService.verifyTOTP(userId, token);
       if (!verified) {
-        return res.status(400).json({ error: 'Invalid verification code' });
+        return _res.status(400).json({ error: 'Invalid verification code' });
       }
 
       await twoFactorAuthService.disable2FA(userId);
 
-      res.json({
+      _res.json({
         success: true,
         message: '2FA has been disabled',
       });
     } catch (error) {
       logger.error('Error disabling 2FA', error);
-      res.status(500).json({ error: 'Failed to disable 2FA' });
+      _res.status(500).json({ error: 'Failed to disable 2FA' });
     }
   }
 
   /**
    * Regenerate backup codes
    */
-  async regenerateBackupCodes(req: AuthRequest, res: Response) {
+  async regenerateBackupCodes(req: AuthenticatedRequest, _res: Response) {
     try {
       const userId = req.user!.id;
       const { token } = req.body;
@@ -217,64 +217,64 @@ export class TwoFactorAuthController {
       // Verify current 2FA token
       const verified = await twoFactorAuthService.verifyTOTP(userId, token);
       if (!verified) {
-        return res.status(400).json({ error: 'Invalid verification code' });
+        return _res.status(400).json({ error: 'Invalid verification code' });
       }
 
       const backupCodes = await twoFactorAuthService.regenerateBackupCodes(userId);
 
-      res.json({
+      _res.json({
         backupCodes,
         message: 'New backup codes generated. Save them securely.',
       });
     } catch (error) {
       logger.error('Error regenerating backup codes', error);
-      res.status(500).json({ error: 'Failed to regenerate backup codes' });
+      _res.status(500).json({ error: 'Failed to regenerate backup codes' });
     }
   }
 
   /**
    * Manage trusted devices
    */
-  async getTrustedDevices(req: AuthRequest, res: Response) {
+  async getTrustedDevices(req: AuthenticatedRequest, _res: Response) {
     try {
       const userId = req.user!.id;
       const devices = await twoFactorAuthService.getTrustedDevices(userId);
 
-      res.json({ devices });
+      _res.json({ devices });
     } catch (error) {
       logger.error('Error getting trusted devices', error);
-      res.status(500).json({ error: 'Failed to get trusted devices' });
+      _res.status(500).json({ error: 'Failed to get trusted devices' });
     }
   }
 
   /**
    * Remove trusted device
    */
-  async removeTrustedDevice(req: AuthRequest, res: Response) {
+  async removeTrustedDevice(req: AuthenticatedRequest, _res: Response) {
     try {
       const userId = req.user!.id;
       const { deviceId } = req.params;
 
       await twoFactorAuthService.removeTrustedDevice(userId, deviceId);
 
-      res.json({
+      _res.json({
         success: true,
         message: 'Device removed successfully',
       });
     } catch (error) {
       logger.error('Error removing trusted device', error);
-      res.status(500).json({ error: 'Failed to remove device' });
+      _res.status(500).json({ error: 'Failed to remove device' });
     }
   }
 
   /**
    * WebAuthn - Start registration
    */
-  async startWebAuthnRegistration(req: AuthRequest, res: Response) {
+  async startWebAuthnRegistration(req: AuthenticatedRequest, _res: Response) {
     try {
       const userId = req.user!.id;
       const userName = req.user!.email;
-      const userDisplayName = req.user!.name;
+      const userDisplayName = req.user!.name || req.user!.email;
 
       const options = await webAuthnService.generateRegistrationOptions(
         userId,
@@ -282,17 +282,17 @@ export class TwoFactorAuthController {
         userDisplayName
       );
 
-      res.json(options);
+      _res.json(options);
     } catch (error) {
       logger.error('Error starting WebAuthn registration', error);
-      res.status(500).json({ error: 'Failed to start registration' });
+      _res.status(500).json({ error: 'Failed to start registration' });
     }
   }
 
   /**
    * WebAuthn - Verify registration
    */
-  async verifyWebAuthnRegistration(req: AuthRequest, res: Response) {
+  async verifyWebAuthnRegistration(req: AuthenticatedRequest, _res: Response) {
     try {
       const userId = req.user!.id;
       const { response, name } = req.body;
@@ -304,71 +304,71 @@ export class TwoFactorAuthController {
       );
 
       if (verified) {
-        res.json({
+        _res.json({
           verified: true,
           credentialId,
           message: 'Passkey registered successfully',
         });
       } else {
-        res.status(400).json({ error: 'Registration verification failed' });
+        _res.status(400).json({ error: 'Registration verification failed' });
       }
     } catch (error) {
       logger.error('Error verifying WebAuthn registration', error);
-      res.status(500).json({ error: 'Failed to verify registration' });
+      _res.status(500).json({ error: 'Failed to verify registration' });
     }
   }
 
   /**
    * WebAuthn - Start authentication
    */
-  async startWebAuthnAuthentication(req: Request, res: Response) {
+  async startWebAuthnAuthentication(req: Request, _res: Response) {
     try {
       const { userId } = req.body; // Optional, for username-less auth
       const options = await webAuthnService.generateAuthenticationOptions(userId);
 
-      res.json(options);
+      _res.json(options);
     } catch (error) {
       logger.error('Error starting WebAuthn authentication', error);
-      res.status(500).json({ error: 'Failed to start authentication' });
+      _res.status(500).json({ error: 'Failed to start authentication' });
     }
   }
 
   /**
    * WebAuthn - Verify authentication
    */
-  async verifyWebAuthnAuthentication(req: Request, res: Response) {
+  async verifyWebAuthnAuthentication(req: Request, _res: Response) {
     try {
       const { response, userId } = req.body;
 
       const result = await webAuthnService.verifyAuthenticationResponse(response, userId);
 
       if (result.verified) {
-        res.json({
+        _res.json({
           verified: true,
           userId: result.userId,
           message: 'Authentication successful',
         });
       } else {
-        res.status(400).json({ error: 'Authentication verification failed' });
+        _res.status(400).json({ error: 'Authentication verification failed' });
       }
     } catch (error) {
       logger.error('Error verifying WebAuthn authentication', error);
-      res.status(500).json({ error: 'Failed to verify authentication' });
+      _res.status(500).json({ error: 'Failed to verify authentication' });
     }
   }
 
   /**
    * WebAuthn - List credentials
    */
-  async listWebAuthnCredentials(req: AuthRequest, res: Response) {
+  async listWebAuthnCredentials(req: AuthenticatedRequest, _res: Response) {
     try {
       const userId = req.user!.id;
       const credentials = await webAuthnService.getUserCredentials(userId);
       const stats = await webAuthnService.getUserCredentialStats(userId);
 
-      res.json({
+      _res.json({
         credentials: credentials.map(c => ({
-          id: c.credentialID,
+          id: Buffer.from(c.credentialID).toString('base64'),
           name: c.name,
           createdAt: c.createdAt,
           lastUsedAt: c.lastUsedAt,
@@ -379,34 +379,34 @@ export class TwoFactorAuthController {
       });
     } catch (error) {
       logger.error('Error listing WebAuthn credentials', error);
-      res.status(500).json({ error: 'Failed to list credentials' });
+      _res.status(500).json({ error: 'Failed to list credentials' });
     }
   }
 
   /**
    * WebAuthn - Delete credential
    */
-  async deleteWebAuthnCredential(req: AuthRequest, res: Response) {
+  async deleteWebAuthnCredential(req: AuthenticatedRequest, _res: Response) {
     try {
       const userId = req.user!.id;
       const { credentialId } = req.params;
 
       await webAuthnService.deleteCredential(userId, credentialId);
 
-      res.json({
+      _res.json({
         success: true,
         message: 'Credential deleted successfully',
       });
     } catch (error) {
       logger.error('Error deleting WebAuthn credential', error);
-      res.status(500).json({ error: 'Failed to delete credential' });
+      _res.status(500).json({ error: 'Failed to delete credential' });
     }
   }
 
   /**
    * WebAuthn - Rename credential
    */
-  async renameWebAuthnCredential(req: AuthRequest, res: Response) {
+  async renameWebAuthnCredential(req: AuthenticatedRequest, _res: Response) {
     try {
       const userId = req.user!.id;
       const { credentialId } = req.params;
@@ -414,13 +414,13 @@ export class TwoFactorAuthController {
 
       await webAuthnService.renameCredential(userId, credentialId, name);
 
-      res.json({
+      _res.json({
         success: true,
         message: 'Credential renamed successfully',
       });
     } catch (error) {
       logger.error('Error renaming WebAuthn credential', error);
-      res.status(500).json({ error: 'Failed to rename credential' });
+      _res.status(500).json({ error: 'Failed to rename credential' });
     }
   }
 }

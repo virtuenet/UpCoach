@@ -1,7 +1,4 @@
 import axios from 'axios';
-import { useAuthStore } from "../stores/authStore";
-import { csrfManager } from "../services/csrfManager";
-import { performanceMonitor } from "../services/performanceMonitor";
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 

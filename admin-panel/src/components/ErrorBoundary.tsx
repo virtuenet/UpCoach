@@ -1,6 +1,3 @@
-import { Component, ReactNode, ErrorInfo } from 'react';
-import { Button } from './ui/button';
-import { AlertCircle, RefreshCw } from 'lucide-react';
 // Temporarily disabled for development
 // import { sentryFrontend } from '../services/monitoring/sentryInit';
 

@@ -5,6 +5,7 @@
 
 import CircuitBreaker from 'opossum';
 import { EventEmitter } from 'events';
+import { logger } from '../utils/logger';
 
 export interface CircuitBreakerOptions {
   timeout?: number;

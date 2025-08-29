@@ -1,8 +1,4 @@
-import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import App from './App';
-import { useAuthStore } from './stores/authStore';
 
 // Mock react-router-dom BrowserRouter to avoid conflicts
 vi.mock('react-router-dom', async () => {

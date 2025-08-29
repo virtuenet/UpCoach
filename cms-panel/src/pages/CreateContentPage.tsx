@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { Save, ArrowLeft, Eye, Image, Settings, Calendar } from 'lucide-react'
+import { Save, ArrowLeft, Eye, Settings } from 'lucide-react'
 import DOMPurify from 'isomorphic-dompurify'
 import RichTextEditor from '../components/RichTextEditor'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -39,7 +39,7 @@ export default function CreateContentPage() {
     control,
     watch,
     formState: { errors },
-    setValue,
+    setValue: _setValue,
   } = useForm<ContentFormData>({
     resolver: zodResolver(contentSchema),
     defaultValues: {

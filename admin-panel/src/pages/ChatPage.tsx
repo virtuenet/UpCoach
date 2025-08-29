@@ -1,7 +1,3 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Search, MessageSquare, User, Bot } from "lucide-react";
-import { chatApi } from "../api/chat";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 interface ChatConversation {

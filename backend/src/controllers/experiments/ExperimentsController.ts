@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Experiment } from '../../models/experiments/Experiment';
 import { ABTestingService } from '../../services/ab-testing/ABTestingService';
 import { validationResult } from 'express-validator';
+import { logger } from '../../utils/logger';
 
 export class ExperimentsController {
   private abTestingService: ABTestingService;
@@ -13,11 +14,11 @@ export class ExperimentsController {
   /**
    * Create a new experiment
    */
-  async createExperiment(req: Request, res: Response): Promise<void> {
+  async createExperiment(req: Request, _res: Response): Promise<void> {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           errors: errors.array(),
         });
@@ -51,14 +52,14 @@ export class ExperimentsController {
         status: 'draft',
       });
 
-      res.status(201).json({
+      _res.status(201).json({
         success: true,
         data: experiment,
         message: 'Experiment created successfully',
       });
     } catch (error) {
       logger.error('Error creating experiment:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to create experiment',
         message: error instanceof Error ? error.message : 'Unknown error',
@@ -69,7 +70,7 @@ export class ExperimentsController {
   /**
    * Get all experiments
    */
-  async getExperiments(req: Request, res: Response): Promise<void> {
+  async getExperiments(req: Request, _res: Response): Promise<void> {
     try {
       const {
         status,
@@ -93,7 +94,7 @@ export class ExperimentsController {
         order: [[sortBy as string, sortOrder as string]],
       });
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: {
           experiments,
@@ -107,7 +108,7 @@ export class ExperimentsController {
       });
     } catch (error) {
       logger.error('Error fetching experiments:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to fetch experiments',
       });
@@ -117,26 +118,26 @@ export class ExperimentsController {
   /**
    * Get experiment by ID
    */
-  async getExperiment(req: Request, res: Response): Promise<void> {
+  async getExperiment(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
 
       const experiment = await Experiment.findByPk(id);
       if (!experiment) {
-        res.status(404).json({
+        _res.status(404).json({
           success: false,
           error: 'Experiment not found',
         });
         return;
       }
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: experiment,
       });
     } catch (error) {
       logger.error('Error fetching experiment:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to fetch experiment',
       });
@@ -146,11 +147,11 @@ export class ExperimentsController {
   /**
    * Update experiment
    */
-  async updateExperiment(req: Request, res: Response): Promise<void> {
+  async updateExperiment(req: Request, _res: Response): Promise<void> {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           errors: errors.array(),
         });
@@ -162,7 +163,7 @@ export class ExperimentsController {
 
       const experiment = await Experiment.findByPk(id);
       if (!experiment) {
-        res.status(404).json({
+        _res.status(404).json({
           success: false,
           error: 'Experiment not found',
         });
@@ -171,7 +172,7 @@ export class ExperimentsController {
 
       // Prevent modification of active experiments
       if (experiment.status === 'active' && updateData.status !== 'paused' && updateData.status !== 'completed') {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           error: 'Cannot modify active experiment configuration. Pause experiment first.',
         });
@@ -180,14 +181,14 @@ export class ExperimentsController {
 
       await experiment.update(updateData);
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: experiment,
         message: 'Experiment updated successfully',
       });
     } catch (error) {
       logger.error('Error updating experiment:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to update experiment',
         message: error instanceof Error ? error.message : 'Unknown error',
@@ -198,13 +199,13 @@ export class ExperimentsController {
   /**
    * Start experiment
    */
-  async startExperiment(req: Request, res: Response): Promise<void> {
+  async startExperiment(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
 
       const experiment = await Experiment.findByPk(id);
       if (!experiment) {
-        res.status(404).json({
+        _res.status(404).json({
           success: false,
           error: 'Experiment not found',
         });
@@ -212,7 +213,7 @@ export class ExperimentsController {
       }
 
       if (experiment.status !== 'draft' && experiment.status !== 'paused') {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           error: `Cannot start experiment with status: ${experiment.status}`,
         });
@@ -221,7 +222,7 @@ export class ExperimentsController {
 
       // Validate experiment configuration
       if (!experiment.validateVariantAllocations()) {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           error: 'Invalid variant allocations. Must sum to 100%',
         });
@@ -234,14 +235,14 @@ export class ExperimentsController {
         updatedBy: (req as any).user!.id,
       });
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: experiment,
         message: 'Experiment started successfully',
       });
     } catch (error) {
       logger.error('Error starting experiment:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to start experiment',
       });
@@ -251,13 +252,13 @@ export class ExperimentsController {
   /**
    * Stop experiment
    */
-  async stopExperiment(req: Request, res: Response): Promise<void> {
+  async stopExperiment(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
 
       const experiment = await Experiment.findByPk(id);
       if (!experiment) {
-        res.status(404).json({
+        _res.status(404).json({
           success: false,
           error: 'Experiment not found',
         });
@@ -265,7 +266,7 @@ export class ExperimentsController {
       }
 
       if (experiment.status !== 'active' && experiment.status !== 'paused') {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           error: `Cannot stop experiment with status: ${experiment.status}`,
         });
@@ -278,14 +279,14 @@ export class ExperimentsController {
         updatedBy: (req as any).user!.id,
       });
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: experiment,
         message: 'Experiment stopped successfully',
       });
     } catch (error) {
       logger.error('Error stopping experiment:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to stop experiment',
       });
@@ -295,7 +296,7 @@ export class ExperimentsController {
   /**
    * Get variant for user
    */
-  async getVariant(req: Request, res: Response): Promise<void> {
+  async getVariant(req: Request, _res: Response): Promise<void> {
     try {
       const { experimentId } = req.params;
       const userId = (req as any).user!.id;
@@ -303,13 +304,13 @@ export class ExperimentsController {
 
       const variant = await this.abTestingService.getVariant(userId, experimentId, context);
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: variant,
       });
     } catch (error) {
       logger.error('Error getting variant:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to get variant assignment',
       });
@@ -319,7 +320,7 @@ export class ExperimentsController {
   /**
    * Track conversion event
    */
-  async trackConversion(req: Request, res: Response): Promise<void> {
+  async trackConversion(req: Request, _res: Response): Promise<void> {
     try {
       const { experimentId } = req.params;
       const { eventType, eventValue, properties } = req.body;
@@ -333,13 +334,13 @@ export class ExperimentsController {
         properties
       );
 
-      (res as any).json({
+      _res.json({
         success,
         message: success ? 'Conversion tracked successfully' : 'Failed to track conversion',
       });
     } catch (error) {
       logger.error('Error tracking conversion:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to track conversion',
       });
@@ -349,26 +350,26 @@ export class ExperimentsController {
   /**
    * Get experiment analytics
    */
-  async getAnalytics(req: Request, res: Response): Promise<void> {
+  async getAnalytics(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
 
       const analytics = await this.abTestingService.getExperimentAnalytics(id);
       if (!analytics) {
-        res.status(404).json({
+        _res.status(404).json({
           success: false,
           error: 'Experiment not found or analytics not available',
         });
         return;
       }
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: analytics,
       });
     } catch (error) {
       logger.error('Error fetching analytics:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to fetch experiment analytics',
       });
@@ -378,13 +379,13 @@ export class ExperimentsController {
   /**
    * Delete experiment (only drafts)
    */
-  async deleteExperiment(req: Request, res: Response): Promise<void> {
+  async deleteExperiment(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
 
       const experiment = await Experiment.findByPk(id);
       if (!experiment) {
-        res.status(404).json({
+        _res.status(404).json({
           success: false,
           error: 'Experiment not found',
         });
@@ -392,7 +393,7 @@ export class ExperimentsController {
       }
 
       if (experiment.status !== 'draft') {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           error: 'Can only delete draft experiments',
         });
@@ -401,13 +402,13 @@ export class ExperimentsController {
 
       await experiment.destroy();
 
-      (res as any).json({
+      _res.json({
         success: true,
         message: 'Experiment deleted successfully',
       });
     } catch (error) {
       logger.error('Error deleting experiment:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to delete experiment',
       });

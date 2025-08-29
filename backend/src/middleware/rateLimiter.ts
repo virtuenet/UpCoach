@@ -13,13 +13,13 @@ export const apiLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  handler: (req: Request, res: Response) => {
+  handler: (req: Request, _res: Response) => {
     logger.warn('Rate limit exceeded', {
       ip: req.ip,
       path: req.path,
       method: req.method,
     });
-    res.status(429).json({
+    _res.status(429).json({
       success: false,
       error: 'Too many requests',
       message: 'Rate limit exceeded. Please try again later.',
@@ -40,7 +40,7 @@ export const authLimiter = rateLimit({
   legacyHeaders: false,
   // Use fingerprinting for better bot detection
   keyGenerator: (req) => generateRequestFingerprint(req),
-  handler: (req: Request, res: Response) => {
+  handler: (req: Request, _res: Response) => {
     logger.error('Auth rate limit exceeded', {
       ip: req.ip,
       fingerprint: generateRequestFingerprint(req).substring(0, 10),
@@ -48,7 +48,7 @@ export const authLimiter = rateLimit({
       body: { email: req.body?.email }, // Log email for security monitoring
       userAgent: req.get('user-agent'),
     });
-    res.status(429).json({
+    _res.status(429).json({
       success: false,
       error: 'Too many authentication attempts',
       message: 'Account temporarily locked. Please try again in 15 minutes.',
@@ -147,7 +147,7 @@ export function createRateLimiter(options: {
     keyGenerator: options.useFingerprint 
       ? (req) => generateRequestFingerprint(req)
       : undefined, // Uses default IP-based key
-    handler: (req: Request, res: Response) => {
+    handler: (req: Request, _res: Response) => {
       logger.warn('Custom rate limit exceeded', {
         ip: req.ip,
         fingerprint: options.useFingerprint ? generateRequestFingerprint(req).substring(0, 10) : undefined,
@@ -155,7 +155,7 @@ export function createRateLimiter(options: {
         limit: options.max,
         window: options.windowMs,
       });
-      res.status(429).json({
+      _res.status(429).json({
         success: false,
         error: 'Rate limit exceeded',
         message: options.message || 'Please try again later.',

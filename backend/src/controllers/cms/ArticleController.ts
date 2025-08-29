@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Article, Category, ContentAnalytics } from '../../models';
 import { validationResult } from 'express-validator';
 import { Op } from 'sequelize';
+import { logger } from '../../utils/logger';
 
 /**
  * ArticleController
@@ -11,7 +12,7 @@ export class ArticleController {
   /**
    * Get all articles with filtering and pagination
    */
-  static async getArticles(req: Request, res: Response): Promise<void> {
+  static async getArticles(req: Request, _res: Response): Promise<void> {
     try {
       const {
         page = 1,
@@ -62,7 +63,7 @@ export class ArticleController {
         offset,
       });
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: articles.rows,
         pagination: {
@@ -74,7 +75,7 @@ export class ArticleController {
       });
     } catch (error) {
       logger.error('Error fetching articles:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to fetch articles',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -85,7 +86,7 @@ export class ArticleController {
   /**
    * Get a single article by ID or slug
    */
-  static async getArticle(req: Request, res: Response): Promise<void> {
+  static async getArticle(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { trackView = 'true' } = req.query;
@@ -115,7 +116,7 @@ export class ArticleController {
       }
 
       if (!article) {
-        res.status(404).json({
+        _res.status(404).json({
           success: false,
           message: 'Article not found',
         });
@@ -143,13 +144,13 @@ export class ArticleController {
         });
       }
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: article,
       });
     } catch (error) {
       logger.error('Error fetching article:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to fetch article',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -160,12 +161,12 @@ export class ArticleController {
   /**
    * Create a new article
    */
-  static async createArticle(req: Request, res: Response): Promise<void> {
+  static async createArticle(req: Request, _res: Response): Promise<void> {
     try {
       // Check validation errors
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           message: 'Validation failed',
           errors: errors.array(),
@@ -236,14 +237,14 @@ export class ArticleController {
         ],
       });
 
-      res.status(201).json({
+      _res.status(201).json({
         success: true,
         data: createdArticle,
         message: 'Article created successfully',
       });
     } catch (error) {
       logger.error('Error creating article:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to create article',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -254,13 +255,13 @@ export class ArticleController {
   /**
    * Update an existing article
    */
-  static async updateArticle(req: Request, res: Response): Promise<void> {
+  static async updateArticle(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const errors = validationResult(req);
 
       if (!errors.isEmpty()) {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           message: 'Validation failed',
           errors: errors.array(),
@@ -270,7 +271,7 @@ export class ArticleController {
 
       const article = await Article.findByPk(id);
       if (!article) {
-        res.status(404).json({
+        _res.status(404).json({
           success: false,
           message: 'Article not found',
         });
@@ -279,7 +280,7 @@ export class ArticleController {
 
       // Check if user can edit this article
       if (article.authorId !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
-        res.status(403).json({
+        _res.status(403).json({
           success: false,
           message: 'Not authorized to edit this article',
         });
@@ -335,14 +336,14 @@ export class ArticleController {
         ],
       });
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: updatedArticle,
         message: 'Article updated successfully',
       });
     } catch (error) {
       logger.error('Error updating article:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to update article',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -353,13 +354,13 @@ export class ArticleController {
   /**
    * Delete an article
    */
-  static async deleteArticle(req: Request, res: Response): Promise<void> {
+  static async deleteArticle(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
 
       const article = await Article.findByPk(id);
       if (!article) {
-        res.status(404).json({
+        _res.status(404).json({
           success: false,
           message: 'Article not found',
         });
@@ -368,7 +369,7 @@ export class ArticleController {
 
       // Check if user can delete this article
       if (article.authorId !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
-        res.status(403).json({
+        _res.status(403).json({
           success: false,
           message: 'Not authorized to delete this article',
         });
@@ -377,13 +378,13 @@ export class ArticleController {
 
       await article.destroy();
 
-      (res as any).json({
+      _res.json({
         success: true,
         message: 'Article deleted successfully',
       });
     } catch (error) {
       logger.error('Error deleting article:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to delete article',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -394,13 +395,13 @@ export class ArticleController {
   /**
    * Publish an article
    */
-  static async publishArticle(req: Request, res: Response): Promise<void> {
+  static async publishArticle(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
 
       const article = await Article.findByPk(id);
       if (!article) {
-        res.status(404).json({
+        _res.status(404).json({
           success: false,
           message: 'Article not found',
         });
@@ -409,7 +410,7 @@ export class ArticleController {
 
       // Check if user can publish this article
       if (article.authorId !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
-        res.status(403).json({
+        _res.status(403).json({
           success: false,
           message: 'Not authorized to publish this article',
         });
@@ -418,14 +419,14 @@ export class ArticleController {
 
       await article.publish();
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: article,
         message: 'Article published successfully',
       });
     } catch (error) {
       logger.error('Error publishing article:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to publish article',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -436,13 +437,13 @@ export class ArticleController {
   /**
    * Archive an article
    */
-  static async archiveArticle(req: Request, res: Response): Promise<void> {
+  static async archiveArticle(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
 
       const article = await Article.findByPk(id);
       if (!article) {
-        res.status(404).json({
+        _res.status(404).json({
           success: false,
           message: 'Article not found',
         });
@@ -451,7 +452,7 @@ export class ArticleController {
 
       // Check if user can archive this article
       if (article.authorId !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
-        res.status(403).json({
+        _res.status(403).json({
           success: false,
           message: 'Not authorized to archive this article',
         });
@@ -460,14 +461,14 @@ export class ArticleController {
 
       await article.archive();
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: article,
         message: 'Article archived successfully',
       });
     } catch (error) {
       logger.error('Error archiving article:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to archive article',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -478,20 +479,20 @@ export class ArticleController {
   /**
    * Get popular articles
    */
-  static async getPopularArticles(req: Request, res: Response): Promise<void> {
+  static async getPopularArticles(req: Request, _res: Response): Promise<void> {
     try {
       const { limit = 10 } = req.query;
       // const { timeframe = 'month' } = req.query; // unused
 
       const articles = await Article.getPopular(Number(limit));
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: articles,
       });
     } catch (error) {
       logger.error('Error fetching popular articles:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to fetch popular articles',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -502,12 +503,12 @@ export class ArticleController {
   /**
    * Search articles
    */
-  static async searchArticles(req: Request, res: Response): Promise<void> {
+  static async searchArticles(req: Request, _res: Response): Promise<void> {
     try {
       const { q: query, category, status, author, tags } = req.query;
 
       if (!query) {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           message: 'Search query is required',
         });
@@ -522,13 +523,13 @@ export class ArticleController {
 
       const articles = await Article.searchArticles(query as string, filters);
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: articles,
       });
     } catch (error) {
       logger.error('Error searching articles:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to search articles',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -539,13 +540,13 @@ export class ArticleController {
   /**
    * Get article analytics
    */
-  static async getArticleAnalytics(req: Request, res: Response): Promise<void> {
+  static async getArticleAnalytics(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
 
       const article = await Article.findByPk(id);
       if (!article) {
-        res.status(404).json({
+        _res.status(404).json({
           success: false,
           message: 'Article not found',
         });
@@ -554,7 +555,7 @@ export class ArticleController {
 
       const analytics = await ContentAnalytics.getContentPerformance('article', id);
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: {
           article: {
@@ -568,7 +569,7 @@ export class ArticleController {
       });
     } catch (error) {
       logger.error('Error fetching article analytics:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to fetch article analytics',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,

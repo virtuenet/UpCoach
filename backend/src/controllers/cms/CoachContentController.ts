@@ -12,7 +12,7 @@ const publishingService = new PublishingService();
 
 export class CoachContentController {
   // Get coach's content dashboard
-  async getDashboard(req: Request, res: Response) {
+  async getDashboard(req: Request, _res: Response) {
     try {
       const coachId = (req as any).user!.id;
 
@@ -44,7 +44,7 @@ export class CoachContentController {
         limit: 5,
       });
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: {
           stats: {
@@ -59,7 +59,7 @@ export class CoachContentController {
       });
     } catch (error) {
       logger.error('Failed to get coach dashboard', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to load dashboard',
       });
@@ -67,7 +67,7 @@ export class CoachContentController {
   }
 
   // Get coach's articles
-  async getArticles(req: Request, res: Response) {
+  async getArticles(req: Request, _res: Response) {
     try {
       const coachId = (req as any).user!.id;
       const { status, search, page = 1, limit = 10 } = req.query;
@@ -97,7 +97,7 @@ export class CoachContentController {
         offset,
       });
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: rows,
         pagination: {
@@ -109,7 +109,7 @@ export class CoachContentController {
       });
     } catch (error) {
       logger.error('Failed to get coach articles', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to load articles',
       });
@@ -117,7 +117,7 @@ export class CoachContentController {
   }
 
   // Create new article
-  async createArticle(req: Request, res: Response) {
+  async createArticle(req: Request, _res: Response) {
     try {
       const coachId = (req as any).user!.id;
       const articleData = {
@@ -131,13 +131,13 @@ export class CoachContentController {
       // Create initial version
       await article.createVersion(Number(coachId), 'Initial draft');
 
-      res.status(201).json({
+      _res.status(201).json({
         success: true,
         data: article,
       });
     } catch (error) {
       logger.error('Failed to create article', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to create article',
       });
@@ -145,7 +145,7 @@ export class CoachContentController {
   }
 
   // Update article
-  async updateArticle(req: Request, res: Response) {
+  async updateArticle(req: Request, _res: Response) {
     try {
       const coachId = (req as any).user!.id;
       const { id } = req.params;
@@ -155,7 +155,7 @@ export class CoachContentController {
       });
 
       if (!article) {
-        return res.status(404).json({
+        return _res.status(404).json({
           success: false,
           error: 'Article not found',
         });
@@ -163,7 +163,7 @@ export class CoachContentController {
 
       // Coaches can only update their own articles in draft or review status
       if (article.status === 'published' && !req.body.forceUpdate) {
-        return res.status(403).json({
+        return _res.status(403).json({
           success: false,
           error: 'Cannot edit published articles. Create a new version instead.',
         });
@@ -174,13 +174,13 @@ export class CoachContentController {
       // Create version snapshot
       await article.createVersion(Number(coachId), 'Updated by coach');
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: article,
       });
     } catch (error) {
       logger.error('Failed to update article', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to update article',
       });
@@ -188,7 +188,7 @@ export class CoachContentController {
   }
 
   // Submit article for review
-  async submitForReview(req: Request, res: Response) {
+  async submitForReview(req: Request, _res: Response) {
     try {
       const coachId = (req as any).user!.id;
       const { id } = req.params;
@@ -199,14 +199,14 @@ export class CoachContentController {
       });
 
       if (!article) {
-        return res.status(404).json({
+        return _res.status(404).json({
           success: false,
           error: 'Article not found',
         });
       }
 
       if (article.status !== 'draft') {
-        return res.status(400).json({
+        return _res.status(400).json({
           success: false,
           error: 'Only draft articles can be submitted for review',
         });
@@ -215,7 +215,7 @@ export class CoachContentController {
       // Validate article before submission
       const validation = await publishingService.validateArticle(article);
       if (!validation.isValid) {
-        return res.status(400).json({
+        return _res.status(400).json({
           success: false,
           error: 'Article validation failed',
           details: validation.errors,
@@ -230,14 +230,14 @@ export class CoachContentController {
         await article.createVersion(Number(coachId), `Submitted for review: ${reviewerNotes}`);
       }
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: article,
         message: 'Article submitted for review successfully',
       });
     } catch (error) {
       logger.error('Failed to submit article for review', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to submit article for review',
       });
@@ -245,7 +245,7 @@ export class CoachContentController {
   }
 
   // Schedule article publishing
-  async scheduleArticle(req: Request, res: Response) {
+  async scheduleArticle(req: Request, _res: Response) {
     try {
       const coachId = (req as any).user!.id;
       const { id } = req.params;
@@ -256,7 +256,7 @@ export class CoachContentController {
       });
 
       if (!article) {
-        return res.status(404).json({
+        return _res.status(404).json({
           success: false,
           error: 'Article not found',
         });
@@ -264,7 +264,7 @@ export class CoachContentController {
 
       // Coaches can only schedule their approved articles
       if (article.status !== 'review' && article.status !== 'published') {
-        return res.status(400).json({
+        return _res.status(400).json({
           success: false,
           error: 'Article must be approved before scheduling',
         });
@@ -276,14 +276,14 @@ export class CoachContentController {
         { ...options, createdBy: coachId }
       );
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: schedule,
         message: 'Article scheduled successfully',
       });
     } catch (error) {
       logger.error('Failed to schedule article', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to schedule article',
       });
@@ -291,7 +291,7 @@ export class CoachContentController {
   }
 
   // Get article analytics
-  async getArticleAnalytics(req: Request, res: Response) {
+  async getArticleAnalytics(req: Request, _res: Response) {
     try {
       const coachId = (req as any).user!.id;
       const { id } = req.params;
@@ -302,7 +302,7 @@ export class CoachContentController {
       });
 
       if (!article) {
-        return res.status(404).json({
+        return _res.status(404).json({
           success: false,
           error: 'Article not found',
         });
@@ -342,13 +342,13 @@ export class CoachContentController {
         },
       };
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: analytics,
       });
     } catch (error) {
       logger.error('Failed to get article analytics', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to load analytics',
       });
@@ -356,13 +356,13 @@ export class CoachContentController {
   }
 
   // Upload media for articles
-  async uploadMedia(req: Request, res: Response) {
+  async uploadMedia(req: Request, _res: Response) {
     try {
       const coachId = (req as any).user!.id;
       const { file } = req;
 
       if (!file) {
-        return res.status(400).json({
+        return _res.status(400).json({
           success: false,
           error: 'No file provided',
         });
@@ -382,13 +382,13 @@ export class CoachContentController {
         isPublic: false,
       });
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: media,
       });
     } catch (error) {
       logger.error('Failed to upload media', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to upload media',
       });
@@ -396,7 +396,7 @@ export class CoachContentController {
   }
 
   // Get coach's media library
-  async getMediaLibrary(req: Request, res: Response) {
+  async getMediaLibrary(req: Request, _res: Response) {
     try {
       const coachId = (req as any).user!.id;
       const { type, page = 1, limit = 20 } = req.query;
@@ -416,7 +416,7 @@ export class CoachContentController {
         offset,
       });
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: rows,
         pagination: {
@@ -428,7 +428,7 @@ export class CoachContentController {
       });
     } catch (error) {
       logger.error('Failed to get media library', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to load media library',
       });
@@ -436,20 +436,20 @@ export class CoachContentController {
   }
 
   // Get available categories for coaches
-  async getCategories_(req: Request, res: Response) {
+  async getCategories_(req: Request, _res: Response) {
     try {
       const categories = await ContentCategory.findAll({
         where: { isActive: true },
         order: [['name', 'ASC']],
       });
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: categories,
       });
     } catch (error) {
       logger.error('Failed to get categories', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to load categories',
       });
@@ -457,7 +457,7 @@ export class CoachContentController {
   }
 
   // Get coach's content performance overview
-  async getPerformanceOverview(req: Request, res: Response) {
+  async getPerformanceOverview(req: Request, _res: Response) {
     try {
       const coachId = (req as any).user!.id;
       const { period = '30d' } = req.query;
@@ -513,7 +513,7 @@ export class CoachContentController {
       const previousViews = previousArticles.reduce((sum, article) => sum + article.viewCount, 0);
       const viewsGrowth = previousViews > 0 ? ((totalViews - previousViews) / previousViews) * 100 : 0;
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: {
           period,
@@ -536,7 +536,7 @@ export class CoachContentController {
       });
     } catch (error) {
       logger.error('Failed to get performance overview', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to load performance data',
       });

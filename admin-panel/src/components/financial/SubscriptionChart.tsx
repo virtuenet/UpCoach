@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -9,8 +8,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { format } from "date-fns";
-import { financialApi } from "../../services/financialApi";
 
 export function SubscriptionChart() {
   const [loading, setLoading] = useState(true);

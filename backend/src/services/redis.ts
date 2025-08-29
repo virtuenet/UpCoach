@@ -119,6 +119,16 @@ class RedisService {
     }
   }
 
+  async incr(key: string): Promise<number> {
+    try {
+      await this.ensureConnected();
+      return await this.client.incr(key);
+    } catch (error) {
+      logger.error(`Redis INCR error for key ${key}:`, error);
+      throw error;
+    }
+  }
+
   async ping(): Promise<string> {
     try {
       await this.ensureConnected();

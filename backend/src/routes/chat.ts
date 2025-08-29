@@ -23,7 +23,7 @@ const createConversationSchema = z.object({
 });
 
 // Get all conversations for the current user
-router.get('/conversations', asyncHandler(async (req: Request, res: Response) => {
+router.get('/conversations', asyncHandler(async (req: Request, _res: Response) => {
   const userId = (req as any).user!.id;
 
   const conversations = await db.query(`
@@ -42,7 +42,7 @@ router.get('/conversations', asyncHandler(async (req: Request, res: Response) =>
     ORDER BY COALESCE(MAX(m.created_at), c.created_at) DESC
   `, [userId]);
 
-  (res as any).json({
+  _res.json({
     success: true,
     data: {
       conversations: conversations.rows,
@@ -51,7 +51,7 @@ router.get('/conversations', asyncHandler(async (req: Request, res: Response) =>
 }));
 
 // Get a specific conversation with messages
-router.get('/conversations/:id', asyncHandler(async (req: Request, res: Response) => {
+router.get('/conversations/:id', asyncHandler(async (req: Request, _res: Response) => {
   const userId = (req as any).user!.id;
   const { id } = req.params;
 
@@ -74,7 +74,7 @@ router.get('/conversations/:id', asyncHandler(async (req: Request, res: Response
     ORDER BY created_at ASC
   `, [id]);
 
-  (res as any).json({
+  _res.json({
     success: true,
     data: {
       conversation: {
@@ -86,7 +86,7 @@ router.get('/conversations/:id', asyncHandler(async (req: Request, res: Response
 }));
 
 // Create a new conversation
-router.post('/conversations', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.post('/conversations', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const validatedData = createConversationSchema.parse(req.body);
 
@@ -101,7 +101,7 @@ router.post('/conversations', asyncHandler(async (req: AuthenticatedRequest, res
 
   logger.info('Conversation created:', { conversationId: conversation.id, userId });
 
-  res.status(201).json({
+  _res.status(201).json({
     success: true,
     message: 'Conversation created successfully',
     data: {
@@ -111,7 +111,7 @@ router.post('/conversations', asyncHandler(async (req: AuthenticatedRequest, res
 }));
 
 // Send a message and get AI response
-router.post('/message', asyncHandler(async (req: Request, res: Response) => {
+router.post('/message', asyncHandler(async (req: Request, _res: Response) => {
   const userId = (req as any).user!.id;
   const validatedData = chatMessageSchema.parse(req.body);
   const aiProvider = validatedData.aiProvider;
@@ -213,7 +213,7 @@ router.post('/message', asyncHandler(async (req: Request, res: Response) => {
       tokens: response.usage?.total_tokens || 0,
     });
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: {
         conversationId,
@@ -238,7 +238,7 @@ router.post('/message', asyncHandler(async (req: Request, res: Response) => {
 }));
 
 // Update conversation title
-router.put('/conversations/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.put('/conversations/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const { id } = req.params;
   const validatedData = createConversationSchema.parse(req.body);
@@ -262,7 +262,7 @@ router.put('/conversations/:id', asyncHandler(async (req: AuthenticatedRequest, 
 
   logger.info('Conversation updated:', { conversationId: id, userId });
 
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'Conversation updated successfully',
     data: {
@@ -272,7 +272,7 @@ router.put('/conversations/:id', asyncHandler(async (req: AuthenticatedRequest, 
 }));
 
 // Delete a conversation (soft delete)
-router.delete('/conversations/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.delete('/conversations/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const { id } = req.params;
 
@@ -292,14 +292,14 @@ router.delete('/conversations/:id', asyncHandler(async (req: AuthenticatedReques
 
   logger.info('Conversation deleted:', { conversationId: id, userId });
 
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'Conversation deleted successfully',
   });
 }));
 
 // Get chat statistics
-router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
 
   const stats = await db.query(`
@@ -329,7 +329,7 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, res
     ORDER BY date
   `, [userId]);
 
-  (res as any).json({
+  _res.json({
     success: true,
     data: {
       overview: stats.rows[0],

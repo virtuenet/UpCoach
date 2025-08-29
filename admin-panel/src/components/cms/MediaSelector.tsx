@@ -1,18 +1,15 @@
-import Grid from "@mui/material/Grid";
-import React, { useState, useEffect } from "react";
 import {
   X,
   Upload,
   Image,
   Search,
-  
+  Grid,
   List,
   Check,
   File,
   Video,
   Music,
 } from "lucide-react";
-import { sanitizeUrl, validateMediaUrl, createSafeImageProps, sanitizeFilename } from "../../utils/urlSanitizer";
 
 interface MediaItem {
   id: string;

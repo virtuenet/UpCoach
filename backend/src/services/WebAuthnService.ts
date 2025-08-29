@@ -16,11 +16,10 @@ import type {
   PublicKeyCredentialRequestOptionsJSON,
   RegistrationResponseJSON,
   AuthenticationResponseJSON,
-  AuthenticatorDevice,
+  AuthenticatorTransportFuture,
 } from '@simplewebauthn/types';
 import { logger } from '../utils/logger';
 import { redis } from './redis';
-import crypto from 'crypto';
 
 export interface WebAuthnConfig {
   rpName: string;
@@ -31,7 +30,11 @@ export interface WebAuthnConfig {
   attestationType?: 'none' | 'indirect' | 'direct' | 'enterprise';
 }
 
-export interface WebAuthnCredential extends AuthenticatorDevice {
+export interface WebAuthnCredential {
+  credentialID: Uint8Array;
+  credentialPublicKey: Uint8Array;
+  counter: number;
+  transports?: AuthenticatorTransportFuture[];
   userId: string;
   name?: string;
   createdAt: Date;
@@ -255,9 +258,9 @@ class WebAuthnService {
       }
 
       // Prepare authenticator for verification
-      const authenticator: AuthenticatorDevice = {
-        credentialID: Buffer.from(credential.credentialID, 'base64'),
-        credentialPublicKey: Buffer.from(credential.credentialPublicKey, 'base64'),
+      const authenticator: any = {
+        credentialID: Uint8Array.from(credential.credentialID, 'base64'),
+        credentialPublicKey: Uint8Array.from(credential.credentialPublicKey, 'base64'),
         counter: credential.counter,
         transports: credential.transports,
       };
@@ -451,7 +454,7 @@ class WebAuthnService {
       expiresAt: new Date(Date.now() + this.challengeExpiry),
     };
 
-    await redis.setex(
+    await redis.setEx(
       key,
       Math.floor(this.challengeExpiry / 1000),
       JSON.stringify(challengeData)

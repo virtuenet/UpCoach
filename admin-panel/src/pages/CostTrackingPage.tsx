@@ -1,7 +1,3 @@
-import { useState, useEffect } from "react";
-import { format } from "date-fns";
-import { Plus, Download, Upload, Trash2, Edit } from "lucide-react";
-import { financialApi, CostTracking } from "../services/financialApi";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 export default function CostTrackingPage() {

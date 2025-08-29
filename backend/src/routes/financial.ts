@@ -16,12 +16,12 @@ const stripe = new Stripe(config.stripe.secretKey || '', {
 // IMPORTANT: Use raw body for signature verification
 router.post('/webhook/stripe', 
   raw({ type: 'application/json' }), // Raw body required for signature verification
-  async (req: Request, res: Response) => {
+  async (req: Request, _res: Response) => {
     const sig = req.headers['stripe-signature'] as string;
     
     if (!sig) {
       logger.error('Missing Stripe signature header');
-      return res.status(400).json({ 
+      return _res.status(400).json({ 
         error: 'Missing signature header',
         code: 'MISSING_SIGNATURE' 
       });
@@ -29,7 +29,7 @@ router.post('/webhook/stripe',
     
     if (!config.stripe.webhookSecret) {
       logger.error('Stripe webhook secret not configured');
-      return res.status(500).json({ 
+      return _res.status(500).json({ 
         error: 'Webhook configuration error',
         code: 'WEBHOOK_NOT_CONFIGURED' 
       });
@@ -56,7 +56,7 @@ router.post('/webhook/stripe',
       });
       
       // Return 400 to indicate invalid signature
-      return res.status(400).json({ 
+      return _res.status(400).json({ 
         error: 'Invalid signature',
         code: 'INVALID_SIGNATURE'
       });
@@ -67,7 +67,7 @@ router.post('/webhook/stripe',
       await stripeWebhookService.handleWebhook(event);
       
       // Return 200 to acknowledge receipt
-      (res as any).json({ 
+      _res.json({ 
         received: true,
         eventId: event.id,
         eventType: event.type
@@ -80,7 +80,7 @@ router.post('/webhook/stripe',
       });
       
       // Return 500 for processing errors (Stripe will retry)
-      res.status(500).json({ 
+      _res.status(500).json({ 
         error: 'Webhook processing failed',
         code: 'PROCESSING_ERROR'
       });

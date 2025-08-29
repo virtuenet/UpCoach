@@ -37,7 +37,7 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
           target: '_blank',
           rel: 'noopener noreferrer nofollow',
         },
-        validate: (href) => /^https?:\/\//.test(href),
+        validate: (href: string) => /^https?:\/\//.test(href),
       }),
       Image.configure({
         HTMLAttributes: {
@@ -47,7 +47,7 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
       }),
     ],
     content,
-    onUpdate: ({ editor }) => {
+    onUpdate: ({ editor }: { editor: any }) => {
       onChange(editor.getHTML())
     },
     editorProps: {

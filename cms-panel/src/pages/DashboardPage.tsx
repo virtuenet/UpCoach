@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { FileText, BookOpen, Eye, Users, TrendingUp, Calendar, Target, Award } from 'lucide-react'
+import { FileText, BookOpen, Eye, Users, TrendingUp, Target, Award } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { mediaApi } from '../api/media'
 import LoadingSpinner from '../components/LoadingSpinner'

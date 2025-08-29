@@ -10,8 +10,6 @@ import {
   IconButton,
   Badge,
 } from "@mui/material";
-import { Search, Notifications, Settings } from "@mui/icons-material";
-import { styled } from "@mui/material/styles";
 
 const StyledAppBar = styled(AppBar)(() => ({
   backgroundColor: "#ffffff",

@@ -6,11 +6,11 @@ import { logger } from '../utils/logger';
 import { referralService } from '../services/referral/ReferralService';
 
 export class ReferralAnalyticsController {
-  async getReferralStats_(req: Request, res: Response): Promise<void> {
+  async getReferralStats_(req: Request, _res: Response): Promise<void> {
     try {
       const stats = await referralService.getOverallStats();
       
-      (res as any).json({
+      _res.json({
         totalReferrals: stats.totalReferrals,
         activeReferrals: stats.activeReferrals,
         completedReferrals: stats.completedReferrals,
@@ -20,11 +20,11 @@ export class ReferralAnalyticsController {
       });
     } catch (error) {
       logger.error('Failed to get referral stats:', error);
-      res.status(500).json({ error: 'Failed to fetch referral statistics' });
+      _res.status(500).json({ error: 'Failed to fetch referral statistics' });
     }
   }
 
-  async getAllReferrals(req: Request, res: Response): Promise<void> {
+  async getAllReferrals(req: Request, _res: Response): Promise<void> {
     try {
       const { page = 1, limit = 20, status, search } = req.query;
       const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
@@ -78,21 +78,21 @@ export class ReferralAnalyticsController {
         expiresAt: ref.expiresAt,
       }));
 
-      (res as any).json(formattedReferrals);
+      _res.json(formattedReferrals);
     } catch (error) {
       logger.error('Failed to get all referrals:', error);
-      res.status(500).json({ error: 'Failed to fetch referrals' });
+      _res.status(500).json({ error: 'Failed to fetch referrals' });
     }
   }
 
-  async updateReferralStatus(req: Request, res: Response): Promise<void> {
+  async updateReferralStatus(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { status } = req.body;
 
       const referral = await Referral.findByPk(id);
       if (!referral) {
-        res.status(404).json({ error: 'Referral not found' });
+        _res.status(404).json({ error: 'Referral not found' });
         return;
       }
 
@@ -103,25 +103,25 @@ export class ReferralAnalyticsController {
       
       await referral.save();
 
-      (res as any).json({ message: 'Referral status updated successfully' });
+      _res.json({ message: 'Referral status updated successfully' });
     } catch (error) {
       logger.error('Failed to update referral status:', error);
-      res.status(500).json({ error: 'Failed to update referral status' });
+      _res.status(500).json({ error: 'Failed to update referral status' });
     }
   }
 
-  async processReferralPayment(req: Request, res: Response): Promise<void> {
+  async processReferralPayment(req: Request, _res: Response): Promise<void> {
     try {
       const { referralId } = req.body;
 
       const referral = await Referral.findByPk(referralId);
       if (!referral) {
-        res.status(404).json({ error: 'Referral not found' });
+        _res.status(404).json({ error: 'Referral not found' });
         return;
       }
 
       if (referral.rewardStatus === 'paid') {
-        res.status(400).json({ error: 'Reward already paid' });
+        _res.status(400).json({ error: 'Reward already paid' });
         return;
       }
 
@@ -130,14 +130,14 @@ export class ReferralAnalyticsController {
       referral.rewardStatus = 'paid';
       await referral.save();
 
-      (res as any).json({ message: 'Payment processed successfully' });
+      _res.json({ message: 'Payment processed successfully' });
     } catch (error) {
       logger.error('Failed to process referral payment:', error);
-      res.status(500).json({ error: 'Failed to process payment' });
+      _res.status(500).json({ error: 'Failed to process payment' });
     }
   }
 
-  async getReferralPrograms_(req: Request, res: Response): Promise<void> {
+  async getReferralPrograms_(req: Request, _res: Response): Promise<void> {
     try {
       const programs = [
         {
@@ -166,10 +166,10 @@ export class ReferralAnalyticsController {
         },
       ];
 
-      (res as any).json(programs);
+      _res.json(programs);
     } catch (error) {
       logger.error('Failed to get referral programs:', error);
-      res.status(500).json({ error: 'Failed to fetch referral programs' });
+      _res.status(500).json({ error: 'Failed to fetch referral programs' });
     }
   }
 }

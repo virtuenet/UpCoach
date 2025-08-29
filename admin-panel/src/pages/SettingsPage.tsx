@@ -1,7 +1,3 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Save, AlertTriangle } from "lucide-react";
-import { settingsApi } from "../api/settings";
 import LoadingSpinner from "../components/LoadingSpinner";
 import toast from "react-hot-toast";
 

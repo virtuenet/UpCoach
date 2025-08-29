@@ -1,5 +1,4 @@
-import Grid from "@mui/material/Grid";
-import React, { useState, useEffect } from "react";
+import Grid from "@mui/material";
 import {
   Box,
   Card,
@@ -28,8 +27,6 @@ import {
   Analytics as AnalyticsIcon,
   Schedule as ScheduleIcon,
 } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
 import {
   BarChart,
   Bar,

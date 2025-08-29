@@ -1,5 +1,4 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
 import {
   Dashboard,
   People,
@@ -20,7 +19,6 @@ import {
   Typography,
   Divider,
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
 
 const SidebarContainer = styled(Box)(() => ({
   width: 260,
@@ -193,9 +191,11 @@ const Sidebar: React.FC = () => {
   return (
     <SidebarContainer>
       <SidebarHeader>
-        <Logo component={Link as any} to="/">
-          <Build sx={{ fontSize: 28 }} />
-          UpCoach Admin
+        <Logo>
+          <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
+            <Build sx={{ fontSize: 28, mr: 1 }} />
+            UpCoach Admin
+          </Link>
         </Logo>
       </SidebarHeader>
 
@@ -205,16 +205,16 @@ const Sidebar: React.FC = () => {
             <SectionTitle>{section}</SectionTitle>
             <List sx={{ py: 0 }}>
               {items.map((item) => (
-                <StyledListItem
-                  key={item.path}
-                  component={Link as any}
-                  to={item.path}
-                  active={currentPath === item.path}
-                  disableRipple
-                >
-                  <ListItemIcon>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.title} />
-                </StyledListItem>
+                <Link to={item.path} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <StyledListItem
+                    key={item.path}
+                    active={currentPath === item.path}
+                    disableRipple
+                  >
+                    <ListItemIcon>{item.icon}</ListItemIcon>
+                    <ListItemText primary={item.title} />
+                  </StyledListItem>
+                </Link>
               ))}
             </List>
           </Box>

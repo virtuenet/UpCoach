@@ -1,5 +1,3 @@
-import { csrfManager } from './csrfManager';
-import { logger } from '../utils/logger';
 
 interface SessionConfig {
   timeout: number;

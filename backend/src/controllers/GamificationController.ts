@@ -5,18 +5,18 @@ import { body, query, param, validationResult } from 'express-validator';
 
 export class GamificationController {
   // Get user stats
-  getUserStats = async (req: Request, res: Response) => {
+  getUserStats = async (req: Request, _res: Response) => {
     try {
       const userId = (req as any).userId;
       const stats = await gamificationService.getUserStats(userId);
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: stats,
       });
     } catch (error) {
       logger.error('Error getting user stats', { error });
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to get user stats',
       });
@@ -26,11 +26,11 @@ export class GamificationController {
   // Get user achievements
   getUserAchievements = [
     query('category').optional().isString(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const userId = (req as any).userId;
@@ -41,13 +41,13 @@ export class GamificationController {
           category
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           data: achievements,
         });
       } catch (error) {
         logger.error('Error getting user achievements', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to get user achievements',
         });
@@ -58,11 +58,11 @@ export class GamificationController {
   // Claim achievement
   claimAchievement = [
     param('achievementId').isInt(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const userId = (req as any).userId;
@@ -83,13 +83,13 @@ export class GamificationController {
           }
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           message: 'Achievement claimed successfully',
         });
       } catch (error) {
         logger.error('Error claiming achievement', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to claim achievement',
         });
@@ -98,7 +98,7 @@ export class GamificationController {
   ];
 
   // Get user streaks
-  getUserStreaks = async (req: Request, res: Response) => {
+  getUserStreaks = async (req: Request, _res: Response) => {
     try {
       const userId = (req as any).userId;
       const { sequelize } = require('../models');
@@ -112,13 +112,13 @@ export class GamificationController {
         }
       );
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: streaks,
       });
     } catch (error) {
       logger.error('Error getting user streaks', { error });
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to get user streaks',
       });
@@ -129,11 +129,11 @@ export class GamificationController {
   getChallenges = [
     query('type').optional().isString(),
     query('status').optional().isIn(['active', 'upcoming', 'ended']),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const userId = (req as any).userId;
@@ -180,13 +180,13 @@ export class GamificationController {
           }
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           data: challenges,
         });
       } catch (error) {
         logger.error('Error getting challenges', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to get challenges',
         });
@@ -197,11 +197,11 @@ export class GamificationController {
   // Join challenge
   joinChallenge = [
     param('challengeId').isInt(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const userId = (req as any).userId;
@@ -209,13 +209,13 @@ export class GamificationController {
 
         await gamificationService.joinChallenge(userId, challengeId);
 
-        (res as any).json({
+        _res.json({
           success: true,
           message: 'Successfully joined challenge',
         });
       } catch (error) {
         logger.error('Error joining challenge', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to join challenge',
         });
@@ -228,11 +228,11 @@ export class GamificationController {
     query('type').isIn(['points', 'achievements', 'streaks', 'level']),
     query('period').optional().isIn(['all_time', 'monthly', 'weekly', 'daily']),
     query('limit').optional().isInt({ min: 1, max: 100 }),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const type = req.query.type as any;
@@ -245,13 +245,13 @@ export class GamificationController {
           limit
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           data: leaderboard,
         });
       } catch (error) {
         logger.error('Error getting leaderboard', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to get leaderboard',
         });
@@ -264,11 +264,11 @@ export class GamificationController {
     query('category').optional().isString(),
     query('page').optional().isInt({ min: 1 }),
     query('limit').optional().isInt({ min: 1, max: 50 }),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const userId = (req as any).userId;
@@ -333,7 +333,7 @@ export class GamificationController {
           }
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           data: items,
           pagination: {
@@ -345,7 +345,7 @@ export class GamificationController {
         });
       } catch (error) {
         logger.error('Error getting reward store', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to get reward store',
         });
@@ -356,11 +356,11 @@ export class GamificationController {
   // Purchase reward
   purchaseReward = [
     param('itemId').isInt(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const userId = (req as any).userId;
@@ -368,13 +368,13 @@ export class GamificationController {
 
         await gamificationService.purchaseReward(userId, itemId);
 
-        (res as any).json({
+        _res.json({
           success: true,
           message: 'Reward purchased successfully',
         });
       } catch (error) {
         logger.error('Error purchasing reward', { error });
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           error: error instanceof Error ? error.message : 'Failed to purchase reward',
         });
@@ -383,7 +383,7 @@ export class GamificationController {
   ];
 
   // Get user rewards
-  getUserRewards = async (req: Request, res: Response) => {
+  getUserRewards = async (req: Request, _res: Response) => {
     try {
       const userId = (req as any).userId;
       const { sequelize } = require('../models');
@@ -407,13 +407,13 @@ export class GamificationController {
         }
       );
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: rewards,
       });
     } catch (error) {
       logger.error('Error getting user rewards', { error });
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         error: 'Failed to get user rewards',
       });
@@ -425,11 +425,11 @@ export class GamificationController {
     body('category').notEmpty().isString(),
     body('value').optional().isInt(),
     body('metadata').optional().isObject(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const userId = (req as any).userId;
@@ -442,13 +442,13 @@ export class GamificationController {
           metadata
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           message: 'Activity tracked successfully',
         });
       } catch (error) {
         logger.error('Error tracking activity', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to track activity',
         });
@@ -460,11 +460,11 @@ export class GamificationController {
   updateStreak = [
     body('streakType').notEmpty().isString(),
     body('activityDate').optional().isISO8601(),
-    async (req: Request, res: Response) => {
+    async (req: Request, _res: Response) => {
       try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-          return res.status(400).json({ errors: errors.array() });
+          return _res.status(400).json({ errors: errors.array() });
         }
 
         const userId = (req as any).userId;
@@ -476,13 +476,13 @@ export class GamificationController {
           activityDate ? new Date(activityDate) : new Date()
         );
 
-        (res as any).json({
+        _res.json({
           success: true,
           message: 'Streak updated successfully',
         });
       } catch (error) {
         logger.error('Error updating streak', { error });
-        res.status(500).json({
+        _res.status(500).json({
           success: false,
           error: 'Failed to update streak',
         });

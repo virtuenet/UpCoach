@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Template } from '../../models';
 import { Op } from 'sequelize';
 import { validationResult } from 'express-validator';
+import { logger } from '../../utils/logger';
 
 /**
  * TemplateController
@@ -11,7 +12,7 @@ export class TemplateController {
   /**
    * Get all templates with filtering
    */
-  static async getTemplates(req: Request, res: Response): Promise<void> {
+  static async getTemplates(req: Request, _res: Response): Promise<void> {
     try {
       const {
         page = 1,
@@ -68,7 +69,7 @@ export class TemplateController {
         offset,
       });
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: templates.rows,
         pagination: {
@@ -80,7 +81,7 @@ export class TemplateController {
       });
     } catch (error) {
       logger.error('Error fetching templates:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to fetch templates',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -91,19 +92,19 @@ export class TemplateController {
   /**
    * Get popular templates
    */
-  static async getPopularTemplates(req: Request, res: Response): Promise<void> {
+  static async getPopularTemplates(req: Request, _res: Response): Promise<void> {
     try {
       const { category, limit = 10 } = req.query;
 
       const templates = await Template.getPopularTemplates(category as string);
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: templates.slice(0, Number(limit)),
       });
     } catch (error) {
       logger.error('Error fetching popular templates:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to fetch popular templates',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -114,12 +115,12 @@ export class TemplateController {
   /**
    * Search templates
    */
-  static async searchTemplates(req: Request, res: Response): Promise<void> {
+  static async searchTemplates(req: Request, _res: Response): Promise<void> {
     try {
       const { q: query, category } = req.query;
 
       if (!query) {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           message: 'Search query is required',
         });
@@ -128,13 +129,13 @@ export class TemplateController {
 
       const templates = await Template.searchTemplates(query as string, category as string);
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: templates,
       });
     } catch (error) {
       logger.error('Error searching templates:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to search templates',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -145,11 +146,11 @@ export class TemplateController {
   /**
    * Create a new template
    */
-  static async createTemplate(req: Request, res: Response): Promise<void> {
+  static async createTemplate(req: Request, _res: Response): Promise<void> {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           message: 'Validation failed',
           errors: errors.array(),
@@ -187,14 +188,14 @@ export class TemplateController {
         },
       });
 
-      res.status(201).json({
+      _res.status(201).json({
         success: true,
         data: newTemplate,
         message: 'Template created successfully',
       });
     } catch (error) {
       logger.error('Error creating template:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to create template',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -205,13 +206,13 @@ export class TemplateController {
   /**
    * Get a single template
    */
-  static async getTemplate(req: Request, res: Response): Promise<void> {
+  static async getTemplate(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
 
       const template = await Template.findByPk(id);
       if (!template) {
-        res.status(404).json({
+        _res.status(404).json({
           success: false,
           message: 'Template not found',
         });
@@ -220,20 +221,20 @@ export class TemplateController {
 
       // Check access permissions
       if (!template.isPublic && template.createdById !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
-        res.status(403).json({
+        _res.status(403).json({
           success: false,
           message: 'Access denied to this template',
         });
         return;
       }
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: template,
       });
     } catch (error) {
       logger.error('Error fetching template:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to fetch template',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -244,7 +245,7 @@ export class TemplateController {
   /**
    * Update a template
    */
-  static async updateTemplate(req: Request, res: Response): Promise<void> {
+  static async updateTemplate(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const {
@@ -259,7 +260,7 @@ export class TemplateController {
 
       const existingTemplate = await Template.findByPk(id);
       if (!existingTemplate) {
-        res.status(404).json({
+        _res.status(404).json({
           success: false,
           message: 'Template not found',
         });
@@ -268,7 +269,7 @@ export class TemplateController {
 
       // Check permissions
       if (existingTemplate.createdById !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
-        res.status(403).json({
+        _res.status(403).json({
           success: false,
           message: 'Not authorized to edit this template',
         });
@@ -286,14 +287,14 @@ export class TemplateController {
         version: '1.0.1', // Increment version on updates
       });
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: existingTemplate,
         message: 'Template updated successfully',
       });
     } catch (error) {
       logger.error('Error updating template:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to update template',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -304,13 +305,13 @@ export class TemplateController {
   /**
    * Delete a template
    */
-  static async deleteTemplate(req: Request, res: Response): Promise<void> {
+  static async deleteTemplate(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
 
       const template = await Template.findByPk(id);
       if (!template) {
-        res.status(404).json({
+        _res.status(404).json({
           success: false,
           message: 'Template not found',
         });
@@ -319,7 +320,7 @@ export class TemplateController {
 
       // Check permissions
       if (template.createdById !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
-        res.status(403).json({
+        _res.status(403).json({
           success: false,
           message: 'Not authorized to delete this template',
         });
@@ -329,13 +330,13 @@ export class TemplateController {
       // Soft delete by marking as inactive
       await template.update({ isActive: false });
 
-      (res as any).json({
+      _res.json({
         success: true,
         message: 'Template deleted successfully',
       });
     } catch (error) {
       logger.error('Error deleting template:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to delete template',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -346,20 +347,20 @@ export class TemplateController {
   /**
    * Duplicate a template
    */
-  static async duplicateTemplate(req: Request, res: Response): Promise<void> {
+  static async duplicateTemplate(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
 
       const duplicated = await Template.duplicateTemplate(id, (req as any).user!.id);
 
-      res.status(201).json({
+      _res.status(201).json({
         success: true,
         data: duplicated,
         message: 'Template duplicated successfully',
       });
     } catch (error) {
       logger.error('Error duplicating template:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to duplicate template',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -370,14 +371,14 @@ export class TemplateController {
   /**
    * Create content from template
    */
-  static async createContentFromTemplate(req: Request, res: Response): Promise<void> {
+  static async createContentFromTemplate(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { title, customContent, autoPublish } = req.body;
 
       const template = await Template.findByPk(id);
       if (!template) {
-        res.status(404).json({
+        _res.status(404).json({
           success: false,
           message: 'Template not found',
         });
@@ -386,7 +387,7 @@ export class TemplateController {
 
       // Check access permissions
       if (!template.isPublic && template.createdById !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
-        res.status(403).json({
+        _res.status(403).json({
           success: false,
           message: 'Access denied to this template',
         });
@@ -400,14 +401,14 @@ export class TemplateController {
         userId: (req as any).user!.id,
       });
 
-      res.status(201).json({
+      _res.status(201).json({
         success: true,
         data: contentData,
         message: 'Content created from template successfully',
       });
     } catch (error) {
       logger.error('Error creating content from template:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to create content from template',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -418,17 +419,17 @@ export class TemplateController {
   /**
    * Get user's templates
    */
-  static async getUserTemplates(req: Request, res: Response): Promise<void> {
+  static async getUserTemplates(req: Request, _res: Response): Promise<void> {
     try {
       const templates = await Template.getTemplatesByUser((req as any).user!.id);
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: templates,
       });
     } catch (error) {
       logger.error('Error fetching user templates:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to fetch user templates',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -439,7 +440,7 @@ export class TemplateController {
   /**
    * Get template categories
    */
-  static async getCategories_(req: Request, res: Response): Promise<void> {
+  static async getCategories_(req: Request, _res: Response): Promise<void> {
     try {
       const categories = [
         {
@@ -472,13 +473,13 @@ export class TemplateController {
         },
       ];
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: categories,
       });
     } catch (error) {
       logger.error('Error fetching template categories:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to fetch template categories',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -489,14 +490,14 @@ export class TemplateController {
   /**
    * Get template preview
    */
-  static async getTemplatePreview(req: Request, res: Response): Promise<void> {
+  static async getTemplatePreview(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { sampleData } = req.query;
 
       const template = await Template.findByPk(id);
       if (!template) {
-        res.status(404).json({
+        _res.status(404).json({
           success: false,
           message: 'Template not found',
         });
@@ -505,7 +506,7 @@ export class TemplateController {
 
       // Check access permissions
       if (!template.isPublic && template.createdById !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
-        res.status(403).json({
+        _res.status(403).json({
           success: false,
           message: 'Access denied to this template',
         });
@@ -527,7 +528,7 @@ export class TemplateController {
         autoPublish: false,
       });
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: {
           preview: previewData,
@@ -542,7 +543,7 @@ export class TemplateController {
       });
     } catch (error) {
       logger.error('Error generating template preview:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to generate template preview',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,
@@ -553,7 +554,7 @@ export class TemplateController {
   /**
    * Get automation suggestions
    */
-  static async getAutomationSuggestions(req: Request, res: Response): Promise<void> {
+  static async getAutomationSuggestions(req: Request, _res: Response): Promise<void> {
     try {
       const { category } = req.query;
 
@@ -600,13 +601,13 @@ export class TemplateController {
         ],
       };
 
-      (res as any).json({
+      _res.json({
         success: true,
         data: suggestions[category as keyof typeof suggestions] || [],
       });
     } catch (error) {
       logger.error('Error fetching automation suggestions:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to fetch automation suggestions',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined,

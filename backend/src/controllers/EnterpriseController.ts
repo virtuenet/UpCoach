@@ -18,7 +18,7 @@ export class EnterpriseController {
   }
 
   // Organization Management
-  createOrganization = catchAsync(async (req: Request, res: Response) => {
+  createOrganization = catchAsync(async (req: Request, _res: Response) => {
     const { name, website, industry, size, billingEmail } = req.body;
     const ownerId = (req as any).user!.id;
 
@@ -31,13 +31,13 @@ export class EnterpriseController {
       ownerId: parseInt(ownerId as string),
     });
 
-    res.status(201).json({
+    _res.status(201).json({
       success: true,
       data: { organization },
     });
   });
 
-  updateOrganization = catchAsync(async (req: Request, res: Response) => {
+  updateOrganization = catchAsync(async (req: Request, _res: Response) => {
     const { organizationId } = req.params;
     const updates = req.body;
 
@@ -46,13 +46,13 @@ export class EnterpriseController {
       updates
     );
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: { organization },
     });
   });
 
-  getOrganizationDetails = catchAsync(async (req: Request, res: Response) => {
+  getOrganizationDetails = catchAsync(async (req: Request, _res: Response) => {
     const { organizationId } = req.params;
 
     const [organization, stats] = await Promise.all([
@@ -60,13 +60,13 @@ export class EnterpriseController {
       this.organizationService.getOrganizationStats(parseInt(organizationId)),
     ]);
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: { organization, stats },
     });
   });
 
-  getOrganizationMembers = catchAsync(async (req: Request, res: Response) => {
+  getOrganizationMembers = catchAsync(async (req: Request, _res: Response) => {
     const { organizationId } = req.params;
     const { page, limit, search, role, teamId } = req.query;
 
@@ -81,13 +81,13 @@ export class EnterpriseController {
       }
     );
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: result,
     });
   });
 
-  inviteMember = catchAsync(async (req: Request, res: Response) => {
+  inviteMember = catchAsync(async (req: Request, _res: Response) => {
     const { organizationId } = req.params;
     const { email, role, teamIds } = req.body;
     const invitedBy = (req as any).user!.id;
@@ -124,7 +124,7 @@ export class EnterpriseController {
 
     const inviteUrl = `${process.env.FRONTEND_URL}/accept-invite?token=${token}`;
 
-    res.status(201).json({
+    _res.status(201).json({
       success: true,
       data: {
         invitationId,
@@ -134,19 +134,19 @@ export class EnterpriseController {
     });
   });
 
-  acceptInvitation = catchAsync(async (req: Request, res: Response) => {
+  acceptInvitation = catchAsync(async (req: Request, _res: Response) => {
     const { token } = req.body;
     const userId = (req as any).user!.id;
 
     await this.organizationService.acceptInvitation(token, parseInt(userId as string));
 
-    (res as any).json({
+    _res.json({
       success: true,
       message: 'Invitation accepted successfully',
     });
   });
 
-  removeMember = catchAsync(async (req: Request, res: Response) => {
+  removeMember = catchAsync(async (req: Request, _res: Response) => {
     const { organizationId, userId } = req.params;
     const removedBy = (req as any).user!.id;
 
@@ -156,14 +156,14 @@ export class EnterpriseController {
       parseInt(removedBy as string)
     );
 
-    (res as any).json({
+    _res.json({
       success: true,
       message: 'Member removed successfully',
     });
   });
 
   // Team Management
-  createTeam = catchAsync(async (req: Request, res: Response) => {
+  createTeam = catchAsync(async (req: Request, _res: Response) => {
     const { organizationId } = req.params;
     const { name, description, department, managerId } = req.body;
 
@@ -175,38 +175,38 @@ export class EnterpriseController {
       managerId,
     });
 
-    res.status(201).json({
+    _res.status(201).json({
       success: true,
       data: { team },
     });
   });
 
-  updateTeam = catchAsync(async (req: Request, res: Response) => {
+  updateTeam = catchAsync(async (req: Request, _res: Response) => {
     const { teamId } = req.params;
     const updates = req.body;
 
     const team = await this.teamService.updateTeam(parseInt(teamId), updates);
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: { team },
     });
   });
 
-  getTeams = catchAsync(async (req: Request, res: Response) => {
+  getTeams = catchAsync(async (req: Request, _res: Response) => {
     const { organizationId } = req.params;
 
     const teams = await this.teamService.getOrganizationTeams(
       parseInt(organizationId)
     );
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: { teams },
     });
   });
 
-  addTeamMember = catchAsync(async (req: Request, res: Response) => {
+  addTeamMember = catchAsync(async (req: Request, _res: Response) => {
     const { teamId } = req.params;
     const { userId, role } = req.body;
     const addedBy = (req as any).user!.id;
@@ -218,13 +218,13 @@ export class EnterpriseController {
       parseInt(addedBy as string)
     );
 
-    (res as any).json({
+    _res.json({
       success: true,
       message: 'Team member added successfully',
     });
   });
 
-  removeTeamMember = catchAsync(async (req: Request, res: Response) => {
+  removeTeamMember = catchAsync(async (req: Request, _res: Response) => {
     const { teamId, userId } = req.params;
 
     await this.teamService.removeTeamMember(
@@ -232,14 +232,14 @@ export class EnterpriseController {
       parseInt(userId)
     );
 
-    (res as any).json({
+    _res.json({
       success: true,
       message: 'Team member removed successfully',
     });
   });
 
   // SSO Management
-  configureSSOProvider = catchAsync(async (req: Request, res: Response) => {
+  configureSSOProvider = catchAsync(async (req: Request, _res: Response) => {
     const { organizationId } = req.params;
     const ssoConfig = req.body;
 
@@ -248,7 +248,7 @@ export class EnterpriseController {
       ssoConfig
     );
 
-    res.status(201).json({
+    _res.status(201).json({
       success: true,
       data: {
         configId,
@@ -257,41 +257,41 @@ export class EnterpriseController {
     });
   });
 
-  getSSOProviders = catchAsync(async (req: Request, res: Response) => {
+  getSSOProviders = catchAsync(async (req: Request, _res: Response) => {
     const { organizationId } = req.params;
 
     const providers = await this.ssoService.getOrganizationSSOProviders(
       parseInt(organizationId)
     );
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: { providers },
     });
   });
 
-  updateSSOProvider = catchAsync(async (req: Request, res: Response) => {
+  updateSSOProvider = catchAsync(async (req: Request, _res: Response) => {
     const { configId } = req.params;
     const updates = req.body;
 
     await this.ssoService.updateSSOConfiguration(parseInt(configId), updates);
 
-    (res as any).json({
+    _res.json({
       success: true,
       message: 'SSO configuration updated successfully',
     });
   });
 
   // SSO Authentication Flow
-  initiateSSOLogin = catchAsync(async (req: Request, res: Response) => {
+  initiateSSOLogin = catchAsync(async (req: Request, _res: Response) => {
     const { configId } = req.params;
 
     const loginUrl = await this.ssoService.initiateSAMLLogin(parseInt(configId));
 
-    res.redirect(loginUrl);
+    _res.redirect(loginUrl);
   });
 
-  handleSAMLCallback = catchAsync(async (req: Request, res: Response) => {
+  handleSAMLCallback = catchAsync(async (req: Request, _res: Response) => {
     const { configId } = req.params;
     const { SAMLResponse } = req.body;
 
@@ -304,10 +304,10 @@ export class EnterpriseController {
     const token = this.generateJWT(parseInt(user.id as string), sessionId);
 
     // Redirect to frontend with token
-    res.redirect(`${process.env.FRONTEND_URL}/sso-callback?token=${token}`);
+    _res.redirect(`${process.env.FRONTEND_URL}/sso-callback?token=${token}`);
   });
 
-  handleOIDCCallback = catchAsync(async (req: Request, res: Response) => {
+  handleOIDCCallback = catchAsync(async (req: Request, _res: Response) => {
     const { configId } = req.params;
     const { code, state } = req.query;
 
@@ -332,31 +332,31 @@ export class EnterpriseController {
     const token = this.generateJWT(parseInt(user.id as string), sessionId);
 
     // Redirect to frontend with token
-    res.redirect(`${process.env.FRONTEND_URL}/sso-callback?token=${token}`);
+    _res.redirect(`${process.env.FRONTEND_URL}/sso-callback?token=${token}`);
   });
 
-  ssoLogout = catchAsync(async (req: Request, res: Response) => {
+  ssoLogout = catchAsync(async (req: Request, _res: Response) => {
     const sessionId = req.headers['x-sso-session'] as string;
 
     if (sessionId) {
       const logoutUrl = await this.ssoService.initiateSSOLogout(sessionId);
       
       if (logoutUrl) {
-        return (res as any).json({
+        return _res.json({
           success: true,
           data: { logoutUrl },
         });
       }
     }
 
-    (res as any).json({
+    _res.json({
       success: true,
       message: 'Logged out successfully',
     });
   });
 
   // Enterprise Policies
-  createPolicy = catchAsync(async (req: Request, res: Response) => {
+  createPolicy = catchAsync(async (req: Request, _res: Response) => {
     const { organizationId } = req.params;
     const { name, type, rules, enforcementLevel, appliesTo } = req.body;
     const createdBy = (req as any).user!.id;
@@ -371,27 +371,27 @@ export class EnterpriseController {
       createdBy: parseInt(createdBy as string),
     });
 
-    res.status(201).json({
+    _res.status(201).json({
       success: true,
       data: { policy },
     });
   });
 
-  getPolicies = catchAsync(async (req: Request, res: Response) => {
+  getPolicies = catchAsync(async (req: Request, _res: Response) => {
     const { organizationId } = req.params;
 
     const policies = await this.teamService.getOrganizationPolicies(
       parseInt(organizationId)
     );
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: { policies },
     });
   });
 
   // Enterprise Audit Logs
-  getAuditLogs = catchAsync(async (req: Request, res: Response) => {
+  getAuditLogs = catchAsync(async (req: Request, _res: Response) => {
     const { organizationId } = req.params;
     const { page, limit, action, userId, startDate, endDate } = req.query;
 
@@ -407,7 +407,7 @@ export class EnterpriseController {
       }
     );
 
-    (res as any).json({
+    _res.json({
       success: true,
       data: logs,
     });

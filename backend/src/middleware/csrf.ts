@@ -77,7 +77,7 @@ export function csrfProtection(options: CsrfOptions = {}) {
     doubleSubmit = false,
   } = options;
 
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, _res: Response, next: NextFunction) => {
     // Skip CSRF for excluded paths
     if (excludePaths.some(path => req.path.startsWith(path))) {
       return next();
@@ -105,7 +105,7 @@ export function csrfProtection(options: CsrfOptions = {}) {
             hasCookie: !!cookieToken,
             hasHeader: !!headerToken 
           });
-          return res.status(403).json({ 
+          return _res.status(403).json({ 
             error: 'CSRF token missing',
             code: 'CSRF_TOKEN_MISSING' 
           });
@@ -114,7 +114,7 @@ export function csrfProtection(options: CsrfOptions = {}) {
         // Verify tokens match
         if (!crypto.timingSafeEqual(Buffer.from(cookieToken), Buffer.from(headerToken))) {
           logger.warn('CSRF token mismatch', { path: req.path });
-          return res.status(403).json({ 
+          return _res.status(403).json({ 
             error: 'Invalid CSRF token',
             code: 'CSRF_TOKEN_INVALID' 
           });
@@ -125,7 +125,7 @@ export function csrfProtection(options: CsrfOptions = {}) {
         
         if (!sessionId) {
           logger.warn('No session for CSRF validation', { path: req.path });
-          return res.status(403).json({ 
+          return _res.status(403).json({ 
             error: 'Session required',
             code: 'SESSION_REQUIRED' 
           });
@@ -137,7 +137,7 @@ export function csrfProtection(options: CsrfOptions = {}) {
 
         if (!providedToken) {
           logger.warn('CSRF token not provided', { path: req.path });
-          return res.status(403).json({ 
+          return _res.status(403).json({ 
             error: 'CSRF token required',
             code: 'CSRF_TOKEN_REQUIRED' 
           });
@@ -149,7 +149,7 @@ export function csrfProtection(options: CsrfOptions = {}) {
 
         if (!storedToken) {
           logger.warn('CSRF token not found in storage', { path: req.path });
-          return res.status(403).json({ 
+          return _res.status(403).json({ 
             error: 'CSRF token expired or not found',
             code: 'CSRF_TOKEN_EXPIRED' 
           });
@@ -159,7 +159,7 @@ export function csrfProtection(options: CsrfOptions = {}) {
         const [_token, hash] = storedToken.split(':');
         if (!verifyToken(providedToken, hash, secret)) {
           logger.warn('CSRF token verification failed', { path: req.path });
-          return res.status(403).json({ 
+          return _res.status(403).json({ 
             error: 'Invalid CSRF token',
             code: 'CSRF_TOKEN_INVALID' 
           });
@@ -171,13 +171,13 @@ export function csrfProtection(options: CsrfOptions = {}) {
         await redis.setEx(storedTokenKey, tokenExpiry, `${newToken}:${newHash}`);
         
         // Send new token in response header
-        res.setHeader('X-CSRF-Token', newToken);
+        _res.setHeader('X-CSRF-Token', newToken);
       }
 
       next();
     } catch (error) {
       logger.error('CSRF protection error', { error });
-      res.status(500).json({ 
+      _res.status(500).json({ 
         error: 'CSRF validation error',
         code: 'CSRF_ERROR' 
       });
@@ -196,7 +196,7 @@ export function csrfToken(options: CsrfOptions = {}) {
     doubleSubmit = false,
   } = options;
 
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, _res: Response, next: NextFunction) => {
     // Attach method to generate token
     (req as any).csrfToken = async (): Promise<string> => {
       if (doubleSubmit) {
@@ -204,7 +204,7 @@ export function csrfToken(options: CsrfOptions = {}) {
         const token = generateCsrfToken();
         
         // Set cookie with secure options
-        (res as any).cookie(cookieName, token, {
+        _res.cookie(cookieName, token, {
           httpOnly: false, // Must be readable by JavaScript
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict',
@@ -234,7 +234,7 @@ export function csrfToken(options: CsrfOptions = {}) {
     // Attach token to response locals for template rendering
     if (req.method === 'GET') {
       try {
-        res.locals.csrfToken = await (req as any).csrfToken();
+        _res.locals.csrfToken = await (req as any).csrfToken();
       } catch (error) {
         logger.debug('Could not generate CSRF token', { error });
       }

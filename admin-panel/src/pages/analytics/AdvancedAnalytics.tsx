@@ -1,5 +1,4 @@
-import Grid from "@mui/material/Grid";
-import React, { useState, useEffect } from "react";
+import Grid from "@mui/material";
 import {
   Box,
   Card,
@@ -43,10 +42,6 @@ import {
   DateRange,
   Download,
 } from "@mui/icons-material";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { useSnackbar } from "notistack";
 import apiService from "../../services/api";
 import {
   LineChart,
@@ -63,7 +58,6 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
-import { format, parseISO, subDays } from "date-fns";
 
 interface TabPanelProps {
   children?: React.ReactNode;

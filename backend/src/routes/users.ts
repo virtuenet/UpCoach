@@ -17,7 +17,7 @@ const updateProfileSchema = z.object({
 });
 
 // Get current user profile
-router.get('/profile', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.get('/profile', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const userProfile = await UserService.getProfile(userId);
   
@@ -25,7 +25,7 @@ router.get('/profile', asyncHandler(async (req: AuthenticatedRequest, res: Respo
     throw new ApiError(404, 'User profile not found');
   }
 
-  (res as any).json({
+  _res.json({
     success: true,
     data: {
       user: userProfile,
@@ -34,7 +34,7 @@ router.get('/profile', asyncHandler(async (req: AuthenticatedRequest, res: Respo
 }));
 
 // Update current user profile
-router.put('/profile', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.put('/profile', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const validatedData = updateProfileSchema.parse(req.body);
 
@@ -46,7 +46,7 @@ router.put('/profile', asyncHandler(async (req: AuthenticatedRequest, res: Respo
 
   logger.info('User profile updated:', { userId });
 
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'Profile updated successfully',
     data: {
@@ -56,11 +56,11 @@ router.put('/profile', asyncHandler(async (req: AuthenticatedRequest, res: Respo
 }));
 
 // Get user statistics
-router.get('/statistics', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.get('/statistics', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const statistics = await UserService.getUserStatistics(userId);
 
-  (res as any).json({
+  _res.json({
     success: true,
     data: {
       statistics,
@@ -69,24 +69,24 @@ router.get('/statistics', asyncHandler(async (req: AuthenticatedRequest, res: Re
 }));
 
 // Deactivate current user account
-router.delete('/account', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.delete('/account', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   
   await UserService.deactivate(userId);
 
   logger.info('User account deactivated:', { userId });
 
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'Account deactivated successfully',
   });
 }));
 
 // Admin routes - require admin role
-router.get('/all', requireRole(['admin']), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.get('/all', requireRole(['admin']), asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   // This would require implementing a method to list all users
   // For now, we'll return a placeholder
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'Admin endpoint - list all users',
     data: {
@@ -102,7 +102,7 @@ router.get('/all', requireRole(['admin']), asyncHandler(async (req: Authenticate
 }));
 
 // Admin route to get any user by ID
-router.get('/:id', requireRole(['admin']), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.get('/:id', requireRole(['admin']), asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const { id } = req.params;
   const user = await UserService.findById(id);
   
@@ -110,7 +110,7 @@ router.get('/:id', requireRole(['admin']), asyncHandler(async (req: Authenticate
     throw new ApiError(404, 'User not found');
   }
 
-  (res as any).json({
+  _res.json({
     success: true,
     data: {
       user: UserService.toResponseDto(user),
@@ -119,7 +119,7 @@ router.get('/:id', requireRole(['admin']), asyncHandler(async (req: Authenticate
 }));
 
 // Admin route to deactivate any user
-router.delete('/:id', requireRole(['admin']), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.delete('/:id', requireRole(['admin']), asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const { id } = req.params;
   
   // Prevent admin from deactivating themselves
@@ -131,7 +131,7 @@ router.delete('/:id', requireRole(['admin']), asyncHandler(async (req: Authentic
 
   logger.info('User deactivated by admin:', { userId: id, adminId: (req as any).user!.id });
 
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'User deactivated successfully',
   });

@@ -3,11 +3,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { GlobalErrorBoundary } from "./components/ErrorBoundary/GlobalErrorBoundary";
-import { AsyncErrorBoundary } from "./components/ErrorBoundary/AsyncErrorBoundary";
-import { useState, useEffect, lazy, Suspense } from "react";
 import SessionWrapper from "./components/SessionWrapper";
-import { useKeyboardNavigation, useSkipLinks } from "./hooks/useAccessibility";
 import "./styles/layout-fixes.css";
 import "./styles/accessibility.css";
 

@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -10,7 +9,6 @@ import {
   Cell,
 } from "recharts";
 
-import { financialApi } from "../../services/financialApi";
 
 export function MRRChart() {
   const [loading, setLoading] = useState(true);

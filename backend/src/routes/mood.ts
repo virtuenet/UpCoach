@@ -35,7 +35,7 @@ const moodFiltersSchema = z.object({
 });
 
 // Get all mood entries for the current user
-router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.get('/', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const filters = moodFiltersSchema.parse(req.query);
 
@@ -116,7 +116,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) =>
   const total = parseInt(countResult.rows[0].count);
   const totalPages = Math.ceil(total / filters.limit);
 
-  (res as any).json({
+  _res.json({
     success: true,
     data: {
       moodEntries: result.rows,
@@ -131,7 +131,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) =>
 }));
 
 // Get today's mood entry
-router.get('/today', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.get('/today', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   
   const today = new Date();
@@ -149,7 +149,7 @@ router.get('/today', asyncHandler(async (req: AuthenticatedRequest, res: Respons
     LIMIT 1
   `, [userId, today.toISOString(), tomorrow.toISOString()]);
 
-  (res as any).json({
+  _res.json({
     success: true,
     data: {
       moodEntry: moodEntry.rows[0] || null,
@@ -158,7 +158,7 @@ router.get('/today', asyncHandler(async (req: AuthenticatedRequest, res: Respons
 }));
 
 // Get mood statistics and insights
-router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
 
   // Overall statistics
@@ -274,7 +274,7 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, res
     LIMIT 10
   `, [userId]);
 
-  (res as any).json({
+  _res.json({
     success: true,
     data: {
       overview: overallStats.rows[0],
@@ -288,7 +288,7 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, res
 }));
 
 // Get a single mood entry by ID
-router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const { id } = req.params;
 
@@ -298,7 +298,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response)
     throw new ApiError(404, 'Mood entry not found');
   }
 
-  (res as any).json({
+  _res.json({
     success: true,
     data: {
       moodEntry,
@@ -307,7 +307,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response)
 }));
 
 // Create a new mood entry
-router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.post('/', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const validatedData = createMoodEntrySchema.parse(req.body);
 
@@ -342,7 +342,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) =
 
   logger.info('Mood entry created:', { moodEntryId: moodEntry.id, userId, level: validatedData.level });
 
-  res.status(201).json({
+  _res.status(201).json({
     success: true,
     message: 'Mood entry created successfully',
     data: {
@@ -352,7 +352,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) =
 }));
 
 // Update a mood entry
-router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const { id } = req.params;
   const validatedData = createMoodEntrySchema.parse(req.body);
@@ -375,7 +375,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response)
 
   logger.info('Mood entry updated:', { moodEntryId: id, userId });
 
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'Mood entry updated successfully',
     data: {
@@ -385,7 +385,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response)
 }));
 
 // Delete a mood entry
-router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
   const userId = (req as any).user!.id;
   const { id } = req.params;
 
@@ -399,7 +399,7 @@ router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Respon
 
   logger.info('Mood entry deleted:', { moodEntryId: id, userId });
 
-  (res as any).json({
+  _res.json({
     success: true,
     message: 'Mood entry deleted successfully',
   });

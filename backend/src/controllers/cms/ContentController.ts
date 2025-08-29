@@ -6,10 +6,11 @@ import { ContentMedia } from '../../models/cms/ContentMedia';
 import { User } from '../../models';
 import { Op } from 'sequelize';
 import slugify from 'slugify';
+import { logger } from '../../utils/logger';
 
 export class ContentController {
   // Get all content with filters
-  static async getAll(req: Request, res: Response) {
+  static async getAll(req: Request, _res: Response) {
     try {
       const {
         page = 1,
@@ -73,7 +74,7 @@ export class ContentController {
         offset
       });
 
-      (res as any).json({
+      _res.json({
         contents,
         pagination: {
           page: Number(page),
@@ -84,12 +85,12 @@ export class ContentController {
       });
     } catch (error) {
       logger.error('Error fetching content:', error);
-      res.status(500).json({ error: 'Failed to fetch content' });
+      _res.status(500).json({ error: 'Failed to fetch content' });
     }
   }
 
   // Get single content by ID or slug
-  static async getOne(req: Request, res: Response) {
+  static async getOne(req: Request, _res: Response) {
     try {
       const { id } = req.params;
       
@@ -122,21 +123,21 @@ export class ContentController {
       });
 
       if (!content) {
-        return res.status(404).json({ error: 'Content not found' });
+        return _res.status(404).json({ error: 'Content not found' });
       }
 
       // Increment view count
       await content.increment('viewCount');
 
-      (res as any).json(content);
+      _res.json(content);
     } catch (error) {
       logger.error('Error fetching content:', error);
-      res.status(500).json({ error: 'Failed to fetch content' });
+      _res.status(500).json({ error: 'Failed to fetch content' });
     }
   }
 
   // Create new content
-  static async create(req: Request, res: Response) {
+  static async create(req: Request, _res: Response) {
     try {
       const {
         title,
@@ -208,27 +209,27 @@ export class ContentController {
         ]
       });
 
-      res.status(201).json(completeContent);
+      _res.status(201).json(completeContent);
     } catch (error) {
       logger.error('Error creating content:', error);
-      res.status(500).json({ error: 'Failed to create content' });
+      _res.status(500).json({ error: 'Failed to create content' });
     }
   }
 
   // Update content
-  static async update(req: Request, res: Response) {
+  static async update(req: Request, _res: Response) {
     try {
       const { id } = req.params;
       const updates = req.body;
 
       const content = await Content.findByPk(id);
       if (!content) {
-        return res.status(404).json({ error: 'Content not found' });
+        return _res.status(404).json({ error: 'Content not found' });
       }
 
       // Check permissions
       if (content.authorId !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
-        return res.status(403).json({ error: 'Unauthorized to update this content' });
+        return _res.status(403).json({ error: 'Unauthorized to update this content' });
       }
 
       // Update slug if title changed
@@ -275,43 +276,43 @@ export class ContentController {
         ]
       });
 
-      (res as any).json(updatedContent);
+      _res.json(updatedContent);
     } catch (error) {
       logger.error('Error updating content:', error);
-      res.status(500).json({ error: 'Failed to update content' });
+      _res.status(500).json({ error: 'Failed to update content' });
     }
   }
 
   // Delete content
-  static async delete(req: Request, res: Response) {
+  static async delete(req: Request, _res: Response) {
     try {
       const { id } = req.params;
 
       const content = await Content.findByPk(id);
       if (!content) {
-        return res.status(404).json({ error: 'Content not found' });
+        return _res.status(404).json({ error: 'Content not found' });
       }
 
       // Check permissions
       if (content.authorId !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
-        return res.status(403).json({ error: 'Unauthorized to delete this content' });
+        return _res.status(403).json({ error: 'Unauthorized to delete this content' });
       }
 
       await content.destroy();
-      (res as any).json({ message: 'Content deleted successfully' });
+      _res.json({ message: 'Content deleted successfully' });
     } catch (error) {
       logger.error('Error deleting content:', error);
-      res.status(500).json({ error: 'Failed to delete content' });
+      _res.status(500).json({ error: 'Failed to delete content' });
     }
   }
 
   // Bulk operations
-  static async bulkUpdate(req: Request, res: Response) {
+  static async bulkUpdate(req: Request, _res: Response) {
     try {
       const { ids, updates } = req.body;
 
       if (!ids || !Array.isArray(ids) || ids.length === 0) {
-        return res.status(400).json({ error: 'No content IDs provided' });
+        return _res.status(400).json({ error: 'No content IDs provided' });
       }
 
       // Check permissions
@@ -322,7 +323,7 @@ export class ContentController {
         
         const unauthorized = contents.some(c => c.authorId !== (req as any).user!.id);
         if (unauthorized) {
-          return res.status(403).json({ error: 'Unauthorized to update some content' });
+          return _res.status(403).json({ error: 'Unauthorized to update some content' });
         }
       }
 
@@ -330,22 +331,22 @@ export class ContentController {
         where: { id: ids }
       });
 
-      (res as any).json({ message: `Updated ${ids.length} content items` });
+      _res.json({ message: `Updated ${ids.length} content items` });
     } catch (error) {
       logger.error('Error bulk updating content:', error);
-      res.status(500).json({ error: 'Failed to bulk update content' });
+      _res.status(500).json({ error: 'Failed to bulk update content' });
     }
   }
 
   // Get content analytics
-  static async getAnalytics(req: Request, res: Response) {
+  static async getAnalytics(req: Request, _res: Response) {
     try {
       const { id } = req.params;
       const {} = req.query;
 
       const content = await Content.findByPk(id);
       if (!content) {
-        return res.status(404).json({ error: 'Content not found' });
+        return _res.status(404).json({ error: 'Content not found' });
       }
 
       // Basic analytics from content model
@@ -360,10 +361,10 @@ export class ContentController {
       // TODO: Add more detailed analytics from content_views table
       // This would include views over time, unique visitors, etc.
 
-      (res as any).json(analytics);
+      _res.json(analytics);
     } catch (error) {
       logger.error('Error fetching content analytics:', error);
-      res.status(500).json({ error: 'Failed to fetch content analytics' });
+      _res.status(500).json({ error: 'Failed to fetch content analytics' });
     }
   }
 }

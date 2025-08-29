@@ -1,6 +1,4 @@
 import React from "react";
-import { Card, CardContent, Typography, Box, useTheme } from "@mui/material";
-import { TrendingUp, TrendingDown } from "@mui/icons-material";
 
 interface StatCardProps {
   title: string;

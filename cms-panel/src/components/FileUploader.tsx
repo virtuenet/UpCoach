@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function FileUploader({ onUpload }: any) {
   return (
     <div className="border-2 border-dashed rounded-lg p-8 text-center">

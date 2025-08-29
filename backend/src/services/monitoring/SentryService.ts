@@ -215,7 +215,7 @@ export class SentryService {
    * Create a custom middleware for route transactions
    */
   routeTransaction() {
-    return (req: Request, res: Response, next: NextFunction) => {
+    return (req: Request, _res: Response, next: NextFunction) => {
       if (!this.initialized) {
         return next();
       }
@@ -227,8 +227,8 @@ export class SentryService {
           description: `${req.method} ${req.path}`,
         });
 
-        res.on('finish', () => {
-          span.setHttpStatus(res.statusCode);
+        _res.on('finish', () => {
+          span.setHttpStatus(_res.statusCode);
           span.finish();
         });
       }

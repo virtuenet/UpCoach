@@ -1,6 +1,3 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 export interface DropdownMenuProps {
   trigger: React.ReactNode;

@@ -4,6 +4,7 @@ import CoachIntelligenceService from '../services/coaching/CoachIntelligenceServ
 import CoachMemory from '../models/coaching/CoachMemory';
 import UserAnalytics from '../models/analytics/UserAnalytics';
 import KpiTracker from '../models/analytics/KpiTracker';
+import { logger } from '../utils/logger';
 
 /**
  * Coach Intelligence Controller
@@ -21,11 +22,11 @@ export class CoachIntelligenceController {
    * Process and store a coaching session
    * POST /api/coach-intelligence/sessions
    */
-  async processSession(req: Request, res: Response): Promise<void> {
+  async processSession(req: Request, _res: Response): Promise<void> {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           message: 'Validation failed',
           errors: errors.array(),
@@ -63,7 +64,7 @@ export class CoachIntelligenceController {
         userFeedback
       );
 
-      res.status(201).json({
+      _res.status(201).json({
         success: true,
         message: 'Coaching session processed successfully',
         data: {
@@ -75,7 +76,7 @@ export class CoachIntelligenceController {
       });
     } catch (error) {
       logger.error('Error processing coaching session:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to process coaching session',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
@@ -87,11 +88,11 @@ export class CoachIntelligenceController {
    * Get relevant memories for current context
    * GET /api/coach-intelligence/memories/relevant
    */
-  async getRelevantMemories(req: Request, res: Response): Promise<void> {
+  async getRelevantMemories(req: Request, _res: Response): Promise<void> {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           message: 'Validation failed',
           errors: errors.array(),
@@ -114,7 +115,7 @@ export class CoachIntelligenceController {
         parseInt(limit as string, 10)
       );
 
-      res.status(200).json({
+      _res.status(200).json({
         success: true,
         message: 'Relevant memories retrieved successfully',
         data: {
@@ -136,7 +137,7 @@ export class CoachIntelligenceController {
       });
     } catch (error) {
       logger.error('Error retrieving relevant memories:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to retrieve relevant memories',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
@@ -148,11 +149,11 @@ export class CoachIntelligenceController {
    * Get coaching recommendations
    * GET /api/coach-intelligence/recommendations/:userId
    */
-  async getCoachingRecommendations(req: Request, res: Response): Promise<void> {
+  async getCoachingRecommendations(req: Request, _res: Response): Promise<void> {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           message: 'Validation failed',
           errors: errors.array(),
@@ -168,7 +169,7 @@ export class CoachIntelligenceController {
         avatarId as string
       );
 
-      res.status(200).json({
+      _res.status(200).json({
         success: true,
         message: 'Coaching recommendations generated successfully',
         data: {
@@ -179,7 +180,7 @@ export class CoachIntelligenceController {
       });
     } catch (error) {
       logger.error('Error generating coaching recommendations:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to generate coaching recommendations',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
@@ -191,11 +192,11 @@ export class CoachIntelligenceController {
    * Generate weekly report
    * GET /api/coach-intelligence/reports/weekly/:userId
    */
-  async getWeeklyReport(req: Request, res: Response): Promise<void> {
+  async getWeeklyReport(req: Request, _res: Response): Promise<void> {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           message: 'Validation failed',
           errors: errors.array(),
@@ -207,14 +208,14 @@ export class CoachIntelligenceController {
 
       const report = await this.coachIntelligenceService.generateWeeklyReport(userId);
 
-      res.status(200).json({
+      _res.status(200).json({
         success: true,
         message: 'Weekly report generated successfully',
         data: report,
       });
     } catch (error) {
       logger.error('Error generating weekly report:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to generate weekly report',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
@@ -226,11 +227,11 @@ export class CoachIntelligenceController {
    * Get user analytics
    * GET /api/coach-intelligence/analytics/:userId
    */
-  async getUserAnalytics(req: Request, res: Response): Promise<void> {
+  async getUserAnalytics(req: Request, _res: Response): Promise<void> {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           message: 'Validation failed',
           errors: errors.array(),
@@ -246,7 +247,7 @@ export class CoachIntelligenceController {
         periodType as 'daily' | 'weekly' | 'monthly' | 'quarterly'
       );
 
-      res.status(200).json({
+      _res.status(200).json({
         success: true,
         message: 'User analytics retrieved successfully',
         data: {
@@ -259,7 +260,7 @@ export class CoachIntelligenceController {
       });
     } catch (error) {
       logger.error('Error retrieving user analytics:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to retrieve user analytics',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
@@ -271,11 +272,11 @@ export class CoachIntelligenceController {
    * Get all memories for a user
    * GET /api/coach-intelligence/memories/:userId
    */
-  async getUserMemories(req: Request, res: Response): Promise<void> {
+  async getUserMemories(req: Request, _res: Response): Promise<void> {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           message: 'Validation failed',
           errors: errors.array(),
@@ -326,7 +327,7 @@ export class CoachIntelligenceController {
         offset,
       });
 
-      res.status(200).json({
+      _res.status(200).json({
         success: true,
         message: 'User memories retrieved successfully',
         data: {
@@ -353,7 +354,7 @@ export class CoachIntelligenceController {
       });
     } catch (error) {
       logger.error('Error retrieving user memories:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to retrieve user memories',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
@@ -365,11 +366,11 @@ export class CoachIntelligenceController {
    * Create a new KPI/Goal tracker
    * POST /api/coach-intelligence/kpi-trackers
    */
-  async createKpiTracker(req: Request, res: Response): Promise<void> {
+  async createKpiTracker(req: Request, _res: Response): Promise<void> {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           message: 'Validation failed',
           errors: errors.array(),
@@ -379,7 +380,7 @@ export class CoachIntelligenceController {
 
       const kpiTracker = await KpiTracker.create(req.body);
 
-      res.status(201).json({
+      _res.status(201).json({
         success: true,
         message: 'KPI tracker created successfully',
         data: {
@@ -391,7 +392,7 @@ export class CoachIntelligenceController {
       });
     } catch (error) {
       logger.error('Error creating KPI tracker:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to create KPI tracker',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
@@ -403,11 +404,11 @@ export class CoachIntelligenceController {
    * Get KPI trackers for a user
    * GET /api/coach-intelligence/kpi-trackers/:userId
    */
-  async getUserKpiTrackers(req: Request, res: Response): Promise<void> {
+  async getUserKpiTrackers(req: Request, _res: Response): Promise<void> {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           message: 'Validation failed',
           errors: errors.array(),
@@ -444,7 +445,7 @@ export class CoachIntelligenceController {
         overdueActionItems: tracker.getOverdueActionItems(),
       }));
 
-      res.status(200).json({
+      _res.status(200).json({
         success: true,
         message: 'KPI trackers retrieved successfully',
         data: {
@@ -459,7 +460,7 @@ export class CoachIntelligenceController {
       });
     } catch (error) {
       logger.error('Error retrieving KPI trackers:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to retrieve KPI trackers',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
@@ -471,11 +472,11 @@ export class CoachIntelligenceController {
    * Update KPI tracker progress
    * PATCH /api/coach-intelligence/kpi-trackers/:id/progress
    */
-  async updateKpiProgress(req: Request, res: Response): Promise<void> {
+  async updateKpiProgress(req: Request, _res: Response): Promise<void> {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        res.status(400).json({
+        _res.status(400).json({
           success: false,
           message: 'Validation failed',
           errors: errors.array(),
@@ -489,7 +490,7 @@ export class CoachIntelligenceController {
       const kpiTracker = await KpiTracker.findByPk(id);
 
       if (!kpiTracker) {
-        res.status(404).json({
+        _res.status(404).json({
           success: false,
           message: 'KPI tracker not found',
         });
@@ -500,7 +501,7 @@ export class CoachIntelligenceController {
       kpiTracker.addPerformanceData(value, note, context);
       await kpiTracker.save();
 
-      res.status(200).json({
+      _res.status(200).json({
         success: true,
         message: 'KPI progress updated successfully',
         data: {
@@ -512,7 +513,7 @@ export class CoachIntelligenceController {
       });
     } catch (error) {
       logger.error('Error updating KPI progress:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to update KPI progress',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
@@ -524,7 +525,7 @@ export class CoachIntelligenceController {
    * Get cohort analytics (for admin panel)
    * GET /api/coach-intelligence/cohort-analytics
    */
-  async getCohortAnalytics(req: Request, res: Response): Promise<void> {
+  async getCohortAnalytics(req: Request, _res: Response): Promise<void> {
     try {
       const { cohortId, periodType = 'weekly' } = req.query;
 
@@ -556,7 +557,7 @@ export class CoachIntelligenceController {
         topImprovementAreas: this.aggregateStringArrays(analytics.map(a => a.aiInsights.improvementAreas)),
       };
 
-      res.status(200).json({
+      _res.status(200).json({
         success: true,
         message: 'Cohort analytics retrieved successfully',
         data: {
@@ -567,7 +568,7 @@ export class CoachIntelligenceController {
       });
     } catch (error) {
       logger.error('Error retrieving cohort analytics:', error);
-      res.status(500).json({
+      _res.status(500).json({
         success: false,
         message: 'Failed to retrieve cohort analytics',
         error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',

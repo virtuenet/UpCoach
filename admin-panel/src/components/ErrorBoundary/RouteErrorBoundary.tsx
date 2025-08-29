@@ -1,5 +1,3 @@
-import { useRouteError, useNavigate } from 'react-router-dom';
-import { AlertTriangle, ArrowLeft, Home } from 'lucide-react';
 
 /**
  * Error Boundary for React Router routes

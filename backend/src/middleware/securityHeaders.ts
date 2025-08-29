@@ -128,12 +128,12 @@ function buildPermissionsPolicy(policies: Record<string, string[]>): string {
 export function securityHeaders(customConfig?: Partial<SecurityHeadersConfig>) {
   const config = { ...defaultConfig, ...customConfig };
   
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, _res: Response, next: NextFunction) => {
     try {
       // Generate nonce for this request
       const nonce = config.enableCSP ? generateCSPNonce() : undefined;
       if (nonce) {
-        res.locals.cspNonce = nonce;
+        _res.locals.cspNonce = nonce;
       }
       
       // HSTS - HTTP Strict Transport Security
@@ -145,39 +145,39 @@ export function securityHeaders(customConfig?: Partial<SecurityHeadersConfig>) {
         if (config.hstsPreload) {
           hstsValue += '; preload';
         }
-        res.setHeader('Strict-Transport-Security', hstsValue);
+        _res.setHeader('Strict-Transport-Security', hstsValue);
       }
       
       // CSP - Content Security Policy
       if (config.enableCSP && config.cspDirectives) {
         const cspHeader = buildCSPHeader(config.cspDirectives, nonce);
-        res.setHeader('Content-Security-Policy', cspHeader);
+        _res.setHeader('Content-Security-Policy', cspHeader);
         
         // Report-only mode for monitoring
         if (process.env.CSP_REPORT_ONLY === 'true') {
-          res.setHeader('Content-Security-Policy-Report-Only', cspHeader);
+          _res.setHeader('Content-Security-Policy-Report-Only', cspHeader);
         }
       }
       
       // X-Frame-Options
       if (config.enableXFrameOptions) {
-        res.setHeader('X-Frame-Options', config.xFrameOptions || 'DENY');
+        _res.setHeader('X-Frame-Options', config.xFrameOptions || 'DENY');
       }
       
       // X-Content-Type-Options
       if (config.enableXContentTypeOptions) {
-        res.setHeader('X-Content-Type-Options', 'nosniff');
+        _res.setHeader('X-Content-Type-Options', 'nosniff');
       }
       
       // Referrer-Policy
       if (config.enableReferrerPolicy) {
-        res.setHeader('Referrer-Policy', config.referrerPolicy || 'strict-origin-when-cross-origin');
+        _res.setHeader('Referrer-Policy', config.referrerPolicy || 'strict-origin-when-cross-origin');
       }
       
       // Permissions-Policy (formerly Feature-Policy)
       if (config.enablePermissionsPolicy && config.permissionsPolicy) {
         const permissionsHeader = buildPermissionsPolicy(config.permissionsPolicy);
-        res.setHeader('Permissions-Policy', permissionsHeader);
+        _res.setHeader('Permissions-Policy', permissionsHeader);
       }
       
       // Expect-CT - Certificate Transparency
@@ -189,21 +189,21 @@ export function securityHeaders(customConfig?: Partial<SecurityHeadersConfig>) {
         if (config.expectCTReportUri) {
           expectCTValue += `, report-uri="${config.expectCTReportUri}"`;
         }
-        res.setHeader('Expect-CT', expectCTValue);
+        _res.setHeader('Expect-CT', expectCTValue);
       }
       
       // X-DNS-Prefetch-Control
-      res.setHeader('X-DNS-Prefetch-Control', 'off');
+      _res.setHeader('X-DNS-Prefetch-Control', 'off');
       
       // X-Download-Options (IE specific)
-      res.setHeader('X-Download-Options', 'noopen');
+      _res.setHeader('X-Download-Options', 'noopen');
       
       // X-Permitted-Cross-Domain-Policies
-      res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+      _res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
       
       // Remove potentially dangerous headers
-      res.removeHeader('X-Powered-By');
-      res.removeHeader('Server');
+      _res.removeHeader('X-Powered-By');
+      _res.removeHeader('Server');
       
       next();
     } catch (error) {
@@ -283,10 +283,10 @@ export class CertificateTransparencyMonitor {
    * Middleware to handle CT violation reports
    */
   middleware() {
-    return async (req: Request, res: Response, next: NextFunction) => {
+    return async (req: Request, _res: Response, next: NextFunction) => {
       if (req.path === '/api/security/ct-report' && req.method === 'POST') {
         await this.processReport(req.body);
-        res.status(204).send();
+        _res.status(204).send();
         return;
       }
       next();
@@ -298,7 +298,7 @@ export class CertificateTransparencyMonitor {
  * Security Report URI Handler
  */
 export function securityReportHandler() {
-  return async (req: Request, res: Response) => {
+  return async (req: Request, _res: Response) => {
     try {
       const reportType = req.path.split('/').pop();
       const report = req.body;
@@ -320,10 +320,10 @@ export function securityReportHandler() {
           logger.warn('Unknown security report type', { reportType });
       }
       
-      res.status(204).send();
+      _res.status(204).send();
     } catch (error) {
       logger.error('Error processing security report', error);
-      res.status(500).json({ error: 'Failed to process report' });
+      _res.status(500).json({ error: 'Failed to process report' });
     }
   };
 }

@@ -1,5 +1,4 @@
-import Grid from "@mui/material/Grid";
-import React, { useState, useEffect } from "react";
+import Grid from "@mui/material";
 import {
   Box,
   Card,
@@ -50,9 +49,7 @@ import {
   EventAvailable,
   MonetizationOn,
 } from "@mui/icons-material";
-import { useSnackbar } from "notistack";
 import apiService from "../../services/api";
-import { format, parseISO } from "date-fns";
 import {
   LineChart,
   Line,

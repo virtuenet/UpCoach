@@ -3,7 +3,6 @@
  * Tracks and reports application performance metrics
  */
 
-import type { ComponentType } from 'react';
 
 interface PerformanceMetrics {
   fcp: number | null;      // First Contentful Paint
