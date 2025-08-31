@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./landing-page
+        working-directory: ./apps/landing-page
     
     steps:
       - uses: actions/checkout@v4
@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: landing-page/package-lock.json
+          cache-dependency-path: apps/landing-page/package-lock.json
       
       - name: Install dependencies
         run: npm ci
@@ -47,7 +47,7 @@ jobs:
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
-          file: ./landing-page/coverage/lcov.info
+          file: ./apps/landing-page/coverage/lcov.info
           flags: landing-page
 
   # Admin Panel Tests
@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./admin-panel
+        working-directory: ./apps/admin-panel
     
     steps:
       - uses: actions/checkout@v4
@@ -66,7 +66,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: admin-panel/package-lock.json
+          cache-dependency-path: apps/admin-panel/package-lock.json
       
       - name: Install dependencies
         run: npm ci
@@ -86,7 +86,7 @@ jobs:
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
-          file: ./admin-panel/coverage/lcov.info
+          file: ./apps/admin-panel/coverage/lcov.info
           flags: admin-panel
 
   # CMS Panel Tests
@@ -95,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./cms-panel
+        working-directory: ./apps/cms-panel
     
     steps:
       - uses: actions/checkout@v4
@@ -105,7 +105,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: cms-panel/package-lock.json
+          cache-dependency-path: apps/cms-panel/package-lock.json
       
       - name: Install dependencies
         run: npm ci
@@ -125,7 +125,7 @@ jobs:
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
-          file: ./cms-panel/coverage/lcov.info
+          file: ./apps/cms-panel/coverage/lcov.info
           flags: cms-panel
 
   # Flutter Mobile App Tests
@@ -134,7 +134,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./mobile-app
+        working-directory: ./apps/mobile
     
     steps:
       - uses: actions/checkout@v4
@@ -157,7 +157,7 @@ jobs:
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
-          file: ./mobile-app/coverage/lcov.info
+          file: ./apps/mobile/coverage/lcov.info
           flags: mobile-app
       
       - name: Build APK
@@ -250,7 +250,7 @@ jobs:
       
       - name: Run npm audit
         run: |
-          cd landing-page && npm audit --production
+          cd apps/landing-page && npm audit --production
           cd ../admin-panel && npm audit --production
           cd ../cms-panel && npm audit --production
         continue-on-error: true

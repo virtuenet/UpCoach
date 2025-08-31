@@ -5,7 +5,8 @@
   "description": "UpCoach - AI-Powered Coaching Platform Monorepo",
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "services/*"
   ],
   "scripts": {
     "dev": "turbo run dev",
@@ -19,11 +20,11 @@
     "install:workspaces": "npm install --workspaces",
     
     "// Development Commands": "",
-    "dev:backend": "npm run dev --workspace=@upcoach/backend",
+    "dev:backend": "npm run dev --workspace=@upcoach/api",
     "dev:admin": "npm run dev --workspace=@upcoach/admin-panel",
     "dev:cms": "npm run dev --workspace=@upcoach/cms-panel",
     "dev:landing": "npm run dev --workspace=@upcoach/landing-page",
-    "dev:mobile": "npm run dev --workspace=@upcoach/mobile-app",
+    "dev:mobile": "cd apps/mobile && flutter run",
     "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev:admin\" \"npm run dev:cms\" \"npm run dev:landing\"",
     
     "// Testing Commands": "",
@@ -39,9 +40,9 @@
     "docker:rebuild": "docker-compose down && docker-compose build --no-cache && docker-compose up",
     
     "// Database Commands": "",
-    "db:migrate": "npm run db:migrate --workspace=@upcoach/backend",
-    "db:seed": "npm run db:seed --workspace=@upcoach/backend",
-    "db:reset": "npm run db:reset --workspace=@upcoach/backend",
+    "db:migrate": "npm run db:migrate --workspace=@upcoach/api",
+    "db:seed": "npm run db:seed --workspace=@upcoach/api",
+    "db:reset": "npm run db:reset --workspace=@upcoach/api",
     
     "// Utility Commands": "",
     "prepare": "husky install",

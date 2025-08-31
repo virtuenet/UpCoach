@@ -11,7 +11,7 @@ services:
       - "8004:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/migrations:/docker-entrypoint-initdb.d
+      - ./services/api/migrations:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-upcoach}"]
       interval: 10s
@@ -38,7 +38,7 @@ services:
   # Landing Page
   landing-page:
     build:
-      context: ./landing-page
+      context: ./apps/landing-page
       dockerfile: Dockerfile
     container_name: upcoach-landing
     environment:
@@ -58,7 +58,7 @@ services:
   admin-panel:
     build:
       context: .
-      dockerfile: ./admin-panel/Dockerfile
+      dockerfile: ./apps/admin-panel/Dockerfile
     container_name: upcoach-admin
     environment:
       NODE_ENV: ${NODE_ENV:-development}
@@ -77,7 +77,7 @@ services:
   cms-panel:
     build:
       context: .
-      dockerfile: ./cms-panel/Dockerfile
+      dockerfile: ./apps/cms-panel/Dockerfile
     container_name: upcoach-cms
     environment:
       NODE_ENV: ${NODE_ENV:-development}
@@ -95,7 +95,7 @@ services:
   # Backend API (Optional - for custom endpoints)
   backend-api:
     build:
-      context: ./backend
+      context: ./services/api
       dockerfile: Dockerfile
     container_name: upcoach-api
     environment:
@@ -138,7 +138,7 @@ services:
   # Flutter Test Container
   flutter-test:
     build:
-      context: ./mobile-app
+      context: ./apps/mobile
       dockerfile: Dockerfile.test
     container_name: upcoach-flutter-test
     volumes:
