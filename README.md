@@ -251,11 +251,32 @@ See `env.example` for complete list.
 
 ## 📚 Documentation
 
-- [Architecture Guide](docs/architecture.md)
-- [API Documentation](docs/api.md)
-- [Mobile App Guide](mobile-app/README.md)
-- [Testing Strategy](docs/testing.md)
-- [Deployment Guide](docs/deployment.md)
+### Developer Documentation
+- [Development Guide](CLAUDE.md) - Complete development setup and workflows
+- [Design Principles](context/design-principles.md) - UI/UX design standards
+- [Security Testing](docs/SECURITY_TESTING.md) - Security implementation guide
+- [Two-Factor Authentication](docs/TWO_FACTOR_AUTH.md) - 2FA implementation details
+- [Monitoring & Security](docs/MONITORING_SECURITY.md) - System monitoring setup
+
+### Implementation Guides
+- [Backend Implementation](docs/implementation/) - Backend setup and configuration guides
+- [CMS Implementation](docs/implementation/IMPLEMENTATION_PLAN.md) - CMS panel setup
+- [Library Replacements](docs/implementation/library-replacements.md) - Dependency management
+
+### Testing Documentation
+- [Testing Strategy](docs/testing/testing-strategy.md) - Comprehensive testing approach
+- [Visual Testing](docs/testing/visual-tests.md) - Visual regression testing
+- [E2E Testing](docs/testing/e2e-tests.md) - End-to-end testing setup
+- [Test Implementation Guide](docs/testing/test-implementation-guide.md) - Testing best practices
+
+### Planning & Architecture
+- [Enhancement Plan](docs/planning/enhancement-plan.md) - Feature development roadmap
+- [Intelligence Features](docs/planning/intelligence-features.md) - AI coaching features
+- [Design System](docs/design-system.md) - Component library and design tokens
+
+### Service Documentation
+- [Backend API](backend/README.md) - Backend service documentation
+- [Badge System](badges/README.md) - Test and coverage badges
 
 ## 🤝 Contributing
 

@@ -1,0 +1,19 @@
+{
+  "name": "upcoach-monorepo",
+  "version": "1.0.0",
+  "workspaces": {
+    "apps": [
+      "apps/backend",
+      "apps/admin-panel", 
+      "apps/cms-panel",
+      "apps/landing-page",
+      "apps/mobile"
+    ],
+    "services": [
+      "services/api"
+    ],
+    "packages": [
+      "packages/*"
+    ]
+  }
+}

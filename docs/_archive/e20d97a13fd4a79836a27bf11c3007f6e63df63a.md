@@ -1,0 +1,100 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - link "UpCoach":
+    - /url: /
+  - navigation:
+    - link "Features":
+      - /url: /features/
+    - link "Pricing":
+      - /url: /pricing/
+    - link "About":
+      - /url: /about/
+  - button "Sign In"
+  - button "Get Started"
+- main:
+  - text: 🎯 AI-Powered Personal Development
+  - heading "Unlock Your Full Potential with AI-Driven Coaching" [level=1]
+  - paragraph: Transform your habits, achieve your goals, and track your progress with personalized AI coaching that adapts to your unique journey. Voice journaling, habit tracking, and intelligent insights - all in one app.
+  - link "Download for iOS":
+    - /url: https://apps.apple.com/app/upcoach
+    - img
+    - text: Download for iOS
+  - link "Download for Android":
+    - /url: https://play.google.com/store/apps/details?id=com.upcoach.app
+    - img
+    - text: Download for Android
+  - button "Watch 2-minute Demo":
+    - img
+    - text: Watch 2-minute Demo
+  - img
+  - text: No credit card required
+  - img
+  - text: Free 7-day trial
+  - img
+  - text: Cancel anytime 9:41
+  - heading "Good morning, Sarah! 👋" [level=2]
+  - paragraph: Ready to crush your goals today?
+  - text: 🤖
+  - paragraph: "Your AI Coach says:"
+  - paragraph: "\"You're on a 5-day streak! Let's keep the momentum going with today's habit check-ins.\""
+  - heading "Today's Habits" [level=3]
+  - text: 🧘
+  - paragraph: Morning Meditation
+  - paragraph: 10 minutes
+  - img
+  - text: 📚
+  - paragraph: Read Industry News
+  - paragraph: 15 minutes
+  - text: 💪
+  - paragraph: Workout Session
+  - paragraph: 30 minutes
+  - text: 🎯
+  - paragraph: Goal Achieved!
+  - paragraph: 5-day streak
+  - text: 📊
+  - paragraph: 85% Progress
+  - paragraph: This week
+  - text: 50K+ Active Users 4.9★ App Rating 92% Goal Achievement 3M+ Habits Tracked Features
+  - heading "Everything You Need to Transform" [level=2]
+  - paragraph: UpCoach combines voice journaling, habit tracking, and AI intelligence to create a personalized coaching experience that adapts to your unique journey.
+  - img
+  - heading "Voice Journaling" [level=3]
+  - paragraph: Express yourself naturally with AI-powered voice journaling. Record your thoughts, get automatic transcriptions, and gain insights from your reflections.
+  - text: AI Transcription Voice Analytics Mood Detection
+  - img
+  - heading "Smart Habit Tracking" [level=3]
+  - paragraph: Build lasting habits with our intelligent tracking system. Set goals, track streaks, and celebrate achievements with gamification features.
+  - text: Streak Tracking Gamification Custom Reminders
+  - img
+  - heading "Progress Photos" [level=3]
+  - paragraph: Visualize your transformation journey with before/after photo comparisons. Track physical changes and celebrate your progress.
+  - text: Photo Timeline Side-by-side Compare Private Gallery
+  - img
+  - heading "AI Coaching Intelligence" [level=3]
+  - paragraph: Get personalized guidance from an AI coach that learns your patterns and provides tailored recommendations for your growth.
+  - text: Personalized Tips Pattern Recognition Smart Suggestions
+  - img
+  - heading "Offline-First Design" [level=3]
+  - paragraph: Never lose your progress. All features work offline and automatically sync when you're back online. Your journey never stops.
+  - text: Offline Mode Auto Sync Data Security
+  - img
+  - heading "Advanced Analytics" [level=3]
+  - paragraph: Understand your progress with detailed analytics. Track trends, identify patterns, and make data-driven decisions about your growth.
+  - text: Visual Charts Weekly Reports Trend Analysis
+  - paragraph: Ready to start your transformation journey?
+  - link "Get Started Free":
+    - /url: "#download"
+    - text: Get Started Free
+    - img
+  - link "Watch Demo":
+    - /url: "#demo"
+    - text: Watch Demo
+    - img
+- alert
+- img
+- text: 3 errors
+- button "Hide Errors":
+  - img
+```
