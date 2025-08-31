@@ -97,7 +97,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./backend
+        working-directory: ./services/api
     services:
       postgres:
         image: postgres:15
@@ -132,7 +132,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
-          cache-dependency-path: backend/package-lock.json
+          cache-dependency-path: services/api/package-lock.json
       
       - name: Install dependencies
         run: npm ci

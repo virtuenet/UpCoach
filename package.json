@@ -18,7 +18,6 @@
     "clean": "turbo run clean && rm -rf node_modules",
     "install:all": "npm install && npm run install:workspaces",
     "install:workspaces": "npm install --workspaces",
-    
     "// Development Commands": "",
     "dev:backend": "npm run dev --workspace=@upcoach/api",
     "dev:admin": "npm run dev --workspace=@upcoach/admin-panel",
@@ -26,24 +25,20 @@
     "dev:landing": "npm run dev --workspace=@upcoach/landing-page",
     "dev:mobile": "cd apps/mobile && flutter run",
     "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev:admin\" \"npm run dev:cms\" \"npm run dev:landing\"",
-    
     "// Testing Commands": "",
     "test:unit": "turbo run test:unit",
     "test:e2e": "turbo run test:e2e",
     "test:integration": "turbo run test:integration",
     "test:coverage": "turbo run test:coverage",
-    
     "// Docker Commands": "",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up",
     "docker:down": "docker-compose down",
     "docker:rebuild": "docker-compose down && docker-compose build --no-cache && docker-compose up",
-    
     "// Database Commands": "",
     "db:migrate": "npm run db:migrate --workspace=@upcoach/api",
     "db:seed": "npm run db:seed --workspace=@upcoach/api",
     "db:reset": "npm run db:reset --workspace=@upcoach/api",
-    
     "// Utility Commands": "",
     "prepare": "husky install",
     "changeset": "changeset",
