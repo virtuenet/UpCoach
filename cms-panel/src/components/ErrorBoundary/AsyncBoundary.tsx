@@ -16,17 +16,11 @@ export default function AsyncBoundary({
   children,
   loadingFallback,
   errorFallback,
-  onError
+  onError,
 }: AsyncBoundaryProps) {
   return (
-    <RouteErrorBoundary
-      fallback={errorFallback}
-      onError={onError}
-      isolate={true}
-    >
-      <Suspense fallback={loadingFallback || <LoadingSkeleton />}>
-        {children}
-      </Suspense>
+    <RouteErrorBoundary fallback={errorFallback} onError={onError} isolate={true}>
+      <Suspense fallback={loadingFallback || <LoadingSkeleton />}>{children}</Suspense>
     </RouteErrorBoundary>
   );
 }

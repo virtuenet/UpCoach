@@ -268,8 +268,7 @@ export class CoachSession extends Model {
 
   // Helper methods
   canBeCancelled(): boolean {
-    if (this.status === SessionStatus.COMPLETED || 
-        this.status === SessionStatus.CANCELLED) {
+    if (this.status === SessionStatus.COMPLETED || this.status === SessionStatus.CANCELLED) {
       return false;
     }
 
@@ -279,8 +278,7 @@ export class CoachSession extends Model {
   }
 
   canBeRescheduled(): boolean {
-    if (this.status !== SessionStatus.PENDING && 
-        this.status !== SessionStatus.CONFIRMED) {
+    if (this.status !== SessionStatus.PENDING && this.status !== SessionStatus.CONFIRMED) {
       return false;
     }
 
@@ -371,12 +369,16 @@ export class CoachSession extends Model {
     durationMinutes: number
   ): Promise<boolean> {
     const sessionEnd = new Date(scheduledAt.getTime() + durationMinutes * 60 * 1000);
-    
+
     const conflicts = await this.count({
       where: {
         coachId,
         status: {
-          [Op.in as any]: [SessionStatus.PENDING, SessionStatus.CONFIRMED, SessionStatus.IN_PROGRESS],
+          [Op.in as any]: [
+            SessionStatus.PENDING,
+            SessionStatus.CONFIRMED,
+            SessionStatus.IN_PROGRESS,
+          ],
         },
         [Op.and as any]: [
           {

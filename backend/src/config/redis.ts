@@ -5,10 +5,10 @@ let redisClient: ReturnType<typeof createClient>;
 
 export async function initializeRedis() {
   redisClient = createClient({
-    url: process.env.REDIS_URL || 'redis://localhost:6379'
+    url: process.env.REDIS_URL || 'redis://localhost:6379',
   });
 
-  redisClient.on('error', (err) => {
+  redisClient.on('error', err => {
     logger.error('Redis Client Error:', err);
   });
 
@@ -30,7 +30,7 @@ export function getRedis() {
 export async function cacheGet<T>(key: string): Promise<T | null> {
   const value = await redisClient.get(key);
   if (!value) return null;
-  
+
   try {
     return JSON.parse(value) as T;
   } catch {
@@ -40,7 +40,7 @@ export async function cacheGet<T>(key: string): Promise<T | null> {
 
 export async function cacheSet(key: string, value: any, expirySeconds?: number): Promise<void> {
   const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
-  
+
   if (expirySeconds) {
     await redisClient.setEx(key, expirySeconds, stringValue);
   } else {
@@ -55,4 +55,4 @@ export async function cacheDelete(key: string): Promise<void> {
 export async function cacheExists(key: string): Promise<boolean> {
   const exists = await redisClient.exists(key);
   return exists === 1;
-} 
+}

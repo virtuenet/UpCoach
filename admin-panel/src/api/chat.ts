@@ -1,3 +1,4 @@
+import { apiClient } from './client';
 
 export interface ChatConversation {
   id: string;
@@ -15,7 +16,7 @@ export interface ChatConversation {
 export interface ChatMessage {
   id: string;
   content: string;
-  sender: "user" | "ai";
+  sender: 'user' | 'ai';
   timestamp: string;
 }
 
@@ -27,21 +28,15 @@ export interface GetConversationsParams {
 }
 
 export const chatApi = {
-  getConversations: async (
-    params: GetConversationsParams = {},
-  ): Promise<ChatConversation[]> => {
-    const response = await apiClient.get("/admin/chat/conversations", {
+  getConversations: async (params: GetConversationsParams = {}): Promise<ChatConversation[]> => {
+    const response = await apiClient.get('/admin/chat/conversations', {
       params,
     });
     return response.data;
   },
 
-  getConversationMessages: async (
-    conversationId: string,
-  ): Promise<ChatMessage[]> => {
-    const response = await apiClient.get(
-      `/admin/chat/conversations/${conversationId}/messages`,
-    );
+  getConversationMessages: async (conversationId: string): Promise<ChatMessage[]> => {
+    const response = await apiClient.get(`/admin/chat/conversations/${conversationId}/messages`);
     return response.data;
   },
 
@@ -51,7 +46,7 @@ export const chatApi = {
     activeUsers: number;
     averageMessagesPerConversation: number;
   }> => {
-    const response = await apiClient.get("/admin/chat/stats");
+    const response = await apiClient.get('/admin/chat/stats');
     return response.data;
   },
 };

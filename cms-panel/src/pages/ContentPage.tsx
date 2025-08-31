@@ -1,109 +1,122 @@
-import { useState } from 'react'
-import { useQuery, useMutation, keepPreviousData, useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate } from 'react-router-dom'
-import { Search, Plus, Edit, Trash2, Eye, Calendar, Filter } from 'lucide-react'
-import LoadingSpinner from '../components/LoadingSpinner'
-import { format } from 'date-fns'
-import toast from 'react-hot-toast'
-import { contentApi, Article } from '../api/content'
+import { useState } from 'react';
+import { useQuery, useMutation, keepPreviousData, useQueryClient } from '@tanstack/react-query';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, Plus, Edit, Trash2, Eye, Calendar, Filter } from 'lucide-react';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { format } from 'date-fns';
+import toast from 'react-hot-toast';
+import { contentApi, Article } from '../api/content';
 
 export default function ContentPage() {
-  const _navigate = useNavigate()
-  const queryClient = useQueryClient()
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [categoryFilter, setCategoryFilter] = useState<string>('all')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [sortBy, setSortBy] = useState('updatedAt')
-  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC')
-  const [showFilters, setShowFilters] = useState(false)
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState('updatedAt');
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC');
+  const [showFilters, setShowFilters] = useState(false);
 
   const { data: categories = [] } = useQuery({
     queryKey: ['categories'],
     queryFn: contentApi.getCategories,
-  })
+  });
 
-  const { data: articlesData, isLoading, error } = useQuery({
-    queryKey: ['articles', searchTerm, statusFilter, categoryFilter, currentPage, sortBy, sortOrder],
-    queryFn: () => contentApi.getArticles({
-      search: searchTerm || undefined,
-      status: statusFilter === 'all' ? undefined : statusFilter,
-      category: categoryFilter === 'all' ? undefined : categoryFilter,
-      page: currentPage,
-      limit: 10,
+  const {
+    data: articlesData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: [
+      'articles',
+      searchTerm,
+      statusFilter,
+      categoryFilter,
+      currentPage,
       sortBy,
       sortOrder,
-    }),
+    ],
+    queryFn: () =>
+      contentApi.getArticles({
+        search: searchTerm || undefined,
+        status: statusFilter === 'all' ? undefined : statusFilter,
+        category: categoryFilter === 'all' ? undefined : categoryFilter,
+        page: currentPage,
+        limit: 10,
+        sortBy,
+        sortOrder,
+      }),
     placeholderData: keepPreviousData,
-  })
+  });
 
   const deleteMutation = useMutation({
     mutationFn: contentApi.deleteArticle,
     onSuccess: () => {
-      toast.success('Article deleted successfully')
-      queryClient.invalidateQueries({ queryKey: ['articles'] })
+      toast.success('Article deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['articles'] });
     },
     onError: (error: any) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete article')
+      toast.error(error instanceof Error ? error.message : 'Failed to delete article');
     },
-  })
+  });
 
   const publishMutation = useMutation({
     mutationFn: contentApi.publishArticle,
     onSuccess: () => {
-      toast.success('Article published successfully')
-      queryClient.invalidateQueries({ queryKey: ['articles'] })
+      toast.success('Article published successfully');
+      queryClient.invalidateQueries({ queryKey: ['articles'] });
     },
     onError: (error: any) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to publish article')
+      toast.error(error instanceof Error ? error.message : 'Failed to publish article');
     },
-  })
+  });
 
   const archiveMutation = useMutation({
     mutationFn: contentApi.archiveArticle,
     onSuccess: () => {
-      toast.success('Article archived successfully')
-      queryClient.invalidateQueries({ queryKey: ['articles'] })
+      toast.success('Article archived successfully');
+      queryClient.invalidateQueries({ queryKey: ['articles'] });
     },
     onError: (error: any) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to archive article')
+      toast.error(error instanceof Error ? error.message : 'Failed to archive article');
     },
-  })
+  });
 
   const handleDelete = async (article: Article) => {
     if (window.confirm(`Are you sure you want to delete "${article.title}"?`)) {
-      deleteMutation.mutate(article.id)
+      deleteMutation.mutate(article.id);
     }
-  }
+  };
 
   const handlePublish = async (article: Article) => {
-    publishMutation.mutate(article.id)
-  }
+    publishMutation.mutate(article.id);
+  };
 
   const handleArchive = async (article: Article) => {
-    archiveMutation.mutate(article.id)
-  }
+    archiveMutation.mutate(article.id);
+  };
 
   const getStatusBadge = (status: string) => {
     const colors = {
       published: 'bg-green-100 text-green-800',
       draft: 'bg-yellow-100 text-yellow-800',
       archived: 'bg-gray-100 text-gray-800',
-    }
-    return colors[status as keyof typeof colors] || colors.draft
-  }
+    };
+    return colors[status as keyof typeof colors] || colors.draft;
+  };
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    setCurrentPage(1)
-  }
+    e.preventDefault();
+    setCurrentPage(1);
+  };
 
   const resetFilters = () => {
-    setSearchTerm('')
-    setStatusFilter('all')
-    setCategoryFilter('all')
-    setCurrentPage(1)
-  }
+    setSearchTerm('');
+    setStatusFilter('all');
+    setCategoryFilter('all');
+    setCurrentPage(1);
+  };
 
   if (error) {
     return (
@@ -113,13 +126,15 @@ export default function ContentPage() {
             <div className="ml-3">
               <h3 className="text-sm font-medium text-red-800">Error loading articles</h3>
               <div className="mt-2 text-sm text-red-700">
-                {error instanceof Error ? error.message : 'Failed to load articles. Please try again.'}
+                {error instanceof Error
+                  ? error.message
+                  : 'Failed to load articles. Please try again.'}
               </div>
             </div>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -151,7 +166,7 @@ export default function ContentPage() {
                   type="text"
                   placeholder="Search articles..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-secondary-500 focus:border-secondary-500"
                 />
               </div>
@@ -180,7 +195,7 @@ export default function ContentPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
+                  onChange={e => setStatusFilter(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-secondary-500 focus:border-secondary-500"
                 >
                   <option value="all">All Status</option>
@@ -193,11 +208,11 @@ export default function ContentPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                 <select
                   value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  onChange={e => setCategoryFilter(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-secondary-500 focus:border-secondary-500"
                 >
                   <option value="all">All Categories</option>
-                  {categories.map((cat) => (
+                  {categories.map(cat => (
                     <option key={cat.id} value={cat.id}>
                       {cat.name}
                     </option>
@@ -208,10 +223,10 @@ export default function ContentPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
                 <select
                   value={`${sortBy}-${sortOrder}`}
-                  onChange={(e) => {
-                    const [field, order] = e.target.value.split('-')
-                    setSortBy(field)
-                    setSortOrder(order as 'ASC' | 'DESC')
+                  onChange={e => {
+                    const [field, order] = e.target.value.split('-');
+                    setSortBy(field);
+                    setSortOrder(order as 'ASC' | 'DESC');
                   }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-secondary-500 focus:border-secondary-500"
                 >
@@ -329,7 +344,9 @@ export default function ContentPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(article.status)}`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(article.status)}`}
+                        >
                           {article.status.charAt(0).toUpperCase() + article.status.slice(1)}
                         </span>
                       </td>
@@ -354,7 +371,7 @@ export default function ContentPage() {
                           >
                             <Edit className="h-4 w-4" />
                           </Link>
-                          
+
                           {article.status === 'draft' && (
                             <button
                               onClick={() => handlePublish(article)}
@@ -365,7 +382,7 @@ export default function ContentPage() {
                               <Eye className="h-4 w-4" />
                             </button>
                           )}
-                          
+
                           {article.status === 'published' && (
                             <button
                               onClick={() => handleArchive(article)}
@@ -376,7 +393,7 @@ export default function ContentPage() {
                               <Calendar className="h-4 w-4" />
                             </button>
                           )}
-                          
+
                           <button
                             onClick={() => handleDelete(article)}
                             disabled={deleteMutation.isPending}
@@ -405,7 +422,9 @@ export default function ContentPage() {
                     Previous
                   </button>
                   <button
-                    onClick={() => setCurrentPage(Math.min(articlesData.pagination.totalPages, currentPage + 1))}
+                    onClick={() =>
+                      setCurrentPage(Math.min(articlesData.pagination.totalPages, currentPage + 1))
+                    }
                     disabled={currentPage === articlesData.pagination.totalPages}
                     className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                   >
@@ -421,9 +440,13 @@ export default function ContentPage() {
                       </span>{' '}
                       to{' '}
                       <span className="font-medium">
-                        {Math.min(currentPage * articlesData.pagination.itemsPerPage, articlesData.pagination.totalItems)}
+                        {Math.min(
+                          currentPage * articlesData.pagination.itemsPerPage,
+                          articlesData.pagination.totalItems
+                        )}
                       </span>{' '}
-                      of <span className="font-medium">{articlesData.pagination.totalItems}</span> results
+                      of <span className="font-medium">{articlesData.pagination.totalItems}</span>{' '}
+                      results
                     </p>
                   </div>
                   <div>
@@ -435,24 +458,31 @@ export default function ContentPage() {
                       >
                         Previous
                       </button>
-                      {Array.from({ length: Math.min(5, articlesData.pagination.totalPages) }, (_, i) => {
-                        const page = i + 1
-                        return (
-                          <button
-                            key={page}
-                            onClick={() => setCurrentPage(page)}
-                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                              page === currentPage
-                                ? 'z-10 bg-secondary-50 border-secondary-500 text-secondary-600'
-                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                            }`}
-                          >
-                            {page}
-                          </button>
-                        )
-                      })}
+                      {Array.from(
+                        { length: Math.min(5, articlesData.pagination.totalPages) },
+                        (_, i) => {
+                          const page = i + 1;
+                          return (
+                            <button
+                              key={page}
+                              onClick={() => setCurrentPage(page)}
+                              className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                page === currentPage
+                                  ? 'z-10 bg-secondary-50 border-secondary-500 text-secondary-600'
+                                  : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          );
+                        }
+                      )}
                       <button
-                        onClick={() => setCurrentPage(Math.min(articlesData.pagination.totalPages, currentPage + 1))}
+                        onClick={() =>
+                          setCurrentPage(
+                            Math.min(articlesData.pagination.totalPages, currentPage + 1)
+                          )
+                        }
                         disabled={currentPage === articlesData.pagination.totalPages}
                         className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                       >
@@ -467,5 +497,5 @@ export default function ContentPage() {
         )}
       </div>
     </div>
-  )
-} 
+  );
+}

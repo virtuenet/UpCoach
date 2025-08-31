@@ -6,11 +6,11 @@ export { default as Card } from './ui/Card';
 
 export { default as Skeleton, SkeletonText, SkeletonCard, SkeletonTable } from './ui/Skeleton';
 
-export { 
-  default as EmptyState, 
-  NoDataEmptyState, 
-  NoSearchResultsEmptyState, 
-  ErrorEmptyState 
+export {
+  default as EmptyState,
+  NoDataEmptyState,
+  NoSearchResultsEmptyState,
+  ErrorEmptyState,
 } from './ui/EmptyState';
 
 export { default as FormField, SelectFormField } from './ui/FormField';

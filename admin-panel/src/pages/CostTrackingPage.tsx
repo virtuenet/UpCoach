@@ -1,4 +1,6 @@
-import LoadingSpinner from "../components/LoadingSpinner";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function CostTrackingPage() {
   const [loading, setLoading] = useState(true);
@@ -19,14 +21,14 @@ export default function CostTrackingPage() {
       setCosts(response.costs);
       setTotalCount(response.total);
     } catch (error) {
-      console.error("Failed to load costs:", error);
+      console.error('Failed to load costs:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this cost entry?")) {
+    if (!confirm('Are you sure you want to delete this cost entry?')) {
       return;
     }
 
@@ -34,14 +36,14 @@ export default function CostTrackingPage() {
       await financialApi.deleteCost(id);
       await loadCosts();
     } catch (error) {
-      console.error("Failed to delete cost:", error);
+      console.error('Failed to delete cost:', error);
     }
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -57,9 +59,7 @@ export default function CostTrackingPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Cost Tracking</h1>
-          <p className="text-muted-foreground">
-            Track and manage operational expenses
-          </p>
+          <p className="text-muted-foreground">Track and manage operational expenses</p>
         </div>
         <div className="flex gap-2">
           <button className="btn btn-secondary">
@@ -70,10 +70,7 @@ export default function CostTrackingPage() {
             <Download className="h-4 w-4 mr-2" />
             Export
           </button>
-          <button
-            className="btn btn-primary"
-            onClick={() => setShowAddModal(true)}
-          >
+          <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add Cost
           </button>
@@ -113,43 +110,39 @@ export default function CostTrackingPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {costs.map((cost) => (
+              {costs.map(cost => (
                 <tr key={cost.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {cost.name}
-                      </div>
+                      <div className="text-sm font-medium text-gray-900">{cost.name}</div>
                       {cost.description && (
-                        <div className="text-sm text-gray-500">
-                          {cost.description}
-                        </div>
+                        <div className="text-sm text-gray-500">{cost.description}</div>
                       )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                      {cost.category.replace(/_/g, " ")}
+                      {cost.category.replace(/_/g, ' ')}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {cost.provider || "-"}
+                    {cost.provider || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {formatCurrency(cost.amount)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {format(new Date(cost.periodStart), "MMM d")} -{" "}
-                    {format(new Date(cost.periodEnd), "MMM d, yyyy")}
+                    {format(new Date(cost.periodStart), 'MMM d')} -{' '}
+                    {format(new Date(cost.periodEnd), 'MMM d, yyyy')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        cost.type === "fixed"
-                          ? "bg-gray-100 text-gray-800"
-                          : cost.type === "variable"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-green-100 text-green-800"
+                        cost.type === 'fixed'
+                          ? 'bg-gray-100 text-gray-800'
+                          : cost.type === 'variable'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-green-100 text-green-800'
                       }`}
                     >
                       {cost.type}
@@ -159,11 +152,11 @@ export default function CostTrackingPage() {
                     <span
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         cost.isApproved
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-yellow-100 text-yellow-800'
                       }`}
                     >
-                      {cost.isApproved ? "Approved" : "Pending"}
+                      {cost.isApproved ? 'Approved' : 'Pending'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -207,12 +200,9 @@ export default function CostTrackingPage() {
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700">
-                Showing{" "}
-                <span className="font-medium">{(page - 1) * 20 + 1}</span> to{" "}
-                <span className="font-medium">
-                  {Math.min(page * 20, totalCount)}
-                </span>{" "}
-                of <span className="font-medium">{totalCount}</span> results
+                Showing <span className="font-medium">{(page - 1) * 20 + 1}</span> to{' '}
+                <span className="font-medium">{Math.min(page * 20, totalCount)}</span> of{' '}
+                <span className="font-medium">{totalCount}</span> results
               </p>
             </div>
             <div>

@@ -5,15 +5,15 @@ import { ApiError } from '../utils/apiError';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { db } from '../services/database';
 import { logger } from '../utils/logger';
-import { 
-  GoalPriority, 
-  GoalStatus, 
-  GoalCategory, 
-  CreateGoalDto, 
+import {
+  GoalPriority,
+  GoalStatus,
+  GoalCategory,
+  CreateGoalDto,
   UpdateGoalDto,
   CreateGoalMilestoneDto,
   UpdateGoalMilestoneDto,
-  GoalFilters 
+  GoalFilters,
 } from '../types/database';
 
 const router = Router();
@@ -61,363 +61,401 @@ const goalFiltersSchema = z.object({
   targetBefore: z.string().datetime().optional(),
   targetAfter: z.string().datetime().optional(),
   search: z.string().optional(),
-  sortBy: z.enum(['created_at', 'updated_at', 'target_date', 'title', 'priority', 'progress_percentage']).default('created_at'),
+  sortBy: z
+    .enum(['created_at', 'updated_at', 'target_date', 'title', 'priority', 'progress_percentage'])
+    .default('created_at'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
 // Get all goals for the current user
-router.get('/', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const filters = goalFiltersSchema.parse(req.query);
+router.get(
+  '/',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const filters = goalFiltersSchema.parse(req.query);
 
-  // Build query
-  let query = `
+    // Build query
+    let query = `
     SELECT id, title, description, priority, status, category, target_date, completed_at, 
            progress_percentage, created_at, updated_at
     FROM goals 
     WHERE user_id = $1
   `;
-  const params: any[] = [userId];
-  let paramIndex = 2;
+    const params: any[] = [userId];
+    let paramIndex = 2;
 
-  // Add filters
-  if (filters.status) {
-    query += ` AND status = $${paramIndex}`;
-    params.push(filters.status);
-    paramIndex++;
-  }
+    // Add filters
+    if (filters.status) {
+      query += ` AND status = $${paramIndex}`;
+      params.push(filters.status);
+      paramIndex++;
+    }
 
-  if (filters.priority) {
-    query += ` AND priority = $${paramIndex}`;
-    params.push(filters.priority);
-    paramIndex++;
-  }
+    if (filters.priority) {
+      query += ` AND priority = $${paramIndex}`;
+      params.push(filters.priority);
+      paramIndex++;
+    }
 
-  if (filters.category) {
-    query += ` AND category = $${paramIndex}`;
-    params.push(filters.category);
-    paramIndex++;
-  }
+    if (filters.category) {
+      query += ` AND category = $${paramIndex}`;
+      params.push(filters.category);
+      paramIndex++;
+    }
 
-  if (filters.targetBefore) {
-    query += ` AND target_date <= $${paramIndex}`;
-    params.push(filters.targetBefore);
-    paramIndex++;
-  }
+    if (filters.targetBefore) {
+      query += ` AND target_date <= $${paramIndex}`;
+      params.push(filters.targetBefore);
+      paramIndex++;
+    }
 
-  if (filters.targetAfter) {
-    query += ` AND target_date >= $${paramIndex}`;
-    params.push(filters.targetAfter);
-    paramIndex++;
-  }
+    if (filters.targetAfter) {
+      query += ` AND target_date >= $${paramIndex}`;
+      params.push(filters.targetAfter);
+      paramIndex++;
+    }
 
-  if (filters.search) {
-    query += ` AND (title ILIKE $${paramIndex} OR description ILIKE $${paramIndex})`;
-    params.push(`%${filters.search}%`);
-    paramIndex++;
-  }
+    if (filters.search) {
+      query += ` AND (title ILIKE $${paramIndex} OR description ILIKE $${paramIndex})`;
+      params.push(`%${filters.search}%`);
+      paramIndex++;
+    }
 
-  // Add sorting
-  query += ` ORDER BY ${filters.sortBy} ${filters.sortOrder}`;
+    // Add sorting
+    query += ` ORDER BY ${filters.sortBy} ${filters.sortOrder}`;
 
-  // Add pagination
-  const offset = (filters.page - 1) * filters.limit;
-  query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-  params.push(filters.limit, offset);
+    // Add pagination
+    const offset = (filters.page - 1) * filters.limit;
+    query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(filters.limit, offset);
 
-  // Execute query
-  const result = await db.query(query, params);
+    // Execute query
+    const result = await db.query(query, params);
 
-  // Get total count for pagination
-  let countQuery = `SELECT COUNT(*) FROM goals WHERE user_id = $1`;
-  const countParams = [userId];
-  let countParamIndex = 2;
+    // Get total count for pagination
+    let countQuery = `SELECT COUNT(*) FROM goals WHERE user_id = $1`;
+    const countParams = [userId];
+    let countParamIndex = 2;
 
-  if (filters.status) {
-    countQuery += ` AND status = $${countParamIndex}`;
-    countParams.push(filters.status);
-    countParamIndex++;
-  }
+    if (filters.status) {
+      countQuery += ` AND status = $${countParamIndex}`;
+      countParams.push(filters.status);
+      countParamIndex++;
+    }
 
-  if (filters.priority) {
-    countQuery += ` AND priority = $${countParamIndex}`;
-    countParams.push(filters.priority);
-    countParamIndex++;
-  }
+    if (filters.priority) {
+      countQuery += ` AND priority = $${countParamIndex}`;
+      countParams.push(filters.priority);
+      countParamIndex++;
+    }
 
-  if (filters.category) {
-    countQuery += ` AND category = $${countParamIndex}`;
-    countParams.push(filters.category);
-    countParamIndex++;
-  }
+    if (filters.category) {
+      countQuery += ` AND category = $${countParamIndex}`;
+      countParams.push(filters.category);
+      countParamIndex++;
+    }
 
-  if (filters.search) {
-    countQuery += ` AND (title ILIKE $${countParamIndex} OR description ILIKE $${countParamIndex})`;
-    countParams.push(`%${filters.search}%`);
-  }
+    if (filters.search) {
+      countQuery += ` AND (title ILIKE $${countParamIndex} OR description ILIKE $${countParamIndex})`;
+      countParams.push(`%${filters.search}%`);
+    }
 
-  const countResult = await db.query(countQuery, countParams);
-  const total = parseInt(countResult.rows[0].count);
-  const totalPages = Math.ceil(total / filters.limit);
+    const countResult = await db.query(countQuery, countParams);
+    const total = parseInt(countResult.rows[0].count);
+    const totalPages = Math.ceil(total / filters.limit);
 
-  _res.json({
-    success: true,
-    data: {
-      goals: result.rows,
-      pagination: {
-        page: filters.page,
-        limit: filters.limit,
-        total,
-        totalPages,
+    _res.json({
+      success: true,
+      data: {
+        goals: result.rows,
+        pagination: {
+          page: filters.page,
+          limit: filters.limit,
+          total,
+          totalPages,
+        },
       },
-    },
-  });
-}));
+    });
+  })
+);
 
 // Get a single goal by ID with milestones
-router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const { id } = req.params;
+router.get(
+  '/:id',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const { id } = req.params;
 
-  const goal = await db.findOne('goals', { id, user_id: userId });
-  
-  if (!goal) {
-    throw new ApiError(404, 'Goal not found');
-  }
+    const goal = await db.findOne('goals', { id, user_id: userId });
 
-  // Get milestones for this goal
-  const milestones = await db.query(`
+    if (!goal) {
+      throw new ApiError(404, 'Goal not found');
+    }
+
+    // Get milestones for this goal
+    const milestones = await db.query(
+      `
     SELECT id, title, description, target_date, completed_at, is_completed, sort_order, created_at, updated_at
     FROM goal_milestones 
     WHERE goal_id = $1 
     ORDER BY sort_order ASC, created_at ASC
-  `, [id]);
+  `,
+      [id]
+    );
 
-  _res.json({
-    success: true,
-    data: {
-      goal: {
-        ...goal,
-        milestones: milestones.rows,
+    _res.json({
+      success: true,
+      data: {
+        goal: {
+          ...goal,
+          milestones: milestones.rows,
+        },
       },
-    },
-  });
-}));
+    });
+  })
+);
 
 // Create a new goal
-router.post('/', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const validatedData = createGoalSchema.parse(req.body);
+router.post(
+  '/',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const validatedData = createGoalSchema.parse(req.body);
 
-  const goalData = {
-    user_id: userId,
-    title: validatedData.title,
-    description: validatedData.description || null,
-    priority: validatedData.priority,
-    category: validatedData.category,
-    target_date: validatedData.targetDate ? new Date(validatedData.targetDate) : null,
-    progress_percentage: 0,
-    metadata: {},
-  };
+    const goalData = {
+      user_id: userId,
+      title: validatedData.title,
+      description: validatedData.description || null,
+      priority: validatedData.priority,
+      category: validatedData.category,
+      target_date: validatedData.targetDate ? new Date(validatedData.targetDate) : null,
+      progress_percentage: 0,
+      metadata: {},
+    };
 
-  const goal = await db.insert('goals', goalData);
+    const goal = await db.insert('goals', goalData);
 
-  logger.info('Goal created:', { goalId: goal.id, userId });
+    logger.info('Goal created:', { goalId: goal.id, userId });
 
-  _res.status(201).json({
-    success: true,
-    message: 'Goal created successfully',
-    data: {
-      goal,
-    },
-  });
-}));
+    _res.status(201).json({
+      success: true,
+      message: 'Goal created successfully',
+      data: {
+        goal,
+      },
+    });
+  })
+);
 
 // Update a goal
-router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const { id } = req.params;
-  const validatedData = updateGoalSchema.parse(req.body);
+router.put(
+  '/:id',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const { id } = req.params;
+    const validatedData = updateGoalSchema.parse(req.body);
 
-  // Check if goal exists and belongs to user
-  const existingGoal = await db.findOne('goals', { id, user_id: userId });
-  if (!existingGoal) {
-    throw new ApiError(404, 'Goal not found');
-  }
-
-  const updateData: any = {};
-  
-  if (validatedData.title !== undefined) updateData.title = validatedData.title;
-  if (validatedData.description !== undefined) updateData.description = validatedData.description;
-  if (validatedData.priority !== undefined) updateData.priority = validatedData.priority;
-  if (validatedData.status !== undefined) {
-    updateData.status = validatedData.status;
-    // Set completed_at when goal is completed
-    if (validatedData.status === 'completed') {
-      updateData.completed_at = new Date();
-      updateData.progress_percentage = 100;
-    } else if (existingGoal.completed_at) {
-      updateData.completed_at = null;
+    // Check if goal exists and belongs to user
+    const existingGoal = await db.findOne('goals', { id, user_id: userId });
+    if (!existingGoal) {
+      throw new ApiError(404, 'Goal not found');
     }
-  }
-  if (validatedData.category !== undefined) updateData.category = validatedData.category;
-  if (validatedData.targetDate !== undefined) {
-    updateData.target_date = validatedData.targetDate ? new Date(validatedData.targetDate) : null;
-  }
-  if (validatedData.progressPercentage !== undefined) {
-    updateData.progress_percentage = validatedData.progressPercentage;
-  }
 
-  const updatedGoal = await db.update('goals', updateData, { id, user_id: userId });
+    const updateData: any = {};
 
-  logger.info('Goal updated:', { goalId: id, userId });
+    if (validatedData.title !== undefined) updateData.title = validatedData.title;
+    if (validatedData.description !== undefined) updateData.description = validatedData.description;
+    if (validatedData.priority !== undefined) updateData.priority = validatedData.priority;
+    if (validatedData.status !== undefined) {
+      updateData.status = validatedData.status;
+      // Set completed_at when goal is completed
+      if (validatedData.status === 'completed') {
+        updateData.completed_at = new Date();
+        updateData.progress_percentage = 100;
+      } else if (existingGoal.completed_at) {
+        updateData.completed_at = null;
+      }
+    }
+    if (validatedData.category !== undefined) updateData.category = validatedData.category;
+    if (validatedData.targetDate !== undefined) {
+      updateData.target_date = validatedData.targetDate ? new Date(validatedData.targetDate) : null;
+    }
+    if (validatedData.progressPercentage !== undefined) {
+      updateData.progress_percentage = validatedData.progressPercentage;
+    }
 
-  _res.json({
-    success: true,
-    message: 'Goal updated successfully',
-    data: {
-      goal: updatedGoal,
-    },
-  });
-}));
+    const updatedGoal = await db.update('goals', updateData, { id, user_id: userId });
+
+    logger.info('Goal updated:', { goalId: id, userId });
+
+    _res.json({
+      success: true,
+      message: 'Goal updated successfully',
+      data: {
+        goal: updatedGoal,
+      },
+    });
+  })
+);
 
 // Delete a goal
-router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const { id } = req.params;
+router.delete(
+  '/:id',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const { id } = req.params;
 
-  // Check if goal exists and belongs to user
-  const existingGoal = await db.findOne('goals', { id, user_id: userId });
-  if (!existingGoal) {
-    throw new ApiError(404, 'Goal not found');
-  }
+    // Check if goal exists and belongs to user
+    const existingGoal = await db.findOne('goals', { id, user_id: userId });
+    if (!existingGoal) {
+      throw new ApiError(404, 'Goal not found');
+    }
 
-  // Delete goal (milestones will be cascade deleted)
-  await db.delete('goals', { id, user_id: userId });
+    // Delete goal (milestones will be cascade deleted)
+    await db.delete('goals', { id, user_id: userId });
 
-  logger.info('Goal deleted:', { goalId: id, userId });
+    logger.info('Goal deleted:', { goalId: id, userId });
 
-  _res.json({
-    success: true,
-    message: 'Goal deleted successfully',
-  });
-}));
+    _res.json({
+      success: true,
+      message: 'Goal deleted successfully',
+    });
+  })
+);
 
 // Create a milestone for a goal
-router.post('/:id/milestones', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const { id: goalId } = req.params;
-  const validatedData = createMilestoneSchema.parse(req.body);
+router.post(
+  '/:id/milestones',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const { id: goalId } = req.params;
+    const validatedData = createMilestoneSchema.parse(req.body);
 
-  // Check if goal exists and belongs to user
-  const goal = await db.findOne('goals', { id: goalId, user_id: userId });
-  if (!goal) {
-    throw new ApiError(404, 'Goal not found');
-  }
+    // Check if goal exists and belongs to user
+    const goal = await db.findOne('goals', { id: goalId, user_id: userId });
+    if (!goal) {
+      throw new ApiError(404, 'Goal not found');
+    }
 
-  const milestoneData = {
-    goal_id: goalId,
-    title: validatedData.title,
-    description: validatedData.description || null,
-    target_date: validatedData.targetDate ? new Date(validatedData.targetDate) : null,
-    sort_order: validatedData.sortOrder,
-  };
+    const milestoneData = {
+      goal_id: goalId,
+      title: validatedData.title,
+      description: validatedData.description || null,
+      target_date: validatedData.targetDate ? new Date(validatedData.targetDate) : null,
+      sort_order: validatedData.sortOrder,
+    };
 
-  const milestone = await db.insert('goal_milestones', milestoneData);
+    const milestone = await db.insert('goal_milestones', milestoneData);
 
-  logger.info('Milestone created:', { milestoneId: milestone.id, goalId, userId });
+    logger.info('Milestone created:', { milestoneId: milestone.id, goalId, userId });
 
-  _res.status(201).json({
-    success: true,
-    message: 'Milestone created successfully',
-    data: {
-      milestone,
-    },
-  });
-}));
+    _res.status(201).json({
+      success: true,
+      message: 'Milestone created successfully',
+      data: {
+        milestone,
+      },
+    });
+  })
+);
 
 // Update a milestone
-router.put('/:goalId/milestones/:milestoneId', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const { goalId, milestoneId } = req.params;
-  const validatedData = updateMilestoneSchema.parse(req.body);
+router.put(
+  '/:goalId/milestones/:milestoneId',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const { goalId, milestoneId } = req.params;
+    const validatedData = updateMilestoneSchema.parse(req.body);
 
-  // Check if goal exists and belongs to user
-  const goal = await db.findOne('goals', { id: goalId, user_id: userId });
-  if (!goal) {
-    throw new ApiError(404, 'Goal not found');
-  }
+    // Check if goal exists and belongs to user
+    const goal = await db.findOne('goals', { id: goalId, user_id: userId });
+    if (!goal) {
+      throw new ApiError(404, 'Goal not found');
+    }
 
-  // Check if milestone exists and belongs to the goal
-  const existingMilestone = await db.findOne('goal_milestones', { id: milestoneId, goal_id: goalId });
-  if (!existingMilestone) {
-    throw new ApiError(404, 'Milestone not found');
-  }
+    // Check if milestone exists and belongs to the goal
+    const existingMilestone = await db.findOne('goal_milestones', {
+      id: milestoneId,
+      goal_id: goalId,
+    });
+    if (!existingMilestone) {
+      throw new ApiError(404, 'Milestone not found');
+    }
 
-  const updateData: any = {};
-  
-  if (validatedData.title !== undefined) updateData.title = validatedData.title;
-  if (validatedData.description !== undefined) updateData.description = validatedData.description;
-  if (validatedData.targetDate !== undefined) {
-    updateData.target_date = validatedData.targetDate ? new Date(validatedData.targetDate) : null;
-  }
-  if (validatedData.isCompleted !== undefined) {
-    updateData.is_completed = validatedData.isCompleted;
-    updateData.completed_at = validatedData.isCompleted ? new Date() : null;
-  }
-  if (validatedData.sortOrder !== undefined) updateData.sort_order = validatedData.sortOrder;
+    const updateData: any = {};
 
-  const updatedMilestone = await db.update('goal_milestones', updateData, { id: milestoneId });
+    if (validatedData.title !== undefined) updateData.title = validatedData.title;
+    if (validatedData.description !== undefined) updateData.description = validatedData.description;
+    if (validatedData.targetDate !== undefined) {
+      updateData.target_date = validatedData.targetDate ? new Date(validatedData.targetDate) : null;
+    }
+    if (validatedData.isCompleted !== undefined) {
+      updateData.is_completed = validatedData.isCompleted;
+      updateData.completed_at = validatedData.isCompleted ? new Date() : null;
+    }
+    if (validatedData.sortOrder !== undefined) updateData.sort_order = validatedData.sortOrder;
 
-  // Update goal progress based on milestone completion
-  await updateGoalProgress(goalId);
+    const updatedMilestone = await db.update('goal_milestones', updateData, { id: milestoneId });
 
-  logger.info('Milestone updated:', { milestoneId, goalId, userId });
+    // Update goal progress based on milestone completion
+    await updateGoalProgress(goalId);
 
-  _res.json({
-    success: true,
-    message: 'Milestone updated successfully',
-    data: {
-      milestone: updatedMilestone,
-    },
-  });
-}));
+    logger.info('Milestone updated:', { milestoneId, goalId, userId });
+
+    _res.json({
+      success: true,
+      message: 'Milestone updated successfully',
+      data: {
+        milestone: updatedMilestone,
+      },
+    });
+  })
+);
 
 // Delete a milestone
-router.delete('/:goalId/milestones/:milestoneId', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const { goalId, milestoneId } = req.params;
+router.delete(
+  '/:goalId/milestones/:milestoneId',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const { goalId, milestoneId } = req.params;
 
-  // Check if goal exists and belongs to user
-  const goal = await db.findOne('goals', { id: goalId, user_id: userId });
-  if (!goal) {
-    throw new ApiError(404, 'Goal not found');
-  }
+    // Check if goal exists and belongs to user
+    const goal = await db.findOne('goals', { id: goalId, user_id: userId });
+    if (!goal) {
+      throw new ApiError(404, 'Goal not found');
+    }
 
-  // Check if milestone exists
-  const existingMilestone = await db.findOne('goal_milestones', { id: milestoneId, goal_id: goalId });
-  if (!existingMilestone) {
-    throw new ApiError(404, 'Milestone not found');
-  }
+    // Check if milestone exists
+    const existingMilestone = await db.findOne('goal_milestones', {
+      id: milestoneId,
+      goal_id: goalId,
+    });
+    if (!existingMilestone) {
+      throw new ApiError(404, 'Milestone not found');
+    }
 
-  await db.delete('goal_milestones', { id: milestoneId });
+    await db.delete('goal_milestones', { id: milestoneId });
 
-  // Update goal progress after milestone deletion
-  await updateGoalProgress(goalId);
+    // Update goal progress after milestone deletion
+    await updateGoalProgress(goalId);
 
-  logger.info('Milestone deleted:', { milestoneId, goalId, userId });
+    logger.info('Milestone deleted:', { milestoneId, goalId, userId });
 
-  _res.json({
-    success: true,
-    message: 'Milestone deleted successfully',
-  });
-}));
+    _res.json({
+      success: true,
+      message: 'Milestone deleted successfully',
+    });
+  })
+);
 
 // Get goal statistics
-router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
+router.get(
+  '/stats/overview',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
 
-  const stats = await db.query(`
+    const stats = await db.query(
+      `
     SELECT 
       COUNT(*) as total_goals,
       COUNT(*) FILTER (WHERE status = 'active') as active_goals,
@@ -428,9 +466,12 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _re
       COUNT(*) FILTER (WHERE target_date IS NOT NULL AND target_date < NOW() AND status != 'completed') as overdue_goals
     FROM goals 
     WHERE user_id = $1
-  `, [userId]);
+  `,
+      [userId]
+    );
 
-  const priorityStats = await db.query(`
+    const priorityStats = await db.query(
+      `
     SELECT 
       priority,
       COUNT(*) as count,
@@ -438,9 +479,12 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _re
     FROM goals 
     WHERE user_id = $1
     GROUP BY priority
-  `, [userId]);
+  `,
+      [userId]
+    );
 
-  const categoryStats = await db.query(`
+    const categoryStats = await db.query(
+      `
     SELECT 
       category,
       COUNT(*) as count,
@@ -448,26 +492,32 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _re
     FROM goals 
     WHERE user_id = $1
     GROUP BY category
-  `, [userId]);
+  `,
+      [userId]
+    );
 
-  _res.json({
-    success: true,
-    data: {
-      overview: stats.rows[0],
-      byPriority: priorityStats.rows,
-      byCategory: categoryStats.rows,
-    },
-  });
-}));
+    _res.json({
+      success: true,
+      data: {
+        overview: stats.rows[0],
+        byPriority: priorityStats.rows,
+        byCategory: categoryStats.rows,
+      },
+    });
+  })
+);
 
 // Helper function to update goal progress based on milestones
 async function updateGoalProgress(goalId: string): Promise<void> {
   try {
-    const milestones = await db.query(`
+    const milestones = await db.query(
+      `
       SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE is_completed = true) as completed
       FROM goal_milestones 
       WHERE goal_id = $1
-    `, [goalId]);
+    `,
+      [goalId]
+    );
 
     const { total, completed } = milestones.rows[0];
     const progressPercentage = total > 0 ? Math.round((completed / total) * 100) : 0;
@@ -478,4 +528,4 @@ async function updateGoalProgress(goalId: string): Promise<void> {
   }
 }
 
-export default router; 
+export default router;

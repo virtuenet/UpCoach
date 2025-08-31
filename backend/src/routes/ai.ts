@@ -39,14 +39,22 @@ router.get('/predictions/intervention/:riskType', authenticate, aiController.get
 // Adaptive Learning Routes
 router.post('/learning/path', authenticate, aiController.createLearningPath);
 router.get('/learning/paths', authenticate, aiController.getLearningPaths);
-router.post('/learning/path/:pathId/module/:moduleId/progress', authenticate, aiController.trackLearningProgress);
+router.post(
+  '/learning/path/:pathId/module/:moduleId/progress',
+  authenticate,
+  aiController.trackLearningProgress
+);
 router.get('/learning/path/:pathId/next-module', authenticate, aiController.getNextModule);
 
 // Voice AI Routes
 router.post('/voice/analyze', authenticate, upload.single('audio'), aiController.analyzeVoice);
 router.post('/voice/coaching', authenticate, aiController.getVoiceCoaching);
 router.get('/voice/insights', authenticate, aiController.getVoiceInsights);
-router.get('/voice/compare/:sessionId1/:sessionId2', authenticate, aiController.compareVoiceSessions);
+router.get(
+  '/voice/compare/:sessionId1/:sessionId2',
+  authenticate,
+  aiController.compareVoiceSessions
+);
 
 // Insight Generation Routes
 router.get('/insights/report', authenticate, aiController.getInsightReport);

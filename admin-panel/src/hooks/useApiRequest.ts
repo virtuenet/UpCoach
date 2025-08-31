@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
 import axios from 'axios';
 
 interface UseApiRequestOptions {
@@ -28,7 +29,7 @@ export function useApiRequest<T = any>(
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState(false);
-  
+
   const cancelTokenRef = useRef<CancelTokenSource | null>(null);
   const mountedRef = useRef(true);
   const retryCountRef = useRef(0);
@@ -53,80 +54,85 @@ export function useApiRequest<T = any>(
   }, [cancel]);
 
   // Execute API request with cancellation support
-  const execute = useCallback(async (overrideConfig?: AxiosRequestConfig): Promise<T> => {
-    // Cancel any existing request
-    cancel();
+  const execute = useCallback(
+    async (overrideConfig?: AxiosRequestConfig): Promise<T> => {
+      // Cancel any existing request
+      cancel();
 
-    // Create new cancel token
-    cancelTokenRef.current = axios.CancelToken.source();
+      // Create new cancel token
+      cancelTokenRef.current = axios.CancelToken.source();
 
-    // Merge configurations
-    const config: AxiosRequestConfig = {
-      ...defaultConfig,
-      ...overrideConfig,
-      cancelToken: cancelTokenRef.current.token,
-    };
+      // Merge configurations
+      const config: AxiosRequestConfig = {
+        ...defaultConfig,
+        ...overrideConfig,
+        cancelToken: cancelTokenRef.current.token,
+      };
 
-    // Update state only if mounted
-    if (mountedRef.current) {
-      setLoading(true);
-      setError(null);
-    }
-
-    try {
-      const response: AxiosResponse<T> = await apiClient.request(config);
-      
-      // Only update state if component is still mounted
+      // Update state only if mounted
       if (mountedRef.current) {
-        setData(response.data);
-        setLoading(false);
-        options.onSuccess?.(response.data);
-        retryCountRef.current = 0;
+        setLoading(true);
+        setError(null);
       }
-      
-      return response.data;
-    } catch (err: any) {
-      // Check if request was cancelled
-      if (axios.isCancel(err)) {
-        console.log('Request cancelled:', err.message);
+
+      try {
+        const response: AxiosResponse<T> = await apiClient.request(config);
+
+        // Only update state if component is still mounted
         if (mountedRef.current) {
+          setData(response.data);
           setLoading(false);
+          options.onSuccess?.(response.data);
+          retryCountRef.current = 0;
         }
+
+        return response.data;
+      } catch (err: any) {
+        // Check if request was cancelled
+        if (axios.isCancel(err)) {
+          console.log('Request cancelled:', err.message);
+          if (mountedRef.current) {
+            setLoading(false);
+          }
+          throw err;
+        }
+
+        // Handle network errors with retry
+        if (err.code === 'ECONNABORTED' || !err.response) {
+          const maxRetries = options.retryCount || 0;
+          if (retryCountRef.current < maxRetries) {
+            retryCountRef.current++;
+            const delay = options.retryDelay || 1000;
+
+            console.log(`Retrying request (${retryCountRef.current}/${maxRetries})...`);
+
+            // Exponential backoff
+            await new Promise(resolve =>
+              setTimeout(resolve, delay * Math.pow(2, retryCountRef.current - 1))
+            );
+
+            // Retry the request
+            return execute(overrideConfig);
+          }
+        }
+
+        // Update error state only if mounted
+        if (mountedRef.current) {
+          setError(err);
+          setLoading(false);
+          options.onError?.(err);
+        }
+
         throw err;
-      }
-
-      // Handle network errors with retry
-      if (err.code === 'ECONNABORTED' || !err.response) {
-        const maxRetries = options.retryCount || 0;
-        if (retryCountRef.current < maxRetries) {
-          retryCountRef.current++;
-          const delay = options.retryDelay || 1000;
-          
-          console.log(`Retrying request (${retryCountRef.current}/${maxRetries})...`);
-          
-          // Exponential backoff
-          await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, retryCountRef.current - 1)));
-          
-          // Retry the request
-          return execute(overrideConfig);
+      } finally {
+        // Clear cancel token reference
+        if (cancelTokenRef.current?.token.reason) {
+          cancelTokenRef.current = null;
         }
       }
-
-      // Update error state only if mounted
-      if (mountedRef.current) {
-        setError(err);
-        setLoading(false);
-        options.onError?.(err);
-      }
-      
-      throw err;
-    } finally {
-      // Clear cancel token reference
-      if (cancelTokenRef.current?.token.reason) {
-        cancelTokenRef.current = null;
-      }
-    }
-  }, [defaultConfig, options]);
+    },
+    [defaultConfig, options]
+  );
 
   // Execute immediately if requested
   useEffect(() => {
@@ -138,7 +144,7 @@ export function useApiRequest<T = any>(
   // Cleanup on unmount
   useEffect(() => {
     mountedRef.current = true;
-    
+
     return () => {
       mountedRef.current = false;
       cancel();
@@ -162,10 +168,7 @@ export function useApiGet<T = any>(
   url: string,
   options: UseApiRequestOptions = {}
 ): UseApiRequestReturn<T> {
-  return useApiRequest<T>(
-    { method: 'GET', url },
-    options
-  );
+  return useApiRequest<T>({ method: 'GET', url }, options);
 }
 
 /**
@@ -175,10 +178,7 @@ export function useApiPost<T = any>(
   url: string,
   options: UseApiRequestOptions = {}
 ): UseApiRequestReturn<T> {
-  return useApiRequest<T>(
-    { method: 'POST', url },
-    options
-  );
+  return useApiRequest<T>({ method: 'POST', url }, options);
 }
 
 /**
@@ -188,10 +188,7 @@ export function useApiPut<T = any>(
   url: string,
   options: UseApiRequestOptions = {}
 ): UseApiRequestReturn<T> {
-  return useApiRequest<T>(
-    { method: 'PUT', url },
-    options
-  );
+  return useApiRequest<T>({ method: 'PUT', url }, options);
 }
 
 /**
@@ -201,32 +198,27 @@ export function useApiDelete<T = any>(
   url: string,
   options: UseApiRequestOptions = {}
 ): UseApiRequestReturn<T> {
-  return useApiRequest<T>(
-    { method: 'DELETE', url },
-    options
-  );
+  return useApiRequest<T>({ method: 'DELETE', url }, options);
 }
 
 /**
  * Hook for parallel API requests with cancellation
  */
-export function useParallelApiRequests<T extends readonly unknown[]>(
-  configs: { [K in keyof T]: AxiosRequestConfig }
-): {
+export function useParallelApiRequests<T extends readonly unknown[]>(configs: {
+  [K in keyof T]: AxiosRequestConfig;
+}): {
   data: { [K in keyof T]: T[K] | null };
   errors: { [K in keyof T]: Error | null };
   loading: boolean;
   execute: () => Promise<{ [K in keyof T]: T[K] }>;
   cancel: () => void;
 } {
-  const [data, setData] = useState<{ [K in keyof T]: T[K] | null }>(
-    configs.map(() => null) as any
-  );
+  const [data, setData] = useState<{ [K in keyof T]: T[K] | null }>(configs.map(() => null) as any);
   const [errors, setErrors] = useState<{ [K in keyof T]: Error | null }>(
     configs.map(() => null) as any
   );
   const [loading, setLoading] = useState(false);
-  
+
   const cancelTokensRef = useRef<CancelTokenSource[]>([]);
   const mountedRef = useRef(true);
 
@@ -239,7 +231,7 @@ export function useParallelApiRequests<T extends readonly unknown[]>(
 
   const execute = useCallback(async () => {
     cancel();
-    
+
     if (mountedRef.current) {
       setLoading(true);
       setErrors(configs.map(() => null) as any);
@@ -293,9 +285,9 @@ export function useParallelApiRequests<T extends readonly unknown[]>(
 /**
  * Hook for sequential API requests with proper cancellation
  */
-export function useSequentialApiRequests<T extends readonly unknown[]>(
-  configs: { [K in keyof T]: AxiosRequestConfig | ((prevData: any) => AxiosRequestConfig) }
-): {
+export function useSequentialApiRequests<T extends readonly unknown[]>(configs: {
+  [K in keyof T]: AxiosRequestConfig | ((prevData: any) => AxiosRequestConfig);
+}): {
   data: { [K in keyof T]: T[K] | null };
   currentStep: number;
   totalSteps: number;
@@ -304,13 +296,11 @@ export function useSequentialApiRequests<T extends readonly unknown[]>(
   execute: () => Promise<{ [K in keyof T]: T[K] }>;
   cancel: () => void;
 } {
-  const [data, setData] = useState<{ [K in keyof T]: T[K] | null }>(
-    configs.map(() => null) as any
-  );
+  const [data, setData] = useState<{ [K in keyof T]: T[K] | null }>(configs.map(() => null) as any);
   const [currentStep, setCurrentStep] = useState(0);
   const [error, setError] = useState<Error | null>(null);
   const [loading, setLoading] = useState(false);
-  
+
   const cancelTokenRef = useRef<CancelTokenSource | null>(null);
   const mountedRef = useRef(true);
 
@@ -323,7 +313,7 @@ export function useSequentialApiRequests<T extends readonly unknown[]>(
 
   const execute = useCallback(async () => {
     cancel();
-    
+
     if (mountedRef.current) {
       setLoading(true);
       setError(null);
@@ -340,10 +330,9 @@ export function useSequentialApiRequests<T extends readonly unknown[]>(
         }
 
         cancelTokenRef.current = axios.CancelToken.source();
-        
-        const config = typeof configs[i] === 'function' 
-          ? (configs[i] as Function)(results[i - 1])
-          : configs[i];
+
+        const config =
+          typeof configs[i] === 'function' ? (configs[i] as Function)(results[i - 1]) : configs[i];
 
         const response = await apiClient.request({
           ...config,
@@ -351,7 +340,7 @@ export function useSequentialApiRequests<T extends readonly unknown[]>(
         });
 
         results.push(response.data);
-        
+
         if (mountedRef.current) {
           setData(prev => {
             const newData = [...prev] as any;

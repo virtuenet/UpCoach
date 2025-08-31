@@ -38,22 +38,22 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
-  
+
   // Close sidebar on route change (mobile)
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname]);
-  
+
   const isActiveRoute = (href: string) => {
     if (href === '/') return location.pathname === href;
     return location.pathname.startsWith(href);
   };
-  
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch?.(searchQuery);
   };
-  
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Skip to main content link for accessibility */}
@@ -63,7 +63,7 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
       >
         Skip to main content
       </a>
-      
+
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
@@ -72,7 +72,7 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
           aria-hidden="true"
         />
       )}
-      
+
       {/* Sidebar */}
       <aside
         className={cn(
@@ -98,7 +98,7 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
               <X className="h-5 w-5" />
             </button>
           </div>
-          
+
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Main navigation">
             {navigation.map((section, sectionIdx) => (
@@ -109,10 +109,10 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
                   </h3>
                 )}
                 <ul className={cn('space-y-1', section.title && 'mt-2')} role="list">
-                  {section.items.map((item) => {
+                  {section.items.map(item => {
                     const isActive = isActiveRoute(item.href);
                     const Icon = item.icon;
-                    
+
                     return (
                       <li key={item.href}>
                         <Link
@@ -152,7 +152,7 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
               </div>
             ))}
           </nav>
-          
+
           {/* User menu (optional) */}
           {userMenu && (
             <div className="border-t border-gray-200 p-4">
@@ -173,12 +173,8 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
                   )}
                 </div>
                 <div className="ml-3 flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {userMenu.user.name}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate">
-                    {userMenu.user.email}
-                  </p>
+                  <p className="text-sm font-medium text-gray-900 truncate">{userMenu.user.name}</p>
+                  <p className="text-xs text-gray-500 truncate">{userMenu.user.email}</p>
                 </div>
                 <button
                   onClick={userMenu.onLogout}
@@ -192,7 +188,7 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
           )}
         </div>
       </aside>
-      
+
       {/* Main content area */}
       <div className="lg:pl-64">
         {/* Top bar */}
@@ -206,7 +202,7 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
             >
               <Menu className="h-5 w-5" />
             </button>
-            
+
             {/* Search bar */}
             <form onSubmit={handleSearch} className="flex-1 max-w-lg mx-4">
               <label htmlFor="search" className="sr-only">
@@ -220,13 +216,13 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
                   id="search"
                   type="search"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                   placeholder={searchPlaceholder}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </form>
-            
+
             {/* Right side actions */}
             <div className="flex items-center space-x-4">
               <button
@@ -238,7 +234,7 @@ const UnifiedLayout: React.FC<UnifiedLayoutProps> = ({
             </div>
           </div>
         </header>
-        
+
         {/* Page content */}
         <main id="main-content" className="p-4 sm:p-6 lg:p-8">
           <Outlet />

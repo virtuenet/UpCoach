@@ -1,3 +1,5 @@
+import { logger } from '../utils/logger';
+import { csrfManager } from './csrfManager';
 
 interface SessionConfig {
   timeout: number;
@@ -30,13 +32,7 @@ class SecureSessionManager {
   private timeoutCallback?: () => void;
   private checkTimer?: NodeJS.Timeout;
   private readonly storageKey = 'upcoach_secure_session';
-  private readonly activityEvents = [
-    'mousedown',
-    'keydown',
-    'scroll',
-    'touchstart',
-    'click',
-  ];
+  private readonly activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
 
   constructor() {
     this.loadSession();
@@ -78,8 +74,7 @@ class SecureSessionManager {
     }
 
     // Validate session structure
-    if (typeof data.sessionId !== 'string' || 
-        (data.userId && typeof data.userId !== 'string')) {
+    if (typeof data.sessionId !== 'string' || (data.userId && typeof data.userId !== 'string')) {
       return false;
     }
 
@@ -106,7 +101,7 @@ class SecureSessionManager {
       sessionId: null,
       userId: null,
     };
-    
+
     try {
       localStorage.removeItem(this.storageKey);
       // Clear all sensitive data from storage
@@ -118,12 +113,7 @@ class SecureSessionManager {
 
   private clearSensitiveData(): void {
     // Clear any cached sensitive data
-    const sensitiveKeys = [
-      'auth_token',
-      'refresh_token',
-      'user_data',
-      'csrf_token',
-    ];
+    const sensitiveKeys = ['auth_token', 'refresh_token', 'user_data', 'csrf_token'];
 
     sensitiveKeys.forEach(key => {
       localStorage.removeItem(key);
@@ -131,16 +121,17 @@ class SecureSessionManager {
     });
 
     // Clear cookies if needed
-    document.cookie.split(";").forEach(c => {
-      document.cookie = c.replace(/^ +/, "")
-        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    document.cookie.split(';').forEach(c => {
+      document.cookie = c
+        .replace(/^ +/, '')
+        .replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
     });
   }
 
   private setupEventListeners(): void {
     // Use arrow function to preserve 'this' context
     const handler = () => this.handleActivity();
-    
+
     this.activityEvents.forEach(eventType => {
       document.addEventListener(eventType, handler as EventListener);
     });
@@ -199,7 +190,7 @@ class SecureSessionManager {
     });
 
     this.clearSession();
-    
+
     if (this.timeoutCallback) {
       this.timeoutCallback();
     }
@@ -217,10 +208,10 @@ class SecureSessionManager {
     };
 
     this.saveSession();
-    
+
     // Regenerate CSRF token for new session
     csrfManager.regenerateToken();
-    
+
     logger.info('Session started', {
       sessionId,
       userId,
@@ -258,7 +249,7 @@ class SecureSessionManager {
 
     const elapsed = Date.now() - this.state.lastActivity;
     const remaining = this.config.timeout - elapsed;
-    
+
     return Math.max(0, remaining);
   }
 
@@ -287,7 +278,7 @@ class SecureSessionManager {
     if (this.checkTimer) {
       clearInterval(this.checkTimer);
     }
-    
+
     this.clearSession();
   }
 }

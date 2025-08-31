@@ -34,14 +34,14 @@ class RateLimiter {
   }> {
     const key = config.identifier || 'default';
     const now = Date.now();
-    
+
     let entry = this.limits.get(key);
 
     // Create new entry or reset if window expired
     if (!entry || now > entry.resetTime) {
       entry = {
         count: 0,
-        resetTime: now + config.windowMs
+        resetTime: now + config.windowMs,
       };
       this.limits.set(key, entry);
     }
@@ -53,17 +53,17 @@ class RateLimiter {
         allowed: false,
         remaining: 0,
         resetTime: entry.resetTime,
-        retryAfter
+        retryAfter,
       };
     }
 
     // Increment counter
     entry.count++;
-    
+
     return {
       allowed: true,
       remaining: config.maxRequests - entry.count,
-      resetTime: entry.resetTime
+      resetTime: entry.resetTime,
     };
   }
 
@@ -110,61 +110,61 @@ export const RATE_LIMITS = {
   LOGIN: {
     maxRequests: 5,
     windowMs: 15 * 60 * 1000, // 5 attempts per 15 minutes
-    identifier: 'auth:login'
+    identifier: 'auth:login',
   },
   REGISTER: {
     maxRequests: 3,
     windowMs: 60 * 60 * 1000, // 3 attempts per hour
-    identifier: 'auth:register'
+    identifier: 'auth:register',
   },
   PASSWORD_RESET: {
     maxRequests: 3,
     windowMs: 60 * 60 * 1000, // 3 attempts per hour
-    identifier: 'auth:password-reset'
+    identifier: 'auth:password-reset',
   },
-  
+
   // Content operations
   CONTENT_CREATE: {
     maxRequests: 10,
     windowMs: 60 * 1000, // 10 creates per minute
-    identifier: 'content:create'
+    identifier: 'content:create',
   },
   CONTENT_UPDATE: {
     maxRequests: 30,
     windowMs: 60 * 1000, // 30 updates per minute
-    identifier: 'content:update'
+    identifier: 'content:update',
   },
   CONTENT_DELETE: {
     maxRequests: 5,
     windowMs: 60 * 1000, // 5 deletes per minute
-    identifier: 'content:delete'
+    identifier: 'content:delete',
   },
-  
+
   // Media operations
   MEDIA_UPLOAD: {
     maxRequests: 10,
     windowMs: 5 * 60 * 1000, // 10 uploads per 5 minutes
-    identifier: 'media:upload'
+    identifier: 'media:upload',
   },
-  
+
   // Search and read operations
   SEARCH: {
     maxRequests: 30,
     windowMs: 60 * 1000, // 30 searches per minute
-    identifier: 'search'
+    identifier: 'search',
   },
   API_READ: {
     maxRequests: 100,
     windowMs: 60 * 1000, // 100 reads per minute
-    identifier: 'api:read'
+    identifier: 'api:read',
   },
-  
+
   // Admin operations
   ADMIN_ACTION: {
     maxRequests: 20,
     windowMs: 60 * 1000, // 20 admin actions per minute
-    identifier: 'admin:action'
-  }
+    identifier: 'admin:action',
+  },
 };
 
 /**
@@ -175,7 +175,7 @@ export async function withRateLimit<T>(
   config: RateLimitConfig
 ): Promise<T> {
   const result = await rateLimiter.checkLimit(config);
-  
+
   if (!result.allowed) {
     const error = new Error(`Rate limit exceeded. Try again in ${result.retryAfter} seconds.`);
     (error as any).code = 'RATE_LIMIT_EXCEEDED';
@@ -183,7 +183,7 @@ export async function withRateLimit<T>(
     (error as any).resetTime = result.resetTime;
     throw error;
   }
-  
+
   return operation();
 }
 
@@ -196,7 +196,7 @@ export function useRateLimit(config: RateLimitConfig) {
   const [isLimited, setIsLimited] = useState(false);
   const [remaining, setRemaining] = useState(config.maxRequests);
   const [retryAfter, setRetryAfter] = useState(0);
-  
+
   const checkLimit = useCallback(async () => {
     const result = await rateLimiter.checkLimit(config);
     setIsLimited(!result.allowed);
@@ -204,14 +204,14 @@ export function useRateLimit(config: RateLimitConfig) {
     setRetryAfter(result.retryAfter || 0);
     return result.allowed;
   }, [config]);
-  
+
   const reset = useCallback(() => {
     rateLimiter.reset(config.identifier);
     setIsLimited(false);
     setRemaining(config.maxRequests);
     setRetryAfter(0);
   }, [config]);
-  
+
   // Auto-reset when retry time expires
   useEffect(() => {
     if (retryAfter > 0) {
@@ -220,17 +220,17 @@ export function useRateLimit(config: RateLimitConfig) {
         setRetryAfter(0);
         setRemaining(config.maxRequests);
       }, retryAfter * 1000);
-      
+
       return () => clearTimeout(timeout);
     }
   }, [retryAfter, config.maxRequests]);
-  
+
   return {
     isLimited,
     remaining,
     retryAfter,
     checkLimit,
-    reset
+    reset,
   };
 }
 
@@ -242,31 +242,28 @@ export class ProgressiveDelay {
   private baseDelay: number;
   private maxDelay: number;
   private factor: number;
-  
+
   constructor(baseDelay = 1000, maxDelay = 30000, factor = 2) {
     this.baseDelay = baseDelay;
     this.maxDelay = maxDelay;
     this.factor = factor;
   }
-  
+
   getDelay(identifier: string): number {
     const attempts = this.attempts.get(identifier) || 0;
-    const delay = Math.min(
-      this.baseDelay * Math.pow(this.factor, attempts),
-      this.maxDelay
-    );
+    const delay = Math.min(this.baseDelay * Math.pow(this.factor, attempts), this.maxDelay);
     return delay;
   }
-  
+
   recordAttempt(identifier: string): void {
     const attempts = this.attempts.get(identifier) || 0;
     this.attempts.set(identifier, attempts + 1);
   }
-  
+
   reset(identifier: string): void {
     this.attempts.delete(identifier);
   }
-  
+
   resetAll(): void {
     this.attempts.clear();
   }

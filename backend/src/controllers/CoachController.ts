@@ -125,7 +125,9 @@ export class CoachController {
         }
 
         const maxDays = 30;
-        const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        const daysDiff = Math.ceil(
+          (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
         if (daysDiff > maxDays) {
           return _res.status(400).json({
             success: false,
@@ -133,11 +135,7 @@ export class CoachController {
           });
         }
 
-        const availability = await coachService.getCoachAvailability(
-          coachId,
-          startDate,
-          endDate
-        );
+        const availability = await coachService.getCoachAvailability(coachId, startDate, endDate);
 
         _res.json({
           success: true,
@@ -187,7 +185,7 @@ export class CoachController {
         logger.error('Error booking session', { error });
         _res.status(400).json({
           success: false,
-          error: error instanceof Error ? error.message : 'Failed to book session',
+          error: (error as Error)?.message || "Failed to book session",
         });
       }
     },
@@ -217,7 +215,7 @@ export class CoachController {
         logger.error('Error processing payment', { error });
         _res.status(400).json({
           success: false,
-          error: error instanceof Error ? error.message : 'Failed to process payment',
+          error: (error as Error)?.message || "Failed to process payment",
         });
       }
     },
@@ -242,11 +240,7 @@ export class CoachController {
         const sessionId = parseInt(req.params.sessionId);
         const clientId = (req as any).userId;
 
-        const review = await coachService.submitReview(
-          sessionId,
-          clientId,
-          req.body
-        );
+        const review = await coachService.submitReview(sessionId, clientId, req.body);
 
         _res.status(201).json({
           success: true,
@@ -256,7 +250,7 @@ export class CoachController {
         logger.error('Error submitting review', { error });
         _res.status(400).json({
           success: false,
-          error: error instanceof Error ? error.message : 'Failed to submit review',
+          error: (error as Error)?.message || "Failed to submit review",
         });
       }
     },
@@ -318,7 +312,7 @@ export class CoachController {
         logger.error('Error purchasing package', { error });
         _res.status(400).json({
           success: false,
-          error: error instanceof Error ? error.message : 'Failed to purchase package',
+          error: (error as Error)?.message || "Failed to purchase package",
         });
       }
     },
@@ -328,7 +322,7 @@ export class CoachController {
   getCoachDashboard = async (req: Request, _res: Response) => {
     try {
       const userId = (req as any).userId;
-      
+
       // Get coach profile by user ID
       const { CoachProfile } = require('../models/CoachProfile');
       const coachProfile = await CoachProfile.findOne({
@@ -374,12 +368,7 @@ export class CoachController {
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 10;
 
-        const sessions = await coachService.getClientSessions(
-          clientId,
-          status,
-          page,
-          limit
-        );
+        const sessions = await coachService.getClientSessions(clientId, status, page, limit);
 
         _res.json({
           success: true,
@@ -406,7 +395,7 @@ export class CoachController {
     try {
       const { CoachProfile } = require('../models/CoachProfile');
       const { User } = require('../models/User');
-      
+
       const coaches = await CoachProfile.findAll({
         include: [
           {
@@ -436,7 +425,7 @@ export class CoachController {
       const { CoachSession } = require('../models/CoachSession');
       const { CoachProfile } = require('../models/CoachProfile');
       const { User } = require('../models/User');
-      
+
       const sessions = await CoachSession.findAll({
         include: [
           {
@@ -472,7 +461,7 @@ export class CoachController {
       const { CoachReview } = require('../models/CoachReview');
       const { CoachProfile } = require('../models/CoachProfile');
       const { User } = require('../models/User');
-      
+
       const reviews = await CoachReview.findAll({
         include: [
           {
@@ -506,7 +495,7 @@ export class CoachController {
   adminGetStats = async (req: Request, _res: Response) => {
     try {
       const stats = await coachService.getMarketplaceStats();
-      
+
       _res.json({
         success: true,
         data: stats,
@@ -535,10 +524,7 @@ export class CoachController {
         const { isActive } = req.body;
 
         const { CoachProfile } = require('../models/CoachProfile');
-        await CoachProfile.update(
-          { isActive },
-          { where: { id: coachId } }
-        );
+        await CoachProfile.update({ isActive }, { where: { id: coachId } });
 
         _res.json({
           success: true,
@@ -569,10 +555,7 @@ export class CoachController {
         const { isVerified } = req.body;
 
         const { CoachProfile } = require('../models/CoachProfile');
-        await CoachProfile.update(
-          { isVerified },
-          { where: { id: coachId } }
-        );
+        await CoachProfile.update({ isVerified }, { where: { id: coachId } });
 
         _res.json({
           success: true,
@@ -603,10 +586,7 @@ export class CoachController {
         const { isFeatured } = req.body;
 
         const { CoachProfile } = require('../models/CoachProfile');
-        await CoachProfile.update(
-          { isFeatured },
-          { where: { id: coachId } }
-        );
+        await CoachProfile.update({ isFeatured }, { where: { id: coachId } });
 
         _res.json({
           success: true,
@@ -679,7 +659,7 @@ export class CoachController {
         logger.error('Error cancelling session', { error });
         _res.status(400).json({
           success: false,
-          error: error instanceof Error ? error.message : 'Failed to cancel session',
+          error: (error as Error)?.message || "Failed to cancel session",
         });
       }
     },

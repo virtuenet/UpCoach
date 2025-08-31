@@ -1,4 +1,7 @@
-import Grid from "@mui/material";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import Grid from '@mui/material';
 import {
   Box,
   Card,
@@ -19,7 +22,7 @@ import {
   Tabs,
   TextField,
   InputAdornment,
-} from "@mui/material";
+} from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -32,10 +35,10 @@ import {
   Analytics as AnalyticsIcon,
   CloudUpload as UploadIcon,
   Publish as PublishIcon,
-} from "@mui/icons-material";
-import api from "../../services/api";
-import PageHeader from "../../components/PageHeader";
-import StatCard from "../../components/StatCard";
+} from '@mui/icons-material';
+import api from '../../services/api';
+import PageHeader from '../../components/PageHeader';
+import StatCard from '../../components/StatCard';
 
 interface ContentStats {
   totalArticles: number;
@@ -73,7 +76,7 @@ const CMSDashboard: React.FC = () => {
   const [stats, setStats] = useState<ContentStats | null>(null);
   const [articles, setArticles] = useState<Article[]>([]);
   const [currentTab, setCurrentTab] = useState(0);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchDashboardData();
@@ -83,15 +86,10 @@ const CMSDashboard: React.FC = () => {
     setLoading(true);
     try {
       const [statsRes, articlesRes] = await Promise.all([
-        api.get("/cms/analytics/overview"),
-        api.get("/cms/articles", {
+        api.get('/cms/analytics/overview'),
+        api.get('/cms/articles', {
           params: {
-            status:
-              currentTab === 1
-                ? "published"
-                : currentTab === 2
-                  ? "draft"
-                  : undefined,
+            status: currentTab === 1 ? 'published' : currentTab === 2 ? 'draft' : undefined,
             search: searchTerm || undefined,
             limit: 10,
           },
@@ -101,26 +99,23 @@ const CMSDashboard: React.FC = () => {
       setStats(statsRes.data.data);
       setArticles(articlesRes.data.data);
     } catch (error) {
-      console.error("Failed to fetch CMS data:", error);
+      console.error('Failed to fetch CMS data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleStatusChange = (
-    event: React.SyntheticEvent,
-    newValue: number,
-  ) => {
+  const handleStatusChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this article?")) {
+    if (window.confirm('Are you sure you want to delete this article?')) {
       try {
         await api.delete(`/cms/articles/${id}`);
         fetchDashboardData();
       } catch (error) {
-        console.error("Failed to delete article:", error);
+        console.error('Failed to delete article:', error);
       }
     }
   };
@@ -130,22 +125,22 @@ const CMSDashboard: React.FC = () => {
       await api.post(`/cms/articles/${id}/publish`);
       fetchDashboardData();
     } catch (error) {
-      console.error("Failed to publish article:", error);
+      console.error('Failed to publish article:', error);
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "published":
-        return "success";
-      case "draft":
-        return "default";
-      case "review":
-        return "warning";
-      case "archived":
-        return "error";
+      case 'published':
+        return 'success';
+      case 'draft':
+        return 'default';
+      case 'review':
+        return 'warning';
+      case 'archived':
+        return 'error';
       default:
-        return "default";
+        return 'default';
     }
   };
 
@@ -162,7 +157,7 @@ const CMSDashboard: React.FC = () => {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => navigate("/cms/content/new")}
+            onClick={() => navigate('/cms/content/new')}
           >
             New Article
           </Button>
@@ -227,7 +222,7 @@ const CMSDashboard: React.FC = () => {
           <Button
             variant="outlined"
             startIcon={<CategoryIcon />}
-            onClick={() => navigate("/cms/categories")}
+            onClick={() => navigate('/cms/categories')}
           >
             Manage Categories
           </Button>
@@ -236,7 +231,7 @@ const CMSDashboard: React.FC = () => {
           <Button
             variant="outlined"
             startIcon={<UploadIcon />}
-            onClick={() => navigate("/cms/media")}
+            onClick={() => navigate('/cms/media')}
           >
             Media Library
           </Button>
@@ -245,7 +240,7 @@ const CMSDashboard: React.FC = () => {
           <Button
             variant="outlined"
             startIcon={<ScheduleIcon />}
-            onClick={() => navigate("/cms/schedule")}
+            onClick={() => navigate('/cms/schedule')}
           >
             Content Calendar
           </Button>
@@ -254,7 +249,7 @@ const CMSDashboard: React.FC = () => {
           <Button
             variant="outlined"
             startIcon={<AnalyticsIcon />}
-            onClick={() => navigate("/cms/analytics")}
+            onClick={() => navigate('/cms/analytics')}
           >
             Analytics
           </Button>
@@ -264,7 +259,7 @@ const CMSDashboard: React.FC = () => {
       {/* Articles List */}
       <Card>
         <CardContent>
-          <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
             <Tabs value={currentTab} onChange={handleStatusChange}>
               <Tab label="All Articles" />
               <Tab label="Published" />
@@ -276,7 +271,7 @@ const CMSDashboard: React.FC = () => {
             fullWidth
             placeholder="Search articles..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
             sx={{ mb: 3 }}
             InputProps={{
               startAdornment: (
@@ -301,18 +296,16 @@ const CMSDashboard: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {articles.map((article) => (
+                {articles.map(article => (
                   <TableRow key={article.id}>
                     <TableCell>
-                      <Typography variant="subtitle2">
-                        {article.title}
-                      </Typography>
+                      <Typography variant="subtitle2">{article.title}</Typography>
                       <Typography variant="caption" color="text.secondary">
                         /{article.slug}
                       </Typography>
                     </TableCell>
                     <TableCell>{article.author.name}</TableCell>
-                    <TableCell>{article.category?.name || "-"}</TableCell>
+                    <TableCell>{article.category?.name || '-'}</TableCell>
                     <TableCell>
                       <Chip
                         label={article.status}
@@ -321,27 +314,21 @@ const CMSDashboard: React.FC = () => {
                       />
                     </TableCell>
                     <TableCell align="center">{article.viewCount}</TableCell>
-                    <TableCell>
-                      {format(new Date(article.createdAt), "MMM dd, yyyy")}
-                    </TableCell>
+                    <TableCell>{format(new Date(article.createdAt), 'MMM dd, yyyy')}</TableCell>
                     <TableCell align="center">
                       <IconButton
                         size="small"
-                        onClick={() =>
-                          window.open(`/preview/${article.slug}`, "_blank")
-                        }
+                        onClick={() => window.open(`/preview/${article.slug}`, '_blank')}
                       >
                         <ViewIcon />
                       </IconButton>
                       <IconButton
                         size="small"
-                        onClick={() =>
-                          navigate(`/cms/content/${article.id}/edit`)
-                        }
+                        onClick={() => navigate(`/cms/content/${article.id}/edit`)}
                       >
                         <EditIcon />
                       </IconButton>
-                      {article.status === "draft" && (
+                      {article.status === 'draft' && (
                         <IconButton
                           size="small"
                           color="success"

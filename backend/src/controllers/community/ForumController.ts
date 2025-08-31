@@ -8,7 +8,7 @@ export class ForumController {
   async getCategories_(req: Request, _res: Response) {
     try {
       const categories = await forumService.getCategories();
-      
+
       _res.json({
         success: true,
         data: categories,
@@ -227,7 +227,7 @@ export class ForumController {
       });
     } catch (error) {
       logger.error('Failed to delete post', { error, postId: req.params.postId });
-      const errorMessage = error instanceof Error ? error.message : 'Failed to delete post';
+      const errorMessage = (error as Error)?.message || 'Failed to delete post';
       _res.status(errorMessage === 'Unauthorized' ? 403 : 500).json({
         success: false,
         error: errorMessage,
@@ -251,7 +251,7 @@ export class ForumController {
       logger.error('Failed to mark as solution', { error, postId: req.params.postId });
       _res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to mark as solution',
+        error: (error as Error)?.message || 'Failed to mark as solution',
       });
     }
   }

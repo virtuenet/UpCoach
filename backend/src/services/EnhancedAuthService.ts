@@ -46,30 +46,30 @@ export class EnhancedAuthService {
    * Generate a new token pair with rotation tracking
    */
   static async generateTokenPair(
-    userId: string, 
+    userId: string,
     deviceFingerprint: DeviceFingerprint
   ): Promise<TokenPair> {
     const family = uuidv4();
     const deviceId = this.hashDeviceFingerprint(deviceFingerprint);
     const accessJti = uuidv4();
     const refreshJti = uuidv4();
-    
+
     // Generate access token
     const accessToken = jwt.sign(
       {
         userId,
         type: 'access',
         deviceId,
-        jti: accessJti
+        jti: accessJti,
       } as TokenPayload,
       config.jwt.secret,
-      { 
+      {
         expiresIn: this.ACCESS_TOKEN_TTL,
         issuer: 'upcoach-api',
-        audience: 'upcoach-client'
+        audience: 'upcoach-client',
       }
     );
-    
+
     // Generate refresh token with family tracking
     const refreshToken = jwt.sign(
       {
@@ -77,26 +77,26 @@ export class EnhancedAuthService {
         type: 'refresh',
         deviceId,
         family,
-        jti: refreshJti
+        jti: refreshJti,
       } as TokenPayload,
       config.jwt.refreshSecret || config.jwt.secret,
-      { 
+      {
         expiresIn: this.REFRESH_TOKEN_TTL,
         issuer: 'upcoach-api',
-        audience: 'upcoach-client'
+        audience: 'upcoach-client',
       }
     );
-    
+
     // Store token family in Redis for tracking
     await this.storeTokenFamily(family, refreshJti, userId);
-    
+
     // Log authentication event
     logger.info('Token pair generated', {
       userId,
       family,
-      deviceId: deviceId.substring(0, 8) // Log only first 8 chars for privacy
+      deviceId: deviceId.substring(0, 8), // Log only first 8 chars for privacy
     });
-    
+
     return { accessToken, refreshToken, family };
   }
 
@@ -110,12 +110,12 @@ export class EnhancedAuthService {
     try {
       // Verify the old refresh token
       const decoded = jwt.verify(
-        oldRefreshToken, 
+        oldRefreshToken,
         config.jwt.refreshSecret || config.jwt.secret
       ) as TokenPayload;
-      
+
       const { userId, family, jti: oldJti, deviceId } = decoded;
-      
+
       // Verify device fingerprint matches
       const currentDeviceId = this.hashDeviceFingerprint(deviceFingerprint);
       if (deviceId !== currentDeviceId) {
@@ -123,14 +123,14 @@ export class EnhancedAuthService {
           userId,
           family,
           expectedDevice: deviceId.substring(0, 8),
-          actualDevice: currentDeviceId.substring(0, 8)
+          actualDevice: currentDeviceId.substring(0, 8),
         });
-        
+
         // Potential token theft - invalidate entire family
         await this.invalidateTokenFamily(family!);
         return null;
       }
-      
+
       // Check if token is in the valid family chain
       const isValidFamily = await this.validateTokenFamily(family!, oldJti);
       if (!isValidFamily) {
@@ -138,62 +138,62 @@ export class EnhancedAuthService {
         await this.invalidateTokenFamily(family!);
         return null;
       }
-      
+
       // Check if token has been revoked
       const isRevoked = await this.isTokenRevoked(oldJti);
       if (isRevoked) {
         logger.warn('Attempted use of revoked token', { userId, jti: oldJti });
         return null;
       }
-      
+
       // Generate new token pair
       const newAccessJti = uuidv4();
       const newRefreshJti = uuidv4();
-      
+
       const accessToken = jwt.sign(
         {
           userId,
           type: 'access',
           deviceId,
-          jti: newAccessJti
+          jti: newAccessJti,
         } as TokenPayload,
         config.jwt.secret,
-        { 
+        {
           expiresIn: this.ACCESS_TOKEN_TTL,
           issuer: 'upcoach-api',
-          audience: 'upcoach-client'
+          audience: 'upcoach-client',
         }
       );
-      
+
       const refreshToken = jwt.sign(
         {
           userId,
           type: 'refresh',
           deviceId,
           family,
-          jti: newRefreshJti
+          jti: newRefreshJti,
         } as TokenPayload,
         config.jwt.refreshSecret || config.jwt.secret,
-        { 
+        {
           expiresIn: this.REFRESH_TOKEN_TTL,
           issuer: 'upcoach-api',
-          audience: 'upcoach-client'
+          audience: 'upcoach-client',
         }
       );
-      
+
       // Update token family chain
       await this.updateTokenFamily(family!, oldJti, newRefreshJti);
-      
+
       // Revoke the old refresh token
       await this.revokeToken(oldJti);
-      
+
       logger.info('Token rotated successfully', {
         userId,
         family,
         oldJti: oldJti.substring(0, 8),
-        newJti: newRefreshJti.substring(0, 8)
+        newJti: newRefreshJti.substring(0, 8),
       });
-      
+
       return { accessToken, refreshToken, family: family! };
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
@@ -203,7 +203,7 @@ export class EnhancedAuthService {
       } else {
         logger.error('Token rotation error', { error });
       }
-      
+
       return null;
     }
   }
@@ -213,28 +213,24 @@ export class EnhancedAuthService {
    */
   static async validateAccessToken(token: string): Promise<TokenPayload | null> {
     try {
-      const decoded = jwt.verify(
-        token, 
-        config.jwt.secret,
-        {
-          issuer: 'upcoach-api',
-          audience: 'upcoach-client'
-        }
-      ) as TokenPayload;
-      
+      const decoded = jwt.verify(token, config.jwt.secret, {
+        issuer: 'upcoach-api',
+        audience: 'upcoach-client',
+      }) as TokenPayload;
+
       // Check if token has been revoked
       const isRevoked = await this.isTokenRevoked(decoded.jti);
       if (isRevoked) {
         logger.warn('Revoked access token used', { jti: decoded.jti });
         return null;
       }
-      
+
       // Verify token type
       if (decoded.type !== 'access') {
         logger.warn('Invalid token type for access', { type: decoded.type });
         return null;
       }
-      
+
       return decoded;
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
@@ -242,7 +238,7 @@ export class EnhancedAuthService {
       } else if (error instanceof jwt.JsonWebTokenError) {
         logger.warn('Invalid access token', { error });
       }
-      
+
       return null;
     }
   }
@@ -251,7 +247,7 @@ export class EnhancedAuthService {
    * Logout user by invalidating tokens
    */
   static async logout(
-    userId: string, 
+    userId: string,
     refreshToken?: string,
     logoutAllDevices: boolean = false
   ): Promise<void> {
@@ -265,9 +261,9 @@ export class EnhancedAuthService {
         const decoded = jwt.decode(refreshToken) as TokenPayload;
         if (decoded && decoded.family) {
           await this.invalidateTokenFamily(decoded.family);
-          logger.info('User logged out from device', { 
-            userId, 
-            family: decoded.family 
+          logger.info('User logged out from device', {
+            userId,
+            family: decoded.family,
           });
         }
       }
@@ -281,8 +277,8 @@ export class EnhancedAuthService {
    * Store token family in Redis
    */
   private static async storeTokenFamily(
-    family: string, 
-    jti: string, 
+    family: string,
+    jti: string,
     userId: string
   ): Promise<void> {
     const key = `${this.TOKEN_FAMILY_PREFIX}${family}`;
@@ -291,15 +287,15 @@ export class EnhancedAuthService {
       userId,
       chainLength: 1,
       createdAt: new Date().toISOString(),
-      lastRotated: new Date().toISOString()
+      lastRotated: new Date().toISOString(),
     };
-    
+
     await redis.setex(
-      key, 
+      key,
       24 * 60 * 60, // 24 hours TTL
       JSON.stringify(data)
     );
-    
+
     // Also maintain a set of active families per user
     await redis.sadd(`user_families:${userId}`, family);
     await redis.expire(`user_families:${userId}`, 24 * 60 * 60);
@@ -309,31 +305,31 @@ export class EnhancedAuthService {
    * Update token family chain
    */
   private static async updateTokenFamily(
-    family: string, 
-    oldJti: string, 
+    family: string,
+    oldJti: string,
     newJti: string
   ): Promise<void> {
     const key = `${this.TOKEN_FAMILY_PREFIX}${family}`;
     const dataStr = await redis.get(key);
-    
+
     if (!dataStr) {
       throw new Error('Token family not found');
     }
-    
+
     const data = JSON.parse(dataStr);
-    
+
     // Check chain length to prevent infinite chains
     if (data.chainLength >= this.MAX_REFRESH_CHAIN_LENGTH) {
       throw new Error('Max refresh chain length exceeded');
     }
-    
+
     data.previousJti = oldJti;
     data.currentJti = newJti;
     data.chainLength += 1;
     data.lastRotated = new Date().toISOString();
-    
+
     await redis.setex(
-      key, 
+      key,
       24 * 60 * 60, // Reset TTL
       JSON.stringify(data)
     );
@@ -342,17 +338,14 @@ export class EnhancedAuthService {
   /**
    * Validate token family
    */
-  private static async validateTokenFamily(
-    family: string, 
-    jti: string
-  ): Promise<boolean> {
+  private static async validateTokenFamily(family: string, jti: string): Promise<boolean> {
     const key = `${this.TOKEN_FAMILY_PREFIX}${family}`;
     const dataStr = await redis.get(key);
-    
+
     if (!dataStr) {
       return false;
     }
-    
+
     const data = JSON.parse(dataStr);
     return data.currentJti === jti || data.previousJti === jti;
   }
@@ -363,10 +356,10 @@ export class EnhancedAuthService {
   private static async invalidateTokenFamily(family: string): Promise<void> {
     const key = `${this.TOKEN_FAMILY_PREFIX}${family}`;
     const dataStr = await redis.get(key);
-    
+
     if (dataStr) {
       const data = JSON.parse(dataStr);
-      
+
       // Revoke all tokens in the family
       if (data.currentJti) {
         await this.revokeToken(data.currentJti);
@@ -374,13 +367,13 @@ export class EnhancedAuthService {
       if (data.previousJti) {
         await this.revokeToken(data.previousJti);
       }
-      
+
       // Remove family from user's active families
       if (data.userId) {
         await redis.srem(`user_families:${data.userId}`, family);
       }
     }
-    
+
     await redis.del(key);
   }
 
@@ -389,11 +382,11 @@ export class EnhancedAuthService {
    */
   private static async invalidateAllUserTokens(userId: string): Promise<void> {
     const families = await redis.smembers(`user_families:${userId}`);
-    
+
     for (const family of families) {
       await this.invalidateTokenFamily(family);
     }
-    
+
     await redis.del(`user_families:${userId}`);
   }
 
@@ -426,7 +419,7 @@ export class EnhancedAuthService {
       // This should be called periodically (e.g., daily)
       const pattern = `${this.TOKEN_FAMILY_PREFIX}*`;
       const keys = await redis.keys(pattern);
-      
+
       let cleaned = 0;
       for (const key of keys) {
         const ttl = await redis.ttl(key);
@@ -436,7 +429,7 @@ export class EnhancedAuthService {
           cleaned++;
         }
       }
-      
+
       if (cleaned > 0) {
         logger.info('Cleaned up expired token families', { count: cleaned });
       }

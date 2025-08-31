@@ -83,11 +83,7 @@ export class SchedulerService {
   /**
    * Schedule a new job
    */
-  private static scheduleJob(
-    name: string,
-    schedule: string,
-    task: () => Promise<void>
-  ): void {
+  private static scheduleJob(name: string, schedule: string, task: () => Promise<void>): void {
     if (this.jobs.has(name)) {
       logger.warn(`Job ${name} already exists, stopping previous job`);
       this.jobs.get(name)?.stop();
@@ -147,7 +143,7 @@ export class SchedulerService {
 
       // Get cost metrics for the week
       const costMetrics = await financialService.getCostsByCategory(startDate, endDate);
-      
+
       // Analyze cost trends
       const analysis = {
         totalCosts: costMetrics.reduce((sum: number, cost: any) => sum + parseFloat(cost.total), 0),
@@ -173,10 +169,10 @@ export class SchedulerService {
     try {
       // Get comprehensive financial metrics
       const metrics = await financialService.getDashboardMetrics();
-      
+
       // Calculate health score
       const healthScore = this.calculateHealthScore(metrics);
-      
+
       // Generate health report
       const healthReport = {
         score: healthScore,
@@ -203,10 +199,10 @@ export class SchedulerService {
     try {
       const currentDate = new Date();
       const quarter = Math.floor(currentDate.getMonth() / 3) + 1;
-      
+
       // Get historical data for projections
       const historicalData = await this.getHistoricalQuarterlyData();
-      
+
       // Generate projections
       const projections = {
         quarter: `Q${quarter} ${currentDate.getFullYear()}`,
@@ -233,13 +229,14 @@ export class SchedulerService {
     try {
       // Get latest financial snapshot
       const latestSnapshot = await financialService.generateDailySnapshot();
-      
+
       // Check critical thresholds
       const criticalAlerts = [];
 
       // Check burn rate
       const monthlyBurn = latestSnapshot.totalCosts;
-      if (monthlyBurn > 100000) { // $100k threshold
+      if (monthlyBurn > 100000) {
+        // $100k threshold
         criticalAlerts.push({
           type: 'HIGH_BURN_RATE',
           severity: 'HIGH',
@@ -252,11 +249,14 @@ export class SchedulerService {
       // Check revenue drop
       const revenueDropThreshold = 0.1; // 10% drop
       const previousRevenue = await this.getPreviousRevenue();
-      if (previousRevenue && latestSnapshot.revenue < previousRevenue * (1 - revenueDropThreshold)) {
+      if (
+        previousRevenue &&
+        latestSnapshot.revenue < previousRevenue * (1 - revenueDropThreshold)
+      ) {
         criticalAlerts.push({
           type: 'REVENUE_DROP',
           severity: 'CRITICAL',
-          message: `Revenue dropped by ${((previousRevenue - latestSnapshot.revenue) / previousRevenue * 100).toFixed(1)}%`,
+          message: `Revenue dropped by ${(((previousRevenue - latestSnapshot.revenue) / previousRevenue) * 100).toFixed(1)}%`,
           value: latestSnapshot.revenue,
           threshold: previousRevenue * (1 - revenueDropThreshold),
         });
@@ -266,7 +266,6 @@ export class SchedulerService {
       if (criticalAlerts.length > 0) {
         await this.sendCriticalAlerts(criticalAlerts);
       }
-
     } catch (error) {
       logger.error('Real-time alerts check failed:', error);
     }
@@ -293,12 +292,12 @@ export class SchedulerService {
   private static calculateHealthScore(metrics: any): number {
     // Implementation would calculate a composite health score
     let score = 100;
-    
+
     // Deduct points for poor metrics
     if (metrics.subscriptions.churnRate > 5) score -= 20;
     if (metrics.unitEconomics.ltvToCacRatio < 3) score -= 15;
     if (metrics.profitLoss.margin < 20) score -= 25;
-    
+
     return Math.max(0, score);
   }
 
@@ -311,8 +310,10 @@ export class SchedulerService {
 
   private static identifyOpportunities(metrics: any): string[] {
     const opportunities = [];
-    if (metrics.unitEconomics.ltvToCacRatio > 5) opportunities.push('Strong unit economics for scaling');
-    if (metrics.subscriptions.churnRate < 3) opportunities.push('Excellent retention for premium pricing');
+    if (metrics.unitEconomics.ltvToCacRatio > 5)
+      opportunities.push('Strong unit economics for scaling');
+    if (metrics.subscriptions.churnRate < 3)
+      opportunities.push('Excellent retention for premium pricing');
     return opportunities;
   }
 
@@ -372,4 +373,4 @@ export class SchedulerService {
 // Auto-initialize if not in test environment
 if (process.env.NODE_ENV !== 'test') {
   SchedulerService.initialize();
-} 
+}

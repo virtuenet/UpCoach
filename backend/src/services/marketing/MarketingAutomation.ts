@@ -96,15 +96,17 @@ export class MarketingAutomationService {
       type: 'email',
       triggers: [{ event: 'user_inactive_7_days' }],
       audience: {
-        behaviors: [{
-          action: 'app_open',
-          timeframe: 'last_7_days',
-          count: 0,
-          operator: 'equals',
-        }],
+        behaviors: [
+          {
+            action: 'app_open',
+            timeframe: 'last_7_days',
+            count: 0,
+            operator: 'equals',
+          },
+        ],
       },
       content: {
-        subject: 'We miss you! Here\'s what you\'ve been missing...',
+        subject: "We miss you! Here's what you've been missing...",
         body: 'personalized_content',
         abTest: {
           variants: [
@@ -187,16 +189,13 @@ export class MarketingAutomationService {
       if (!campaign.active) continue;
 
       const matchingTrigger = campaign.triggers.find(
-        trigger => trigger.event === event.event && 
-        this.matchesConditions(trigger.conditions, event.properties)
+        trigger =>
+          trigger.event === event.event &&
+          this.matchesConditions(trigger.conditions, event.properties)
       );
 
       if (matchingTrigger) {
-        await this.scheduleCampaignDelivery(
-          campaign,
-          event.userId,
-          matchingTrigger.delay || 0
-        );
+        await this.scheduleCampaignDelivery(campaign, event.userId, matchingTrigger.delay || 0);
       }
     }
   }
@@ -225,7 +224,7 @@ export class MarketingAutomationService {
 
     // Schedule delivery
     const deliveryTime = new Date(Date.now() + delayMinutes * 60 * 1000);
-    
+
     await this.scheduleDelivery({
       campaignId: campaign.id,
       userId,
@@ -246,9 +245,7 @@ export class MarketingAutomationService {
     // Check segments
     if (audience.segments) {
       const userSegments = await this.segmentEngine.getUserSegments(user.id);
-      const hasRequiredSegment = audience.segments.some(
-        segment => userSegments.includes(segment)
-      );
+      const hasRequiredSegment = audience.segments.some(segment => userSegments.includes(segment));
       if (!hasRequiredSegment) return false;
     }
 
@@ -276,18 +273,22 @@ export class MarketingAutomationService {
     if (!process.env.MIXPANEL_TOKEN) return;
 
     try {
-      await axios.post('https://api.mixpanel.com/track', {
-        event: event.event,
-        properties: {
-          distinct_id: event.userId,
-          time: event.timestamp || new Date(),
-          ...event.properties,
+      await axios.post(
+        'https://api.mixpanel.com/track',
+        {
+          event: event.event,
+          properties: {
+            distinct_id: event.userId,
+            time: event.timestamp || new Date(),
+            ...event.properties,
+          },
         },
-      }, {
-        headers: {
-          'Authorization': `Basic ${Buffer.from(process.env.MIXPANEL_TOKEN).toString('base64')}`,
-        },
-      });
+        {
+          headers: {
+            Authorization: `Basic ${Buffer.from(process.env.MIXPANEL_TOKEN).toString('base64')}`,
+          },
+        }
+      );
     } catch (error) {
       logger.error('Failed to send to Mixpanel', { error });
     }
@@ -301,10 +302,12 @@ export class MarketingAutomationService {
         `https://www.google-analytics.com/mp/collect`,
         {
           client_id: event.userId,
-          events: [{
-            name: event.event,
-            params: event.properties,
-          }],
+          events: [
+            {
+              name: event.event,
+              params: event.properties,
+            },
+          ],
         },
         {
           params: {
@@ -332,7 +335,7 @@ export class MarketingAutomationService {
         },
         {
           headers: {
-            'Authorization': `Basic ${Buffer.from(process.env.SEGMENT_WRITE_KEY + ':').toString('base64')}`,
+            Authorization: `Basic ${Buffer.from(process.env.SEGMENT_WRITE_KEY + ':').toString('base64')}`,
           },
         }
       );
@@ -349,9 +352,7 @@ export class MarketingAutomationService {
     if (!conditions) return true;
     if (!properties) return false;
 
-    return Object.entries(conditions).every(
-      ([key, value]) => properties[key] === value
-    );
+    return Object.entries(conditions).every(([key, value]) => properties[key] === value);
   }
 
   private selectABTestVariant(abTest: ABTestConfig): CampaignContent {
@@ -419,7 +420,7 @@ export class MarketingAutomationService {
 class SegmentEngine {
   async getUserSegments(userId: string): Promise<string[]> {
     const segments: string[] = [];
-    
+
     const user = await User.findByPk(userId, {
       include: ['goals'],
     });
@@ -463,7 +464,7 @@ class SegmentEngine {
 
   async updateUserSegments(userId: string): Promise<void> {
     const _segments = await this.getUserSegments(userId);
-    
+
     // Store segments in cache or database
     // TODO: Implement updateUserProperty in analyticsService
     // await analyticsService.updateUserProperty(userId, 'segments', segments);

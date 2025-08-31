@@ -1,4 +1,5 @@
 import React from 'react';
+import { FolderOpen, ExpandMore } from '@mui/icons-material';
 
 // SelectContext
 const SelectContext = React.createContext<{
@@ -16,12 +17,7 @@ export interface SelectProps {
   children: React.ReactNode;
 }
 
-export const Select: React.FC<SelectProps> = ({
-  value,
-  onValueChange,
-  defaultValue,
-  children,
-}) => {
+export const Select: React.FC<SelectProps> = ({ value, onValueChange, defaultValue, children }) => {
   const [internalValue, setInternalValue] = React.useState(defaultValue || '');
   const [open, setOpen] = React.useState(false);
 
@@ -35,11 +31,7 @@ export const Select: React.FC<SelectProps> = ({
     [value, internalValue, onValueChange, open]
   );
 
-  return (
-    <SelectContext.Provider value={contextValue}>
-      {children}
-    </SelectContext.Provider>
-  );
+  return <SelectContext.Provider value={contextValue}>{children}</SelectContext.Provider>;
 };
 
 // SelectTrigger Component

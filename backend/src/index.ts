@@ -80,25 +80,33 @@ if (config.monitoring?.datadog?.enabled) {
 
 // Enhanced security headers with HSTS, CSP, and Certificate Transparency
 const isDevelopment = process.env.NODE_ENV === 'development';
-app.use(securityHeaders({
-  enableHSTS: !isDevelopment,
-  enableCSP: true,
-  enableCertificateTransparency: !isDevelopment,
-  cspDirectives: {
-    'default-src': ["'self'"],
-    'script-src': ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
-    'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-    'font-src': ["'self'", 'https://fonts.gstatic.com'],
-    'img-src': ["'self'", 'data:', 'https:'],
-    'connect-src': ["'self'", 'https://api.stripe.com', 'https://api.openai.com', 'wss:', config.corsOrigins.join(' ')],
-    'frame-src': ["'self'", 'https://js.stripe.com'],
-    'object-src': ["'none'"],
-    'base-uri': ["'self'"],
-    'form-action': ["'self'"],
-    'frame-ancestors': ["'none'"],
-    'upgrade-insecure-requests': isDevelopment ? [] : [''],
-  },
-}));
+app.use(
+  securityHeaders({
+    enableHSTS: !isDevelopment,
+    enableCSP: true,
+    enableCertificateTransparency: !isDevelopment,
+    cspDirectives: {
+      'default-src': ["'self'"],
+      'script-src': ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+      'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      'font-src': ["'self'", 'https://fonts.gstatic.com'],
+      'img-src': ["'self'", 'data:', 'https:'],
+      'connect-src': [
+        "'self'",
+        'https://api.stripe.com',
+        'https://api.openai.com',
+        'wss:',
+        config.corsOrigins.join(' '),
+      ],
+      'frame-src': ["'self'", 'https://js.stripe.com'],
+      'object-src': ["'none'"],
+      'base-uri': ["'self'"],
+      'form-action': ["'self'"],
+      'frame-ancestors': ["'none'"],
+      'upgrade-insecure-requests': isDevelopment ? [] : [''],
+    },
+  })
+);
 
 // Certificate Transparency monitoring middleware
 app.use(ctMonitor.middleware());
@@ -115,47 +123,55 @@ app.use(compression());
 // Removed duplicate rate limiter to avoid conflicts
 
 // CORS configuration
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    // Check if origin is in allowed list
-    if (config.corsOrigins.some(allowedOrigin => {
-      if (allowedOrigin.includes('*')) {
-        const pattern = allowedOrigin.replace(/\*/g, '.*');
-        return new RegExp(`^${pattern}$`).test(origin);
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      // Check if origin is in allowed list
+      if (
+        config.corsOrigins.some(allowedOrigin => {
+          if (allowedOrigin.includes('*')) {
+            const pattern = allowedOrigin.replace(/\*/g, '.*');
+            return new RegExp(`^${pattern}$`).test(origin);
+          }
+          return allowedOrigin === origin;
+        })
+      ) {
+        return callback(null, true);
       }
-      return allowedOrigin === origin;
-    })) {
-      return callback(null, true);
-    }
-    
-    return callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  exposedHeaders: ['X-Total-Count'],
-}));
+
+      return callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['X-Total-Count'],
+  })
+);
 
 // Body parsing middleware
-app.use(express.json({ 
-  limit: '10mb',
-  verify: (req: any, _res, buf) => {
-    // Store raw body for webhook verification if needed
-    req.rawBody = buf;
-  }
-}));
+app.use(
+  express.json({
+    limit: '10mb',
+    verify: (req: any, _res, buf) => {
+      // Store raw body for webhook verification if needed
+      req.rawBody = buf;
+    },
+  })
+);
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Logging middleware
 if (config.env !== 'test') {
-  app.use(morgan('combined', {
-    stream: {
-      write: (message) => logger.info(message.trim())
-    }
-  }));
+  app.use(
+    morgan('combined', {
+      stream: {
+        write: message => logger.info(message.trim()),
+      },
+    })
+  );
 }
 
 // Request ID middleware for tracking
@@ -175,10 +191,10 @@ app.get('/health', async (_req, res) => {
   try {
     // Test database connection
     const dbHealth = await testDatabaseConnection();
-    
+
     // Test Redis connection
     const redisHealth = await testRedisConnection();
-    
+
     const health = {
       status: 'OK',
       timestamp: new Date().toISOString(),
@@ -224,7 +240,7 @@ app.get('/api', (_req, res) => {
         refresh: 'POST /api/auth/refresh',
         logout: 'POST /api/auth/logout',
         verify: 'GET /api/auth/verify',
-      }
+      },
     },
     features: config.features,
   });
@@ -242,36 +258,36 @@ app.use(errorMiddleware);
 // Helper functions
 async function testDatabaseConnection(): Promise<boolean> {
   const timeoutMs = 5000; // 5 second timeout
-  
+
   try {
     // Create a timeout promise
     const timeoutPromise = new Promise<boolean>((_, reject) => {
       setTimeout(() => reject(new Error('Database health check timeout')), timeoutMs);
     });
-    
+
     // Create the actual health check promise
     const healthCheckPromise = (async () => {
       const { sequelize } = await import('./config/database');
-      
+
       // Test authentication
       await sequelize.authenticate();
-      
+
       // Test a simple query
       const result = await sequelize.query('SELECT 1+1 as result', {
         raw: true,
-        type: (sequelize as any).QueryTypes?.SELECT || 'SELECT'
+        type: (sequelize as any).QueryTypes?.SELECT || 'SELECT',
       });
-      
+
       return result && result[0] && (result[0] as any).result === 2;
     })();
-    
+
     // Race between timeout and health check
     const isHealthy = await Promise.race([healthCheckPromise, timeoutPromise]);
-    
+
     if (isHealthy) {
       logger.info('Database health check passed');
     }
-    
+
     return isHealthy || false;
   } catch (error) {
     logger.error('Database health check failed:', error);
@@ -294,10 +310,10 @@ async function initializeServices() {
   try {
     // Initialize database
     await initializeDatabase();
-    
+
     // Initialize scheduler service
     SchedulerService.initialize();
-    
+
     logger.info('All services initialized successfully');
   } catch (error) {
     logger.error('Failed to initialize services:', error);
@@ -308,19 +324,23 @@ async function initializeServices() {
 // Start server
 const server = app.listen(PORT, async () => {
   logger.info(`Server is running on port ${PORT}`);
-  
+
   // Initialize services after server starts
   await initializeServices();
-  
+
   // Initialize graceful shutdown
   gracefulShutdown.setServer(server);
   gracefulShutdown.initialize();
-  
+
   // Register additional cleanup if needed
-  gracefulShutdown.onShutdown('SchedulerService', async () => {
-    logger.info('Shutting down SchedulerService...');
-    // Add scheduler shutdown logic here if needed
-  }, 25);
+  gracefulShutdown.onShutdown(
+    'SchedulerService',
+    async () => {
+      logger.info('Shutting down SchedulerService...');
+      // Add scheduler shutdown logic here if needed
+    },
+    25
+  );
 });
 
-export default app; 
+export default app;

@@ -54,10 +54,7 @@ export class TemplateController {
 
       // Filter by ownership and public templates
       if (includePublic === 'true') {
-        whereClause[Op.or as any] = [
-          { createdById: (req as any).user!.id },
-          { isPublic: true },
-        ];
+        whereClause[Op.or as any] = [{ createdById: (req as any).user!.id }, { isPublic: true }];
       } else {
         whereClause.createdById = (req as any).user!.id;
       }
@@ -158,16 +155,7 @@ export class TemplateController {
         return;
       }
 
-      const {
-        name,
-        description,
-        category,
-        type,
-        template,
-        automation,
-        isPublic,
-        tags,
-      } = req.body;
+      const { name, description, category, type, template, automation, isPublic, tags } = req.body;
 
       const newTemplate = await Template.create({
         name,
@@ -220,7 +208,11 @@ export class TemplateController {
       }
 
       // Check access permissions
-      if (!template.isPublic && template.createdById !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
+      if (
+        !template.isPublic &&
+        template.createdById !== (req as any).user!.id &&
+        (req as any).user!.role !== 'admin'
+      ) {
         _res.status(403).json({
           success: false,
           message: 'Access denied to this template',
@@ -248,15 +240,7 @@ export class TemplateController {
   static async updateTemplate(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const {
-        name,
-        description,
-        template,
-        automation,
-        isPublic,
-        tags,
-        isActive,
-      } = req.body;
+      const { name, description, template, automation, isPublic, tags, isActive } = req.body;
 
       const existingTemplate = await Template.findByPk(id);
       if (!existingTemplate) {
@@ -268,7 +252,10 @@ export class TemplateController {
       }
 
       // Check permissions
-      if (existingTemplate.createdById !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
+      if (
+        existingTemplate.createdById !== (req as any).user!.id &&
+        (req as any).user!.role !== 'admin'
+      ) {
         _res.status(403).json({
           success: false,
           message: 'Not authorized to edit this template',
@@ -386,7 +373,11 @@ export class TemplateController {
       }
 
       // Check access permissions
-      if (!template.isPublic && template.createdById !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
+      if (
+        !template.isPublic &&
+        template.createdById !== (req as any).user!.id &&
+        (req as any).user!.role !== 'admin'
+      ) {
         _res.status(403).json({
           success: false,
           message: 'Access denied to this template',
@@ -505,7 +496,11 @@ export class TemplateController {
       }
 
       // Check access permissions
-      if (!template.isPublic && template.createdById !== (req as any).user!.id && (req as any).user!.role !== 'admin') {
+      if (
+        !template.isPublic &&
+        template.createdById !== (req as any).user!.id &&
+        (req as any).user!.role !== 'admin'
+      ) {
         _res.status(403).json({
           success: false,
           message: 'Access denied to this template',
@@ -514,12 +509,14 @@ export class TemplateController {
       }
 
       // Generate preview data
-      const mockData = sampleData ? JSON.parse(sampleData as string) : {
-        title: 'Sample Article Title',
-        author: 'John Doe',
-        date: new Date().toISOString().split('T')[0],
-        year: new Date().getFullYear().toString(),
-      };
+      const mockData = sampleData
+        ? JSON.parse(sampleData as string)
+        : {
+            title: 'Sample Article Title',
+            author: 'John Doe',
+            date: new Date().toISOString().split('T')[0],
+            year: new Date().getFullYear().toString(),
+          };
 
       const previewData = await template.createContentFromTemplate({
         title: mockData.title,
@@ -616,4 +613,4 @@ export class TemplateController {
   }
 }
 
-export default TemplateController; 
+export default TemplateController;

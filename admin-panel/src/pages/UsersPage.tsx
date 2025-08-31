@@ -1,55 +1,60 @@
-import LoadingSpinner from "../components/LoadingSpinner";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
+import { Search, Eye, Edit, Trash2 } from 'lucide-react';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { usersApi } from '../api/users';
 
 interface User {
   id: string;
   email: string;
   fullName: string;
-  role: "user" | "coach" | "admin" | "moderator";
-  subscriptionPlan: "free" | "pro" | "team" | "enterprise";
+  role: 'user' | 'coach' | 'admin' | 'moderator';
+  subscriptionPlan: 'free' | 'pro' | 'team' | 'enterprise';
   isActive: boolean;
   createdAt: string;
   lastLoginAt?: string;
 }
 
 export default function UsersPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [roleFilter, setRoleFilter] = useState<string>("all");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const { data: users, isLoading } = useQuery({
-    queryKey: ["users", searchTerm, roleFilter, statusFilter],
+    queryKey: ['users', searchTerm, roleFilter, statusFilter],
     queryFn: () =>
       usersApi.getUsers({
         search: searchTerm,
-        role: roleFilter === "all" ? undefined : roleFilter,
-        status: statusFilter === "all" ? undefined : statusFilter,
+        role: roleFilter === 'all' ? undefined : roleFilter,
+        status: statusFilter === 'all' ? undefined : statusFilter,
       }),
   });
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   };
 
   const getRoleBadge = (role: string) => {
     const colors = {
-      admin: "bg-red-100 text-red-800",
-      moderator: "bg-purple-100 text-purple-800",
-      coach: "bg-blue-100 text-blue-800",
-      user: "bg-gray-100 text-gray-800",
+      admin: 'bg-red-100 text-red-800',
+      moderator: 'bg-purple-100 text-purple-800',
+      coach: 'bg-blue-100 text-blue-800',
+      user: 'bg-gray-100 text-gray-800',
     };
     return colors[role as keyof typeof colors] || colors.user;
   };
 
   const getSubscriptionBadge = (plan: string) => {
     const colors = {
-      enterprise: "bg-yellow-100 text-yellow-800",
-      team: "bg-green-100 text-green-800",
-      pro: "bg-blue-100 text-blue-800",
-      free: "bg-gray-100 text-gray-800",
+      enterprise: 'bg-yellow-100 text-yellow-800',
+      team: 'bg-green-100 text-green-800',
+      pro: 'bg-blue-100 text-blue-800',
+      free: 'bg-gray-100 text-gray-800',
     };
     return colors[plan as keyof typeof colors] || colors.free;
   };
@@ -67,9 +72,7 @@ export default function UsersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Users</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Manage and monitor all platform users
-          </p>
+          <p className="mt-1 text-sm text-gray-500">Manage and monitor all platform users</p>
         </div>
         <button className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700">
           Add User
@@ -86,7 +89,7 @@ export default function UsersPage() {
                 type="text"
                 placeholder="Search users..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
@@ -94,7 +97,7 @@ export default function UsersPage() {
           <div className="flex gap-2">
             <select
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
+              onChange={e => setRoleFilter(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="all">All Roles</option>
@@ -105,7 +108,7 @@ export default function UsersPage() {
             </select>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={e => setStatusFilter(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="all">All Status</option>
@@ -149,16 +152,14 @@ export default function UsersPage() {
                     <div className="flex items-center">
                       <div className="h-10 w-10 rounded-full bg-primary-500 flex items-center justify-center">
                         <span className="text-sm font-medium text-white">
-                          {user.fullName?.charAt(0) || "U"}
+                          {user.fullName?.charAt(0) || 'U'}
                         </span>
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {user.fullName || "Unknown User"}
+                          {user.fullName || 'Unknown User'}
                         </div>
-                        <div className="text-sm text-gray-500">
-                          {user.email}
-                        </div>
+                        <div className="text-sm text-gray-500">{user.email}</div>
                       </div>
                     </div>
                   </td>
@@ -179,16 +180,14 @@ export default function UsersPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        user.isActive
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
+                        user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}
                     >
-                      {user.isActive ? "Active" : "Inactive"}
+                      {user.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {user.lastLoginAt ? formatDate(user.lastLoginAt) : "Never"}
+                    {user.lastLoginAt ? formatDate(user.lastLoginAt) : 'Never'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center space-x-2">

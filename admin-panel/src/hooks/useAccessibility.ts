@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
 
 /**
  * Accessibility utilities and hooks for improved UX
@@ -35,7 +36,7 @@ export function useKeyboardNavigation() {
           const searchInput = document.querySelector('[data-search-input]') as HTMLElement;
           searchInput?.focus();
           break;
-        
+
         case 'Escape':
           // Close modals or reset focus
           const modal = document.querySelector('[role="dialog"]') as HTMLElement;
@@ -169,7 +170,7 @@ export function useReducedMotion(): boolean {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    
+
     setPrefersReducedMotion(mediaQuery.matches);
 
     const handleChange = (e: MediaQueryListEvent) => {
@@ -194,7 +195,7 @@ export function useHighContrast(): boolean {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-contrast: high)');
-    
+
     setPrefersHighContrast(mediaQuery.matches);
 
     const handleChange = (e: MediaQueryListEvent) => {
@@ -221,7 +222,7 @@ export function useSkipLinks() {
     skipLink.className = 'skip-link';
     skipLink.textContent = 'Skip to main content';
     skipLink.setAttribute('aria-label', 'Skip to main content');
-    
+
     document.body.insertBefore(skipLink, document.body.firstChild);
 
     const handleClick = (e: MouseEvent) => {

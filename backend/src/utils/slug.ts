@@ -14,11 +14,11 @@ export function generateUniqueSlug(baseSlug: string, existingSlugs: string[]): s
 
   let counter = 1;
   let uniqueSlug = `${baseSlug}-${counter}`;
-  
+
   while (existingSlugs.includes(uniqueSlug)) {
     counter++;
     uniqueSlug = `${baseSlug}-${counter}`;
   }
-  
+
   return uniqueSlug;
 }

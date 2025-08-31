@@ -42,5 +42,6 @@ export {
 export * from './alert-dialog';
 
 // Export pagination components
-export * from './pagination';export { DashboardSkeleton } from './dashboard-skeleton';
+export * from './pagination';
+export { DashboardSkeleton } from './dashboard-skeleton';
 export { SkipLink } from './skip-link';

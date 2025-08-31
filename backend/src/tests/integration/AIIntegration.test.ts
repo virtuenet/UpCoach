@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import request from 'supertest';
 import { app } from '../../index';
 import { AIService } from '../../services/ai/AIService';
@@ -28,7 +30,7 @@ describe('AI Services Integration Tests', () => {
       id: 'test-user-123',
       email: 'test@example.com',
       name: 'Test User',
-      password: 'hashedpassword'
+      password: 'hashedpassword',
     });
 
     // Generate auth token
@@ -87,7 +89,7 @@ describe('AI Services Integration Tests', () => {
       const preferences = {
         notifications: false,
         emailDigest: 'weekly',
-        coachingStyle: 'motivational'
+        coachingStyle: 'motivational',
       };
 
       const response = await request(app)
@@ -112,9 +114,9 @@ describe('AI Services Integration Tests', () => {
         profileMetrics: {},
         behaviorPatterns: {
           mostActiveTimeOfDay: 'morning',
-          preferredCategories: ['health', 'productivity']
+          preferredCategories: ['health', 'productivity'],
         },
-        insights: []
+        insights: [],
       });
 
       // Create some goals
@@ -125,7 +127,7 @@ describe('AI Services Integration Tests', () => {
         category: 'health',
         targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         status: 'active',
-        progress: 30
+        progress: 30,
       });
     });
 
@@ -136,9 +138,9 @@ describe('AI Services Integration Tests', () => {
           {
             title: 'Morning Meditation',
             description: 'Start with 5 minutes of meditation',
-            reason: 'Helps with your health goals'
-          }
-        ]
+            reason: 'Helps with your health goals',
+          },
+        ],
       });
 
       const response = await request(app)
@@ -170,9 +172,9 @@ describe('AI Services Integration Tests', () => {
             time: '08:00',
             activity: 'Morning exercise',
             duration: 30,
-            type: 'habit'
-          }
-        ]
+            type: 'habit',
+          },
+        ],
       });
 
       const response = await request(app)
@@ -192,7 +194,7 @@ describe('AI Services Integration Tests', () => {
         content: 'I can help you with that goal!',
         provider: 'openai',
         model: 'gpt-4',
-        usage: { totalTokens: 100 }
+        usage: { totalTokens: 100 },
       });
 
       const response = await request(app)
@@ -200,7 +202,7 @@ describe('AI Services Integration Tests', () => {
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           message: 'I want to improve my productivity',
-          conversationId: 'conv-123'
+          conversationId: 'conv-123',
         })
         .expect(200);
 
@@ -214,7 +216,7 @@ describe('AI Services Integration Tests', () => {
         content: 'Based on your morning routine...',
         provider: 'openai',
         model: 'gpt-4',
-        usage: { totalTokens: 100 }
+        usage: { totalTokens: 100 },
       });
 
       const response = await request(app)
@@ -224,8 +226,8 @@ describe('AI Services Integration Tests', () => {
           message: 'How should I start my day?',
           options: {
             includeProfile: true,
-            personality: 'motivational'
-          }
+            personality: 'motivational',
+          },
         })
         .expect(200);
 
@@ -246,9 +248,9 @@ describe('AI Services Integration Tests', () => {
               title: 'Morning Productivity',
               description: 'You are most productive in the morning',
               impact: 'high',
-              category: 'productivity'
-            }
-          ]
+              category: 'productivity',
+            },
+          ],
         },
         { where: { userId: testUser.id } }
       );
@@ -277,9 +279,7 @@ describe('AI Services Integration Tests', () => {
 
   describe('Error Handling', () => {
     test('should handle unauthorized access', async () => {
-      const response = await request(app)
-        .get('/api/ai/profile')
-        .expect(401);
+      const response = await request(app).get('/api/ai/profile').expect(401);
 
       expect(response.body.error).toBeDefined();
     });
@@ -295,15 +295,15 @@ describe('AI Services Integration Tests', () => {
     });
 
     test('should handle AI service errors gracefully', async () => {
-      jest.spyOn(AIService.prototype, 'generateResponse').mockRejectedValue(
-        new Error('AI service unavailable')
-      );
+      jest
+        .spyOn(AIService.prototype, 'generateResponse')
+        .mockRejectedValue(new Error('AI service unavailable'));
 
       const response = await request(app)
         .post('/api/ai/conversation/process')
         .set('Authorization', `Bearer ${authToken}`)
         .send({
-          message: 'Test message'
+          message: 'Test message',
         })
         .expect(500);
 
@@ -314,15 +314,17 @@ describe('AI Services Integration Tests', () => {
   describe('Rate Limiting', () => {
     test('should rate limit AI endpoints', async () => {
       // Make multiple rapid requests
-      const requests = Array(10).fill(null).map(() =>
-        request(app)
-          .post('/api/ai/conversation/process')
-          .set('Authorization', `Bearer ${authToken}`)
-          .send({ message: 'Test' })
-      );
+      const requests = Array(10)
+        .fill(null)
+        .map(() =>
+          request(app)
+            .post('/api/ai/conversation/process')
+            .set('Authorization', `Bearer ${authToken}`)
+            .send({ message: 'Test' })
+        );
 
       const responses = await Promise.all(requests);
-      
+
       // Some requests should be rate limited
       const rateLimited = responses.some(res => res.status === 429);
       expect(rateLimited).toBe(true);

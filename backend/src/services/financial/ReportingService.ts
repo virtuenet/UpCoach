@@ -1,11 +1,11 @@
 // import { Op } from 'sequelize';
 import { /* startOfDay, endOfDay, */ startOfMonth, endOfMonth, format } from 'date-fns';
-import { 
-  FinancialReport, 
+import {
+  FinancialReport,
   FinancialSnapshot,
   ReportType,
   ReportStatus,
-  ReportFormat 
+  ReportFormat,
 } from '../../models';
 import { financialService } from './FinancialService';
 import { emailService } from '../email/UnifiedEmailService';
@@ -18,10 +18,10 @@ export class ReportingService {
   async generateDailySnapshot(): Promise<FinancialSnapshot> {
     try {
       const snapshot = await financialService.generateDailySnapshot();
-      
+
       // Check for alerts
       await this.checkFinancialAlerts(snapshot);
-      
+
       return snapshot;
     } catch (error) {
       logger.error('Failed to generate daily snapshot:', error);
@@ -35,7 +35,7 @@ export class ReportingService {
   async generateScheduledReports(): Promise<void> {
     try {
       const now = new Date();
-      
+
       // Generate daily reports
       if (this.shouldGenerateDailyReport(now)) {
         await this.generateDailyReport();
@@ -55,7 +55,6 @@ export class ReportingService {
       if (this.shouldGenerateQuarterlyReport(now)) {
         await this.generateQuarterlyReport();
       }
-
     } catch (error) {
       logger.error('Failed to generate scheduled reports:', error);
       throw error;
@@ -143,10 +142,7 @@ export class ReportingService {
     try {
       const [currentWeek, previousWeek] = await Promise.all([
         this.getWeeklyMetrics(weekStart, today),
-        this.getWeeklyMetrics(
-          new Date(weekStart.getTime() - 7 * 24 * 60 * 60 * 1000),
-          weekStart
-        ),
+        this.getWeeklyMetrics(new Date(weekStart.getTime() - 7 * 24 * 60 * 60 * 1000), weekStart),
       ]);
 
       const reportData = {
@@ -255,12 +251,7 @@ export class ReportingService {
     });
 
     try {
-      const [
-        quarterlyMetrics,
-        yearToDateMetrics,
-        benchmarks,
-        projections
-      ] = await Promise.all([
+      const [quarterlyMetrics, yearToDateMetrics, benchmarks, projections] = await Promise.all([
         this.getQuarterlyMetrics(quarterStart, quarterEnd),
         this.getYearToDateMetrics(new Date(now.getFullYear(), 0, 1), quarterEnd),
         this.getIndustryBenchmarks(),
@@ -390,7 +381,6 @@ export class ReportingService {
           priority: 'normal',
         });
       }
-
     } catch (error) {
       logger.error('Failed to send financial alerts:', error);
     }
@@ -402,7 +392,7 @@ export class ReportingService {
   private async sendReportToStakeholders(report: FinancialReport): Promise<void> {
     try {
       const recipients = this.getReportRecipients(report.type);
-      
+
       await emailService.sendFinancialReport({
         to: recipients,
         subject: `Financial Report: ${report.title}`,
@@ -422,7 +412,11 @@ export class ReportingService {
   private getReportRecipients(type: ReportType): string[] {
     const recipients: Record<ReportType, string[]> = {
       [ReportType.DAILY_SUMMARY]: ['finance@upcoach.app'],
-      [ReportType.WEEKLY_BUSINESS_REVIEW]: ['ceo@upcoach.app', 'cfo@upcoach.app', 'finance@upcoach.app'],
+      [ReportType.WEEKLY_BUSINESS_REVIEW]: [
+        'ceo@upcoach.app',
+        'cfo@upcoach.app',
+        'finance@upcoach.app',
+      ],
       [ReportType.MONTHLY_P_AND_L]: ['ceo@upcoach.app', 'cfo@upcoach.app', 'board@upcoach.app'],
       [ReportType.QUARTERLY_INVESTOR]: ['investors@upcoach.app', 'board@upcoach.app'],
       [ReportType.CUSTOM]: ['finance@upcoach.app'],
@@ -551,4 +545,4 @@ export class ReportingService {
   }
 }
 
-export const reportingService = new ReportingService(); 
+export const reportingService = new ReportingService();

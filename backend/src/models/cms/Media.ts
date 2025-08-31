@@ -1,5 +1,5 @@
 import { DataTypes, Model, Optional, Op } from 'sequelize';
-import { sequelize } from '../index';
+import { sequelize } from '../../config/sequelize';
 
 // Media interface
 export interface MediaAttributes {
@@ -43,13 +43,29 @@ export interface MediaAttributes {
 }
 
 // Optional fields for creation
-export interface MediaCreationAttributes extends Optional<MediaAttributes, 
-  'id' | 'thumbnailUrl' | 'alt' | 'caption' | 'folder' | 'tags' | 'metadata' | 
-  'usage' | 'status' | 'isPublic' | 'createdAt' | 'updatedAt' | 'deletedAt'
-> {}
+export interface MediaCreationAttributes
+  extends Optional<
+    MediaAttributes,
+    | 'id'
+    | 'thumbnailUrl'
+    | 'alt'
+    | 'caption'
+    | 'folder'
+    | 'tags'
+    | 'metadata'
+    | 'usage'
+    | 'status'
+    | 'isPublic'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'deletedAt'
+  > {}
 
 // Media model class
-export class Media extends Model<MediaAttributes, MediaCreationAttributes> implements MediaAttributes {
+export class Media
+  extends Model<MediaAttributes, MediaCreationAttributes>
+  implements MediaAttributes
+{
   public id!: string;
   public filename!: string;
   public originalName!: string;
@@ -99,9 +115,9 @@ export class Media extends Model<MediaAttributes, MediaCreationAttributes> imple
   public formatFileSize(): string {
     const sizes = ['B', 'KB', 'MB', 'GB'];
     if (this.fileSize === 0) return '0 B';
-    
+
     const i = Math.floor(Math.log(this.fileSize) / Math.log(1024));
-    return Math.round(this.fileSize / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((this.fileSize / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i];
   }
 
   public async addUsage(contentType: 'article' | 'course', contentId: string): Promise<void> {
@@ -110,7 +126,7 @@ export class Media extends Model<MediaAttributes, MediaCreationAttributes> imple
     } else if (contentType === 'course' && !this.usage.usedInCourses.includes(contentId)) {
       this.usage.usedInCourses.push(contentId);
     }
-    
+
     this.usage.totalUsageCount = this.usage.usedInArticles.length + this.usage.usedInCourses.length;
     this.usage.lastUsedAt = new Date();
     await this.save();
@@ -122,12 +138,15 @@ export class Media extends Model<MediaAttributes, MediaCreationAttributes> imple
     } else if (contentType === 'course') {
       this.usage.usedInCourses = this.usage.usedInCourses.filter(id => id !== contentId);
     }
-    
+
     this.usage.totalUsageCount = this.usage.usedInArticles.length + this.usage.usedInCourses.length;
     await this.save();
   }
 
-  public async updateProcessingStatus(status: 'processing' | 'ready' | 'failed', metadata?: any): Promise<void> {
+  public async updateProcessingStatus(
+    status: 'processing' | 'ready' | 'failed',
+    metadata?: any
+  ): Promise<void> {
     this.status = status;
     if (metadata) {
       this.metadata = { ...this.metadata, ...metadata };
@@ -145,19 +164,22 @@ export class Media extends Model<MediaAttributes, MediaCreationAttributes> imple
 
   static async getByType(mimeType: string): Promise<Media[]> {
     return Media.findAll({
-      where: { 
-        mimeType: { [Op.like]: `${mimeType}%` }
+      where: {
+        mimeType: { [Op.like]: `${mimeType}%` },
       },
       order: [['createdAt', 'DESC']],
     });
   }
 
-  static async searchMedia(query: string, filters: {
-    type?: string;
-    folder?: string;
-    uploadedBy?: string;
-    tags?: string[];
-  } = {}): Promise<Media[]> {
+  static async searchMedia(
+    query: string,
+    filters: {
+      type?: string;
+      folder?: string;
+      uploadedBy?: string;
+      tags?: string[];
+    } = {}
+  ): Promise<Media[]> {
     const whereClause: any = {};
 
     if (query) {
@@ -193,8 +215,8 @@ export class Media extends Model<MediaAttributes, MediaCreationAttributes> imple
 
   static async getUnused(): Promise<Media[]> {
     return Media.findAll({
-      where: { 
-        'usage.totalUsageCount': 0
+      where: {
+        'usage.totalUsageCount': 0,
       },
       order: [['createdAt', 'DESC']],
     });
@@ -211,7 +233,7 @@ export class Media extends Model<MediaAttributes, MediaCreationAttributes> imple
     const result = await Media.findAll({
       attributes: ['folder'],
       where: {
-        folder: { [Op.ne as any]: null }
+        folder: { [Op.ne as any]: null },
       },
       group: ['folder'],
       raw: true,
@@ -255,13 +277,13 @@ export class Media extends Model<MediaAttributes, MediaCreationAttributes> imple
     const unusedMedia = await Media.findAll({
       where: {
         'usage.totalUsageCount': 0,
-        createdAt: { [Op.lt]: cutoffDate }
-      }
+        createdAt: { [Op.lt]: cutoffDate },
+      },
     });
 
     // In production, you would delete the actual files from storage here
     const deletedCount = unusedMedia.length;
-    
+
     for (const media of unusedMedia) {
       await media.destroy();
     }
@@ -427,4 +449,4 @@ Media.init(
   }
 );
 
-export default Media; 
+export default Media;

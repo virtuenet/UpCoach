@@ -1,3 +1,5 @@
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { Tag, X } from 'lucide-react';
 
 interface TagItem {
   id: string;
@@ -13,7 +15,7 @@ interface TagSelectorProps {
 const TagSelector: React.FC<TagSelectorProps> = ({ value, onChange }) => {
   const [tags, setTags] = useState<TagItem[]>([]);
   const [selectedTags, setSelectedTags] = useState<TagItem[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredTags, setFilteredTags] = useState<TagItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -23,35 +25,33 @@ const TagSelector: React.FC<TagSelectorProps> = ({ value, onChange }) => {
     // Fetch tags from API
     // Mock data for now
     setTags([
-      { id: "1", name: "habits", color: "#10B981" },
-      { id: "2", name: "success", color: "#8B5CF6" },
-      { id: "3", name: "meditation", color: "#3B82F6" },
-      { id: "4", name: "mindfulness", color: "#6366F1" },
-      { id: "5", name: "goals", color: "#F59E0B" },
-      { id: "6", name: "planning", color: "#EF4444" },
-      { id: "7", name: "productivity", color: "#06B6D4" },
-      { id: "8", name: "wellness", color: "#84CC16" },
-      { id: "9", name: "leadership", color: "#EC4899" },
-      { id: "10", name: "motivation", color: "#F97316" },
+      { id: '1', name: 'habits', color: '#10B981' },
+      { id: '2', name: 'success', color: '#8B5CF6' },
+      { id: '3', name: 'meditation', color: '#3B82F6' },
+      { id: '4', name: 'mindfulness', color: '#6366F1' },
+      { id: '5', name: 'goals', color: '#F59E0B' },
+      { id: '6', name: 'planning', color: '#EF4444' },
+      { id: '7', name: 'productivity', color: '#06B6D4' },
+      { id: '8', name: 'wellness', color: '#84CC16' },
+      { id: '9', name: 'leadership', color: '#EC4899' },
+      { id: '10', name: 'motivation', color: '#F97316' },
     ]);
   }, []);
 
   useEffect(() => {
-    const selected = tags.filter((tag) => value.includes(tag.id));
+    const selected = tags.filter(tag => value.includes(tag.id));
     setSelectedTags(selected);
   }, [value, tags]);
 
   useEffect(() => {
     if (searchQuery) {
       const filtered = tags.filter(
-        (tag) =>
-          tag.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          !value.includes(tag.id),
+        tag => tag.name.toLowerCase().includes(searchQuery.toLowerCase()) && !value.includes(tag.id)
       );
       setFilteredTags(filtered);
       setShowSuggestions(filtered.length > 0);
     } else {
-      setFilteredTags(tags.filter((tag) => !value.includes(tag.id)));
+      setFilteredTags(tags.filter(tag => !value.includes(tag.id)));
       setShowSuggestions(false);
     }
   }, [searchQuery, tags, value]);
@@ -68,28 +68,28 @@ const TagSelector: React.FC<TagSelectorProps> = ({ value, onChange }) => {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleAddTag = (tag: TagItem) => {
     onChange([...value, tag.id]);
-    setSearchQuery("");
+    setSearchQuery('');
     setShowSuggestions(false);
     inputRef.current?.focus();
   };
 
   const handleRemoveTag = (tagId: string) => {
-    onChange(value.filter((id) => id !== tagId));
+    onChange(value.filter(id => id !== tagId));
   };
 
   const handleCreateTag = () => {
-    if (searchQuery && !tags.find((tag) => tag.name === searchQuery)) {
+    if (searchQuery && !tags.find(tag => tag.name === searchQuery)) {
       // In a real app, this would create a new tag via API
       const newTag: TagItem = {
         id: `new-${Date.now()}`,
         name: searchQuery,
-        color: "#6B7280",
+        color: '#6B7280',
       };
       setTags([...tags, newTag]);
       handleAddTag(newTag);
@@ -100,7 +100,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({ value, onChange }) => {
     <div className="relative">
       <div className="border border-gray-300 rounded-lg p-2 min-h-[42px]">
         <div className="flex flex-wrap gap-2">
-          {selectedTags.map((tag) => (
+          {selectedTags.map(tag => (
             <span
               key={tag.id}
               className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-white"
@@ -120,10 +120,10 @@ const TagSelector: React.FC<TagSelectorProps> = ({ value, onChange }) => {
             ref={inputRef}
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             onFocus={() => setShowSuggestions(true)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && searchQuery) {
+            onKeyDown={e => {
+              if (e.key === 'Enter' && searchQuery) {
                 e.preventDefault();
                 if (filteredTags.length > 0) {
                   handleAddTag(filteredTags[0]);
@@ -132,7 +132,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({ value, onChange }) => {
                 }
               }
             }}
-            placeholder={selectedTags.length === 0 ? "Add tags..." : ""}
+            placeholder={selectedTags.length === 0 ? 'Add tags...' : ''}
             className="flex-1 min-w-[100px] outline-none text-sm"
           />
         </div>
@@ -144,16 +144,13 @@ const TagSelector: React.FC<TagSelectorProps> = ({ value, onChange }) => {
           className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-40 overflow-y-auto"
         >
           {filteredTags.length > 0 ? (
-            filteredTags.map((tag) => (
+            filteredTags.map(tag => (
               <button
                 key={tag.id}
                 onClick={() => handleAddTag(tag)}
                 className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2"
               >
-                <span
-                  className="w-4 h-4 rounded-full"
-                  style={{ backgroundColor: tag.color }}
-                />
+                <span className="w-4 h-4 rounded-full" style={{ backgroundColor: tag.color }} />
                 {tag.name}
               </button>
             ))

@@ -9,8 +9,8 @@ export { LoadingState } from './LoadingState';
 export { Navigation } from './Navigation';
 // Component Groups for convenience
 export const Components = {
-    Button: require('./Button').Button,
-    Card: require('./Card').Card,
-    LoadingState: require('./LoadingState').LoadingState,
-    Navigation: require('./Navigation').Navigation,
+  Button: require('./Button').Button,
+  Card: require('./Card').Card,
+  LoadingState: require('./LoadingState').LoadingState,
+  Navigation: require('./Navigation').Navigation,
 };

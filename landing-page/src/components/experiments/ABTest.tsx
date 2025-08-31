@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { ReactNode } from "react";
-import { useExperiment } from "@/services/experiments";
+import { ReactNode } from 'react';
+import { useExperiment } from '@/services/experiments';
 
 interface ABTestProps {
   experimentId: string;
@@ -13,7 +13,7 @@ export function ABTest({ experimentId, children, fallback }: ABTestProps) {
   const { variant } = useExperiment(experimentId);
 
   // If no variant or control, show fallback or first child
-  if (variant === "control") {
+  if (variant === 'control') {
     return <>{fallback || children}</>;
   }
 
@@ -41,7 +41,7 @@ export function ABTestSwitch({ experimentId, children }: ABTestSwitchProps) {
   const variantElements = Array.isArray(children) ? children : [children];
 
   for (const child of variantElements) {
-    if (child && typeof child === "object" && "props" in child) {
+    if (child && typeof child === 'object' && 'props' in child) {
       if (child.props.variant === variant) {
         return <>{child}</>;
       }

@@ -1,3 +1,4 @@
+import { apiClient } from './client';
 
 export interface Goal {
   id: string;
@@ -7,7 +8,7 @@ export interface Goal {
   targetValue: number;
   currentValue: number;
   deadline: string;
-  status: "active" | "completed" | "paused" | "cancelled";
+  status: 'active' | 'completed' | 'paused' | 'cancelled';
   createdAt: string;
   user: {
     id: string;
@@ -27,7 +28,7 @@ export interface GetGoalsParams {
 
 export const goalsApi = {
   getAllGoals: async (params: GetGoalsParams = {}): Promise<Goal[]> => {
-    const response = await apiClient.get("/admin/goals", { params });
+    const response = await apiClient.get('/admin/goals', { params });
     return response.data;
   },
 
@@ -38,7 +39,7 @@ export const goalsApi = {
     paused: number;
     cancelled: number;
   }> => {
-    const response = await apiClient.get("/admin/goals/stats");
+    const response = await apiClient.get('/admin/goals/stats');
     return response.data;
   },
 };

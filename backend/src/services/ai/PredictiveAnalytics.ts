@@ -43,13 +43,13 @@ export class PredictiveAnalytics {
     try {
       // Gather historical data
       const userData = await this.gatherUserData(userId);
-      
+
       // Analyze patterns
       const patterns = await this.analyzeBehaviorPatterns(userData);
-      
+
       // Calculate success indicators
       const successIndicators = this.calculateSuccessIndicators(userData, patterns);
-      
+
       // Generate prediction
       const prediction = await this.generateSuccessPrediction(
         userData,
@@ -68,7 +68,7 @@ export class PredictiveAnalytics {
     try {
       const userData = await this.gatherUserData(userId);
       const engagementMetrics = await this.calculateEngagementMetrics(userData);
-      
+
       // Churn indicators
       const indicators = [];
       let riskScore = 0;
@@ -80,8 +80,9 @@ export class PredictiveAnalytics {
       }
 
       // Incomplete tasks
-      const incompletionRate = userData.tasks.filter((t: any) => t.status !== 'completed').length / 
-                              Math.max(1, userData.tasks.length);
+      const incompletionRate =
+        userData.tasks.filter((t: any) => t.status !== 'completed').length /
+        Math.max(1, userData.tasks.length);
       if (incompletionRate > 0.7) {
         indicators.push('High task incompletion rate');
         riskScore += 0.25;
@@ -100,8 +101,8 @@ export class PredictiveAnalytics {
       }
 
       // No recent goals
-      const recentGoals = userData.goals.filter((g: any) => 
-        new Date(g.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      const recentGoals = userData.goals.filter(
+        (g: any) => new Date(g.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
       );
       if (recentGoals.length === 0) {
         indicators.push('No new goals in past month');
@@ -115,8 +116,7 @@ export class PredictiveAnalytics {
       else severity = 'high';
 
       // Calculate time to intervention
-      const timeToIntervention = severity === 'high' ? 1 : 
-                                severity === 'medium' ? 3 : 7;
+      const timeToIntervention = severity === 'high' ? 1 : severity === 'medium' ? 3 : 7;
 
       // Generate mitigation strategies
       const mitigationStrategies = this.generateMitigationStrategies(
@@ -131,7 +131,7 @@ export class PredictiveAnalytics {
         probability: Math.min(0.95, riskScore),
         indicators,
         mitigationStrategies,
-        timeToIntervention
+        timeToIntervention,
       };
     } catch (error) {
       logger.error('Error predicting churn risk:', error);
@@ -155,30 +155,30 @@ export class PredictiveAnalytics {
         where: {
           goalId,
           createdAt: {
-            [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-          }
+            [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          },
         },
-        order: [['createdAt', 'DESC']]
+        order: [['createdAt', 'DESC']],
       });
 
       // Calculate progress velocity
       const progressVelocity = this.calculateProgressVelocity(goal, tasks);
-      
+
       // Identify patterns
       const completionPatterns = this.analyzeCompletionPatterns(tasks);
-      
+
       // Calculate probability
       let probability = 0.5; // Base probability
-      
+
       // Adjust based on current progress
       if (goal.progress > 70) probability += 0.3;
       else if (goal.progress > 40) probability += 0.15;
-      
+
       // Adjust based on velocity
       if (progressVelocity > 10) probability += 0.2;
       else if (progressVelocity > 5) probability += 0.1;
       else if (progressVelocity < 2) probability -= 0.2;
-      
+
       // Adjust based on consistency
       if (completionPatterns.consistency > 0.7) probability += 0.15;
       else if (completionPatterns.consistency < 0.3) probability -= 0.15;
@@ -187,20 +187,17 @@ export class PredictiveAnalytics {
 
       // Estimate completion date
       const remainingProgress = 100 - goal.progress;
-      const weeksToComplete = progressVelocity > 0 ? 
-        remainingProgress / progressVelocity : 52;
-      
+      const weeksToComplete = progressVelocity > 0 ? remainingProgress / progressVelocity : 52;
+
       const estimatedCompletionDate = new Date();
-      estimatedCompletionDate.setDate(
-        estimatedCompletionDate.getDate() + (weeksToComplete * 7)
-      );
+      estimatedCompletionDate.setDate(estimatedCompletionDate.getDate() + weeksToComplete * 7);
 
       // Calculate required weekly progress
       const targetDate = goal.targetDate ? new Date(goal.targetDate) : null;
-      const weeksRemaining = targetDate ? 
-        Math.max(1, (targetDate.getTime() - Date.now()) / (7 * 24 * 60 * 60 * 1000)) : 
-        weeksToComplete;
-      
+      const weeksRemaining = targetDate
+        ? Math.max(1, (targetDate.getTime() - Date.now()) / (7 * 24 * 60 * 60 * 1000))
+        : weeksToComplete;
+
       const requiredWeeklyProgress = remainingProgress / weeksRemaining;
 
       // Identify obstacles and accelerators
@@ -215,7 +212,7 @@ export class PredictiveAnalytics {
         estimatedCompletionDate,
         requiredWeeklyProgress,
         obstacles,
-        accelerators
+        accelerators,
       };
     } catch (error) {
       logger.error('Error predicting goal completion:', error);
@@ -255,39 +252,41 @@ export class PredictiveAnalytics {
       Goal.findAll({
         where: { userId },
         order: [['createdAt', 'DESC']],
-        limit: 50
+        limit: 50,
       }),
       Task.findAll({
         where: {
           userId,
           createdAt: {
-            [Op.gte]: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000) // 60 days
-          }
+            [Op.gte]: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000), // 60 days
+          },
         },
-        order: [['createdAt', 'DESC']]
+        order: [['createdAt', 'DESC']],
       }),
       Mood.findAll({
         where: {
           userId,
           createdAt: {
-            [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // 30 days
-          }
+            [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days
+          },
         },
-        order: [['createdAt', 'DESC']]
+        order: [['createdAt', 'DESC']],
       }),
       UserProfile.findOne({ where: { userId } }),
       ChatMessage.count({
-        include: [{
-          model: Chat,
-          as: 'chat',
-          where: { userId }
-        }],
+        include: [
+          {
+            model: Chat,
+            as: 'chat',
+            where: { userId },
+          },
+        ],
         where: {
           createdAt: {
-            [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-          }
-        }
-      })
+            [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          },
+        },
+      }),
     ]);
 
     // Calculate mood trends
@@ -299,7 +298,7 @@ export class PredictiveAnalytics {
       moods,
       profile,
       messageCount: messages,
-      avgMoodTrend
+      avgMoodTrend,
     };
   }
 
@@ -309,7 +308,7 @@ export class PredictiveAnalytics {
       progressRate: 0,
       engagementLevel: 0,
       adaptability: 0,
-      resilience: 0
+      resilience: 0,
     };
 
     // Consistency score
@@ -320,8 +319,8 @@ export class PredictiveAnalytics {
 
     // Progress rate
     const completedGoals = userData.goals.filter((g: any) => g.status === 'completed');
-    indicators.progressRate = userData.goals.length > 0 ? 
-      completedGoals.length / userData.goals.length : 0;
+    indicators.progressRate =
+      userData.goals.length > 0 ? completedGoals.length / userData.goals.length : 0;
 
     // Engagement level
     const engagementPattern = patterns.find(p => p.pattern === 'engagement');
@@ -347,7 +346,7 @@ export class PredictiveAnalytics {
   ): Promise<Prediction> {
     // Calculate base probability
     let probability = 0.5;
-    
+
     // Weight each indicator
     probability += indicators.consistencyScore * 0.2;
     probability += indicators.progressRate * 0.15;
@@ -358,20 +357,19 @@ export class PredictiveAnalytics {
     // Adjust for patterns
     const positivePatterns = patterns.filter((p: BehaviorPattern) => p.impact === 'positive');
     const negativePatterns = patterns.filter((p: BehaviorPattern) => p.impact === 'negative');
-    
+
     probability += positivePatterns.length * 0.05;
     probability -= negativePatterns.length * 0.05;
 
     probability = Math.max(0.1, Math.min(0.95, probability));
 
     // Determine timeframe
-    const timeframe = probability > 0.7 ? '30 days' : 
-                     probability > 0.5 ? '60 days' : '90 days';
+    const timeframe = probability > 0.7 ? '30 days' : probability > 0.5 ? '60 days' : '90 days';
 
     // Extract factors
     const factors = {
       positive: this.extractPositiveFactors(userData, patterns, indicators),
-      negative: this.extractNegativeFactors(userData, patterns, indicators)
+      negative: this.extractNegativeFactors(userData, patterns, indicators),
     };
 
     // Generate recommendations
@@ -384,7 +382,7 @@ export class PredictiveAnalytics {
 
     // Calculate confidence
     const dataPoints = userData.tasks.length + userData.goals.length + userData.moods.length;
-    const confidence = Math.min(0.95, 0.5 + (dataPoints / 200));
+    const confidence = Math.min(0.95, 0.5 + dataPoints / 200);
 
     return {
       type: 'success',
@@ -392,17 +390,18 @@ export class PredictiveAnalytics {
       timeframe,
       factors,
       recommendations,
-      confidence
+      confidence,
     };
   }
 
   private calculateEngagementMetrics(userData: any): any {
-    const recentTasks = userData.tasks.filter((t: any) => 
-      new Date(t.createdAt) > new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+    const recentTasks = userData.tasks.filter(
+      (t: any) => new Date(t.createdAt) > new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
     );
-    const olderTasks = userData.tasks.filter((t: any) => 
-      new Date(t.createdAt) <= new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) &&
-      new Date(t.createdAt) > new Date(Date.now() - 28 * 24 * 60 * 60 * 1000)
+    const olderTasks = userData.tasks.filter(
+      (t: any) =>
+        new Date(t.createdAt) <= new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) &&
+        new Date(t.createdAt) > new Date(Date.now() - 28 * 24 * 60 * 60 * 1000)
     );
 
     const recentEngagement = recentTasks.length;
@@ -414,12 +413,13 @@ export class PredictiveAnalytics {
     else trend = 'stable';
 
     // Calculate session frequency (sessions per week)
-    const uniqueDays = new Set(
-      userData.tasks.map((t: any) => new Date(t.createdAt).toDateString())
-    ).size;
-    const weeksCovered = Math.max(1, 
-      (Date.now() - new Date(userData.tasks[userData.tasks.length - 1]?.createdAt || Date.now()).getTime()) / 
-      (7 * 24 * 60 * 60 * 1000)
+    const uniqueDays = new Set(userData.tasks.map((t: any) => new Date(t.createdAt).toDateString()))
+      .size;
+    const weeksCovered = Math.max(
+      1,
+      (Date.now() -
+        new Date(userData.tasks[userData.tasks.length - 1]?.createdAt || Date.now()).getTime()) /
+        (7 * 24 * 60 * 60 * 1000)
     );
     const sessionFrequency = uniqueDays / weeksCovered;
 
@@ -427,7 +427,7 @@ export class PredictiveAnalytics {
       trend,
       sessionFrequency,
       recentEngagement,
-      totalEngagement: userData.tasks.length
+      totalEngagement: userData.tasks.length,
     };
   }
 
@@ -476,11 +476,12 @@ export class PredictiveAnalytics {
     for (let i = 0; i < weeks; i++) {
       const weekStart = new Date(Date.now() - (i + 1) * 7 * 24 * 60 * 60 * 1000);
       const weekEnd = new Date(Date.now() - i * 7 * 24 * 60 * 60 * 1000);
-      
-      const weekTasks = tasks.filter((t: any) => 
-        new Date(t.createdAt) >= weekStart && 
-        new Date(t.createdAt) < weekEnd &&
-        t.status === 'completed'
+
+      const weekTasks = tasks.filter(
+        (t: any) =>
+          new Date(t.createdAt) >= weekStart &&
+          new Date(t.createdAt) < weekEnd &&
+          t.status === 'completed'
       );
 
       weeklyProgress.push(weekTasks.length);
@@ -488,12 +489,11 @@ export class PredictiveAnalytics {
 
     // Calculate average weekly progress
     const avgProgress = weeklyProgress.reduce((sum, p) => sum + p, 0) / weeks;
-    
+
     // Estimate progress per week (assuming each task contributes equally)
-    const progressPerTask = goal.progress / Math.max(1, 
-      tasks.filter((t: any) => t.status === 'completed').length
-    );
-    
+    const progressPerTask =
+      goal.progress / Math.max(1, tasks.filter((t: any) => t.status === 'completed').length);
+
     return avgProgress * progressPerTask;
   }
 
@@ -510,14 +510,16 @@ export class PredictiveAnalytics {
       return (completed - created) / (1000 * 60 * 60); // hours
     });
 
-    const avgCompletionTime = completionTimes.length > 0 ?
-      completionTimes.reduce((sum, t) => sum + t, 0) / completionTimes.length : 24;
+    const avgCompletionTime =
+      completionTimes.length > 0
+        ? completionTimes.reduce((sum, t) => sum + t, 0) / completionTimes.length
+        : 24;
 
     return {
       consistency,
       avgCompletionTime,
       totalCompleted: completedTasks.length,
-      completionRate: consistency
+      completionRate: consistency,
     };
   }
 
@@ -562,7 +564,7 @@ export class PredictiveAnalytics {
 
     return {
       obstacles: [...new Set(obstacles)].slice(0, 3),
-      accelerators: [...new Set(accelerators)].slice(0, 3)
+      accelerators: [...new Set(accelerators)].slice(0, 3),
     };
   }
 
@@ -577,19 +579,23 @@ Provide JSON with:
 - accelerators: array of 2-3 specific accelerators`;
 
     try {
-      const response = await aiService.generateResponse([
+      const response = await aiService.generateResponse(
+        [
+          {
+            role: 'system',
+            content:
+              'You are an expert at analyzing goal achievement patterns. Always respond with valid JSON.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
         {
-          role: 'system',
-          content: 'You are an expert at analyzing goal achievement patterns. Always respond with valid JSON.'
-        },
-        {
-          role: 'user',
-          content: prompt
+          temperature: 0.3,
+          maxTokens: 300,
         }
-      ], {
-        temperature: 0.3,
-        maxTokens: 300
-      });
+      );
 
       return JSON.parse(response.content);
     } catch (error) {
@@ -602,12 +608,13 @@ Provide JSON with:
     const frequency = tasks.length > 0 ? completedTasks.length / tasks.length : 0;
 
     // Analyze trend
-    const recentTasks = tasks.filter(t => 
-      new Date(t.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+    const recentTasks = tasks.filter(
+      t => new Date(t.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
     );
-    const olderTasks = tasks.filter(t => 
-      new Date(t.createdAt) <= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) &&
-      new Date(t.createdAt) > new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+    const olderTasks = tasks.filter(
+      t =>
+        new Date(t.createdAt) <= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) &&
+        new Date(t.createdAt) > new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
     );
 
     let trend: 'increasing' | 'stable' | 'decreasing' = 'stable';
@@ -626,7 +633,7 @@ Provide JSON with:
       frequency,
       trend,
       impact,
-      insights
+      insights,
     };
   }
 
@@ -637,29 +644,34 @@ Provide JSON with:
         frequency: 0,
         trend: 'stable',
         impact: 'neutral',
-        insights: ['No mood data available']
+        insights: ['No mood data available'],
       };
     }
 
     // Calculate average mood
-    const moodValues: Record<string, number> = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1 };
-    const avgMood = moods.reduce((sum, m) => 
-      sum + (moodValues[m.mood as string] || 3), 0
-    ) / moods.length;
+    const moodValues: Record<string, number> = {
+      happy: 5,
+      content: 4,
+      neutral: 3,
+      stressed: 2,
+      sad: 1,
+    };
+    const avgMood =
+      moods.reduce((sum, m) => sum + (moodValues[m.mood as string] || 3), 0) / moods.length;
 
     const frequency = Math.min(1, moods.length / 30); // Expecting daily tracking
 
     // Trend analysis
     const recentMoods = moods.slice(0, 7);
     const olderMoods = moods.slice(7, 14);
-    
-    const recentAvg = recentMoods.reduce((sum, m) => 
-      sum + (moodValues[m.mood as string] || 3), 0
-    ) / Math.max(1, recentMoods.length);
-    
-    const olderAvg = olderMoods.reduce((sum, m) => 
-      sum + (moodValues[m.mood as string] || 3), 0
-    ) / Math.max(1, olderMoods.length);
+
+    const recentAvg =
+      recentMoods.reduce((sum, m) => sum + (moodValues[m.mood as string] || 3), 0) /
+      Math.max(1, recentMoods.length);
+
+    const olderAvg =
+      olderMoods.reduce((sum, m) => sum + (moodValues[m.mood as string] || 3), 0) /
+      Math.max(1, olderMoods.length);
 
     let trend: 'increasing' | 'stable' | 'decreasing' = 'stable';
     if (recentAvg > olderAvg + 0.5) trend = 'increasing';
@@ -677,7 +689,7 @@ Provide JSON with:
       frequency,
       trend,
       impact,
-      insights
+      insights,
     };
   }
 
@@ -689,14 +701,14 @@ Provide JSON with:
       frequency: 0.7,
       trend: 'stable',
       impact: 'positive',
-      insights: ['Regular platform engagement']
+      insights: ['Regular platform engagement'],
     };
   }
 
   private analyzeGoalPatterns(goals: Goal[]): BehaviorPattern {
     const completedGoals = goals.filter((g: any) => g.status === 'completed');
     const activeGoals = goals.filter((g: any) => g.status === 'in_progress');
-    
+
     const completionRate = goals.length > 0 ? completedGoals.length / goals.length : 0;
     const frequency = Math.min(1, goals.length / 12); // Expecting monthly goals
 
@@ -705,13 +717,13 @@ Provide JSON with:
     const diversity = goalTypes.size / Math.max(1, goals.length);
 
     let trend: 'increasing' | 'stable' | 'decreasing' = 'stable';
-    const recentGoals = goals.filter((g: any) => 
-      new Date(g.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+    const recentGoals = goals.filter(
+      (g: any) => new Date(g.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     );
     if (recentGoals.length > goals.length / 4) trend = 'increasing';
 
-    const impact = completionRate > 0.6 ? 'positive' : 
-                  completionRate < 0.3 ? 'negative' : 'neutral';
+    const impact =
+      completionRate > 0.6 ? 'positive' : completionRate < 0.3 ? 'negative' : 'neutral';
 
     const insights = [];
     if (completionRate > 0.7) insights.push('High goal achievement rate');
@@ -723,20 +735,24 @@ Provide JSON with:
       frequency,
       trend,
       impact,
-      insights
+      insights,
     };
   }
 
   private async analyzeTimePatterns(userData: any): Promise<BehaviorPattern> {
     // Analyze when user is most active
     const taskTimes = userData.tasks.map((t: any) => new Date(t.createdAt).getHours());
-    const hourCounts = taskTimes.reduce((acc: any, hour: number) => {
-      acc[hour] = (acc[hour] || 0) + 1;
-      return acc;
-    }, {} as Record<number, number>);
+    const hourCounts = taskTimes.reduce(
+      (acc: any, hour: number) => {
+        acc[hour] = (acc[hour] || 0) + 1;
+        return acc;
+      },
+      {} as Record<number, number>
+    );
 
-    const peakHour = Object.entries(hourCounts)
-      .sort(([, a], [, b]) => (b as number) - (a as number))[0]?.[0] || '9';
+    const peakHour =
+      Object.entries(hourCounts).sort(([, a], [, b]) => (b as number) - (a as number))[0]?.[0] ||
+      '9';
 
     const insights = [];
     if (parseInt(peakHour) < 9) insights.push('Early bird - most active in morning');
@@ -748,19 +764,25 @@ Provide JSON with:
       frequency: 1,
       trend: 'stable',
       impact: 'neutral',
-      insights
+      insights,
     };
   }
 
   private calculateMoodTrend(moods: Mood[]): number {
     if (moods.length < 2) return 0;
 
-    const moodValues: Record<string, number> = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1 };
-    
+    const moodValues: Record<string, number> = {
+      happy: 5,
+      content: 4,
+      neutral: 3,
+      stressed: 2,
+      sad: 1,
+    };
+
     // Simple linear regression
     const points = moods.map((m, i) => ({
       x: i,
-      y: moodValues[m.mood as string] || 3
+      y: moodValues[m.mood as string] || 3,
     }));
 
     const n = points.length;
@@ -770,7 +792,7 @@ Provide JSON with:
     const sumX2 = points.reduce((sum, p) => sum + p.x * p.x, 0);
 
     const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-    
+
     return slope; // Positive = improving, negative = declining
   }
 
@@ -778,9 +800,9 @@ Provide JSON with:
     // Detect how often user changes approach
     let changes = 0;
     const taskTypes = tasks.map((t: any) => t.category || 'general');
-    
+
     for (let i = 1; i < taskTypes.length; i++) {
-      if (taskTypes[i] !== taskTypes[i-1]) changes++;
+      if (taskTypes[i] !== taskTypes[i - 1]) changes++;
     }
 
     return changes;
@@ -792,8 +814,8 @@ Provide JSON with:
 
     // Check if user continues after incomplete tasks
     const incompleteTasks = userData.tasks.filter((t: any) => t.status !== 'completed');
-    const tasksAfterIncomplete = userData.tasks.filter((_t: any, i: number) => 
-      i > 0 && userData.tasks[i-1].status !== 'completed'
+    const tasksAfterIncomplete = userData.tasks.filter(
+      (_t: any, i: number) => i > 0 && userData.tasks[i - 1].status !== 'completed'
     );
 
     if (incompleteTasks.length > 0 && tasksAfterIncomplete.length > 0) {
@@ -801,13 +823,12 @@ Provide JSON with:
     }
 
     // Check mood recovery
-    const moodDips = userData.moods.filter((m: any) => 
-      m.mood === 'stressed' || m.mood === 'sad'
-    );
+    const moodDips = userData.moods.filter((m: any) => m.mood === 'stressed' || m.mood === 'sad');
     if (moodDips.length > 0) {
-      const recoveries = moodDips.filter((_m: any, i: number) => 
-        i < userData.moods.length - 1 && 
-        (userData.moods[i+1].mood === 'happy' || userData.moods[i+1].mood === 'content')
+      const recoveries = moodDips.filter(
+        (_m: any, i: number) =>
+          i < userData.moods.length - 1 &&
+          (userData.moods[i + 1].mood === 'happy' || userData.moods[i + 1].mood === 'content')
       );
       resilienceScore += (recoveries.length / moodDips.length) * 0.3;
     }
@@ -933,7 +954,7 @@ Provide JSON with:
         action: 'Personal outreach',
         channel: 'Email + In-app notification',
         message: 'We noticed you might be facing challenges. How can we help?',
-        expectedImpact: '40% reduction in churn probability'
+        expectedImpact: '40% reduction in churn probability',
       });
     }
 
@@ -942,7 +963,7 @@ Provide JSON with:
       action: 'Success story sharing',
       channel: 'In-app',
       message: 'See how others overcame similar challenges',
-      expectedImpact: '25% increase in engagement'
+      expectedImpact: '25% increase in engagement',
     });
 
     interventions.push({
@@ -950,7 +971,7 @@ Provide JSON with:
       action: 'Simplified goal offering',
       channel: 'Push notification',
       message: 'Start fresh with a 5-minute daily win',
-      expectedImpact: '30% reactivation rate'
+      expectedImpact: '30% reactivation rate',
     });
 
     const successMetrics = [
@@ -958,7 +979,7 @@ Provide JSON with:
       'Completes at least one task within 7 days',
       'Engagement frequency returns to baseline',
       'Mood ratings improve or stabilize',
-      'Sets a new goal within 14 days'
+      'Sets a new goal within 14 days',
     ];
 
     return { interventions, successMetrics };

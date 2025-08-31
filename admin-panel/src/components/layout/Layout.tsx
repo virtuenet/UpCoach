@@ -1,23 +1,24 @@
-import Sidebar from "./Sidebar";
-import TopBar from "./TopBar";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import Sidebar from './Sidebar';
+import TopBar from './TopBar';
 
 const MainContent = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'sidebarOpen'
+  shouldForwardProp: prop => prop !== 'sidebarOpen',
 })<{ sidebarOpen?: boolean }>(({ theme, sidebarOpen }) => ({
   marginLeft: sidebarOpen ? 260 : 0,
   paddingTop: 64,
-  minHeight: "100vh",
-  backgroundColor: "#f9fafb",
-  transition: "margin-left 0.3s ease",
+  minHeight: '100vh',
+  backgroundColor: '#f9fafb',
+  transition: 'margin-left 0.3s ease',
   [theme.breakpoints.down('md')]: {
     marginLeft: 0,
   },
-}))
+}));
 
 const ContentWrapper = styled(Box)(({ theme: _theme }) => ({
-  padding: "24px",
-  maxWidth: "100%",
-  margin: "0 auto",
+  padding: '24px',
+  maxWidth: '100%',
+  margin: '0 auto',
 }));
 
 interface LayoutProps {
@@ -37,18 +38,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   // Show loading state while checking auth
   if (isLoading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+      <Box
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}
+      >
         Loading...
       </Box>
     );
   }
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       {sidebarOpen && <Sidebar />}
-      <TopBar 
-        userName={user?.fullName || "Guest"} 
-        userRole={user?.role || "user"}
+      <TopBar
+        userName={user?.fullName || 'Guest'}
+        userRole={user?.role || 'user'}
         onMenuClick={handleSidebarToggle}
       />
       <MainContent sidebarOpen={!isMobile && sidebarOpen}>

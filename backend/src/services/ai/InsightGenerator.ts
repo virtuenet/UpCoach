@@ -27,7 +27,7 @@ export interface Insight {
   metadata?: any;
 }
 
-export type InsightType = 
+export type InsightType =
   | 'pattern'
   | 'anomaly'
   | 'prediction'
@@ -37,7 +37,7 @@ export type InsightType =
   | 'opportunity'
   | 'correlation';
 
-export type InsightCategory = 
+export type InsightCategory =
   | 'productivity'
   | 'wellbeing'
   | 'goals'
@@ -113,7 +113,7 @@ export class InsightGenerator {
       ['achievement', this.generateAchievementInsights.bind(this)],
       ['risk', this.generateRiskInsights.bind(this)],
       ['opportunity', this.generateOpportunityInsights.bind(this)],
-      ['correlation', this.generateCorrelationInsights.bind(this)]
+      ['correlation', this.generateCorrelationInsights.bind(this)],
     ]);
   }
 
@@ -124,14 +124,15 @@ export class InsightGenerator {
     try {
       // Determine period
       const endDate = period.end || new Date();
-      const startDate = period.start || new Date(endDate.getTime() - (period.days || 30) * 24 * 60 * 60 * 1000);
+      const startDate =
+        period.start || new Date(endDate.getTime() - (period.days || 30) * 24 * 60 * 60 * 1000);
 
       // Gather comprehensive data
       const userData = await this.gatherUserData(userId, startDate, endDate);
-      
+
       // Generate insights of all types
       const allInsights: Insight[] = [];
-      
+
       for (const [_type, strategy] of this.generationStrategies) {
         const insights = await strategy(userData);
         allInsights.push(...insights);
@@ -139,10 +140,10 @@ export class InsightGenerator {
 
       // Rank and filter insights
       const rankedInsights = this.rankInsights(allInsights);
-      
+
       // Analyze trends
       const trends = await this.analyzeTrends(userData);
-      
+
       // Generate summary and recommendations
       const summary = this.generateSummary(rankedInsights);
       const recommendations = await this.generateReportRecommendations(
@@ -156,12 +157,12 @@ export class InsightGenerator {
         generatedAt: new Date(),
         period: {
           start: startDate,
-          end: endDate
+          end: endDate,
         },
         insights: rankedInsights,
         summary,
         trends,
-        recommendations
+        recommendations,
       };
 
       // Cache insights
@@ -180,32 +181,34 @@ export class InsightGenerator {
       Goal.findAll({
         where: {
           userId,
-          createdAt: { [Op.between]: [startDate, endDate] }
-        }
+          createdAt: { [Op.between]: [startDate, endDate] },
+        },
       }),
       Task.findAll({
         where: {
           userId,
-          createdAt: { [Op.between]: [startDate, endDate] }
-        }
+          createdAt: { [Op.between]: [startDate, endDate] },
+        },
       }),
       Mood.findAll({
         where: {
           userId,
-          createdAt: { [Op.between]: [startDate, endDate] }
+          createdAt: { [Op.between]: [startDate, endDate] },
         },
-        order: [['createdAt', 'ASC']]
+        order: [['createdAt', 'ASC']],
       }),
       ChatMessage.count({
-        include: [{
-          model: Chat,
-          as: 'chat',
-          where: { userId }
-        }],
+        include: [
+          {
+            model: Chat,
+            as: 'chat',
+            where: { userId },
+          },
+        ],
         where: {
-          createdAt: { [Op.between]: [startDate, endDate] }
-        }
-      })
+          createdAt: { [Op.between]: [startDate, endDate] },
+        },
+      }),
     ]);
 
     // Calculate additional metrics
@@ -219,7 +222,7 @@ export class InsightGenerator {
       moods,
       messageCount: messages,
       metrics,
-      period: { startDate, endDate }
+      period: { startDate, endDate },
     };
   }
 
@@ -237,7 +240,7 @@ export class InsightGenerator {
 
     // Calculate streaks
     const currentStreak = await this.calculateCurrentStreak(tasks);
-    
+
     // Mood analysis
     const avgMood = this.calculateAverageMood(moods);
     const moodVariability = this.calculateMoodVariability(moods);
@@ -257,7 +260,7 @@ export class InsightGenerator {
       productiveHours,
       taskVelocity,
       totalTasks: tasks.length,
-      totalGoals: goals.length
+      totalGoals: goals.length,
     };
   }
 
@@ -275,32 +278,38 @@ export class InsightGenerator {
         category: 'productivity',
         priority: 'medium',
         confidence: taskPatterns.strongPatterns[0].confidence,
-        evidence: [{
-          type: 'pattern',
-          description: 'Analysis of task completion times',
-          dataPoints: taskPatterns.strongPatterns[0].dataPoints,
-          strength: taskPatterns.strongPatterns[0].confidence
-        }],
-        actionItems: [{
-          id: `action_${Date.now()}_1`,
-          action: `Schedule important tasks during your peak productivity ${taskPatterns.strongPatterns[0].timeframe}`,
-          priority: 'high',
-          estimatedImpact: '30% increase in task completion',
-          estimatedTime: 5,
-          category: 'planning'
-        }],
-        visualizations: [{
-          type: 'chart',
-          data: {
-            type: 'heatmap',
-            data: taskPatterns.heatmapData
+        evidence: [
+          {
+            type: 'pattern',
+            description: 'Analysis of task completion times',
+            dataPoints: taskPatterns.strongPatterns[0].dataPoints,
+            strength: taskPatterns.strongPatterns[0].confidence,
           },
-          config: {
-            title: 'Task Completion Heatmap',
-            xAxis: 'Day of Week',
-            yAxis: 'Hour of Day'
-          }
-        }]
+        ],
+        actionItems: [
+          {
+            id: `action_${Date.now()}_1`,
+            action: `Schedule important tasks during your peak productivity ${taskPatterns.strongPatterns[0].timeframe}`,
+            priority: 'high',
+            estimatedImpact: '30% increase in task completion',
+            estimatedTime: 5,
+            category: 'planning',
+          },
+        ],
+        visualizations: [
+          {
+            type: 'chart',
+            data: {
+              type: 'heatmap',
+              data: taskPatterns.heatmapData,
+            },
+            config: {
+              title: 'Task Completion Heatmap',
+              xAxis: 'Day of Week',
+              yAxis: 'Hour of Day',
+            },
+          },
+        ],
       });
     }
 
@@ -315,20 +324,24 @@ export class InsightGenerator {
         category: 'wellbeing',
         priority: moodPatterns.significantPattern.impact === 'negative' ? 'high' : 'medium',
         confidence: moodPatterns.significantPattern.confidence,
-        evidence: [{
-          type: 'trend',
-          description: 'Mood tracking data over time',
-          dataPoints: moodPatterns.significantPattern.dataPoints,
-          strength: moodPatterns.significantPattern.confidence
-        }],
-        actionItems: moodPatterns.significantPattern.recommendations.map((rec: any, idx: number) => ({
-          id: `action_${Date.now()}_mood_${idx}`,
-          action: rec,
-          priority: idx === 0 ? 'high' : 'medium',
-          estimatedImpact: 'Improved emotional wellbeing',
-          estimatedTime: 15,
-          category: 'wellbeing'
-        }))
+        evidence: [
+          {
+            type: 'trend',
+            description: 'Mood tracking data over time',
+            dataPoints: moodPatterns.significantPattern.dataPoints,
+            strength: moodPatterns.significantPattern.confidence,
+          },
+        ],
+        actionItems: moodPatterns.significantPattern.recommendations.map(
+          (rec: any, idx: number) => ({
+            id: `action_${Date.now()}_mood_${idx}`,
+            action: rec,
+            priority: idx === 0 ? 'high' : 'medium',
+            estimatedImpact: 'Improved emotional wellbeing',
+            estimatedTime: 15,
+            category: 'wellbeing',
+          })
+        ),
       });
     }
 
@@ -348,20 +361,24 @@ export class InsightGenerator {
         category: 'productivity',
         priority: 'medium',
         confidence: 0.85,
-        evidence: [{
-          type: 'comparison',
-          description: `${Math.round(data.metrics.taskCompletionRate * 100)}% completion rate vs typical 70%`,
-          dataPoints: [data.metrics.taskCompletionRate],
-          strength: 0.85
-        }],
-        actionItems: [{
-          id: `action_${Date.now()}_capture`,
-          action: 'Document what strategies are working exceptionally well',
-          priority: 'high',
-          estimatedImpact: 'Sustain high performance',
-          estimatedTime: 10,
-          category: 'reflection'
-        }]
+        evidence: [
+          {
+            type: 'comparison',
+            description: `${Math.round(data.metrics.taskCompletionRate * 100)}% completion rate vs typical 70%`,
+            dataPoints: [data.metrics.taskCompletionRate],
+            strength: 0.85,
+          },
+        ],
+        actionItems: [
+          {
+            id: `action_${Date.now()}_capture`,
+            action: 'Document what strategies are working exceptionally well',
+            priority: 'high',
+            estimatedImpact: 'Sustain high performance',
+            estimatedTime: 10,
+            category: 'reflection',
+          },
+        ],
       });
     }
 
@@ -376,20 +393,22 @@ export class InsightGenerator {
         category: 'wellbeing',
         priority: 'high',
         confidence: moodAnomaly.confidence,
-        evidence: [{
-          type: 'data',
-          description: 'Unusual mood patterns detected',
-          dataPoints: moodAnomaly.dataPoints,
-          strength: moodAnomaly.confidence
-        }],
+        evidence: [
+          {
+            type: 'data',
+            description: 'Unusual mood patterns detected',
+            dataPoints: moodAnomaly.dataPoints,
+            strength: moodAnomaly.confidence,
+          },
+        ],
         actionItems: moodAnomaly.actions.map((action: any, idx: number) => ({
           id: `action_${Date.now()}_anomaly_${idx}`,
           action: action,
           priority: 'urgent',
           estimatedImpact: 'Address potential wellbeing concerns',
           estimatedTime: 20,
-          category: 'wellbeing'
-        }))
+          category: 'wellbeing',
+        })),
       });
     }
 
@@ -402,7 +421,7 @@ export class InsightGenerator {
     // Goal completion predictions
     for (const goal of data.goals.filter((g: any) => g.status === 'active')) {
       const prediction = await predictiveAnalytics.predictGoalCompletion(goal.id);
-      
+
       if (prediction.probability < 0.5) {
         insights.push({
           id: `prediction_${Date.now()}_goal_${goal.id}`,
@@ -412,36 +431,42 @@ export class InsightGenerator {
           category: 'goals',
           priority: 'high',
           confidence: 0.75,
-          evidence: [{
-            type: 'data',
-            description: 'Based on current progress rate and historical patterns',
-            dataPoints: [{
-              currentProgress: goal.progress,
-              requiredWeeklyProgress: prediction.requiredWeeklyProgress,
-              obstacles: prediction.obstacles
-            }],
-            strength: 0.75
-          }],
+          evidence: [
+            {
+              type: 'data',
+              description: 'Based on current progress rate and historical patterns',
+              dataPoints: [
+                {
+                  currentProgress: goal.progress,
+                  requiredWeeklyProgress: prediction.requiredWeeklyProgress,
+                  obstacles: prediction.obstacles,
+                },
+              ],
+              strength: 0.75,
+            },
+          ],
           actionItems: prediction.obstacles.slice(0, 2).map((obstacle, idx) => ({
             id: `action_${Date.now()}_pred_${idx}`,
             action: `Address: ${obstacle}`,
             priority: 'high',
             estimatedImpact: 'Increase success probability by 20%',
             estimatedTime: 30,
-            category: 'goals'
+            category: 'goals',
           })),
-          visualizations: [{
-            type: 'chart',
-            data: {
-              type: 'line',
-              projected: true,
-              data: this.generateProgressProjection(goal, prediction)
+          visualizations: [
+            {
+              type: 'chart',
+              data: {
+                type: 'line',
+                projected: true,
+                data: this.generateProgressProjection(goal, prediction),
+              },
+              config: {
+                title: 'Goal Progress Projection',
+                showConfidenceInterval: true,
+              },
             },
-            config: {
-              title: 'Goal Progress Projection',
-              showConfidenceInterval: true
-            }
-          }]
+          ],
         });
       }
     }
@@ -457,23 +482,25 @@ export class InsightGenerator {
         category: 'progress',
         priority: successPrediction.probability > 0.7 ? 'low' : 'medium',
         confidence: successPrediction.confidence,
-        evidence: [{
-          type: 'data',
-          description: 'Comprehensive analysis of your patterns and progress',
-          dataPoints: [
-            { factor: 'Positive factors', items: successPrediction.factors.positive },
-            { factor: 'Challenges', items: successPrediction.factors.negative }
-          ],
-          strength: successPrediction.confidence
-        }],
+        evidence: [
+          {
+            type: 'data',
+            description: 'Comprehensive analysis of your patterns and progress',
+            dataPoints: [
+              { factor: 'Positive factors', items: successPrediction.factors.positive },
+              { factor: 'Challenges', items: successPrediction.factors.negative },
+            ],
+            strength: successPrediction.confidence,
+          },
+        ],
         actionItems: successPrediction.recommendations.slice(0, 3).map((rec, idx) => ({
           id: `action_${Date.now()}_success_${idx}`,
           action: rec,
           priority: idx === 0 ? 'high' : 'medium',
           estimatedImpact: 'Optimize success probability',
           estimatedTime: 20,
-          category: 'strategy'
-        }))
+          category: 'strategy',
+        })),
       });
     }
 
@@ -500,20 +527,22 @@ export class InsightGenerator {
         category: this.mapRecommendationCategory(topRecommendation.category),
         priority: topRecommendation.priority,
         confidence: topRecommendation.confidence,
-        evidence: [{
-          type: 'data',
-          description: topRecommendation.reason,
-          dataPoints: [],
-          strength: topRecommendation.confidence
-        }],
+        evidence: [
+          {
+            type: 'data',
+            description: topRecommendation.reason,
+            dataPoints: [],
+            strength: topRecommendation.confidence,
+          },
+        ],
         actionItems: topRecommendation.actionItems.map((item, idx) => ({
           id: `action_${Date.now()}_rec_${idx}`,
           action: item,
           priority: idx === 0 ? 'high' : 'medium',
           estimatedImpact: topRecommendation.expectedOutcome,
           estimatedTime: topRecommendation.estimatedTime || 15,
-          category: topRecommendation.category
-        }))
+          category: topRecommendation.category,
+        })),
       });
     }
 
@@ -529,24 +558,28 @@ export class InsightGenerator {
         id: `achievement_${Date.now()}_streak`,
         type: 'achievement',
         title: `${data.metrics.currentStreak}-Day Streak! 🔥`,
-        description: 'You\'ve maintained consistent daily engagement',
+        description: "You've maintained consistent daily engagement",
         category: 'habits',
         priority: 'low',
         confidence: 1.0,
-        evidence: [{
-          type: 'data',
-          description: 'Consecutive days of task completion',
-          dataPoints: [{ streak: data.metrics.currentStreak }],
-          strength: 1.0
-        }],
-        actionItems: [{
-          id: `action_${Date.now()}_celebrate`,
-          action: 'Celebrate this milestone and share your success',
-          priority: 'low',
-          estimatedImpact: 'Boost motivation and social support',
-          estimatedTime: 5,
-          category: 'social'
-        }]
+        evidence: [
+          {
+            type: 'data',
+            description: 'Consecutive days of task completion',
+            dataPoints: [{ streak: data.metrics.currentStreak }],
+            strength: 1.0,
+          },
+        ],
+        actionItems: [
+          {
+            id: `action_${Date.now()}_celebrate`,
+            action: 'Celebrate this milestone and share your success',
+            priority: 'low',
+            estimatedImpact: 'Boost motivation and social support',
+            estimatedTime: 5,
+            category: 'social',
+          },
+        ],
       });
     }
 
@@ -556,27 +589,33 @@ export class InsightGenerator {
         id: `achievement_${Date.now()}_goals`,
         type: 'achievement',
         title: `${data.metrics.completedGoalsCount} Goal${data.metrics.completedGoalsCount > 1 ? 's' : ''} Completed!`,
-        description: 'You\'ve successfully achieved your objectives',
+        description: "You've successfully achieved your objectives",
         category: 'goals',
         priority: 'low',
         confidence: 1.0,
-        evidence: [{
-          type: 'data',
-          description: 'Goals marked as completed',
-          dataPoints: data.goals.filter((g: any) => g.status === 'completed').map((g: any) => ({
-            title: g.title,
-            completedAt: g.updatedAt
-          })),
-          strength: 1.0
-        }],
-        actionItems: [{
-          id: `action_${Date.now()}_reflect`,
-          action: 'Reflect on what made these goals successful',
-          priority: 'medium',
-          estimatedImpact: 'Apply success patterns to future goals',
-          estimatedTime: 15,
-          category: 'reflection'
-        }]
+        evidence: [
+          {
+            type: 'data',
+            description: 'Goals marked as completed',
+            dataPoints: data.goals
+              .filter((g: any) => g.status === 'completed')
+              .map((g: any) => ({
+                title: g.title,
+                completedAt: g.updatedAt,
+              })),
+            strength: 1.0,
+          },
+        ],
+        actionItems: [
+          {
+            id: `action_${Date.now()}_reflect`,
+            action: 'Reflect on what made these goals successful',
+            priority: 'medium',
+            estimatedImpact: 'Apply success patterns to future goals',
+            estimatedTime: 15,
+            category: 'reflection',
+          },
+        ],
       });
     }
 
@@ -601,7 +640,7 @@ export class InsightGenerator {
           type: 'data' as const,
           description: indicator,
           dataPoints: [],
-          strength: 0.8
+          strength: 0.8,
         })),
         actionItems: churnRisk.mitigationStrategies.slice(0, 3).map((strategy, idx) => ({
           id: `action_${Date.now()}_risk_${idx}`,
@@ -609,8 +648,8 @@ export class InsightGenerator {
           priority: idx === 0 ? 'urgent' : 'high',
           estimatedImpact: 'Prevent disengagement',
           estimatedTime: 10,
-          category: 'engagement'
-        }))
+          category: 'engagement',
+        })),
       });
     }
 
@@ -624,15 +663,19 @@ export class InsightGenerator {
         category: 'health',
         priority: 'high',
         confidence: 0.75,
-        evidence: [{
-          type: 'pattern' as const,
-          description: 'Task volume vs mood correlation',
-          dataPoints: [{
-            taskVelocity: data.metrics.taskVelocity,
-            avgMood: data.metrics.avgMood
-          }],
-          strength: 0.75
-        }],
+        evidence: [
+          {
+            type: 'pattern' as const,
+            description: 'Task volume vs mood correlation',
+            dataPoints: [
+              {
+                taskVelocity: data.metrics.taskVelocity,
+                avgMood: data.metrics.avgMood,
+              },
+            ],
+            strength: 0.75,
+          },
+        ],
         actionItems: [
           {
             id: `action_${Date.now()}_burnout_1`,
@@ -640,7 +683,7 @@ export class InsightGenerator {
             priority: 'urgent',
             estimatedImpact: 'Prevent burnout and maintain sustainability',
             estimatedTime: 60,
-            category: 'wellbeing'
+            category: 'wellbeing',
           },
           {
             id: `action_${Date.now()}_burnout_2`,
@@ -648,9 +691,9 @@ export class InsightGenerator {
             priority: 'high',
             estimatedImpact: 'Reduce overwhelm',
             estimatedTime: 30,
-            category: 'planning'
-          }
-        ]
+            category: 'planning',
+          },
+        ],
       });
     }
 
@@ -670,15 +713,19 @@ export class InsightGenerator {
         category: 'learning',
         priority: 'medium',
         confidence: 0.8,
-        evidence: [{
-          type: 'data',
-          description: 'Consistency and engagement metrics',
-          dataPoints: [{
-            consistencyScore: data.profile.behaviorPatterns?.consistencyScore,
-            completionRate: data.metrics.taskCompletionRate
-          }],
-          strength: 0.8
-        }],
+        evidence: [
+          {
+            type: 'data',
+            description: 'Consistency and engagement metrics',
+            dataPoints: [
+              {
+                consistencyScore: data.profile.behaviorPatterns?.consistencyScore,
+                completionRate: data.metrics.taskCompletionRate,
+              },
+            ],
+            strength: 0.8,
+          },
+        ],
         actionItems: [
           {
             id: `action_${Date.now()}_challenge_1`,
@@ -686,7 +733,7 @@ export class InsightGenerator {
             priority: 'medium',
             estimatedImpact: 'Accelerate personal growth',
             estimatedTime: 30,
-            category: 'goals'
+            category: 'goals',
           },
           {
             id: `action_${Date.now()}_challenge_2`,
@@ -694,9 +741,9 @@ export class InsightGenerator {
             priority: 'medium',
             estimatedImpact: 'Deepen expertise',
             estimatedTime: 45,
-            category: 'learning'
-          }
-        ]
+            category: 'learning',
+          },
+        ],
       });
     }
 
@@ -710,23 +757,29 @@ export class InsightGenerator {
         category: 'engagement',
         priority: 'low',
         confidence: 0.7,
-        evidence: [{
-          type: 'data',
-          description: 'Success rate and completed goals',
-          dataPoints: [{
-            completedGoals: data.metrics.completedGoalsCount,
-            successRate: data.metrics.goalCompletionRate
-          }],
-          strength: 0.7
-        }],
-        actionItems: [{
-          id: `action_${Date.now()}_share`,
-          action: 'Share your success strategies with the community',
-          priority: 'low',
-          estimatedImpact: 'Inspire others and reinforce your learning',
-          estimatedTime: 20,
-          category: 'social'
-        }]
+        evidence: [
+          {
+            type: 'data',
+            description: 'Success rate and completed goals',
+            dataPoints: [
+              {
+                completedGoals: data.metrics.completedGoalsCount,
+                successRate: data.metrics.goalCompletionRate,
+              },
+            ],
+            strength: 0.7,
+          },
+        ],
+        actionItems: [
+          {
+            id: `action_${Date.now()}_share`,
+            action: 'Share your success strategies with the community',
+            priority: 'low',
+            estimatedImpact: 'Inspire others and reinforce your learning',
+            estimatedTime: 20,
+            category: 'social',
+          },
+        ],
       });
     }
 
@@ -742,38 +795,43 @@ export class InsightGenerator {
       insights.push({
         id: `correlation_${Date.now()}_task_mood`,
         type: 'pattern' as const,
-        title: correlation.coefficient > 0 ? 'Productivity Boosts Mood' : 'Mood Affects Productivity',
+        title:
+          correlation.coefficient > 0 ? 'Productivity Boosts Mood' : 'Mood Affects Productivity',
         description: correlation.description,
         category: 'wellbeing',
         priority: 'medium',
         confidence: Math.abs(correlation.coefficient),
-        evidence: [{
-          type: 'pattern' as const,
-          description: 'Statistical correlation between task completion and mood',
-          dataPoints: correlation.dataPoints,
-          strength: Math.abs(correlation.coefficient)
-        }],
+        evidence: [
+          {
+            type: 'pattern' as const,
+            description: 'Statistical correlation between task completion and mood',
+            dataPoints: correlation.dataPoints,
+            strength: Math.abs(correlation.coefficient),
+          },
+        ],
         actionItems: correlation.recommendations.map((rec: string, idx: number) => ({
           id: `action_${Date.now()}_corr_${idx}`,
           action: rec,
           priority: 'medium',
           estimatedImpact: 'Optimize the productivity-wellbeing cycle',
           estimatedTime: 15,
-          category: 'strategy'
+          category: 'strategy',
         })),
-        visualizations: [{
-          type: 'chart',
-          data: {
-            type: 'scatter',
-            data: correlation.scatterData
+        visualizations: [
+          {
+            type: 'chart',
+            data: {
+              type: 'scatter',
+              data: correlation.scatterData,
+            },
+            config: {
+              title: 'Task Completion vs Mood',
+              xAxis: 'Tasks Completed',
+              yAxis: 'Mood Score',
+              showTrendLine: true,
+            },
           },
-          config: {
-            title: 'Task Completion vs Mood',
-            xAxis: 'Tasks Completed',
-            yAxis: 'Mood Score',
-            showTrendLine: true
-          }
-        }]
+        ],
       });
     }
 
@@ -783,7 +841,7 @@ export class InsightGenerator {
   private analyzeTaskPatterns(tasks: Task[]): any {
     const patterns = {
       strongPatterns: [] as any[],
-      heatmapData: {} as any
+      heatmapData: {} as any,
     };
 
     // Analyze by hour of day
@@ -799,25 +857,27 @@ export class InsightGenerator {
     });
 
     // Find peak productivity hours
-    const productivityByHour = Object.entries(hourlyTotal).map(([hour, total]) => ({
-      hour: parseInt(hour),
-      completionRate: (hourlyCompletion[parseInt(hour)] || 0) / total,
-      total
-    })).filter(h => h.total >= 3); // At least 3 tasks to be significant
+    const productivityByHour = Object.entries(hourlyTotal)
+      .map(([hour, total]) => ({
+        hour: parseInt(hour),
+        completionRate: (hourlyCompletion[parseInt(hour)] || 0) / total,
+        total,
+      }))
+      .filter(h => h.total >= 3); // At least 3 tasks to be significant
 
     const peakHours = productivityByHour
       .sort((a, b) => b.completionRate - a.completionRate)
       .slice(0, 3);
 
     if (peakHours.length > 0 && peakHours[0].completionRate > 0.7) {
-      const timeframe = peakHours[0].hour < 12 ? 'morning' : 
-                       peakHours[0].hour < 17 ? 'afternoon' : 'evening';
-      
+      const timeframe =
+        peakHours[0].hour < 12 ? 'morning' : peakHours[0].hour < 17 ? 'afternoon' : 'evening';
+
       patterns.strongPatterns.push({
         description: `in the ${timeframe} (${peakHours[0].hour}:00 - ${peakHours[0].hour + 1}:00)`,
         timeframe,
         confidence: peakHours[0].completionRate,
-        dataPoints: peakHours
+        dataPoints: peakHours,
       });
     }
 
@@ -840,12 +900,14 @@ export class InsightGenerator {
     });
 
     // Populate with task data
-    tasks.filter(t => t.status === 'completed').forEach(task => {
-      const date = new Date(task.createdAt);
-      const day = days[date.getDay()];
-      const hour = date.getHours();
-      heatmap[day][hour]++;
-    });
+    tasks
+      .filter(t => t.status === 'completed')
+      .forEach(task => {
+        const date = new Date(task.createdAt);
+        const day = days[date.getDay()];
+        const hour = date.getHours();
+        heatmap[day][hour]++;
+      });
 
     return heatmap;
   }
@@ -855,11 +917,22 @@ export class InsightGenerator {
       return { significantPattern: null };
     }
 
-    const moodValues: Record<string, number> = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1, great: 5, good: 4, okay: 3, bad: 2, terrible: 1 };
+    const moodValues: Record<string, number> = {
+      happy: 5,
+      content: 4,
+      neutral: 3,
+      stressed: 2,
+      sad: 1,
+      great: 5,
+      good: 4,
+      okay: 3,
+      bad: 2,
+      terrible: 1,
+    };
     const moodScores = moods.map(m => ({
       date: new Date(m.createdAt),
       score: moodValues[m.mood as string] || 3,
-      mood: m.mood
+      mood: m.mood,
     }));
 
     // Calculate trend
@@ -873,20 +946,21 @@ export class InsightGenerator {
 
     if (Math.abs(trend) > 0.5) {
       const pattern = {
-        description: trend > 0 ? 
-          'Your mood has been improving over time' : 
-          'Your mood has been declining recently',
+        description:
+          trend > 0
+            ? 'Your mood has been improving over time'
+            : 'Your mood has been declining recently',
         impact: trend > 0 ? 'positive' : 'negative',
         confidence: Math.min(0.9, Math.abs(trend) / 2),
         dataPoints: moodScores,
-        recommendations: trend > 0 ? [
-          'Continue with current positive habits',
-          'Document what\'s working well'
-        ] : [
-          'Consider what might be causing stress',
-          'Schedule self-care activities',
-          'Reach out to support network if needed'
-        ]
+        recommendations:
+          trend > 0
+            ? ['Continue with current positive habits', "Document what's working well"]
+            : [
+                'Consider what might be causing stress',
+                'Schedule self-care activities',
+                'Reach out to support network if needed',
+              ],
       };
 
       return { significantPattern: pattern };
@@ -898,28 +972,39 @@ export class InsightGenerator {
   private detectMoodAnomaly(moods: Mood[]): any {
     if (moods.length < 7) return null;
 
-    const moodValues: Record<string, number> = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1, great: 5, good: 4, okay: 3, bad: 2, terrible: 1 };
+    const moodValues: Record<string, number> = {
+      happy: 5,
+      content: 4,
+      neutral: 3,
+      stressed: 2,
+      sad: 1,
+      great: 5,
+      good: 4,
+      okay: 3,
+      bad: 2,
+      terrible: 1,
+    };
     const recentMoods = moods.slice(-7);
-    
-    const negativeCount = recentMoods.filter((m: any) => 
-      m.mood === 'stressed' || m.mood === 'sad'
+
+    const negativeCount = recentMoods.filter(
+      (m: any) => m.mood === 'stressed' || m.mood === 'sad'
     ).length;
 
     if (negativeCount >= 5) {
       return {
         title: 'Extended Period of Stress',
-        description: 'You\'ve been experiencing challenging emotions for several days',
+        description: "You've been experiencing challenging emotions for several days",
         confidence: 0.85,
         dataPoints: recentMoods.map(m => ({
           date: m.createdAt,
           mood: m.mood,
-          score: moodValues[m.mood as string] || 3
+          score: moodValues[m.mood as string] || 3,
         })),
         actions: [
           'Consider reaching out to a friend or professional for support',
           'Schedule activities that typically improve your mood',
-          'Review and adjust your current goals if they\'re causing stress'
-        ]
+          "Review and adjust your current goals if they're causing stress",
+        ],
       };
     }
 
@@ -928,32 +1013,37 @@ export class InsightGenerator {
 
   private generateProgressProjection(goal: Goal, _prediction: any): any {
     const currentDate = new Date();
-    const targetDate = new Date(goal.targetDate || currentDate.getTime() + 90 * 24 * 60 * 60 * 1000);
-    
+    const targetDate = new Date(
+      goal.targetDate || currentDate.getTime() + 90 * 24 * 60 * 60 * 1000
+    );
+
     const dataPoints = [];
-    
+
     // Historical progress (simplified)
     dataPoints.push({
       date: new Date(goal.createdAt),
       progress: 0,
-      type: 'actual'
+      type: 'actual',
     });
-    
+
     dataPoints.push({
       date: currentDate,
       progress: goal.progress,
-      type: 'actual'
+      type: 'actual',
     });
 
     // Projected progress
-    const remainingDays = Math.max(1, (targetDate.getTime() - currentDate.getTime()) / (24 * 60 * 60 * 1000));
+    const remainingDays = Math.max(
+      1,
+      (targetDate.getTime() - currentDate.getTime()) / (24 * 60 * 60 * 1000)
+    );
     const dailyProgress = (100 - goal.progress) / remainingDays;
-    
+
     for (let i = 1; i <= Math.min(remainingDays, 90); i += 7) {
       dataPoints.push({
         date: new Date(currentDate.getTime() + i * 24 * 60 * 60 * 1000),
         progress: Math.min(100, goal.progress + dailyProgress * i),
-        type: 'projected'
+        type: 'projected',
       });
     }
 
@@ -962,13 +1052,13 @@ export class InsightGenerator {
 
   private mapRecommendationCategory(category: string): InsightCategory {
     const mapping: Record<string, InsightCategory> = {
-      'wellness': 'wellbeing',
-      'productivity': 'productivity',
-      'goal': 'goals',
-      'habit': 'habits',
-      'health': 'health',
-      'mindfulness': 'wellbeing',
-      'planning': 'productivity'
+      wellness: 'wellbeing',
+      productivity: 'productivity',
+      goal: 'goals',
+      habit: 'habits',
+      health: 'health',
+      mindfulness: 'wellbeing',
+      planning: 'productivity',
     };
 
     return mapping[category] || 'progress';
@@ -977,14 +1067,27 @@ export class InsightGenerator {
   private calculateTaskMoodCorrelation(tasks: Task[], moods: Mood[]): any {
     // Group by day
     const dailyData: Record<string, { tasks: number; mood: number }> = {};
-    const moodValues: Record<string, number> = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1, great: 5, good: 4, okay: 3, bad: 2, terrible: 1 };
+    const moodValues: Record<string, number> = {
+      happy: 5,
+      content: 4,
+      neutral: 3,
+      stressed: 2,
+      sad: 1,
+      great: 5,
+      good: 4,
+      okay: 3,
+      bad: 2,
+      terrible: 1,
+    };
 
     // Count completed tasks per day
-    tasks.filter(t => t.status === 'completed').forEach(task => {
-      const date = new Date(task.createdAt).toDateString();
-      if (!dailyData[date]) dailyData[date] = { tasks: 0, mood: 3 };
-      dailyData[date].tasks++;
-    });
+    tasks
+      .filter(t => t.status === 'completed')
+      .forEach(task => {
+        const date = new Date(task.createdAt).toDateString();
+        if (!dailyData[date]) dailyData[date] = { tasks: 0, mood: 3 };
+        dailyData[date].tasks++;
+      });
 
     // Add mood scores
     moods.forEach(mood => {
@@ -996,19 +1099,24 @@ export class InsightGenerator {
 
     // Calculate correlation
     const dataPoints = Object.values(dailyData).filter(d => d.tasks > 0);
-    
+
     if (dataPoints.length < 5) {
-      return { coefficient: 0, description: 'Insufficient data', dataPoints: [], recommendations: [] };
+      return {
+        coefficient: 0,
+        description: 'Insufficient data',
+        dataPoints: [],
+        recommendations: [],
+      };
     }
 
     // Simple correlation calculation
     const avgTasks = dataPoints.reduce((sum, d) => sum + d.tasks, 0) / dataPoints.length;
     const avgMood = dataPoints.reduce((sum, d) => sum + d.mood, 0) / dataPoints.length;
-    
+
     let numerator = 0;
     let denomTasks = 0;
     let denomMood = 0;
-    
+
     dataPoints.forEach(d => {
       numerator += (d.tasks - avgTasks) * (d.mood - avgMood);
       denomTasks += Math.pow(d.tasks - avgTasks, 2);
@@ -1017,26 +1125,30 @@ export class InsightGenerator {
 
     const coefficient = numerator / (Math.sqrt(denomTasks) * Math.sqrt(denomMood));
 
-    const description = coefficient > 0.5 ? 
-      'Completing tasks significantly improves your mood' :
-      coefficient < -0.5 ?
-      'Low mood tends to reduce your productivity' :
-      'Task completion and mood show moderate correlation';
+    const description =
+      coefficient > 0.5
+        ? 'Completing tasks significantly improves your mood'
+        : coefficient < -0.5
+          ? 'Low mood tends to reduce your productivity'
+          : 'Task completion and mood show moderate correlation';
 
-    const recommendations = coefficient > 0 ? [
-      'Use task completion as a mood booster',
-      'Schedule important tasks when you need an emotional lift'
-    ] : [
-      'Focus on mood management to improve productivity',
-      'Start with small, easy tasks when feeling low'
-    ];
+    const recommendations =
+      coefficient > 0
+        ? [
+            'Use task completion as a mood booster',
+            'Schedule important tasks when you need an emotional lift',
+          ]
+        : [
+            'Focus on mood management to improve productivity',
+            'Start with small, easy tasks when feeling low',
+          ];
 
     return {
       coefficient,
       description,
       dataPoints,
       recommendations,
-      scatterData: dataPoints.map(d => ({ x: d.tasks, y: d.mood }))
+      scatterData: dataPoints.map(d => ({ x: d.tasks, y: d.mood })),
     };
   }
 
@@ -1049,13 +1161,13 @@ export class InsightGenerator {
       'createdAt',
       t => t.status === 'completed'
     );
-    
+
     trends.push({
       metric: 'Task Completion',
       direction: taskTrend.direction,
       change: taskTrend.percentage,
       significance: Math.abs(taskTrend.percentage) > 20 ? 'high' : 'medium',
-      interpretation: taskTrend.interpretation
+      interpretation: taskTrend.interpretation,
     });
 
     // Mood trend
@@ -1066,7 +1178,7 @@ export class InsightGenerator {
         direction: moodTrend.direction,
         change: moodTrend.percentage,
         significance: Math.abs(moodTrend.percentage) > 15 ? 'high' : 'medium',
-        interpretation: moodTrend.interpretation
+        interpretation: moodTrend.interpretation,
       });
     }
 
@@ -1077,19 +1189,15 @@ export class InsightGenerator {
       direction: engagementTrend.direction,
       change: engagementTrend.percentage,
       significance: engagementTrend.significance,
-      interpretation: engagementTrend.interpretation
+      interpretation: engagementTrend.interpretation,
     });
 
     return trends;
   }
 
-  private calculateTrend(
-    items: any[],
-    _dateField: string,
-    filterFn?: (item: any) => boolean
-  ): any {
+  private calculateTrend(items: any[], _dateField: string, filterFn?: (item: any) => boolean): any {
     const filtered = filterFn ? items.filter(filterFn) : items;
-    
+
     if (filtered.length < 2) {
       return { direction: 'stable', percentage: 0, interpretation: 'Insufficient data' };
     }
@@ -1103,48 +1211,74 @@ export class InsightGenerator {
     return {
       direction: change > 10 ? 'up' : change < -10 ? 'down' : 'stable',
       percentage: Math.round(change),
-      interpretation: change > 10 ? 'Increasing activity' : 
-                     change < -10 ? 'Decreasing activity' : 'Stable pattern'
+      interpretation:
+        change > 10
+          ? 'Increasing activity'
+          : change < -10
+            ? 'Decreasing activity'
+            : 'Stable pattern',
     };
   }
 
   private calculateMoodTrend(moods: Mood[]): any {
-    const moodValues: Record<string, number> = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1, great: 5, good: 4, okay: 3, bad: 2, terrible: 1 };
-    
+    const moodValues: Record<string, number> = {
+      happy: 5,
+      content: 4,
+      neutral: 3,
+      stressed: 2,
+      sad: 1,
+      great: 5,
+      good: 4,
+      okay: 3,
+      bad: 2,
+      terrible: 1,
+    };
+
     const midpoint = Math.floor(moods.length / 2);
     const firstHalf = moods.slice(0, midpoint);
     const secondHalf = moods.slice(midpoint);
 
-    const firstAvg = firstHalf.reduce((sum, m) => sum + (moodValues[m.mood as string] || 3), 0) / firstHalf.length;
-    const secondAvg = secondHalf.reduce((sum, m) => sum + (moodValues[m.mood as string] || 3), 0) / secondHalf.length;
+    const firstAvg =
+      firstHalf.reduce((sum, m) => sum + (moodValues[m.mood as string] || 3), 0) / firstHalf.length;
+    const secondAvg =
+      secondHalf.reduce((sum, m) => sum + (moodValues[m.mood as string] || 3), 0) /
+      secondHalf.length;
 
     const change = ((secondAvg - firstAvg) / firstAvg) * 100;
 
     return {
       direction: change > 5 ? 'up' : change < -5 ? 'down' : 'stable',
       percentage: Math.round(change),
-      interpretation: change > 5 ? 'Mood improving over time' :
-                     change < -5 ? 'Mood declining - attention needed' :
-                     'Emotional state remains stable'
+      interpretation:
+        change > 5
+          ? 'Mood improving over time'
+          : change < -5
+            ? 'Mood declining - attention needed'
+            : 'Emotional state remains stable',
     };
   }
 
   private calculateEngagementTrend(userData: any): any {
     const totalActivities = userData.tasks.length + userData.goals.length + userData.moods.length;
-    const daysInPeriod = Math.max(1, 
-      (new Date(userData.period.endDate).getTime() - new Date(userData.period.startDate).getTime()) / 
-      (24 * 60 * 60 * 1000)
+    const daysInPeriod = Math.max(
+      1,
+      (new Date(userData.period.endDate).getTime() -
+        new Date(userData.period.startDate).getTime()) /
+        (24 * 60 * 60 * 1000)
     );
-    
+
     const dailyEngagement = totalActivities / daysInPeriod;
 
     return {
       direction: dailyEngagement > 3 ? 'up' : dailyEngagement < 1 ? 'down' : 'stable',
       percentage: Math.round(dailyEngagement * 100) / 100,
       significance: dailyEngagement > 5 ? 'high' : 'medium',
-      interpretation: dailyEngagement > 3 ? 'Highly engaged with platform' :
-                     dailyEngagement < 1 ? 'Low engagement - consider re-engagement strategies' :
-                     'Moderate engagement level'
+      interpretation:
+        dailyEngagement > 3
+          ? 'Highly engaged with platform'
+          : dailyEngagement < 1
+            ? 'Low engagement - consider re-engagement strategies'
+            : 'Moderate engagement level',
     };
   }
 
@@ -1180,38 +1314,59 @@ export class InsightGenerator {
   private calculateAverageMood(moods: Mood[]): number {
     if (moods.length === 0) return 3;
 
-    const moodValues: Record<string, number> = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1, great: 5, good: 4, okay: 3, bad: 2, terrible: 1 };
+    const moodValues: Record<string, number> = {
+      happy: 5,
+      content: 4,
+      neutral: 3,
+      stressed: 2,
+      sad: 1,
+      great: 5,
+      good: 4,
+      okay: 3,
+      bad: 2,
+      terrible: 1,
+    };
     const sum = moods.reduce((total, m) => total + (moodValues[m.mood as string] || 3), 0);
-    
+
     return sum / moods.length;
   }
 
   private calculateMoodVariability(moods: Mood[]): number {
     if (moods.length < 2) return 0;
 
-    const moodValues: Record<string, number> = { happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1, great: 5, good: 4, okay: 3, bad: 2, terrible: 1 };
+    const moodValues: Record<string, number> = {
+      happy: 5,
+      content: 4,
+      neutral: 3,
+      stressed: 2,
+      sad: 1,
+      great: 5,
+      good: 4,
+      okay: 3,
+      bad: 2,
+      terrible: 1,
+    };
     const values = moods.map(m => moodValues[m.mood as string] || 3);
-    
+
     const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
     const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
-    
+
     return Math.sqrt(variance);
   }
 
   private analyzeProductiveHours(tasks: Task[]): any {
     const hourlyActivity: Record<number, number> = {};
-    
+
     tasks.forEach(task => {
       const hour = new Date(task.createdAt).getHours();
       hourlyActivity[hour] = (hourlyActivity[hour] || 0) + 1;
     });
 
-    const peakHour = Object.entries(hourlyActivity)
-      .sort((a, b) => b[1] - a[1])[0];
+    const peakHour = Object.entries(hourlyActivity).sort((a, b) => b[1] - a[1])[0];
 
     return {
       peakHour: peakHour ? parseInt(peakHour[0]) : 9,
-      distribution: hourlyActivity
+      distribution: hourlyActivity,
     };
   }
 
@@ -1236,7 +1391,7 @@ export class InsightGenerator {
         pattern: 2,
         correlation: 2,
         recommendation: 1,
-        achievement: 1
+        achievement: 1,
       };
       const aType = typeWeight[a.type];
       const bType = typeWeight[b.type];
@@ -1258,7 +1413,7 @@ export class InsightGenerator {
       progress: 0,
       engagement: 0,
       health: 0,
-      learning: 0
+      learning: 0,
     };
 
     insights.forEach(insight => {
@@ -1271,7 +1426,7 @@ export class InsightGenerator {
       totalInsights: insights.length,
       highPriorityCount: insights.filter(i => i.priority === 'high').length,
       categories,
-      keyTakeaways
+      keyTakeaways,
     };
   }
 
@@ -1347,7 +1502,7 @@ export class InsightGenerator {
 
   private cacheInsights(userId: string, insights: Insight[]) {
     this.insightCache.set(userId, insights);
-    
+
     // Set expiration for insights
     insights.forEach(insight => {
       if (!insight.expiresAt) {
@@ -1360,9 +1515,9 @@ export class InsightGenerator {
           anomaly: 3,
           opportunity: 7,
           recommendation: 7,
-          correlation: 14
+          correlation: 14,
         };
-        
+
         insight.expiresAt = new Date(
           Date.now() + (expirationDays[insight.type] || 7) * 24 * 60 * 60 * 1000
         );
@@ -1373,16 +1528,14 @@ export class InsightGenerator {
   async getActiveInsights(userId: string): Promise<Insight[]> {
     const cached = this.insightCache.get(userId) || [];
     const now = new Date();
-    
-    return cached.filter(insight => 
-      !insight.expiresAt || insight.expiresAt > now
-    );
+
+    return cached.filter(insight => !insight.expiresAt || insight.expiresAt > now);
   }
 
   async dismissInsight(userId: string, insightId: string): Promise<void> {
     const insights = this.insightCache.get(userId) || [];
     const insight = insights.find(i => i.id === insightId);
-    
+
     if (insight) {
       insight.expiresAt = new Date(); // Expire immediately
       this.insightCache.set(userId, insights);

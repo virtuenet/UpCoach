@@ -41,33 +41,49 @@ class GracefulShutdown {
    */
   initialize(): void {
     // Register default service handlers
-    this.register('HTTP Server', async () => {
-      if (this.server) {
-        logger.info('Closing HTTP server...');
-        await new Promise<void>((resolve) => {
-          this.server!.close(() => {
-            logger.info('HTTP server closed');
-            resolve();
+    this.register(
+      'HTTP Server',
+      async () => {
+        if (this.server) {
+          logger.info('Closing HTTP server...');
+          await new Promise<void>(resolve => {
+            this.server!.close(() => {
+              logger.info('HTTP server closed');
+              resolve();
+            });
           });
-        });
-      }
-    }, 10);
+        }
+      },
+      10
+    );
 
-    this.register('NotificationService', async () => {
-      await notificationService.shutdown();
-    }, 20);
+    this.register(
+      'NotificationService',
+      async () => {
+        await notificationService.shutdown();
+      },
+      20
+    );
 
-    this.register('EmailService', async () => {
-      await emailService.shutdown();
-    }, 30);
+    this.register(
+      'EmailService',
+      async () => {
+        await emailService.shutdown();
+      },
+      30
+    );
 
-    this.register('CacheService', async () => {
-      const cache = getCacheService();
-      if (cache && typeof cache.disconnect === 'function') {
-        logger.info('Disconnecting cache service...');
-        await cache.disconnect();
-      }
-    }, 40);
+    this.register(
+      'CacheService',
+      async () => {
+        const cache = getCacheService();
+        if (cache && typeof cache.disconnect === 'function') {
+          logger.info('Disconnecting cache service...');
+          await cache.disconnect();
+        }
+      },
+      40
+    );
 
     // Setup signal handlers
     process.on('SIGTERM', () => this.shutdown('SIGTERM'));
@@ -75,7 +91,7 @@ class GracefulShutdown {
     process.on('SIGUSR2', () => this.shutdown('SIGUSR2')); // For nodemon
 
     // Handle uncaught errors
-    process.on('uncaughtException', (error) => {
+    process.on('uncaughtException', error => {
       logger.error('Uncaught exception:', error);
       this.shutdown('UNCAUGHT_EXCEPTION', 1);
     });
@@ -126,7 +142,7 @@ class GracefulShutdown {
       logger.error('Error during shutdown:', error);
     } finally {
       clearTimeout(forceShutdownTimeout);
-      
+
       // Give a moment for logs to flush
       setTimeout(() => {
         logger.info('Exiting process');

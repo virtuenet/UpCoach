@@ -28,24 +28,26 @@ export interface UnifiedCategoryAttributes {
   updatedAt?: Date;
 }
 
-export interface UnifiedCategoryCreationAttributes extends Optional<
-  UnifiedCategoryAttributes,
-  | 'id'
-  | 'description'
-  | 'parentId'
-  | 'icon'
-  | 'image'
-  | 'color'
-  | 'order'
-  | 'isActive'
-  | 'metadata'
-  | 'createdAt'
-  | 'updatedAt'
-> {}
+export interface UnifiedCategoryCreationAttributes
+  extends Optional<
+    UnifiedCategoryAttributes,
+    | 'id'
+    | 'description'
+    | 'parentId'
+    | 'icon'
+    | 'image'
+    | 'color'
+    | 'order'
+    | 'isActive'
+    | 'metadata'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
-export class UnifiedCategory extends Model<UnifiedCategoryAttributes, UnifiedCategoryCreationAttributes> 
-  implements UnifiedCategoryAttributes {
-  
+export class UnifiedCategory
+  extends Model<UnifiedCategoryAttributes, UnifiedCategoryCreationAttributes>
+  implements UnifiedCategoryAttributes
+{
   public id!: string;
   public name!: string;
   public slug!: string;
@@ -58,14 +60,14 @@ export class UnifiedCategory extends Model<UnifiedCategoryAttributes, UnifiedCat
   public order?: number;
   public isActive!: boolean;
   public metadata?: UnifiedCategoryAttributes['metadata'];
-  
+
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
-  
+
   // Associations
   public readonly parent?: UnifiedCategory;
   public readonly children?: UnifiedCategory[];
-  
+
   public static initialize(sequelize: Sequelize): void {
     UnifiedCategory.init(
       {
@@ -142,13 +144,13 @@ export class UnifiedCategory extends Model<UnifiedCategoryAttributes, UnifiedCat
       }
     );
   }
-  
+
   public static associate(): void {
     UnifiedCategory.belongsTo(UnifiedCategory, {
       foreignKey: 'parentId',
       as: 'parent',
     });
-    
+
     UnifiedCategory.hasMany(UnifiedCategory, {
       foreignKey: 'parentId',
       as: 'children',

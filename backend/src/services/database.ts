@@ -75,13 +75,13 @@ export class DatabaseService {
     try {
       const result = await this.pool.query<T>(text, params);
       const duration = Date.now() - start;
-      
+
       logger.debug('Executed query', {
         text: text.replace(/\s+/g, ' ').trim(),
         duration: `${duration}ms`,
         rows: result.rowCount,
       });
-      
+
       return result;
     } catch (error) {
       logger.error('Database query error:', {
@@ -100,11 +100,9 @@ export class DatabaseService {
     return this.pool.connect();
   }
 
-  public async transaction<T>(
-    callback: (client: PoolClient) => Promise<T>
-  ): Promise<T> {
+  public async transaction<T>(callback: (client: PoolClient) => Promise<T>): Promise<T> {
     const client = await this.getClient();
-    
+
     try {
       await client.query('BEGIN');
       const result = await callback(client);
@@ -127,17 +125,17 @@ export class DatabaseService {
     const whereClause = Object.keys(conditions)
       .map((key, index) => `${key} = $${index + 1}`)
       .join(' AND ');
-    
+
     const query = `
       SELECT ${columns.join(', ')}
       FROM ${table}
       WHERE ${whereClause}
       LIMIT 1
     `;
-    
+
     const values = Object.values(conditions);
     const result = await this.query<T>(query, values);
-    
+
     return result.rows[0] || null;
   }
 
@@ -152,10 +150,10 @@ export class DatabaseService {
     } = {}
   ): Promise<T[]> {
     const { columns = ['*'], orderBy, limit, offset } = options;
-    
+
     let query = `SELECT ${columns.join(', ')} FROM ${table}`;
     const values: any[] = [];
-    
+
     if (Object.keys(conditions).length > 0) {
       const whereClause = Object.keys(conditions)
         .map((key, index) => `${key} = $${index + 1}`)
@@ -163,19 +161,19 @@ export class DatabaseService {
       query += ` WHERE ${whereClause}`;
       values.push(...Object.values(conditions));
     }
-    
+
     if (orderBy) {
       query += ` ORDER BY ${orderBy}`;
     }
-    
+
     if (limit) {
       query += ` LIMIT ${limit}`;
     }
-    
+
     if (offset) {
       query += ` OFFSET ${offset}`;
     }
-    
+
     const result = await this.query<T>(query, values);
     return result.rows;
   }
@@ -188,13 +186,13 @@ export class DatabaseService {
     const columns = Object.keys(data);
     const placeholders = columns.map((_, index) => `$${index + 1}`);
     const values = Object.values(data);
-    
+
     const query = `
       INSERT INTO ${table} (${columns.join(', ')})
       VALUES (${placeholders.join(', ')})
       RETURNING ${returning.join(', ')}
     `;
-    
+
     const result = await this.query<T>(query, values);
     return result.rows[0];
   }
@@ -208,39 +206,36 @@ export class DatabaseService {
     const setClause = Object.keys(data)
       .map((key, index) => `${key} = $${index + 1}`)
       .join(', ');
-    
+
     const whereClause = Object.keys(conditions)
       .map((key, index) => `${key} = $${Object.keys(data).length + index + 1}`)
       .join(' AND ');
-    
+
     const query = `
       UPDATE ${table}
       SET ${setClause}, updated_at = NOW()
       WHERE ${whereClause}
       RETURNING ${returning.join(', ')}
     `;
-    
+
     const values = [...Object.values(data), ...Object.values(conditions)];
     const result = await this.query<T>(query, values);
-    
+
     return result.rows[0] || null;
   }
 
-  public async delete(
-    table: string,
-    conditions: Record<string, any>
-  ): Promise<number> {
+  public async delete(table: string, conditions: Record<string, any>): Promise<number> {
     const whereClause = Object.keys(conditions)
       .map((key, index) => `${key} = $${index + 1}`)
       .join(' AND ');
-    
+
     const query = `DELETE FROM ${table} WHERE ${whereClause}`;
     const values = Object.values(conditions);
-    
+
     const result = await this.query(query, values);
     return result.rowCount || 0;
   }
 }
 
 // Export singleton instance
-export const db = DatabaseService.getInstance(); 
+export const db = DatabaseService.getInstance();

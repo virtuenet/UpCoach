@@ -15,12 +15,13 @@ export interface ExperimentAssignmentAttributes {
   sessionId?: string;
 }
 
-interface ExperimentAssignmentCreationAttributes 
+interface ExperimentAssignmentCreationAttributes
   extends Optional<ExperimentAssignmentAttributes, 'id' | 'assignedAt' | 'isExcluded'> {}
 
-class ExperimentAssignment extends Model<ExperimentAssignmentAttributes, ExperimentAssignmentCreationAttributes> 
-  implements ExperimentAssignmentAttributes {
-  
+class ExperimentAssignment
+  extends Model<ExperimentAssignmentAttributes, ExperimentAssignmentCreationAttributes>
+  implements ExperimentAssignmentAttributes
+{
   public id!: string;
   public experimentId!: string;
   public userId!: string;
@@ -34,7 +35,10 @@ class ExperimentAssignment extends Model<ExperimentAssignmentAttributes, Experim
   public sessionId?: string;
 
   // Static methods
-  static async getAssignment(experimentId: string, userId: string): Promise<ExperimentAssignment | null> {
+  static async getAssignment(
+    experimentId: string,
+    userId: string
+  ): Promise<ExperimentAssignment | null> {
     return this.findOne({
       where: {
         experimentId,
@@ -176,4 +180,4 @@ ExperimentAssignment.init(
   }
 );
 
-export { ExperimentAssignment }; 
+export { ExperimentAssignment };

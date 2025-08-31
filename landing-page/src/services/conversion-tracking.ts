@@ -75,12 +75,12 @@ class SessionTracker {
   private getOrCreateSessionId(): string {
     const key = 'upcoach_session_id';
     let sessionId = sessionStorage.getItem(key);
-    
+
     if (!sessionId) {
       sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       sessionStorage.setItem(key, sessionId);
     }
-    
+
     return sessionId;
   }
 
@@ -108,11 +108,9 @@ class SessionTracker {
         Object.entries(scrollTracked).forEach(([threshold, tracked]) => {
           if (!tracked && scrollPercent >= parseInt(threshold)) {
             scrollTracked[threshold as keyof typeof scrollTracked] = true;
-            this.trackConversion(
-              ConversionType.SCROLL_DEPTH,
-              FunnelStage.INTEREST,
-              { scroll_depth: threshold }
-            );
+            this.trackConversion(ConversionType.SCROLL_DEPTH, FunnelStage.INTEREST, {
+              scroll_depth: threshold,
+            });
           }
         });
       }
@@ -124,15 +122,13 @@ class SessionTracker {
 
     setInterval(() => {
       const timeOnPage = Math.floor((Date.now() - this.startTime) / 1000);
-      
+
       timeThresholds.forEach(threshold => {
         if (!timeTracked.has(threshold) && timeOnPage >= threshold) {
           timeTracked.add(threshold);
-          this.trackConversion(
-            ConversionType.TIME_ON_PAGE,
-            FunnelStage.INTEREST,
-            { time_on_page: threshold }
-          );
+          this.trackConversion(ConversionType.TIME_ON_PAGE, FunnelStage.INTEREST, {
+            time_on_page: threshold,
+          });
         }
       });
     }, 5000);
@@ -143,11 +139,7 @@ class SessionTracker {
     });
   }
 
-  public trackConversion(
-    type: ConversionType,
-    stage: FunnelStage,
-    metadata?: Record<string, any>
-  ) {
+  public trackConversion(type: ConversionType, stage: FunnelStage, metadata?: Record<string, any>) {
     const conversion: ConversionData = {
       type,
       value: ConversionValues[type],
@@ -219,10 +211,7 @@ class SessionTracker {
   private flushConversions() {
     // Send any remaining conversions
     if (this.conversions.length > 0) {
-      navigator.sendBeacon(
-        '/api/conversions/batch',
-        JSON.stringify(this.conversions)
-      );
+      navigator.sendBeacon('/api/conversions/batch', JSON.stringify(this.conversions));
     }
   }
 
@@ -314,10 +303,7 @@ export function trackFAQInteraction(question: string) {
 }
 
 // Conversion rate optimization helpers
-export function getConversionRate(
-  conversions: number,
-  visitors: number
-): number {
+export function getConversionRate(conversions: number, visitors: number): number {
   return visitors > 0 ? (conversions / visitors) * 100 : 0;
 }
 
@@ -338,7 +324,7 @@ export function getAttributionModel(): 'first-touch' | 'last-touch' | 'linear' |
 export function retryFailedConversions() {
   const key = 'upcoach_failed_conversions';
   const failed = localStorage.getItem(key);
-  
+
   if (failed) {
     try {
       const conversions = JSON.parse(failed);

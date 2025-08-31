@@ -5,10 +5,7 @@ import { logger } from '../../utils/logger';
 // import { analyticsService } from './AnalyticsService';
 import { getCacheService } from '../cache/UnifiedCacheService';
 import { format, subDays } from 'date-fns';
-import { 
-  executeSecureQuery,
-  validateQueryParams
-} from '../../utils/sqlSecurity';
+import { executeSecureQuery, validateQueryParams } from '../../utils/sqlSecurity';
 
 interface CohortDefinition {
   name: string;
@@ -160,7 +157,7 @@ export class AdvancedAnalyticsService {
   private buildCustomCohortQuery(filters: any): string {
     // This is a simplified version - in production, you'd want more robust query building
     let conditions = [];
-    
+
     if (filters.minSessions) {
       conditions.push(`
         (SELECT COUNT(*) FROM user_activity_logs 
@@ -266,10 +263,10 @@ export class AdvancedAnalyticsService {
   // Update feature usage statistics
   private async updateFeatureUsage(featureName: string, userId: number): Promise<void> {
     const today = format(new Date(), 'yyyy-MM-dd');
-    
+
     // Sanitize feature name to prevent injection
     const sanitizedFeatureName = featureName.replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 50);
-    
+
     await executeSecureQuery(
       sequelize,
       `INSERT INTO feature_usage_stats (feature_name, date, unique_users, total_uses)
@@ -296,11 +293,7 @@ export class AdvancedAnalyticsService {
   }
 
   // Create and track conversion funnel
-  async createFunnel(
-    name: string,
-    steps: FunnelStep[],
-    description?: string
-  ): Promise<number> {
+  async createFunnel(name: string, steps: FunnelStep[], description?: string): Promise<number> {
     try {
       const result = await sequelize.query(
         `INSERT INTO conversion_funnels (name, description, steps)
@@ -385,9 +378,8 @@ export class AdvancedAnalyticsService {
     endDate?: Date
   ): Promise<FunnelData[]> {
     try {
-      const dateFilter = startDate && endDate
-        ? 'AND fc.completed_at BETWEEN :startDate AND :endDate'
-        : '';
+      const dateFilter =
+        startDate && endDate ? 'AND fc.completed_at BETWEEN :startDate AND :endDate' : '';
 
       const result = await sequelize.query(
         `WITH funnel_info AS (
@@ -446,7 +438,7 @@ export class AdvancedAnalyticsService {
     try {
       const dateStr = format(date, 'yyyy-MM-dd');
       const _monthStart = format(new Date(date.getFullYear(), date.getMonth(), 1), 'yyyy-MM-dd');
-      
+
       await sequelize.query(
         `INSERT INTO revenue_analytics (
            date,
@@ -593,19 +585,14 @@ export class AdvancedAnalyticsService {
   }
 
   // Get feature adoption metrics
-  async getFeatureAdoption(
-    featureName?: string,
-    startDate?: Date,
-    endDate?: Date
-  ): Promise<any> {
+  async getFeatureAdoption(featureName?: string, startDate?: Date, endDate?: Date): Promise<any> {
     try {
-      const dateFilter = startDate && endDate
-        ? 'WHERE date BETWEEN :startDate AND :endDate'
-        : 'WHERE date >= CURRENT_DATE - INTERVAL \'30 days\'';
+      const dateFilter =
+        startDate && endDate
+          ? 'WHERE date BETWEEN :startDate AND :endDate'
+          : "WHERE date >= CURRENT_DATE - INTERVAL '30 days'";
 
-      const featureFilter = featureName
-        ? 'AND feature_name = :featureName'
-        : '';
+      const featureFilter = featureName ? 'AND feature_name = :featureName' : '';
 
       const result = await sequelize.query(
         `SELECT 
@@ -681,7 +668,7 @@ export class AdvancedAnalyticsService {
   async runDailyAnalytics(): Promise<void> {
     try {
       const yesterday = subDays(new Date(), 1);
-      
+
       // Calculate revenue analytics
       await this.calculateRevenueAnalytics(yesterday);
 

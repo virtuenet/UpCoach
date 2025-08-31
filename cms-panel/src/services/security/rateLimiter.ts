@@ -6,8 +6,8 @@
 import { logger } from '../../utils/logger';
 
 export interface RateLimitConfig {
-  windowMs: number;       // Time window in milliseconds
-  maxRequests: number;    // Maximum requests per window
+  windowMs: number; // Time window in milliseconds
+  maxRequests: number; // Maximum requests per window
   skipSuccessfulRequests?: boolean;
   skipFailedRequests?: boolean;
   keyGenerator?: (req: any) => string;
@@ -44,7 +44,7 @@ class RateLimiterService {
   private constructor() {
     // Start cleanup timer
     this.cleanupTimer = setInterval(() => this.cleanup(), this.CLEANUP_INTERVAL);
-    
+
     // Setup default rules
     this.setupDefaultRules();
   }
@@ -67,10 +67,10 @@ class RateLimiterService {
       config: {
         windowMs: 900000, // 15 minutes
         maxRequests: 5,
-        onLimitReached: (key) => {
+        onLimitReached: key => {
           logger.warn(`Authentication rate limit reached for ${key}`);
-        }
-      }
+        },
+      },
     });
 
     // Moderate rate limit for API endpoints
@@ -80,8 +80,8 @@ class RateLimiterService {
       config: {
         windowMs: 60000, // 1 minute
         maxRequests: 100,
-        skipSuccessfulRequests: false
-      }
+        skipSuccessfulRequests: false,
+      },
     });
 
     // Strict rate limit for file uploads
@@ -91,8 +91,8 @@ class RateLimiterService {
       method: 'POST',
       config: {
         windowMs: 60000, // 1 minute
-        maxRequests: 10
-      }
+        maxRequests: 10,
+      },
     });
 
     // Very strict rate limit for password reset
@@ -101,8 +101,8 @@ class RateLimiterService {
       path: /password-reset|forgot-password/i,
       config: {
         windowMs: 3600000, // 1 hour
-        maxRequests: 3
-      }
+        maxRequests: 3,
+      },
     });
 
     // Rate limit for search endpoints
@@ -111,8 +111,8 @@ class RateLimiterService {
       path: /search/i,
       config: {
         windowMs: 60000, // 1 minute
-        maxRequests: 30
-      }
+        maxRequests: 30,
+      },
     });
   }
 
@@ -122,12 +122,12 @@ class RateLimiterService {
   addRule(rule: RateLimitRule): void {
     this.rules.push(rule);
     this.stores.set(rule.name, new Map());
-    
+
     logger.info(`Rate limit rule '${rule.name}' added`, {
       path: rule.path?.toString(),
       method: rule.method,
       maxRequests: rule.config.maxRequests,
-      windowMs: rule.config.windowMs
+      windowMs: rule.config.windowMs,
     });
   }
 
@@ -144,7 +144,7 @@ class RateLimiterService {
     if (this.blacklist.has(identifier)) {
       return {
         allowed: false,
-        reason: 'Blacklisted due to repeated violations'
+        reason: 'Blacklisted due to repeated violations',
       };
     }
 
@@ -154,7 +154,7 @@ class RateLimiterService {
     }
 
     // Find applicable rules
-    const applicableRules = ruleName 
+    const applicableRules = ruleName
       ? this.rules.filter(r => r.name === ruleName)
       : this.findApplicableRules(path, method);
 
@@ -165,16 +165,16 @@ class RateLimiterService {
     // Check each applicable rule
     for (const rule of applicableRules) {
       const result = this.checkRuleLimit(identifier, rule);
-      
+
       if (!result.allowed) {
         // Track violations
         this.trackViolation(identifier, rule.name);
-        
+
         // Call limit reached handler
         if (rule.config.onLimitReached) {
           rule.config.onLimitReached(identifier);
         }
-        
+
         return result;
       }
     }
@@ -204,7 +204,7 @@ class RateLimiterService {
         firstRequest: now,
         lastRequest: now,
         blocked: false,
-        violations: 0
+        violations: 0,
       };
       store.set(identifier, record);
       return { allowed: true };
@@ -212,7 +212,7 @@ class RateLimiterService {
 
     // Check if window has expired
     const windowExpired = now - record.firstRequest > rule.config.windowMs;
-    
+
     if (windowExpired) {
       // Reset the window
       record.count = 1;
@@ -230,11 +230,11 @@ class RateLimiterService {
     if (record.count > rule.config.maxRequests) {
       record.blocked = true;
       const retryAfter = Math.ceil((record.firstRequest + rule.config.windowMs - now) / 1000);
-      
+
       return {
         allowed: false,
         retryAfter,
-        reason: `Rate limit exceeded for ${rule.name}. Max ${rule.config.maxRequests} requests per ${rule.config.windowMs / 1000} seconds.`
+        reason: `Rate limit exceeded for ${rule.name}. Max ${rule.config.maxRequests} requests per ${rule.config.windowMs / 1000} seconds.`,
       };
     }
 
@@ -249,7 +249,7 @@ class RateLimiterService {
       // Check path match
       if (rule.path) {
         if (!path) return false;
-        
+
         if (typeof rule.path === 'string') {
           if (!path.startsWith(rule.path)) return false;
         } else if (rule.path instanceof RegExp) {
@@ -260,7 +260,7 @@ class RateLimiterService {
       // Check method match
       if (rule.method) {
         if (!method) return false;
-        
+
         const methods = Array.isArray(rule.method) ? rule.method : [rule.method];
         if (!methods.includes(method.toUpperCase())) return false;
       }
@@ -284,7 +284,7 @@ class RateLimiterService {
     // Check if should blacklist
     if (record.violations >= this.BLACKLIST_THRESHOLD) {
       this.blacklist.add(identifier);
-      
+
       // Auto-remove from blacklist after duration
       setTimeout(() => {
         this.blacklist.delete(identifier);
@@ -341,13 +341,13 @@ class RateLimiterService {
    */
   addToBlacklist(identifier: string, duration?: number): void {
     this.blacklist.add(identifier);
-    
+
     if (duration) {
       setTimeout(() => {
         this.blacklist.delete(identifier);
       }, duration);
     }
-    
+
     logger.warn(`Added ${identifier} to rate limit blacklist`);
   }
 
@@ -364,14 +364,14 @@ class RateLimiterService {
    */
   getLimits(identifier: string): Map<string, RequestRecord> {
     const limits = new Map<string, RequestRecord>();
-    
+
     for (const [ruleName, store] of this.stores) {
       const record = store.get(identifier);
       if (record) {
         limits.set(ruleName, record);
       }
     }
-    
+
     return limits;
   }
 
@@ -387,7 +387,7 @@ class RateLimiterService {
         store.delete(identifier);
       }
     }
-    
+
     logger.info(`Reset rate limits for ${identifier}`);
   }
 
@@ -398,36 +398,31 @@ class RateLimiterService {
     return async (req: any, res: any, next: any) => {
       // Generate identifier (IP by default, can be customized)
       const identifier = this.getIdentifier(req);
-      
+
       // Check rate limit
-      const result = await this.checkLimit(
-        identifier,
-        ruleName,
-        req.path,
-        req.method
-      );
+      const result = await this.checkLimit(identifier, ruleName, req.path, req.method);
 
       if (!result.allowed) {
         // Set retry-after header
         if (result.retryAfter) {
           res.setHeader('Retry-After', result.retryAfter);
         }
-        
+
         // Set rate limit headers
         res.setHeader('X-RateLimit-Limit', '0');
         res.setHeader('X-RateLimit-Remaining', '0');
-        
+
         logger.warn(`Rate limit exceeded`, {
           identifier,
           path: req.path,
           method: req.method,
-          reason: result.reason
+          reason: result.reason,
         });
 
         return res.status(429).json({
           error: 'Too Many Requests',
           message: result.reason || 'Rate limit exceeded',
-          retryAfter: result.retryAfter
+          retryAfter: result.retryAfter,
         });
       }
 
@@ -443,14 +438,15 @@ class RateLimiterService {
     if (req.user?.id) {
       return `user:${req.user.id}`;
     }
-    
+
     // Fall back to IP address
-    const ip = req.ip || 
-                req.connection?.remoteAddress || 
-                req.socket?.remoteAddress ||
-                req.headers?.['x-forwarded-for']?.split(',')[0] ||
-                'unknown';
-    
+    const ip =
+      req.ip ||
+      req.connection?.remoteAddress ||
+      req.socket?.remoteAddress ||
+      req.headers?.['x-forwarded-for']?.split(',')[0] ||
+      'unknown';
+
     return `ip:${ip}`;
   }
 
@@ -464,16 +460,16 @@ class RateLimiterService {
     whitelisted: number;
   } {
     let activeRecords = 0;
-    
+
     for (const store of this.stores.values()) {
       activeRecords += store.size;
     }
-    
+
     return {
       rules: this.rules.length,
       activeRecords,
       blacklisted: this.blacklist.size,
-      whitelisted: this.whitelist.size
+      whitelisted: this.whitelist.size,
     };
   }
 }

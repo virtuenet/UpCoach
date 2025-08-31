@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
 import { X, Link, AlertCircle } from 'lucide-react';
 import { validateUserUrl } from '../utils/urlValidator';
 
@@ -39,7 +40,7 @@ export default function UrlInputModal({
 
     try {
       const validation = validateUserUrl(url);
-      
+
       if (!validation.valid) {
         setError(validation.error || 'Invalid URL');
         setIsValidating(false);
@@ -52,7 +53,11 @@ export default function UrlInputModal({
       if (validateImage) {
         // Check if it looks like an image URL
         const imageExtensions = /\.(jpg|jpeg|png|gif|webp|svg)$/i;
-        if (!imageExtensions.test(safeUrl) && !safeUrl.includes('unsplash') && !safeUrl.includes('pexels')) {
+        if (
+          !imageExtensions.test(safeUrl) &&
+          !safeUrl.includes('unsplash') &&
+          !safeUrl.includes('pexels')
+        ) {
           setError('Please provide a direct link to an image file');
           setIsValidating(false);
           return;
@@ -106,7 +111,7 @@ export default function UrlInputModal({
               id="url-input"
               type="text"
               value={url}
-              onChange={(e) => {
+              onChange={e => {
                 setUrl(e.target.value);
                 setError(''); // Clear error on change
               }}
@@ -124,7 +129,7 @@ export default function UrlInputModal({
               </div>
             )}
             <p className="mt-2 text-xs text-gray-500">
-              {validateImage 
+              {validateImage
                 ? 'Enter a direct link to an image (JPG, PNG, GIF, WebP, or SVG)'
                 : 'Enter a valid URL starting with http:// or https://'}
             </p>

@@ -1,4 +1,5 @@
 /**
+import { format, formatDistanceToNow, parseISO } from "date-fns";
  * Production-ready Logger Service
  * Replaces console.log with proper logging levels and monitoring integration
  */
@@ -35,7 +36,7 @@ class Logger {
 
   constructor(config: Partial<LoggerConfig> = {}) {
     this.config = {
-      minLevel: (typeof import.meta !== 'undefined' && import.meta.env?.DEV) ? 'debug' : 'info',
+      minLevel: typeof import.meta !== 'undefined' && import.meta.env?.DEV ? 'debug' : 'info',
       enableConsole: typeof import.meta !== 'undefined' && import.meta.env?.DEV,
       enableRemote: !(typeof import.meta !== 'undefined' && import.meta.env?.DEV),
       maxLocalLogs: 100,
@@ -50,30 +51,27 @@ class Logger {
   private formatMessage(level: LogLevel, message: string, data?: any): string {
     const timestamp = new Date().toISOString();
     const prefix = `[${timestamp}] [${level.toUpperCase()}]`;
-    
+
     if (data !== undefined) {
       return `${prefix} ${message} ${JSON.stringify(data, null, 2)}`;
     }
-    
+
     return `${prefix} ${message}`;
   }
 
-  private createLogEntry(
-    level: LogLevel,
-    message: string,
-    data?: any,
-    error?: Error
-  ): LogEntry {
+  private createLogEntry(level: LogLevel, message: string, data?: any, error?: Error): LogEntry {
     return {
       level,
       message,
       timestamp: new Date().toISOString(),
       data,
-      error: error ? {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-      } : undefined,
+      error: error
+        ? {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+          }
+        : undefined,
       context: {
         url: window.location.href,
         userAgent: navigator.userAgent,
@@ -87,7 +85,7 @@ class Logger {
 
   private storeLocal(entry: LogEntry): void {
     this.localLogs.push(entry);
-    
+
     // Maintain max log size
     if (this.localLogs.length > this.config.maxLocalLogs) {
       this.localLogs.shift();
@@ -96,16 +94,14 @@ class Logger {
     // Also store critical errors in sessionStorage
     if (entry.level === 'error' || entry.level === 'fatal') {
       try {
-        const storedErrors = JSON.parse(
-          sessionStorage.getItem('app_logs') || '[]'
-        );
+        const storedErrors = JSON.parse(sessionStorage.getItem('app_logs') || '[]');
         storedErrors.push(entry);
-        
+
         // Keep only last 50 errors
         if (storedErrors.length > 50) {
           storedErrors.shift();
         }
-        
+
         sessionStorage.setItem('app_logs', JSON.stringify(storedErrors));
       } catch (e) {
         // Ignore storage errors
@@ -141,14 +137,14 @@ class Logger {
     }
 
     const entry = this.createLogEntry(level, message, data, error);
-    
+
     // Store locally
     this.storeLocal(entry);
-    
+
     // Log to console in development
     if (this.config.enableConsole) {
       const formattedMessage = this.formatMessage(level, message, data);
-      
+
       switch (level) {
         case 'debug':
           console.debug(formattedMessage);
@@ -198,7 +194,7 @@ class Logger {
 
   fatal(message: string, error: Error, data?: any): void {
     this.log('fatal', message, data, error);
-    
+
     // Fatal errors might warrant additional actions
     // For example, showing a modal or redirecting to an error page
   }
@@ -208,11 +204,9 @@ class Logger {
     if (!level) {
       return [...this.localLogs];
     }
-    
+
     const minLevel = this.logLevels[level];
-    return this.localLogs.filter(
-      log => this.logLevels[log.level] >= minLevel
-    );
+    return this.localLogs.filter(log => this.logLevels[log.level] >= minLevel);
   }
 
   // Clear stored logs
@@ -255,11 +249,7 @@ class Logger {
     if (this.shouldLog('debug')) {
       performance.mark(`logger-${label}-end`);
       try {
-        performance.measure(
-          `logger-${label}`,
-          `logger-${label}-start`,
-          `logger-${label}-end`
-        );
+        performance.measure(`logger-${label}`, `logger-${label}-start`, `logger-${label}-end`);
         const measure = performance.getEntriesByName(`logger-${label}`)[0];
         this.debug(`Performance: ${label}`, {
           duration: measure.duration,
@@ -324,10 +314,7 @@ export const logPerformance = (operation: string, fn: () => any): any => {
   }
 };
 
-export const logAsync = async (
-  operation: string,
-  fn: () => Promise<any>
-): Promise<any> => {
+export const logAsync = async (operation: string, fn: () => Promise<any>): Promise<any> => {
   logger.time(operation);
   try {
     const result = await fn();

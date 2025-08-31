@@ -34,7 +34,7 @@ export enum ConsentPurpose {
   SOCIAL_MEDIA = 'social_media',
   EMAIL_COMMUNICATIONS = 'email_communications',
   DATA_PROCESSING = 'data_processing',
-  THIRD_PARTY_SHARING = 'third_party_sharing'
+  THIRD_PARTY_SHARING = 'third_party_sharing',
 }
 
 export interface DataPortabilityRequest {
@@ -152,7 +152,7 @@ class GDPRService {
       for (const purpose of purposes) {
         const key = `consent:${userId}:${purpose}`;
         const data = await redis.get(key);
-        
+
         if (data) {
           const consent: ConsentRecord = JSON.parse(data);
           // Check if consent is still valid
@@ -183,7 +183,7 @@ class GDPRService {
   ): Promise<DataPortabilityRequest> {
     try {
       const requestId = crypto.randomUUID();
-      
+
       const request: DataPortabilityRequest = {
         id: requestId,
         userId,
@@ -291,12 +291,13 @@ class GDPRService {
     userData.goals = user.goals || [];
     userData.tasks = user.tasks || [];
     userData.moods = user.moods || [];
-    userData.chats = user.chats?.map((chat: any) => ({
-      id: chat.id,
-      message: chat.message,
-      response: chat.response,
-      createdAt: chat.createdAt,
-    })) || [];
+    userData.chats =
+      user.chats?.map((chat: any) => ({
+        id: chat.id,
+        message: chat.message,
+        response: chat.response,
+        createdAt: chat.createdAt,
+      })) || [];
 
     // Consent history
     userData.consentHistory = await sequelize.models.ConsentLog.findAll({
@@ -340,26 +341,26 @@ class GDPRService {
         filePath = path.join(exportDir, `${baseFileName}.json`);
         fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
         break;
-      
+
       case 'csv':
         // For CSV, we need to flatten the data structure
         filePath = path.join(exportDir, `${baseFileName}.zip`);
         await this.createCSVExport(data, filePath);
         break;
-      
+
       case 'xml':
         filePath = path.join(exportDir, `${baseFileName}.xml`);
         const xml = this.jsonToXML(data);
         fs.writeFileSync(filePath, xml);
         break;
-      
+
       default:
         throw new Error('Unsupported export format');
     }
 
     // Encrypt the file
     const encryptedPath = await this.encryptFile(filePath);
-    
+
     // Delete unencrypted file
     fs.unlinkSync(filePath);
 
@@ -376,7 +377,7 @@ class GDPRService {
   ): Promise<DeletionRequest> {
     try {
       const requestId = crypto.randomUUID();
-      
+
       const request: DeletionRequest = {
         id: requestId,
         userId,
@@ -451,7 +452,7 @@ class GDPRService {
 
       // Anonymize user data instead of hard delete
       const anonymizedId = `deleted_${crypto.randomBytes(16).toString('hex')}`;
-      
+
       // Update user record
       await User.update(
         {
@@ -478,7 +479,7 @@ class GDPRService {
       // Update request
       request.status = 'completed';
       request.completedAt = new Date();
-      
+
       await sequelize.models.DeletionRequest.update(
         {
           status: request.status,
@@ -522,7 +523,7 @@ class GDPRService {
       // Check if notification is required (within 72 hours)
       if (breachIncident.severity === 'high' || breachIncident.severity === 'critical') {
         await this.notifyDataProtectionAuthority(breachIncident);
-        
+
         // Notify affected users
         if (!breachIncident.notificationsSent) {
           await this.notifyAffectedUsers(breachIncident);
@@ -582,7 +583,7 @@ class GDPRService {
   async runDataRetentionCleanup(): Promise<void> {
     try {
       const policy = await this.getDataRetentionPolicy();
-      
+
       for (const category of policy.categories) {
         await this.cleanupCategoryData(category);
       }
@@ -615,12 +616,7 @@ class GDPRService {
         'Usage analytics',
         'Payment information',
       ],
-      legalBasis: [
-        'Consent',
-        'Contract fulfillment',
-        'Legal obligation',
-        'Legitimate interests',
-      ],
+      legalBasis: ['Consent', 'Contract fulfillment', 'Legal obligation', 'Legitimate interests'],
       dataSharing: {
         thirdParties: [
           {
@@ -652,10 +648,13 @@ class GDPRService {
   /**
    * Helper methods
    */
-  
+
   private hashIP(ip: string): string {
     // Hash IP for privacy while maintaining uniqueness for fraud detection
-    return crypto.createHash('sha256').update(ip + process.env.IP_SALT).digest('hex');
+    return crypto
+      .createHash('sha256')
+      .update(ip + process.env.IP_SALT)
+      .digest('hex');
   }
 
   private async onConsentGranted(userId: string, purpose: ConsentPurpose): Promise<void> {
@@ -670,11 +669,11 @@ class GDPRService {
 
   private async checkLegalRetentionRequirements(userId: string): Promise<string[]> {
     const retainData: string[] = [];
-    
+
     // Check for ongoing legal cases
     // Check for financial records (7 year requirement)
     // Check for regulatory requirements
-    
+
     return retainData;
   }
 
@@ -684,12 +683,12 @@ class GDPRService {
       { userId: null, message: '[DELETED]' },
       { where: { userId }, transaction }
     );
-    
+
     await sequelize.models.Goal.destroy({
       where: { userId },
       transaction,
     });
-    
+
     await sequelize.models.Task.destroy({
       where: { userId },
       transaction,
@@ -756,19 +755,19 @@ class GDPRService {
     // Create ZIP with multiple CSV files
     const output = fs.createWriteStream(zipPath);
     const archive = archiver('zip', { zlib: { level: 9 } });
-    
+
     archive.pipe(output);
-    
+
     // Add different data types as separate CSV files
     // Implementation would convert each data type to CSV format
-    
+
     await archive.finalize();
   }
 
   private jsonToXML(obj: any): string {
     // Simple JSON to XML conversion
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<gdpr-export>\n';
-    
+
     function convertToXML(data: any, indent: string = '  '): string {
       let result = '';
       for (const key in data) {
@@ -780,10 +779,10 @@ class GDPRService {
       }
       return result;
     }
-    
+
     xml += convertToXML(obj);
     xml += '</gdpr-export>';
-    
+
     return xml;
   }
 

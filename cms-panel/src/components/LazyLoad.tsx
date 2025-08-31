@@ -8,10 +8,10 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { Loader2 } from 'lucide-react';
 
 // Loading fallback component
-export function LoadingFallback({ 
+export function LoadingFallback({
   message = 'Loading...',
-  fullScreen = false 
-}: { 
+  fullScreen = false,
+}: {
   message?: string;
   fullScreen?: boolean;
 }) {
@@ -30,11 +30,7 @@ export function LoadingFallback({
     );
   }
 
-  return (
-    <div className="flex items-center justify-center min-h-[200px] p-4">
-      {content}
-    </div>
-  );
+  return <div className="flex items-center justify-center min-h-[200px] p-4">{content}</div>;
 }
 
 // Error fallback component
@@ -135,10 +131,10 @@ export const LazyPages = {
 
   // Reports
   Reports: lazyLoad(() => import('../pages/AnalyticsPage')),
-  
+
   // Referrals
   ReferralManagement: lazyLoad(() => import('../pages/AnalyticsPage')),
-  
+
   // Mood
   MoodTracking: lazyLoad(() => import('../pages/AnalyticsPage')),
 };
@@ -148,18 +144,10 @@ export const LazyPages = {
  */
 export const LazyComponents = {
   // Charts
-  AreaChart: lazyLoad(() => 
-    import('recharts').then(m => ({ default: m.AreaChart }))
-  ),
-  BarChart: lazyLoad(() => 
-    import('recharts').then(m => ({ default: m.BarChart }))
-  ),
-  LineChart: lazyLoad(() => 
-    import('recharts').then(m => ({ default: m.LineChart }))
-  ),
-  PieChart: lazyLoad(() => 
-    import('recharts').then(m => ({ default: m.PieChart }))
-  ),
+  AreaChart: lazyLoad(() => import('recharts').then(m => ({ default: m.AreaChart }))),
+  BarChart: lazyLoad(() => import('recharts').then(m => ({ default: m.BarChart }))),
+  LineChart: lazyLoad(() => import('recharts').then(m => ({ default: m.LineChart }))),
+  PieChart: lazyLoad(() => import('recharts').then(m => ({ default: m.PieChart }))),
 
   // Rich Text Editor
   RichTextEditor: lazyLoad(() => import('../components/RichTextEditor')),
@@ -276,8 +264,8 @@ export function useLazyLoadOnVisible(
     const element = ref.current;
     if (!element) return;
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
         if (entry.isIntersecting) {
           callback();
           observer.unobserve(element);
@@ -316,8 +304,8 @@ export function LazyImage({
   React.useEffect(() => {
     if (!imageRef) return;
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
         if (entry.isIntersecting) {
           const img = new Image();
           img.src = src;

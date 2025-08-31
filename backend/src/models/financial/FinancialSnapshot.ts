@@ -1,12 +1,4 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  CreatedAt,
-  UpdatedAt,
-  Index,
-} from 'sequelize-typescript';
+import { Table, Column, Model, DataType, CreatedAt, UpdatedAt, Index } from 'sequelize-typescript';
 
 export enum SnapshotPeriod {
   DAILY = 'daily',
@@ -381,8 +373,6 @@ export class FinancialSnapshot extends Model {
   }
 
   get isHealthy(): boolean {
-    return this.netProfit > 0 && 
-           this.churnRate < 10 && 
-           this.ltvToCacRatio > 3;
+    return this.netProfit > 0 && this.churnRate < 10 && this.ltvToCacRatio > 3;
   }
-} 
+}

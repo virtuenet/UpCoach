@@ -1,5 +1,5 @@
 import { Model, DataTypes, Optional } from 'sequelize';
-import { sequelize } from './index';
+import { sequelize } from '../config/sequelize';
 
 export interface ChatMessageAttributes {
   id: string;
@@ -14,9 +14,16 @@ export interface ChatMessageAttributes {
   updatedAt?: Date;
 }
 
-export interface ChatMessageCreationAttributes extends Optional<ChatMessageAttributes, 'id' | 'metadata' | 'parentMessageId' | 'isEdited' | 'editedAt' | 'createdAt' | 'updatedAt'> {}
+export interface ChatMessageCreationAttributes
+  extends Optional<
+    ChatMessageAttributes,
+    'id' | 'metadata' | 'parentMessageId' | 'isEdited' | 'editedAt' | 'createdAt' | 'updatedAt'
+  > {}
 
-export class ChatMessage extends Model<ChatMessageAttributes, ChatMessageCreationAttributes> implements ChatMessageAttributes {
+export class ChatMessage
+  extends Model<ChatMessageAttributes, ChatMessageCreationAttributes>
+  implements ChatMessageAttributes
+{
   public id!: string;
   public chatId!: string;
   public role!: 'user' | 'assistant' | 'system';
@@ -31,7 +38,10 @@ export class ChatMessage extends Model<ChatMessageAttributes, ChatMessageCreatio
   // Associations
   public static associate(models: any) {
     ChatMessage.belongsTo(models.Chat, { foreignKey: 'chatId', as: 'chat' });
-    ChatMessage.belongsTo(models.ChatMessage, { foreignKey: 'parentMessageId', as: 'parentMessage' });
+    ChatMessage.belongsTo(models.ChatMessage, {
+      foreignKey: 'parentMessageId',
+      as: 'parentMessage',
+    });
     ChatMessage.hasMany(models.ChatMessage, { foreignKey: 'parentMessageId', as: 'replies' });
   }
 }

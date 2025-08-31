@@ -54,16 +54,12 @@ export class ClaudeService {
     } = {}
   ): Promise<ClaudeResponse> {
     try {
-      const {
-        maxTokens = 1000,
-        temperature = 0.7,
-        model = 'claude-3-sonnet-20240229'
-      } = options;
+      const { maxTokens = 1000, temperature = 0.7, model = 'claude-3-sonnet-20240229' } = options;
 
       // Format messages for Claude
       const formattedMessages = messages.map(msg => ({
         role: msg.role,
-        content: msg.content
+        content: msg.content,
       }));
 
       const response = await anthropic.messages.create({
@@ -71,7 +67,7 @@ export class ClaudeService {
         max_tokens: maxTokens,
         temperature,
         system: CLAUDE_SYSTEM_PROMPT,
-        messages: formattedMessages
+        messages: formattedMessages,
       });
 
       // Extract text content from Claude's response
@@ -84,10 +80,9 @@ export class ClaudeService {
         content,
         usage: {
           input_tokens: response.usage.input_tokens,
-          output_tokens: response.usage.output_tokens
-        }
+          output_tokens: response.usage.output_tokens,
+        },
       };
-
     } catch (error) {
       logger.error('Claude API error:', error);
       throw new Error('Failed to generate Claude response');
@@ -101,16 +96,15 @@ export class ClaudeService {
     try {
       const messages: ClaudeMessage[] = [
         ...conversationHistory,
-        { role: 'user', content: userMessage }
+        { role: 'user', content: userMessage },
       ];
 
       const response = await this.generateResponse(messages, {
         maxTokens: 1000,
-        temperature: 0.7
+        temperature: 0.7,
       });
 
       return response.content;
-
     } catch (error) {
       logger.error('Error generating coaching response:', error);
       throw error;
@@ -118,4 +112,4 @@ export class ClaudeService {
   }
 }
 
-export const claudeService = new ClaudeService(); 
+export const claudeService = new ClaudeService();

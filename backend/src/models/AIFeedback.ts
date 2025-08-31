@@ -79,13 +79,16 @@ export class AIFeedback extends Model {
     return AIFeedback.create(data);
   }
 
-  static async getAverageSentiment(startDate?: Date, endDate?: Date): Promise<{
+  static async getAverageSentiment(
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<{
     positive: number;
     neutral: number;
     negative: number;
   }> {
     const where: any = {};
-    
+
     if (startDate || endDate) {
       where.createdAt = {};
       if (startDate) where.createdAt[Op.gte] = startDate;
@@ -113,18 +116,18 @@ export class AIFeedback extends Model {
 
   static async getAverageRating(startDate?: Date, endDate?: Date): Promise<number> {
     const where: any = { rating: { [Op.ne as any]: null } };
-    
+
     if (startDate || endDate) {
       where.createdAt = {};
       if (startDate) where.createdAt[Op.gte] = startDate;
       if (endDate) where.createdAt[Op.lte] = endDate;
     }
 
-    const result = await this.findOne({
+    const result = (await this.findOne({
       where,
       attributes: [[Sequelize.fn('AVG', Sequelize.col('rating')), 'avgRating']],
       raw: true,
-    }) as any;
+    })) as any;
 
     return result?.avgRating || 0;
   }

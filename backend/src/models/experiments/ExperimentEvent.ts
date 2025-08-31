@@ -14,12 +14,13 @@ export interface ExperimentEventAttributes {
   metadata?: Record<string, any>;
 }
 
-interface ExperimentEventCreationAttributes 
+interface ExperimentEventCreationAttributes
   extends Optional<ExperimentEventAttributes, 'id' | 'timestamp'> {}
 
-class ExperimentEvent extends Model<ExperimentEventAttributes, ExperimentEventCreationAttributes> 
-  implements ExperimentEventAttributes {
-  
+class ExperimentEvent
+  extends Model<ExperimentEventAttributes, ExperimentEventCreationAttributes>
+  implements ExperimentEventAttributes
+{
   public id!: string;
   public experimentId!: string;
   public userId!: string;
@@ -134,8 +135,14 @@ class ExperimentEvent extends Model<ExperimentEventAttributes, ExperimentEventCr
     return {
       count: countResult,
       uniqueUsers: uniqueUsersResult,
-      averageValue: valueResult[0] && 'averageValue' in valueResult[0] ? parseFloat(valueResult[0]['averageValue'] as string) : undefined,
-      totalValue: valueResult[0] && 'totalValue' in valueResult[0] ? parseFloat(valueResult[0]['totalValue'] as string) : undefined,
+      averageValue:
+        valueResult[0] && 'averageValue' in valueResult[0]
+          ? parseFloat(valueResult[0]['averageValue'] as string)
+          : undefined,
+      totalValue:
+        valueResult[0] && 'totalValue' in valueResult[0]
+          ? parseFloat(valueResult[0]['totalValue'] as string)
+          : undefined,
     };
   }
 
@@ -151,10 +158,17 @@ class ExperimentEvent extends Model<ExperimentEventAttributes, ExperimentEventCr
 
     for (let i = 0; i < events.length; i++) {
       const event = events[i];
-      const metrics = await this.getEventMetrics(experimentId, variantId, event, startDate, endDate);
-      
-      const conversionRate = i === 0 ? 1 : (previousUsers > 0 ? metrics.uniqueUsers / previousUsers : 0);
-      
+      const metrics = await this.getEventMetrics(
+        experimentId,
+        variantId,
+        event,
+        startDate,
+        endDate
+      );
+
+      const conversionRate =
+        i === 0 ? 1 : previousUsers > 0 ? metrics.uniqueUsers / previousUsers : 0;
+
       results.push({
         event,
         users: metrics.uniqueUsers,
@@ -246,4 +260,4 @@ ExperimentEvent.init(
   }
 );
 
-export { ExperimentEvent }; 
+export { ExperimentEvent };

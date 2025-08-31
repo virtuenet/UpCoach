@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface PageHeaderProps {
   title: string;
@@ -11,9 +11,9 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, action }) => {
     <Box
       sx={{
         mb: 3,
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
       }}
     >
       <Box>

@@ -1,13 +1,15 @@
-import toast from "react-hot-toast";
+import toast from 'react-hot-toast';
+import { create } from 'zustand';
+import { authApi } from '../api/auth';
 
 export interface User {
   id: string;
   email: string;
-  fullName: string;
-  role: "admin" | "moderator" | "coach" | "user";
-  avatarUrl?: string;
+  name: string;
+  role: 'admin' | 'moderator' | 'coach' | 'user';
+  avatar?: string;
   createdAt: string;
-  lastLoginAt?: string;
+  updatedAt: string;
 }
 
 interface AuthState {
@@ -32,11 +34,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ isLoading: true });
       const response = await authApi.login(email, password);
 
-      if (
-        response.user.role !== "admin" &&
-        response.user.role !== "moderator"
-      ) {
-        throw new Error("Access denied. Admin privileges required.");
+      if (response.user.role !== 'admin' && response.user.role !== 'moderator') {
+        throw new Error('Access denied. Admin privileges required.');
       }
 
       // No token storage - it's in httpOnly cookie
@@ -45,10 +44,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: true,
         isLoading: false,
       });
-      toast.success("Successfully logged in!");
+      toast.success('Successfully logged in!');
     } catch (error: any) {
       set({ isLoading: false, isAuthenticated: false });
-      toast.error(error.message || "Login failed");
+      toast.error(error.message || 'Login failed');
       throw error;
     }
   },
@@ -58,11 +57,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Call logout endpoint to clear httpOnly cookie
       await authApi.logout();
       set({ user: null, isAuthenticated: false });
-      toast.success("Logged out successfully");
+      toast.success('Logged out successfully');
     } catch (error) {
       // Even if logout fails, clear local state
       set({ user: null, isAuthenticated: false });
-      toast.error("Logout failed, but session cleared");
+      toast.error('Logout failed, but session cleared');
     }
   },
 
@@ -72,7 +71,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // This will use the httpOnly cookie automatically
       const user = await authApi.getProfile();
 
-      if (user.role !== "admin" && user.role !== "moderator") {
+      if (user.role !== 'admin' && user.role !== 'moderator') {
         set({ user: null, isAuthenticated: false, isLoading: false });
         return;
       }

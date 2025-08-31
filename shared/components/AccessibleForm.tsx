@@ -36,7 +36,7 @@ export const AccessibleForm: React.FC<AccessibleFormProps> = ({
       const errorCount = errors.length;
       const message = `Form has ${errorCount} error${errorCount > 1 ? 's' : ''}. Please review and correct.`;
       setAnnouncement(message);
-      
+
       // Focus error summary for keyboard users
       if (errorSummaryRef.current) {
         errorSummaryRef.current.focus();
@@ -50,10 +50,10 @@ export const AccessibleForm: React.FC<AccessibleFormProps> = ({
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     // Clear previous announcements
     setAnnouncement('');
-    
+
     // Call parent submit handler
     await onSubmit(e);
   };
@@ -70,9 +70,7 @@ export const AccessibleForm: React.FC<AccessibleFormProps> = ({
       noValidate // Use custom validation for better accessibility
     >
       {/* Hidden CSRF token input */}
-      {csrfToken && (
-        <input type="hidden" name="_csrf" value={csrfToken} />
-      )}
+      {csrfToken && <input type="hidden" name="_csrf" value={csrfToken} />}
 
       {/* Screen reader announcements */}
       <div
@@ -165,18 +163,13 @@ export const AccessibleField: React.FC<AccessibleFieldProps> = ({
   const errorId = `${fieldId}-error`;
   const helpId = `${fieldId}-help`;
 
-  const ariaDescribedBy = [
-    error && errorId,
-    helpText && helpId,
-  ].filter(Boolean).join(' ');
+  const ariaDescribedBy = [error && errorId, helpText && helpId].filter(Boolean).join(' ');
 
   return (
     <div className={`mb-4 ${className}`}>
       <label
         htmlFor={fieldId}
-        className={`block text-sm font-medium mb-1 ${
-          error ? 'text-red-700' : 'text-gray-700'
-        }`}
+        className={`block text-sm font-medium mb-1 ${error ? 'text-red-700' : 'text-gray-700'}`}
       >
         {label}
         {required && (
@@ -191,7 +184,7 @@ export const AccessibleField: React.FC<AccessibleFieldProps> = ({
         name={name}
         type={type}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={e => onChange(e.target.value)}
         required={required}
         placeholder={placeholder}
         autoComplete={autoComplete}
@@ -200,9 +193,10 @@ export const AccessibleField: React.FC<AccessibleFieldProps> = ({
         aria-required={required}
         className={`
           w-full px-3 py-2 border rounded-md
-          ${error 
-            ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-            : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+          ${
+            error
+              ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+              : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
           }
           ${inputClassName}
         `}
@@ -217,12 +211,7 @@ export const AccessibleField: React.FC<AccessibleFieldProps> = ({
 
       {/* Error message */}
       {error && (
-        <p
-          id={errorId}
-          role="alert"
-          className="mt-1 text-sm text-red-600"
-          aria-live="polite"
-        >
+        <p id={errorId} role="alert" className="mt-1 text-sm text-red-600" aria-live="polite">
           <span className="sr-only">Error:</span> {error}
         </p>
       )}
@@ -266,19 +255,17 @@ export const AccessibleButton: React.FC<AccessibleButtonProps> = ({
       aria-busy={loading}
       className={`
         relative px-4 py-2 font-medium rounded-md
-        ${isDisabled 
-          ? 'opacity-50 cursor-not-allowed' 
-          : 'hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2'
+        ${
+          isDisabled
+            ? 'opacity-50 cursor-not-allowed'
+            : 'hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2'
         }
         ${className}
       `}
     >
       {/* Loading spinner */}
       {loading && (
-        <span
-          className="absolute inset-0 flex items-center justify-center"
-          aria-hidden="true"
-        >
+        <span className="absolute inset-0 flex items-center justify-center" aria-hidden="true">
           <svg
             className="animate-spin h-5 w-5"
             xmlns="http://www.w3.org/2000/svg"
@@ -303,14 +290,10 @@ export const AccessibleButton: React.FC<AccessibleButtonProps> = ({
       )}
 
       {/* Button content */}
-      <span className={loading ? 'invisible' : ''}>
-        {children}
-      </span>
+      <span className={loading ? 'invisible' : ''}>{children}</span>
 
       {/* Screen reader text for loading state */}
-      {loading && (
-        <span className="sr-only">Loading, please wait</span>
-      )}
+      {loading && <span className="sr-only">Loading, please wait</span>}
     </button>
   );
 };

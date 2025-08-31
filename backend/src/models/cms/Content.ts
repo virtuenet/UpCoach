@@ -36,9 +36,32 @@ export interface ContentAttributes {
   updatedAt?: Date;
 }
 
-export interface ContentCreationAttributes extends Optional<ContentAttributes, 'id' | 'excerpt' | 'categoryId' | 'featuredImageUrl' | 'metaTitle' | 'metaDescription' | 'metaKeywords' | 'publishedAt' | 'scheduledAt' | 'readingTime' | 'viewCount' | 'likeCount' | 'shareCount' | 'order' | 'settings' | 'createdAt' | 'updatedAt'> {}
+export interface ContentCreationAttributes
+  extends Optional<
+    ContentAttributes,
+    | 'id'
+    | 'excerpt'
+    | 'categoryId'
+    | 'featuredImageUrl'
+    | 'metaTitle'
+    | 'metaDescription'
+    | 'metaKeywords'
+    | 'publishedAt'
+    | 'scheduledAt'
+    | 'readingTime'
+    | 'viewCount'
+    | 'likeCount'
+    | 'shareCount'
+    | 'order'
+    | 'settings'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
-export class Content extends Model<ContentAttributes, ContentCreationAttributes> implements ContentAttributes {
+export class Content
+  extends Model<ContentAttributes, ContentCreationAttributes>
+  implements ContentAttributes
+{
   public id!: string;
   public title!: string;
   public slug!: string;
@@ -74,7 +97,7 @@ export class Content extends Model<ContentAttributes, ContentCreationAttributes>
   public readonly category?: ContentCategory;
   public readonly tags?: ContentTag[];
   public readonly media?: ContentMedia[];
-  
+
   // Association methods
   public setTags!: (tags: ContentTag[]) => Promise<void>;
   public getTags!: () => Promise<ContentTag[]>;

@@ -1,4 +1,6 @@
-import Grid from "@mui/material";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import { Grid } from '@mui/material';
 import {
   Box,
   Card,
@@ -29,7 +31,7 @@ import {
   Select,
   MenuItem,
   Tooltip,
-} from "@mui/material";
+} from '@mui/material';
 import {
   Search as SearchIcon,
   Refresh as RefreshIcon,
@@ -42,10 +44,10 @@ import {
   Schedule as PendingIcon,
   Edit as EditIcon,
   AttachMoney as PaymentIcon,
-} from "@mui/icons-material";
-import api from "../services/api";
-import PageHeader from "../components/PageHeader";
-import StatCard from "../components/StatCard";
+} from '@mui/icons-material';
+import api from '../services/api';
+import PageHeader from '../components/PageHeader';
+import StatCard from '../components/StatCard';
 
 interface ReferralStats {
   totalReferrals: number;
@@ -63,8 +65,8 @@ interface Referral {
   refereeName: string | null;
   refereeId: number | null;
   code: string;
-  status: "pending" | "completed" | "expired" | "cancelled";
-  rewardStatus: "pending" | "paid" | "failed";
+  status: 'pending' | 'completed' | 'expired' | 'cancelled';
+  rewardStatus: 'pending' | 'paid' | 'failed';
   referrerReward: number;
   refereeReward: number;
   createdAt: string;
@@ -85,12 +87,10 @@ const ReferralManagement: React.FC = () => {
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [tabValue, setTabValue] = useState(0);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [leaderboardPeriod, setLeaderboardPeriod] = useState<
-    "week" | "month" | "all"
-  >("month");
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [leaderboardPeriod, setLeaderboardPeriod] = useState<'week' | 'month' | 'all'>('month');
   const [paymentDialog, setPaymentDialog] = useState<{
     open: boolean;
     referral: Referral | null;
@@ -114,8 +114,8 @@ const ReferralManagement: React.FC = () => {
     setLoading(true);
     try {
       const [statsRes, referralsRes, leaderboardRes] = await Promise.all([
-        api.get("/analytics/referrals/stats"),
-        api.get("/analytics/referrals"),
+        api.get('/analytics/referrals/stats'),
+        api.get('/analytics/referrals'),
         api.get(`/referrals/leaderboard?period=${leaderboardPeriod}`),
       ]);
 
@@ -123,7 +123,7 @@ const ReferralManagement: React.FC = () => {
       setReferrals(referralsRes.data);
       setLeaderboard(leaderboardRes.data.data.leaderboard);
     } catch (error) {
-      console.error("Failed to fetch referral data:", error);
+      console.error('Failed to fetch referral data:', error);
     } finally {
       setLoading(false);
     }
@@ -137,7 +137,7 @@ const ReferralManagement: React.FC = () => {
       fetchData();
       setPaymentDialog({ open: false, referral: null });
     } catch (error) {
-      console.error("Failed to process payment:", error);
+      console.error('Failed to process payment:', error);
     }
   };
 
@@ -149,54 +149,53 @@ const ReferralManagement: React.FC = () => {
       fetchData();
       setEditDialog({ open: false, referral: null });
     } catch (error) {
-      console.error("Failed to update status:", error);
+      console.error('Failed to update status:', error);
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "completed":
-        return "success";
-      case "pending":
-        return "warning";
-      case "expired":
-        return "default";
-      case "cancelled":
-        return "error";
+      case 'completed':
+        return 'success';
+      case 'pending':
+        return 'warning';
+      case 'expired':
+        return 'default';
+      case 'cancelled':
+        return 'error';
       default:
-        return "default";
+        return 'default';
     }
   };
 
   const getPaymentStatusColor = (status: string) => {
     switch (status) {
-      case "paid":
-        return "success";
-      case "pending":
-        return "warning";
-      case "failed":
-        return "error";
+      case 'paid':
+        return 'success';
+      case 'pending':
+        return 'warning';
+      case 'failed':
+        return 'error';
       default:
-        return "default";
+        return 'default';
     }
   };
 
-  const filteredReferrals = referrals.filter((referral) => {
+  const filteredReferrals = referrals.filter(referral => {
     const matchesSearch =
       referral.referrerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       referral.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (referral.refereeName &&
         referral.refereeName.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const matchesStatus =
-      statusFilter === "all" || referral.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' || referral.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
 
   if (loading) {
     return (
-      <Box sx={{ width: "100%", mt: 4 }}>
+      <Box sx={{ width: '100%', mt: 4 }}>
         <LinearProgress />
       </Box>
     );
@@ -208,11 +207,7 @@ const ReferralManagement: React.FC = () => {
         title="Referral Management"
         subtitle="Manage referral program and rewards"
         action={
-          <Button
-            startIcon={<RefreshIcon />}
-            onClick={fetchData}
-            variant="outlined"
-          >
+          <Button startIcon={<RefreshIcon />} onClick={fetchData} variant="outlined">
             Refresh
           </Button>
         }
@@ -269,11 +264,11 @@ const ReferralManagement: React.FC = () => {
       {tabValue === 0 && (
         <Card>
           <CardContent>
-            <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
               <TextField
                 placeholder="Search by name or code..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -287,7 +282,7 @@ const ReferralManagement: React.FC = () => {
                 <InputLabel>Status</InputLabel>
                 <Select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
+                  onChange={e => setStatusFilter(e.target.value)}
                   label="Status"
                 >
                   <MenuItem value="all">All</MenuItem>
@@ -314,18 +309,15 @@ const ReferralManagement: React.FC = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredReferrals.map((referral) => (
+                  {filteredReferrals.map(referral => (
                     <TableRow key={referral.id}>
                       <TableCell>{referral.referrerName}</TableCell>
                       <TableCell>
-                        <Typography
-                          variant="body2"
-                          sx={{ fontFamily: "monospace" }}
-                        >
+                        <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
                           {referral.code}
                         </Typography>
                       </TableCell>
-                      <TableCell>{referral.refereeName || "-"}</TableCell>
+                      <TableCell>{referral.refereeName || '-'}</TableCell>
                       <TableCell>
                         <Chip
                           label={referral.status}
@@ -337,27 +329,19 @@ const ReferralManagement: React.FC = () => {
                         <Chip
                           label={referral.rewardStatus}
                           size="small"
-                          color={
-                            getPaymentStatusColor(referral.rewardStatus) as any
-                          }
+                          color={getPaymentStatusColor(referral.rewardStatus) as any}
                         />
                       </TableCell>
-                      <TableCell align="right">
-                        ${referral.referrerReward}
-                      </TableCell>
+                      <TableCell align="right">${referral.referrerReward}</TableCell>
+                      <TableCell>{format(new Date(referral.createdAt), 'MMM dd, yyyy')}</TableCell>
                       <TableCell>
-                        {format(new Date(referral.createdAt), "MMM dd, yyyy")}
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: "flex", gap: 1 }}>
-                          {referral.status === "completed" &&
-                            referral.rewardStatus === "pending" && (
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          {referral.status === 'completed' &&
+                            referral.rewardStatus === 'pending' && (
                               <Tooltip title="Process Payment">
                                 <IconButton
                                   size="small"
-                                  onClick={() =>
-                                    setPaymentDialog({ open: true, referral })
-                                  }
+                                  onClick={() => setPaymentDialog({ open: true, referral })}
                                 >
                                   <PaymentIcon />
                                 </IconButton>
@@ -366,9 +350,7 @@ const ReferralManagement: React.FC = () => {
                           <Tooltip title="Edit">
                             <IconButton
                               size="small"
-                              onClick={() =>
-                                setEditDialog({ open: true, referral })
-                              }
+                              onClick={() => setEditDialog({ open: true, referral })}
                             >
                               <EditIcon />
                             </IconButton>
@@ -388,14 +370,12 @@ const ReferralManagement: React.FC = () => {
       {tabValue === 1 && (
         <Card>
           <CardContent>
-            <Box
-              sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}
-            >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
               <Typography variant="h6">Top Referrers</Typography>
               <FormControl sx={{ minWidth: 120 }}>
                 <Select
                   value={leaderboardPeriod}
-                  onChange={(e) => {
+                  onChange={e => {
                     setLeaderboardPeriod(e.target.value as any);
                     fetchData();
                   }}
@@ -413,15 +393,15 @@ const ReferralManagement: React.FC = () => {
                 <Grid item xs={12} md={4} key={entry.userId}>
                   <Card
                     sx={{
-                      textAlign: "center",
+                      textAlign: 'center',
                       p: 3,
                       background:
                         index === 0
-                          ? "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)"
+                          ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)'
                           : index === 1
-                            ? "linear-gradient(135deg, #C0C0C0 0%, #808080 100%)"
-                            : "linear-gradient(135deg, #CD7F32 0%, #8B4513 100%)",
-                      color: "white",
+                            ? 'linear-gradient(135deg, #C0C0C0 0%, #808080 100%)'
+                            : 'linear-gradient(135deg, #CD7F32 0%, #8B4513 100%)',
+                      color: 'white',
                     }}
                   >
                     <TrophyIcon sx={{ fontSize: 48, mb: 2 }} />
@@ -429,9 +409,7 @@ const ReferralManagement: React.FC = () => {
                     <Typography variant="h6" sx={{ mb: 1 }}>
                       {entry.userName}
                     </Typography>
-                    <Typography variant="body1">
-                      {entry.referralCount} referrals
-                    </Typography>
+                    <Typography variant="body1">{entry.referralCount} referrals</Typography>
                     <Typography variant="h5" sx={{ mt: 2 }}>
                       ${entry.totalEarnings}
                     </Typography>
@@ -455,12 +433,8 @@ const ReferralManagement: React.FC = () => {
                     <TableRow key={entry.userId}>
                       <TableCell>{index + 4}</TableCell>
                       <TableCell>{entry.userName}</TableCell>
-                      <TableCell align="center">
-                        {entry.referralCount}
-                      </TableCell>
-                      <TableCell align="right">
-                        ${entry.totalEarnings}
-                      </TableCell>
+                      <TableCell align="center">{entry.referralCount}</TableCell>
+                      <TableCell align="right">${entry.totalEarnings}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -480,8 +454,7 @@ const ReferralManagement: React.FC = () => {
                   Referral Program Settings
                 </Typography>
                 <Alert severity="info" sx={{ mt: 2 }}>
-                  Referral program configuration can be managed in the backend
-                  settings.
+                  Referral program configuration can be managed in the backend settings.
                 </Alert>
               </CardContent>
             </Card>
@@ -519,27 +492,21 @@ const ReferralManagement: React.FC = () => {
           {paymentDialog.referral && (
             <Box sx={{ pt: 2 }}>
               <Typography>
-                Process payment of ${paymentDialog.referral.referrerReward} to{" "}
+                Process payment of ${paymentDialog.referral.referrerReward} to{' '}
                 {paymentDialog.referral.referrerName}?
               </Typography>
               <Alert severity="info" sx={{ mt: 2 }}>
-                This will mark the reward as paid and trigger the payment
-                process.
+                This will mark the reward as paid and trigger the payment process.
               </Alert>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={() => setPaymentDialog({ open: false, referral: null })}
-          >
-            Cancel
-          </Button>
+          <Button onClick={() => setPaymentDialog({ open: false, referral: null })}>Cancel</Button>
           <Button
             variant="contained"
             onClick={() =>
-              paymentDialog.referral &&
-              handleProcessPayment(paymentDialog.referral.id)
+              paymentDialog.referral && handleProcessPayment(paymentDialog.referral.id)
             }
           >
             Process Payment
@@ -548,10 +515,7 @@ const ReferralManagement: React.FC = () => {
       </Dialog>
 
       {/* Edit Dialog */}
-      <Dialog
-        open={editDialog.open}
-        onClose={() => setEditDialog({ open: false, referral: null })}
-      >
+      <Dialog open={editDialog.open} onClose={() => setEditDialog({ open: false, referral: null })}>
         <DialogTitle>Edit Referral Status</DialogTitle>
         <DialogContent>
           {editDialog.referral && (
@@ -560,9 +524,7 @@ const ReferralManagement: React.FC = () => {
                 <InputLabel>Status</InputLabel>
                 <Select
                   value={editDialog.referral.status}
-                  onChange={(e) =>
-                    handleUpdateStatus(editDialog.referral!.id, e.target.value)
-                  }
+                  onChange={e => handleUpdateStatus(editDialog.referral!.id, e.target.value)}
                   label="Status"
                 >
                   <MenuItem value="pending">Pending</MenuItem>
@@ -575,11 +537,7 @@ const ReferralManagement: React.FC = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={() => setEditDialog({ open: false, referral: null })}
-          >
-            Cancel
-          </Button>
+          <Button onClick={() => setEditDialog({ open: false, referral: null })}>Cancel</Button>
         </DialogActions>
       </Dialog>
     </Box>

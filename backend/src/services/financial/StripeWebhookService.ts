@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
-import { 
-  Transaction, 
-  Subscription, 
+import {
+  Transaction,
+  Subscription,
   BillingEvent,
   User,
   TransactionStatus,
@@ -142,7 +142,7 @@ export class StripeWebhookService {
       currency: paymentIntent.currency,
       paymentMethod: PaymentMethod.CARD,
       description: paymentIntent.description || 'Payment',
-      failureReason: paymentIntent.last_payment_error?.message,
+      failureReason: paymentIntent.last_paymenterror?.message,
     });
 
     // Create billing event
@@ -151,7 +151,7 @@ export class StripeWebhookService {
       source: BillingEventSource.STRIPE_WEBHOOK,
       userId: user.id,
       stripeEventId: paymentIntent.id,
-      description: `Payment failed: ${paymentIntent.last_payment_error?.message}`,
+      description: `Payment failed: ${paymentIntent.last_paymenterror?.message}`,
       amount: paymentIntent.amount / 100,
       currency: paymentIntent.currency,
       isProcessed: true,
@@ -183,11 +183,11 @@ export class StripeWebhookService {
       currency: stripeSubscription.currency,
       currentPeriodStart: new Date((stripeSubscription as any).current_period_start * 1000),
       currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
-      trialStartDate: stripeSubscription.trial_start 
-        ? new Date(stripeSubscription.trial_start * 1000) 
+      trialStartDate: stripeSubscription.trial_start
+        ? new Date(stripeSubscription.trial_start * 1000)
         : undefined,
-      trialEndDate: stripeSubscription.trial_end 
-        ? new Date(stripeSubscription.trial_end * 1000) 
+      trialEndDate: stripeSubscription.trial_end
+        ? new Date(stripeSubscription.trial_end * 1000)
         : undefined,
     });
 
@@ -215,7 +215,9 @@ export class StripeWebhookService {
     if (!subscription) return;
 
     const previousPlan = subscription.plan;
-    const newPlan = this.mapStripePlanToInternal(stripeSubscription.items.data[0].price.lookup_key!);
+    const newPlan = this.mapStripePlanToInternal(
+      stripeSubscription.items.data[0].price.lookup_key!
+    );
 
     await subscription.update({
       plan: newPlan,
@@ -440,10 +442,10 @@ export class StripeWebhookService {
    */
   private mapStripePlanToInternal(stripePlan: string): any {
     const planMap: Record<string, any> = {
-      'basic_monthly': 'basic',
-      'pro_monthly': 'pro',
-      'team_monthly': 'team',
-      'enterprise_monthly': 'enterprise',
+      basic_monthly: 'basic',
+      pro_monthly: 'pro',
+      team_monthly: 'team',
+      enterprise_monthly: 'enterprise',
     };
 
     return planMap[stripePlan] || 'free';
@@ -454,17 +456,17 @@ export class StripeWebhookService {
    */
   private mapStripeStatusToInternal(stripeStatus: Stripe.Subscription.Status): SubscriptionStatus {
     const statusMap: Record<string, SubscriptionStatus> = {
-      'active': SubscriptionStatus.ACTIVE,
-      'past_due': SubscriptionStatus.PAST_DUE,
-      'canceled': SubscriptionStatus.CANCELED,
-      'incomplete': SubscriptionStatus.INCOMPLETE,
-      'incomplete_expired': SubscriptionStatus.INCOMPLETE_EXPIRED,
-      'trialing': SubscriptionStatus.TRIALING,
-      'paused': SubscriptionStatus.PAUSED,
+      active: SubscriptionStatus.ACTIVE,
+      past_due: SubscriptionStatus.PAST_DUE,
+      canceled: SubscriptionStatus.CANCELED,
+      incomplete: SubscriptionStatus.INCOMPLETE,
+      incomplete_expired: SubscriptionStatus.INCOMPLETE_EXPIRED,
+      trialing: SubscriptionStatus.TRIALING,
+      paused: SubscriptionStatus.PAUSED,
     };
 
     return statusMap[stripeStatus] || SubscriptionStatus.INCOMPLETE;
   }
 }
 
-export const stripeWebhookService = new StripeWebhookService(); 
+export const stripeWebhookService = new StripeWebhookService();

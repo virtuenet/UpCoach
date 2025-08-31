@@ -23,7 +23,7 @@ export interface RequestConfig {
 
 class ValidatedApiClient {
   private static instance: ValidatedApiClient;
-  
+
   private constructor() {}
 
   static getInstance(): ValidatedApiClient {
@@ -41,26 +41,26 @@ class ValidatedApiClient {
       // Validate request data
       if (config.validation?.data && config.data) {
         const validation = inputValidator.validate(config.validation.data, config.data);
-        
+
         if (!validation.success) {
           const error = new Error('Request data validation failed');
           (error as any).validationErrors = validation.errors;
           throw error;
         }
-        
+
         config.data = validation.data;
       }
 
       // Validate request params
       if (config.validation?.params && config.params) {
         const validation = inputValidator.validate(config.validation.params, config.params);
-        
+
         if (!validation.success) {
           const error = new Error('Request params validation failed');
           (error as any).validationErrors = validation.errors;
           throw error;
         }
-        
+
         config.params = validation.data;
       }
 
@@ -86,7 +86,7 @@ class ValidatedApiClient {
       // Validate response if schema provided
       if (config.validation?.response) {
         const validation = inputValidator.validate(config.validation.response, response.data);
-        
+
         if (!validation.success) {
           logger.error('Response validation failed', {
             url: config.url,
@@ -94,7 +94,7 @@ class ValidatedApiClient {
           });
           throw new Error('Invalid response from server');
         }
-        
+
         return validation.data as T;
       }
 
@@ -230,7 +230,7 @@ class ValidatedApiClient {
   }> {
     // Validate pagination params
     const paginationValidation = inputValidator.validatePagination(params);
-    
+
     if (!paginationValidation.success) {
       throw new Error('Invalid pagination parameters');
     }
@@ -246,11 +246,7 @@ class ValidatedApiClient {
   /**
    * File upload with validation
    */
-  async uploadFile(
-    url: string,
-    file: File,
-    additionalData?: any
-  ): Promise<any> {
+  async uploadFile(url: string, file: File, additionalData?: any): Promise<any> {
     // Validate file
     const fileValidation = inputValidator.validateFileUpload({
       name: file.name,
@@ -290,9 +286,7 @@ class ValidatedApiClient {
   /**
    * Batch requests with validation
    */
-  async batch<T = any>(
-    requests: RequestConfig[]
-  ): Promise<T[]> {
+  async batch<T = any>(requests: RequestConfig[]): Promise<T[]> {
     // Validate all requests first
     const validatedRequests = requests.map(req => {
       if (req.validation?.data && req.data) {
@@ -302,7 +296,7 @@ class ValidatedApiClient {
         }
         req.data = validation.data;
       }
-      
+
       if (req.validation?.params && req.params) {
         const validation = inputValidator.validate(req.validation.params, req.params);
         if (!validation.success) {
@@ -310,7 +304,7 @@ class ValidatedApiClient {
         }
         req.params = validation.data;
       }
-      
+
       return req;
     });
 
@@ -328,30 +322,34 @@ class ValidatedApiClient {
     delay: number = 1000
   ): Promise<T> {
     let lastError: any;
-    
+
     for (let i = 0; i < maxRetries; i++) {
       try {
         return await this.request<T>(config);
       } catch (error) {
         lastError = error;
-        
+
         // Don't retry validation errors
         if ((error as any).validationErrors) {
           throw error;
         }
-        
+
         // Don't retry 4xx errors (except 429)
-        if ((error as any).response?.status >= 400 && (error as any).response?.status < 500 && (error as any).response?.status !== 429) {
+        if (
+          (error as any).response?.status >= 400 &&
+          (error as any).response?.status < 500 &&
+          (error as any).response?.status !== 429
+        ) {
           throw error;
         }
-        
+
         // Wait before retrying
         if (i < maxRetries - 1) {
           await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
         }
       }
     }
-    
+
     throw lastError;
   }
 }
@@ -384,7 +382,8 @@ export const api = {
   // Media endpoints
   media: {
     list: (params?: any) => validatedApi.paginated('/media', params),
-    upload: (file: File, metadata?: any) => validatedApi.uploadFile('/media/upload', file, metadata),
+    upload: (file: File, metadata?: any) =>
+      validatedApi.uploadFile('/media/upload', file, metadata),
     delete: (id: string) => validatedApi.delete(`/media/${id}`),
   },
 

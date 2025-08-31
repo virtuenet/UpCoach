@@ -1,4 +1,8 @@
-import LoadingSpinner from "../components/LoadingSpinner";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { goalsApi } from '../api/goals';
 
 interface Goal {
   id: string;
@@ -8,7 +12,7 @@ interface Goal {
   targetValue: number;
   currentValue: number;
   deadline: string;
-  status: "active" | "completed" | "paused" | "cancelled";
+  status: 'active' | 'completed' | 'paused' | 'cancelled';
   createdAt: string;
   user: {
     id: string;
@@ -18,34 +22,34 @@ interface Goal {
 }
 
 export default function GoalsPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const { data: goals, isLoading } = useQuery({
-    queryKey: ["admin-goals", searchTerm, categoryFilter, statusFilter],
+    queryKey: ['admin-goals', searchTerm, categoryFilter, statusFilter],
     queryFn: () =>
       goalsApi.getAllGoals({
         search: searchTerm,
-        category: categoryFilter === "all" ? undefined : categoryFilter,
-        status: statusFilter === "all" ? undefined : statusFilter,
+        category: categoryFilter === 'all' ? undefined : categoryFilter,
+        status: statusFilter === 'all' ? undefined : statusFilter,
       }),
   });
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   };
 
   const getStatusBadge = (status: string) => {
     const colors = {
-      active: "bg-blue-100 text-blue-800",
-      completed: "bg-green-100 text-green-800",
-      paused: "bg-yellow-100 text-yellow-800",
-      cancelled: "bg-red-100 text-red-800",
+      active: 'bg-blue-100 text-blue-800',
+      completed: 'bg-green-100 text-green-800',
+      paused: 'bg-yellow-100 text-yellow-800',
+      cancelled: 'bg-red-100 text-red-800',
     };
     return colors[status as keyof typeof colors] || colors.active;
   };
@@ -81,7 +85,7 @@ export default function GoalsPage() {
                 type="text"
                 placeholder="Search goals..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
@@ -89,7 +93,7 @@ export default function GoalsPage() {
           <div className="flex gap-2">
             <select
               value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
+              onChange={e => setCategoryFilter(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="all">All Categories</option>
@@ -101,7 +105,7 @@ export default function GoalsPage() {
             </select>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={e => setStatusFilter(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="all">All Status</option>
@@ -142,10 +146,7 @@ export default function GoalsPage() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {goals?.map((goal: Goal) => {
-                const progress = getProgressPercentage(
-                  goal.currentValue,
-                  goal.targetValue,
-                );
+                const progress = getProgressPercentage(goal.currentValue, goal.targetValue);
                 return (
                   <tr key={goal.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
@@ -165,9 +166,7 @@ export default function GoalsPage() {
                         <div className="text-sm font-medium text-gray-900">
                           {goal.user.fullName}
                         </div>
-                        <div className="text-sm text-gray-500">
-                          {goal.user.email}
-                        </div>
+                        <div className="text-sm text-gray-500">{goal.user.email}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

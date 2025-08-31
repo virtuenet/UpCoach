@@ -1,4 +1,5 @@
 /**
+import { format, formatDistanceToNow, parseISO } from "date-fns";
  * URL Validation and Sanitization Utilities
  * Prevents XSS attacks through malicious URLs
  */
@@ -18,15 +19,16 @@ const BLOCKED_PROTOCOLS = [
 ];
 
 // Regex patterns for validation
-const URL_PATTERN = /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)$/;
+const URL_PATTERN =
+  /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/\/=]*)$/;
 const IMAGE_URL_PATTERN = /\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i;
 const MALICIOUS_PATTERNS = [
   /<script/i,
   /javascript:/i,
   /on\w+=/i, // onclick=, onerror=, etc.
-  /&#/,       // HTML entity encoding
-  /%3C/i,     // URL encoded <
-  /%3E/i,     // URL encoded >
+  /&#/, // HTML entity encoding
+  /%3C/i, // URL encoded <
+  /%3E/i, // URL encoded >
 ];
 
 /**
@@ -38,7 +40,7 @@ export function isValidUrl(url: string): boolean {
   }
 
   const trimmedUrl = url.trim();
-  
+
   // Check for empty or whitespace-only strings
   if (trimmedUrl.length === 0) {
     return false;
@@ -62,7 +64,7 @@ export function isValidUrl(url: string): boolean {
   // Validate URL format
   try {
     const urlObj = new URL(trimmedUrl);
-    
+
     // Check if protocol is allowed
     if (!ALLOWED_PROTOCOLS.includes(urlObj.protocol)) {
       return false;
@@ -121,7 +123,7 @@ export function sanitizeUrl(url: string): string {
 
   try {
     const urlObj = new URL(trimmedUrl);
-    
+
     // Remove any dangerous parameters
     const paramsToRemove = ['javascript', 'vbscript', 'data'];
     paramsToRemove.forEach(param => {
@@ -144,13 +146,16 @@ export function sanitizeUrl(url: string): string {
 /**
  * Creates a safe link with proper attributes
  */
-export function createSafeLink(url: string, text?: string): {
+export function createSafeLink(
+  url: string,
+  text?: string
+): {
   href: string;
   text: string;
   attributes: Record<string, string>;
 } {
   const safeUrl = sanitizeUrl(url);
-  
+
   if (!safeUrl) {
     return {
       href: '#',
@@ -158,7 +163,7 @@ export function createSafeLink(url: string, text?: string): {
       attributes: {
         'aria-disabled': 'true',
         'data-invalid': 'true',
-      }
+      },
     };
   }
 
@@ -174,7 +179,7 @@ export function createSafeLink(url: string, text?: string): {
         rel: 'noopener noreferrer nofollow',
       }),
       'data-safe-link': 'true',
-    }
+    },
   };
 }
 
@@ -189,7 +194,7 @@ export function validateUserUrl(url: string): {
   if (!url || url.trim().length === 0) {
     return {
       valid: false,
-      error: 'Please enter a URL'
+      error: 'Please enter a URL',
     };
   }
 
@@ -200,7 +205,7 @@ export function validateUserUrl(url: string): {
   if (BLOCKED_PROTOCOLS.some(protocol => lowerUrl.startsWith(protocol))) {
     return {
       valid: false,
-      error: 'This type of URL is not allowed for security reasons'
+      error: 'This type of URL is not allowed for security reasons',
     };
   }
 
@@ -208,35 +213,39 @@ export function validateUserUrl(url: string): {
   if (MALICIOUS_PATTERNS.some(pattern => pattern.test(trimmedUrl))) {
     return {
       valid: false,
-      error: 'The URL contains potentially dangerous content'
+      error: 'The URL contains potentially dangerous content',
     };
   }
 
   // Validate URL format
-  if (!trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://') && !trimmedUrl.startsWith('/')) {
+  if (
+    !trimmedUrl.startsWith('http://') &&
+    !trimmedUrl.startsWith('https://') &&
+    !trimmedUrl.startsWith('/')
+  ) {
     // Try adding https:// prefix
     const withProtocol = `https://${trimmedUrl}`;
     if (isValidUrl(withProtocol)) {
       return {
         valid: true,
-        sanitized: sanitizeUrl(withProtocol)
+        sanitized: sanitizeUrl(withProtocol),
       };
     }
     return {
       valid: false,
-      error: 'Please enter a valid URL (e.g., https://example.com)'
+      error: 'Please enter a valid URL (e.g., https://example.com)',
     };
   }
 
   if (!isValidUrl(trimmedUrl)) {
     return {
       valid: false,
-      error: 'Please enter a valid URL'
+      error: 'Please enter a valid URL',
     };
   }
 
   return {
     valid: true,
-    sanitized: sanitizeUrl(trimmedUrl)
+    sanitized: sanitizeUrl(trimmedUrl),
   };
 }

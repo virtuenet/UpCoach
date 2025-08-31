@@ -29,13 +29,13 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   ...props
 }) => {
   const baseStyles = 'flex flex-col items-center justify-center text-center';
-  
+
   const variants = {
     default: 'py-12 px-4',
     minimal: 'py-8 px-4',
     card: 'py-12 px-4 bg-white rounded-lg border border-gray-200',
   };
-  
+
   // Default icon if none provided
   const defaultIcon = (
     <svg
@@ -53,33 +53,20 @@ const EmptyState: React.FC<EmptyStateProps> = ({
       />
     </svg>
   );
-  
+
   return (
-    <div
-      className={cn(baseStyles, variants[variant], className)}
-      {...props}
-    >
+    <div className={cn(baseStyles, variants[variant], className)} {...props}>
       {(icon || defaultIcon) && (
         <div className="mb-4" aria-hidden="true">
           {icon || defaultIcon}
         </div>
       )}
-      
-      <h3 className="text-sm font-medium text-gray-900 mb-1">
-        {title}
-      </h3>
-      
-      {description && (
-        <p className="text-sm text-gray-500 max-w-sm mb-6">
-          {description}
-        </p>
-      )}
-      
-      {action && (
-        <div className="mt-6">
-          {action}
-        </div>
-      )}
+
+      <h3 className="text-sm font-medium text-gray-900 mb-1">{title}</h3>
+
+      {description && <p className="text-sm text-gray-500 max-w-sm mb-6">{description}</p>}
+
+      {action && <div className="mt-6">{action}</div>}
     </div>
   );
 };
@@ -130,10 +117,7 @@ export const NoSearchResultsEmptyState: React.FC<{ searchTerm?: string; onClear?
     }
     action={
       onClear && (
-        <button
-          onClick={onClear}
-          className="text-sm text-blue-600 hover:text-blue-500 font-medium"
-        >
+        <button onClick={onClear} className="text-sm text-blue-600 hover:text-blue-500 font-medium">
           Clear search
         </button>
       )
@@ -144,12 +128,7 @@ export const NoSearchResultsEmptyState: React.FC<{ searchTerm?: string; onClear?
 export const ErrorEmptyState: React.FC<{ onRetry?: () => void }> = ({ onRetry }) => (
   <EmptyState
     icon={
-      <svg
-        className="h-12 w-12 text-red-400"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
+      <svg className="h-12 w-12 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"

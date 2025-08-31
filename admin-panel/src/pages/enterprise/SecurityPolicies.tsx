@@ -1,4 +1,6 @@
-import Grid from "@mui/material";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import Grid from '@mui/material';
 import {
   Box,
   Card,
@@ -31,7 +33,7 @@ import {
   Alert,
   Tooltip,
   LinearProgress,
-} from "@mui/material";
+} from '@mui/material';
 import {
   Security,
   Add,
@@ -47,15 +49,15 @@ import {
   Info,
   Policy,
   Shield,
-} from "@mui/icons-material";
-import api from "../../services/api";
+} from '@mui/icons-material';
+import api from '../../services/api';
 
 interface SecurityPolicy {
   id: number;
   name: string;
-  type: "security" | "data_retention" | "access_control" | "compliance";
+  type: 'security' | 'data_retention' | 'access_control' | 'compliance';
   rules: any;
-  enforcementLevel: "soft" | "hard";
+  enforcementLevel: 'soft' | 'hard';
   appliesTo: any;
   isActive: boolean;
   createdBy: string;
@@ -67,15 +69,13 @@ const SecurityPolicies: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [policies, setPolicies] = useState<SecurityPolicy[]>([]);
   const [policyDialog, setPolicyDialog] = useState(false);
-  const [editingPolicy, setEditingPolicy] = useState<SecurityPolicy | null>(
-    null,
-  );
+  const [editingPolicy, setEditingPolicy] = useState<SecurityPolicy | null>(null);
   const { enqueueSnackbar } = useSnackbar();
 
   const [policyForm, setPolicyForm] = useState({
-    name: "",
-    type: "security" as const,
-    enforcementLevel: "soft" as const,
+    name: '',
+    type: 'security' as const,
+    enforcementLevel: 'soft' as const,
     rules: {
       passwordPolicy: {
         minLength: 8,
@@ -120,14 +120,12 @@ const SecurityPolicies: React.FC = () => {
   const loadPolicies = async () => {
     try {
       setLoading(true);
-      const orgId = localStorage.getItem("organizationId");
-      const response = await api.get(
-        `/enterprise/organizations/${orgId}/policies`,
-      );
+      const orgId = localStorage.getItem('organizationId');
+      const response = await api.get(`/enterprise/organizations/${orgId}/policies`);
       setPolicies(response.data.data.policies);
     } catch (error) {
-      console.error("Failed to load policies:", error);
-      enqueueSnackbar("Failed to load security policies", { variant: "error" });
+      console.error('Failed to load policies:', error);
+      enqueueSnackbar('Failed to load security policies', { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -135,20 +133,17 @@ const SecurityPolicies: React.FC = () => {
 
   const handleCreatePolicy = async () => {
     try {
-      const orgId = localStorage.getItem("organizationId");
+      const orgId = localStorage.getItem('organizationId');
       await api.post(`/enterprise/organizations/${orgId}/policies`, policyForm);
 
-      enqueueSnackbar("Policy created successfully", { variant: "success" });
+      enqueueSnackbar('Policy created successfully', { variant: 'success' });
       setPolicyDialog(false);
       resetForm();
       loadPolicies();
     } catch (error) {
-      enqueueSnackbar(
-        error.response?.data?.message || "Failed to create policy",
-        {
-          variant: "error",
-        },
-      );
+      enqueueSnackbar(error.response?.data?.message || 'Failed to create policy', {
+        variant: 'error',
+      });
     }
   };
 
@@ -158,35 +153,29 @@ const SecurityPolicies: React.FC = () => {
     try {
       await api.put(`/enterprise/policies/${editingPolicy.id}`, policyForm);
 
-      enqueueSnackbar("Policy updated successfully", { variant: "success" });
+      enqueueSnackbar('Policy updated successfully', { variant: 'success' });
       setPolicyDialog(false);
       setEditingPolicy(null);
       resetForm();
       loadPolicies();
     } catch (error) {
-      enqueueSnackbar(
-        error.response?.data?.message || "Failed to update policy",
-        {
-          variant: "error",
-        },
-      );
+      enqueueSnackbar(error.response?.data?.message || 'Failed to update policy', {
+        variant: 'error',
+      });
     }
   };
 
   const handleDeletePolicy = async (policyId: number) => {
-    if (!window.confirm("Are you sure you want to delete this policy?")) return;
+    if (!window.confirm('Are you sure you want to delete this policy?')) return;
 
     try {
       await api.delete(`/enterprise/policies/${policyId}`);
-      enqueueSnackbar("Policy deleted successfully", { variant: "success" });
+      enqueueSnackbar('Policy deleted successfully', { variant: 'success' });
       loadPolicies();
     } catch (error) {
-      enqueueSnackbar(
-        error.response?.data?.message || "Failed to delete policy",
-        {
-          variant: "error",
-        },
-      );
+      enqueueSnackbar(error.response?.data?.message || 'Failed to delete policy', {
+        variant: 'error',
+      });
     }
   };
 
@@ -196,26 +185,22 @@ const SecurityPolicies: React.FC = () => {
         isActive: !policy.isActive,
       });
 
-      enqueueSnackbar(
-        `Policy ${!policy.isActive ? "activated" : "deactivated"} successfully`,
-        { variant: "success" },
-      );
+      enqueueSnackbar(`Policy ${!policy.isActive ? 'activated' : 'deactivated'} successfully`, {
+        variant: 'success',
+      });
       loadPolicies();
     } catch (error) {
-      enqueueSnackbar(
-        error.response?.data?.message || "Failed to toggle policy",
-        {
-          variant: "error",
-        },
-      );
+      enqueueSnackbar(error.response?.data?.message || 'Failed to toggle policy', {
+        variant: 'error',
+      });
     }
   };
 
   const resetForm = () => {
     setPolicyForm({
-      name: "",
-      type: "security",
-      enforcementLevel: "soft",
+      name: '',
+      type: 'security',
+      enforcementLevel: 'soft',
       rules: {
         passwordPolicy: {
           minLength: 8,
@@ -268,13 +253,13 @@ const SecurityPolicies: React.FC = () => {
 
   const getPolicyIcon = (type: string) => {
     switch (type) {
-      case "security":
+      case 'security':
         return <Lock />;
-      case "data_retention":
+      case 'data_retention':
         return <Timer />;
-      case "access_control":
+      case 'access_control':
         return <VpnKey />;
-      case "compliance":
+      case 'compliance':
         return <Policy />;
       default:
         return <Security />;
@@ -283,22 +268,22 @@ const SecurityPolicies: React.FC = () => {
 
   const getPolicyColor = (type: string) => {
     switch (type) {
-      case "security":
-        return "primary";
-      case "data_retention":
-        return "warning";
-      case "access_control":
-        return "info";
-      case "compliance":
-        return "secondary";
+      case 'security':
+        return 'primary';
+      case 'data_retention':
+        return 'warning';
+      case 'access_control':
+        return 'info';
+      case 'compliance':
+        return 'secondary';
       default:
-        return "default";
+        return 'default';
     }
   };
 
   if (loading) {
     return (
-      <Box sx={{ width: "100%" }}>
+      <Box sx={{ width: '100%' }}>
         <LinearProgress />
       </Box>
     );
@@ -306,78 +291,61 @@ const SecurityPolicies: React.FC = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ mb: 3, display: "flex", justifyContent: "space-between" }}>
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between' }}>
         <Typography variant="h4">Security Policies</Typography>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => setPolicyDialog(true)}
-        >
+        <Button variant="contained" startIcon={<Add />} onClick={() => setPolicyDialog(true)}>
           Create Policy
         </Button>
       </Box>
 
       {policies.length === 0 ? (
         <Card>
-          <CardContent sx={{ textAlign: "center", py: 8 }}>
-            <Shield sx={{ fontSize: 80, color: "text.secondary", mb: 2 }} />
+          <CardContent sx={{ textAlign: 'center', py: 8 }}>
+            <Shield sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
             <Typography variant="h6" gutterBottom>
               No Security Policies Configured
             </Typography>
             <Typography color="textSecondary" paragraph>
-              Create security policies to enforce organizational compliance and
-              security standards.
+              Create security policies to enforce organizational compliance and security standards.
             </Typography>
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={() => setPolicyDialog(true)}
-            >
+            <Button variant="contained" startIcon={<Add />} onClick={() => setPolicyDialog(true)}>
               Create Your First Policy
             </Button>
           </CardContent>
         </Card>
       ) : (
         <Grid container spacing={3}>
-          {policies.map((policy) => (
+          {policies.map(policy => (
             <Grid item xs={12} key={policy.id}>
               <Card>
                 <CardContent>
                   <Box
                     sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
+                      display: 'flex',
+                      justifyContent: 'space-between',
                       mb: 2,
                     }}
                   >
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       {getPolicyIcon(policy.type)}
                       <Box sx={{ ml: 2 }}>
                         <Typography variant="h6">{policy.name}</Typography>
-                        <Box sx={{ display: "flex", gap: 1, mt: 0.5 }}>
+                        <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
                           <Chip
-                            label={policy.type.replace("_", " ")}
+                            label={policy.type.replace('_', ' ')}
                             size="small"
                             color={getPolicyColor(policy.type) as any}
                           />
                           <Chip
                             label={policy.enforcementLevel}
                             size="small"
-                            variant={
-                              policy.enforcementLevel === "hard"
-                                ? "filled"
-                                : "outlined"
-                            }
-                            color={
-                              policy.enforcementLevel === "hard"
-                                ? "error"
-                                : "default"
-                            }
+                            variant={policy.enforcementLevel === 'hard' ? 'filled' : 'outlined'}
+                            color={policy.enforcementLevel === 'hard' ? 'error' : 'default'}
                           />
                           <Chip
-                            label={policy.isActive ? "Active" : "Inactive"}
+                            label={policy.isActive ? 'Active' : 'Inactive'}
                             size="small"
-                            color={policy.isActive ? "success" : "default"}
+                            color={policy.isActive ? 'success' : 'default'}
                             icon={policy.isActive ? <CheckCircle /> : <Block />}
                           />
                         </Box>
@@ -391,10 +359,7 @@ const SecurityPolicies: React.FC = () => {
                       <IconButton onClick={() => openEditDialog(policy)}>
                         <Edit />
                       </IconButton>
-                      <IconButton
-                        onClick={() => handleDeletePolicy(policy.id)}
-                        color="error"
-                      >
+                      <IconButton onClick={() => handleDeletePolicy(policy.id)} color="error">
                         <Delete />
                       </IconButton>
                     </Box>
@@ -412,10 +377,10 @@ const SecurityPolicies: React.FC = () => {
                           </Typography>
                           <pre
                             style={{
-                              background: "#f5f5f5",
+                              background: '#f5f5f5',
                               padding: 12,
                               borderRadius: 4,
-                              overflow: "auto",
+                              overflow: 'auto',
                               fontSize: 12,
                             }}
                           >
@@ -428,10 +393,10 @@ const SecurityPolicies: React.FC = () => {
                           </Typography>
                           <pre
                             style={{
-                              background: "#f5f5f5",
+                              background: '#f5f5f5',
                               padding: 12,
                               borderRadius: 4,
-                              overflow: "auto",
+                              overflow: 'auto',
                               fontSize: 12,
                             }}
                           >
@@ -440,8 +405,7 @@ const SecurityPolicies: React.FC = () => {
                         </Grid>
                         <Grid item xs={12}>
                           <Typography variant="caption" color="textSecondary">
-                            Created by {policy.createdBy} on{" "}
-                            {formatDate(policy.createdAt)}
+                            Created by {policy.createdBy} on {formatDate(policy.createdAt)}
                           </Typography>
                         </Grid>
                       </Grid>
@@ -466,7 +430,7 @@ const SecurityPolicies: React.FC = () => {
         fullWidth
       >
         <DialogTitle>
-          {editingPolicy ? "Edit Security Policy" : "Create Security Policy"}
+          {editingPolicy ? 'Edit Security Policy' : 'Create Security Policy'}
         </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
@@ -476,9 +440,7 @@ const SecurityPolicies: React.FC = () => {
                   fullWidth
                   label="Policy Name"
                   value={policyForm.name}
-                  onChange={(e) =>
-                    setPolicyForm({ ...policyForm, name: e.target.value })
-                  }
+                  onChange={e => setPolicyForm({ ...policyForm, name: e.target.value })}
                 />
               </Grid>
 
@@ -487,7 +449,7 @@ const SecurityPolicies: React.FC = () => {
                   <InputLabel>Policy Type</InputLabel>
                   <Select
                     value={policyForm.type}
-                    onChange={(e) =>
+                    onChange={e =>
                       setPolicyForm({
                         ...policyForm,
                         type: e.target.value as any,
@@ -507,7 +469,7 @@ const SecurityPolicies: React.FC = () => {
                   <InputLabel>Enforcement Level</InputLabel>
                   <Select
                     value={policyForm.enforcementLevel}
-                    onChange={(e) =>
+                    onChange={e =>
                       setPolicyForm({
                         ...policyForm,
                         enforcementLevel: e.target.value as any,
@@ -515,16 +477,14 @@ const SecurityPolicies: React.FC = () => {
                     }
                   >
                     <MenuItem value="soft">
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <Info sx={{ mr: 1, fontSize: 20 }} />
                         Soft (Warning only)
                       </Box>
                     </MenuItem>
                     <MenuItem value="hard">
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Warning
-                          sx={{ mr: 1, fontSize: 20, color: "error.main" }}
-                        />
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Warning sx={{ mr: 1, fontSize: 20, color: 'error.main' }} />
                         Hard (Enforced)
                       </Box>
                     </MenuItem>
@@ -533,7 +493,7 @@ const SecurityPolicies: React.FC = () => {
               </Grid>
 
               {/* Policy Type Specific Rules */}
-              {policyForm.type === "security" && (
+              {policyForm.type === 'security' && (
                 <Grid item xs={12}>
                   <Typography variant="h6" gutterBottom>
                     Password Policy
@@ -545,7 +505,7 @@ const SecurityPolicies: React.FC = () => {
                         type="number"
                         label="Minimum Length"
                         value={policyForm.rules.passwordPolicy.minLength}
-                        onChange={(e) =>
+                        onChange={e =>
                           setPolicyForm({
                             ...policyForm,
                             rules: {
@@ -565,7 +525,7 @@ const SecurityPolicies: React.FC = () => {
                         type="number"
                         label="Password Expiry (days)"
                         value={policyForm.rules.passwordPolicy.expiryDays}
-                        onChange={(e) =>
+                        onChange={e =>
                           setPolicyForm({
                             ...policyForm,
                             rules: {
@@ -583,10 +543,8 @@ const SecurityPolicies: React.FC = () => {
                       <FormControlLabel
                         control={
                           <Switch
-                            checked={
-                              policyForm.rules.passwordPolicy.requireUppercase
-                            }
-                            onChange={(e) =>
+                            checked={policyForm.rules.passwordPolicy.requireUppercase}
+                            onChange={e =>
                               setPolicyForm({
                                 ...policyForm,
                                 rules: {
@@ -607,10 +565,8 @@ const SecurityPolicies: React.FC = () => {
                       <FormControlLabel
                         control={
                           <Switch
-                            checked={
-                              policyForm.rules.passwordPolicy.requireNumbers
-                            }
-                            onChange={(e) =>
+                            checked={policyForm.rules.passwordPolicy.requireNumbers}
+                            onChange={e =>
                               setPolicyForm({
                                 ...policyForm,
                                 rules: {
@@ -631,11 +587,8 @@ const SecurityPolicies: React.FC = () => {
                       <FormControlLabel
                         control={
                           <Switch
-                            checked={
-                              policyForm.rules.passwordPolicy
-                                .requireSpecialChars
-                            }
-                            onChange={(e) =>
+                            checked={policyForm.rules.passwordPolicy.requireSpecialChars}
+                            onChange={e =>
                               setPolicyForm({
                                 ...policyForm,
                                 rules: {
@@ -663,10 +616,8 @@ const SecurityPolicies: React.FC = () => {
                         fullWidth
                         type="number"
                         label="Max Session Duration (minutes)"
-                        value={
-                          policyForm.rules.sessionPolicy.maxSessionDuration
-                        }
-                        onChange={(e) =>
+                        value={policyForm.rules.sessionPolicy.maxSessionDuration}
+                        onChange={e =>
                           setPolicyForm({
                             ...policyForm,
                             rules: {
@@ -686,7 +637,7 @@ const SecurityPolicies: React.FC = () => {
                         type="number"
                         label="Idle Timeout (minutes)"
                         value={policyForm.rules.sessionPolicy.idleTimeout}
-                        onChange={(e) =>
+                        onChange={e =>
                           setPolicyForm({
                             ...policyForm,
                             rules: {
@@ -705,7 +656,7 @@ const SecurityPolicies: React.FC = () => {
                         control={
                           <Switch
                             checked={policyForm.rules.sessionPolicy.requireMFA}
-                            onChange={(e) =>
+                            onChange={e =>
                               setPolicyForm({
                                 ...policyForm,
                                 rules: {
@@ -726,7 +677,7 @@ const SecurityPolicies: React.FC = () => {
                 </Grid>
               )}
 
-              {policyForm.type === "data_retention" && (
+              {policyForm.type === 'data_retention' && (
                 <Grid item xs={12}>
                   <Typography variant="h6" gutterBottom>
                     Data Retention Settings
@@ -738,7 +689,7 @@ const SecurityPolicies: React.FC = () => {
                         type="number"
                         label="Data Retention Period (days)"
                         value={policyForm.rules.dataPolicy.retentionDays}
-                        onChange={(e) =>
+                        onChange={e =>
                           setPolicyForm({
                             ...policyForm,
                             rules: {
@@ -758,7 +709,7 @@ const SecurityPolicies: React.FC = () => {
                         type="number"
                         label="Audit Log Retention (days)"
                         value={policyForm.rules.dataPolicy.auditLogRetention}
-                        onChange={(e) =>
+                        onChange={e =>
                           setPolicyForm({
                             ...policyForm,
                             rules: {
@@ -776,10 +727,8 @@ const SecurityPolicies: React.FC = () => {
                       <FormControlLabel
                         control={
                           <Switch
-                            checked={
-                              policyForm.rules.dataPolicy.allowDataExport
-                            }
-                            onChange={(e) =>
+                            checked={policyForm.rules.dataPolicy.allowDataExport}
+                            onChange={e =>
                               setPolicyForm({
                                 ...policyForm,
                                 rules: {
@@ -800,10 +749,8 @@ const SecurityPolicies: React.FC = () => {
                       <FormControlLabel
                         control={
                           <Switch
-                            checked={
-                              policyForm.rules.dataPolicy.encryptionRequired
-                            }
-                            onChange={(e) =>
+                            checked={policyForm.rules.dataPolicy.encryptionRequired}
+                            onChange={e =>
                               setPolicyForm({
                                 ...policyForm,
                                 rules: {
@@ -833,7 +780,7 @@ const SecurityPolicies: React.FC = () => {
                   control={
                     <Switch
                       checked={policyForm.appliesTo.allUsers}
-                      onChange={(e) =>
+                      onChange={e =>
                         setPolicyForm({
                           ...policyForm,
                           appliesTo: {
@@ -848,8 +795,7 @@ const SecurityPolicies: React.FC = () => {
                 />
                 {!policyForm.appliesTo.allUsers && (
                   <Alert severity="info" sx={{ mt: 2 }}>
-                    Specific role and team targeting will be available in the
-                    next update.
+                    Specific role and team targeting will be available in the next update.
                   </Alert>
                 )}
               </Grid>
@@ -870,7 +816,7 @@ const SecurityPolicies: React.FC = () => {
             onClick={editingPolicy ? handleUpdatePolicy : handleCreatePolicy}
             variant="contained"
           >
-            {editingPolicy ? "Update Policy" : "Create Policy"}
+            {editingPolicy ? 'Update Policy' : 'Create Policy'}
           </Button>
         </DialogActions>
       </Dialog>

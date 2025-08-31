@@ -5,14 +5,14 @@ import { ApiError } from '../utils/apiError';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { db } from '../services/database';
 import { logger } from '../utils/logger';
-import { 
-  TaskPriority, 
-  TaskStatus, 
-  TaskCategory, 
-  CreateTaskDto, 
+import {
+  TaskPriority,
+  TaskStatus,
+  TaskCategory,
+  CreateTaskDto,
   UpdateTaskDto,
   TaskFilters,
-  Task 
+  Task,
 } from '../types/database';
 
 const router = Router();
@@ -46,237 +46,257 @@ const taskFiltersSchema = z.object({
   dueBefore: z.string().datetime().optional(),
   dueAfter: z.string().datetime().optional(),
   search: z.string().optional(),
-  sortBy: z.enum(['created_at', 'updated_at', 'due_date', 'title', 'priority']).default('created_at'),
+  sortBy: z
+    .enum(['created_at', 'updated_at', 'due_date', 'title', 'priority'])
+    .default('created_at'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
 // Get all tasks for the current user
-router.get('/', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const filters = taskFiltersSchema.parse(req.query);
+router.get(
+  '/',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const filters = taskFiltersSchema.parse(req.query);
 
-  // Build query
-  let query = `
+    // Build query
+    let query = `
     SELECT id, title, description, priority, status, category, due_date, completed_at, tags, created_at, updated_at
     FROM tasks 
     WHERE user_id = $1
   `;
-  const params: any[] = [userId];
-  let paramIndex = 2;
+    const params: any[] = [userId];
+    let paramIndex = 2;
 
-  // Add filters
-  if (filters.status) {
-    query += ` AND status = $${paramIndex}`;
-    params.push(filters.status);
-    paramIndex++;
-  }
+    // Add filters
+    if (filters.status) {
+      query += ` AND status = $${paramIndex}`;
+      params.push(filters.status);
+      paramIndex++;
+    }
 
-  if (filters.priority) {
-    query += ` AND priority = $${paramIndex}`;
-    params.push(filters.priority);
-    paramIndex++;
-  }
+    if (filters.priority) {
+      query += ` AND priority = $${paramIndex}`;
+      params.push(filters.priority);
+      paramIndex++;
+    }
 
-  if (filters.category) {
-    query += ` AND category = $${paramIndex}`;
-    params.push(filters.category);
-    paramIndex++;
-  }
+    if (filters.category) {
+      query += ` AND category = $${paramIndex}`;
+      params.push(filters.category);
+      paramIndex++;
+    }
 
-  if (filters.dueBefore) {
-    query += ` AND due_date <= $${paramIndex}`;
-    params.push(filters.dueBefore);
-    paramIndex++;
-  }
+    if (filters.dueBefore) {
+      query += ` AND due_date <= $${paramIndex}`;
+      params.push(filters.dueBefore);
+      paramIndex++;
+    }
 
-  if (filters.dueAfter) {
-    query += ` AND due_date >= $${paramIndex}`;
-    params.push(filters.dueAfter);
-    paramIndex++;
-  }
+    if (filters.dueAfter) {
+      query += ` AND due_date >= $${paramIndex}`;
+      params.push(filters.dueAfter);
+      paramIndex++;
+    }
 
-  if (filters.search) {
-    query += ` AND (title ILIKE $${paramIndex} OR description ILIKE $${paramIndex})`;
-    params.push(`%${filters.search}%`);
-    paramIndex++;
-  }
+    if (filters.search) {
+      query += ` AND (title ILIKE $${paramIndex} OR description ILIKE $${paramIndex})`;
+      params.push(`%${filters.search}%`);
+      paramIndex++;
+    }
 
-  // Add sorting
-  query += ` ORDER BY ${filters.sortBy} ${filters.sortOrder}`;
+    // Add sorting
+    query += ` ORDER BY ${filters.sortBy} ${filters.sortOrder}`;
 
-  // Add pagination
-  const offset = (filters.page - 1) * filters.limit;
-  query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-  params.push(filters.limit, offset);
+    // Add pagination
+    const offset = (filters.page - 1) * filters.limit;
+    query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(filters.limit, offset);
 
-  // Execute query
-  const result = await db.query(query, params);
+    // Execute query
+    const result = await db.query(query, params);
 
-  // Get total count for pagination
-  let countQuery = `SELECT COUNT(*) FROM tasks WHERE user_id = $1`;
-  const countParams = [userId];
-  let countParamIndex = 2;
+    // Get total count for pagination
+    let countQuery = `SELECT COUNT(*) FROM tasks WHERE user_id = $1`;
+    const countParams = [userId];
+    let countParamIndex = 2;
 
-  if (filters.status) {
-    countQuery += ` AND status = $${countParamIndex}`;
-    countParams.push(filters.status);
-    countParamIndex++;
-  }
+    if (filters.status) {
+      countQuery += ` AND status = $${countParamIndex}`;
+      countParams.push(filters.status);
+      countParamIndex++;
+    }
 
-  if (filters.priority) {
-    countQuery += ` AND priority = $${countParamIndex}`;
-    countParams.push(filters.priority);
-    countParamIndex++;
-  }
+    if (filters.priority) {
+      countQuery += ` AND priority = $${countParamIndex}`;
+      countParams.push(filters.priority);
+      countParamIndex++;
+    }
 
-  if (filters.category) {
-    countQuery += ` AND category = $${countParamIndex}`;
-    countParams.push(filters.category);
-    countParamIndex++;
-  }
+    if (filters.category) {
+      countQuery += ` AND category = $${countParamIndex}`;
+      countParams.push(filters.category);
+      countParamIndex++;
+    }
 
-  if (filters.search) {
-    countQuery += ` AND (title ILIKE $${countParamIndex} OR description ILIKE $${countParamIndex})`;
-    countParams.push(`%${filters.search}%`);
-  }
+    if (filters.search) {
+      countQuery += ` AND (title ILIKE $${countParamIndex} OR description ILIKE $${countParamIndex})`;
+      countParams.push(`%${filters.search}%`);
+    }
 
-  const countResult = await db.query(countQuery, countParams);
-  const total = parseInt(countResult.rows[0].count);
-  const totalPages = Math.ceil(total / filters.limit);
+    const countResult = await db.query(countQuery, countParams);
+    const total = parseInt(countResult.rows[0].count);
+    const totalPages = Math.ceil(total / filters.limit);
 
-  _res.json({
-    success: true,
-    data: {
-      tasks: result.rows,
-      pagination: {
-        page: filters.page,
-        limit: filters.limit,
-        total,
-        totalPages,
+    _res.json({
+      success: true,
+      data: {
+        tasks: result.rows,
+        pagination: {
+          page: filters.page,
+          limit: filters.limit,
+          total,
+          totalPages,
+        },
       },
-    },
-  });
-}));
+    });
+  })
+);
 
 // Get a single task by ID
-router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const { id } = req.params;
+router.get(
+  '/:id',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const { id } = req.params;
 
-  const task = await db.findOne('tasks', { id, user_id: userId });
-  
-  if (!task) {
-    throw new ApiError(404, 'Task not found');
-  }
+    const task = await db.findOne('tasks', { id, user_id: userId });
 
-  _res.json({
-    success: true,
-    data: {
-      task,
-    },
-  });
-}));
+    if (!task) {
+      throw new ApiError(404, 'Task not found');
+    }
+
+    _res.json({
+      success: true,
+      data: {
+        task,
+      },
+    });
+  })
+);
 
 // Create a new task
-router.post('/', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const validatedData = createTaskSchema.parse(req.body);
+router.post(
+  '/',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const validatedData = createTaskSchema.parse(req.body);
 
-  const taskData = {
-    user_id: userId,
-    title: validatedData.title,
-    description: validatedData.description || null,
-    priority: validatedData.priority,
-    category: validatedData.category,
-    due_date: validatedData.dueDate ? new Date(validatedData.dueDate) : null,
-    tags: validatedData.tags,
-    metadata: {},
-  };
+    const taskData = {
+      user_id: userId,
+      title: validatedData.title,
+      description: validatedData.description || null,
+      priority: validatedData.priority,
+      category: validatedData.category,
+      due_date: validatedData.dueDate ? new Date(validatedData.dueDate) : null,
+      tags: validatedData.tags,
+      metadata: {},
+    };
 
-  const task = await db.insert('tasks', taskData);
+    const task = await db.insert('tasks', taskData);
 
-  logger.info('Task created:', { taskId: task.id, userId });
+    logger.info('Task created:', { taskId: task.id, userId });
 
-  _res.status(201).json({
-    success: true,
-    message: 'Task created successfully',
-    data: {
-      task,
-    },
-  });
-}));
+    _res.status(201).json({
+      success: true,
+      message: 'Task created successfully',
+      data: {
+        task,
+      },
+    });
+  })
+);
 
 // Update a task
-router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const { id } = req.params;
-  const validatedData = updateTaskSchema.parse(req.body);
+router.put(
+  '/:id',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const { id } = req.params;
+    const validatedData = updateTaskSchema.parse(req.body);
 
-  // Check if task exists and belongs to user
-  const existingTask = await db.findOne('tasks', { id, user_id: userId });
-  if (!existingTask) {
-    throw new ApiError(404, 'Task not found');
-  }
-
-  const updateData: any = {};
-  
-  if (validatedData.title !== undefined) updateData.title = validatedData.title;
-  if (validatedData.description !== undefined) updateData.description = validatedData.description;
-  if (validatedData.priority !== undefined) updateData.priority = validatedData.priority;
-  if (validatedData.status !== undefined) {
-    updateData.status = validatedData.status;
-    // Set completed_at when task is completed
-    if (validatedData.status === 'completed') {
-      updateData.completed_at = new Date();
-    } else if (existingTask.completed_at) {
-      updateData.completed_at = null;
+    // Check if task exists and belongs to user
+    const existingTask = await db.findOne('tasks', { id, user_id: userId });
+    if (!existingTask) {
+      throw new ApiError(404, 'Task not found');
     }
-  }
-  if (validatedData.category !== undefined) updateData.category = validatedData.category;
-  if (validatedData.dueDate !== undefined) {
-    updateData.due_date = validatedData.dueDate ? new Date(validatedData.dueDate) : null;
-  }
-  if (validatedData.tags !== undefined) updateData.tags = validatedData.tags;
 
-  const updatedTask = await db.update('tasks', updateData, { id, user_id: userId });
+    const updateData: any = {};
 
-  logger.info('Task updated:', { taskId: id, userId });
+    if (validatedData.title !== undefined) updateData.title = validatedData.title;
+    if (validatedData.description !== undefined) updateData.description = validatedData.description;
+    if (validatedData.priority !== undefined) updateData.priority = validatedData.priority;
+    if (validatedData.status !== undefined) {
+      updateData.status = validatedData.status;
+      // Set completed_at when task is completed
+      if (validatedData.status === 'completed') {
+        updateData.completed_at = new Date();
+      } else if (existingTask.completed_at) {
+        updateData.completed_at = null;
+      }
+    }
+    if (validatedData.category !== undefined) updateData.category = validatedData.category;
+    if (validatedData.dueDate !== undefined) {
+      updateData.due_date = validatedData.dueDate ? new Date(validatedData.dueDate) : null;
+    }
+    if (validatedData.tags !== undefined) updateData.tags = validatedData.tags;
 
-  _res.json({
-    success: true,
-    message: 'Task updated successfully',
-    data: {
-      task: updatedTask,
-    },
-  });
-}));
+    const updatedTask = await db.update('tasks', updateData, { id, user_id: userId });
+
+    logger.info('Task updated:', { taskId: id, userId });
+
+    _res.json({
+      success: true,
+      message: 'Task updated successfully',
+      data: {
+        task: updatedTask,
+      },
+    });
+  })
+);
 
 // Delete a task
-router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const { id } = req.params;
+router.delete(
+  '/:id',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const { id } = req.params;
 
-  // Check if task exists and belongs to user
-  const existingTask = await db.findOne('tasks', { id, user_id: userId });
-  if (!existingTask) {
-    throw new ApiError(404, 'Task not found');
-  }
+    // Check if task exists and belongs to user
+    const existingTask = await db.findOne('tasks', { id, user_id: userId });
+    if (!existingTask) {
+      throw new ApiError(404, 'Task not found');
+    }
 
-  await db.delete('tasks', { id, user_id: userId });
+    await db.delete('tasks', { id, user_id: userId });
 
-  logger.info('Task deleted:', { taskId: id, userId });
+    logger.info('Task deleted:', { taskId: id, userId });
 
-  _res.json({
-    success: true,
-    message: 'Task deleted successfully',
-  });
-}));
+    _res.json({
+      success: true,
+      message: 'Task deleted successfully',
+    });
+  })
+);
 
 // Get task statistics
-router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
+router.get(
+  '/stats/overview',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
 
-  const stats = await db.query(`
+    const stats = await db.query(
+      `
     SELECT 
       COUNT(*) as total_tasks,
       COUNT(*) FILTER (WHERE status = 'pending') as pending_tasks,
@@ -287,34 +307,43 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _re
       COUNT(*) FILTER (WHERE due_date IS NOT NULL AND due_date BETWEEN NOW() AND NOW() + INTERVAL '7 days' AND status != 'completed') as due_this_week
     FROM tasks 
     WHERE user_id = $1
-  `, [userId]);
+  `,
+      [userId]
+    );
 
-  const priorityStats = await db.query(`
+    const priorityStats = await db.query(
+      `
     SELECT 
       priority,
       COUNT(*) as count
     FROM tasks 
     WHERE user_id = $1 AND status != 'completed'
     GROUP BY priority
-  `, [userId]);
+  `,
+      [userId]
+    );
 
-  const categoryStats = await db.query(`
+    const categoryStats = await db.query(
+      `
     SELECT 
       category,
       COUNT(*) as count
     FROM tasks 
     WHERE user_id = $1
     GROUP BY category
-  `, [userId]);
+  `,
+      [userId]
+    );
 
-  _res.json({
-    success: true,
-    data: {
-      overview: stats.rows[0],
-      byPriority: priorityStats.rows,
-      byCategory: categoryStats.rows,
-    },
-  });
-}));
+    _res.json({
+      success: true,
+      data: {
+        overview: stats.rows[0],
+        byPriority: priorityStats.rows,
+        byCategory: categoryStats.rows,
+      },
+    });
+  })
+);
 
-export default router; 
+export default router;

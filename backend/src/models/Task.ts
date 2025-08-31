@@ -1,5 +1,5 @@
 import { Model, DataTypes, Optional } from 'sequelize';
-import { sequelize } from './index';
+import { sequelize } from '../config/sequelize';
 
 export interface TaskAttributes {
   id: string;
@@ -21,7 +21,25 @@ export interface TaskAttributes {
   updatedAt?: Date;
 }
 
-export interface TaskCreationAttributes extends Optional<TaskAttributes, 'id' | 'goalId' | 'description' | 'dueDate' | 'priority' | 'status' | 'category' | 'tags' | 'estimatedTime' | 'actualTime' | 'isRecurring' | 'recurringPattern' | 'completedAt' | 'createdAt' | 'updatedAt'> {}
+export interface TaskCreationAttributes
+  extends Optional<
+    TaskAttributes,
+    | 'id'
+    | 'goalId'
+    | 'description'
+    | 'dueDate'
+    | 'priority'
+    | 'status'
+    | 'category'
+    | 'tags'
+    | 'estimatedTime'
+    | 'actualTime'
+    | 'isRecurring'
+    | 'recurringPattern'
+    | 'completedAt'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
 export class Task extends Model<TaskAttributes, TaskCreationAttributes> implements TaskAttributes {
   public id!: string;

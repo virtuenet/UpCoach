@@ -1,14 +1,14 @@
 import { Router } from 'express';
-import { 
-  validateBody, 
-  registerSchema, 
-  loginSchema, 
+import {
+  validateBody,
+  registerSchema,
+  loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
   changePasswordSchema,
   updateProfileSchema,
   verify2FASchema,
-  createValidator
+  createValidator,
 } from '../middleware/zodValidation';
 import { AuthController } from '../controllers/AuthController';
 import { authenticate } from '../middleware/auth';
@@ -89,12 +89,7 @@ router.patch(
 );
 
 // Enable 2FA
-router.post(
-  '/2fa/enable',
-  authenticate,
-  validateBody(verify2FASchema),
-  authController.enable2FA
-);
+router.post('/2fa/enable', authenticate, validateBody(verify2FASchema), authController.enable2FA);
 
 // Verify 2FA code
 router.post(
@@ -147,17 +142,14 @@ router.get(
  */
 router.post(
   '/check-username',
-  validateAsync(
-    usernameSchema,
-    async (username) => {
-      // Custom check for username availability
-      const exists = await authController.checkUsernameExists(username);
-      if (exists) {
-        return { error: 'Username is already taken' };
-      }
-      return true;
+  validateAsync(usernameSchema, async username => {
+    // Custom check for username availability
+    const exists = await authController.checkUsernameExists(username);
+    if (exists) {
+      return { error: 'Username is already taken' };
     }
-  ),
+    return true;
+  }),
   authController.checkUsername
 );
 

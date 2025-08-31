@@ -19,7 +19,7 @@ export { UnifiedContent as ContentArticle } from './UnifiedContent';
 export { UnifiedContent as Course } from './UnifiedContent';
 export { UnifiedContent as Template } from './UnifiedContent';
 
-// Category aliases  
+// Category aliases
 export { UnifiedCategory as Category } from './UnifiedCategory';
 export { UnifiedCategory as ContentCategory } from './UnifiedCategory';
 
@@ -37,13 +37,7 @@ export { UnifiedInteraction as ContentInteraction } from './UnifiedInteraction';
 
 // ==================== Primary Exports ====================
 
-export {
-  UnifiedContent,
-  UnifiedCategory,
-  UnifiedTag,
-  UnifiedMedia,
-  UnifiedInteraction
-};
+export { UnifiedContent, UnifiedCategory, UnifiedTag, UnifiedMedia, UnifiedInteraction };
 
 // ==================== Helper Types ====================
 
@@ -64,51 +58,51 @@ export function initializeCMSModels(sequelize: Sequelize): void {
   UnifiedTag.initialize(sequelize);
   UnifiedMedia.initialize(sequelize);
   UnifiedInteraction.initialize(sequelize);
-  
+
   // Set up associations
   UnifiedContent.associate();
   UnifiedCategory.associate();
-  
+
   // Additional associations
   UnifiedContent.belongsTo(UnifiedCategory, {
     foreignKey: 'categoryId',
     as: 'category',
   });
-  
+
   UnifiedContent.belongsToMany(UnifiedTag, {
     through: 'content_tag_relations',
     foreignKey: 'contentId',
     otherKey: 'tagId',
     as: 'tags',
   });
-  
+
   UnifiedContent.hasMany(UnifiedMedia, {
     foreignKey: 'contentId',
     as: 'media',
   });
-  
+
   UnifiedContent.hasMany(UnifiedInteraction, {
     foreignKey: 'contentId',
     as: 'interactions',
   });
-  
+
   UnifiedTag.belongsToMany(UnifiedContent, {
     through: 'content_tag_relations',
     foreignKey: 'tagId',
     otherKey: 'contentId',
     as: 'contents',
   });
-  
+
   UnifiedMedia.belongsTo(UnifiedContent, {
     foreignKey: 'contentId',
     as: 'content',
   });
-  
+
   UnifiedInteraction.belongsTo(UnifiedContent, {
     foreignKey: 'contentId',
     as: 'content',
   });
-  
+
   logger.info('✅ CMS models initialized with unified structure');
 }
 
@@ -119,5 +113,5 @@ export default {
   UnifiedTag,
   UnifiedMedia,
   UnifiedInteraction,
-  initializeCMSModels
+  initializeCMSModels,
 };

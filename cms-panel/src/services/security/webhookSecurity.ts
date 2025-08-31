@@ -80,12 +80,9 @@ class WebhookSecurityService {
   /**
    * Validate incoming webhook request
    */
-  async validateWebhook(
-    name: string,
-    payload: WebhookPayload
-  ): Promise<WebhookValidationResult> {
+  async validateWebhook(name: string, payload: WebhookPayload): Promise<WebhookValidationResult> {
     const config = this.configs.get(name);
-    
+
     if (!config) {
       logger.error(`Webhook '${name}' not configured`);
       return {
@@ -137,7 +134,7 @@ class WebhookSecurityService {
     // 3. Validate timestamp (replay protection)
     if (config.replayProtection) {
       const timestamp = payload.timestamp || this.extractTimestamp(payload.headers);
-      
+
       if (!timestamp) {
         logger.warn('Webhook missing timestamp for replay protection');
         validationDetails.timestampValid = false;
@@ -150,7 +147,7 @@ class WebhookSecurityService {
 
       const now = Date.now() / 1000;
       const age = Math.abs(now - timestamp);
-      
+
       if (age > (config.replayWindow || this.DEFAULT_REPLAY_WINDOW)) {
         logger.warn(`Webhook timestamp too old: ${age} seconds`);
         validationDetails.timestampValid = false;
@@ -179,7 +176,7 @@ class WebhookSecurityService {
 
     // 4. Validate signature
     const signature = this.extractSignature(payload.headers, name);
-    
+
     if (!signature) {
       logger.warn('Webhook missing signature');
       validationDetails.signatureValid = false;
@@ -190,11 +187,7 @@ class WebhookSecurityService {
       };
     }
 
-    const expectedSignature = this.generateSignature(
-      config,
-      payload.body,
-      payload.timestamp
-    );
+    const expectedSignature = this.generateSignature(config, payload.body, payload.timestamp);
 
     const signatureValid = this.secureCompare(signature, expectedSignature);
     validationDetails.signatureValid = signatureValid;
@@ -218,13 +211,9 @@ class WebhookSecurityService {
   /**
    * Generate signature for outgoing webhook
    */
-  generateWebhookSignature(
-    name: string,
-    payload: any,
-    timestamp?: number
-  ): string {
+  generateWebhookSignature(name: string, payload: any, timestamp?: number): string {
     const config = this.configs.get(name);
-    
+
     if (!config) {
       throw new Error(`Webhook '${name}' not configured`);
     }
@@ -235,10 +224,7 @@ class WebhookSecurityService {
   /**
    * Generate webhook headers for outgoing request
    */
-  generateWebhookHeaders(
-    name: string,
-    payload: any
-  ): Record<string, string> {
+  generateWebhookHeaders(name: string, payload: any): Record<string, string> {
     const timestamp = Math.floor(Date.now() / 1000);
     const signature = this.generateWebhookSignature(name, payload, timestamp);
 
@@ -253,34 +239,23 @@ class WebhookSecurityService {
   /**
    * Generate signature using HMAC
    */
-  private generateSignature(
-    config: WebhookConfig,
-    payload: any,
-    timestamp?: number
-  ): string {
+  private generateSignature(config: WebhookConfig, payload: any, timestamp?: number): string {
     const algorithm = config.algorithm || this.DEFAULT_ALGORITHM;
-    const payloadString = typeof payload === 'string' 
-      ? payload 
-      : JSON.stringify(payload);
+    const payloadString = typeof payload === 'string' ? payload : JSON.stringify(payload);
 
     // Include timestamp in signature if provided
-    const signaturePayload = timestamp 
-      ? `${timestamp}.${payloadString}`
-      : payloadString;
+    const signaturePayload = timestamp ? `${timestamp}.${payloadString}` : payloadString;
 
     const hmac = crypto.createHmac(algorithm, config.secret);
     hmac.update(signaturePayload);
-    
+
     return `${algorithm}=${hmac.digest('hex')}`;
   }
 
   /**
    * Extract signature from headers
    */
-  private extractSignature(
-    headers: Record<string, string>,
-    name: string
-  ): string | null {
+  private extractSignature(headers: Record<string, string>, name: string): string | null {
     // Try multiple header variations
     const signatureHeaders = [
       'x-webhook-signature',
@@ -304,11 +279,7 @@ class WebhookSecurityService {
    * Extract timestamp from headers
    */
   private extractTimestamp(headers: Record<string, string>): number | null {
-    const timestampHeaders = [
-      'x-webhook-timestamp',
-      'x-timestamp',
-      'timestamp',
-    ];
+    const timestampHeaders = ['x-webhook-timestamp', 'x-timestamp', 'timestamp'];
 
     for (const header of timestampHeaders) {
       const value = headers[header] || headers[header.toLowerCase()];
@@ -342,11 +313,7 @@ class WebhookSecurityService {
   /**
    * Generate unique request ID for replay protection
    */
-  private generateRequestId(
-    name: string,
-    payload: WebhookPayload,
-    timestamp: number
-  ): string {
+  private generateRequestId(name: string, payload: WebhookPayload, timestamp: number): string {
     const hash = crypto.createHash('sha256');
     hash.update(`${name}:${timestamp}:${JSON.stringify(payload.body)}`);
     return hash.digest('hex');
@@ -372,7 +339,7 @@ class WebhookSecurityService {
   validateWebhookUrl(url: string): boolean {
     try {
       const parsedUrl = new URL(url);
-      
+
       // Must be HTTPS in production
       if (import.meta.env.PROD && parsedUrl.protocol !== 'https:') {
         logger.warn(`Webhook URL must use HTTPS: ${url}`);
@@ -419,7 +386,7 @@ class WebhookSecurityService {
     testUrl: string
   ): Promise<{ success: boolean; error?: string; response?: any }> {
     const config = this.configs.get(name);
-    
+
     if (!config) {
       return {
         success: false,

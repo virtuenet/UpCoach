@@ -20,9 +20,16 @@ export interface CommunityGroupAttributes {
   updatedAt: Date;
 }
 
-export interface CommunityGroupCreationAttributes extends Omit<CommunityGroupAttributes, 'id' | 'memberCount' | 'postCount' | 'createdAt' | 'updatedAt'> {}
+export interface CommunityGroupCreationAttributes
+  extends Omit<
+    CommunityGroupAttributes,
+    'id' | 'memberCount' | 'postCount' | 'createdAt' | 'updatedAt'
+  > {}
 
-export class CommunityGroup extends Model<CommunityGroupAttributes, CommunityGroupCreationAttributes> implements CommunityGroupAttributes {
+export class CommunityGroup
+  extends Model<CommunityGroupAttributes, CommunityGroupCreationAttributes>
+  implements CommunityGroupAttributes
+{
   public id!: string;
   public name!: string;
   public slug!: string;
@@ -49,17 +56,17 @@ export class CommunityGroup extends Model<CommunityGroupAttributes, CommunityGro
   public static associate(models: any) {
     CommunityGroup.belongsTo(models.User, {
       foreignKey: 'createdBy',
-      as: 'creator'
+      as: 'creator',
     });
-    
+
     CommunityGroup.hasMany(models.GroupMember, {
       foreignKey: 'groupId',
-      as: 'members'
+      as: 'members',
     });
-    
+
     CommunityGroup.hasMany(models.GroupPost, {
       foreignKey: 'groupId',
-      as: 'posts'
+      as: 'posts',
     });
   }
 }

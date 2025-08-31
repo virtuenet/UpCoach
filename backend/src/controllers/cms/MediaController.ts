@@ -23,7 +23,7 @@ const storage = multer.diskStorage({
     const name = path.basename(file.originalname, ext);
     const safeName = name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
     cb(null, `${safeName}-${uniqueSuffix}${ext}`);
-  }
+  },
 });
 
 const upload = multer({
@@ -45,15 +45,15 @@ const upload = multer({
       'audio/wav',
       'application/pdf',
       'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ];
-    
+
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
       cb(new Error('Invalid file type'));
     }
-  }
+  },
 });
 
 export class MediaController {
@@ -78,7 +78,8 @@ export class MediaController {
       if (file.mimetype.startsWith('image/')) mediaType = 'image';
       else if (file.mimetype.startsWith('video/')) mediaType = 'video';
       else if (file.mimetype.startsWith('audio/')) mediaType = 'audio';
-      else if (file.mimetype.includes('pdf') || file.mimetype.includes('document')) mediaType = 'document';
+      else if (file.mimetype.includes('pdf') || file.mimetype.includes('document'))
+        mediaType = 'document';
 
       // Process image files
       let width, height, thumbnailUrl;
@@ -94,7 +95,7 @@ export class MediaController {
             .resize(300, 300, { fit: 'cover' })
             .jpeg({ quality: 80 })
             .toFile(thumbnailPath);
-          
+
           thumbnailUrl = `/uploads/media/${path.basename(thumbnailPath)}`;
         } catch (error) {
           logger.error('Error processing image:', error);
@@ -144,7 +145,8 @@ export class MediaController {
         if (file.mimetype.startsWith('image/')) mediaType = 'image';
         else if (file.mimetype.startsWith('video/')) mediaType = 'video';
         else if (file.mimetype.startsWith('audio/')) mediaType = 'audio';
-        else if (file.mimetype.includes('pdf') || file.mimetype.includes('document')) mediaType = 'document';
+        else if (file.mimetype.includes('pdf') || file.mimetype.includes('document'))
+          mediaType = 'document';
 
         let width, height, thumbnailUrl;
         if (mediaType === 'image') {
@@ -158,7 +160,7 @@ export class MediaController {
               .resize(300, 300, { fit: 'cover' })
               .jpeg({ quality: 80 })
               .toFile(thumbnailPath);
-            
+
             thumbnailUrl = `/uploads/media/${path.basename(thumbnailPath)}`;
           } catch (error) {
             logger.error('Error processing image:', error);
@@ -201,23 +203,23 @@ export class MediaController {
         uploadedBy,
         search,
         sortBy = 'createdAt',
-        sortOrder = 'DESC'
+        sortOrder = 'DESC',
       } = req.query;
 
       const offset = (Number(page) - 1) * Number(limit);
-      
+
       const where: any = {};
-      
+
       if (type) where.type = type;
       if (contentId) where.contentId = contentId;
       if (uploadedBy) where.uploadedBy = uploadedBy;
-      
+
       if (search) {
         where[Op.or as any] = [
           { filename: { [Op.iLike]: `%${search}%` } },
           { originalFilename: { [Op.iLike]: `%${search}%` } },
           { 'metadata.alt': { [Op.iLike]: `%${search}%` } },
-          { 'metadata.caption': { [Op.iLike]: `%${search}%` } }
+          { 'metadata.caption': { [Op.iLike]: `%${search}%` } },
         ];
       }
 
@@ -230,9 +232,9 @@ export class MediaController {
           {
             model: User,
             as: 'uploader',
-            attributes: ['id', 'name', 'email', 'avatar']
-          }
-        ]
+            attributes: ['id', 'name', 'email', 'avatar'],
+          },
+        ],
       });
 
       _res.json({
@@ -241,8 +243,8 @@ export class MediaController {
           page: Number(page),
           limit: Number(limit),
           total: count,
-          totalPages: Math.ceil(count / Number(limit))
-        }
+          totalPages: Math.ceil(count / Number(limit)),
+        },
       });
     } catch (error) {
       logger.error('Error fetching media:', error);
@@ -260,14 +262,14 @@ export class MediaController {
           {
             model: User,
             as: 'uploader',
-            attributes: ['id', 'name', 'email', 'avatar']
+            attributes: ['id', 'name', 'email', 'avatar'],
           },
           {
             model: Content,
             as: 'content',
-            attributes: ['id', 'title', 'slug']
-          }
-        ]
+            attributes: ['id', 'title', 'slug'],
+          },
+        ],
       });
 
       if (!media) {
@@ -299,7 +301,7 @@ export class MediaController {
 
       await media.update({
         metadata: { ...media.metadata, ...metadata },
-        isPublic: isPublic !== undefined ? isPublic : media.isPublic
+        isPublic: isPublic !== undefined ? isPublic : media.isPublic,
       });
 
       _res.json(media);
@@ -347,14 +349,14 @@ export class MediaController {
     try {
       const totalCount = await ContentMedia.count();
       const totalSize = await ContentMedia.sum('size');
-      
+
       const typeStats = await ContentMedia.findAll({
         attributes: [
           'type',
           [require('sequelize').fn('COUNT', '*'), 'count'],
-          [require('sequelize').fn('SUM', require('sequelize').col('size')), 'totalSize']
+          [require('sequelize').fn('SUM', require('sequelize').col('size')), 'totalSize'],
         ],
-        group: ['type']
+        group: ['type'],
       });
 
       const recentUploads = await ContentMedia.findAll({
@@ -364,16 +366,16 @@ export class MediaController {
           {
             model: User,
             as: 'uploader',
-            attributes: ['id', 'name', 'avatar']
-          }
-        ]
+            attributes: ['id', 'name', 'avatar'],
+          },
+        ],
       });
 
       _res.json({
         totalCount,
         totalSize,
         typeStats,
-        recentUploads
+        recentUploads,
       });
     } catch (error) {
       logger.error('Error fetching media stats:', error);

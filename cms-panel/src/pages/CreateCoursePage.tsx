@@ -1,8 +1,8 @@
-import { useNavigate } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 export default function CreateCoursePage() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -21,5 +21,5 @@ export default function CreateCoursePage() {
         <p className="text-gray-500">Course builder functionality coming soon...</p>
       </div>
     </div>
-  )
-} 
+  );
+}

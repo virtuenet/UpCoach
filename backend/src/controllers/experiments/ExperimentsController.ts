@@ -62,7 +62,7 @@ export class ExperimentsController {
       _res.status(500).json({
         success: false,
         error: 'Failed to create experiment',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: (error as Error)?.message || 'Unknown error',
       });
     }
   }
@@ -72,13 +72,7 @@ export class ExperimentsController {
    */
   async getExperiments(req: Request, _res: Response): Promise<void> {
     try {
-      const {
-        status,
-        page = 1,
-        limit = 20,
-        sortBy = 'createdAt',
-        sortOrder = 'DESC',
-      } = req.query;
+      const { status, page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'DESC' } = req.query;
 
       const whereClause: any = {};
       if (status) {
@@ -171,7 +165,11 @@ export class ExperimentsController {
       }
 
       // Prevent modification of active experiments
-      if (experiment.status === 'active' && updateData.status !== 'paused' && updateData.status !== 'completed') {
+      if (
+        experiment.status === 'active' &&
+        updateData.status !== 'paused' &&
+        updateData.status !== 'completed'
+      ) {
         _res.status(400).json({
           success: false,
           error: 'Cannot modify active experiment configuration. Pause experiment first.',
@@ -191,7 +189,7 @@ export class ExperimentsController {
       _res.status(500).json({
         success: false,
         error: 'Failed to update experiment',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: (error as Error)?.message || 'Unknown error',
       });
     }
   }
@@ -416,4 +414,4 @@ export class ExperimentsController {
   }
 }
 
-export default ExperimentsController; 
+export default ExperimentsController;

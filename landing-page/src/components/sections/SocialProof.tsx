@@ -1,102 +1,102 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { CheckCircle, TrendingUp, Users, Award, Clock } from "lucide-react";
-import Image from "next/image";
+import { motion } from 'framer-motion';
+import { CheckCircle, TrendingUp, Users, Award, Clock } from 'lucide-react';
+import Image from 'next/image';
 
 const metrics = [
   {
-    value: "50,000+",
-    label: "Active Users",
-    description: "Growing community of achievers",
+    value: '50,000+',
+    label: 'Active Users',
+    description: 'Growing community of achievers',
     icon: Users,
-    color: "text-blue-600",
-    bgColor: "bg-blue-100",
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-100',
   },
   {
-    value: "92%",
-    label: "Goal Achievement",
-    description: "Users reaching their targets",
+    value: '92%',
+    label: 'Goal Achievement',
+    description: 'Users reaching their targets',
     icon: TrendingUp,
-    color: "text-green-600",
-    bgColor: "bg-green-100",
+    color: 'text-green-600',
+    bgColor: 'bg-green-100',
   },
   {
-    value: "4.9/5",
-    label: "App Store Rating",
-    description: "From 10,000+ reviews",
+    value: '4.9/5',
+    label: 'App Store Rating',
+    description: 'From 10,000+ reviews',
     icon: Award,
-    color: "text-yellow-600",
-    bgColor: "bg-yellow-100",
+    color: 'text-yellow-600',
+    bgColor: 'bg-yellow-100',
   },
   {
-    value: "3M+",
-    label: "Habits Tracked",
-    description: "Total habits monitored",
+    value: '3M+',
+    label: 'Habits Tracked',
+    description: 'Total habits monitored',
     icon: CheckCircle,
-    color: "text-purple-600",
-    bgColor: "bg-purple-100",
+    color: 'text-purple-600',
+    bgColor: 'bg-purple-100',
   },
 ];
 
 const successStories = [
   {
-    name: "Jessica Martinez",
-    achievement: "Lost 30 lbs in 4 months",
+    name: 'Jessica Martinez',
+    achievement: 'Lost 30 lbs in 4 months',
     story:
-      "The progress photos feature kept me motivated. Seeing my transformation visually made all the difference.",
-    beforeAfter: { before: "180 lbs", after: "150 lbs", duration: "4 months" },
-    image: "/testimonials/jessica.jpg",
-    category: "Fitness",
+      'The progress photos feature kept me motivated. Seeing my transformation visually made all the difference.',
+    beforeAfter: { before: '180 lbs', after: '150 lbs', duration: '4 months' },
+    image: '/testimonials/jessica.jpg',
+    category: 'Fitness',
   },
   {
-    name: "Ryan Chen",
-    achievement: "Built a $100K business",
+    name: 'Ryan Chen',
+    achievement: 'Built a $100K business',
     story:
-      "Daily voice journaling helped me clarify my business vision. The AI insights identified opportunities I was missing.",
-    beforeAfter: { before: "$0 MRR", after: "$8.5K MRR", duration: "8 months" },
-    image: "/testimonials/ryan.jpg",
-    category: "Business",
+      'Daily voice journaling helped me clarify my business vision. The AI insights identified opportunities I was missing.',
+    beforeAfter: { before: '$0 MRR', after: '$8.5K MRR', duration: '8 months' },
+    image: '/testimonials/ryan.jpg',
+    category: 'Business',
   },
   {
-    name: "Maria Silva",
-    achievement: "Overcame anxiety & depression",
+    name: 'Maria Silva',
+    achievement: 'Overcame anxiety & depression',
     story:
-      "The mood tracking and AI coaching helped me identify triggers and develop healthy coping mechanisms.",
+      'The mood tracking and AI coaching helped me identify triggers and develop healthy coping mechanisms.',
     beforeAfter: {
-      before: "Daily anxiety",
-      after: "90% reduction",
-      duration: "6 months",
+      before: 'Daily anxiety',
+      after: '90% reduction',
+      duration: '6 months',
     },
-    image: "/testimonials/maria.jpg",
-    category: "Mental Health",
+    image: '/testimonials/maria.jpg',
+    category: 'Mental Health',
   },
 ];
 
 const awards = [
   {
-    title: "App of the Day",
-    provider: "App Store",
-    date: "2024",
-    icon: "🏆",
+    title: 'App of the Day',
+    provider: 'App Store',
+    date: '2024',
+    icon: '🏆',
   },
   {
-    title: "Best Wellness App",
-    provider: "TechCrunch",
-    date: "2024",
-    icon: "🥇",
+    title: 'Best Wellness App',
+    provider: 'TechCrunch',
+    date: '2024',
+    icon: '🥇',
   },
   {
     title: "Editor's Choice",
-    provider: "Google Play",
-    date: "2024",
-    icon: "⭐",
+    provider: 'Google Play',
+    date: '2024',
+    icon: '⭐',
   },
   {
-    title: "Top 10 Productivity",
-    provider: "Product Hunt",
-    date: "2023",
-    icon: "🚀",
+    title: 'Top 10 Productivity',
+    provider: 'Product Hunt',
+    date: '2023',
+    icon: '🚀',
   },
 ];
 
@@ -118,13 +118,12 @@ export default function SocialProof() {
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 mt-2">
             Trusted by Thousands
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-secondary-600">
-              {" "}
+              {' '}
               Worldwide
             </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Join a community of achievers who are transforming their lives with
-            UpCoach
+            Join a community of achievers who are transforming their lives with UpCoach
           </p>
         </motion.div>
 
@@ -152,15 +151,9 @@ export default function SocialProof() {
                 >
                   <Icon className={`w-6 h-6 ${metric.color}`} />
                 </div>
-                <div className="text-3xl font-bold text-gray-900 mb-1">
-                  {metric.value}
-                </div>
-                <div className="text-sm font-semibold text-gray-700">
-                  {metric.label}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {metric.description}
-                </div>
+                <div className="text-3xl font-bold text-gray-900 mb-1">{metric.value}</div>
+                <div className="text-sm font-semibold text-gray-700">{metric.label}</div>
+                <div className="text-xs text-gray-500 mt-1">{metric.description}</div>
               </motion.div>
             );
           })}
@@ -189,9 +182,7 @@ export default function SocialProof() {
               >
                 <span className="text-3xl">{award.icon}</span>
                 <div>
-                  <div className="font-semibold text-gray-900">
-                    {award.title}
-                  </div>
+                  <div className="font-semibold text-gray-900">{award.title}</div>
                   <div className="text-sm text-gray-600">
                     {award.provider} • {award.date}
                   </div>
@@ -208,9 +199,7 @@ export default function SocialProof() {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <h3 className="text-2xl font-bold text-center text-gray-900 mb-12">
-            Success Stories
-          </h3>
+          <h3 className="text-2xl font-bold text-center text-gray-900 mb-12">Success Stories</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {successStories.map((story, index) => (
               <motion.div
@@ -233,9 +222,7 @@ export default function SocialProof() {
                     <div className="absolute inset-0 bg-black/20"></div>
                     <div className="absolute bottom-4 left-4 text-white">
                       <div className="font-bold text-lg">{story.name}</div>
-                      <div className="text-sm opacity-90">
-                        {story.achievement}
-                      </div>
+                      <div className="text-sm opacity-90">{story.achievement}</div>
                     </div>
                   </div>
                 </div>
@@ -263,9 +250,7 @@ export default function SocialProof() {
                     </div>
                     <div className="text-center">
                       <Clock className="w-4 h-4 inline mr-1 text-gray-400" />
-                      <span className="text-sm text-gray-600">
-                        {story.beforeAfter.duration}
-                      </span>
+                      <span className="text-sm text-gray-600">{story.beforeAfter.duration}</span>
                     </div>
                   </div>
                 </div>

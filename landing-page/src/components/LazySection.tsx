@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
 interface LazySectionProps {
   children: React.ReactNode;
@@ -12,9 +12,9 @@ interface LazySectionProps {
 
 export default function LazySection({
   children,
-  className = "",
+  className = '',
   threshold = 0.1,
-  rootMargin = "50px",
+  rootMargin = '50px',
   fallback = <div className="h-96 bg-gray-50 animate-pulse rounded-xl" />,
 }: LazySectionProps) {
   const [isVisible, setIsVisible] = useState(false);
@@ -32,7 +32,7 @@ export default function LazySection({
       {
         threshold,
         rootMargin,
-      },
+      }
     );
 
     const currentRef = sectionRef.current;

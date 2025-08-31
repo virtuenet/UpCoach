@@ -3,6 +3,8 @@
  * Uses the unified UpCoach Design System
  */
 
+import { createTheme } from '@mui/material/styles';
+import { lightTheme, darkTheme } from '../../../shared/styles/theme';
 
 // Use the unified light theme from the design system
 const theme = lightTheme;

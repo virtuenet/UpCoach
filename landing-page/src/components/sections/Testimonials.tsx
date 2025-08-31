@@ -1,75 +1,75 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { Star, Quote } from "lucide-react";
-import { useState } from "react";
+import { motion } from 'framer-motion';
+import { Star, Quote } from 'lucide-react';
+import { useState } from 'react';
 
 const testimonials = [
   {
-    name: "Sarah Chen",
-    role: "Senior Product Manager",
-    company: "TechCorp",
-    avatar: "SC",
-    avatarBg: "bg-gradient-to-br from-purple-500 to-pink-500",
+    name: 'Sarah Chen',
+    role: 'Senior Product Manager',
+    company: 'TechCorp',
+    avatar: 'SC',
+    avatarBg: 'bg-gradient-to-br from-purple-500 to-pink-500',
     content:
-      "Voice journaling changed my life. I process my thoughts better by speaking, and the AI insights help me identify patterns I never noticed. My productivity has increased by 40% in just 2 months.",
+      'Voice journaling changed my life. I process my thoughts better by speaking, and the AI insights help me identify patterns I never noticed. My productivity has increased by 40% in just 2 months.',
     rating: 5,
-    feature: "Voice Journaling",
+    feature: 'Voice Journaling',
   },
   {
-    name: "Michael Rodriguez",
-    role: "Entrepreneur",
-    company: "StartupHub",
-    avatar: "MR",
-    avatarBg: "bg-gradient-to-br from-blue-500 to-cyan-500",
+    name: 'Michael Rodriguez',
+    role: 'Entrepreneur',
+    company: 'StartupHub',
+    avatar: 'MR',
+    avatarBg: 'bg-gradient-to-br from-blue-500 to-cyan-500',
     content:
       "The habit tracking with gamification keeps me engaged. I've built 12 new habits and maintained a 90-day streak. The progress photos feature helps me visualize my fitness transformation.",
     rating: 5,
-    feature: "Habit Tracking",
+    feature: 'Habit Tracking',
   },
   {
-    name: "Emily Thompson",
-    role: "Marketing Director",
-    company: "Growth Agency",
-    avatar: "ET",
-    avatarBg: "bg-gradient-to-br from-green-500 to-emerald-500",
+    name: 'Emily Thompson',
+    role: 'Marketing Director',
+    company: 'Growth Agency',
+    avatar: 'ET',
+    avatarBg: 'bg-gradient-to-br from-green-500 to-emerald-500',
     content:
-      "The offline-first design is brilliant. I travel frequently and never lose my data. The AI coach adapts to my schedule and provides personalized recommendations that actually work.",
+      'The offline-first design is brilliant. I travel frequently and never lose my data. The AI coach adapts to my schedule and provides personalized recommendations that actually work.',
     rating: 5,
-    feature: "AI Coaching",
+    feature: 'AI Coaching',
   },
   {
-    name: "David Kim",
-    role: "Software Engineer",
-    company: "DevOps Inc",
-    avatar: "DK",
-    avatarBg: "bg-gradient-to-br from-orange-500 to-red-500",
+    name: 'David Kim',
+    role: 'Software Engineer',
+    company: 'DevOps Inc',
+    avatar: 'DK',
+    avatarBg: 'bg-gradient-to-br from-orange-500 to-red-500',
     content:
       "As someone who struggles with consistency, the streak tracking and achievements keep me motivated. I've completed 30 days of meditation and feel more focused than ever.",
     rating: 5,
-    feature: "Gamification",
+    feature: 'Gamification',
   },
   {
-    name: "Lisa Anderson",
-    role: "Fitness Coach",
-    company: "FitLife Pro",
-    avatar: "LA",
-    avatarBg: "bg-gradient-to-br from-indigo-500 to-purple-500",
+    name: 'Lisa Anderson',
+    role: 'Fitness Coach',
+    company: 'FitLife Pro',
+    avatar: 'LA',
+    avatarBg: 'bg-gradient-to-br from-indigo-500 to-purple-500',
     content:
-      "The progress photos feature is incredible for tracking client transformations. The side-by-side comparisons and timeline view make it easy to show real results.",
+      'The progress photos feature is incredible for tracking client transformations. The side-by-side comparisons and timeline view make it easy to show real results.',
     rating: 5,
-    feature: "Progress Photos",
+    feature: 'Progress Photos',
   },
   {
-    name: "James Wilson",
-    role: "Executive Coach",
-    company: "Leadership Plus",
-    avatar: "JW",
-    avatarBg: "bg-gradient-to-br from-pink-500 to-rose-500",
+    name: 'James Wilson',
+    role: 'Executive Coach',
+    company: 'Leadership Plus',
+    avatar: 'JW',
+    avatarBg: 'bg-gradient-to-br from-pink-500 to-rose-500',
     content:
-      "UpCoach complements my coaching practice perfectly. The analytics help me track client progress between sessions, and the voice notes provide deeper insights into their journey.",
+      'UpCoach complements my coaching practice perfectly. The analytics help me track client progress between sessions, and the voice notes provide deeper insights into their journey.',
     rating: 5,
-    feature: "Analytics",
+    feature: 'Analytics',
   },
 ];
 
@@ -95,13 +95,13 @@ export default function Testimonials() {
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 mt-2">
             Real Stories,
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-secondary-600">
-              {" "}
+              {' '}
               Real Results
             </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Join thousands of users who have transformed their lives with
-            UpCoach's innovative features
+            Join thousands of users who have transformed their lives with UpCoach's innovative
+            features
           </p>
         </motion.div>
 
@@ -119,10 +119,7 @@ export default function Testimonials() {
             <div className="relative z-10">
               <div className="flex items-center mb-6">
                 {[...Array(testimonials[activeIndex].rating)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="w-6 h-6 text-yellow-400 fill-current"
-                  />
+                  <Star key={i} className="w-6 h-6 text-yellow-400 fill-current" />
                 ))}
                 <span className="ml-4 text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
                   {testimonials[activeIndex].feature}
@@ -144,8 +141,7 @@ export default function Testimonials() {
                     {testimonials[activeIndex].name}
                   </p>
                   <p className="text-gray-600">
-                    {testimonials[activeIndex].role} at{" "}
-                    {testimonials[activeIndex].company}
+                    {testimonials[activeIndex].role} at {testimonials[activeIndex].company}
                   </p>
                 </div>
               </div>
@@ -158,9 +154,7 @@ export default function Testimonials() {
                   key={index}
                   onClick={() => setActiveIndex(index)}
                   className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    index === activeIndex
-                      ? "w-8 bg-primary-600"
-                      : "bg-gray-300 hover:bg-gray-400"
+                    index === activeIndex ? 'w-8 bg-primary-600' : 'bg-gray-300 hover:bg-gray-400'
                   }`}
                   aria-label={`Go to testimonial ${index + 1}`}
                 />
@@ -182,16 +176,11 @@ export default function Testimonials() {
             >
               <div className="flex items-center mb-4">
                 {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="w-4 h-4 text-yellow-400 fill-current"
-                  />
+                  <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
                 ))}
               </div>
 
-              <p className="text-gray-700 mb-6 leading-relaxed">
-                "{testimonial.content}"
-              </p>
+              <p className="text-gray-700 mb-6 leading-relaxed">"{testimonial.content}"</p>
 
               <div className="flex items-center">
                 <div
@@ -200,9 +189,7 @@ export default function Testimonials() {
                   {testimonial.avatar}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">
-                    {testimonial.name}
-                  </p>
+                  <p className="font-semibold text-gray-900">{testimonial.name}</p>
                   <p className="text-sm text-gray-600">{testimonial.role}</p>
                 </div>
               </div>

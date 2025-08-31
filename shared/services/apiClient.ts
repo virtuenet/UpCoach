@@ -3,8 +3,7 @@
  * Creates configured axios instances for admin and CMS panels
  */
 
-import axios, { AxiosInstance, AxiosError } from 'axios'
-
+import axios, { AxiosInstance, AxiosError } from 'axios';
 
 export interface ApiClientConfig {
   baseURL: string;
@@ -43,7 +42,7 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
 
   // Request interceptor for auth and CSRF tokens
   client.interceptors.request.use(
-    async (requestConfig) => {
+    async requestConfig => {
       // Add auth token
       const token = authToken || (config.getAuthToken ? config.getAuthToken() : null);
       if (token) {
@@ -54,7 +53,7 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
       const method = requestConfig.method?.toUpperCase();
       if (
         !config.skipCSRF &&
-        method && 
+        method &&
         ['POST', 'PUT', 'DELETE', 'PATCH'].includes(method) &&
         !requestConfig.headers['X-Skip-CSRF']
       ) {
@@ -71,14 +70,14 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
 
       return requestConfig;
     },
-    (error) => {
+    error => {
       return Promise.reject(error);
     }
   );
 
   // Response interceptor for error handling
   client.interceptors.response.use(
-    (response) => response,
+    response => response,
     async (error: AxiosError) => {
       // Handle 401 Unauthorized
       if (error.response?.status === 401 && config.onUnauthorized) {
@@ -93,7 +92,7 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
         // Retry once with new CSRF token
         if (!(error.config as any)?._retried && config.getCSRFToken) {
           (error.config as any)._retried = true;
-          
+
           try {
             // Force refresh CSRF token
             const newToken = await config.getCSRFToken();
@@ -129,7 +128,7 @@ export function handleApiError(error: any): {
 } {
   if (axios.isAxiosError(error)) {
     const response = error.response;
-    
+
     if (response) {
       // Server responded with error
       return {
@@ -167,7 +166,7 @@ export function withRetry<T>(
   const {
     maxRetries = 3,
     delay = 1000,
-    shouldRetry = (error) => {
+    shouldRetry = error => {
       // Retry on network errors and 5xx server errors
       if (axios.isAxiosError(error)) {
         return !error.response || error.response.status >= 500;
@@ -178,23 +177,23 @@ export function withRetry<T>(
 
   return new Promise(async (resolve, reject) => {
     let lastError: any;
-    
+
     for (let i = 0; i < maxRetries; i++) {
       try {
         const result = await apiCall();
         return resolve(result);
       } catch (error) {
         lastError = error;
-        
+
         if (!shouldRetry(error) || i === maxRetries - 1) {
           return reject(error);
         }
-        
+
         // Exponential backoff
         await new Promise(r => setTimeout(r, delay * Math.pow(2, i)));
       }
     }
-    
+
     reject(lastError);
   });
 }
@@ -208,7 +207,7 @@ export const transformers = {
     if (Array.isArray(data)) {
       return data.map(transformers.snakeToCamel);
     }
-    
+
     if (data !== null && typeof data === 'object') {
       return Object.keys(data).reduce((acc, key) => {
         const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
@@ -216,16 +215,16 @@ export const transformers = {
         return acc;
       }, {} as any);
     }
-    
+
     return data;
   },
 
-  // Convert camelCase to snake_case  
+  // Convert camelCase to snake_case
   camelToSnake: (data: any): any => {
     if (Array.isArray(data)) {
       return data.map(transformers.camelToSnake);
     }
-    
+
     if (data !== null && typeof data === 'object') {
       return Object.keys(data).reduce((acc, key) => {
         const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
@@ -233,7 +232,7 @@ export const transformers = {
         return acc;
       }, {} as any);
     }
-    
+
     return data;
   },
 };

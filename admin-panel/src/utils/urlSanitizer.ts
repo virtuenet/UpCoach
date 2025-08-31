@@ -13,24 +13,23 @@ const ALLOWED_DOCUMENT_EXTENSIONS = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '
  */
 export function sanitizeUrl(url: string | undefined | null): string {
   if (!url) return '#';
-  
+
   try {
     // Parse the URL to validate structure
     const parsed = new URL(url);
-    
+
     // Only allow safe protocols
     if (!ALLOWED_PROTOCOLS.includes(parsed.protocol)) {
       console.warn('Blocked unsafe protocol:', parsed.protocol);
       return '#';
     }
-    
+
     // Check for javascript: or data: URLs (additional safety)
-    if (url.toLowerCase().includes('javascript:') || 
-        url.toLowerCase().includes('data:text/html')) {
+    if (url.toLowerCase().includes('javascript:') || url.toLowerCase().includes('data:text/html')) {
       console.error('Blocked potential XSS attempt:', url.substring(0, 50));
       return '#';
     }
-    
+
     // Return the validated URL
     return parsed.toString();
   } catch (error) {
@@ -42,11 +41,14 @@ export function sanitizeUrl(url: string | undefined | null): string {
 /**
  * Validate media URL based on file type
  */
-export function validateMediaUrl(url: string, type: 'image' | 'video' | 'audio' | 'document' | 'other'): boolean {
+export function validateMediaUrl(
+  url: string,
+  type: 'image' | 'video' | 'audio' | 'document' | 'other'
+): boolean {
   try {
     const parsed = new URL(url);
     const pathname = parsed.pathname.toLowerCase();
-    
+
     switch (type) {
       case 'image':
         return ALLOWED_IMAGE_EXTENSIONS.some(ext => pathname.endsWith(ext));
@@ -69,7 +71,7 @@ export function validateMediaUrl(url: string, type: 'image' | 'video' | 'audio' 
  */
 export function createSafeImageProps(url: string, alt: string) {
   const sanitizedUrl = sanitizeUrl(url);
-  
+
   return {
     src: sanitizedUrl,
     alt: alt.replace(/[<>]/g, ''), // Basic XSS prevention in alt text

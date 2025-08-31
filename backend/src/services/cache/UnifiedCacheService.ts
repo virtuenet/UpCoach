@@ -52,7 +52,7 @@ export class UnifiedCacheService {
     memoryMisses: 0,
     compressionRatio: 1,
   };
-  
+
   private readonly defaultTTL: number;
   private readonly maxRetries: number;
   private readonly compressionThreshold: number;
@@ -61,14 +61,16 @@ export class UnifiedCacheService {
   private cleanupInterval: NodeJS.Timeout | null = null;
   private tagIndex: Map<string, Set<string>> = new Map();
 
-  constructor(options: {
-    defaultTTL?: number;
-    maxRetries?: number;
-    compressionThreshold?: number;
-    memoryMaxSize?: number;
-    defaultPrefix?: string;
-    redisUrl?: string;
-  } = {}) {
+  constructor(
+    options: {
+      defaultTTL?: number;
+      maxRetries?: number;
+      compressionThreshold?: number;
+      memoryMaxSize?: number;
+      defaultPrefix?: string;
+      redisUrl?: string;
+    } = {}
+  ) {
     this.defaultTTL = options.defaultTTL || 3600; // 1 hour
     this.maxRetries = options.maxRetries || 3;
     this.compressionThreshold = options.compressionThreshold || 1024; // 1KB
@@ -78,6 +80,7 @@ export class UnifiedCacheService {
     // Initialize LRU cache with automatic eviction
     this.inMemoryCache = new LRUCache<string, MemoryCacheEntry>({
       max: this.memoryMaxSize,
+      maxSize: this.memoryMaxSize * 1000, // Set maxSize when using sizeCalculation
       ttl: this.defaultTTL * 1000, // Convert to milliseconds
       updateAgeOnGet: true,
       updateAgeOnHas: true,
@@ -102,28 +105,25 @@ export class UnifiedCacheService {
 
   private initializeRedis(redisUrl?: string): void {
     try {
-      this.redis = new Redis(
-        redisUrl || process.env.REDIS_URL || 'redis://localhost:6379',
-        {
-          maxRetriesPerRequest: this.maxRetries,
-          enableReadyCheck: true,
-          enableOfflineQueue: true,
-          retryStrategy: (times) => {
-            if (times > this.maxRetries) {
-              logger.warn('Redis connection failed, falling back to in-memory cache');
-              this.redis = null;
-              return null;
-            }
-            return Math.min(times * 100, 3000);
-          },
-        }
-      );
+      this.redis = new Redis(redisUrl || process.env.REDIS_URL || 'redis://localhost:6379', {
+        maxRetriesPerRequest: this.maxRetries,
+        enableReadyCheck: true,
+        enableOfflineQueue: true,
+        retryStrategy: times => {
+          if (times > this.maxRetries) {
+            logger.warn('Redis connection failed, falling back to in-memory cache');
+            this.redis = null;
+            return null;
+          }
+          return Math.min(times * 100, 3000);
+        },
+      });
 
       this.redis.on('connect', () => {
         logger.info('Unified cache service connected to Redis');
       });
 
-      this.redis.on('error', (err) => {
+      this.redis.on('error', err => {
         logger.error('Redis cache error:', err);
         // Continue with in-memory fallback
       });
@@ -139,13 +139,13 @@ export class UnifiedCacheService {
 
   private generateKey(key: string, namespace?: string, prefix?: string): string {
     const finalPrefix = prefix || namespace || this.defaultPrefix;
-    
+
     // If key is already long/complex, hash it for consistency
     if (key.length > 250) {
       const hash = createHash('sha256').update(key).digest('hex');
       return `${finalPrefix}${hash}`;
     }
-    
+
     return `${finalPrefix}${key}`;
   }
 
@@ -178,8 +178,7 @@ export class UnifiedCacheService {
 
   private updateCompressionRatio(original: number, compressed: number): void {
     const ratio = compressed / original;
-    this.stats.compressionRatio = 
-      (this.stats.compressionRatio * 0.9) + (ratio * 0.1); // Exponential moving average
+    this.stats.compressionRatio = this.stats.compressionRatio * 0.9 + ratio * 0.1; // Exponential moving average
   }
 
   private updateHitRate(): void {
@@ -191,15 +190,17 @@ export class UnifiedCacheService {
     // LRU cache handles its own cleanup and eviction
     // This method now just prunes expired entries
     this.inMemoryCache.purgeStale();
-    
+
     // Log cache statistics
     const stats = {
       size: this.inMemoryCache.size,
       calculatedSize: this.inMemoryCache.calculatedSize,
-      hitRate: this.stats.hits > 0 ? 
-        (this.stats.memoryHits / (this.stats.memoryHits + this.stats.memoryMisses)) : 0
+      hitRate:
+        this.stats.hits > 0
+          ? this.stats.memoryHits / (this.stats.memoryHits + this.stats.memoryMisses)
+          : 0,
     };
-    
+
     if (this.inMemoryCache.size > this.memoryMaxSize * 0.9) {
       logger.warn('Memory cache approaching size limit', stats);
     }
@@ -229,7 +230,7 @@ export class UnifiedCacheService {
         if (cached) {
           this.stats.hits++;
           this.updateHitRate();
-          
+
           const decompressed = await this.decompressValue(cached);
           return JSON.parse(decompressed);
         }
@@ -244,7 +245,7 @@ export class UnifiedCacheService {
       if (memoryCached && memoryCached.expiry > Date.now()) {
         this.stats.memoryHits++;
         this.updateHitRate();
-        
+
         if (memoryCached.compressed) {
           const decompressed = await this.decompressValue(memoryCached.value);
           return JSON.parse(decompressed);
@@ -263,14 +264,13 @@ export class UnifiedCacheService {
     const cacheKey = this.generateKey(key, options?.namespace, options?.prefix);
     const ttl = options?.ttl || this.defaultTTL;
     const stringValue = JSON.stringify(value);
-    
+
     this.stats.sets++;
 
     // Handle compression
-    const finalValue = options?.compress !== false 
-      ? await this.compressValue(stringValue)
-      : stringValue;
-    
+    const finalValue =
+      options?.compress !== false ? await this.compressValue(stringValue) : stringValue;
+
     const isCompressed = Buffer.isBuffer(finalValue);
 
     // Try Redis first
@@ -281,7 +281,7 @@ export class UnifiedCacheService {
         } else {
           await this.redis.setex(cacheKey, ttl, finalValue);
         }
-        
+
         // Handle tags for invalidation
         if (options?.tags && options.tags.length > 0) {
           await this.addToTags(cacheKey, options.tags);
@@ -295,10 +295,10 @@ export class UnifiedCacheService {
     if (!this.redis || options?.fallbackToMemory !== false) {
       this.inMemoryCache.set(cacheKey, {
         value: isCompressed ? finalValue : value,
-        expiry: Date.now() + (ttl * 1000),
+        expiry: Date.now() + ttl * 1000,
         compressed: isCompressed,
       });
-      
+
       // Maintain memory cache size limit
       if (this.inMemoryCache.size > this.memoryMaxSize) {
         this.cleanupMemoryCache();
@@ -308,7 +308,7 @@ export class UnifiedCacheService {
 
   async del(key: string, options?: CacheOptions): Promise<void> {
     const cacheKey = this.generateKey(key, options?.namespace, options?.prefix);
-    
+
     this.stats.deletes++;
 
     // Delete from Redis
@@ -343,7 +343,7 @@ export class UnifiedCacheService {
     }
 
     // Invalidate in memory cache
-    const memoryKeys = Array.from(this.inMemoryCache.keys()).filter(k => 
+    const memoryKeys = Array.from(this.inMemoryCache.keys()).filter(k =>
       k.match(new RegExp(fullPattern.replace(/\*/g, '.*')))
     );
     memoryKeys.forEach(key => this.inMemoryCache.delete(key));
@@ -431,7 +431,7 @@ export class UnifiedCacheService {
     // Clear memory cache
     this.inMemoryCache.clear();
     this.tagIndex.clear();
-    
+
     // Reset stats
     this.stats = {
       hits: 0,
@@ -465,11 +465,7 @@ export class UnifiedCacheService {
   }
 
   // Compatibility methods for easy migration
-  async getOrSet<T>(
-    key: string,
-    factory: () => Promise<T>,
-    options?: CacheOptions
-  ): Promise<T> {
+  async getOrSet<T>(key: string, factory: () => Promise<T>, options?: CacheOptions): Promise<T> {
     const cached = await this.get<T>(key, options);
     if (cached !== null) {
       return cached;

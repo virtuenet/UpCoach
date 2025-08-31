@@ -11,8 +11,7 @@ export * from '../../../shared/utils';
 /**
  * Sleep/delay function
  */
-export const sleep = (ms: number): Promise<void> => 
-  new Promise(resolve => setTimeout(resolve, ms));
+export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
  * Retry function with exponential backoff
@@ -27,13 +26,7 @@ export async function retry<T>(
     onRetry?: (error: Error, attempt: number) => void;
   } = {}
 ): Promise<T> {
-  const {
-    retries = 3,
-    delay = 1000,
-    maxDelay = 10000,
-    factor = 2,
-    onRetry
-  } = options;
+  const { retries = 3, delay = 1000, maxDelay = 10000, factor = 2, onRetry } = options;
 
   let lastError: Error;
   let currentDelay = delay;
@@ -43,12 +36,12 @@ export async function retry<T>(
       return await fn();
     } catch (error) {
       lastError = error as Error;
-      
+
       if (i < retries) {
         if (onRetry) {
           onRetry(lastError, i + 1);
         }
-        
+
         await sleep(currentDelay);
         currentDelay = Math.min(currentDelay * factor, maxDelay);
       }
@@ -66,14 +59,14 @@ export function memoize<T extends (...args: any[]) => any>(
   getKey?: (...args: Parameters<T>) => string
 ): T {
   const cache = new Map<string, ReturnType<T>>();
-  
+
   return ((...args: Parameters<T>) => {
     const key = getKey ? getKey(...args) : JSON.stringify(args);
-    
+
     if (cache.has(key)) {
       return cache.get(key);
     }
-    
+
     const result = fn(...args);
     cache.set(key, result);
     return result;
@@ -94,7 +87,7 @@ export class RateLimiter {
 
   async execute<T>(fn: () => Promise<T>): Promise<T> {
     await this.waitForSlot();
-    
+
     try {
       this.running++;
       return await fn();
@@ -127,11 +120,9 @@ export class RateLimiter {
 /**
  * Create a singleton instance
  */
-export function singleton<T>(
-  factory: () => T
-): () => T {
+export function singleton<T>(factory: () => T): () => T {
   let instance: T | undefined;
-  
+
   return () => {
     if (!instance) {
       instance = factory();
@@ -143,10 +134,7 @@ export function singleton<T>(
 /**
  * Parse JSON safely
  */
-export function safeJsonParse<T = any>(
-  json: string,
-  fallback?: T
-): T | undefined {
+export function safeJsonParse<T = any>(json: string, fallback?: T): T | undefined {
   try {
     return JSON.parse(json);
   } catch {
@@ -157,16 +145,13 @@ export function safeJsonParse<T = any>(
 /**
  * Environment variable getter with type safety
  */
-export function getEnv(
-  key: string,
-  defaultValue?: string
-): string {
+export function getEnv(key: string, defaultValue?: string): string {
   const value = process.env[key];
-  
+
   if (value === undefined && defaultValue === undefined) {
     throw new Error(`Environment variable ${key} is not defined`);
   }
-  
+
   return value ?? defaultValue!;
 }
 

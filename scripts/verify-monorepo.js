@@ -71,7 +71,7 @@ Object.entries(requiredPackageJsonFields).forEach(([pattern, fields]) => {
     // Handle wildcard patterns
     const [prefix, suffix] = pattern.split('*');
     const baseDir = path.join(__dirname, '..', prefix);
-    
+
     if (fs.existsSync(baseDir)) {
       fs.readdirSync(baseDir).forEach(dir => {
         const packagePath = path.join(baseDir, dir, 'package.json');

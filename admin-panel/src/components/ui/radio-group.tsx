@@ -20,11 +20,7 @@ const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>(
   ({ className, value, onValueChange, name, children, ...props }, ref) => {
     return (
       <RadioGroupContext.Provider value={{ value, onValueChange, name }}>
-        <div
-          ref={ref}
-          className={cn('grid gap-2', className)}
-          {...props}
-        >
+        <div ref={ref} className={cn('grid gap-2', className)} {...props}>
           {children}
         </div>
       </RadioGroupContext.Provider>
@@ -36,7 +32,7 @@ RadioGroup.displayName = 'RadioGroup';
 const RadioGroupItem = React.forwardRef<HTMLInputElement, RadioGroupItemProps>(
   ({ className, value, ...props }, ref) => {
     const context = React.useContext(RadioGroupContext);
-    
+
     return (
       <input
         type="radio"
@@ -48,7 +44,7 @@ const RadioGroupItem = React.forwardRef<HTMLInputElement, RadioGroupItemProps>(
         value={value}
         name={context.name}
         checked={context.value === value}
-        onChange={(e) => {
+        onChange={e => {
           if (e.target.checked && context.onValueChange) {
             context.onValueChange(value);
           }

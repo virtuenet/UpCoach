@@ -1,3 +1,6 @@
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Languages } from 'lucide-react';
 import {
   IconButton,
   Menu,
@@ -7,7 +10,8 @@ import {
   Divider,
   Typography,
   Box,
-} from "@mui/material";
+} from '@mui/material';
+import { getCurrentLanguage, changeLanguage, languages } from '../i18n';
 
 export const LanguageSelector: React.FC = () => {
   const { t } = useTranslation();
@@ -29,33 +33,29 @@ export const LanguageSelector: React.FC = () => {
 
   return (
     <>
-      <IconButton
-        color="inherit"
-        onClick={handleClick}
-        aria-label="Change language"
-      >
-        <Translate />
+      <IconButton color="inherit" onClick={handleClick} aria-label="Change language">
+        <Languages />
       </IconButton>
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}
         anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "right",
+          vertical: 'bottom',
+          horizontal: 'right',
         }}
         transformOrigin={{
-          vertical: "top",
-          horizontal: "right",
+          vertical: 'top',
+          horizontal: 'right',
         }}
       >
         <Box sx={{ px: 2, py: 1 }}>
           <Typography variant="subtitle2" color="textSecondary">
-            {t("profile.language")}
+            {t('profile.language')}
           </Typography>
         </Box>
         <Divider />
-        {languages.map((language) => (
+        {languages.map(language => (
           <MenuItem
             key={language.code}
             onClick={() => handleLanguageChange(language.code)}
@@ -64,10 +64,7 @@ export const LanguageSelector: React.FC = () => {
             <ListItemIcon>
               <Typography sx={{ fontSize: 24 }}>{language.flag}</Typography>
             </ListItemIcon>
-            <ListItemText
-              primary={language.nativeName}
-              secondary={language.name}
-            />
+            <ListItemText primary={language.nativeName} secondary={language.name} />
           </MenuItem>
         ))}
       </Menu>

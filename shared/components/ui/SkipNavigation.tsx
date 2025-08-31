@@ -18,24 +18,24 @@ export const SkipLink: React.FC<SkipLinkProps> = ({
 }) => {
   const handleSkipClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-    
+
     // Find the target element
     const targetId = href.replace('#', '');
     const targetElement = document.getElementById(targetId);
-    
+
     if (targetElement) {
       // Focus the target element
       targetElement.focus();
-      
+
       // If the element can't receive focus naturally, ensure it can
       if (document.activeElement !== targetElement) {
         targetElement.setAttribute('tabindex', '-1');
         targetElement.focus();
       }
-      
+
       // Scroll the element into view
       targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      
+
       // Announce to screen readers
       const announcement = document.createElement('div');
       announcement.setAttribute('role', 'status');
@@ -43,7 +43,7 @@ export const SkipLink: React.FC<SkipLinkProps> = ({
       announcement.className = 'sr-only';
       announcement.textContent = `Navigated to ${children}`;
       document.body.appendChild(announcement);
-      
+
       // Remove announcement after a short delay
       setTimeout(() => {
         document.body.removeChild(announcement);
@@ -101,7 +101,7 @@ export const SkipNavigation: React.FC<SkipNavigationProps> = ({
 }) => {
   return (
     <div className="skip-navigation" role="navigation" aria-label="Skip links">
-      {links.map((link) => (
+      {links.map(link => (
         <SkipLink key={link.href} href={link.href}>
           {link.label}
         </SkipLink>

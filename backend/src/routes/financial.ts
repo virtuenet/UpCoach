@@ -14,29 +14,30 @@ const stripe = new Stripe(config.stripe.secretKey || '', {
 
 // Stripe webhook endpoint with proper signature validation
 // IMPORTANT: Use raw body for signature verification
-router.post('/webhook/stripe', 
+router.post(
+  '/webhook/stripe',
   raw({ type: 'application/json' }), // Raw body required for signature verification
   async (req: Request, _res: Response) => {
     const sig = req.headers['stripe-signature'] as string;
-    
+
     if (!sig) {
       logger.error('Missing Stripe signature header');
-      return _res.status(400).json({ 
+      return _res.status(400).json({
         error: 'Missing signature header',
-        code: 'MISSING_SIGNATURE' 
+        code: 'MISSING_SIGNATURE',
       });
     }
-    
+
     if (!config.stripe.webhookSecret) {
       logger.error('Stripe webhook secret not configured');
-      return _res.status(500).json({ 
+      return _res.status(500).json({
         error: 'Webhook configuration error',
-        code: 'WEBHOOK_NOT_CONFIGURED' 
+        code: 'WEBHOOK_NOT_CONFIGURED',
       });
     }
-    
+
     let event: Stripe.Event;
-    
+
     try {
       // Verify webhook signature using Stripe SDK
       event = stripe.webhooks.constructEvent(
@@ -44,45 +45,45 @@ router.post('/webhook/stripe',
         sig,
         config.stripe.webhookSecret
       );
-      
-      logger.info('Stripe webhook signature verified', { 
+
+      logger.info('Stripe webhook signature verified', {
         eventType: event.type,
-        eventId: event.id 
+        eventId: event.id,
       });
     } catch (_err) {
-      logger.error('Webhook signature verification failed', { 
+      logger.error('Webhook signature verification failed', {
         error: err.message,
-        signature: sig.substring(0, 20) + '...' // Log partial signature for debugging
+        signature: sig.substring(0, 20) + '...', // Log partial signature for debugging
       });
-      
+
       // Return 400 to indicate invalid signature
-      return _res.status(400).json({ 
+      return _res.status(400).json({
         error: 'Invalid signature',
-        code: 'INVALID_SIGNATURE'
+        code: 'INVALID_SIGNATURE',
       });
     }
-    
+
     try {
       // Process verified webhook event
       await stripeWebhookService.handleWebhook(event);
-      
+
       // Return 200 to acknowledge receipt
-      _res.json({ 
+      _res.json({
         received: true,
         eventId: event.id,
-        eventType: event.type
+        eventType: event.type,
       });
     } catch (error) {
       logger.error('Webhook processing error:', {
         error: error.message,
         eventId: event.id,
-        eventType: event.type
+        eventType: event.type,
       });
-      
+
       // Return 500 for processing errors (Stripe will retry)
-      _res.status(500).json({ 
+      _res.status(500).json({
         error: 'Webhook processing failed',
-        code: 'PROCESSING_ERROR'
+        code: 'PROCESSING_ERROR',
       });
     }
   }
@@ -157,4 +158,4 @@ router.get('/scheduler/jobs', financialController.getScheduledJobs);
 router.post('/scheduler/jobs/:name/start', financialController.startJob);
 router.post('/scheduler/jobs/:name/stop', financialController.stopJob);
 
-export default router; 
+export default router;

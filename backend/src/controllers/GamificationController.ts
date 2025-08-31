@@ -35,11 +35,8 @@ export class GamificationController {
 
         const userId = (req as any).userId;
         const category = req.query.category as string;
-        
-        const achievements = await gamificationService.getUserAchievements(
-          userId,
-          category
-        );
+
+        const achievements = await gamificationService.getUserAchievements(userId, category);
 
         _res.json({
           success: true,
@@ -71,7 +68,7 @@ export class GamificationController {
         // Mark achievement as claimed
         const { sequelize } = require('../models');
         const { QueryTypes } = require('sequelize');
-        
+
         await sequelize.query(
           `UPDATE user_achievements 
            SET is_claimed = true, claimed_at = CURRENT_TIMESTAMP
@@ -104,13 +101,10 @@ export class GamificationController {
       const { sequelize } = require('../models');
       const { QueryTypes } = require('sequelize');
 
-      const streaks = await sequelize.query(
-        `SELECT * FROM user_streaks WHERE user_id = :userId`,
-        {
-          replacements: { userId },
-          type: QueryTypes.SELECT,
-        }
-      );
+      const streaks = await sequelize.query(`SELECT * FROM user_streaks WHERE user_id = :userId`, {
+        replacements: { userId },
+        type: QueryTypes.SELECT,
+      });
 
       _res.json({
         success: true,
@@ -138,7 +132,7 @@ export class GamificationController {
 
         const userId = (req as any).userId;
         const type = req.query.type as string;
-        const status = req.query.status as string || 'active';
+        const status = (req.query.status as string) || 'active';
 
         const { sequelize } = require('../models');
         const { QueryTypes } = require('sequelize');
@@ -239,11 +233,7 @@ export class GamificationController {
         const period = (req.query.period as any) || 'all_time';
         const limit = parseInt(req.query.limit as string) || 10;
 
-        const leaderboard = await gamificationService.getLeaderboard(
-          type,
-          period,
-          limit
-        );
+        const leaderboard = await gamificationService.getLeaderboard(type, period, limit);
 
         _res.json({
           success: true,
@@ -376,7 +366,7 @@ export class GamificationController {
         logger.error('Error purchasing reward', { error });
         _res.status(400).json({
           success: false,
-          error: error instanceof Error ? error.message : 'Failed to purchase reward',
+          error: (error as Error)?.message || 'Failed to purchase reward',
         });
       }
     },
@@ -435,12 +425,7 @@ export class GamificationController {
         const userId = (req as any).userId;
         const { category, value, metadata } = req.body;
 
-        await gamificationService.trackProgress(
-          userId,
-          category,
-          value || 1,
-          metadata
-        );
+        await gamificationService.trackProgress(userId, category, value || 1, metadata);
 
         _res.json({
           success: true,

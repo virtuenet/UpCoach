@@ -16,10 +16,7 @@ const Sheet = ({ open, onOpenChange, children }: SheetProps) => {
 
   return (
     <>
-      <div
-        className="fixed inset-0 z-50 bg-black/80"
-        onClick={() => onOpenChange?.(false)}
-      />
+      <div className="fixed inset-0 z-50 bg-black/80" onClick={() => onOpenChange?.(false)} />
       {children}
     </>
   );

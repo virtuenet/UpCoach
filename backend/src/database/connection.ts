@@ -15,14 +15,17 @@ const sequelize = new Sequelize(DATABASE_URL, {
     max: 5,
     min: 0,
     acquire: 30000,
-    idle: 10000
+    idle: 10000,
   },
   dialectOptions: {
-    ssl: NODE_ENV === 'production' ? {
-      require: true,
-      rejectUnauthorized: false
-    } : false
-  }
+    ssl:
+      NODE_ENV === 'production'
+        ? {
+            require: true,
+            rejectUnauthorized: false,
+          }
+        : false,
+  },
 });
 
 export default sequelize;

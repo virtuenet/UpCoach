@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 interface OptimizedImageProps {
   src: string;
@@ -10,7 +10,7 @@ interface OptimizedImageProps {
   height?: number;
   className?: string;
   priority?: boolean;
-  placeholder?: "blur" | "empty";
+  placeholder?: 'blur' | 'empty';
   blurDataURL?: string;
   quality?: number;
   sizes?: string;
@@ -24,9 +24,9 @@ export default function OptimizedImage({
   alt,
   width,
   height,
-  className = "",
+  className = '',
   priority = false,
-  placeholder = "blur",
+  placeholder = 'blur',
   blurDataURL,
   quality = 75,
   sizes,
@@ -39,7 +39,7 @@ export default function OptimizedImage({
 
   // Generate a low-quality placeholder if blurDataURL is not provided
   const defaultBlurDataURL =
-    "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q==";
+    'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q==';
 
   useEffect(() => {
     setImgSrc(src);
@@ -47,7 +47,7 @@ export default function OptimizedImage({
 
   const handleError = () => {
     // Fallback image
-    setImgSrc("/placeholder-image.png");
+    setImgSrc('/placeholder-image.png');
   };
 
   if (fill) {
@@ -58,8 +58,8 @@ export default function OptimizedImage({
           alt={alt}
           fill
           quality={quality}
-          sizes={sizes || "100vw"}
-          className={`${isLoading ? "blur-sm" : "blur-0"} transition-all duration-300`}
+          sizes={sizes || '100vw'}
+          className={`${isLoading ? 'blur-sm' : 'blur-0'} transition-all duration-300`}
           onLoad={() => {
             setIsLoading(false);
             onLoad?.();
@@ -81,7 +81,7 @@ export default function OptimizedImage({
       height={height || 630}
       quality={quality}
       sizes={sizes}
-      className={`${className} ${isLoading ? "blur-sm" : "blur-0"} transition-all duration-300`}
+      className={`${className} ${isLoading ? 'blur-sm' : 'blur-0'} transition-all duration-300`}
       onLoad={() => {
         setIsLoading(false);
         onLoad?.();

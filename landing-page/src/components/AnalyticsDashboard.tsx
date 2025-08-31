@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   Users,
   TrendingUp,
@@ -11,7 +11,7 @@ import {
   Smartphone,
   Monitor,
   BarChart3,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface AnalyticsData {
   pageViews: number;
@@ -33,22 +33,22 @@ interface AnalyticsData {
 const mockData: AnalyticsData = {
   pageViews: 45678,
   uniqueVisitors: 12345,
-  avgSessionDuration: "3:45",
+  avgSessionDuration: '3:45',
   bounceRate: 32.5,
   conversionRate: 4.8,
   topPages: [
-    { page: "/", views: 15234 },
-    { page: "/pricing", views: 8765 },
-    { page: "/features", views: 6543 },
-    { page: "/blog", views: 4321 },
-    { page: "/contact", views: 2345 },
+    { page: '/', views: 15234 },
+    { page: '/pricing', views: 8765 },
+    { page: '/features', views: 6543 },
+    { page: '/blog', views: 4321 },
+    { page: '/contact', views: 2345 },
   ],
   topReferrers: [
-    { source: "Google", visits: 8765 },
-    { source: "Direct", visits: 6543 },
-    { source: "Facebook", visits: 3456 },
-    { source: "Twitter", visits: 2345 },
-    { source: "LinkedIn", visits: 1234 },
+    { source: 'Google', visits: 8765 },
+    { source: 'Direct', visits: 6543 },
+    { source: 'Facebook', visits: 3456 },
+    { source: 'Twitter', visits: 2345 },
+    { source: 'LinkedIn', visits: 1234 },
   ],
   deviceStats: {
     desktop: 55,
@@ -56,17 +56,17 @@ const mockData: AnalyticsData = {
     tablet: 7,
   },
   countryStats: [
-    { country: "United States", visits: 15234 },
-    { country: "United Kingdom", visits: 4567 },
-    { country: "Canada", visits: 3456 },
-    { country: "Australia", visits: 2345 },
-    { country: "Germany", visits: 1234 },
+    { country: 'United States', visits: 15234 },
+    { country: 'United Kingdom', visits: 4567 },
+    { country: 'Canada', visits: 3456 },
+    { country: 'Australia', visits: 2345 },
+    { country: 'Germany', visits: 1234 },
   ],
 };
 
 export default function AnalyticsDashboard() {
   const [data, setData] = useState<AnalyticsData | null>(null);
-  const [timeRange, setTimeRange] = useState("7d");
+  const [timeRange, setTimeRange] = useState('7d');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -94,14 +94,12 @@ export default function AnalyticsDashboard() {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container mx-auto px-4">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Analytics Dashboard
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Analytics Dashboard</h1>
           <div className="flex items-center gap-4">
             <p className="text-gray-600">Website performance overview</p>
             <select
               value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
+              onChange={e => setTimeRange(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm"
             >
               <option value="24h">Last 24 hours</option>
@@ -156,9 +154,7 @@ export default function AnalyticsDashboard() {
               <Clock className="w-8 h-8 text-purple-600" />
               <span className="text-sm text-green-600 font-medium">+5.2%</span>
             </div>
-            <div className="text-2xl font-bold text-gray-900">
-              {data.avgSessionDuration}
-            </div>
+            <div className="text-2xl font-bold text-gray-900">{data.avgSessionDuration}</div>
             <div className="text-sm text-gray-600">Avg. Duration</div>
           </motion.div>
 
@@ -172,9 +168,7 @@ export default function AnalyticsDashboard() {
               <TrendingUp className="w-8 h-8 text-orange-600" />
               <span className="text-sm text-red-600 font-medium">-2.1%</span>
             </div>
-            <div className="text-2xl font-bold text-gray-900">
-              {data.bounceRate}%
-            </div>
+            <div className="text-2xl font-bold text-gray-900">{data.bounceRate}%</div>
             <div className="text-sm text-gray-600">Bounce Rate</div>
           </motion.div>
 
@@ -188,9 +182,7 @@ export default function AnalyticsDashboard() {
               <BarChart3 className="w-8 h-8 text-pink-600" />
               <span className="text-sm text-green-600 font-medium">+15.7%</span>
             </div>
-            <div className="text-2xl font-bold text-gray-900">
-              {data.conversionRate}%
-            </div>
+            <div className="text-2xl font-bold text-gray-900">{data.conversionRate}%</div>
             <div className="text-sm text-gray-600">Conversion Rate</div>
           </motion.div>
         </div>
@@ -203,9 +195,7 @@ export default function AnalyticsDashboard() {
             transition={{ duration: 0.3, delay: 0.5 }}
             className="bg-white rounded-xl p-6 shadow-sm"
           >
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Top Pages
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Pages</h3>
             <div className="space-y-3">
               {data.topPages.map((page, index) => (
                 <div key={index} className="flex items-center justify-between">
@@ -235,9 +225,7 @@ export default function AnalyticsDashboard() {
             transition={{ duration: 0.3, delay: 0.6 }}
             className="bg-white rounded-xl p-6 shadow-sm"
           >
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Traffic Sources
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Traffic Sources</h3>
             <div className="space-y-3">
               {data.topReferrers.map((source, index) => (
                 <div key={index} className="flex items-center justify-between">
@@ -267,9 +255,7 @@ export default function AnalyticsDashboard() {
             transition={{ duration: 0.3, delay: 0.7 }}
             className="bg-white rounded-xl p-6 shadow-sm"
           >
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Device Breakdown
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Device Breakdown</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">

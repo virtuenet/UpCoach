@@ -84,9 +84,7 @@ class ErrorBoundary extends Component<Props, State> {
                   d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                 />
               </svg>
-              <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-                Something went wrong
-              </h2>
+              <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Something went wrong</h2>
               <p className="mt-2 text-sm text-gray-600">
                 We're sorry, but an unexpected error occurred. Please try refreshing the page.
               </p>
@@ -109,7 +107,7 @@ class ErrorBoundary extends Component<Props, State> {
                   Try again
                 </button>
                 <button
-                  onClick={() => window.location.href = '/'}
+                  onClick={() => (window.location.href = '/')}
                   className="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                 >
                   Go to homepage

@@ -18,12 +18,12 @@ export { default as theme } from './theme/mui-theme';
 export type { ThemeOptions } from '@mui/material/styles';
 
 // Utility exports
-export { 
+export {
   withOpacity,
   responsiveTypography,
   getSpacing,
   createSpacing,
   isBreakpoint,
   getCurrentBreakpoint,
-  responsiveValue
+  responsiveValue,
 } from './tokens';

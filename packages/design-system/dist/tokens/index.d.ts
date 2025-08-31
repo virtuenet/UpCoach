@@ -16,13 +16,20 @@ export { darkColors, withOpacity } from './colors';
 export { responsiveTypography } from './typography';
 export { componentSpacing, layout, getSpacing, createSpacing } from './spacing';
 export { shadows, borders, transitions, animation, blur, opacity, zIndex } from './effects';
-export { media, container, grid, isBreakpoint, getCurrentBreakpoint, responsiveValue } from './breakpoints';
+export {
+  media,
+  container,
+  grid,
+  isBreakpoint,
+  getCurrentBreakpoint,
+  responsiveValue,
+} from './breakpoints';
 export declare const tokens: {
-    readonly colors: any;
-    readonly typography: any;
-    readonly spacing: any;
-    readonly effects: any;
-    readonly breakpoints: any;
+  readonly colors: any;
+  readonly typography: any;
+  readonly spacing: any;
+  readonly effects: any;
+  readonly breakpoints: any;
 };
 export default tokens;
 //# sourceMappingURL=index.d.ts.map

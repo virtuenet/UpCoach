@@ -136,13 +136,7 @@ export function useSearch<T = any>(
   searchKeys: (keyof T)[],
   options: UseSearchOptions = {}
 ) {
-  const {
-    delay = 300,
-    minLength = 2,
-    maxResults = 100,
-    cacheResults = true,
-    onSearch,
-  } = options;
+  const { delay = 300, minLength = 2, maxResults = 100, cacheResults = true, onSearch } = options;
 
   const [query, setQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -161,11 +155,11 @@ export function useSearch<T = any>(
     }
 
     setIsSearching(true);
-    
+
     const lowerQuery = debouncedQuery.toLowerCase();
     const results = items
-      .filter((item) => {
-        return searchKeys.some((key) => {
+      .filter(item => {
+        return searchKeys.some(key => {
           const value = item[key];
           if (typeof value === 'string') {
             return value.toLowerCase().includes(lowerQuery);
@@ -184,7 +178,7 @@ export function useSearch<T = any>(
     }
 
     setIsSearching(false);
-    
+
     // Callback
     if (onSearch) {
       onSearch(debouncedQuery);
@@ -215,15 +209,22 @@ export function useSearch<T = any>(
  */
 export interface FilterCriteria<T> {
   field: keyof T;
-  operator: 'equals' | 'contains' | 'startsWith' | 'endsWith' | 'gt' | 'lt' | 'gte' | 'lte' | 'between' | 'in';
+  operator:
+    | 'equals'
+    | 'contains'
+    | 'startsWith'
+    | 'endsWith'
+    | 'gt'
+    | 'lt'
+    | 'gte'
+    | 'lte'
+    | 'between'
+    | 'in';
   value: any;
   caseSensitive?: boolean;
 }
 
-export function useFilter<T = any>(
-  items: T[],
-  initialFilters: FilterCriteria<T>[] = []
-) {
+export function useFilter<T = any>(items: T[], initialFilters: FilterCriteria<T>[] = []) {
   const [filters, setFilters] = useState<FilterCriteria<T>[]>(initialFilters);
   const [isFiltering, setIsFiltering] = useState(false);
 
@@ -234,8 +235,8 @@ export function useFilter<T = any>(
 
     setIsFiltering(true);
 
-    const results = items.filter((item) => {
-      return filters.every((filter) => {
+    const results = items.filter(item => {
+      return filters.every(filter => {
         const itemValue = item[filter.field];
         const filterValue = filter.value;
         const caseSensitive = filter.caseSensitive ?? false;
@@ -248,7 +249,9 @@ export function useFilter<T = any>(
         // String operations
         if (typeof itemValue === 'string') {
           const compareValue = caseSensitive ? itemValue : itemValue.toLowerCase();
-          const compareFilter = caseSensitive ? filterValue : filterValue?.toLowerCase?.() ?? filterValue;
+          const compareFilter = caseSensitive
+            ? filterValue
+            : (filterValue?.toLowerCase?.() ?? filterValue);
 
           switch (filter.operator) {
             case 'equals':
@@ -280,9 +283,11 @@ export function useFilter<T = any>(
             case 'lte':
               return itemValue <= filterValue;
             case 'between':
-              return Array.isArray(filterValue) && 
-                     itemValue >= filterValue[0] && 
-                     itemValue <= filterValue[1];
+              return (
+                Array.isArray(filterValue) &&
+                itemValue >= filterValue[0] &&
+                itemValue <= filterValue[1]
+              );
             case 'in':
               return Array.isArray(filterValue) && filterValue.includes(itemValue);
             default:
@@ -296,8 +301,7 @@ export function useFilter<T = any>(
             case 'contains':
               return itemValue.includes(filterValue);
             case 'in':
-              return Array.isArray(filterValue) && 
-                     filterValue.some(v => itemValue.includes(v));
+              return Array.isArray(filterValue) && filterValue.some(v => itemValue.includes(v));
             default:
               return true;
           }
@@ -320,24 +324,27 @@ export function useFilter<T = any>(
   }, []);
 
   const updateFilter = useCallback((index: number, filter: FilterCriteria<T>) => {
-    setFilters(prev => prev.map((f, i) => i === index ? filter : f));
+    setFilters(prev => prev.map((f, i) => (i === index ? filter : f)));
   }, []);
 
   const clearFilters = useCallback(() => {
     setFilters([]);
   }, []);
 
-  const setFieldFilter = useCallback((field: keyof T, value: any, operator: FilterCriteria<T>['operator'] = 'equals') => {
-    setFilters(prev => {
-      const existing = prev.findIndex(f => f.field === field);
-      const newFilter: FilterCriteria<T> = { field, value, operator };
-      
-      if (existing >= 0) {
-        return prev.map((f, i) => i === existing ? newFilter : f);
-      }
-      return [...prev, newFilter];
-    });
-  }, []);
+  const setFieldFilter = useCallback(
+    (field: keyof T, value: any, operator: FilterCriteria<T>['operator'] = 'equals') => {
+      setFilters(prev => {
+        const existing = prev.findIndex(f => f.field === field);
+        const newFilter: FilterCriteria<T> = { field, value, operator };
+
+        if (existing >= 0) {
+          return prev.map((f, i) => (i === existing ? newFilter : f));
+        }
+        return [...prev, newFilter];
+      });
+    },
+    []
+  );
 
   return {
     filters,
@@ -373,7 +380,7 @@ export function useSearchAndFilter<T = any>(
     debouncedQuery: search.debouncedQuery,
     clearSearch: search.clearSearch,
     isSearching: search.isSearching,
-    
+
     // Filter
     filters: filter.filters,
     setFilters: filter.setFilters,
@@ -383,12 +390,12 @@ export function useSearchAndFilter<T = any>(
     clearFilters: filter.clearFilters,
     setFieldFilter: filter.setFieldFilter,
     isFiltering: filter.isFiltering,
-    
+
     // Results
     results: filter.filteredItems,
     resultCount: filter.resultCount,
     hasResults: filter.hasResults,
-    
+
     // Reset all
     reset: () => {
       search.clearSearch();
@@ -408,17 +415,13 @@ export function useAutoSuggest<T = any>(
     maxSuggestions?: number;
   } = {}
 ) {
-  const {
-    delay = 300,
-    minLength = 2,
-    maxSuggestions = 10,
-  } = options;
+  const { delay = 300, minLength = 2, maxSuggestions = 10 } = options;
 
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<T[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  
+
   const debouncedQuery = useDebounce(query, delay);
 
   useEffect(() => {
@@ -432,10 +435,10 @@ export function useAutoSuggest<T = any>(
 
     const fetchSuggestions = async () => {
       setIsLoading(true);
-      
+
       try {
         const results = await getSuggestions(debouncedQuery);
-        
+
         if (!cancelled) {
           setSuggestions(results.slice(0, maxSuggestions));
           setSelectedIndex(-1);
@@ -460,22 +463,23 @@ export function useAutoSuggest<T = any>(
   }, [debouncedQuery, minLength, maxSuggestions, getSuggestions]);
 
   const selectNext = useCallback(() => {
-    setSelectedIndex(prev => 
-      prev < suggestions.length - 1 ? prev + 1 : prev
-    );
+    setSelectedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : prev));
   }, [suggestions.length]);
 
   const selectPrevious = useCallback(() => {
-    setSelectedIndex(prev => prev > -1 ? prev - 1 : -1);
+    setSelectedIndex(prev => (prev > -1 ? prev - 1 : -1));
   }, []);
 
-  const selectSuggestion = useCallback((index: number) => {
-    if (index >= 0 && index < suggestions.length) {
-      setSelectedIndex(index);
-      return suggestions[index];
-    }
-    return null;
-  }, [suggestions]);
+  const selectSuggestion = useCallback(
+    (index: number) => {
+      if (index >= 0 && index < suggestions.length) {
+        setSelectedIndex(index);
+        return suggestions[index];
+      }
+      return null;
+    },
+    [suggestions]
+  );
 
   const clearSuggestions = useCallback(() => {
     setSuggestions([]);

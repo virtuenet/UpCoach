@@ -27,7 +27,7 @@ export const setupRoutes = (app: Application): void => {
   // Public routes (no authentication required)
   app.use(`${apiPrefix}/auth`, authRoutes);
   app.use(`${apiPrefix}`, csrfRoutes); // CSRF token endpoint
-  
+
   // Two-Factor Authentication routes (mixed public and protected)
   app.use(`${apiPrefix}/2fa`, twoFactorAuthRoutes);
 
@@ -37,40 +37,40 @@ export const setupRoutes = (app: Application): void => {
   app.use(`${apiPrefix}/goals`, authMiddleware, goalRoutes);
   app.use(`${apiPrefix}/mood`, authMiddleware, moodRoutes);
   app.use(`${apiPrefix}/chat`, authMiddleware, chatRoutes);
-  
+
   // CMS routes (mixed public and protected)
   app.use(`${apiPrefix}/cms`, cmsRoutes);
-  
+
   // Coach content routes (protected)
   app.use(`${apiPrefix}/coach-content`, authMiddleware, coachContentRoutes);
-  
+
   // Financial routes (protected)
   app.use(`${apiPrefix}/financial`, authMiddleware, financialRoutes);
-  
+
   // AI routes (protected)
   app.use(`${apiPrefix}/ai`, authMiddleware, aiRoutes);
-  
+
   // Referral routes (mixed public and protected)
   app.use(`${apiPrefix}/referrals`, referralRoutes);
-  
+
   // Onboarding routes (protected)
   app.use(`${apiPrefix}/onboarding`, authMiddleware, onboardingRoutes);
-  
+
   // Forum routes (mixed public and protected)
   app.use(`${apiPrefix}/forum`, forumRoutes);
-  
+
   // AI Analytics routes (admin only)
   app.use(`${apiPrefix}/analytics`, authMiddleware, aiAnalyticsRoutes);
-  
+
   // Coach marketplace routes (mixed public and protected)
   app.use(`${apiPrefix}`, coachRoutes);
-  
+
   // Advanced analytics routes (protected)
   app.use(`${apiPrefix}/advanced-analytics`, advancedAnalyticsRoutes);
-  
+
   // Gamification routes (protected)
   app.use(`${apiPrefix}/gamification`, gamificationRoutes);
-  
+
   // Enterprise routes (mixed public and protected)
   app.use(`${apiPrefix}/enterprise`, enterpriseRoutes);
 

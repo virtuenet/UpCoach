@@ -1,19 +1,25 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useForm, Controller } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { Save, ArrowLeft, Eye, Settings } from 'lucide-react'
-import DOMPurify from 'isomorphic-dompurify'
-import RichTextEditor from '../components/RichTextEditor'
-import LoadingSpinner from '../components/LoadingSpinner'
-import toast from 'react-hot-toast'
-import { contentApi } from '../api/content'
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Save, ArrowLeft, Eye, Settings } from 'lucide-react';
+import DOMPurify from 'isomorphic-dompurify';
+import RichTextEditor from '../components/RichTextEditor';
+import LoadingSpinner from '../components/LoadingSpinner';
+import toast from 'react-hot-toast';
+import { contentApi } from '../api/content';
 
 const contentSchema = z.object({
-  title: z.string().min(5, 'Title must be at least 5 characters').max(200, 'Title must be less than 200 characters'),
-  excerpt: z.string().min(20, 'Excerpt must be at least 20 characters').max(500, 'Excerpt must be less than 500 characters'),
+  title: z
+    .string()
+    .min(5, 'Title must be at least 5 characters')
+    .max(200, 'Title must be less than 200 characters'),
+  excerpt: z
+    .string()
+    .min(20, 'Excerpt must be at least 20 characters')
+    .max(500, 'Excerpt must be less than 500 characters'),
   content: z.string().min(100, 'Content must be at least 100 characters'),
   categoryId: z.string().min(1, 'Please select a category'),
   tags: z.string().min(1, 'Please add at least one tag'),
@@ -23,15 +29,15 @@ const contentSchema = z.object({
   seoDescription: z.string().max(160, 'SEO description must be 160 characters or less').optional(),
   allowComments: z.boolean().optional(),
   isFeatured: z.boolean().optional(),
-})
+});
 
-type ContentFormData = z.infer<typeof contentSchema>
+type ContentFormData = z.infer<typeof contentSchema>;
 
 export default function CreateContentPage() {
-  const navigate = useNavigate()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [activeTab, setActiveTab] = useState<'content' | 'seo' | 'settings'>('content')
-  const [preview, setPreview] = useState(false)
+  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState<'content' | 'seo' | 'settings'>('content');
+  const [preview, setPreview] = useState(false);
 
   const {
     register,
@@ -48,30 +54,33 @@ export default function CreateContentPage() {
       allowComments: true,
       isFeatured: false,
     },
-  })
+  });
 
   // Fetch categories
   const { data: categories = [], isPending: categoriesLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: contentApi.getCategories,
-  })
+  });
 
   const createMutation = useMutation({
     mutationFn: contentApi.createArticle,
-    onSuccess: (data) => {
-      toast.success('Article created successfully!')
-      navigate(`/content/edit/${data.id}`)
+    onSuccess: data => {
+      toast.success('Article created successfully!');
+      navigate(`/content/edit/${data.id}`);
     },
     onError: (error: any) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to create article')
+      toast.error(error instanceof Error ? error.message : 'Failed to create article');
     },
-  })
+  });
 
   const onSubmit = async (data: ContentFormData) => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
-      const tags = data.tags.split(',').map(tag => tag.trim()).filter(Boolean)
-      
+      const tags = data.tags
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(Boolean);
+
       const articleData = {
         title: data.title,
         excerpt: data.excerpt,
@@ -88,18 +97,18 @@ export default function CreateContentPage() {
           isFeatured: data.isFeatured ?? false,
           isTemplate: false,
         },
-      }
+      };
 
-      await createMutation.mutateAsync(articleData)
+      await createMutation.mutateAsync(articleData);
     } catch (error) {
-      console.error('Error creating article:', error)
+      console.error('Error creating article:', error);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
-  const watchedContent = watch(['title', 'excerpt', 'content'])
-  const estimatedReadTime = Math.ceil((watchedContent[2] || '').split(/\s+/).length / 200)
+  const watchedContent = watch(['title', 'excerpt', 'content']);
+  const estimatedReadTime = Math.ceil((watchedContent[2] || '').split(/\s+/).length / 200);
 
   if (preview) {
     return (
@@ -112,9 +121,7 @@ export default function CreateContentPage() {
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to Editor
           </button>
-          <div className="text-sm text-gray-500">
-            Preview Mode • {estimatedReadTime} min read
-          </div>
+          <div className="text-sm text-gray-500">Preview Mode • {estimatedReadTime} min read</div>
         </div>
 
         <article className="bg-white rounded-lg shadow p-8">
@@ -127,26 +134,49 @@ export default function CreateContentPage() {
             )}
           </header>
           {watchedContent[2] && (
-            <div 
+            <div
               className="prose prose-lg max-w-none"
-              dangerouslySetInnerHTML={{ 
+              dangerouslySetInnerHTML={{
                 __html: DOMPurify.sanitize(watchedContent[2], {
                   ALLOWED_TAGS: [
-                    'p', 'br', 'strong', 'em', 'u', 'i', 'b',
-                    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-                    'ul', 'ol', 'li', 'blockquote', 'code', 'pre',
-                    'a', 'img', 'table', 'thead', 'tbody', 'tr', 'td', 'th'
+                    'p',
+                    'br',
+                    'strong',
+                    'em',
+                    'u',
+                    'i',
+                    'b',
+                    'h1',
+                    'h2',
+                    'h3',
+                    'h4',
+                    'h5',
+                    'h6',
+                    'ul',
+                    'ol',
+                    'li',
+                    'blockquote',
+                    'code',
+                    'pre',
+                    'a',
+                    'img',
+                    'table',
+                    'thead',
+                    'tbody',
+                    'tr',
+                    'td',
+                    'th',
                   ],
                   ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id'],
                   FORBID_TAGS: ['script', 'style', 'iframe', 'form'],
-                  FORBID_ATTR: ['onerror', 'onload', 'onclick']
-                })
+                  FORBID_ATTR: ['onerror', 'onload', 'onclick'],
+                }),
               }}
             />
           )}
         </article>
       </div>
-    )
+    );
   }
 
   return (
@@ -174,9 +204,7 @@ export default function CreateContentPage() {
                 <Eye className="h-4 w-4 mr-1" />
                 Preview
               </button>
-              <div className="text-sm text-gray-500">
-                {estimatedReadTime} min read
-              </div>
+              <div className="text-sm text-gray-500">{estimatedReadTime} min read</div>
             </div>
           </div>
         </div>
@@ -188,7 +216,7 @@ export default function CreateContentPage() {
               { id: 'content', name: 'Content', icon: null },
               { id: 'seo', name: 'SEO', icon: null },
               { id: 'settings', name: 'Settings', icon: Settings },
-            ].map((tab) => (
+            ].map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
@@ -258,7 +286,7 @@ export default function CreateContentPage() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-secondary-500 focus:border-secondary-500"
                     >
                       <option value="">Select a category</option>
-                      {categories.map((cat) => (
+                      {categories.map(cat => (
                         <option key={cat.id} value={cat.id}>
                           {cat.name}
                         </option>
@@ -313,10 +341,7 @@ export default function CreateContentPage() {
                   name="content"
                   control={control}
                   render={({ field }) => (
-                    <RichTextEditor
-                      content={field.value}
-                      onChange={field.onChange}
-                    />
+                    <RichTextEditor content={field.value} onChange={field.onChange} />
                   )}
                 />
                 {errors.content && (
@@ -330,9 +355,7 @@ export default function CreateContentPage() {
           {activeTab === 'seo' && (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  SEO Title
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">SEO Title</label>
                 <input
                   {...register('seoTitle')}
                   type="text"
@@ -384,9 +407,7 @@ export default function CreateContentPage() {
                     type="checkbox"
                     className="rounded border-gray-300 text-secondary-600 focus:ring-secondary-500"
                   />
-                  <label className="ml-2 text-sm text-gray-700">
-                    Mark as featured article
-                  </label>
+                  <label className="ml-2 text-sm text-gray-700">Mark as featured article</label>
                 </div>
               </div>
             </>
@@ -432,5 +453,5 @@ export default function CreateContentPage() {
         </form>
       </div>
     </div>
-  )
-} 
+  );
+}

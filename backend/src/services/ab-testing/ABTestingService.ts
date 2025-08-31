@@ -50,7 +50,11 @@ export class ABTestingService {
   /**
    * Get variant assignment for a user in an experiment
    */
-  async getVariant(userId: string, experimentId: string, context?: Record<string, any>): Promise<VariantAssignment | null> {
+  async getVariant(
+    userId: string,
+    experimentId: string,
+    context?: Record<string, any>
+  ): Promise<VariantAssignment | null> {
     try {
       // Check if user already has an assignment
       const existingAssignment = await ExperimentAssignment.getAssignment(experimentId, userId);
@@ -90,7 +94,7 @@ export class ABTestingService {
       // Check traffic allocation
       const userHash = this.generateUserHash(userId, experimentId);
       const trafficHash = userHash % 100;
-      
+
       if (trafficHash >= experiment.trafficAllocation) {
         await ExperimentAssignment.excludeUser(experimentId, userId, 'traffic_allocation');
         return null;
@@ -99,9 +103,9 @@ export class ABTestingService {
       // Assign variant based on hash
       const variantHash = userHash % 100;
       const variant = experiment.getVariantByAllocation(variantHash);
-      
+
       if (!variant) {
-        await ExperimentAssignment.excludeUser(experimentId, userId, 'allocation_error');
+        await ExperimentAssignment.excludeUser(experimentId, userId, 'allocationerror');
         return null;
       }
 
@@ -174,7 +178,7 @@ export class ABTestingService {
       if (!experiment) return null;
 
       const variantAnalytics: VariantAnalytics[] = [];
-      
+
       for (const variant of experiment.variants) {
         const assignments = await ExperimentAssignment.findAll({
           where: {
@@ -185,7 +189,7 @@ export class ABTestingService {
         });
 
         const totalUsers = assignments.length;
-        
+
         // Get conversion metrics for primary metric
         const conversionMetrics = await ExperimentEvent.getConversionRate(
           experimentId,
@@ -216,7 +220,11 @@ export class ABTestingService {
       );
 
       // Generate recommendations
-      const recommendations = this.generateRecommendations(experiment, variantAnalytics, statisticalSignificance);
+      const recommendations = this.generateRecommendations(
+        experiment,
+        variantAnalytics,
+        statisticalSignificance
+      );
 
       return {
         experimentId,
@@ -251,7 +259,7 @@ export class ABTestingService {
 
     // Check include rules
     if (segmentation.includeRules && segmentation.includeRules.length > 0) {
-      const meetsIncludeRules = segmentation.includeRules.every((rule: any) => 
+      const meetsIncludeRules = segmentation.includeRules.every((rule: any) =>
         this.evaluateSegmentRule(user, rule)
       );
       if (!meetsIncludeRules) return false;
@@ -259,7 +267,7 @@ export class ABTestingService {
 
     // Check exclude rules
     if (segmentation.excludeRules && segmentation.excludeRules.length > 0) {
-      const meetsExcludeRules = segmentation.excludeRules.some((rule: any) => 
+      const meetsExcludeRules = segmentation.excludeRules.some((rule: any) =>
         this.evaluateSegmentRule(user, rule)
       );
       if (meetsExcludeRules) return false;
@@ -273,7 +281,7 @@ export class ABTestingService {
    */
   private evaluateSegmentRule(user: any, rule: any): boolean {
     const userValue = this.getNestedProperty(user, rule.field);
-    
+
     switch (rule.operator) {
       case 'equals':
         return userValue === rule.value;
@@ -310,7 +318,7 @@ export class ABTestingService {
   ): Promise<StatisticalSignificance> {
     const controlVariant = variants.find(v => v.isControl);
     const testVariants = variants.filter(v => !v.isControl);
-    
+
     if (!controlVariant || testVariants.length === 0) {
       return {
         isSignificant: false,
@@ -322,7 +330,7 @@ export class ABTestingService {
     }
 
     // Use the best performing test variant for comparison
-    const bestTestVariant = testVariants.reduce((best, current) => 
+    const bestTestVariant = testVariants.reduce((best, current) =>
       current.conversionRate > best.conversionRate ? current : best
     );
 
@@ -332,8 +340,10 @@ export class ABTestingService {
     const p2 = bestTestVariant.conversionRate;
     const n2 = bestTestVariant.totalUsers;
 
-    if (n1 < experiment.successCriteria.minimumSampleSize || 
-        n2 < experiment.successCriteria.minimumSampleSize) {
+    if (
+      n1 < experiment.successCriteria.minimumSampleSize ||
+      n2 < experiment.successCriteria.minimumSampleSize
+    ) {
       return {
         isSignificant: false,
         confidenceLevel: 0,
@@ -344,18 +354,19 @@ export class ABTestingService {
     }
 
     const pooledP = (p1 * n1 + p2 * n2) / (n1 + n2);
-    const se = Math.sqrt(pooledP * (1 - pooledP) * (1/n1 + 1/n2));
+    const se = Math.sqrt(pooledP * (1 - pooledP) * (1 / n1 + 1 / n2));
     const zScore = (p2 - p1) / se;
-    
+
     // Calculate p-value (two-tailed test)
     const pValue = 2 * (1 - this.normalCDF(Math.abs(zScore)));
-    
+
     const confidenceLevel = experiment.successCriteria.confidenceLevel;
     const alpha = (100 - confidenceLevel) / 100;
     const isSignificant = pValue < alpha;
-    
+
     const effect = ((p2 - p1) / p1) * 100; // Percentage change
-    const meetsMinimumEffect = Math.abs(effect) >= experiment.successCriteria.minimumDetectableEffect;
+    const meetsMinimumEffect =
+      Math.abs(effect) >= experiment.successCriteria.minimumDetectableEffect;
 
     let recommendedAction: 'continue' | 'stop' | 'extend' | 'inconclusive' = 'continue';
     if (isSignificant && meetsMinimumEffect) {
@@ -386,18 +397,18 @@ export class ABTestingService {
    * Error function approximation
    */
   private erf(x: number): number {
-    const a1 =  0.254829592;
+    const a1 = 0.254829592;
     const a2 = -0.284496736;
-    const a3 =  1.421413741;
+    const a3 = 1.421413741;
     const a4 = -1.453152027;
-    const a5 =  1.061405429;
-    const p  =  0.3275911;
+    const a5 = 1.061405429;
+    const p = 0.3275911;
 
     const sign = x >= 0 ? 1 : -1;
     x = Math.abs(x);
 
     const t = 1.0 / (1.0 + p * x);
-    const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+    const y = 1.0 - ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
 
     return sign * y;
   }
@@ -414,13 +425,22 @@ export class ABTestingService {
 
     if (significance.recommendedAction === 'stop') {
       if (significance.effect > 0) {
-        const winningVariant = variants.find(v => !v.isControl && v.conversionRate === Math.max(...variants.filter(v => !v.isControl).map(v => v.conversionRate)));
-        recommendations.push(`Experiment shows significant improvement. Implement ${winningVariant?.variantName} variant.`);
+        const winningVariant = variants.find(
+          v =>
+            !v.isControl &&
+            v.conversionRate ===
+              Math.max(...variants.filter(v => !v.isControl).map(v => v.conversionRate))
+        );
+        recommendations.push(
+          `Experiment shows significant improvement. Implement ${winningVariant?.variantName} variant.`
+        );
       } else {
         recommendations.push('Experiment shows significant decrease. Stick with control variant.');
       }
     } else if (significance.recommendedAction === 'extend') {
-      recommendations.push('Results are promising but not yet significant. Consider extending the experiment.');
+      recommendations.push(
+        'Results are promising but not yet significant. Consider extending the experiment.'
+      );
     } else if (significance.recommendedAction === 'continue') {
       recommendations.push('Continue running the experiment to gather more data.');
     } else {
@@ -432,11 +452,13 @@ export class ABTestingService {
     const maxUsers = Math.max(...variants.map(v => v.totalUsers));
     if (maxUsers < minSampleSize) {
       const remaining = minSampleSize - maxUsers;
-      recommendations.push(`Need ${remaining} more users per variant to reach minimum sample size.`);
+      recommendations.push(
+        `Need ${remaining} more users per variant to reach minimum sample size.`
+      );
     }
 
     return recommendations;
   }
 }
 
-export default ABTestingService; 
+export default ABTestingService;

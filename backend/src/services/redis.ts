@@ -27,7 +27,7 @@ class RedisService {
       this.isConnected = true;
     });
 
-    this.client.on('error', (err) => {
+    this.client.on('error', err => {
       logger.error('Redis client error:', err);
       this.isConnected = false;
     });
@@ -249,10 +249,10 @@ const redisService = new RedisService();
 
 // Auto-connect in non-test environments
 if (process.env.NODE_ENV !== 'test') {
-  redisService.connect().catch((error) => {
+  redisService.connect().catch(error => {
     logger.error('Failed to auto-connect to Redis:', error);
   });
 }
 
 export { redisService as redis };
-export default redisService; 
+export default redisService;

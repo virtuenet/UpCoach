@@ -36,12 +36,7 @@ export function Skeleton({
 
   return (
     <div
-      className={cn(
-        'bg-muted',
-        variantClasses[variant],
-        animationClasses[animation],
-        className
-      )}
+      className={cn('bg-muted', variantClasses[variant], animationClasses[animation], className)}
       style={{
         width: width,
         height: height || (variant === 'text' ? '1em' : height),
@@ -67,18 +62,16 @@ export function CardSkeleton({ className }: { className?: string }) {
 /**
  * List Item Skeleton
  */
-export function ListItemSkeleton({ 
+export function ListItemSkeleton({
   showAvatar = true,
-  lines = 2 
-}: { 
+  lines = 2,
+}: {
   showAvatar?: boolean;
   lines?: number;
 }) {
   return (
     <div className="flex items-start space-x-4 p-4">
-      {showAvatar && (
-        <Skeleton variant="circular" width={40} height={40} />
-      )}
+      {showAvatar && <Skeleton variant="circular" width={40} height={40} />}
       <div className="flex-1 space-y-2">
         <Skeleton variant="text" width="40%" />
         {Array.from({ length: lines - 1 }).map((_, i) => (
@@ -92,13 +85,7 @@ export function ListItemSkeleton({
 /**
  * Table Skeleton
  */
-export function TableSkeleton({ 
-  rows = 5,
-  columns = 4 
-}: { 
-  rows?: number;
-  columns?: number;
-}) {
+export function TableSkeleton({ rows = 5, columns = 4 }: { rows?: number; columns?: number }) {
   return (
     <div className="w-full">
       {/* Header */}
@@ -109,16 +96,13 @@ export function TableSkeleton({
           </div>
         ))}
       </div>
-      
+
       {/* Rows */}
       {Array.from({ length: rows }).map((_, rowIndex) => (
         <div key={rowIndex} className="flex border-b p-4">
           {Array.from({ length: columns }).map((_, colIndex) => (
             <div key={colIndex} className="flex-1 px-2">
-              <Skeleton 
-                variant="text" 
-                width={`${Math.random() * 40 + 60}%`} 
-              />
+              <Skeleton variant="text" width={`${Math.random() * 40 + 60}%`} />
             </div>
           ))}
         </div>
@@ -130,11 +114,7 @@ export function TableSkeleton({
 /**
  * Chart Skeleton
  */
-export function ChartSkeleton({ 
-  height = 300 
-}: { 
-  height?: number;
-}) {
+export function ChartSkeleton({ height = 300 }: { height?: number }) {
   return (
     <div className="w-full" style={{ height }}>
       <div className="flex items-end justify-between h-full space-x-2">
@@ -154,11 +134,7 @@ export function ChartSkeleton({
 /**
  * Form Skeleton
  */
-export function FormSkeleton({ 
-  fields = 4 
-}: { 
-  fields?: number;
-}) {
+export function FormSkeleton({ fields = 4 }: { fields?: number }) {
   return (
     <div className="space-y-6">
       {Array.from({ length: fields }).map((_, i) => (
@@ -190,7 +166,7 @@ export function DashboardSkeleton() {
           </div>
         ))}
       </div>
-      
+
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="p-6 border rounded-lg">
@@ -202,7 +178,7 @@ export function DashboardSkeleton() {
           <ChartSkeleton height={250} />
         </div>
       </div>
-      
+
       {/* Table */}
       <div className="border rounded-lg">
         <div className="p-4 border-b">
@@ -226,7 +202,7 @@ export function ContentEditorSkeleton() {
           <Skeleton key={i} variant="rounded" width={32} height={32} />
         ))}
       </div>
-      
+
       {/* Editor */}
       <div className="p-4 border rounded-lg min-h-[400px]">
         <Skeleton variant="text" width="80%" className="mb-4" />
@@ -236,7 +212,7 @@ export function ContentEditorSkeleton() {
         <Skeleton variant="text" width="90%" className="mb-2" />
         <Skeleton variant="text" width="100%" />
       </div>
-      
+
       {/* Actions */}
       <div className="flex justify-end space-x-4">
         <Skeleton variant="rounded" width={100} height={40} />
@@ -259,7 +235,7 @@ export function ProfileSkeleton() {
           <Skeleton variant="text" width={150} />
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="space-y-2">
@@ -268,7 +244,7 @@ export function ProfileSkeleton() {
           </div>
         ))}
       </div>
-      
+
       <div className="space-y-2">
         <Skeleton variant="text" width="30%" height={24} />
         <Skeleton variant="rectangular" height={100} />
@@ -280,11 +256,7 @@ export function ProfileSkeleton() {
 /**
  * Media Gallery Skeleton
  */
-export function MediaGallerySkeleton({ 
-  items = 12 
-}: { 
-  items?: number;
-}) {
+export function MediaGallerySkeleton({ items = 12 }: { items?: number }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
       {Array.from({ length: items }).map((_, i) => (
@@ -299,11 +271,7 @@ export function MediaGallerySkeleton({
 /**
  * Navigation Skeleton
  */
-export function NavigationSkeleton({ 
-  items = 5 
-}: { 
-  items?: number;
-}) {
+export function NavigationSkeleton({ items = 5 }: { items?: number }) {
   return (
     <nav className="space-y-2">
       {Array.from({ length: items }).map((_, i) => (

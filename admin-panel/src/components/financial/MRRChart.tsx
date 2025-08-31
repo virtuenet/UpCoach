@@ -1,3 +1,7 @@
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
+import { financialApi } from '../../services/financialApi';
 import {
   BarChart,
   Bar,
@@ -7,8 +11,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
-} from "recharts";
-
+} from 'recharts';
 
 export function MRRChart() {
   const [loading, setLoading] = useState(true);
@@ -24,52 +27,44 @@ export function MRRChart() {
       const data = await financialApi.getMRRMetrics();
       setMrrData(data);
     } catch (error) {
-      console.error("Failed to load MRR data:", error);
+      console.error('Failed to load MRR data:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
   };
 
   if (loading) {
-    return (
-      <div className="h-[300px] flex items-center justify-center">
-        Loading...
-      </div>
-    );
+    return <div className="h-[300px] flex items-center justify-center">Loading...</div>;
   }
 
   if (!mrrData) {
-    return (
-      <div className="h-[300px] flex items-center justify-center">
-        No data available
-      </div>
-    );
+    return <div className="h-[300px] flex items-center justify-center">No data available</div>;
   }
 
   const movementData = [
-    { name: "Starting MRR", value: mrrData.previous, fill: "#3b82f6" },
-    { name: "New", value: mrrData.breakdown?.new || 0, fill: "#10b981" },
+    { name: 'Starting MRR', value: mrrData.previous, fill: '#3b82f6' },
+    { name: 'New', value: mrrData.breakdown?.new || 0, fill: '#10b981' },
     {
-      name: "Expansion",
+      name: 'Expansion',
       value: mrrData.breakdown?.expansion || 0,
-      fill: "#22c55e",
+      fill: '#22c55e',
     },
     {
-      name: "Contraction",
+      name: 'Contraction',
       value: -(mrrData.breakdown?.contraction || 0),
-      fill: "#f59e0b",
+      fill: '#f59e0b',
     },
-    { name: "Churn", value: -(mrrData.breakdown?.churn || 0), fill: "#ef4444" },
-    { name: "Current MRR", value: mrrData.current, fill: "#3b82f6" },
+    { name: 'Churn', value: -(mrrData.breakdown?.churn || 0), fill: '#ef4444' },
+    { name: 'Current MRR', value: mrrData.current, fill: '#3b82f6' },
   ];
 
   return (
@@ -81,12 +76,10 @@ export function MRRChart() {
           <BarChart data={movementData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
-            <YAxis
-              tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-            />
+            <YAxis tickFormatter={value => `$${(value / 1000).toFixed(0)}k`} />
             <Tooltip
               formatter={(value: number) => formatCurrency(Math.abs(value))}
-              labelStyle={{ color: "#000" }}
+              labelStyle={{ color: '#000' }}
             />
             <Bar dataKey="value">
               {movementData.map((entry, index) => (
@@ -101,23 +94,21 @@ export function MRRChart() {
       <div className="grid grid-cols-3 gap-4">
         <div className="text-center">
           <p className="text-sm text-muted-foreground">Current MRR</p>
-          <p className="text-2xl font-bold">
-            {formatCurrency(mrrData.current)}
-          </p>
+          <p className="text-2xl font-bold">{formatCurrency(mrrData.current)}</p>
         </div>
         <div className="text-center">
           <p className="text-sm text-muted-foreground">Growth</p>
           <p
-            className={`text-2xl font-bold ${mrrData.growth >= 0 ? "text-green-600" : "text-red-600"}`}
+            className={`text-2xl font-bold ${mrrData.growth >= 0 ? 'text-green-600' : 'text-red-600'}`}
           >
-            {mrrData.growth >= 0 ? "+" : ""}
+            {mrrData.growth >= 0 ? '+' : ''}
             {mrrData.growth.toFixed(1)}%
           </p>
         </div>
         <div className="text-center">
           <p className="text-sm text-muted-foreground">Net New</p>
           <p
-            className={`text-2xl font-bold ${mrrData.growthAmount >= 0 ? "text-green-600" : "text-red-600"}`}
+            className={`text-2xl font-bold ${mrrData.growthAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}
           >
             {formatCurrency(Math.abs(mrrData.growthAmount))}
           </p>

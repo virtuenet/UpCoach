@@ -47,14 +47,14 @@ export const borders = {
   // Border radius
   radius: {
     none: '0',
-    sm: '0.125rem',    // 2px
-    md: '0.25rem',     // 4px
-    lg: '0.5rem',      // 8px
-    xl: '0.75rem',     // 12px
-    '2xl': '1rem',     // 16px
-    '3xl': '1.5rem',   // 24px
-    full: '9999px',    // Fully rounded
-    circle: '50%',     // Perfect circle
+    sm: '0.125rem', // 2px
+    md: '0.25rem', // 4px
+    lg: '0.5rem', // 8px
+    xl: '0.75rem', // 12px
+    '2xl': '1rem', // 16px
+    '3xl': '1.5rem', // 24px
+    full: '9999px', // Fully rounded
+    circle: '50%', // Perfect circle
   },
 } as const;
 
@@ -82,7 +82,8 @@ export const transitions = {
 
   // Common transitions
   all: 'all 250ms cubic-bezier(0.4, 0, 0.2, 1)',
-  colors: 'background-color 250ms cubic-bezier(0.4, 0, 0.2, 1), border-color 250ms cubic-bezier(0.4, 0, 0.2, 1), color 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+  colors:
+    'background-color 250ms cubic-bezier(0.4, 0, 0.2, 1), border-color 250ms cubic-bezier(0.4, 0, 0.2, 1), color 250ms cubic-bezier(0.4, 0, 0.2, 1)',
   opacity: 'opacity 250ms cubic-bezier(0.4, 0, 0.2, 1)',
   shadow: 'box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1)',
   transform: 'transform 250ms cubic-bezier(0.4, 0, 0.2, 1)',

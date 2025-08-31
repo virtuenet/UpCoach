@@ -3,16 +3,15 @@
  * Tracks and reports application performance metrics
  */
 
-
 interface PerformanceMetrics {
-  fcp: number | null;      // First Contentful Paint
-  lcp: number | null;      // Largest Contentful Paint
-  fid: number | null;      // First Input Delay
-  cls: number | null;      // Cumulative Layout Shift
-  ttfb: number | null;     // Time to First Byte
-  tti: number | null;      // Time to Interactive
-  tbt: number | null;      // Total Blocking Time
-  inp: number | null;      // Interaction to Next Paint
+  fcp: number | null; // First Contentful Paint
+  lcp: number | null; // Largest Contentful Paint
+  fid: number | null; // First Input Delay
+  cls: number | null; // Cumulative Layout Shift
+  ttfb: number | null; // Time to First Byte
+  tti: number | null; // Time to Interactive
+  tbt: number | null; // Total Blocking Time
+  inp: number | null; // Interaction to Next Paint
 }
 
 interface ResourceTiming {
@@ -68,16 +67,16 @@ class PerformanceMonitor {
   private initializeObservers(): void {
     // Observe paint metrics (FCP, LCP)
     this.observePaintMetrics();
-    
+
     // Observe layout shifts (CLS)
     this.observeLayoutShifts();
-    
+
     // Observe first input delay (FID)
     this.observeFirstInputDelay();
-    
+
     // Observe navigation timing
     this.observeNavigationTiming();
-    
+
     // Observe resource timing
     this.observeResourceTiming();
 
@@ -93,7 +92,7 @@ class PerformanceMonitor {
    */
   private observePaintMetrics(): void {
     try {
-      const observer = new PerformanceObserver((list) => {
+      const observer = new PerformanceObserver(list => {
         for (const entry of list.getEntries()) {
           if (entry.name === 'first-contentful-paint') {
             this.metrics.fcp = Math.round(entry.startTime);
@@ -104,14 +103,14 @@ class PerformanceMonitor {
         }
       });
 
-      observer.observe({ 
-        type: 'paint', 
-        buffered: true 
+      observer.observe({
+        type: 'paint',
+        buffered: true,
       });
-      
-      observer.observe({ 
-        type: 'largest-contentful-paint', 
-        buffered: true 
+
+      observer.observe({
+        type: 'largest-contentful-paint',
+        buffered: true,
       });
 
       this.observers.set('paint', observer);
@@ -128,7 +127,7 @@ class PerformanceMonitor {
       let clsValue = 0;
       let clsEntries: any[] = [];
 
-      const observer = new PerformanceObserver((list) => {
+      const observer = new PerformanceObserver(list => {
         for (const entry of list.getEntries()) {
           // Only count layout shifts without recent input
           if (!(entry as any).hadRecentInput) {
@@ -139,9 +138,9 @@ class PerformanceMonitor {
         this.metrics.cls = Math.round(clsValue * 1000) / 1000;
       });
 
-      observer.observe({ 
-        type: 'layout-shift', 
-        buffered: true 
+      observer.observe({
+        type: 'layout-shift',
+        buffered: true,
       });
 
       this.observers.set('cls', observer);
@@ -155,18 +154,16 @@ class PerformanceMonitor {
    */
   private observeFirstInputDelay(): void {
     try {
-      const observer = new PerformanceObserver((list) => {
+      const observer = new PerformanceObserver(list => {
         const firstInput = list.getEntries()[0];
         if (firstInput) {
-          this.metrics.fid = Math.round(
-            (firstInput as any).processingStart - firstInput.startTime
-          );
+          this.metrics.fid = Math.round((firstInput as any).processingStart - firstInput.startTime);
         }
       });
 
-      observer.observe({ 
-        type: 'first-input', 
-        buffered: true 
+      observer.observe({
+        type: 'first-input',
+        buffered: true,
       });
 
       this.observers.set('fid', observer);
@@ -182,7 +179,7 @@ class PerformanceMonitor {
     try {
       let maxDuration = 0;
 
-      const observer = new PerformanceObserver((list) => {
+      const observer = new PerformanceObserver(list => {
         for (const entry of list.getEntries()) {
           if (entry.entryType === 'event' && (entry as any).duration > maxDuration) {
             maxDuration = (entry as any).duration;
@@ -191,8 +188,8 @@ class PerformanceMonitor {
         }
       });
 
-      observer.observe({ 
-        type: 'event', 
+      observer.observe({
+        type: 'event',
         buffered: true,
         // durationThreshold: 40 // Only observe events > 40ms
       });
@@ -209,11 +206,9 @@ class PerformanceMonitor {
   private observeNavigationTiming(): void {
     if (window.performance && window.performance.timing) {
       const timing = window.performance.timing;
-      
+
       // Calculate TTFB
-      this.metrics.ttfb = Math.round(
-        timing.responseStart - timing.fetchStart
-      );
+      this.metrics.ttfb = Math.round(timing.responseStart - timing.fetchStart);
 
       // Calculate other navigation metrics
       window.addEventListener('load', () => {
@@ -238,10 +233,10 @@ class PerformanceMonitor {
    */
   private observeResourceTiming(): void {
     try {
-      const observer = new PerformanceObserver((list) => {
+      const observer = new PerformanceObserver(list => {
         for (const entry of list.getEntries()) {
           const resourceEntry = entry as PerformanceResourceTiming;
-          
+
           this.resourceTimings.push({
             name: resourceEntry.name,
             type: resourceEntry.initiatorType,
@@ -257,9 +252,9 @@ class PerformanceMonitor {
         }
       });
 
-      observer.observe({ 
-        type: 'resource', 
-        buffered: true 
+      observer.observe({
+        type: 'resource',
+        buffered: true,
       });
 
       this.observers.set('resource', observer);
@@ -274,8 +269,8 @@ class PerformanceMonitor {
   private observeLongTasks(): void {
     try {
       let totalBlockingTime = 0;
-      
-      const observer = new PerformanceObserver((list) => {
+
+      const observer = new PerformanceObserver(list => {
         for (const entry of list.getEntries()) {
           const duration = entry.duration;
           if (duration > 50) {
@@ -285,9 +280,9 @@ class PerformanceMonitor {
         this.metrics.tbt = Math.round(totalBlockingTime);
       });
 
-      observer.observe({ 
-        type: 'longtask', 
-        buffered: true 
+      observer.observe({
+        type: 'longtask',
+        buffered: true,
       });
 
       this.observers.set('longtask', observer);
@@ -447,10 +442,7 @@ class PerformanceMonitor {
     try {
       // Use sendBeacon for reliability on page unload
       if (immediate && navigator.sendBeacon) {
-        navigator.sendBeacon(
-          '/api/performance/report',
-          JSON.stringify(payload)
-        );
+        navigator.sendBeacon('/api/performance/report', JSON.stringify(payload));
       } else {
         // Regular fetch for periodic reports
         await fetch('/api/performance/report', {
@@ -489,14 +481,13 @@ export const performanceMonitor = new PerformanceMonitor();
 export function usePerformanceMonitor() {
   return {
     mark: (name: string) => performanceMonitor.mark(name),
-    measure: (name: string, start: string, end?: string) => 
+    measure: (name: string, start: string, end?: string) =>
       performanceMonitor.measure(name, start, end),
-    trackRender: (component: string, time: number) => 
+    trackRender: (component: string, time: number) =>
       performanceMonitor.trackComponentRender(component, time),
     trackApi: (endpoint: string, duration: number, status: number) =>
       performanceMonitor.trackApiCall(endpoint, duration, status),
-    trackEvent: (name: string, data?: any) =>
-      performanceMonitor.trackEvent(name, data),
+    trackEvent: (name: string, data?: any) => performanceMonitor.trackEvent(name, data),
     getMetrics: () => performanceMonitor.getMetrics(),
   };
 }
@@ -506,6 +497,8 @@ export function usePerformanceMonitor() {
  * Note: This should be used in a .tsx file, not .ts
  * Keeping here for reference but actual implementation should be in a React component file
  */
+import { ComponentType } from 'react';
+
 export function withPerformanceTracking<P extends object>(
   Component: ComponentType<P>,
   _componentName: string

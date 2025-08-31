@@ -4,7 +4,11 @@
  */
 
 import React from 'react';
-import { Button as MuiButton, ButtonProps as MuiButtonProps, CircularProgress } from '@mui/material';
+import {
+  Button as MuiButton,
+  ButtonProps as MuiButtonProps,
+  CircularProgress,
+} from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export interface ButtonProps extends Omit<MuiButtonProps, 'variant'> {
@@ -15,7 +19,7 @@ export interface ButtonProps extends Omit<MuiButtonProps, 'variant'> {
 }
 
 const StyledButton = styled(MuiButton, {
-  shouldForwardProp: (prop) => prop !== 'loading'
+  shouldForwardProp: prop => prop !== 'loading',
 })<{ loading?: boolean }>(({ theme, loading }) => ({
   position: 'relative',
   '& .MuiButton-startIcon': {

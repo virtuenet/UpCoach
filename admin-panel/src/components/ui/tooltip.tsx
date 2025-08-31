@@ -18,10 +18,7 @@ const Tooltip = ({ content, children, side = 'top' }: TooltipProps) => {
 
   return (
     <div className="relative inline-block">
-      <div
-        onMouseEnter={() => setIsVisible(true)}
-        onMouseLeave={() => setIsVisible(false)}
-      >
+      <div onMouseEnter={() => setIsVisible(true)} onMouseLeave={() => setIsVisible(false)}>
         {children}
       </div>
       {isVisible && (

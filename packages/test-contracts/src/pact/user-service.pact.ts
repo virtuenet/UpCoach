@@ -19,7 +19,7 @@ export const userInteractions = {
       method: 'GET',
       path: '/api/users/123',
       headers: {
-        'Authorization': term({
+        Authorization: term({
           matcher: 'Bearer [A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+',
           generate: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
         }),
@@ -82,7 +82,7 @@ export const userInteractions = {
       status: 201,
       headers: {
         'Content-Type': 'application/json',
-        'Location': term({
+        Location: term({
           matcher: '/api/users/[a-f0-9-]+',
           generate: '/api/users/456',
         }),
@@ -112,7 +112,7 @@ export const userInteractions = {
         role: 'user',
       },
       headers: {
-        'Authorization': term({
+        Authorization: term({
           matcher: 'Bearer [A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+',
           generate: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
         }),

@@ -94,10 +94,7 @@ export class ReferralService {
   }
 
   // Create a referral code for a user
-  async createReferralCode(
-    userId: number,
-    programId: string = 'standard'
-  ): Promise<Referral> {
+  async createReferralCode(userId: number, programId: string = 'standard'): Promise<Referral> {
     const user = await User.findByPk(userId);
     if (!user) {
       throw new Error('User not found');
@@ -197,12 +194,7 @@ export class ReferralService {
       await this.updateReferralInDatabase(referral, transaction);
 
       // Apply discount/benefit to referee
-      const discount = await this.applyRefereeReward(
-        refereeId,
-        program,
-        referral,
-        transaction
-      );
+      const discount = await this.applyRefereeReward(refereeId, program, referral, transaction);
 
       // Schedule referrer reward (after referee pays)
       await this.scheduleReferrerReward(referral);
@@ -211,17 +203,11 @@ export class ReferralService {
       await this.sendReferralNotifications(referral);
 
       // Track conversion
-      await analyticsService.trackConversion(
-        refereeId,
-        'referral_applied',
-        discount,
-        'USD',
-        {
-          referralCode: code,
-          programId: program.id,
-          referrerId: referral.referrerId,
-        }
-      );
+      await analyticsService.trackConversion(refereeId, 'referral_applied', discount, 'USD', {
+        referralCode: code,
+        programId: program.id,
+        referrerId: referral.referrerId,
+      });
 
       logger.info('Referral code applied', {
         refereeId,
@@ -253,7 +239,7 @@ export class ReferralService {
     referrals: Referral[];
   }> {
     const userReferrals = await this.getUserReferrals(userId);
-    
+
     const stats = {
       totalReferrals: userReferrals.length,
       successfulReferrals: userReferrals.filter(r => r.status === 'completed').length,
@@ -271,10 +257,7 @@ export class ReferralService {
   }
 
   // Process referrer rewards (called after payment)
-  async processReferrerReward(
-    refereeId: number,
-    paymentAmount: number
-  ): Promise<void> {
+  async processReferrerReward(refereeId: number, paymentAmount: number): Promise<void> {
     try {
       // Find referral by referee
       const referral = await this.getReferralByReferee(refereeId);
@@ -338,10 +321,11 @@ export class ReferralService {
     conversionRate: number;
   }> {
     const allReferrals = Array.from(this.referrals.values());
-    
+
     const stats = {
       totalReferrals: allReferrals.length,
-      activeReferrals: allReferrals.filter(r => r.status === 'pending' && new Date() <= r.expiresAt).length,
+      activeReferrals: allReferrals.filter(r => r.status === 'pending' && new Date() <= r.expiresAt)
+        .length,
       completedReferrals: allReferrals.filter(r => r.status === 'completed').length,
       totalEarnings: allReferrals
         .filter(r => r.rewardStatus === 'paid')
@@ -349,32 +333,32 @@ export class ReferralService {
       pendingPayouts: allReferrals
         .filter(r => r.status === 'completed' && r.rewardStatus === 'pending')
         .reduce((sum, r) => sum + (r.referrerReward || 0), 0),
-      conversionRate: allReferrals.length > 0 
-        ? (allReferrals.filter(r => r.status === 'completed').length / allReferrals.length) * 100
-        : 0,
+      conversionRate:
+        allReferrals.length > 0
+          ? (allReferrals.filter(r => r.status === 'completed').length / allReferrals.length) * 100
+          : 0,
     };
 
     return stats;
   }
 
   // Get referral leaderboard
-  async getReferralLeaderboard(
-    period: 'week' | 'month' | 'all' = 'month'
-  ): Promise<Array<{
-    userId: number;
-    userName: string;
-    referralCount: number;
-    totalEarnings: number;
-    rank: number;
-  }>> {
+  async getReferralLeaderboard(period: 'week' | 'month' | 'all' = 'month'): Promise<
+    Array<{
+      userId: number;
+      userName: string;
+      referralCount: number;
+      totalEarnings: number;
+      rank: number;
+    }>
+  > {
     const startDate = this.getLeaderboardStartDate(period);
-    
+
     // In production, this would be a database query
     const leaderboard: Map<number, any> = new Map();
 
     for (const referral of this.referrals.values()) {
-      if (referral.status === 'completed' && 
-          (!startDate || referral.completedAt! >= startDate)) {
+      if (referral.status === 'completed' && (!startDate || referral.completedAt! >= startDate)) {
         const existing = leaderboard.get(referral.referrerId) || {
           userId: referral.referrerId,
           referralCount: 0,
@@ -388,8 +372,9 @@ export class ReferralService {
     }
 
     // Sort and add user details
-    const sorted = Array.from(leaderboard.values())
-      .sort((a, b) => b.totalEarnings - a.totalEarnings);
+    const sorted = Array.from(leaderboard.values()).sort(
+      (a, b) => b.totalEarnings - a.totalEarnings
+    );
 
     // Add user names and ranks
     const results = await Promise.all(
@@ -419,7 +404,7 @@ export class ReferralService {
       const tierHierarchy = ['free', 'basic', 'pro', 'premium', 'coach'];
       const userTierIndex = tierHierarchy.indexOf(user.role || 'free');
       const requiredTierIndex = tierHierarchy.indexOf(conditions.minSubscriptionTier);
-      
+
       if (userTierIndex < requiredTierIndex) {
         return {
           eligible: false,
@@ -563,10 +548,7 @@ export class ReferralService {
     }
   }
 
-  private async sendRewardNotification(
-    referral: Referral,
-    amount: number
-  ): Promise<void> {
+  private async sendRewardNotification(referral: Referral, amount: number): Promise<void> {
     const referrer = await User.findByPk(referral.referrerId);
     if (referrer) {
       await emailService.send({
@@ -620,8 +602,7 @@ export class ReferralService {
   }
 
   private async getReferralByCode(code: string): Promise<Referral | null> {
-    return this.referrals.get(code) || 
-           await getCacheService().get<Referral>(`referral:${code}`);
+    return this.referrals.get(code) || (await getCacheService().get<Referral>(`referral:${code}`));
   }
 
   private async getReferralByReferee(refereeId: number): Promise<Referral | null> {
@@ -647,9 +628,11 @@ export class ReferralService {
   private async countUserRewards(userId: number, programId: string): Promise<number> {
     let count = 0;
     for (const referral of this.referrals.values()) {
-      if (referral.referrerId === userId && 
-          referral.programId === programId &&
-          referral.rewardStatus === 'paid') {
+      if (
+        referral.referrerId === userId &&
+        referral.programId === programId &&
+        referral.rewardStatus === 'paid'
+      ) {
         count++;
       }
     }

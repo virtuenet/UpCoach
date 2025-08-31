@@ -79,7 +79,10 @@ export class CoachIntelligenceController {
       _res.status(500).json({
         success: false,
         message: 'Failed to process coaching session',
-        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        error:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
       });
     }
   }
@@ -105,7 +108,7 @@ export class CoachIntelligenceController {
 
       const currentContext = {
         topics: topics ? (topics as string).split(',') : [],
-        mood: mood as string || 'neutral',
+        mood: (mood as string) || 'neutral',
         recentGoals: recentGoals ? (recentGoals as string).split(',') : [],
       };
 
@@ -140,7 +143,10 @@ export class CoachIntelligenceController {
       _res.status(500).json({
         success: false,
         message: 'Failed to retrieve relevant memories',
-        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        error:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
       });
     }
   }
@@ -183,7 +189,10 @@ export class CoachIntelligenceController {
       _res.status(500).json({
         success: false,
         message: 'Failed to generate coaching recommendations',
-        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        error:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
       });
     }
   }
@@ -218,7 +227,10 @@ export class CoachIntelligenceController {
       _res.status(500).json({
         success: false,
         message: 'Failed to generate weekly report',
-        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        error:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
       });
     }
   }
@@ -263,7 +275,10 @@ export class CoachIntelligenceController {
       _res.status(500).json({
         success: false,
         message: 'Failed to retrieve user analytics',
-        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        error:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
       });
     }
   }
@@ -285,15 +300,15 @@ export class CoachIntelligenceController {
       }
 
       const { userId } = req.params;
-      const { 
-        memoryType, 
-        tags, 
-        startDate, 
-        endDate, 
-        page = 1, 
+      const {
+        memoryType,
+        tags,
+        startDate,
+        endDate,
+        page = 1,
         limit = 20,
         sortBy = 'conversationDate',
-        sortOrder = 'DESC'
+        sortOrder = 'DESC',
       } = req.query;
 
       const offset = (parseInt(page as string, 10) - 1) * parseInt(limit as string, 10);
@@ -357,7 +372,10 @@ export class CoachIntelligenceController {
       _res.status(500).json({
         success: false,
         message: 'Failed to retrieve user memories',
-        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        error:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
       });
     }
   }
@@ -395,7 +413,10 @@ export class CoachIntelligenceController {
       _res.status(500).json({
         success: false,
         message: 'Failed to create KPI tracker',
-        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        error:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
       });
     }
   }
@@ -433,7 +454,10 @@ export class CoachIntelligenceController {
 
       const kpiTrackers = await KpiTracker.findAll({
         where: whereClause,
-        order: [['priority', 'DESC'], ['createdAt', 'DESC']],
+        order: [
+          ['priority', 'DESC'],
+          ['createdAt', 'DESC'],
+        ],
       });
 
       const trackersWithAnalytics = kpiTrackers.map(tracker => ({
@@ -463,7 +487,10 @@ export class CoachIntelligenceController {
       _res.status(500).json({
         success: false,
         message: 'Failed to retrieve KPI trackers',
-        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        error:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
       });
     }
   }
@@ -516,7 +543,10 @@ export class CoachIntelligenceController {
       _res.status(500).json({
         success: false,
         message: 'Failed to update KPI progress',
-        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        error:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
       });
     }
   }
@@ -549,12 +579,22 @@ export class CoachIntelligenceController {
       // Calculate cohort-level metrics
       const cohortMetrics = {
         totalUsers: analytics.length,
-        averageEngagement: analytics.reduce((sum, a) => sum + a.engagementMetrics.participationScore, 0) / analytics.length,
-        averageGoalCompletion: analytics.reduce((sum, a) => sum + a.coachingMetrics.goalCompletionRate, 0) / analytics.length,
-        averageSatisfaction: analytics.reduce((sum, a) => sum + a.kpiMetrics.userSatisfactionScore, 0) / analytics.length,
+        averageEngagement:
+          analytics.reduce((sum, a) => sum + a.engagementMetrics.participationScore, 0) /
+          analytics.length,
+        averageGoalCompletion:
+          analytics.reduce((sum, a) => sum + a.coachingMetrics.goalCompletionRate, 0) /
+          analytics.length,
+        averageSatisfaction:
+          analytics.reduce((sum, a) => sum + a.kpiMetrics.userSatisfactionScore, 0) /
+          analytics.length,
         churnRisk: analytics.filter(a => a.kpiMetrics.churnRisk > 0.7).length,
-        topStrengthAreas: this.aggregateStringArrays(analytics.map(a => a.aiInsights.strengthAreas)),
-        topImprovementAreas: this.aggregateStringArrays(analytics.map(a => a.aiInsights.improvementAreas)),
+        topStrengthAreas: this.aggregateStringArrays(
+          analytics.map(a => a.aiInsights.strengthAreas)
+        ),
+        topImprovementAreas: this.aggregateStringArrays(
+          analytics.map(a => a.aiInsights.improvementAreas)
+        ),
       };
 
       _res.status(200).json({
@@ -571,7 +611,10 @@ export class CoachIntelligenceController {
       _res.status(500).json({
         success: false,
         message: 'Failed to retrieve cohort analytics',
-        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error',
+        error:
+          process.env.NODE_ENV === 'development'
+            ? (error as Error).message
+            : 'Internal server error',
       });
     }
   }
@@ -581,7 +624,7 @@ export class CoachIntelligenceController {
    */
   private aggregateStringArrays(arrays: string[][]): { item: string; count: number }[] {
     const counts: { [key: string]: number } = {};
-    
+
     arrays.flat().forEach(item => {
       counts[item] = (counts[item] || 0) + 1;
     });
@@ -601,14 +644,25 @@ export const coachIntelligenceValidation = {
     body('sessionId').isUUID().withMessage('Valid session ID is required'),
     body('currentTopic').isString().withMessage('Current topic is required'),
     body('userMood').isString().withMessage('User mood is required'),
-    body('conversationContent').isString().isLength({ min: 10 }).withMessage('Conversation content must be at least 10 characters'),
-    body('sessionDuration').isInt({ min: 1 }).withMessage('Session duration must be a positive integer'),
-    body('userFeedback.rating').optional().isInt({ min: 1, max: 10 }).withMessage('Rating must be between 1 and 10'),
+    body('conversationContent')
+      .isString()
+      .isLength({ min: 10 })
+      .withMessage('Conversation content must be at least 10 characters'),
+    body('sessionDuration')
+      .isInt({ min: 1 })
+      .withMessage('Session duration must be a positive integer'),
+    body('userFeedback.rating')
+      .optional()
+      .isInt({ min: 1, max: 10 })
+      .withMessage('Rating must be between 1 and 10'),
   ],
 
   getRelevantMemories: [
     param('userId').isUUID().withMessage('Valid user ID is required'),
-    query('limit').optional().isInt({ min: 1, max: 50 }).withMessage('Limit must be between 1 and 50'),
+    query('limit')
+      .optional()
+      .isInt({ min: 1, max: 50 })
+      .withMessage('Limit must be between 1 and 50'),
   ],
 
   getCoachingRecommendations: [
@@ -616,35 +670,58 @@ export const coachIntelligenceValidation = {
     query('avatarId').optional().isUUID().withMessage('Avatar ID must be valid UUID'),
   ],
 
-  getWeeklyReport: [
-    param('userId').isUUID().withMessage('Valid user ID is required'),
-  ],
+  getWeeklyReport: [param('userId').isUUID().withMessage('Valid user ID is required')],
 
   getUserAnalytics: [
     param('userId').isUUID().withMessage('Valid user ID is required'),
-    query('periodType').optional().isIn(['daily', 'weekly', 'monthly', 'quarterly']).withMessage('Invalid period type'),
+    query('periodType')
+      .optional()
+      .isIn(['daily', 'weekly', 'monthly', 'quarterly'])
+      .withMessage('Invalid period type'),
   ],
 
   getUserMemories: [
     param('userId').isUUID().withMessage('Valid user ID is required'),
     query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
-    query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
+    query('limit')
+      .optional()
+      .isInt({ min: 1, max: 100 })
+      .withMessage('Limit must be between 1 and 100'),
   ],
 
   createKpiTracker: [
     body('userId').isUUID().withMessage('Valid user ID is required'),
-    body('type').isIn(['kpi', 'okr', 'personal_goal', 'team_goal']).withMessage('Invalid tracker type'),
-    body('title').isString().isLength({ min: 3, max: 200 }).withMessage('Title must be between 3 and 200 characters'),
-    body('description').isString().isLength({ min: 10 }).withMessage('Description must be at least 10 characters'),
-    body('category').isIn(['financial', 'professional', 'personal', 'health', 'relationships', 'skills', 'custom']).withMessage('Invalid category'),
+    body('type')
+      .isIn(['kpi', 'okr', 'personal_goal', 'team_goal'])
+      .withMessage('Invalid tracker type'),
+    body('title')
+      .isString()
+      .isLength({ min: 3, max: 200 })
+      .withMessage('Title must be between 3 and 200 characters'),
+    body('description')
+      .isString()
+      .isLength({ min: 10 })
+      .withMessage('Description must be at least 10 characters'),
+    body('category')
+      .isIn([
+        'financial',
+        'professional',
+        'personal',
+        'health',
+        'relationships',
+        'skills',
+        'custom',
+      ])
+      .withMessage('Invalid category'),
     body('startDate').isISO8601().withMessage('Valid start date is required'),
     body('endDate').isISO8601().withMessage('Valid end date is required'),
-    body('priority').optional().isIn(['low', 'medium', 'high', 'critical']).withMessage('Invalid priority'),
+    body('priority')
+      .optional()
+      .isIn(['low', 'medium', 'high', 'critical'])
+      .withMessage('Invalid priority'),
   ],
 
-  getUserKpiTrackers: [
-    param('userId').isUUID().withMessage('Valid user ID is required'),
-  ],
+  getUserKpiTrackers: [param('userId').isUUID().withMessage('Valid user ID is required')],
 
   updateKpiProgress: [
     param('id').isUUID().withMessage('Valid KPI tracker ID is required'),
@@ -654,4 +731,4 @@ export const coachIntelligenceValidation = {
   ],
 };
 
-export default CoachIntelligenceController; 
+export default CoachIntelligenceController;

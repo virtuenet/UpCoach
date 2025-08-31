@@ -6,7 +6,11 @@ import { Request } from 'express';
 const storage = multer.memoryStorage();
 
 // File filter function
-const fileFilter = (req: Request, file: Express.Multer.File, callback: multer.FileFilterCallback) => {
+const fileFilter = (
+  req: Request,
+  file: Express.Multer.File,
+  callback: multer.FileFilterCallback
+) => {
   // Define allowed file types
   const allowedTypes = {
     images: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
@@ -53,9 +57,13 @@ const getFileSizeLimit = (mimetype: string): number => {
 };
 
 // Custom file size validation
-const customFileSizeLimit = (req: Request, file: Express.Multer.File, callback: multer.FileFilterCallback) => {
+const customFileSizeLimit = (
+  req: Request,
+  file: Express.Multer.File,
+  callback: multer.FileFilterCallback
+) => {
   const _maxSize = getFileSizeLimit(file.mimetype);
-  
+
   // Note: This is called before the file is fully uploaded, so we can't check actual size here
   // We'll handle size validation in the controller after upload
   callback(null, true);
@@ -71,7 +79,7 @@ export const uploadMiddleware = multer({
         callback(error as any);
         return;
       }
-      
+
       // Then check custom size limit
       customFileSizeLimit(req, file, callback);
     });
@@ -140,14 +148,14 @@ export const handleUploadError = (error: any, req: Request, res: any, next: any)
       error: 'INVALID_FILE_TYPE',
     });
   }
-  
+
   next(error);
 };
 
 // Validate file sizes after upload
 export const validateFileSizes = (req: Request, res: any, next: any) => {
   const files = req.files as Express.Multer.File[];
-  
+
   if (files && Array.isArray(files)) {
     for (const file of files) {
       const maxSize = getFileSizeLimit(file.mimetype);
@@ -169,7 +177,7 @@ export const validateFileSizes = (req: Request, res: any, next: any) => {
       });
     }
   }
-  
+
   next();
 };
 
@@ -178,8 +186,9 @@ export const getFileTypeCategory = (mimetype: string): string => {
   if (mimetype.startsWith('image/')) return 'image';
   if (mimetype.startsWith('video/')) return 'video';
   if (mimetype.startsWith('audio/')) return 'audio';
-  if (mimetype.includes('pdf') || mimetype.includes('document') || mimetype.includes('text')) return 'document';
+  if (mimetype.includes('pdf') || mimetype.includes('document') || mimetype.includes('text'))
+    return 'document';
   return 'other';
 };
 
-export default uploadMiddleware; 
+export default uploadMiddleware;

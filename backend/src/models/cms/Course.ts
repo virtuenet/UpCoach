@@ -1,5 +1,5 @@
 import { DataTypes, Model, Optional, Op } from 'sequelize';
-import { sequelize } from '../index';
+import { sequelize } from '../../config/sequelize';
 
 // Course interface
 export interface CourseAttributes {
@@ -74,15 +74,39 @@ export interface CourseAttributes {
 }
 
 // Optional fields for creation
-export interface CourseCreationAttributes extends Optional<CourseAttributes, 
-  'id' | 'slug' | 'longDescription' | 'duration' | 'price' | 'currency' | 'publishedAt' | 
-  'thumbnailImage' | 'previewVideo' | 'objectives' | 'prerequisites' | 'targetAudience' | 
-  'tags' | 'seoTitle' | 'seoDescription' | 'metadata' | 'enrollment' | 'settings' | 'pricing' | 
-  'analytics' | 'createdAt' | 'updatedAt' | 'deletedAt'
-> {}
+export interface CourseCreationAttributes
+  extends Optional<
+    CourseAttributes,
+    | 'id'
+    | 'slug'
+    | 'longDescription'
+    | 'duration'
+    | 'price'
+    | 'currency'
+    | 'publishedAt'
+    | 'thumbnailImage'
+    | 'previewVideo'
+    | 'objectives'
+    | 'prerequisites'
+    | 'targetAudience'
+    | 'tags'
+    | 'seoTitle'
+    | 'seoDescription'
+    | 'metadata'
+    | 'enrollment'
+    | 'settings'
+    | 'pricing'
+    | 'analytics'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'deletedAt'
+  > {}
 
 // Course model class
-export class Course extends Model<CourseAttributes, CourseCreationAttributes> implements CourseAttributes {
+export class Course
+  extends Model<CourseAttributes, CourseCreationAttributes>
+  implements CourseAttributes
+{
   public id!: string;
   public title!: string;
   public slug!: string;
@@ -124,12 +148,12 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
 
     let slug = baseSlug;
     let counter = 1;
-    
+
     while (await Course.findOne({ where: { slug, id: { [Op.ne as any]: this.id } } })) {
       slug = `${baseSlug}-${counter}`;
       counter++;
     }
-    
+
     return slug;
   }
 
@@ -137,26 +161,29 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
     // Would typically fetch lessons and calculate these values
     // For now, using mock calculations
     const lessons: { duration?: number }[] = []; // await this.getLessons();
-    
+
     this.metadata = {
       ...this.metadata,
       lessonsCount: lessons.length,
       totalDuration: lessons.reduce((sum: number, lesson) => sum + (lesson.duration || 0), 0),
       lastContentUpdate: new Date(),
     };
-    
+
     await this.save();
   }
 
   public async enroll(studentId: string): Promise<boolean> {
-    if (this.enrollment.maxStudents && this.enrollment.currentEnrolled >= this.enrollment.maxStudents) {
+    if (
+      this.enrollment.maxStudents &&
+      this.enrollment.currentEnrolled >= this.enrollment.maxStudents
+    ) {
       return false; // Course is full
     }
 
     this.enrollment.currentEnrolled += 1;
     this.analytics.totalEnrollments += 1;
     await this.save();
-    
+
     return true;
   }
 
@@ -183,7 +210,12 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
 
   public calculateCompletionRate(): number {
     if (this.analytics.totalEnrollments === 0) return 0;
-    return (this.analytics.totalEnrollments - (this.analytics.dropoffRate * this.analytics.totalEnrollments)) / this.analytics.totalEnrollments * 100;
+    return (
+      ((this.analytics.totalEnrollments -
+        this.analytics.dropoffRate * this.analytics.totalEnrollments) /
+        this.analytics.totalEnrollments) *
+      100
+    );
   }
 
   // Static methods
@@ -196,9 +228,9 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
 
   static async getByDifficulty(difficulty: string): Promise<Course[]> {
     return Course.findAll({
-      where: { 
+      where: {
         difficulty,
-        status: 'published' 
+        status: 'published',
       },
       order: [['publishedAt', 'DESC']],
     });
@@ -209,7 +241,7 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
       where: { status: 'published' },
       order: [
         ['analytics.totalEnrollments', 'DESC'],
-        ['analytics.averageRating', 'DESC']
+        ['analytics.averageRating', 'DESC'],
       ],
       limit,
     });
@@ -217,9 +249,9 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
 
   static async getFeatured(): Promise<Course[]> {
     return Course.findAll({
-      where: { 
+      where: {
         status: 'published',
-        'analytics.averageRating': { [Op.gte]: 4.0 }
+        'analytics.averageRating': { [Op.gte]: 4.0 },
       },
       order: [['analytics.averageRating', 'DESC']],
       limit: 10,
@@ -228,9 +260,9 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
 
   static async getByCategory(categoryId: string): Promise<Course[]> {
     return Course.findAll({
-      where: { 
+      where: {
         categoryId,
-        status: 'published' 
+        status: 'published',
       },
       order: [['publishedAt', 'DESC']],
     });
@@ -243,12 +275,15 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
     });
   }
 
-  static async searchCourses(query: string, filters: {
-    category?: string;
-    difficulty?: string;
-    priceRange?: { min: number; max: number };
-    rating?: number;
-  } = {}): Promise<Course[]> {
+  static async searchCourses(
+    query: string,
+    filters: {
+      category?: string;
+      difficulty?: string;
+      priceRange?: { min: number; max: number };
+      rating?: number;
+    } = {}
+  ): Promise<Course[]> {
     const whereClause: any = { status: 'published' };
 
     if (query) {
@@ -269,32 +304,35 @@ export class Course extends Model<CourseAttributes, CourseCreationAttributes> im
 
     if (filters.priceRange) {
       whereClause.price = {
-        [Op.between]: [filters.priceRange.min, filters.priceRange.max]
+        [Op.between]: [filters.priceRange.min, filters.priceRange.max],
       };
     }
 
     if (filters.rating) {
       whereClause['analytics.averageRating'] = {
-        [Op.gte]: filters.rating
+        [Op.gte]: filters.rating,
       };
     }
 
     return Course.findAll({
       where: whereClause,
-      order: [['analytics.averageRating', 'DESC'], ['publishedAt', 'DESC']],
+      order: [
+        ['analytics.averageRating', 'DESC'],
+        ['publishedAt', 'DESC'],
+      ],
     });
   }
 
   static async getRecommendations(userId: string, limit: number = 5): Promise<Course[]> {
     // Basic recommendation logic - in production would use ML algorithms
     return Course.findAll({
-      where: { 
+      where: {
         status: 'published',
-        'analytics.averageRating': { [Op.gte]: 4.0 }
+        'analytics.averageRating': { [Op.gte]: 4.0 },
       },
       order: [
         ['analytics.totalEnrollments', 'DESC'],
-        ['analytics.averageRating', 'DESC']
+        ['analytics.averageRating', 'DESC'],
       ],
       limit,
     });
@@ -568,4 +606,4 @@ Course.init(
   }
 );
 
-export default Course; 
+export default Course;

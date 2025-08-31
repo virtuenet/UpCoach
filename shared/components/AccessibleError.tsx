@@ -33,11 +33,11 @@ export const AccessibleError: React.FC<AccessibleErrorProps> = ({
   // Parse error into structured format
   const errorDetails: ErrorDetails = React.useMemo(() => {
     if (!error) return { message: '' };
-    
+
     if (typeof error === 'string') {
       return { message: error };
     }
-    
+
     return error;
   }, [error]);
 
@@ -52,9 +52,9 @@ export const AccessibleError: React.FC<AccessibleErrorProps> = ({
   useEffect(() => {
     if (errorDetails.retryAfter) {
       setTimeLeft(errorDetails.retryAfter);
-      
+
       const timer = setInterval(() => {
-        setTimeLeft((prev) => {
+        setTimeLeft(prev => {
           if (prev <= 1) {
             clearInterval(timer);
             return 0;
@@ -72,14 +72,14 @@ export const AccessibleError: React.FC<AccessibleErrorProps> = ({
   // Get user-friendly message based on error code
   const getUserFriendlyMessage = (code?: string): string | null => {
     const messages: Record<string, string> = {
-      'CSRF_TOKEN_MISSING': 'Your session has expired. Please refresh the page and try again.',
-      'CSRF_TOKEN_INVALID': 'Security validation failed. Please refresh the page and try again.',
-      'RATE_LIMIT_EXCEEDED': `You've made too many requests. Please wait ${timeLeft || errorDetails.retryAfter} seconds and try again.`,
-      'UNAUTHORIZED': 'You need to log in to perform this action.',
-      'FORBIDDEN': 'You don\'t have permission to access this resource.',
-      'NETWORK_ERROR': 'Unable to connect to the server. Please check your internet connection.',
-      'VALIDATION_ERROR': 'Please check your input and try again.',
-      'SERVER_ERROR': 'Something went wrong on our end. Please try again later.',
+      CSRF_TOKEN_MISSING: 'Your session has expired. Please refresh the page and try again.',
+      CSRF_TOKEN_INVALID: 'Security validation failed. Please refresh the page and try again.',
+      RATE_LIMIT_EXCEEDED: `You've made too many requests. Please wait ${timeLeft || errorDetails.retryAfter} seconds and try again.`,
+      UNAUTHORIZED: 'You need to log in to perform this action.',
+      FORBIDDEN: "You don't have permission to access this resource.",
+      NETWORK_ERROR: 'Unable to connect to the server. Please check your internet connection.',
+      VALIDATION_ERROR: 'Please check your input and try again.',
+      SERVER_ERROR: 'Something went wrong on our end. Please try again later.',
     };
 
     return code ? messages[code] || null : null;
@@ -213,9 +213,10 @@ const ErrorContent: React.FC<ErrorContentProps> = ({
           disabled={timeLeft > 0}
           className={`
             mt-3 px-4 py-2 text-sm font-medium rounded-md
-            ${timeLeft > 0
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500'
+            ${
+              timeLeft > 0
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : 'bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500'
             }
           `}
           aria-label={timeLeft > 0 ? `Retry available in ${timeLeft} seconds` : 'Retry'}
@@ -226,9 +227,7 @@ const ErrorContent: React.FC<ErrorContentProps> = ({
 
       {/* Error code for support */}
       {errorDetails.code && (
-        <p className="mt-3 text-xs text-gray-500">
-          Error code: {errorDetails.code}
-        </p>
+        <p className="mt-3 text-xs text-gray-500">Error code: {errorDetails.code}</p>
       )}
     </>
   );
@@ -288,7 +287,7 @@ export function useAccessibleError() {
     announcement.className = 'sr-only';
     announcement.textContent = `Error: ${errorDetails.message}`;
     document.body.appendChild(announcement);
-    
+
     setTimeout(() => {
       document.body.removeChild(announcement);
     }, 1000);

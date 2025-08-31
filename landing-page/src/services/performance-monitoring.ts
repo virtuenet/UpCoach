@@ -5,10 +5,10 @@ import { event } from './analytics';
 const THRESHOLDS = {
   FCP: 1800, // First Contentful Paint (ms)
   LCP: 2500, // Largest Contentful Paint (ms)
-  FID: 100,  // First Input Delay (ms)
-  CLS: 0.1,  // Cumulative Layout Shift
+  FID: 100, // First Input Delay (ms)
+  CLS: 0.1, // Cumulative Layout Shift
   TTI: 3800, // Time to Interactive (ms)
-  TBT: 200,  // Total Blocking Time (ms)
+  TBT: 200, // Total Blocking Time (ms)
 };
 
 // Performance data structure
@@ -53,16 +53,16 @@ class PerformanceMonitor {
   private init() {
     // Observe Core Web Vitals
     this.observeWebVitals();
-    
+
     // Monitor navigation timing
     this.measureNavigationTiming();
-    
+
     // Monitor resource timing
     this.measureResourceTiming();
-    
+
     // Monitor memory usage
     this.measureMemoryUsage();
-    
+
     // Set up visibility change listener
     this.setupVisibilityListener();
   }
@@ -70,9 +70,9 @@ class PerformanceMonitor {
   private observeWebVitals() {
     try {
       // Observe FCP
-      new PerformanceObserver((entryList) => {
+      new PerformanceObserver(entryList => {
         const entries = entryList.getEntries();
-        entries.forEach((entry) => {
+        entries.forEach(entry => {
           if (entry.name === 'first-contentful-paint') {
             this.metrics.FCP = Math.round(entry.startTime);
             this.reportMetric('FCP', this.metrics.FCP);
@@ -81,7 +81,7 @@ class PerformanceMonitor {
       }).observe({ entryTypes: ['paint'] });
 
       // Observe LCP
-      new PerformanceObserver((entryList) => {
+      new PerformanceObserver(entryList => {
         const entries = entryList.getEntries();
         const lastEntry = entries[entries.length - 1];
         this.metrics.LCP = Math.round(lastEntry.startTime);
@@ -89,9 +89,9 @@ class PerformanceMonitor {
       }).observe({ entryTypes: ['largest-contentful-paint'] });
 
       // Observe FID
-      new PerformanceObserver((entryList) => {
+      new PerformanceObserver(entryList => {
         const entries = entryList.getEntries();
-        entries.forEach((entry) => {
+        entries.forEach(entry => {
           if (entry.name === 'first-input') {
             const fidEntry = entry as any;
             this.metrics.FID = Math.round(fidEntry.processingStart - fidEntry.startTime);
@@ -103,8 +103,8 @@ class PerformanceMonitor {
       // Observe CLS
       let clsValue = 0;
       let clsEntries: any[] = [];
-      
-      new PerformanceObserver((entryList) => {
+
+      new PerformanceObserver(entryList => {
         for (const entry of entryList.getEntries()) {
           if (!(entry as any).hadRecentInput) {
             clsEntries.push(entry);
@@ -114,7 +114,6 @@ class PerformanceMonitor {
         this.metrics.CLS = clsValue;
         this.reportMetric('CLS', this.metrics.CLS);
       }).observe({ entryTypes: ['layout-shift'] });
-
     } catch (e) {
       console.error('Failed to observe performance metrics:', e);
     }
@@ -138,7 +137,7 @@ class PerformanceMonitor {
   private measureResourceTiming() {
     if (window.performance && window.performance.getEntriesByType) {
       const resources = window.performance.getEntriesByType('resource');
-      
+
       const resourcesByType = {
         scripts: 0,
         stylesheets: 0,
@@ -261,7 +260,7 @@ class PerformanceMonitor {
     Object.entries(weights).forEach(([metric, weight]) => {
       const value = this.metrics[metric as keyof PerformanceData] as number;
       const threshold = THRESHOLDS[metric as keyof typeof THRESHOLDS];
-      
+
       if (value && threshold) {
         const ratio = Math.min(value / threshold, 2);
         score -= (ratio - 1) * weight * 100;
@@ -278,8 +277,8 @@ export class PerformanceOptimizer {
   static lazyLoadImages() {
     if ('IntersectionObserver' in window) {
       const images = document.querySelectorAll('img[data-src]');
-      const imageObserver = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
+      const imageObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
           if (entry.isIntersecting) {
             const img = entry.target as HTMLImageElement;
             img.src = img.dataset.src!;
@@ -289,16 +288,16 @@ export class PerformanceOptimizer {
         });
       });
 
-      images.forEach((img) => imageObserver.observe(img));
+      images.forEach(img => imageObserver.observe(img));
     }
   }
 
   // Preload critical resources
   static preloadCriticalResources(resources: string[]) {
-    resources.forEach((resource) => {
+    resources.forEach(resource => {
       const link = document.createElement('link');
       link.rel = 'preload';
-      
+
       if (resource.endsWith('.css')) {
         link.as = 'style';
       } else if (resource.endsWith('.js')) {
@@ -308,7 +307,7 @@ export class PerformanceOptimizer {
         link.type = 'font/woff2';
         link.crossOrigin = 'anonymous';
       }
-      
+
       link.href = resource;
       document.head.appendChild(link);
     });
@@ -346,7 +345,7 @@ export class PerformanceOptimizer {
       { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
     ];
 
-    hints.forEach((hint) => {
+    hints.forEach(hint => {
       const link = document.createElement('link');
       link.rel = hint.rel;
       link.href = hint.href;
@@ -360,7 +359,7 @@ export class PerformanceOptimizer {
   // Reduce JavaScript execution time
   static deferNonCriticalJS() {
     const scripts = document.querySelectorAll('script[data-defer]');
-    scripts.forEach((script) => {
+    scripts.forEach(script => {
       const newScript = document.createElement('script');
       newScript.src = (script as HTMLScriptElement).src;
       newScript.defer = true;
@@ -373,10 +372,10 @@ export class PerformanceOptimizer {
     // Load critical CSS inline
     // Load non-critical CSS asynchronously
     const links = document.querySelectorAll('link[rel="stylesheet"][data-async]');
-    links.forEach((link) => {
+    links.forEach(link => {
       const newLink = link.cloneNode() as HTMLLinkElement;
       newLink.media = 'print';
-      newLink.onload = function() {
+      newLink.onload = function () {
         this.media = 'all';
       };
       link.parentNode?.replaceChild(newLink, link);
@@ -389,10 +388,10 @@ export function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js').then(
-        (registration) => {
+        registration => {
           console.log('ServiceWorker registration successful');
         },
-        (error) => {
+        error => {
           console.log('ServiceWorker registration failed:', error);
         }
       );
@@ -407,14 +406,14 @@ let performanceMonitor: PerformanceMonitor | null = null;
 export function initializePerformanceMonitoring() {
   if (typeof window !== 'undefined' && !performanceMonitor) {
     performanceMonitor = new PerformanceMonitor();
-    
+
     // Apply optimizations
     PerformanceOptimizer.lazyLoadImages();
     PerformanceOptimizer.addResourceHints();
     PerformanceOptimizer.optimizeThirdPartyScripts();
     PerformanceOptimizer.deferNonCriticalJS();
     PerformanceOptimizer.optimizeCSSDelivery();
-    
+
     // Register service worker
     registerServiceWorker();
   }

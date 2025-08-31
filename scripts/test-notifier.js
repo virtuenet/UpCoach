@@ -2,7 +2,7 @@
 
 /**
  * Test Failure Notification System
- * 
+ *
  * Monitors test results and sends notifications when tests fail.
  * Supports multiple notification channels: console, file, webhook.
  */
@@ -20,11 +20,11 @@ class TestNotifier {
       thresholds: {
         failureRate: config.failureRateThreshold || 10, // Percentage
         performanceRegression: config.perfRegressionThreshold || 20, // Percentage
-        coverageDrop: config.coverageDropThreshold || 5 // Percentage
+        coverageDrop: config.coverageDropThreshold || 5, // Percentage
       },
-      ...config
+      ...config,
     };
-    
+
     this.notifications = [];
   }
 
@@ -36,19 +36,19 @@ class TestNotifier {
 
     // Load current results
     const currentResults = this.loadCurrentResults();
-    
+
     // Load previous results for comparison
     const previousResults = this.loadPreviousResults();
-    
+
     // Check for test failures
     this.checkTestFailures(currentResults);
-    
+
     // Check for performance regressions
     this.checkPerformanceRegressions(currentResults, previousResults);
-    
+
     // Check for coverage drops
     this.checkCoverageDrops(currentResults, previousResults);
-    
+
     // Send notifications if any
     if (this.notifications.length > 0) {
       await this.sendNotifications();
@@ -65,7 +65,7 @@ class TestNotifier {
       landing: {},
       backend: {},
       performance: {},
-      coverage: {}
+      coverage: {},
     };
 
     // Load landing page test results
@@ -89,7 +89,7 @@ class TestNotifier {
     // Load coverage results
     const coveragePaths = [
       { file: '../landing-page/coverage/coverage-summary.json', key: 'landing' },
-      { file: '../backend/coverage/coverage-summary.json', key: 'backend' }
+      { file: '../backend/coverage/coverage-summary.json', key: 'backend' },
     ];
 
     coveragePaths.forEach(({ file, key }) => {
@@ -129,7 +129,7 @@ class TestNotifier {
         total: results.landing.numTotalTests,
         failedSuites: results.landing.testResults
           ?.filter(r => r.numFailingTests > 0)
-          .map(r => path.basename(r.name))
+          .map(r => path.basename(r.name)),
       });
     }
 
@@ -141,7 +141,7 @@ class TestNotifier {
         total: results.backend.numTotalTests,
         failedSuites: results.backend.testResults
           ?.filter(r => r.numFailingTests > 0)
-          .map(r => path.basename(r.name))
+          .map(r => path.basename(r.name)),
       });
     }
 
@@ -151,7 +151,7 @@ class TestNotifier {
         severity: 'high',
         title: '❌ Test Failures Detected',
         message: this.formatTestFailures(failures),
-        details: failures
+        details: failures,
       });
     }
   }
@@ -172,7 +172,7 @@ class TestNotifier {
           metric: failure.metric,
           current: failure.value,
           threshold: failure.threshold,
-          exceeded: failure.exceeded
+          exceeded: failure.exceeded,
         });
       });
     }
@@ -183,7 +183,7 @@ class TestNotifier {
         severity: 'medium',
         title: '⚠️  Performance Regression Detected',
         message: this.formatPerformanceRegressions(regressions),
-        details: regressions
+        details: regressions,
       });
     }
   }
@@ -210,7 +210,7 @@ class TestNotifier {
               metric,
               previous: previousVal,
               current: currentVal,
-              drop: drop.toFixed(2)
+              drop: drop.toFixed(2),
             });
           }
         });
@@ -223,7 +223,7 @@ class TestNotifier {
         severity: 'low',
         title: '📉 Coverage Drop Detected',
         message: this.formatCoverageDrops(drops),
-        details: drops
+        details: drops,
       });
     }
   }
@@ -232,28 +232,37 @@ class TestNotifier {
    * Format test failures for notification
    */
   formatTestFailures(failures) {
-    return failures.map(f => 
-      `${f.suite}: ${f.failed}/${f.total} tests failed\n` +
-      `Failed suites: ${f.failedSuites?.join(', ') || 'N/A'}`
-    ).join('\n\n');
+    return failures
+      .map(
+        f =>
+          `${f.suite}: ${f.failed}/${f.total} tests failed\n` +
+          `Failed suites: ${f.failedSuites?.join(', ') || 'N/A'}`
+      )
+      .join('\n\n');
   }
 
   /**
    * Format performance regressions
    */
   formatPerformanceRegressions(regressions) {
-    return regressions.map(r =>
-      `${r.metric}: ${r.current.toFixed(2)}ms (threshold: ${r.threshold}ms, +${r.exceeded.toFixed(2)}ms)`
-    ).join('\n');
+    return regressions
+      .map(
+        r =>
+          `${r.metric}: ${r.current.toFixed(2)}ms (threshold: ${r.threshold}ms, +${r.exceeded.toFixed(2)}ms)`
+      )
+      .join('\n');
   }
 
   /**
    * Format coverage drops
    */
   formatCoverageDrops(drops) {
-    return drops.map(d =>
-      `${d.project}/${d.metric}: ${d.current.toFixed(1)}% (was ${d.previous.toFixed(1)}%, -${d.drop}%)`
-    ).join('\n');
+    return drops
+      .map(
+        d =>
+          `${d.project}/${d.metric}: ${d.current.toFixed(1)}% (was ${d.previous.toFixed(1)}%, -${d.drop}%)`
+      )
+      .join('\n');
   }
 
   /**
@@ -278,9 +287,9 @@ class TestNotifier {
    */
   async sendConsole(notification) {
     const severityColors = {
-      high: '\x1b[31m',    // Red
-      medium: '\x1b[33m',  // Yellow
-      low: '\x1b[36m'      // Cyan
+      high: '\x1b[31m', // Red
+      medium: '\x1b[33m', // Yellow
+      low: '\x1b[36m', // Cyan
     };
     const reset = '\x1b[0m';
     const color = severityColors[notification.severity] || reset;
@@ -306,10 +315,17 @@ class TestNotifier {
       fs.mkdirSync(dir, { recursive: true });
     }
 
-    fs.writeFileSync(filepath, JSON.stringify({
-      timestamp,
-      ...notification
-    }, null, 2));
+    fs.writeFileSync(
+      filepath,
+      JSON.stringify(
+        {
+          timestamp,
+          ...notification,
+        },
+        null,
+        2
+      )
+    );
 
     console.log(`📄 Notification saved to: ${filename}`);
   }
@@ -327,7 +343,7 @@ class TestNotifier {
       timestamp: new Date().toISOString(),
       project: 'UpCoach',
       environment: process.env.NODE_ENV || 'development',
-      ...notification
+      ...notification,
     });
 
     return new Promise((resolve, reject) => {
@@ -339,11 +355,11 @@ class TestNotifier {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Content-Length': data.length
-        }
+          'Content-Length': data.length,
+        },
       };
 
-      const req = https.request(options, (res) => {
+      const req = https.request(options, res => {
         if (res.statusCode === 200 || res.statusCode === 204) {
           console.log('📨 Webhook notification sent successfully');
           resolve();
@@ -367,32 +383,35 @@ class TestNotifier {
       return;
     }
 
-    const color = {
-      high: 'danger',
-      medium: 'warning',
-      low: 'good'
-    }[notification.severity] || 'good';
+    const color =
+      {
+        high: 'danger',
+        medium: 'warning',
+        low: 'good',
+      }[notification.severity] || 'good';
 
     const payload = {
-      attachments: [{
-        color,
-        title: notification.title,
-        text: notification.message,
-        fields: [
-          {
-            title: 'Type',
-            value: notification.type.replace(/_/g, ' ').toUpperCase(),
-            short: true
-          },
-          {
-            title: 'Severity',
-            value: notification.severity.toUpperCase(),
-            short: true
-          }
-        ],
-        footer: 'UpCoach Test Suite',
-        ts: Math.floor(Date.now() / 1000)
-      }]
+      attachments: [
+        {
+          color,
+          title: notification.title,
+          text: notification.message,
+          fields: [
+            {
+              title: 'Type',
+              value: notification.type.replace(/_/g, ' ').toUpperCase(),
+              short: true,
+            },
+            {
+              title: 'Severity',
+              value: notification.severity.toUpperCase(),
+              short: true,
+            },
+          ],
+          footer: 'UpCoach Test Suite',
+          ts: Math.floor(Date.now() / 1000),
+        },
+      ],
     };
 
     // Send to Slack (similar to webhook implementation)
@@ -412,7 +431,7 @@ class TestNotifier {
 
     history.push({
       timestamp: new Date().toISOString(),
-      ...results
+      ...results,
     });
 
     // Keep last 30 entries
@@ -431,7 +450,7 @@ class TestNotifier {
       return {
         status: 'success',
         message: 'All tests passed successfully',
-        notifications: []
+        notifications: [],
       };
     }
 
@@ -441,7 +460,7 @@ class TestNotifier {
       notifications: this.notifications,
       highSeverity: this.notifications.filter(n => n.severity === 'high').length,
       mediumSeverity: this.notifications.filter(n => n.severity === 'medium').length,
-      lowSeverity: this.notifications.filter(n => n.severity === 'low').length
+      lowSeverity: this.notifications.filter(n => n.severity === 'low').length,
     };
   }
 }
@@ -454,16 +473,16 @@ async function main() {
     slackWebhook: process.env.SLACK_WEBHOOK_URL,
     failureRateThreshold: parseInt(process.env.FAILURE_THRESHOLD) || 10,
     perfRegressionThreshold: parseInt(process.env.PERF_THRESHOLD) || 20,
-    coverageDropThreshold: parseInt(process.env.COVERAGE_THRESHOLD) || 5
+    coverageDropThreshold: parseInt(process.env.COVERAGE_THRESHOLD) || 5,
   };
 
   const notifier = new TestNotifier(config);
 
   try {
     await notifier.analyzeResults();
-    
+
     const summary = notifier.generateSummary();
-    
+
     // Save current results to history
     const currentResults = notifier.loadCurrentResults();
     notifier.saveToHistory(currentResults);
@@ -472,7 +491,6 @@ async function main() {
     if (summary.highSeverity > 0) {
       process.exit(1);
     }
-
   } catch (error) {
     console.error('❌ Error in test notifier:', error);
     process.exit(1);

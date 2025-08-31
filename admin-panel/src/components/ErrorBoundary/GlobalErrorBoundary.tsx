@@ -1,3 +1,5 @@
+import React, { Component, ReactNode, ErrorInfo } from 'react';
+import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -45,8 +47,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
     const { lastErrorTime, errorCount } = this.state;
 
     // Reset error count if enough time has passed
-    const newErrorCount = 
-      now - lastErrorTime > this.ERROR_RESET_TIME ? 1 : errorCount + 1;
+    const newErrorCount = now - lastErrorTime > this.ERROR_RESET_TIME ? 1 : errorCount + 1;
 
     // Log error to console in development
     if (process.env.NODE_ENV === 'development') {
@@ -101,9 +102,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
     });
 
     // Also store in session storage for debugging
-    const recentErrors = JSON.parse(
-      sessionStorage.getItem('recentErrors') || '[]'
-    );
+    const recentErrors = JSON.parse(sessionStorage.getItem('recentErrors') || '[]');
     recentErrors.push(errorData);
     // Keep only last 10 errors
     if (recentErrors.length > 10) {
@@ -142,12 +141,9 @@ export class GlobalErrorBoundary extends Component<Props, State> {
     const errorDetails = encodeURIComponent(
       `Error: ${error?.message}\n\nStack: ${error?.stack}\n\nComponent Stack: ${errorInfo?.componentStack}`
     );
-    
+
     // Open bug report form or email
-    window.open(
-      `mailto:support@upcoach.ai?subject=Bug Report&body=${errorDetails}`,
-      '_blank'
-    );
+    window.open(`mailto:support@upcoach.ai?subject=Bug Report&body=${errorDetails}`, '_blank');
   };
 
   private renderErrorFallback() {
@@ -187,11 +183,11 @@ export class GlobalErrorBoundary extends Component<Props, State> {
           <div className="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full">
             <AlertTriangle className="h-8 w-8 text-red-600" />
           </div>
-          
+
           <h1 className="mt-4 text-2xl font-bold text-center text-gray-900">
             {isCriticalError ? 'Critical Error' : 'Something went wrong'}
           </h1>
-          
+
           <p className="mt-2 text-center text-gray-600">
             {isCriticalError
               ? 'The application has encountered multiple errors and may be unstable.'
@@ -200,15 +196,9 @@ export class GlobalErrorBoundary extends Component<Props, State> {
 
           {process.env.NODE_ENV === 'development' && error && (
             <details className="mt-4 p-4 bg-gray-50 rounded text-xs">
-              <summary className="cursor-pointer text-gray-700 font-medium">
-                Error Details
-              </summary>
-              <pre className="mt-2 whitespace-pre-wrap text-red-600">
-                {error.message}
-              </pre>
-              <pre className="mt-2 whitespace-pre-wrap text-gray-600">
-                {error.stack}
-              </pre>
+              <summary className="cursor-pointer text-gray-700 font-medium">Error Details</summary>
+              <pre className="mt-2 whitespace-pre-wrap text-red-600">{error.message}</pre>
+              <pre className="mt-2 whitespace-pre-wrap text-gray-600">{error.stack}</pre>
             </details>
           )}
 
@@ -222,7 +212,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
                 Try Again
               </button>
             )}
-            
+
             <button
               onClick={this.handleReload}
               className="w-full flex items-center justify-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
@@ -230,7 +220,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
               <RefreshCw className="h-4 w-4 mr-2" />
               Reload Page
             </button>
-            
+
             <button
               onClick={this.handleGoHome}
               className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
@@ -250,7 +240,8 @@ export class GlobalErrorBoundary extends Component<Props, State> {
 
           {errorCount > 1 && !isCriticalError && (
             <p className="mt-4 text-xs text-center text-gray-500">
-              Error occurred {errorCount} times. Will stop auto-recovery after {this.MAX_ERROR_COUNT} attempts.
+              Error occurred {errorCount} times. Will stop auto-recovery after{' '}
+              {this.MAX_ERROR_COUNT} attempts.
             </p>
           )}
         </div>

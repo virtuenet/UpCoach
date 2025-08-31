@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import { ABTestingService } from '../../src/services/ab-testing/ABTestingService';
 import { Experiment } from '../../src/models/experiments/Experiment';
 import { ExperimentAssignment } from '../../src/models/experiments/ExperimentAssignment';
@@ -17,7 +19,7 @@ describe('ABTestingService', () => {
 
   beforeEach(() => {
     abTestingService = new ABTestingService();
-    
+
     // Setup mock experiment
     mockExperiment = {
       id: 'experiment-123',
@@ -128,7 +130,7 @@ describe('ABTestingService', () => {
 
     it('should assign variant and track assignment event', async () => {
       const assignedVariant = mockExperiment.variants[0];
-      
+
       (ExperimentAssignment.getAssignment as jest.Mock).mockResolvedValue(null);
       (Experiment.findByPk as jest.Mock).mockResolvedValue(mockExperiment);
       (User.findByPk as jest.Mock).mockResolvedValue(mockUser);
@@ -156,7 +158,9 @@ describe('ABTestingService', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      (ExperimentAssignment.getAssignment as jest.Mock).mockRejectedValue(new Error('Database error'));
+      (ExperimentAssignment.getAssignment as jest.Mock).mockRejectedValue(
+        new Error('Database error')
+      );
 
       const result = await abTestingService.getVariant('user-123', 'experiment-123');
 
@@ -205,11 +209,7 @@ describe('ABTestingService', () => {
 
       (ExperimentAssignment.getAssignment as jest.Mock).mockResolvedValue(assignment);
 
-      const result = await abTestingService.trackConversion(
-        'user-123',
-        'experiment-123',
-        'signup'
-      );
+      const result = await abTestingService.trackConversion('user-123', 'experiment-123', 'signup');
 
       expect(result).toBe(false);
       expect(ExperimentEvent.trackEvent).not.toHaveBeenCalled();
@@ -218,11 +218,7 @@ describe('ABTestingService', () => {
     it('should not track conversion for non-assigned user', async () => {
       (ExperimentAssignment.getAssignment as jest.Mock).mockResolvedValue(null);
 
-      const result = await abTestingService.trackConversion(
-        'user-123',
-        'experiment-123',
-        'signup'
-      );
+      const result = await abTestingService.trackConversion('user-123', 'experiment-123', 'signup');
 
       expect(result).toBe(false);
       expect(ExperimentEvent.trackEvent).not.toHaveBeenCalled();
@@ -289,7 +285,7 @@ describe('ABTestingService', () => {
           isControl: true,
           allocation: 50,
           totalUsers: 1000,
-          conversionRate: 0.10,
+          conversionRate: 0.1,
           conversions: 100,
           metrics: {},
         },
@@ -306,7 +302,8 @@ describe('ABTestingService', () => {
       ];
 
       // Access the private method through reflection for testing
-      const calculateStatisticalSignificance = (abTestingService as any).calculateStatisticalSignificance;
+      const calculateStatisticalSignificance = (abTestingService as any)
+        .calculateStatisticalSignificance;
       const result = await calculateStatisticalSignificance.call(
         abTestingService,
         mockExperiment,
@@ -331,7 +328,7 @@ describe('ABTestingService', () => {
           isControl: true,
           allocation: 50,
           totalUsers: 100, // Below minimum sample size
-          conversionRate: 0.10,
+          conversionRate: 0.1,
           conversions: 10,
           metrics: {},
         },
@@ -347,7 +344,8 @@ describe('ABTestingService', () => {
         },
       ];
 
-      const calculateStatisticalSignificance = (abTestingService as any).calculateStatisticalSignificance;
+      const calculateStatisticalSignificance = (abTestingService as any)
+        .calculateStatisticalSignificance;
       const result = await calculateStatisticalSignificance.call(
         abTestingService,
         mockExperiment,
@@ -362,21 +360,21 @@ describe('ABTestingService', () => {
   describe('user hash generation', () => {
     it('should generate consistent hash for same user-experiment combination', () => {
       const generateUserHash = (abTestingService as any).generateUserHash;
-      
+
       const hash1 = generateUserHash.call(abTestingService, 'user-123', 'experiment-456');
       const hash2 = generateUserHash.call(abTestingService, 'user-123', 'experiment-456');
-      
+
       expect(hash1).toBe(hash2);
       expect(typeof hash1).toBe('number');
     });
 
     it('should generate different hashes for different combinations', () => {
       const generateUserHash = (abTestingService as any).generateUserHash;
-      
+
       const hash1 = generateUserHash.call(abTestingService, 'user-123', 'experiment-456');
       const hash2 = generateUserHash.call(abTestingService, 'user-456', 'experiment-456');
       const hash3 = generateUserHash.call(abTestingService, 'user-123', 'experiment-789');
-      
+
       expect(hash1).not.toBe(hash2);
       expect(hash1).not.toBe(hash3);
       expect(hash2).not.toBe(hash3);
@@ -386,7 +384,7 @@ describe('ABTestingService', () => {
   describe('segmentation', () => {
     it('should include users meeting include rules', () => {
       const meetsSegmentationCriteria = (abTestingService as any).meetsSegmentationCriteria;
-      
+
       const user = { id: 'user-123', country: 'US', age: 25 };
       const segmentation = {
         includeRules: [
@@ -401,12 +399,10 @@ describe('ABTestingService', () => {
 
     it('should exclude users not meeting include rules', () => {
       const meetsSegmentationCriteria = (abTestingService as any).meetsSegmentationCriteria;
-      
+
       const user = { id: 'user-123', country: 'CA', age: 25 };
       const segmentation = {
-        includeRules: [
-          { field: 'country', operator: 'equals', value: 'US' },
-        ],
+        includeRules: [{ field: 'country', operator: 'equals', value: 'US' }],
       };
 
       const result = meetsSegmentationCriteria.call(abTestingService, user, segmentation);
@@ -415,16 +411,14 @@ describe('ABTestingService', () => {
 
     it('should exclude users meeting exclude rules', () => {
       const meetsSegmentationCriteria = (abTestingService as any).meetsSegmentationCriteria;
-      
+
       const user = { id: 'user-123', email: 'admin@company.com' };
       const segmentation = {
-        excludeRules: [
-          { field: 'email', operator: 'contains', value: '@company.com' },
-        ],
+        excludeRules: [{ field: 'email', operator: 'contains', value: '@company.com' }],
       };
 
       const result = meetsSegmentationCriteria.call(abTestingService, user, segmentation);
       expect(result).toBe(false);
     });
   });
-}); 
+});

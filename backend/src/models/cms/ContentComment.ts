@@ -13,9 +13,16 @@ export interface ContentCommentAttributes {
   updatedAt?: Date;
 }
 
-export interface ContentCommentCreationAttributes extends Optional<ContentCommentAttributes, 'id' | 'parentId' | 'status' | 'likes' | 'createdAt' | 'updatedAt'> {}
+export interface ContentCommentCreationAttributes
+  extends Optional<
+    ContentCommentAttributes,
+    'id' | 'parentId' | 'status' | 'likes' | 'createdAt' | 'updatedAt'
+  > {}
 
-class ContentComment extends Model<ContentCommentAttributes, ContentCommentCreationAttributes> implements ContentCommentAttributes {
+class ContentComment
+  extends Model<ContentCommentAttributes, ContentCommentCreationAttributes>
+  implements ContentCommentAttributes
+{
   declare id: number;
   public contentId!: number;
   public userId!: number;

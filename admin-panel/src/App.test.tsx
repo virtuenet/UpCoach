@@ -1,3 +1,7 @@
+import { describe, it, expect, beforeEach, afterEach, vi, Mock } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { useAuthStore } from './stores/authStore';
 import App from './App';
 
 // Mock react-router-dom BrowserRouter to avoid conflicts
@@ -59,7 +63,7 @@ describe('Admin Panel App', () => {
         <App />
       </MemoryRouter>
     );
-    
+
     // Check for loading spinner
     const spinner = container.querySelector('.animate-spin');
     expect(spinner).toBeInTheDocument();
@@ -92,7 +96,7 @@ describe('Admin Panel App', () => {
       email: 'admin@test.com',
       role: 'admin',
     };
-    
+
     (useAuthStore.getState as Mock).mockReturnValue({
       checkAuth: checkAuthMock,
       user: mockUser,
@@ -153,8 +157,10 @@ describe('Admin Panel App', () => {
     // Mock console.error to suppress the expected error
     const originalError = console.error;
     console.error = vi.fn();
-    
-    const checkAuthMock = vi.fn().mockImplementation(() => Promise.reject(new Error('Auth failed')));
+
+    const checkAuthMock = vi
+      .fn()
+      .mockImplementation(() => Promise.reject(new Error('Auth failed')));
     (useAuthStore.getState as Mock).mockReturnValue({
       checkAuth: checkAuthMock,
       user: null,
@@ -171,7 +177,7 @@ describe('Admin Panel App', () => {
       // Should still render login page even if auth check fails
       expect(screen.getByText('Login Page')).toBeInTheDocument();
     });
-    
+
     // Restore console.error
     console.error = originalError;
   });

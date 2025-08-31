@@ -29,16 +29,16 @@ class SecureAuthService {
   private sessionCheckTimer: any = null;
   private activityListeners: Set<() => void> = new Set();
   private sessionExpiryWarningShown = false;
-  
+
   constructor(config: SecureAuthConfig = {}) {
     this.config = {
       tokenCookieName: config.tokenCookieName || 'cms-auth-token',
       refreshCookieName: config.refreshCookieName || 'cms-refresh-token',
       csrfHeaderName: config.csrfHeaderName || 'X-CSRF-Token',
       sessionCheckInterval: config.sessionCheckInterval || 60000, // 1 minute
-      sessionWarningThreshold: config.sessionWarningThreshold || 300000 // 5 minutes
+      sessionWarningThreshold: config.sessionWarningThreshold || 300000, // 5 minutes
     };
-    
+
     // Configure axios to send cookies
     apiClient.defaults.withCredentials = true;
   }
@@ -50,19 +50,19 @@ class SecureAuthService {
     try {
       const response = await apiClient.get('/auth/csrf');
       this.csrfToken = response.data.csrfToken;
-      
+
       // Add CSRF token to all requests
       apiClient.defaults.headers.common[this.config.csrfHeaderName] = this.csrfToken;
-      
+
       // Start session monitoring
       this.startSessionMonitoring();
-      
+
       // Setup activity tracking
       this.setupActivityTracking();
-      
+
       // Setup cross-tab synchronization
       this.setupCrossTabSync();
-      
+
       logger.info('Secure auth service initialized');
     } catch (error) {
       logger.error('Failed to initialize secure auth', error as Error);
@@ -75,16 +75,16 @@ class SecureAuthService {
   async checkSession(): Promise<boolean> {
     try {
       const response = await apiClient.get('/auth/session');
-      
+
       if (response.data.valid) {
         this.sessionInfo = {
           isValid: true,
           expiresAt: response.data.expiresAt ? new Date(response.data.expiresAt) : undefined,
           userId: response.data.userId,
           role: response.data.role,
-          lastActivity: new Date()
+          lastActivity: new Date(),
         };
-        
+
         // Reset expiry warning flag if session is refreshed
         if (this.sessionInfo.expiresAt) {
           const timeUntilExpiry = this.sessionInfo.expiresAt.getTime() - Date.now();
@@ -92,10 +92,10 @@ class SecureAuthService {
             this.sessionExpiryWarningShown = false;
           }
         }
-        
+
         return true;
       }
-      
+
       this.sessionInfo = null;
       return false;
     } catch {
@@ -133,10 +133,10 @@ class SecureAuthService {
       this.csrfToken = null;
       this.sessionInfo = null;
       delete apiClient.defaults.headers.common[this.config.csrfHeaderName];
-      
+
       // Stop session monitoring
       this.stopSessionMonitoring();
-      
+
       // Signal other tabs
       this.broadcastLogout();
     }
@@ -171,8 +171,8 @@ class SecureAuthService {
     };
 
     apiClient.interceptors.response.use(
-      (response) => response,
-      async (error) => {
+      response => response,
+      async error => {
         const originalRequest = error.config;
 
         // If 401 and not already retrying
@@ -181,9 +181,11 @@ class SecureAuthService {
             // Queue the request
             return new Promise((resolve, reject) => {
               failedQueue.push({ resolve, reject });
-            }).then(() => {
-              return apiClient(originalRequest);
-            }).catch(err => Promise.reject(err));
+            })
+              .then(() => {
+                return apiClient(originalRequest);
+              })
+              .catch(err => Promise.reject(err));
           }
 
           originalRequest._retry = true;
@@ -218,27 +220,29 @@ class SecureAuthService {
    */
   private startSessionMonitoring(): void {
     this.stopSessionMonitoring();
-    
+
     this.sessionCheckTimer = setInterval(async () => {
       if (!this.sessionInfo?.expiresAt) return;
-      
+
       const now = Date.now();
       const expiresAt = this.sessionInfo.expiresAt.getTime();
       const timeUntilExpiry = expiresAt - now;
-      
+
       // Show warning if session is about to expire
-      if (timeUntilExpiry < this.config.sessionWarningThreshold && 
-          timeUntilExpiry > 0 && 
-          !this.sessionExpiryWarningShown) {
+      if (
+        timeUntilExpiry < this.config.sessionWarningThreshold &&
+        timeUntilExpiry > 0 &&
+        !this.sessionExpiryWarningShown
+      ) {
         this.showSessionExpiryWarning(Math.floor(timeUntilExpiry / 60000));
         this.sessionExpiryWarningShown = true;
       }
-      
+
       // Attempt to refresh if less than warning threshold
       if (timeUntilExpiry < this.config.sessionWarningThreshold && timeUntilExpiry > 0) {
         await this.refreshToken();
       }
-      
+
       // Session expired
       if (timeUntilExpiry <= 0) {
         this.handleSessionExpired();
@@ -263,19 +267,19 @@ class SecureAuthService {
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
     let lastActivity = Date.now();
     const ACTIVITY_THRESHOLD = 300000; // 5 minutes
-    
+
     const handleActivity = () => {
       const now = Date.now();
-      
+
       if (now - lastActivity > ACTIVITY_THRESHOLD) {
         lastActivity = now;
         this.checkSession();
-        
+
         // Notify activity listeners
         this.activityListeners.forEach(listener => listener());
       }
     };
-    
+
     events.forEach(event => {
       window.addEventListener(event, handleActivity, { passive: true });
     });
@@ -285,12 +289,12 @@ class SecureAuthService {
    * Setup cross-tab synchronization
    */
   private setupCrossTabSync(): void {
-    window.addEventListener('storage', (event) => {
+    window.addEventListener('storage', event => {
       if (event.key === 'auth_logout' && event.newValue === 'true') {
         // Another tab logged out
         this.handleSessionExpired();
       }
-      
+
       if (event.key === 'auth_refresh' && event.newValue) {
         // Another tab refreshed the session
         this.checkSession();
@@ -303,10 +307,10 @@ class SecureAuthService {
    */
   private showSessionExpiryWarning(minutes: number): void {
     logger.warn(`Session expiring in ${minutes} minutes`);
-    
+
     // Create warning notification (can be replaced with toast notification)
     const event = new CustomEvent('sessionExpiryWarning', {
-      detail: { minutesRemaining: minutes }
+      detail: { minutesRemaining: minutes },
     });
     window.dispatchEvent(event);
   }
@@ -316,15 +320,15 @@ class SecureAuthService {
    */
   private handleSessionExpired(): void {
     logger.info('Session expired');
-    
+
     // Clear local state
     this.sessionInfo = null;
     this.stopSessionMonitoring();
-    
+
     // Dispatch event for app to handle
     const event = new CustomEvent('sessionExpired');
     window.dispatchEvent(event);
-    
+
     // Redirect to login
     setTimeout(() => {
       window.location.href = '/login';
@@ -367,15 +371,15 @@ class SecureAuthService {
    */
   hasPermission(permission: string): boolean {
     if (!this.sessionInfo?.role) return false;
-    
+
     const rolePermissions: Record<string, string[]> = {
       admin: ['*'],
       coach: ['content.*', 'media.*', 'analytics.view'],
-      content_creator: ['content.read', 'content.write', 'media.upload']
+      content_creator: ['content.read', 'content.write', 'media.upload'],
     };
-    
+
     const permissions = rolePermissions[this.sessionInfo.role] || [];
-    
+
     return permissions.some(p => {
       if (p === '*') return true;
       if (p === permission) return true;

@@ -1,17 +1,17 @@
 import { DataTypes, Model, Optional, Op } from 'sequelize';
-import { sequelize } from '../index';
+import { sequelize } from '../../config/sequelize';
 
 export interface CommentAttributes {
   id: string;
   content: string;
   contentType: 'article' | 'course' | 'template';
   contentId: string;
-  
+
   // Comment metadata
   type: 'comment' | 'suggestion' | 'approval' | 'revision_request';
   status: 'active' | 'resolved' | 'hidden' | 'deleted';
   priority: 'low' | 'medium' | 'high' | 'urgent';
-  
+
   // Positional data for inline comments
   position?: {
     startOffset: number;
@@ -57,15 +57,30 @@ export interface CommentAttributes {
 
   // Relationships
   authorId: string;
-  
+
   createdAt: string;
   updatedAt: string;
   editedAt?: string;
 }
 
-export interface CommentCreationAttributes extends Optional<CommentAttributes, 'id' | 'createdAt' | 'updatedAt' | 'threadId' | 'depth' | 'mentions' | 'attachments' | 'reactions' | 'isResolved'> {}
+export interface CommentCreationAttributes
+  extends Optional<
+    CommentAttributes,
+    | 'id'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'threadId'
+    | 'depth'
+    | 'mentions'
+    | 'attachments'
+    | 'reactions'
+    | 'isResolved'
+  > {}
 
-export class Comment extends Model<CommentAttributes, CommentCreationAttributes> implements CommentAttributes {
+export class Comment
+  extends Model<CommentAttributes, CommentCreationAttributes>
+  implements CommentAttributes
+{
   public id!: string;
   public content!: string;
   public contentType!: 'article' | 'course' | 'template';
@@ -104,11 +119,15 @@ export class Comment extends Model<CommentAttributes, CommentCreationAttributes>
     });
   }
 
-  static async getCommentsForContent(contentType: string, contentId: string, options: {
-    includeResolved?: boolean;
-    limit?: number;
-    offset?: number;
-  } = {}): Promise<{ comments: Comment[], total: number }> {
+  static async getCommentsForContent(
+    contentType: string,
+    contentId: string,
+    options: {
+      includeResolved?: boolean;
+      limit?: number;
+      offset?: number;
+    } = {}
+  ): Promise<{ comments: Comment[]; total: number }> {
     const whereClause: any = {
       contentType,
       contentId,
@@ -129,7 +148,7 @@ export class Comment extends Model<CommentAttributes, CommentCreationAttributes>
 
     // Load replies for each comment
     const commentsWithReplies = await Promise.all(
-      rows.map(async (comment) => {
+      rows.map(async comment => {
         const replies = await Comment.findAll({
           where: {
             threadId: comment.threadId,
@@ -176,11 +195,14 @@ export class Comment extends Model<CommentAttributes, CommentCreationAttributes>
     return comment;
   }
 
-  static async replyToComment(parentId: string, data: {
-    authorId: string;
-    content: string;
-    type?: 'comment' | 'suggestion' | 'approval' | 'revision_request';
-  }): Promise<Comment> {
+  static async replyToComment(
+    parentId: string,
+    data: {
+      authorId: string;
+      content: string;
+      type?: 'comment' | 'suggestion' | 'approval' | 'revision_request';
+    }
+  ): Promise<Comment> {
     const parentComment = await Comment.findByPk(parentId);
     if (!parentComment) {
       throw new Error('Parent comment not found');
@@ -208,11 +230,11 @@ export class Comment extends Model<CommentAttributes, CommentCreationAttributes>
     const mentionRegex = /@([a-zA-Z0-9_-]+)/g;
     const mentions: string[] = [];
     let match;
-    
+
     while ((match = mentionRegex.exec(content)) !== null) {
       mentions.push(match[1]);
     }
-    
+
     return [...new Set(mentions)]; // Remove duplicates
   }
 
@@ -239,7 +261,10 @@ export class Comment extends Model<CommentAttributes, CommentCreationAttributes>
     });
   }
 
-  static async getCommentStats(contentType: string, contentId: string): Promise<{
+  static async getCommentStats(
+    contentType: string,
+    contentId: string
+  ): Promise<{
     total: number;
     unresolved: number;
     suggestions: number;
@@ -248,19 +273,19 @@ export class Comment extends Model<CommentAttributes, CommentCreationAttributes>
   }> {
     const [total, unresolved, suggestions, approvals, revisionRequests] = await Promise.all([
       Comment.count({
-        where: { contentType, contentId, status: { [Op.ne as any]: 'deleted' } }
+        where: { contentType, contentId, status: { [Op.ne as any]: 'deleted' } },
       }),
       Comment.count({
-        where: { contentType, contentId, isResolved: false, status: 'active' }
+        where: { contentType, contentId, isResolved: false, status: 'active' },
       }),
       Comment.count({
-        where: { contentType, contentId, type: 'suggestion', status: 'active' }
+        where: { contentType, contentId, type: 'suggestion', status: 'active' },
       }),
       Comment.count({
-        where: { contentType, contentId, type: 'approval', status: 'active' }
+        where: { contentType, contentId, type: 'approval', status: 'active' },
       }),
       Comment.count({
-        where: { contentType, contentId, type: 'revision_request', status: 'active' }
+        where: { contentType, contentId, type: 'revision_request', status: 'active' },
       }),
     ]);
 
@@ -273,7 +298,7 @@ export class Comment extends Model<CommentAttributes, CommentCreationAttributes>
     if (!reactions[emoji]) {
       reactions[emoji] = [];
     }
-    
+
     if (!reactions[emoji].includes(userId)) {
       reactions[emoji].push(userId);
       await this.update({ reactions });
@@ -518,4 +543,4 @@ Comment.init(
   }
 );
 
-export default Comment; 
+export default Comment;

@@ -182,7 +182,7 @@ export class CoachProfile extends Model {
 
   @Column({
     type: DataType.DECIMAL(3, 2),
-    defaultValue: 0.00,
+    defaultValue: 0.0,
   })
   averageRating!: number;
 
@@ -271,7 +271,7 @@ export class CoachProfile extends Model {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
-      
+
       // Add random suffix to ensure uniqueness
       instance.seoSlug += '-' + Math.random().toString(36).substr(2, 5);
     }
@@ -282,13 +282,13 @@ export class CoachProfile extends Model {
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const dayOfWeek = days[date.getDay()] as keyof AvailabilitySchedule;
     const timeSlots = this.availabilitySchedule[dayOfWeek];
-    
+
     if (!timeSlots || timeSlots.length === 0) {
       return false;
     }
 
     const time = date.toTimeString().slice(0, 5); // HH:MM format
-    
+
     return timeSlots.some(slot => {
       return time >= slot.start && time <= slot.end;
     });
@@ -297,29 +297,29 @@ export class CoachProfile extends Model {
   getNextAvailableSlot(duration: number = 60): Date | null {
     const now = new Date();
     const bufferTime = new Date(now.getTime() + this.bookingBufferHours * 60 * 60 * 1000);
-    
+
     // Check next 30 days
     for (let i = 0; i < 30; i++) {
       const checkDate = new Date(bufferTime);
       checkDate.setDate(checkDate.getDate() + i);
-      
+
       const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
       const dayOfWeek = days[checkDate.getDay()] as keyof AvailabilitySchedule;
       const timeSlots = this.availabilitySchedule[dayOfWeek];
-      
+
       if (timeSlots && timeSlots.length > 0) {
         for (const slot of timeSlots) {
           const slotStart = new Date(checkDate);
           const [hours, minutes] = slot.start.split(':').map(Number);
           slotStart.setHours(hours, minutes, 0, 0);
-          
+
           if (slotStart > bufferTime) {
             return slotStart;
           }
         }
       }
     }
-    
+
     return null;
   }
 

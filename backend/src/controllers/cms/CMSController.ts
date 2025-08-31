@@ -164,7 +164,7 @@ export const getArticle = async (req: Request, _res: Response) => {
     }
 
     const where: any = isNaN(Number(id)) ? { slug: id } : { id };
-    
+
     if (isPublic) {
       where.status = 'published';
       where.publishDate = { [Op.lte]: new Date() };
@@ -326,7 +326,7 @@ export const unpublishArticle = async (req: Request, _res: Response) => {
 export const getArticleVersions = async (req: Request, _res: Response) => {
   try {
     const { id } = req.params;
-    
+
     const versions = await ContentVersion.findAll({
       where: { contentId: id },
       order: [['version', 'DESC']],
@@ -352,7 +352,7 @@ export const getArticleVersions = async (req: Request, _res: Response) => {
 export const revertArticleVersion = async (req: Request, _res: Response) => {
   try {
     const { id, version } = req.params;
-    
+
     const article = await ContentArticle.findByPk(id);
     if (!article) {
       return _res.status(404).json({ success: false, error: 'Article not found' });
@@ -416,9 +416,13 @@ export const uploadMedia = async (req: Request, _res: Response) => {
       size: req.file.size,
       url: uploadResult.url,
       thumbnailUrl: uploadResult.thumbnailUrl,
-      type: req.file.mimetype.startsWith('image/') ? 'image' : 
-            req.file.mimetype.startsWith('video/') ? 'video' : 
-            req.file.mimetype.startsWith('audio/') ? 'audio' : 'document',
+      type: req.file.mimetype.startsWith('image/')
+        ? 'image'
+        : req.file.mimetype.startsWith('video/')
+          ? 'video'
+          : req.file.mimetype.startsWith('audio/')
+            ? 'audio'
+            : 'document',
       width: uploadResult.dimensions?.width,
       height: uploadResult.dimensions?.height,
       uploadedBy: (req as any).user!.id,
@@ -513,7 +517,10 @@ export const getCategories = async (_req: Request, _res: Response) => {
   try {
     const categories = await ContentCategory.findAll({
       where: { isActive: true },
-      order: [['orderIndex', 'ASC'], ['name', 'ASC']],
+      order: [
+        ['orderIndex', 'ASC'],
+        ['name', 'ASC'],
+      ],
     });
 
     _res.json({
@@ -529,9 +536,9 @@ export const getCategories = async (_req: Request, _res: Response) => {
 export const createCategory = async (req: Request, _res: Response) => {
   try {
     const { name, description, parentId, icon, color, orderIndex } = req.body;
-    
+
     const slug = slugify(name, { lower: true, strict: true });
-    
+
     const category = await ContentCategory.create({
       name,
       slug,
@@ -612,7 +619,7 @@ export const getTemplates = async (req: Request, _res: Response) => {
   try {
     const { type } = req.query;
     const where: any = { isActive: true };
-    
+
     if (type) where.templateType = type;
 
     const templates = await ContentTemplate.findAll({
@@ -731,10 +738,7 @@ export const getContentAnalytics = async (req: Request, _res: Response) => {
         attributes: [
           'id',
           'name',
-          [
-            sequelize.fn('COUNT', sequelize.col('articles.id')),
-            'articleCount',
-          ],
+          [sequelize.fn('COUNT', sequelize.col('articles.id')), 'articleCount'],
         ],
         include: [
           {
@@ -760,25 +764,24 @@ export const getContentAnalytics = async (req: Request, _res: Response) => {
 export const getArticleAnalytics = async (req: Request, _res: Response) => {
   try {
     const { id } = req.params;
-    
+
     const article = await ContentArticle.findByPk(id);
     if (!article) {
       return _res.status(404).json({ success: false, error: 'Article not found' });
     }
 
     // Check permissions
-    if ((req as any).user!.role !== 'admin' && 
-        (req as any).user!.role !== 'editor' && 
-        article.authorId !== Number((req as any).user!.id)) {
+    if (
+      (req as any).user!.role !== 'admin' &&
+      (req as any).user!.role !== 'editor' &&
+      article.authorId !== Number((req as any).user!.id)
+    ) {
       return _res.status(403).json({ success: false, error: 'Permission denied' });
     }
 
     const interactions = await ContentInteraction.findAll({
       where: { contentId: id },
-      attributes: [
-        'interactionType',
-        [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
-      ],
+      attributes: ['interactionType', [sequelize.fn('COUNT', sequelize.col('id')), 'count']],
       group: ['interactionType'],
     });
 
@@ -797,13 +800,17 @@ export const getArticleAnalytics = async (req: Request, _res: Response) => {
           where: { contentId: id },
         }),
       },
-      interactions: interactions.reduce((acc: Record<string, any>, curr) => {
-        acc[curr.interactionType] = curr.get('count');
-        return acc;
-      }, {} as Record<string, any>),
-      engagementRate: article.viewCount > 0 
-        ? ((article.likeCount + article.shareCount) / article.viewCount * 100).toFixed(2)
-        : 0,
+      interactions: interactions.reduce(
+        (acc: Record<string, any>, curr) => {
+          acc[curr.interactionType] = curr.get('count');
+          return acc;
+        },
+        {} as Record<string, any>
+      ),
+      engagementRate:
+        article.viewCount > 0
+          ? (((article.likeCount + article.shareCount) / article.viewCount) * 100).toFixed(2)
+          : 0,
     };
 
     _res.json({
@@ -870,7 +877,7 @@ function calculateReadability(content: string): number {
   const words = content.split(/\s+/).filter(w => w.length > 0);
   const avgWordsPerSentence = words.length / sentences.length;
   const avgWordLength = words.reduce((sum, word) => sum + word.length, 0) / words.length;
-  
+
   // Flesch Reading Ease approximation
   const score = 206.835 - 1.015 * avgWordsPerSentence - 84.6 * (avgWordLength / 4.7);
   return Math.max(0, Math.min(100, score));
@@ -883,11 +890,11 @@ function analyzeSEO(title: string, content: string): any {
   // Title checks
   if (title.length < 30) issues.push('Title is too short');
   if (title.length > 60) issues.push('Title is too long');
-  
+
   // Content checks
   const wordCount = content.split(/\s+/).length;
   if (wordCount < 300) issues.push('Content is too short for SEO');
-  
+
   // Meta description check (simplified)
   if (!content.includes('meta') && !content.includes('description')) {
     suggestions.push('Add a meta description');
@@ -902,11 +909,12 @@ function analyzeSEO(title: string, content: string): any {
 
 function extractKeywords(content: string): string[] {
   // Simple keyword extraction - in production, use NLP library
-  const words = content.toLowerCase()
+  const words = content
+    .toLowerCase()
     .split(/\s+/)
     .filter(word => word.length > 4)
     .filter(word => !['the', 'and', 'for', 'with', 'from'].includes(word));
-  
+
   const wordCount: Record<string, number> = {};
   words.forEach(word => {
     wordCount[word] = (wordCount[word] || 0) + 1;
@@ -924,7 +932,7 @@ async function generatePreview(content: any, format: string): Promise<string> {
   if (format === 'markdown') {
     return content.body || content;
   }
-  
+
   // Simple markdown to HTML conversion
   let html = content.body || content;
   html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
@@ -933,6 +941,6 @@ async function generatePreview(content: any, format: string): Promise<string> {
   html = html.replace(/\*\*(.+)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/\*(.+)\*/g, '<em>$1</em>');
   html = html.replace(/\n/g, '<br>');
-  
+
   return html;
 }

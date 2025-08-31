@@ -17,124 +17,148 @@ const updateProfileSchema = z.object({
 });
 
 // Get current user profile
-router.get('/profile', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const userProfile = await UserService.getProfile(userId);
-  
-  if (!userProfile) {
-    throw new ApiError(404, 'User profile not found');
-  }
+router.get(
+  '/profile',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const userProfile = await UserService.getProfile(userId);
 
-  _res.json({
-    success: true,
-    data: {
-      user: userProfile,
-    },
-  });
-}));
+    if (!userProfile) {
+      throw new ApiError(404, 'User profile not found');
+    }
+
+    _res.json({
+      success: true,
+      data: {
+        user: userProfile,
+      },
+    });
+  })
+);
 
 // Update current user profile
-router.put('/profile', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const validatedData = updateProfileSchema.parse(req.body);
+router.put(
+  '/profile',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const validatedData = updateProfileSchema.parse(req.body);
 
-  const updatedUser = await UserService.update(userId, validatedData);
-  
-  if (!updatedUser) {
-    throw new ApiError(404, 'User not found');
-  }
+    const updatedUser = await UserService.update(userId, validatedData);
 
-  logger.info('User profile updated:', { userId });
+    if (!updatedUser) {
+      throw new ApiError(404, 'User not found');
+    }
 
-  _res.json({
-    success: true,
-    message: 'Profile updated successfully',
-    data: {
-      user: UserService.toResponseDto(updatedUser),
-    },
-  });
-}));
+    logger.info('User profile updated:', { userId });
+
+    _res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: {
+        user: UserService.toResponseDto(updatedUser),
+      },
+    });
+  })
+);
 
 // Get user statistics
-router.get('/statistics', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const statistics = await UserService.getUserStatistics(userId);
+router.get(
+  '/statistics',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const statistics = await UserService.getUserStatistics(userId);
 
-  _res.json({
-    success: true,
-    data: {
-      statistics,
-    },
-  });
-}));
+    _res.json({
+      success: true,
+      data: {
+        statistics,
+      },
+    });
+  })
+);
 
 // Deactivate current user account
-router.delete('/account', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  
-  await UserService.deactivate(userId);
+router.delete(
+  '/account',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
 
-  logger.info('User account deactivated:', { userId });
+    await UserService.deactivate(userId);
 
-  _res.json({
-    success: true,
-    message: 'Account deactivated successfully',
-  });
-}));
+    logger.info('User account deactivated:', { userId });
+
+    _res.json({
+      success: true,
+      message: 'Account deactivated successfully',
+    });
+  })
+);
 
 // Admin routes - require admin role
-router.get('/all', requireRole(['admin']), asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  // This would require implementing a method to list all users
-  // For now, we'll return a placeholder
-  _res.json({
-    success: true,
-    message: 'Admin endpoint - list all users',
-    data: {
-      users: [],
-      pagination: {
-        page: 1,
-        limit: 20,
-        total: 0,
-        totalPages: 0,
+router.get(
+  '/all',
+  requireRole(['admin']),
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    // This would require implementing a method to list all users
+    // For now, we'll return a placeholder
+    _res.json({
+      success: true,
+      message: 'Admin endpoint - list all users',
+      data: {
+        users: [],
+        pagination: {
+          page: 1,
+          limit: 20,
+          total: 0,
+          totalPages: 0,
+        },
       },
-    },
-  });
-}));
+    });
+  })
+);
 
 // Admin route to get any user by ID
-router.get('/:id', requireRole(['admin']), asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const { id } = req.params;
-  const user = await UserService.findById(id);
-  
-  if (!user) {
-    throw new ApiError(404, 'User not found');
-  }
+router.get(
+  '/:id',
+  requireRole(['admin']),
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const { id } = req.params;
+    const user = await UserService.findById(id);
 
-  _res.json({
-    success: true,
-    data: {
-      user: UserService.toResponseDto(user),
-    },
-  });
-}));
+    if (!user) {
+      throw new ApiError(404, 'User not found');
+    }
+
+    _res.json({
+      success: true,
+      data: {
+        user: UserService.toResponseDto(user),
+      },
+    });
+  })
+);
 
 // Admin route to deactivate any user
-router.delete('/:id', requireRole(['admin']), asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const { id } = req.params;
-  
-  // Prevent admin from deactivating themselves
-  if (id === (req as any).user!.id) {
-    throw new ApiError(400, 'Cannot deactivate your own account');
-  }
+router.delete(
+  '/:id',
+  requireRole(['admin']),
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const { id } = req.params;
 
-  await UserService.deactivate(id);
+    // Prevent admin from deactivating themselves
+    if (id === (req as any).user!.id) {
+      throw new ApiError(400, 'Cannot deactivate your own account');
+    }
 
-  logger.info('User deactivated by admin:', { userId: id, adminId: (req as any).user!.id });
+    await UserService.deactivate(id);
 
-  _res.json({
-    success: true,
-    message: 'User deactivated successfully',
-  });
-}));
+    logger.info('User deactivated by admin:', { userId: id, adminId: (req as any).user!.id });
 
-export default router; 
+    _res.json({
+      success: true,
+      message: 'User deactivated successfully',
+    });
+  })
+);
+
+export default router;

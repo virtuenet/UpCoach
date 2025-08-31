@@ -6,10 +6,10 @@ interface LoadingSkeletonProps {
   className?: string;
 }
 
-export default function LoadingSkeleton({ 
-  type = 'spinner', 
+export default function LoadingSkeleton({
+  type = 'spinner',
   rows = 3,
-  className = '' 
+  className = '',
 }: LoadingSkeletonProps) {
   // Spinner loader
   if (type === 'spinner') {
@@ -110,10 +110,22 @@ export function TableSkeleton({ rows = 5, className = '' }: { rows?: number; cla
   return <LoadingSkeleton type="table" rows={rows} className={className} />;
 }
 
-export function FormSkeleton({ fields = 4, className = '' }: { fields?: number; className?: string }) {
+export function FormSkeleton({
+  fields = 4,
+  className = '',
+}: {
+  fields?: number;
+  className?: string;
+}) {
   return <LoadingSkeleton type="form" rows={fields} className={className} />;
 }
 
-export function ListSkeleton({ items = 3, className = '' }: { items?: number; className?: string }) {
+export function ListSkeleton({
+  items = 3,
+  className = '',
+}: {
+  items?: number;
+  className?: string;
+}) {
   return <LoadingSkeleton type="list" rows={items} className={className} />;
 }

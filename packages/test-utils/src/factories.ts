@@ -18,12 +18,11 @@ export const createUser = (overrides = {}) => ({
 });
 
 // Admin factory
-export const createAdmin = (overrides = {}) => 
-  createUser({ role: 'admin', ...overrides });
+export const createAdmin = (overrides = {}) => createUser({ role: 'admin', ...overrides });
 
 // Coach factory
-export const createCoach = (overrides = {}) => 
-  createUser({ 
+export const createCoach = (overrides = {}) =>
+  createUser({
     role: 'coach',
     profile: {
       specializations: ['fitness', 'nutrition'],
@@ -31,7 +30,7 @@ export const createCoach = (overrides = {}) =>
       rating: faker.number.float({ min: 3.5, max: 5, precision: 0.1 }),
       ...overrides.profile,
     },
-    ...overrides 
+    ...overrides,
   });
 
 // Content factory

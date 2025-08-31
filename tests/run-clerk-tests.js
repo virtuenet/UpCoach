@@ -28,17 +28,17 @@ function runPlaywrightTests(testFile = 'clerk-auth.spec.js', options = {}) {
       '--config=tests/e2e/playwright.config.js',
       '--browser=chromium',
       '--headed',
-      ...Object.entries(options).map(([key, value]) => `--${key}=${value}`)
+      ...Object.entries(options).map(([key, value]) => `--${key}=${value}`),
     ];
 
     console.log(`Running: npx ${args.join(' ')}\n`);
 
     const child = spawn('npx', args, {
       stdio: 'inherit',
-      cwd: process.cwd()
+      cwd: process.cwd(),
     });
 
-    child.on('close', (code) => {
+    child.on('close', code => {
       if (code === 0) {
         resolve(code);
       } else {
@@ -46,7 +46,7 @@ function runPlaywrightTests(testFile = 'clerk-auth.spec.js', options = {}) {
       }
     });
 
-    child.on('error', (error) => {
+    child.on('error', error => {
       reject(error);
     });
   });
@@ -55,7 +55,7 @@ function runPlaywrightTests(testFile = 'clerk-auth.spec.js', options = {}) {
 // Main execution
 async function main() {
   console.log('📋 Pre-flight checks:');
-  
+
   // Check if server is running
   const serverRunning = await checkServerRunning();
   if (!serverRunning) {
@@ -67,12 +67,12 @@ async function main() {
   }
 
   const testFile = process.argv[2] || 'clerk-auth.spec.js';
-  
+
   try {
     console.log(`🚀 Running Clerk authentication tests from ${testFile}...\n`);
     await runPlaywrightTests(testFile, {
       timeout: 10000,
-      workers: 1
+      workers: 1,
     });
     console.log('\n✅ All Clerk authentication tests passed!');
   } catch (error) {
@@ -95,8 +95,12 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) {
   console.log('  --help, -h   Show this help message');
   console.log('');
   console.log('Examples:');
-  console.log('  node tests/run-clerk-tests.js                          # Run all Clerk auth tests');
-  console.log('  node tests/run-clerk-tests.js clerk-auth-utils-demo.spec.js  # Run utils demo tests');
+  console.log(
+    '  node tests/run-clerk-tests.js                          # Run all Clerk auth tests'
+  );
+  console.log(
+    '  node tests/run-clerk-tests.js clerk-auth-utils-demo.spec.js  # Run utils demo tests'
+  );
   console.log('');
   console.log('Prerequisites:');
   console.log('  1. Landing page server running: cd landing-page && npm run dev');
@@ -109,4 +113,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { runPlaywrightTests, checkServerRunning }; 
+module.exports = { runPlaywrightTests, checkServerRunning };

@@ -15,9 +15,16 @@ export interface ContentTemplateAttributes {
   updatedAt?: Date;
 }
 
-export interface ContentTemplateCreationAttributes extends Optional<ContentTemplateAttributes, 'id' | 'description' | 'thumbnail' | 'isActive' | 'usageCount' | 'createdAt' | 'updatedAt'> {}
+export interface ContentTemplateCreationAttributes
+  extends Optional<
+    ContentTemplateAttributes,
+    'id' | 'description' | 'thumbnail' | 'isActive' | 'usageCount' | 'createdAt' | 'updatedAt'
+  > {}
 
-class ContentTemplate extends Model<ContentTemplateAttributes, ContentTemplateCreationAttributes> implements ContentTemplateAttributes {
+class ContentTemplate
+  extends Model<ContentTemplateAttributes, ContentTemplateCreationAttributes>
+  implements ContentTemplateAttributes
+{
   declare id: number;
   public name!: string;
   public description?: string;

@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import request from 'supertest';
 import app from '../../src/index';
 import { sequelize } from '../../src/config/database';
@@ -18,7 +20,7 @@ describe('Experiments API Integration Tests', () => {
   beforeAll(async () => {
     // Setup test database
     await sequelize.sync({ force: true });
-    
+
     // Create test users
     adminUser = await User.create({
       email: 'admin@test.com',
@@ -35,11 +37,9 @@ describe('Experiments API Integration Tests', () => {
     });
 
     // Generate tokens
-    adminToken = jwt.sign(
-      { userId: adminUser.id, role: adminUser.role },
-      environment.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+    adminToken = jwt.sign({ userId: adminUser.id, role: adminUser.role }, environment.JWT_SECRET, {
+      expiresIn: '1h',
+    });
 
     userToken = jwt.sign(
       { userId: regularUser.id, role: regularUser.role },
@@ -179,7 +179,13 @@ describe('Experiments API Integration Tests', () => {
         status: 'active',
         variants: [
           { id: 'control', name: 'Control', allocation: 50, isControl: true, configuration: {} },
-          { id: 'variant-a', name: 'Variant A', allocation: 50, isControl: false, configuration: {} },
+          {
+            id: 'variant-a',
+            name: 'Variant A',
+            allocation: 50,
+            isControl: false,
+            configuration: {},
+          },
         ],
         trafficAllocation: 100,
         startDate: new Date(),
@@ -201,7 +207,13 @@ describe('Experiments API Integration Tests', () => {
         status: 'draft',
         variants: [
           { id: 'control', name: 'Control', allocation: 50, isControl: true, configuration: {} },
-          { id: 'variant-a', name: 'Variant A', allocation: 50, isControl: false, configuration: {} },
+          {
+            id: 'variant-a',
+            name: 'Variant A',
+            allocation: 50,
+            isControl: false,
+            configuration: {},
+          },
         ],
         trafficAllocation: 100,
         startDate: new Date(),
@@ -259,7 +271,13 @@ describe('Experiments API Integration Tests', () => {
         status: 'draft',
         variants: [
           { id: 'control', name: 'Control', allocation: 50, isControl: true, configuration: {} },
-          { id: 'variant-a', name: 'Variant A', allocation: 50, isControl: false, configuration: {} },
+          {
+            id: 'variant-a',
+            name: 'Variant A',
+            allocation: 50,
+            isControl: false,
+            configuration: {},
+          },
         ],
         trafficAllocation: 100,
         startDate: new Date(),
@@ -304,8 +322,20 @@ describe('Experiments API Integration Tests', () => {
         description: 'Test description',
         status: 'active',
         variants: [
-          { id: 'control', name: 'Control', allocation: 50, isControl: true, configuration: { theme: 'blue' } },
-          { id: 'variant-a', name: 'Variant A', allocation: 50, isControl: false, configuration: { theme: 'red' } },
+          {
+            id: 'control',
+            name: 'Control',
+            allocation: 50,
+            isControl: true,
+            configuration: { theme: 'blue' },
+          },
+          {
+            id: 'variant-a',
+            name: 'Variant A',
+            allocation: 50,
+            isControl: false,
+            configuration: { theme: 'red' },
+          },
         ],
         trafficAllocation: 100,
         startDate: new Date('2024-01-01'),
@@ -374,7 +404,13 @@ describe('Experiments API Integration Tests', () => {
         status: 'active',
         variants: [
           { id: 'control', name: 'Control', allocation: 50, isControl: true, configuration: {} },
-          { id: 'variant-a', name: 'Variant A', allocation: 50, isControl: false, configuration: {} },
+          {
+            id: 'variant-a',
+            name: 'Variant A',
+            allocation: 50,
+            isControl: false,
+            configuration: {},
+          },
         ],
         trafficAllocation: 100,
         startDate: new Date('2024-01-01'),
@@ -461,7 +497,13 @@ describe('Experiments API Integration Tests', () => {
         status: 'active',
         variants: [
           { id: 'control', name: 'Control', allocation: 50, isControl: true, configuration: {} },
-          { id: 'variant-a', name: 'Variant A', allocation: 50, isControl: false, configuration: {} },
+          {
+            id: 'variant-a',
+            name: 'Variant A',
+            allocation: 50,
+            isControl: false,
+            configuration: {},
+          },
         ],
         trafficAllocation: 100,
         startDate: new Date('2024-01-01'),
@@ -480,8 +522,18 @@ describe('Experiments API Integration Tests', () => {
 
       // Create assignments and events for analytics
       const assignments = await ExperimentAssignment.bulkCreate([
-        { experimentId: testExperiment.id, userId: regularUser.id, variantId: 'control', isExcluded: false },
-        { experimentId: testExperiment.id, userId: adminUser.id, variantId: 'variant-a', isExcluded: false },
+        {
+          experimentId: testExperiment.id,
+          userId: regularUser.id,
+          variantId: 'control',
+          isExcluded: false,
+        },
+        {
+          experimentId: testExperiment.id,
+          userId: adminUser.id,
+          variantId: 'variant-a',
+          isExcluded: false,
+        },
       ]);
 
       await ExperimentEvent.bulkCreate([
@@ -539,4 +591,4 @@ describe('Experiments API Integration Tests', () => {
         .expect(403);
     });
   });
-}); 
+});

@@ -70,10 +70,10 @@ export class CoachIntelligenceService {
   ): Promise<CoachMemory> {
     // Extract insights from conversation
     const insights = await this.extractConversationInsights(conversationContent, context);
-    
+
     // Determine memory importance
     const importance = this.calculateMemoryImportance(insights, userFeedback);
-    
+
     // Create memory record
     const memory = await CoachMemory.create({
       userId: context.userId,
@@ -102,13 +102,13 @@ export class CoachIntelligenceService {
 
     // Update related memories
     await this.updateRelatedMemories(memory, context);
-    
+
     // Process with AI for deeper insights
     await this.processMemoryWithAI(memory);
-    
+
     // Update user analytics
     await this.updateUserAnalytics(context.userId, memory, sessionDuration, userFeedback);
-    
+
     return memory;
   }
 
@@ -156,7 +156,7 @@ export class CoachIntelligenceService {
     _avatarId: string
   ): Promise<CoachingRecommendation[]> {
     const recommendations: CoachingRecommendation[] = [];
-    
+
     // Get user analytics
     const analytics = await UserAnalytics.findOne({
       where: { userId },
@@ -199,7 +199,7 @@ export class CoachIntelligenceService {
           expectedOutcome: 'Improved coaching depth and better goal achievement',
           implementation: [
             'Start sessions with a brief check-in to build rapport',
-            'Use interactive techniques matching user\'s learning style',
+            "Use interactive techniques matching user's learning style",
             'Break complex topics into engaging segments',
             'End with clear action items and motivation',
           ],
@@ -234,9 +234,9 @@ export class CoachIntelligenceService {
           rationale: `Avatar effectiveness score is ${Math.round(analytics.coachingMetrics.avatarEffectivenessScore * 100)}%`,
           expectedOutcome: 'Better user-coach compatibility and improved outcomes',
           implementation: [
-            'Assess user\'s preferred communication style',
+            "Assess user's preferred communication style",
             'Consider switching to a different avatar personality',
-            'Adapt current avatar\'s approach based on user feedback',
+            "Adapt current avatar's approach based on user feedback",
             'Experiment with different coaching techniques',
           ],
         });
@@ -351,7 +351,10 @@ export class CoachIntelligenceService {
     const achievements = this.extractAchievements(weeklyMemories, goals);
     const challenges = this.extractChallenges(weeklyMemories, goals);
     const insights = await this.generateWeeklyInsights(weeklyMemories, analytics);
-    const recommendations = await this.generateCoachingRecommendations(userId, weeklyMemories[0]?.avatarId || '');
+    const recommendations = await this.generateCoachingRecommendations(
+      userId,
+      weeklyMemories[0]?.avatarId || ''
+    );
 
     return {
       userId,
@@ -369,7 +372,10 @@ export class CoachIntelligenceService {
   /**
    * Calculate analytics for a user across different time periods
    */
-  async calculateUserAnalytics(userId: string, periodType: 'daily' | 'weekly' | 'monthly' | 'quarterly'): Promise<UserAnalytics> {
+  async calculateUserAnalytics(
+    userId: string,
+    periodType: 'daily' | 'weekly' | 'monthly' | 'quarterly'
+  ): Promise<UserAnalytics> {
     const now = new Date();
     let periodStart: Date;
     let periodEnd: Date = now;
@@ -414,8 +420,11 @@ export class CoachIntelligenceService {
     // Calculate engagement metrics
     const engagementMetrics = {
       totalSessions: memories.length,
-      totalDuration: memories.reduce((sum, m) => sum + (m.coachingContext.importance * 5), 0), // Estimate duration
-      averageSessionDuration: memories.length > 0 ? memories.reduce((sum, m) => sum + (m.coachingContext.importance * 5), 0) / memories.length : 0,
+      totalDuration: memories.reduce((sum, m) => sum + m.coachingContext.importance * 5, 0), // Estimate duration
+      averageSessionDuration:
+        memories.length > 0
+          ? memories.reduce((sum, m) => sum + m.coachingContext.importance * 5, 0) / memories.length
+          : 0,
       streakCount: this.calculateStreakCount(memories),
       missedSessions: 0, // TODO: Calculate based on scheduled vs actual
       responsiveness: this.calculateResponsiveness(memories),
@@ -464,7 +473,9 @@ export class CoachIntelligenceService {
     const aiInsights = {
       strengthAreas: this.identifyStrengthAreas(memories, goals),
       improvementAreas: this.identifyImprovementAreas(memories, goals),
-      recommendedActions: (await this.generateCoachingRecommendations(userId, memories[0]?.avatarId || '')).map(r => r.title),
+      recommendedActions: (
+        await this.generateCoachingRecommendations(userId, memories[0]?.avatarId || '')
+      ).map(r => r.title),
       predictedOutcomes: this.predictOutcomes(memories, goals),
       riskFactors: this.identifyRiskFactors(memories, goals),
     };
@@ -503,22 +514,26 @@ export class CoachIntelligenceService {
       emotionalTrends: [context.userMood],
       category: 'general',
       actionItems: this.extractActionItems(content),
-      followUpNeeded: content.toLowerCase().includes('follow up') || content.toLowerCase().includes('next time'),
+      followUpNeeded:
+        content.toLowerCase().includes('follow up') || content.toLowerCase().includes('next time'),
     };
   }
 
   private calculateMemoryImportance(insights: any, userFeedback?: any): number {
     let importance = 5; // Base importance
-    
+
     if (userFeedback?.rating >= 8) importance += 2;
     if (insights.actionItems.length > 0) importance += 1;
     if (insights.followUpNeeded) importance += 1;
     if (Math.abs(insights.sentiment) > 0.7) importance += 1;
-    
+
     return Math.min(10, importance);
   }
 
-  private async updateRelatedMemories(memory: CoachMemory, context: CoachingContext): Promise<void> {
+  private async updateRelatedMemories(
+    memory: CoachMemory,
+    context: CoachingContext
+  ): Promise<void> {
     // Find related memories based on tags and topics
     const relatedMemories = await CoachMemory.findAll({
       where: {
@@ -559,11 +574,11 @@ export class CoachIntelligenceService {
     // Simple sentiment analysis - replace with proper AI
     const positiveWords = ['good', 'great', 'excellent', 'happy', 'satisfied', 'progress'];
     const negativeWords = ['bad', 'terrible', 'frustrated', 'stuck', 'difficult', 'problem'];
-    
+
     const words = text.toLowerCase().split(/\s+/);
     const positive = words.filter(word => positiveWords.some(pw => word.includes(pw))).length;
     const negative = words.filter(word => negativeWords.some(nw => word.includes(nw))).length;
-    
+
     if (positive + negative === 0) return 0;
     return (positive - negative) / (positive + negative);
   }
@@ -572,11 +587,12 @@ export class CoachIntelligenceService {
     // Simple extraction - replace with proper NLP
     const sentences = content.split(/[.!?]/);
     return sentences
-      .filter(sentence => 
-        sentence.toLowerCase().includes('will') ||
-        sentence.toLowerCase().includes('should') ||
-        sentence.toLowerCase().includes('action') ||
-        sentence.toLowerCase().includes('next')
+      .filter(
+        sentence =>
+          sentence.toLowerCase().includes('will') ||
+          sentence.toLowerCase().includes('should') ||
+          sentence.toLowerCase().includes('action') ||
+          sentence.toLowerCase().includes('next')
       )
       .map(sentence => sentence.trim())
       .filter(sentence => sentence.length > 10);
@@ -600,8 +616,10 @@ export class CoachIntelligenceService {
 
   private calculateFollowThroughRate(goals: KpiTracker[]): number {
     if (goals.length === 0) return 0.5;
-    const completedActions = goals.reduce((sum, goal) => 
-      sum + goal.coachingData.actionItems.filter(item => item.status === 'completed').length, 0
+    const completedActions = goals.reduce(
+      (sum, goal) =>
+        sum + goal.coachingData.actionItems.filter(item => item.status === 'completed').length,
+      0
     );
     const totalActions = goals.reduce((sum, goal) => sum + goal.coachingData.actionItems.length, 0);
     return totalActions > 0 ? completedActions / totalActions : 0.5;
@@ -717,7 +735,11 @@ export class CoachIntelligenceService {
     };
   }
 
-  private calculateWeeklyGoalProgress(_goals: KpiTracker[], _weekStart: Date, _weekEnd: Date): number {
+  private calculateWeeklyGoalProgress(
+    _goals: KpiTracker[],
+    _weekStart: Date,
+    _weekEnd: Date
+  ): number {
     // TODO: Calculate weekly progress
     return 0.7;
   }
@@ -737,7 +759,10 @@ export class CoachIntelligenceService {
     return ['Maintaining consistency', 'Balancing multiple priorities'];
   }
 
-  private async generateWeeklyInsights(_memories: CoachMemory[], _analytics: UserAnalytics | null): Promise<MemoryInsight[]> {
+  private async generateWeeklyInsights(
+    _memories: CoachMemory[],
+    _analytics: UserAnalytics | null
+  ): Promise<MemoryInsight[]> {
     // TODO: Generate insights
     return [
       {
@@ -751,10 +776,17 @@ export class CoachIntelligenceService {
     ];
   }
 
-  private generateNextWeekFocus(_insights: MemoryInsight[], _recommendations: CoachingRecommendation[]): string[] {
+  private generateNextWeekFocus(
+    _insights: MemoryInsight[],
+    _recommendations: CoachingRecommendation[]
+  ): string[] {
     // TODO: Generate focus areas
-    return ['Maintain current progress', 'Address consistency challenges', 'Explore new goal areas'];
+    return [
+      'Maintain current progress',
+      'Address consistency challenges',
+      'Explore new goal areas',
+    ];
   }
 }
 
-export default CoachIntelligenceService; 
+export default CoachIntelligenceService;

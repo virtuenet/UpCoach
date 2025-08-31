@@ -13,37 +13,36 @@ const experimentValidation = [
     .withMessage('Experiment name is required')
     .isLength({ min: 1, max: 255 })
     .withMessage('Name must be between 1 and 255 characters'),
-  
-  body('description')
-    .notEmpty()
-    .withMessage('Description is required'),
-  
+
+  body('description').notEmpty().withMessage('Description is required'),
+
   body('variants')
     .isArray({ min: 2 })
     .withMessage('Must have at least 2 variants')
-    .custom((variants) => {
-      const totalAllocation = variants.reduce((sum: number, variant: any) => sum + variant.allocation, 0);
+    .custom(variants => {
+      const totalAllocation = variants.reduce(
+        (sum: number, variant: any) => sum + variant.allocation,
+        0
+      );
       if (Math.abs(totalAllocation - 100) > 0.01) {
         throw new Error('Variant allocations must sum to 100%');
       }
-      
+
       const controlVariants = variants.filter((v: any) => v.isControl);
       if (controlVariants.length !== 1) {
         throw new Error('Must have exactly one control variant');
       }
-      
+
       return true;
     }),
-  
+
   body('trafficAllocation')
     .optional()
     .isInt({ min: 1, max: 100 })
     .withMessage('Traffic allocation must be between 1 and 100'),
-  
-  body('startDate')
-    .isISO8601()
-    .withMessage('Start date must be a valid ISO 8601 date'),
-  
+
+  body('startDate').isISO8601().withMessage('Start date must be a valid ISO 8601 date'),
+
   body('endDate')
     .optional()
     .isISO8601()
@@ -54,17 +53,21 @@ const experimentValidation = [
       }
       return true;
     }),
-  
-  body('targetMetric')
-    .notEmpty()
-    .withMessage('Target metric is required'),
-  
+
+  body('targetMetric').notEmpty().withMessage('Target metric is required'),
+
   body('successCriteria')
     .isObject()
     .withMessage('Success criteria must be an object')
-    .custom((criteria) => {
-      if (!criteria.primaryMetric || !criteria.minimumDetectableEffect || !criteria.confidenceLevel) {
-        throw new Error('Success criteria must include primaryMetric, minimumDetectableEffect, and confidenceLevel');
+    .custom(criteria => {
+      if (
+        !criteria.primaryMetric ||
+        !criteria.minimumDetectableEffect ||
+        !criteria.confidenceLevel
+      ) {
+        throw new Error(
+          'Success criteria must include primaryMetric, minimumDetectableEffect, and confidenceLevel'
+        );
       }
       if (criteria.confidenceLevel < 80 || criteria.confidenceLevel > 99) {
         throw new Error('Confidence level must be between 80 and 99');
@@ -74,19 +77,11 @@ const experimentValidation = [
 ];
 
 const conversionValidation = [
-  body('eventType')
-    .notEmpty()
-    .withMessage('Event type is required'),
-  
-  body('eventValue')
-    .optional()
-    .isNumeric()
-    .withMessage('Event value must be a number'),
-  
-  body('properties')
-    .optional()
-    .isObject()
-    .withMessage('Properties must be an object'),
+  body('eventType').notEmpty().withMessage('Event type is required'),
+
+  body('eventValue').optional().isNumeric().withMessage('Event value must be a number'),
+
+  body('properties').optional().isObject().withMessage('Properties must be an object'),
 ];
 
 // Admin routes (require admin role)
@@ -186,4 +181,4 @@ router.get('/health', (req, res) => {
   });
 });
 
-export default router; 
+export default router;

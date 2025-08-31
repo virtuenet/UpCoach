@@ -1,5 +1,5 @@
 import { Model, DataTypes, Optional } from 'sequelize';
-import { sequelize } from '../index';
+import { sequelize } from '../../config/sequelize';
 
 /**
  * Coach Memory Model
@@ -12,20 +12,20 @@ export interface CoachMemoryAttributes {
   userId: string;
   avatarId: string;
   sessionId: string;
-  
+
   // Memory Content
   memoryType: 'conversation' | 'insight' | 'goal' | 'pattern' | 'preference' | 'milestone';
   content: string;
   summary: string;
   tags: string[];
-  
+
   // Context Information
   emotionalContext: {
     mood: string;
     sentiment: number; // -1 to 1
     emotionalTrends: string[];
   };
-  
+
   // Coaching Context
   coachingContext: {
     topic: string;
@@ -34,51 +34,68 @@ export interface CoachMemoryAttributes {
     actionItems: string[];
     followUpNeeded: boolean;
   };
-  
+
   // Temporal Information
   conversationDate: Date;
   lastReferencedDate?: Date;
   expiryDate?: Date;
-  
+
   // Memory Strength & Relevance
   importance: number; // 1-10, how important this memory is
   relevanceScore: number; // 0-1, calculated relevance for current context
   accessCount: number; // How many times this memory has been referenced
-  
+
   // Relationships
   relatedMemoryIds: string[];
   parentMemoryId?: string;
   childMemoryIds: string[];
-  
+
   // AI Processing
   aiProcessed: boolean;
   insightsGenerated: string[];
-  
+
   // Metadata
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface CoachMemoryCreationAttributes 
-  extends Optional<CoachMemoryAttributes, 'id' | 'lastReferencedDate' | 'expiryDate' | 'relevanceScore' | 'accessCount' | 'relatedMemoryIds' | 'parentMemoryId' | 'childMemoryIds' | 'aiProcessed' | 'insightsGenerated' | 'createdAt' | 'updatedAt'> {}
+export interface CoachMemoryCreationAttributes
+  extends Optional<
+    CoachMemoryAttributes,
+    | 'id'
+    | 'lastReferencedDate'
+    | 'expiryDate'
+    | 'relevanceScore'
+    | 'accessCount'
+    | 'relatedMemoryIds'
+    | 'parentMemoryId'
+    | 'childMemoryIds'
+    | 'aiProcessed'
+    | 'insightsGenerated'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
-export class CoachMemory extends Model<CoachMemoryAttributes, CoachMemoryCreationAttributes> implements CoachMemoryAttributes {
+export class CoachMemory
+  extends Model<CoachMemoryAttributes, CoachMemoryCreationAttributes>
+  implements CoachMemoryAttributes
+{
   public id!: string;
   public userId!: string;
   public avatarId!: string;
   public sessionId!: string;
-  
+
   public memoryType!: 'conversation' | 'insight' | 'goal' | 'pattern' | 'preference' | 'milestone';
   public content!: string;
   public summary!: string;
   public tags!: string[];
-  
+
   public emotionalContext!: {
     mood: string;
     sentiment: number;
     emotionalTrends: string[];
   };
-  
+
   public coachingContext!: {
     topic: string;
     category: string;
@@ -86,22 +103,22 @@ export class CoachMemory extends Model<CoachMemoryAttributes, CoachMemoryCreatio
     actionItems: string[];
     followUpNeeded: boolean;
   };
-  
+
   public conversationDate!: Date;
   public lastReferencedDate?: Date;
   public expiryDate?: Date;
-  
+
   public importance!: number;
   public relevanceScore!: number;
   public accessCount!: number;
-  
+
   public relatedMemoryIds!: string[];
   public parentMemoryId?: string;
   public childMemoryIds!: string[];
-  
+
   public aiProcessed!: boolean;
   public insightsGenerated!: string[];
-  
+
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
 
@@ -112,26 +129,26 @@ export class CoachMemory extends Model<CoachMemoryAttributes, CoachMemoryCreatio
     if (this.expiryDate && new Date() > this.expiryDate) {
       return false;
     }
-    
+
     // High importance memories are always relevant
     if (this.importance >= 8) {
       return true;
     }
-    
+
     // Recent memories are relevant
     const daysSinceConversation = Math.floor(
       (Date.now() - this.conversationDate.getTime()) / (1000 * 60 * 60 * 24)
     );
-    
+
     if (daysSinceConversation <= 7) {
       return true;
     }
-    
+
     // Frequently accessed memories are relevant
     if (this.accessCount >= 5) {
       return true;
     }
-    
+
     // Check relevance score
     return this.relevanceScore >= 0.6;
   }
@@ -145,33 +162,34 @@ export class CoachMemory extends Model<CoachMemoryAttributes, CoachMemoryCreatio
     recentGoals: string[];
   }): void {
     let score = 0;
-    
+
     // Topic relevance
-    const topicMatches = currentContext.topics.filter(topic => 
-      this.tags.includes(topic) || 
-      this.coachingContext.topic.toLowerCase().includes(topic.toLowerCase())
+    const topicMatches = currentContext.topics.filter(
+      topic =>
+        this.tags.includes(topic) ||
+        this.coachingContext.topic.toLowerCase().includes(topic.toLowerCase())
     );
     score += (topicMatches.length / Math.max(currentContext.topics.length, 1)) * 0.4;
-    
+
     // Emotional context relevance
     if (this.emotionalContext.mood === currentContext.mood) {
       score += 0.2;
     }
-    
+
     // Goal relevance
     const goalMatches = currentContext.recentGoals.filter(goal =>
-      this.coachingContext.actionItems.some(action => 
+      this.coachingContext.actionItems.some(action =>
         action.toLowerCase().includes(goal.toLowerCase())
       )
     );
     score += (goalMatches.length / Math.max(currentContext.recentGoals.length, 1)) * 0.3;
-    
+
     // Recency boost
     const daysSince = Math.floor(
       (Date.now() - this.conversationDate.getTime()) / (1000 * 60 * 60 * 24)
     );
     score += Math.max(0, (30 - daysSince) / 30) * 0.1;
-    
+
     this.relevanceScore = Math.min(1, score);
   }
 
@@ -371,4 +389,4 @@ CoachMemory.init(
   }
 );
 
-export default CoachMemory; 
+export default CoachMemory;

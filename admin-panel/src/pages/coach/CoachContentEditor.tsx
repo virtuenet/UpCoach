@@ -1,4 +1,7 @@
-import Grid from "@mui/material";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import Grid from '@mui/material';
 import {
   Box,
   Card,
@@ -26,7 +29,7 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-} from "@mui/material";
+} from '@mui/material';
 import {
   Save as SaveIcon,
   Send as SendIcon,
@@ -37,17 +40,17 @@ import {
   Info as InfoIcon,
   Delete as DeleteIcon,
   Image as ImageIcon,
-} from "@mui/icons-material";
-import api from "../../services/api";
-import SEOHelper from "../../components/cms/SEOHelper";
-import ContentPreview from "../../components/cms/ContentPreview";
+} from '@mui/icons-material';
+import api from '../../services/api';
+import SEOHelper from '../../components/cms/SEOHelper';
+import ContentPreview from '../../components/cms/ContentPreview';
 
 interface ContentData {
   title: string;
   slug: string;
   summary: string;
   content: {
-    format: "html";
+    format: 'html';
     body: string;
   };
   categoryId: number | null;
@@ -66,7 +69,7 @@ interface Category {
 }
 
 interface ValidationMessage {
-  type: "error" | "warning" | "info";
+  type: 'error' | 'warning' | 'info';
   message: string;
 }
 
@@ -77,18 +80,18 @@ const CoachContentEditor: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [content, setContent] = useState<ContentData>({
-    title: "",
-    slug: "",
-    summary: "",
+    title: '',
+    slug: '',
+    summary: '',
     content: {
-      format: "html",
-      body: "",
+      format: 'html',
+      body: '',
     },
     categoryId: null,
-    featuredImage: "",
+    featuredImage: '',
     tags: [],
-    seoTitle: "",
-    seoDescription: "",
+    seoTitle: '',
+    seoDescription: '',
     seoKeywords: [],
     metadata: {},
   });
@@ -99,13 +102,11 @@ const CoachContentEditor: React.FC = () => {
   const [publishDate, setPublishDate] = useState<Date | null>(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
-    message: "",
-    severity: "success" as any,
+    message: '',
+    severity: 'success' as any,
   });
   const [wordCount, setWordCount] = useState(0);
-  const [validationMessages, setValidationMessages] = useState<
-    ValidationMessage[]
-  >([]);
+  const [validationMessages, setValidationMessages] = useState<ValidationMessage[]>([]);
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
   const autoSaveTimer = useRef<NodeJS.Timeout>();
 
@@ -115,13 +116,7 @@ const CoachContentEditor: React.FC = () => {
 
   useEffect(() => {
     // Auto-save functionality
-    if (
-      autoSaveEnabled &&
-      content.title &&
-      content.content.body &&
-      id &&
-      id !== "new"
-    ) {
+    if (autoSaveEnabled && content.title && content.content.body && id && id !== 'new') {
       clearTimeout(autoSaveTimer.current);
       autoSaveTimer.current = setTimeout(() => {
         handleSave(true);
@@ -139,16 +134,16 @@ const CoachContentEditor: React.FC = () => {
   const fetchInitialData = async () => {
     setLoading(true);
     try {
-      const categoriesRes = await api.get("/coach-content/categories");
+      const categoriesRes = await api.get('/coach-content/categories');
       setCategories(categoriesRes.data.data);
 
-      if (id && id !== "new") {
+      if (id && id !== 'new') {
         const articleRes = await api.get(`/coach-content/articles/${id}`);
         setContent(articleRes.data.data);
       }
     } catch (error) {
-      console.error("Failed to fetch data:", error);
-      showSnackbar("Failed to load content", "error");
+      console.error('Failed to fetch data:', error);
+      showSnackbar('Failed to load content', 'error');
     } finally {
       setLoading(false);
     }
@@ -159,54 +154,54 @@ const CoachContentEditor: React.FC = () => {
 
     // Required fields
     if (!content.title) {
-      messages.push({ type: "error", message: "Title is required" });
+      messages.push({ type: 'error', message: 'Title is required' });
     } else if (content.title.length < 10) {
       messages.push({
-        type: "warning",
-        message: "Title should be at least 10 characters",
+        type: 'warning',
+        message: 'Title should be at least 10 characters',
       });
     }
 
     if (!content.content.body || content.content.body.length < 100) {
       messages.push({
-        type: "error",
-        message: "Content must be at least 100 characters",
+        type: 'error',
+        message: 'Content must be at least 100 characters',
       });
     }
 
     if (!content.summary) {
       messages.push({
-        type: "warning",
-        message: "Summary helps readers understand your content",
+        type: 'warning',
+        message: 'Summary helps readers understand your content',
       });
     }
 
     if (!content.categoryId) {
       messages.push({
-        type: "warning",
-        message: "Select a category for better organization",
+        type: 'warning',
+        message: 'Select a category for better organization',
       });
     }
 
     if (content.tags.length === 0) {
       messages.push({
-        type: "info",
-        message: "Add tags to improve discoverability",
+        type: 'info',
+        message: 'Add tags to improve discoverability',
       });
     }
 
     // SEO recommendations
     if (!content.seoTitle) {
       messages.push({
-        type: "info",
-        message: "Add SEO title for better search visibility",
+        type: 'info',
+        message: 'Add SEO title for better search visibility',
       });
     }
 
     if (!content.seoDescription) {
       messages.push({
-        type: "info",
-        message: "Add SEO description for search results",
+        type: 'info',
+        message: 'Add SEO description for search results',
       });
     }
 
@@ -217,27 +212,25 @@ const CoachContentEditor: React.FC = () => {
     setSaving(true);
     try {
       const endpoint =
-        id && id !== "new"
-          ? `/coach-content/articles/${id}`
-          : "/coach-content/articles";
+        id && id !== 'new' ? `/coach-content/articles/${id}` : '/coach-content/articles';
 
-      const method = id && id !== "new" ? "put" : "post";
+      const method = id && id !== 'new' ? 'put' : 'post';
 
       const response = await api[method](endpoint, content);
 
       if (!isAutoSave) {
-        showSnackbar("Content saved successfully", "success");
+        showSnackbar('Content saved successfully', 'success');
       }
 
       // If creating new article, redirect to edit page
-      if (!id || id === "new") {
+      if (!id || id === 'new') {
         navigate(`/coach/content/${response.data.data.id}/edit`, {
           replace: true,
         });
       }
     } catch (error) {
-      console.error("Failed to save content:", error);
-      showSnackbar("Failed to save content", "error");
+      console.error('Failed to save content:', error);
+      showSnackbar('Failed to save content', 'error');
     } finally {
       setSaving(false);
     }
@@ -245,9 +238,9 @@ const CoachContentEditor: React.FC = () => {
 
   const handleSubmitForReview = async () => {
     // Check for errors
-    const errors = validationMessages.filter((m) => m.type === "error");
+    const errors = validationMessages.filter(m => m.type === 'error');
     if (errors.length > 0) {
-      showSnackbar("Please fix all errors before submitting", "error");
+      showSnackbar('Please fix all errors before submitting', 'error');
       return;
     }
 
@@ -257,14 +250,14 @@ const CoachContentEditor: React.FC = () => {
       await handleSave();
 
       // Then submit for review
-      if (id && id !== "new") {
+      if (id && id !== 'new') {
         await api.post(`/coach-content/articles/${id}/submit-review`);
-        showSnackbar("Article submitted for review", "success");
-        navigate("/coach/content");
+        showSnackbar('Article submitted for review', 'success');
+        navigate('/coach/content');
       }
     } catch (error) {
-      console.error("Failed to submit for review:", error);
-      showSnackbar("Failed to submit for review", "error");
+      console.error('Failed to submit for review:', error);
+      showSnackbar('Failed to submit for review', 'error');
     } finally {
       setSaving(false);
     }
@@ -272,7 +265,7 @@ const CoachContentEditor: React.FC = () => {
 
   const handleSchedule = async () => {
     if (!publishDate) {
-      showSnackbar("Please select a publish date", "error");
+      showSnackbar('Please select a publish date', 'error');
       return;
     }
 
@@ -285,19 +278,19 @@ const CoachContentEditor: React.FC = () => {
           socialShare: false,
         },
       });
-      showSnackbar("Article scheduled successfully", "success");
+      showSnackbar('Article scheduled successfully', 'success');
       setScheduleDialog(false);
-      navigate("/coach/content");
+      navigate('/coach/content');
     } catch (error) {
-      console.error("Failed to schedule article:", error);
-      showSnackbar("Failed to schedule article", "error");
+      console.error('Failed to schedule article:', error);
+      showSnackbar('Failed to schedule article', 'error');
     } finally {
       setSaving(false);
     }
   };
 
   const handleEditorChange = (content: string) => {
-    setContent((prev) => ({
+    setContent(prev => ({
       ...prev,
       content: {
         ...prev.content,
@@ -306,40 +299,35 @@ const CoachContentEditor: React.FC = () => {
     }));
 
     // Update word count
-    const text = content.replace(/<[^>]*>/g, "");
-    setWordCount(text.split(/\s+/).filter((word) => word.length > 0).length);
+    const text = content.replace(/<[^>]*>/g, '');
+    setWordCount(text.split(/\s+/).filter(word => word.length > 0).length);
   };
 
   const generateSlug = (title: string) => {
     return title
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   };
 
   const showSnackbar = (message: string, severity: any) => {
     setSnackbar({ open: true, message, severity });
   };
 
-  const getValidationIcon = (type: ValidationMessage["type"]) => {
+  const getValidationIcon = (type: ValidationMessage['type']) => {
     switch (type) {
-      case "error":
+      case 'error':
         return <WarningIcon color="error" />;
-      case "warning":
+      case 'warning':
         return <WarningIcon color="warning" />;
-      case "info":
+      case 'info':
         return <InfoIcon color="info" />;
     }
   };
 
   if (loading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="400px"
-      >
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
         <CircularProgress />
       </Box>
     );
@@ -352,13 +340,13 @@ const CoachContentEditor: React.FC = () => {
         <Box
           sx={{
             mb: 3,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
           }}
         >
           <Typography variant="h4">
-            {id && id !== "new" ? "Edit Article" : "Create New Article"}
+            {id && id !== 'new' ? 'Edit Article' : 'Create New Article'}
           </Typography>
           <Box>
             <Button
@@ -382,9 +370,7 @@ const CoachContentEditor: React.FC = () => {
               variant="contained"
               startIcon={<SendIcon />}
               onClick={handleSubmitForReview}
-              disabled={
-                saving || validationMessages.some((m) => m.type === "error")
-              }
+              disabled={saving || validationMessages.some(m => m.type === 'error')}
             >
               Submit for Review
             </Button>
@@ -396,11 +382,7 @@ const CoachContentEditor: React.FC = () => {
           <Grid item xs={12} md={8}>
             <Card>
               <CardContent>
-                <Tabs
-                  value={currentTab}
-                  onChange={(_e, v) => setCurrentTab(v)}
-                  sx={{ mb: 3 }}
-                >
+                <Tabs value={currentTab} onChange={(_e, v) => setCurrentTab(v)} sx={{ mb: 3 }}>
                   <Tab label="Content" />
                   <Tab label="SEO" />
                 </Tabs>
@@ -411,8 +393,8 @@ const CoachContentEditor: React.FC = () => {
                       fullWidth
                       label="Title"
                       value={content.title}
-                      onChange={(e) => {
-                        setContent((prev) => ({
+                      onChange={e => {
+                        setContent(prev => ({
                           ...prev,
                           title: e.target.value,
                           slug: generateSlug(e.target.value),
@@ -421,15 +403,15 @@ const CoachContentEditor: React.FC = () => {
                       sx={{ mb: 2 }}
                       required
                       error={!content.title}
-                      helperText={!content.title ? "Title is required" : ""}
+                      helperText={!content.title ? 'Title is required' : ''}
                     />
 
                     <TextField
                       fullWidth
                       label="Summary"
                       value={content.summary}
-                      onChange={(e) =>
-                        setContent((prev) => ({
+                      onChange={e =>
+                        setContent(prev => ({
                           ...prev,
                           summary: e.target.value,
                         }))
@@ -443,16 +425,13 @@ const CoachContentEditor: React.FC = () => {
                     <Box
                       sx={{
                         mb: 2,
-                        display: "flex",
-                        justifyContent: "space-between",
+                        display: 'flex',
+                        justifyContent: 'space-between',
                       }}
                     >
-                      <Typography variant="subtitle2">
-                        Content Editor
-                      </Typography>
+                      <Typography variant="subtitle2">Content Editor</Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {wordCount} words | {Math.ceil(wordCount / 200)} min
-                        read
+                        {wordCount} words | {Math.ceil(wordCount / 200)} min read
                       </Typography>
                     </Box>
 
@@ -465,39 +444,39 @@ const CoachContentEditor: React.FC = () => {
                         height: 500,
                         menubar: true,
                         plugins: [
-                          "advlist",
-                          "autolink",
-                          "lists",
-                          "link",
-                          "image",
-                          "charmap",
-                          "preview",
-                          "anchor",
-                          "searchreplace",
-                          "visualblocks",
-                          "code",
-                          "fullscreen",
-                          "insertdatetime",
-                          "media",
-                          "table",
-                          "code",
-                          "help",
-                          "wordcount",
-                          "codesample",
-                          "emoticons",
-                          "autosave",
+                          'advlist',
+                          'autolink',
+                          'lists',
+                          'link',
+                          'image',
+                          'charmap',
+                          'preview',
+                          'anchor',
+                          'searchreplace',
+                          'visualblocks',
+                          'code',
+                          'fullscreen',
+                          'insertdatetime',
+                          'media',
+                          'table',
+                          'code',
+                          'help',
+                          'wordcount',
+                          'codesample',
+                          'emoticons',
+                          'autosave',
                         ],
                         toolbar:
-                          "undo redo | blocks | " +
-                          "bold italic underline strikethrough | alignleft aligncenter " +
-                          "alignright alignjustify | bullist numlist outdent indent | " +
-                          "link image media | code codesample | removeformat | help",
+                          'undo redo | blocks | ' +
+                          'bold italic underline strikethrough | alignleft aligncenter ' +
+                          'alignright alignjustify | bullist numlist outdent indent | ' +
+                          'link image media | code codesample | removeformat | help',
                         content_style:
-                          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                          'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
                         automatic_uploads: true,
-                        file_picker_types: "image",
-                        autosave_interval: "30s",
-                        autosave_retention: "30m",
+                        file_picker_types: 'image',
+                        autosave_interval: '30s',
+                        autosave_retention: '30m',
                       }}
                     />
 
@@ -505,9 +484,9 @@ const CoachContentEditor: React.FC = () => {
                       <FormControl fullWidth sx={{ mb: 2 }}>
                         <InputLabel>Category</InputLabel>
                         <Select
-                          value={content.categoryId || ""}
-                          onChange={(e) =>
-                            setContent((prev) => ({
+                          value={content.categoryId || ''}
+                          onChange={e =>
+                            setContent(prev => ({
                               ...prev,
                               categoryId: e.target.value as number,
                             }))
@@ -515,7 +494,7 @@ const CoachContentEditor: React.FC = () => {
                           label="Category"
                         >
                           <MenuItem value="">None</MenuItem>
-                          {categories.map((cat) => (
+                          {categories.map(cat => (
                             <MenuItem key={cat.id} value={cat.id}>
                               {cat.name}
                             </MenuItem>
@@ -527,13 +506,13 @@ const CoachContentEditor: React.FC = () => {
                         fullWidth
                         label="Tags"
                         placeholder="Add tags separated by commas"
-                        value={content.tags.join(", ")}
-                        onChange={(e) => {
+                        value={content.tags.join(', ')}
+                        onChange={e => {
                           const tags = e.target.value
-                            .split(",")
-                            .map((tag) => tag.trim())
-                            .filter((tag) => tag.length > 0);
-                          setContent((prev) => ({ ...prev, tags }));
+                            .split(',')
+                            .map(tag => tag.trim())
+                            .filter(tag => tag.length > 0);
+                          setContent(prev => ({ ...prev, tags }));
                         }}
                         helperText="Separate tags with commas"
                       />
@@ -547,12 +526,11 @@ const CoachContentEditor: React.FC = () => {
                       title={content.title}
                       description={content.summary}
                       content={content.content.body}
-                      onUpdate={(seoData) => {
-                        setContent((prev) => ({
+                      onUpdate={seoData => {
+                        setContent(prev => ({
                           ...prev,
                           seoTitle: seoData.title || content.title,
-                          seoDescription:
-                            seoData.description || content.summary,
+                          seoDescription: seoData.description || content.summary,
                           seoKeywords: seoData.keywords || [],
                         }));
                       }}
@@ -580,7 +558,7 @@ const CoachContentEditor: React.FC = () => {
                         </ListItemIcon>
                         <ListItemText
                           primary={message.message}
-                          primaryTypographyProps={{ variant: "body2" }}
+                          primaryTypographyProps={{ variant: 'body2' }}
                         />
                       </ListItem>
                     ))}
@@ -600,13 +578,13 @@ const CoachContentEditor: React.FC = () => {
                   control={
                     <Switch
                       checked={autoSaveEnabled}
-                      onChange={(e) => setAutoSaveEnabled(e.target.checked)}
+                      onChange={e => setAutoSaveEnabled(e.target.checked)}
                     />
                   }
                   label="Auto-save enabled"
                 />
 
-                {id && id !== "new" && (
+                {id && id !== 'new' && (
                   <Box sx={{ mt: 2 }}>
                     <Button
                       fullWidth
@@ -624,12 +602,7 @@ const CoachContentEditor: React.FC = () => {
         </Grid>
 
         {/* Preview Dialog */}
-        <Dialog
-          open={previewOpen}
-          onClose={() => setPreviewOpen(false)}
-          maxWidth="md"
-          fullWidth
-        >
+        <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} maxWidth="md" fullWidth>
           <DialogTitle>Content Preview</DialogTitle>
           <DialogContent>
             <ContentPreview content={content} />
@@ -664,11 +637,7 @@ const CoachContentEditor: React.FC = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setScheduleDialog(false)}>Cancel</Button>
-            <Button
-              onClick={handleSchedule}
-              variant="contained"
-              disabled={!publishDate}
-            >
+            <Button onClick={handleSchedule} variant="contained" disabled={!publishDate}>
               Schedule
             </Button>
           </DialogActions>
@@ -678,11 +647,11 @@ const CoachContentEditor: React.FC = () => {
         <Snackbar
           open={snackbar.open}
           autoHideDuration={6000}
-          onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
         >
           <Alert
             severity={snackbar.severity}
-            onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+            onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
           >
             {snackbar.message}
           </Alert>

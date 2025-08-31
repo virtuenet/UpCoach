@@ -30,9 +30,17 @@ router.get('/coaches/admin/list', requireRole('admin'), coachController.adminGet
 router.get('/coaches/admin/sessions', requireRole('admin'), coachController.adminGetSessions);
 router.get('/coaches/admin/reviews', requireRole('admin'), coachController.adminGetReviews);
 router.get('/coaches/admin/stats', requireRole('admin'), coachController.adminGetStats);
-router.put('/coaches/admin/:id/status', requireRole('admin'), coachController.adminUpdateCoachStatus);
+router.put(
+  '/coaches/admin/:id/status',
+  requireRole('admin'),
+  coachController.adminUpdateCoachStatus
+);
 router.put('/coaches/admin/:id/verify', requireRole('admin'), coachController.adminVerifyCoach);
 router.put('/coaches/admin/:id/feature', requireRole('admin'), coachController.adminFeatureCoach);
-router.delete('/coaches/admin/reviews/:id', requireRole('admin'), coachController.adminDeleteReview);
+router.delete(
+  '/coaches/admin/reviews/:id',
+  requireRole('admin'),
+  coachController.adminDeleteReview
+);
 
 export default router;

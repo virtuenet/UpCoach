@@ -46,7 +46,7 @@ export class ForumService {
   async getCategories(): Promise<any[]> {
     const cacheKey = 'forum:categories';
     const cached = await getCacheService().get<any[]>(cacheKey);
-    
+
     if (cached) {
       return cached;
     }
@@ -76,20 +76,26 @@ export class ForumService {
       const sanitizedContent = this.sanitizeContent(data.content);
 
       // Create thread
-      const thread = await ForumThread.create({
-        categoryId: data.categoryId,
-        userId: data.userId,
-        title: data.title.trim(),
-        content: sanitizedContent,
-        tags: data.tags || [],
-      }, { transaction });
+      const thread = await ForumThread.create(
+        {
+          categoryId: data.categoryId,
+          userId: data.userId,
+          title: data.title.trim(),
+          content: sanitizedContent,
+          tags: data.tags || [],
+        },
+        { transaction }
+      );
 
       // Create initial post
-      await ForumPost.create({
-        threadId: thread.id,
-        userId: data.userId,
-        content: sanitizedContent,
-      }, { transaction });
+      await ForumPost.create(
+        {
+          threadId: thread.id,
+          userId: data.userId,
+          content: sanitizedContent,
+        },
+        { transaction }
+      );
 
       await transaction.commit();
 
@@ -233,7 +239,7 @@ export class ForumService {
       thread.posts.forEach((post: any) => {
         const votes = post.votes || [];
         post.voteScore = votes.reduce((sum: number, vote: any) => sum + vote.voteType, 0);
-        
+
         // Add user vote if userId provided
         if (userId) {
           const userVote = votes.find((v: any) => v.userId === userId);
@@ -271,12 +277,15 @@ export class ForumService {
       const sanitizedContent = this.sanitizeContent(data.content);
 
       // Create post
-      const post = await ForumPost.create({
-        threadId: data.threadId,
-        userId: data.userId,
-        parentId: data.parentId,
-        content: sanitizedContent,
-      }, { transaction });
+      const post = await ForumPost.create(
+        {
+          threadId: data.threadId,
+          userId: data.userId,
+          parentId: data.parentId,
+          content: sanitizedContent,
+        },
+        { transaction }
+      );
 
       await transaction.commit();
 
@@ -326,11 +335,14 @@ export class ForumService {
         }
       } else {
         // Create new vote
-        await ForumVote.create({
-          postId,
-          userId,
-          voteType,
-        }, { transaction });
+        await ForumVote.create(
+          {
+            postId,
+            userId,
+            voteType,
+          },
+          { transaction }
+        );
       }
 
       // Calculate new score
@@ -361,15 +373,15 @@ export class ForumService {
   // Edit a post
   async editPost(postId: string, userId: string, content: string): Promise<any> {
     const post = await ForumPost.findByPk(postId);
-    
+
     if (!post) {
       throw new Error('Post not found');
     }
-    
+
     if (post.userId !== userId) {
       throw new Error('Unauthorized');
     }
-    
+
     if (post.isDeleted) {
       throw new Error('Cannot edit deleted post');
     }
@@ -389,11 +401,11 @@ export class ForumService {
   // Delete a post (soft delete)
   async deletePost(postId: string, userId: string, isAdmin: boolean = false): Promise<void> {
     const post = await ForumPost.findByPk(postId);
-    
+
     if (!post) {
       throw new Error('Post not found');
     }
-    
+
     if (!isAdmin && post.userId !== userId) {
       throw new Error('Unauthorized');
     }
@@ -407,10 +419,12 @@ export class ForumService {
   // Mark post as solution
   async markAsSolution(postId: string, userId: string): Promise<void> {
     const post = await ForumPost.findByPk(postId, {
-      include: [{
-        model: ForumThread,
-        as: 'thread',
-      }],
+      include: [
+        {
+          model: ForumThread,
+          as: 'thread',
+        },
+      ],
     });
 
     if (!post || !post.thread) {
@@ -423,10 +437,7 @@ export class ForumService {
     }
 
     // Remove previous solution
-    await ForumPost.update(
-      { isSolution: false },
-      { where: { threadId: post.threadId } }
-    );
+    await ForumPost.update({ isSolution: false }, { where: { threadId: post.threadId } });
 
     // Mark new solution
     post.isSolution = true;
@@ -447,7 +458,12 @@ export class ForumService {
       .trim();
   }
 
-  private async trackActivity(userId: string, type: string, targetType: string, targetId: string): Promise<void> {
+  private async trackActivity(
+    userId: string,
+    type: string,
+    targetType: string,
+    targetId: string
+  ): Promise<void> {
     try {
       await sequelize.query(
         `INSERT INTO activities (user_id, activity_type, target_type, target_id, created_at)
@@ -474,7 +490,11 @@ export class ForumService {
     }
   }
 
-  private async notifyThreadParticipants(threadId: string, authorId: string, postId: string): Promise<void> {
+  private async notifyThreadParticipants(
+    threadId: string,
+    authorId: string,
+    postId: string
+  ): Promise<void> {
     try {
       // Get all unique participants in thread
       const participants = await sequelize.query(
@@ -503,7 +523,14 @@ export class ForumService {
           `INSERT INTO notifications (user_id, type, title, message, data, created_at)
            VALUES ${notifications.map(() => '(?, ?, ?, ?, ?, ?)').join(', ')}`,
           {
-            replacements: notifications.flatMap(n => [n.user_id, n.type, n.title, n.message, JSON.stringify(n.data), n.created_at]),
+            replacements: notifications.flatMap(n => [
+              n.user_id,
+              n.type,
+              n.title,
+              n.message,
+              JSON.stringify(n.data),
+              n.created_at,
+            ]),
           }
         );
       }

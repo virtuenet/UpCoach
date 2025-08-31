@@ -277,10 +277,7 @@ export class UnifiedContentService {
   /**
    * Publish content
    */
-  async publishContent(
-    id: string,
-    options: ContentOptions = {}
-  ): Promise<UnifiedContent> {
+  async publishContent(id: string, options: ContentOptions = {}): Promise<UnifiedContent> {
     const content = await this.getContent(id, { includeRelations: true });
     if (!content) {
       throw new Error('Content not found');
@@ -462,16 +459,13 @@ export class UnifiedContentService {
   /**
    * Get popular content
    */
-  async getPopularContent(
-    type?: ContentType,
-    limit = 10
-  ): Promise<UnifiedContent[]> {
+  async getPopularContent(type?: ContentType, limit = 10): Promise<UnifiedContent[]> {
     const cacheKey = `content:popular:${type || 'all'}:${limit}`;
     const cached = await this.cache.get<UnifiedContent[]>(cacheKey);
     if (cached) return cached;
 
     const content = await UnifiedContent.getPopular(limit, type);
-    
+
     await this.cache.set(cacheKey, content, { ttl: 600 }); // Cache for 10 minutes
     return content;
   }
@@ -479,10 +473,7 @@ export class UnifiedContentService {
   /**
    * Get related content
    */
-  async getRelatedContent(
-    contentId: string,
-    limit = 5
-  ): Promise<UnifiedContent[]> {
+  async getRelatedContent(contentId: string, limit = 5): Promise<UnifiedContent[]> {
     const content = await this.getContent(contentId, { includeRelations: true });
     if (!content) return [];
 
@@ -491,10 +482,7 @@ export class UnifiedContentService {
       where: {
         id: { [Op.ne as any]: contentId },
         status: 'published',
-        [Op.or as any]: [
-          { categoryId: content.categoryId },
-          { type: content.type },
-        ],
+        [Op.or as any]: [{ categoryId: content.categoryId }, { type: content.type }],
       },
       order: [['viewCount', 'DESC']],
       limit,
@@ -583,9 +571,11 @@ export class UnifiedContentService {
 
     // Calculate average read time from view interactions
     const viewsWithDuration = views.filter(v => v.metadata?.duration);
-    const avgReadTime = viewsWithDuration.length > 0
-      ? viewsWithDuration.reduce((sum, v) => sum + (v.metadata?.duration || 0), 0) / viewsWithDuration.length
-      : 0;
+    const avgReadTime =
+      viewsWithDuration.length > 0
+        ? viewsWithDuration.reduce((sum, v) => sum + (v.metadata?.duration || 0), 0) /
+          viewsWithDuration.length
+        : 0;
 
     // Calculate completion rate (views with duration > 80% of estimated reading time)
     const content = await UnifiedContent.findByPk(contentId);
@@ -593,14 +583,12 @@ export class UnifiedContentService {
     const completedViews = viewsWithDuration.filter(
       v => (v.metadata?.duration || 0) > estimatedReadTime * 60 * 0.8
     ).length;
-    const completionRate = viewsWithDuration.length > 0
-      ? (completedViews / viewsWithDuration.length) * 100
-      : 0;
+    const completionRate =
+      viewsWithDuration.length > 0 ? (completedViews / viewsWithDuration.length) * 100 : 0;
 
     // Calculate engagement rate
-    const engagementRate = views.length > 0
-      ? ((likes + shares + comments) / views.length) * 100
-      : 0;
+    const engagementRate =
+      views.length > 0 ? ((likes + shares + comments) / views.length) * 100 : 0;
 
     return {
       views: views.length,
@@ -632,7 +620,7 @@ export class UnifiedContentService {
 
       for (const content of contents) {
         const analytics = await this.getContentAnalytics(content.id);
-        
+
         // Update content with latest analytics
         content.completionRate = analytics.completionRate;
         await content.save();
@@ -808,13 +796,10 @@ export class UnifiedContentService {
     transaction?: Transaction
   ): Promise<void> {
     // Remove old associations
-    await UnifiedMedia.update(
-      { contentId: null } as any,
-      {
-        where: { contentId },
-        transaction,
-      }
-    );
+    await UnifiedMedia.update({ contentId: null } as any, {
+      where: { contentId },
+      transaction,
+    });
 
     // Add new associations
     await this.attachMedia(contentId, mediaIds, transaction);

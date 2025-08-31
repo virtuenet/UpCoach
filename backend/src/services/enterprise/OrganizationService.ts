@@ -53,7 +53,7 @@ export class OrganizationService {
       let slug = generateSlug(data.name);
       let slugExists = await Organization.findOne({ where: { slug } });
       let counter = 1;
-      
+
       while (slugExists) {
         slug = `${generateSlug(data.name)}-${counter}`;
         slugExists = await Organization.findOne({ where: { slug } });
@@ -61,23 +61,26 @@ export class OrganizationService {
       }
 
       // Create organization
-      const organization = await Organization.create({
-        name: data.name,
-        slug,
-        website: data.website,
-        industry: data.industry,
-        size: data.size,
-        billingEmail: data.billingEmail,
-        subscriptionTier: 'team',
-        settings: {
-          features: ['basic_teams', 'shared_goals'],
-          limits: {
-            teams: 5,
-            membersPerTeam: 10,
-            storage: 10737418240, // 10GB
+      const organization = await Organization.create(
+        {
+          name: data.name,
+          slug,
+          website: data.website,
+          industry: data.industry,
+          size: data.size,
+          billingEmail: data.billingEmail,
+          subscriptionTier: 'team',
+          settings: {
+            features: ['basic_teams', 'shared_goals'],
+            limits: {
+              teams: 5,
+              membersPerTeam: 10,
+              storage: 10737418240, // 10GB
+            },
           },
         },
-      }, { transaction });
+        { transaction }
+      );
 
       // Add owner as organization member
       await sequelize.query(
@@ -99,15 +102,18 @@ export class OrganizationService {
       );
 
       // Create default team
-      await Team.create({
-        organizationId: organization.id,
-        name: 'General',
-        description: 'Default team for all members',
-        managerId: data.ownerId,
-        settings: {
-          isDefault: true,
+      await Team.create(
+        {
+          organizationId: organization.id,
+          name: 'General',
+          description: 'Default team for all members',
+          managerId: data.ownerId,
+          settings: {
+            isDefault: true,
+          },
         },
-      }, { transaction });
+        { transaction }
+      );
 
       await transaction.commit();
 
@@ -167,7 +173,7 @@ export class OrganizationService {
     try {
       // Check if user already exists
       const existingUser = await User.findOne({ where: { email: data.email } });
-      
+
       if (existingUser) {
         // Check if already a member
         const [existingMember] = await sequelize.query(
@@ -274,9 +280,9 @@ export class OrganizationService {
         {
           replacements: {
             organizationId: (invitation as any).organization_id,
-            userId
+            userId,
           },
-          transaction
+          transaction,
         }
       );
 
@@ -324,11 +330,7 @@ export class OrganizationService {
     }
   }
 
-  async removeMember(
-    organizationId: number,
-    userId: number,
-    removedBy: number
-  ): Promise<void> {
+  async removeMember(organizationId: number, userId: number, removedBy: number): Promise<void> {
     const transaction = await sequelize.transaction();
 
     try {
@@ -370,13 +372,10 @@ export class OrganizationService {
       );
 
       // Clear user's organization
-      await sequelize.query(
-        `UPDATE users SET organization_id = NULL WHERE id = :userId`,
-        {
-          replacements: { userId },
-          transaction
-        }
-      );
+      await sequelize.query(`UPDATE users SET organization_id = NULL WHERE id = :userId`, {
+        replacements: { userId },
+        transaction,
+      });
 
       await transaction.commit();
 

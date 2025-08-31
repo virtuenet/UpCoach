@@ -1,5 +1,5 @@
 import { Model, DataTypes, Optional, Association } from 'sequelize';
-import { sequelize } from '../index';
+import { sequelize } from '../../config/sequelize';
 import { User } from '../User';
 import { Transaction } from './Transaction';
 
@@ -50,9 +50,29 @@ export interface SubscriptionAttributes {
   updatedAt?: Date;
 }
 
-export interface SubscriptionCreationAttributes extends Optional<SubscriptionAttributes, 'id' | 'stripeCustomerId' | 'status' | 'billingInterval' | 'currency' | 'trialStartDate' | 'trialEndDate' | 'canceledAt' | 'cancelReason' | 'discountPercentage' | 'discountValidUntil' | 'metadata' | 'createdAt' | 'updatedAt'> {}
+export interface SubscriptionCreationAttributes
+  extends Optional<
+    SubscriptionAttributes,
+    | 'id'
+    | 'stripeCustomerId'
+    | 'status'
+    | 'billingInterval'
+    | 'currency'
+    | 'trialStartDate'
+    | 'trialEndDate'
+    | 'canceledAt'
+    | 'cancelReason'
+    | 'discountPercentage'
+    | 'discountValidUntil'
+    | 'metadata'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
-export class Subscription extends Model<SubscriptionAttributes, SubscriptionCreationAttributes> implements SubscriptionAttributes {
+export class Subscription
+  extends Model<SubscriptionAttributes, SubscriptionCreationAttributes>
+  implements SubscriptionAttributes
+{
   public id!: string;
   public userId!: string;
   public stripeSubscriptionId!: string;
@@ -340,7 +360,11 @@ Subscription.init(
     ],
     hooks: {
       beforeUpdate: (subscription: Subscription) => {
-        if (subscription.changed('status') && subscription.status === SubscriptionStatus.CANCELED && !subscription.canceledAt) {
+        if (
+          subscription.changed('status') &&
+          subscription.status === SubscriptionStatus.CANCELED &&
+          !subscription.canceledAt
+        ) {
           subscription.canceledAt = new Date();
         }
       },

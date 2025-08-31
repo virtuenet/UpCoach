@@ -1,11 +1,10 @@
-import {
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
-import SessionWrapper from "./components/SessionWrapper";
-import "./styles/layout-fixes.css";
-import "./styles/accessibility.css";
+import { AsyncErrorBoundary } from './components/ErrorBoundary/AsyncErrorBoundary';
+import { GlobalErrorBoundary } from './components/ErrorBoundary/GlobalErrorBoundary';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import SessionWrapper from './components/SessionWrapper';
+import './styles/layout-fixes.css';
+import './styles/accessibility.css';
 
 // Loading component for Suspense
 const LoadingFallback = () => (
@@ -15,36 +14,36 @@ const LoadingFallback = () => (
 );
 
 // Lazy load all components for code splitting
-const Layout = lazy(() => import("./components/Layout"));
-const LoginPage = lazy(() => import("./pages/LoginPage"));
-const DashboardPage = lazy(() => import("./pages/DashboardPage"));
-const UsersPage = lazy(() => import("./pages/UsersPage"));
-const ChatPage = lazy(() => import("./pages/ChatPage"));
-const GoalsPage = lazy(() => import("./pages/GoalsPage"));
-const TasksPage = lazy(() => import("./pages/TasksPage"));
-const MoodPage = lazy(() => import("./pages/MoodPage"));
-const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const Layout = lazy(() => import('./components/Layout'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const UsersPage = lazy(() => import('./pages/UsersPage'));
+const ChatPage = lazy(() => import('./pages/ChatPage'));
+const GoalsPage = lazy(() => import('./pages/GoalsPage'));
+const TasksPage = lazy(() => import('./pages/TasksPage'));
+const MoodPage = lazy(() => import('./pages/MoodPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 
 // Financial pages - lazy loaded
-const FinancialDashboardPage = lazy(() => import("./pages/FinancialDashboardPage"));
-const CostTrackingPage = lazy(() => import("./pages/CostTrackingPage"));
-const SubscriptionsPage = lazy(() => import("./pages/SubscriptionsPage"));
-const ReportsPage = lazy(() => import("./pages/ReportsPage"));
+const FinancialDashboardPage = lazy(() => import('./pages/FinancialDashboardPage'));
+const CostTrackingPage = lazy(() => import('./pages/CostTrackingPage'));
+const SubscriptionsPage = lazy(() => import('./pages/SubscriptionsPage'));
+const ReportsPage = lazy(() => import('./pages/ReportsPage'));
 
 // CMS pages - lazy loaded
-const CMSPage = lazy(() => import("./pages/CMSPage"));
-const ContentEditorPage = lazy(() => import("./pages/ContentEditorPage"));
+const CMSPage = lazy(() => import('./pages/CMSPage'));
+const ContentEditorPage = lazy(() => import('./pages/ContentEditorPage'));
 
 // AI and Referral pages - lazy loaded
-const AIAnalytics = lazy(() => import("./pages/AIAnalytics"));
-const ReferralManagement = lazy(() => import("./pages/ReferralManagement"));
+const AIAnalytics = lazy(() => import('./pages/AIAnalytics'));
+const ReferralManagement = lazy(() => import('./pages/ReferralManagement'));
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Enable accessibility features
-  useKeyboardNavigation();
-  useSkipLinks();
+  // useKeyboardNavigation();
+  // useSkipLinks();
 
   useEffect(() => {
     // Temporarily skip auth check for design review
@@ -56,7 +55,7 @@ function App() {
     //   }
     // };
     // checkAuth();
-    
+
     // Skip auth check and set loading to false immediately for design review
     setIsLoading(false);
   }, []);
@@ -86,10 +85,7 @@ function App() {
                 {/* Financial pages */}
                 <Route path="/financial" element={<FinancialDashboardPage />} />
                 <Route path="/financial/costs" element={<CostTrackingPage />} />
-                <Route
-                  path="/financial/subscriptions"
-                  element={<SubscriptionsPage />}
-                />
+                <Route path="/financial/subscriptions" element={<SubscriptionsPage />} />
                 <Route path="/financial/reports" element={<ReportsPage />} />
 
                 {/* CMS pages */}

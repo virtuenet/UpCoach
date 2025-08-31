@@ -10,12 +10,14 @@ export const UserSchema = z.object({
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   isActive: z.boolean(),
-  subscription: z.object({
-    id: z.string().uuid(),
-    status: z.enum(['active', 'canceled', 'past_due', 'trialing']),
-    plan: z.enum(['free', 'basic', 'premium', 'enterprise']),
-    expiresAt: z.string().datetime().optional(),
-  }).optional(),
+  subscription: z
+    .object({
+      id: z.string().uuid(),
+      status: z.enum(['active', 'canceled', 'past_due', 'trialing']),
+      plan: z.enum(['free', 'basic', 'premium', 'enterprise']),
+      expiresAt: z.string().datetime().optional(),
+    })
+    .optional(),
 });
 
 export const UserListSchema = z.object({

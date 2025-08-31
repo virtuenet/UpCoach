@@ -10,10 +10,7 @@ import {
 import { sequelize } from '../config/database';
 import { User } from './User';
 
-export class Referral extends Model<
-  InferAttributes<Referral>,
-  InferCreationAttributes<Referral>
-> {
+export class Referral extends Model<InferAttributes<Referral>, InferCreationAttributes<Referral>> {
   declare id: CreationOptional<number>;
   declare referrerId: ForeignKey<User['id']>;
   declare refereeId: ForeignKey<User['id']> | null;
@@ -43,11 +40,7 @@ export class Referral extends Model<
   }
 
   canBeUsed(userId: string): boolean {
-    return (
-      this.isActive() &&
-      this.referrerId !== userId &&
-      this.refereeId === null
-    );
+    return this.isActive() && this.referrerId !== userId && this.refereeId === null;
   }
 
   // Class methods
@@ -96,12 +89,14 @@ export class Referral extends Model<
   static async getLeaderboard(
     period: 'week' | 'month' | 'year' | 'all' = 'month',
     limit: number = 10
-  ): Promise<Array<{
-    userId: number;
-    userName: string;
-    referralCount: number;
-    totalEarnings: number;
-  }>> {
+  ): Promise<
+    Array<{
+      userId: number;
+      userName: string;
+      referralCount: number;
+      totalEarnings: number;
+    }>
+  > {
     let dateFilter: { completedAt?: { [Op.gte]: Date } } = {};
     const now = new Date();
 
@@ -123,7 +118,8 @@ export class Referral extends Model<
         break;
     }
 
-    const result = await sequelize.query(`
+    const result = await sequelize.query(
+      `
       SELECT 
         r.referrer_id as "userId",
         u.name as "userName",
@@ -136,13 +132,15 @@ export class Referral extends Model<
       GROUP BY r.referrer_id, u.name
       ORDER BY "totalEarnings" DESC
       LIMIT :limit
-    `, {
-      replacements: {
-        startDate: dateFilter.completedAt?.[Op.gte] || new Date(0),
-        limit,
-      },
-      type: QueryTypes.SELECT,
-    });
+    `,
+      {
+        replacements: {
+          startDate: dateFilter.completedAt?.[Op.gte] || new Date(0),
+          limit,
+        },
+        type: QueryTypes.SELECT,
+      }
+    );
 
     return result as Array<{
       userId: number;

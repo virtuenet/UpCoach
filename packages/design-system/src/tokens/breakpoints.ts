@@ -5,11 +5,11 @@
 
 // Breakpoint values
 export const breakpoints = {
-  xs: 0,        // Mobile portrait
-  sm: 600,      // Mobile landscape
-  md: 960,      // Tablet
-  lg: 1280,     // Desktop
-  xl: 1920,     // Large desktop
+  xs: 0, // Mobile portrait
+  sm: 600, // Mobile landscape
+  md: 960, // Tablet
+  lg: 1280, // Desktop
+  xl: 1920, // Large desktop
 } as const;
 
 // Viewport ranges
@@ -36,11 +36,10 @@ export const devices = {
 // Media query helpers
 export const media = {
   // Minimum width queries (mobile-first)
-  up: (breakpoint: keyof typeof breakpoints) => 
-    `@media (min-width: ${breakpoints[breakpoint]}px)`,
+  up: (breakpoint: keyof typeof breakpoints) => `@media (min-width: ${breakpoints[breakpoint]}px)`,
 
   // Maximum width queries
-  down: (breakpoint: keyof typeof breakpoints) => 
+  down: (breakpoint: keyof typeof breakpoints) =>
     `@media (max-width: ${breakpoints[breakpoint] - 1}px)`,
 
   // Range queries
@@ -52,11 +51,11 @@ export const media = {
     const breakpointKeys = Object.keys(breakpoints) as Array<keyof typeof breakpoints>;
     const currentIndex = breakpointKeys.indexOf(breakpoint);
     const nextBreakpoint = breakpointKeys[currentIndex + 1];
-    
+
     if (!nextBreakpoint) {
       return `@media (min-width: ${breakpoints[breakpoint]}px)`;
     }
-    
+
     return `@media (min-width: ${breakpoints[breakpoint]}px) and (max-width: ${breakpoints[nextBreakpoint] - 1}px)`;
   },
 
@@ -92,11 +91,11 @@ export const media = {
 
 // Container queries (for container query support)
 export const container = {
-  xs: '20rem',   // 320px
-  sm: '24rem',   // 384px
-  md: '28rem',   // 448px
-  lg: '32rem',   // 512px
-  xl: '36rem',   // 576px
+  xs: '20rem', // 320px
+  sm: '24rem', // 384px
+  md: '28rem', // 448px
+  lg: '32rem', // 512px
+  xl: '36rem', // 576px
   '2xl': '42rem', // 672px
   '3xl': '48rem', // 768px
   '4xl': '56rem', // 896px
@@ -145,28 +144,25 @@ export const grid = {
 } as const;
 
 // Helper functions
-export const isBreakpoint = (
-  breakpoint: keyof typeof breakpoints,
-  width: number
-): boolean => {
+export const isBreakpoint = (breakpoint: keyof typeof breakpoints, width: number): boolean => {
   const breakpointKeys = Object.keys(breakpoints) as Array<keyof typeof breakpoints>;
   const currentIndex = breakpointKeys.indexOf(breakpoint);
   const minWidth = breakpoints[breakpoint];
   const nextBreakpoint = breakpointKeys[currentIndex + 1];
   const maxWidth = nextBreakpoint ? breakpoints[nextBreakpoint] - 1 : Infinity;
-  
+
   return width >= minWidth && width <= maxWidth;
 };
 
 export const getCurrentBreakpoint = (width: number): keyof typeof breakpoints => {
   const breakpointKeys = Object.keys(breakpoints).reverse() as Array<keyof typeof breakpoints>;
-  
+
   for (const key of breakpointKeys) {
     if (width >= breakpoints[key]) {
       return key;
     }
   }
-  
+
   return 'xs';
 };
 
@@ -177,7 +173,7 @@ export const responsiveValue = <T>(
 ): T | undefined => {
   const breakpointKeys = Object.keys(breakpoints) as Array<keyof typeof breakpoints>;
   const currentIndex = breakpointKeys.indexOf(currentBreakpoint);
-  
+
   // Try to find value for current breakpoint or fall back to smaller ones
   for (let i = currentIndex; i >= 0; i--) {
     const key = breakpointKeys[i];
@@ -185,7 +181,7 @@ export const responsiveValue = <T>(
       return values[key];
     }
   }
-  
+
   return undefined;
 };
 

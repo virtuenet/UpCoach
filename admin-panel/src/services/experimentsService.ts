@@ -1,10 +1,11 @@
-import api from "./api";
+import api from './api';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
 
 export interface Experiment {
   id: string;
   name: string;
   description: string;
-  status: "draft" | "active" | "paused" | "completed" | "archived";
+  status: 'draft' | 'active' | 'paused' | 'completed' | 'archived';
   variants: ExperimentVariant[];
   trafficAllocation: number;
   startDate: string;
@@ -42,14 +43,7 @@ export interface SegmentationRules {
 
 export interface SegmentRule {
   field: string;
-  operator:
-    | "equals"
-    | "not_equals"
-    | "contains"
-    | "greater_than"
-    | "less_than"
-    | "in"
-    | "not_in";
+  operator: 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than' | 'in' | 'not_in';
   value: any;
 }
 
@@ -80,13 +74,13 @@ export interface StatisticalSignificance {
   confidenceLevel: number;
   pValue: number;
   effect: number;
-  recommendedAction: "continue" | "stop" | "extend" | "inconclusive";
+  recommendedAction: 'continue' | 'stop' | 'extend' | 'inconclusive';
 }
 
 export interface CreateExperimentRequest {
   name: string;
   description: string;
-  variants: Omit<ExperimentVariant, "id">[];
+  variants: Omit<ExperimentVariant, 'id'>[];
   trafficAllocation?: number;
   startDate: string;
   endDate?: string;
@@ -110,26 +104,22 @@ export interface ExperimentFilters {
   page?: number;
   limit?: number;
   sortBy?: string;
-  sortOrder?: "ASC" | "DESC";
+  sortOrder?: 'ASC' | 'DESC';
 }
 
 class ExperimentsService {
-  private baseUrl = "/api/experiments";
+  private baseUrl = '/api/experiments';
 
-  async createExperiment(
-    experiment: CreateExperimentRequest,
-  ): Promise<Experiment> {
+  async createExperiment(experiment: CreateExperimentRequest): Promise<Experiment> {
     const response = await api.post(this.baseUrl, experiment);
     return response.data.data;
   }
 
-  async getExperiments(
-    filters: ExperimentFilters = {},
-  ): Promise<ExperimentListResponse> {
+  async getExperiments(filters: ExperimentFilters = {}): Promise<ExperimentListResponse> {
     const params = new URLSearchParams();
 
     Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== "") {
+      if (value !== undefined && value !== '') {
         params.append(key, value.toString());
       }
     });
@@ -145,7 +135,7 @@ class ExperimentsService {
 
   async updateExperiment(
     id: string,
-    updates: Partial<CreateExperimentRequest>,
+    updates: Partial<CreateExperimentRequest>
   ): Promise<Experiment> {
     const response = await api.put(`${this.baseUrl}/${id}`, updates);
     return response.data.data;
@@ -176,7 +166,7 @@ class ExperimentsService {
     const duplicateRequest: CreateExperimentRequest = {
       name: newName,
       description: `Copy of: ${original.description}`,
-      variants: original.variants.map((variant) => ({
+      variants: original.variants.map(variant => ({
         name: variant.name,
         description: variant.description,
         allocation: variant.allocation,
@@ -196,35 +186,35 @@ class ExperimentsService {
   // Helper methods for UI
   getStatusColor(status: string): string {
     switch (status) {
-      case "draft":
-        return "gray";
-      case "active":
-        return "green";
-      case "paused":
-        return "yellow";
-      case "completed":
-        return "blue";
-      case "archived":
-        return "gray";
+      case 'draft':
+        return 'gray';
+      case 'active':
+        return 'green';
+      case 'paused':
+        return 'yellow';
+      case 'completed':
+        return 'blue';
+      case 'archived':
+        return 'gray';
       default:
-        return "gray";
+        return 'gray';
     }
   }
 
   getStatusIcon(status: string): string {
     switch (status) {
-      case "draft":
-        return "📝";
-      case "active":
-        return "🟢";
-      case "paused":
-        return "⏸️";
-      case "completed":
-        return "✅";
-      case "archived":
-        return "📦";
+      case 'draft':
+        return '📝';
+      case 'active':
+        return '🟢';
+      case 'paused':
+        return '⏸️';
+      case 'completed':
+        return '✅';
+      case 'archived':
+        return '📦';
       default:
-        return "❓";
+        return '❓';
     }
   }
 
@@ -234,9 +224,7 @@ class ExperimentsService {
 
     const diffMs = end.getTime() - start.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const diffHours = Math.floor(
-      (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
-    );
+    const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 
     if (diffDays > 0) {
       return `${diffDays}d ${diffHours}h`;
@@ -252,7 +240,7 @@ class ExperimentsService {
     baselineConversion: number,
     minimumDetectableEffect: number,
     confidenceLevel: number = 95,
-    statisticalPower: number = 80,
+    statisticalPower: number = 80
   ): number {
     // Simplified sample size calculation for A/B testing
     // For more accurate calculations, consider using a dedicated statistics library
@@ -271,7 +259,7 @@ class ExperimentsService {
     const numerator = Math.pow(
       zAlpha * Math.sqrt(2 * pooledP * (1 - pooledP)) +
         zBeta * Math.sqrt(p1 * (1 - p1) + p2 * (1 - p2)),
-      2,
+      2
     );
 
     return Math.ceil(numerator / denominator);
@@ -290,37 +278,34 @@ class ExperimentsService {
 
     // Basic validation
     if (!experiment.name.trim()) {
-      errors.push("Experiment name is required");
+      errors.push('Experiment name is required');
     }
 
     if (!experiment.description.trim()) {
-      errors.push("Description is required");
+      errors.push('Description is required');
     }
 
     if (experiment.variants.length < 2) {
-      errors.push("At least 2 variants are required");
+      errors.push('At least 2 variants are required');
     }
 
     // Variant validation
     const totalAllocation = experiment.variants.reduce(
       (sum, variant) => sum + variant.allocation,
-      0,
+      0
     );
     if (Math.abs(totalAllocation - 100) > 0.01) {
-      errors.push("Variant allocations must sum to 100%");
+      errors.push('Variant allocations must sum to 100%');
     }
 
-    const controlVariants = experiment.variants.filter((v) => v.isControl);
+    const controlVariants = experiment.variants.filter(v => v.isControl);
     if (controlVariants.length !== 1) {
-      errors.push("Exactly one variant must be marked as control");
+      errors.push('Exactly one variant must be marked as control');
     }
 
     // Date validation
-    if (
-      experiment.endDate &&
-      new Date(experiment.endDate) <= new Date(experiment.startDate)
-    ) {
-      errors.push("End date must be after start date");
+    if (experiment.endDate && new Date(experiment.endDate) <= new Date(experiment.startDate)) {
+      errors.push('End date must be after start date');
     }
 
     // Success criteria validation
@@ -328,11 +313,11 @@ class ExperimentsService {
       experiment.successCriteria.confidenceLevel < 80 ||
       experiment.successCriteria.confidenceLevel > 99
     ) {
-      errors.push("Confidence level must be between 80% and 99%");
+      errors.push('Confidence level must be between 80% and 99%');
     }
 
     if (experiment.successCriteria.minimumDetectableEffect <= 0) {
-      errors.push("Minimum detectable effect must be greater than 0");
+      errors.push('Minimum detectable effect must be greater than 0');
     }
 
     return errors;

@@ -1,4 +1,5 @@
-import React from "react";
+import React from 'react';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
 
 export interface DateRange {
   from: Date | undefined;
@@ -11,11 +12,7 @@ interface DatePickerWithRangeProps {
   className?: string;
 }
 
-export function DatePickerWithRange({
-  value,
-  onChange,
-  className = "",
-}: DatePickerWithRangeProps) {
+export function DatePickerWithRange({ value, onChange, className = '' }: DatePickerWithRangeProps) {
   const handleFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = e.target.value ? new Date(e.target.value) : undefined;
     onChange?.({
@@ -33,8 +30,8 @@ export function DatePickerWithRange({
   };
 
   const formatDateForInput = (date: Date | undefined) => {
-    if (!date) return "";
-    return date.toISOString().split("T")[0];
+    if (!date) return '';
+    return date.toISOString().split('T')[0];
   };
 
   return (

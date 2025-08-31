@@ -1,13 +1,7 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import {
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/nextjs";
+import Link from 'next/link';
+import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 
 export default function Header() {
   return (
@@ -25,16 +19,10 @@ export default function Header() {
               >
                 Features
               </Link>
-              <Link
-                href="/pricing"
-                className="text-gray-700 hover:text-blue-600 transition-colors"
-              >
+              <Link href="/pricing" className="text-gray-700 hover:text-blue-600 transition-colors">
                 Pricing
               </Link>
-              <Link
-                href="/about"
-                className="text-gray-700 hover:text-blue-600 transition-colors"
-              >
+              <Link href="/about" className="text-gray-700 hover:text-blue-600 transition-colors">
                 About
               </Link>
             </nav>

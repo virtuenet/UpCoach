@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response } from 'express';
 import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import { validateRequest } from '../middleware/validation';
@@ -33,9 +33,7 @@ router.get('/stats', authenticateToken, async (req: Request, _res: Response) => 
 router.post(
   '/code',
   authenticateToken,
-  [
-    body('programId').optional().isString().isIn(['standard', 'premium', 'coach']),
-  ],
+  [body('programId').optional().isString().isIn(['standard', 'premium', 'coach'])],
   validateRequest,
   async (req: Request, _res: Response) => {
     try {
@@ -63,7 +61,7 @@ router.post(
       logger.error('Failed to create referral code', { error, userId: (req as any).user!.id });
       _res.status(400).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to create referral code',
+        error: (error as Error)?.message || 'Failed to create referral code',
       });
     }
   }
@@ -72,17 +70,15 @@ router.post(
 // Validate a referral code (public endpoint)
 router.post(
   '/validate',
-  [
-    body('code').notEmpty().isString().isLength({ min: 4, max: 20 }),
-  ],
+  [body('code').notEmpty().isString().isLength({ min: 4, max: 20 })],
   validateRequest,
   async (req: Request, _res: Response) => {
     try {
       const { code } = req.body;
-      
+
       // Basic validation without applying
       const referral = await Referral.findByCode(code);
-      
+
       if (!referral) {
         return _res.status(404).json({
           success: false,
@@ -91,14 +87,14 @@ router.post(
       }
 
       const isValid = referral.isActive();
-      
+
       _res.json({
         success: true,
         data: {
           valid: isValid,
           programId: referral.programId,
-          discount: referral.programId === 'standard' ? 20 : 
-                   referral.programId === 'premium' ? 30 : 25,
+          discount:
+            referral.programId === 'standard' ? 20 : referral.programId === 'premium' ? 30 : 25,
           discountType: 'percentage',
         },
       });
@@ -116,9 +112,7 @@ router.post(
 router.post(
   '/apply',
   authenticateToken,
-  [
-    body('code').notEmpty().isString().isLength({ min: 4, max: 20 }),
-  ],
+  [body('code').notEmpty().isString().isLength({ min: 4, max: 20 })],
   validateRequest,
   async (req: Request, _res: Response) => {
     try {
@@ -154,9 +148,7 @@ router.post(
 // Get referral leaderboard
 router.get(
   '/leaderboard',
-  [
-    query('period').optional().isIn(['week', 'month', 'all']),
-  ],
+  [query('period').optional().isIn(['week', 'month', 'all'])],
   validateRequest,
   async (req: Request, _res: Response) => {
     try {
@@ -266,7 +258,7 @@ router.post(
 
       // Get user's active referral code
       const stats = await referralService.getUserReferralStats(Number(userId));
-      
+
       if (!stats.referralCode) {
         return _res.status(400).json({
           success: false,
@@ -304,10 +296,7 @@ router.post(
 router.post(
   '/process-reward',
   authenticateToken,
-  [
-    body('refereeId').isInt(),
-    body('paymentAmount').isFloat({ min: 0 }),
-  ],
+  [body('refereeId').isInt(), body('paymentAmount').isFloat({ min: 0 })],
   validateRequest,
   async (req: Request, _res: Response) => {
     try {

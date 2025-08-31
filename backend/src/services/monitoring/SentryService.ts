@@ -4,7 +4,7 @@
  */
 
 import * as Sentry from '@sentry/node';
-import { ProfilingIntegration } from '@sentry/profiling-node';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { Express, Request, Response, NextFunction } from 'express';
 import { logger } from '../../utils/logger';
 
@@ -46,35 +46,35 @@ export class SentryService {
         dsn: config.dsn,
         environment: config.environment,
         release: config.release || process.env.npm_package_version,
-        
+
         // Performance Monitoring
         tracesSampleRate: config.tracesSampleRate || 0.1,
         profilesSampleRate: config.profilesSampleRate || 0.1,
-        
+
         // Enhanced error tracking
         debug: config.debug || process.env.NODE_ENV === 'development',
-        
+
         integrations: [
           // HTTP integration
           new Sentry.Integrations.Http({ tracing: true }),
           // Express integration
           new Sentry.Integrations.Express(),
           // Profiling
-          new ProfilingIntegration(),
+          nodeProfilingIntegration(),
           // Custom integrations
           ...(config.integrations || []),
         ],
-        
+
         // Data scrubbing
         beforeSend: config.beforeSend || this.beforeSend,
-        
+
         // Breadcrumb configuration
         beforeBreadcrumb: this.beforeBreadcrumb,
-        
+
         // Additional options
         attachStacktrace: true,
         autoSessionTracking: true,
-        
+
         // Transport options
         transportOptions: {
           keepAlive: true,
@@ -101,8 +101,8 @@ export class SentryService {
     }
 
     // Request handler creates a separate execution context
-    app.use(Sentry.Handlers.requestHandler());
-    
+    app.use(Sentry.requestHandler());
+
     // TracingHandler creates a trace for every incoming request
     app.use(Sentry.Handlers.tracingHandler());
   }
@@ -116,15 +116,17 @@ export class SentryService {
       return;
     }
 
-    app.use(Sentry.Handlers.errorHandler({
-      shouldHandleError: (error) => {
-        // Capture 4xx and 5xx errors
-        if (error.status && error.status >= 400) {
+    app.use(
+      Sentry.errorHandler({
+        shouldHandleError: error => {
+          // Capture 4xx and 5xx errors
+          if (error.status && error.status >= 400) {
+            return true;
+          }
           return true;
-        }
-        return true;
-      },
-    }));
+        },
+      })
+    );
   }
 
   /**
@@ -167,7 +169,7 @@ export class SentryService {
    */
   addBreadcrumb(breadcrumb: Sentry.Breadcrumb): void {
     if (!this.initialized) return;
-    
+
     Sentry.addBreadcrumb(breadcrumb);
   }
 
@@ -176,7 +178,7 @@ export class SentryService {
    */
   setUser(user: Sentry.User | null): void {
     if (!this.initialized) return;
-    
+
     Sentry.setUser(user);
   }
 
@@ -185,7 +187,7 @@ export class SentryService {
    */
   setContext(key: string, context: any): void {
     if (!this.initialized) return;
-    
+
     Sentry.setContext(key, context);
   }
 
@@ -194,17 +196,17 @@ export class SentryService {
    */
   setTags(tags: { [key: string]: string }): void {
     if (!this.initialized) return;
-    
+
     Sentry.setTags(tags);
   }
 
   /**
    * Start a transaction for performance monitoring
    */
-  startTransaction(name: string, op: string): any {
+  startTransaction(name: string, op: string): Sentry.Span | null {
     if (!this.initialized) return null;
-    
-    return Sentry.startTransaction({
+
+    return Sentry.startSpan({} as any, {
       name,
       op,
       tags: this.getDefaultTags(),
@@ -220,7 +222,7 @@ export class SentryService {
         return next();
       }
 
-      const transaction = Sentry.getCurrentHub().getScope()?.getTransaction();
+      const transaction = Sentry.getActiveSpan()?.getSpanContext();
       if (transaction) {
         const span = transaction.startChild({
           op: 'http.server',
@@ -242,7 +244,7 @@ export class SentryService {
    */
   async flush(timeout = 2000): Promise<boolean> {
     if (!this.initialized) return true;
-    
+
     try {
       const result = await Sentry.flush(timeout);
       logger.info('Sentry events flushed successfully');
@@ -258,7 +260,7 @@ export class SentryService {
    */
   async close(timeout = 2000): Promise<boolean> {
     if (!this.initialized) return true;
-    
+
     try {
       const result = await Sentry.close(timeout);
       this.initialized = false;
@@ -350,23 +352,20 @@ export class SentryService {
   /**
    * Performance monitoring helper
    */
-  measurePerformance<T>(
-    operation: string,
-    fn: () => Promise<T>
-  ): Promise<T> {
+  measurePerformance<T>(operation: string, fn: () => Promise<T>): Promise<T> {
     if (!this.initialized) {
       return fn();
     }
 
     const transaction = this.startTransaction(operation, 'function');
-    
+
     return fn()
       .then(result => {
         transaction?.setStatus('ok');
         return result;
       })
       .catch(error => {
-        transaction?.setStatus('internal_error');
+        transaction?.setStatus('internalerror');
         throw error;
       })
       .finally(() => {
@@ -377,10 +376,7 @@ export class SentryService {
   /**
    * Wrap async functions with error tracking
    */
-  wrapAsync<T extends (...args: any[]) => Promise<any>>(
-    fn: T,
-    context?: string
-  ): T {
+  wrapAsync<T extends (...args: any[]) => Promise<any>>(fn: T, context?: string): T {
     return (async (...args: Parameters<T>) => {
       try {
         return await fn(...args);

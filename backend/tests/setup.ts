@@ -1,27 +1,51 @@
-import { sequelize } from '../src/models';
+import { Sequelize } from 'sequelize';
 import { logger } from '../src/utils/logger';
+
+// Configure test environment
+process.env.NODE_ENV = 'test';
 
 // Increase timeout for database operations
 jest.setTimeout(30000);
 
-// Suppress console logs during tests
+// Use an in-memory SQLite database for testing
+const sequelize = new Sequelize('sqlite::memory:', {
+  logging: false, // Disable logging
+});
+
+// Import and initialize models dynamically
+async function initializeModels() {
+  const modelPaths = [
+    '../src/models/User',
+    '../src/models/Goal',
+    '../src/models/Task',
+    '../src/models/experiments/Experiment',
+    '../src/models/experiments/ExperimentAssignment',
+    '../src/models/experiments/ExperimentEvent'
+  ];
+
+  for (const modelPath of modelPaths) {
+    try {
+      const modelModule = await import(modelPath);
+      const modelClass = Object.values(modelModule)[0] as any;
+      
+      if (typeof modelClass === 'function' && modelClass.init) {
+        modelClass.init(sequelize);
+      }
+    } catch (error) {
+      console.error(`Failed to initialize model from ${modelPath}:`, error);
+    }
+  }
+}
+
+// Setup before all tests
 beforeAll(async () => {
-  // Set test environment
-  process.env.NODE_ENV = 'test';
-  
-  // Suppress logs
-  logger.silent = true;
-  console.log = jest.fn();
-  console.error = jest.fn();
-  console.warn = jest.fn();
-  
   try {
-    // Ensure database connection
-    await sequelize.authenticate();
-    
-    // Sync database schema (force: true drops existing tables)
+    // Initialize models
+    await initializeModels();
+
+    // Sync all models
     await sequelize.sync({ force: true });
-    
+
     console.info('Test database initialized');
   } catch (error) {
     console.error('Failed to initialize test database:', error);
@@ -29,39 +53,30 @@ beforeAll(async () => {
   }
 });
 
-// Clean up after each test
+// Cleanup after each test
 afterEach(async () => {
   // Clear all mocks
   jest.clearAllMocks();
-  
-  // Clear database tables (but keep schema)
-  const tables = Object.keys(sequelize.models);
-  for (const table of tables) {
-    try {
-      await sequelize.models[table].destroy({ truncate: true, cascade: true });
-    } catch (error) {
-      // Some tables might not support truncate, try delete instead
-      await sequelize.models[table].destroy({ where: {} });
+
+  // Clear database tables
+  const models = sequelize.models;
+  for (const modelName in models) {
+    if (models.hasOwnProperty(modelName)) {
+      await models[modelName].destroy({ truncate: true, cascade: true });
     }
   }
 });
 
-// Clean up after all tests
+// Cleanup after all tests
 afterAll(async () => {
   try {
     // Close database connection
     await sequelize.close();
-    
+
     // Clear any remaining timers
     jest.clearAllTimers();
-    
-    // Force exit if needed
-    setTimeout(() => {
-      process.exit(0);
-    }, 1000);
   } catch (error) {
     console.error('Error during test cleanup:', error);
-    process.exit(1);
   }
 });
 
@@ -69,55 +84,34 @@ afterAll(async () => {
 jest.mock('../src/services/email/UnifiedEmailService', () => ({
   __esModule: true,
   default: {
-    send: jest.fn().mockResolvedValue(true),
-    queue: jest.fn().mockResolvedValue(undefined),
-    sendWithProgress: jest.fn().mockResolvedValue({
-      status: 'sent',
-      progress: 100,
-      message: 'Email sent successfully',
-      timestamp: new Date(),
-    }),
-    getMetrics: jest.fn().mockReturnValue({
-      sent: 0,
-      failed: 0,
-      opened: 0,
-      clicked: 0,
-      bounced: 0,
-      queued: 0,
-    }),
-    verifyConfiguration: jest.fn().mockResolvedValue(true),
-    processQueue: jest.fn().mockResolvedValue(undefined),
-    gracefulShutdown: jest.fn().mockResolvedValue(undefined),
+    send: jest.fn(),
+    queue: jest.fn(),
+    sendWithProgress: jest.fn(),
+    getMetrics: jest.fn(),
+    verifyConfiguration: jest.fn(),
+    processQueue: jest.fn(),
+    gracefulShutdown: jest.fn(),
   },
 }));
 
 jest.mock('../src/services/cache/UnifiedCacheService', () => ({
-  getCacheService: jest.fn().mockReturnValue({
-    get: jest.fn().mockResolvedValue(null),
-    set: jest.fn().mockResolvedValue(true),
-    delete: jest.fn().mockResolvedValue(true),
-    flush: jest.fn().mockResolvedValue(undefined),
-    keys: jest.fn().mockResolvedValue([]),
-    exists: jest.fn().mockResolvedValue(false),
-    expire: jest.fn().mockResolvedValue(true),
-  }),
+  getCacheService: jest.fn(() => ({
+    get: jest.fn(),
+    set: jest.fn(),
+    delete: jest.fn(),
+    flush: jest.fn(),
+    keys: jest.fn(),
+    exists: jest.fn(),
+    expire: jest.fn(),
+  })),
 }));
 
-jest.mock('../src/services/payment/StripeService', () => ({
+jest.mock('../src/services/financial/StripeWebhookService', () => ({
   stripeService: {
-    createCustomer: jest.fn().mockResolvedValue({ id: 'cus_test123' }),
-    createPaymentIntent: jest.fn().mockResolvedValue({ 
-      id: 'pi_test123',
-      client_secret: 'secret_test123',
-    }),
-    createSubscription: jest.fn().mockResolvedValue({
-      id: 'sub_test123',
-      status: 'active',
-    }),
-    cancelSubscription: jest.fn().mockResolvedValue({
-      id: 'sub_test123',
-      status: 'canceled',
-    }),
+    createCustomer: jest.fn(),
+    createPaymentIntent: jest.fn(),
+    createSubscription: jest.fn(),
+    cancelSubscription: jest.fn(),
   },
 }));
 
@@ -145,7 +139,7 @@ export async function createTestCoach(overrides = {}) {
 
   const { CoachProfile } = sequelize.models;
   const profile = await CoachProfile.create({
-    userId: user.id,
+    userId: (user as any).id,
     specialization: ['life', 'career'],
     hourlyRate: 100,
     bio: 'Experienced coach',

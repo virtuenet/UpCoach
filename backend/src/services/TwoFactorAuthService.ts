@@ -80,7 +80,10 @@ class TwoFactorAuthService {
   /**
    * Generate TOTP secret for user
    */
-  async generateTOTPSecret(userId: string, email: string): Promise<{
+  async generateTOTPSecret(
+    userId: string,
+    email: string
+  ): Promise<{
     secret: TOTPSecret;
     qrCode: string;
     backupCodes: string[];
@@ -211,7 +214,7 @@ class TwoFactorAuthService {
         // Update last used timestamp
         config.lastUsedAt = new Date();
         await this.update2FAConfig(userId, config);
-        
+
         logger.info('TOTP verification successful', { userId });
       }
 
@@ -229,7 +232,7 @@ class TwoFactorAuthService {
     try {
       const configKey = `2fa:config:${userId}`;
       await redis.del(configKey);
-      
+
       // Clear trusted devices
       const trustedDevicesKey = `2fa:trusted:${userId}`;
       await redis.del(trustedDevicesKey);
@@ -246,7 +249,7 @@ class TwoFactorAuthService {
    */
   generateBackupCodes(count: number = this.backupCodeCount): string[] {
     const codes: string[] = [];
-    
+
     for (let i = 0; i < count; i++) {
       const code = crypto
         .randomBytes(this.backupCodeLength)
@@ -311,7 +314,10 @@ class TwoFactorAuthService {
       // Notify user if running low on backup codes
       if (config.backupCodes.length <= 2) {
         // TODO: Send notification to user
-        logger.warn('User running low on backup codes', { userId, remaining: config.backupCodes.length });
+        logger.warn('User running low on backup codes', {
+          userId,
+          remaining: config.backupCodes.length,
+        });
       }
 
       return true;
@@ -372,7 +378,7 @@ class TwoFactorAuthService {
         device.lastUsedAt = new Date();
         const trustedDevicesKey = `2fa:trusted:${userId}`;
         await redis.set(trustedDevicesKey, JSON.stringify(devices));
-        
+
         return true;
       }
 
@@ -390,7 +396,7 @@ class TwoFactorAuthService {
     try {
       const devices = await this.getTrustedDevices(userId);
       const filteredDevices = devices.filter(d => d.id !== deviceId);
-      
+
       const trustedDevicesKey = `2fa:trusted:${userId}`;
       await redis.set(trustedDevicesKey, JSON.stringify(filteredDevices));
 
@@ -466,11 +472,7 @@ class TwoFactorAuthService {
   /**
    * Generate device fingerprint
    */
-  generateDeviceFingerprint(
-    userAgent: string,
-    ipAddress: string,
-    additionalData?: string
-  ): string {
+  generateDeviceFingerprint(userAgent: string, ipAddress: string, additionalData?: string): string {
     const data = `${userAgent}:${ipAddress}:${additionalData || ''}`;
     return crypto.createHash('sha256').update(data).digest('hex');
   }

@@ -1,3 +1,4 @@
+import { GlobalErrorBoundary, AsyncErrorBoundary } from './components/ErrorBoundary';
 import { Component, ReactNode } from 'react';
 import ErrorFallback from './ErrorFallback';
 
@@ -34,7 +35,7 @@ export default class RouteErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log error to monitoring service
     console.error('Route Error Boundary caught:', error, errorInfo);
-    
+
     // Call custom error handler if provided
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
@@ -70,7 +71,7 @@ export default class RouteErrorBoundary extends Component<Props, State> {
 
     // Send to monitoring service
     // Example: sendToMonitoring(errorReport);
-    
+
     // Store in session storage for debugging
     try {
       const errors = JSON.parse(sessionStorage.getItem('route_errors') || '[]');

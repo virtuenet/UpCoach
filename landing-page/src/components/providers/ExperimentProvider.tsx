@@ -1,16 +1,7 @@
-"use client";
+'use client';
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  ReactNode,
-} from "react";
-import {
-  getActiveExperiments,
-  markReturningUser,
-} from "@/services/experiments";
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { getActiveExperiments, markReturningUser } from '@/services/experiments';
 
 interface ExperimentContextType {
   experiments: Record<string, string>;

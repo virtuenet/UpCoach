@@ -54,29 +54,31 @@ export interface UnifiedMediaAttributes {
   updatedAt?: Date;
 }
 
-export interface UnifiedMediaCreationAttributes extends Optional<
-  UnifiedMediaAttributes,
-  | 'id'
-  | 'thumbnailUrl'
-  | 'width'
-  | 'height'
-  | 'duration'
-  | 'contentId'
-  | 'folder'
-  | 'alt'
-  | 'caption'
-  | 'metadata'
-  | 'processing'
-  | 'usage'
-  | 'isPublic'
-  | 'isArchived'
-  | 'createdAt'
-  | 'updatedAt'
-> {}
+export interface UnifiedMediaCreationAttributes
+  extends Optional<
+    UnifiedMediaAttributes,
+    | 'id'
+    | 'thumbnailUrl'
+    | 'width'
+    | 'height'
+    | 'duration'
+    | 'contentId'
+    | 'folder'
+    | 'alt'
+    | 'caption'
+    | 'metadata'
+    | 'processing'
+    | 'usage'
+    | 'isPublic'
+    | 'isArchived'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
-export class UnifiedMedia extends Model<UnifiedMediaAttributes, UnifiedMediaCreationAttributes> 
-  implements UnifiedMediaAttributes {
-  
+export class UnifiedMedia
+  extends Model<UnifiedMediaAttributes, UnifiedMediaCreationAttributes>
+  implements UnifiedMediaAttributes
+{
   public id!: string;
   public type!: 'image' | 'video' | 'audio' | 'document' | 'file';
   public name!: string;
@@ -97,10 +99,10 @@ export class UnifiedMedia extends Model<UnifiedMediaAttributes, UnifiedMediaCrea
   public usage?: UnifiedMediaAttributes['usage'];
   public isPublic!: boolean;
   public isArchived!: boolean;
-  
+
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
-  
+
   public static initialize(sequelize: Sequelize): void {
     UnifiedMedia.init(
       {

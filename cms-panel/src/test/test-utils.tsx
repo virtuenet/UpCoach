@@ -8,48 +8,42 @@ interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
   routerProps?: MemoryRouterProps;
 }
 
-const createTestQueryClient = () => new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-      gcTime: 0,
-      staleTime: 0,
+const createTestQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        gcTime: 0,
+        staleTime: 0,
+      },
+      mutations: {
+        retry: false,
+      },
     },
-    mutations: {
-      retry: false,
-    },
-  },
-});
+  });
 
-const AllTheProviders = ({ 
-  children, 
-  routerProps = {} 
-}: { 
+const AllTheProviders = ({
+  children,
+  routerProps = {},
+}: {
   children: React.ReactNode;
   routerProps?: MemoryRouterProps;
 }) => {
   const queryClient = createTestQueryClient();
-  
+
   return (
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter {...routerProps}>
-        {children}
-      </MemoryRouter>
+      <MemoryRouter {...routerProps}>{children}</MemoryRouter>
     </QueryClientProvider>
   );
 };
 
-const customRender = (
-  ui: ReactElement,
-  options?: CustomRenderOptions
-) => {
+const customRender = (ui: ReactElement, options?: CustomRenderOptions) => {
   const { routerProps, ...renderOptions } = options || {};
-  
+
   return render(ui, {
     wrapper: ({ children }) => (
-      <AllTheProviders routerProps={routerProps}>
-        {children}
-      </AllTheProviders>
+      <AllTheProviders routerProps={routerProps}>{children}</AllTheProviders>
     ),
     ...renderOptions,
   });

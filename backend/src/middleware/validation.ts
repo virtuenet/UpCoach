@@ -1,38 +1,46 @@
 import { Request, Response, NextFunction } from 'express';
-import { body, param, query, validationResult, ValidationChain, FieldValidationError } from 'express-validator';
+import {
+  body,
+  param,
+  query,
+  validationResult,
+  ValidationChain,
+  FieldValidationError,
+} from 'express-validator';
 import { logger } from '../utils/logger';
 
 /**
  * Validation middleware to check express-validator results
  */
-export const validateRequest = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void => {
+export const validateRequest = (req: Request, res: Response, next: NextFunction): void => {
   const errors = validationResult(req);
-  
+
   if (!errors.isEmpty()) {
     logger.warn('Validation errors', {
       path: req.path,
       errors: errors.array(),
       ip: req.ip,
     });
-    
+
     __res.status(400).json({
       success: false,
       error: 'Validation failed',
       errors: errors.array().map(err => {
         const fieldError = err as FieldValidationError;
         return {
-          field: 'path' in fieldError ? fieldError.path : 'param' in fieldError ? fieldError.param : 'unknown',
+          field:
+            'path' in fieldError
+              ? fieldError.path
+              : 'param' in fieldError
+                ? fieldError.param
+                : 'unknown',
           message: fieldError.msg,
         };
       }),
     });
     return;
   }
-  
+
   next();
 };
 
@@ -44,15 +52,10 @@ export const handleValidationErrors = validateRequest;
  */
 export const validators = {
   // ID validations
-  id: param('id')
-    .isInt({ min: 1 })
-    .withMessage('ID must be a positive integer')
-    .toInt(),
-    
-  uuid: param('id')
-    .isUUID()
-    .withMessage('Invalid UUID format'),
-    
+  id: param('id').isInt({ min: 1 }).withMessage('ID must be a positive integer').toInt(),
+
+  uuid: param('id').isUUID().withMessage('Invalid UUID format'),
+
   // Pagination validators
   pagination: [
     query('page')
@@ -65,13 +68,9 @@ export const validators = {
       .isInt({ min: 1, max: 100 })
       .withMessage('Limit must be between 1 and 100')
       .toInt(),
-    query('offset')
-      .optional()
-      .isInt({ min: 0 })
-      .withMessage('Offset must be non-negative')
-      .toInt(),
+    query('offset').optional().isInt({ min: 0 }).withMessage('Offset must be non-negative').toInt(),
   ],
-  
+
   // Search validator
   search: query('search')
     .optional()
@@ -79,7 +78,7 @@ export const validators = {
     .isLength({ min: 1, max: 100 })
     .withMessage('Search query must be between 1 and 100 characters')
     .escape(), // Escape HTML entities for XSS prevention
-    
+
   // Date range validators
   dateRange: [
     query('startDate')
@@ -100,7 +99,7 @@ export const validators = {
         return true;
       }),
   ],
-  
+
   // Email validator
   email: body('email')
     .trim()
@@ -109,7 +108,7 @@ export const validators = {
     .withMessage('Invalid email address')
     .isLength({ max: 255 })
     .withMessage('Email must be less than 255 characters'),
-    
+
   // Password validator with enhanced security requirements
   password: body('password')
     .isLength({ min: 8, max: 128 })
@@ -122,23 +121,35 @@ export const validators = {
     .withMessage('Password must contain at least one number')
     .matches(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/)
     .withMessage('Password must contain at least one special character')
-    .custom((value) => {
+    .custom(value => {
       // Check for repeated characters (3+ in a row)
       if (/(.)\1{2,}/.test(value)) {
         throw new Error('Password should not contain 3 or more repeated characters');
       }
       // Check for common passwords
-      const commonPasswords = ['password', '12345678', 'qwerty', 'abc123', 'password123', 'admin', 'letmein'];
+      const commonPasswords = [
+        'password',
+        '12345678',
+        'qwerty',
+        'abc123',
+        'password123',
+        'admin',
+        'letmein',
+      ];
       if (commonPasswords.some(common => value.toLowerCase().includes(common))) {
         throw new Error('Password is too common. Please choose a more unique password');
       }
       // Check for sequential characters
-      if (/(?:abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz|012|123|234|345|456|567|678|789)/i.test(value)) {
+      if (
+        /(?:abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz|012|123|234|345|456|567|678|789)/i.test(
+          value
+        )
+      ) {
         throw new Error('Password should not contain sequential characters');
       }
       return true;
     }),
-    
+
   // New password strength validator (optional, stricter version)
   strongPassword: body('password')
     .isLength({ min: 12, max: 128 })
@@ -151,21 +162,33 @@ export const validators = {
     .withMessage('Strong passwords must contain at least two numbers')
     .matches(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?].*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/)
     .withMessage('Strong passwords must contain at least two special characters')
-    .custom((value) => {
+    .custom(value => {
       // All checks from regular password validator
       if (/(.)\1{2,}/.test(value)) {
         throw new Error('Password should not contain 3 or more repeated characters');
       }
-      const commonPasswords = ['password', '12345678', 'qwerty', 'abc123', 'password123', 'admin', 'letmein'];
+      const commonPasswords = [
+        'password',
+        '12345678',
+        'qwerty',
+        'abc123',
+        'password123',
+        'admin',
+        'letmein',
+      ];
       if (commonPasswords.some(common => value.toLowerCase().includes(common))) {
         throw new Error('Password is too common. Please choose a more unique password');
       }
-      if (/(?:abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz|012|123|234|345|456|567|678|789)/i.test(value)) {
+      if (
+        /(?:abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz|012|123|234|345|456|567|678|789)/i.test(
+          value
+        )
+      ) {
         throw new Error('Password should not contain sequential characters');
       }
       return true;
     }),
-    
+
   // Username validator
   username: body('username')
     .trim()
@@ -173,14 +196,10 @@ export const validators = {
     .withMessage('Username must be between 3 and 30 characters')
     .matches(/^[a-zA-Z0-9_-]+$/)
     .withMessage('Username can only contain letters, numbers, underscores, and hyphens'),
-    
+
   // Phone validator
-  phone: body('phone')
-    .optional()
-    .trim()
-    .isMobilePhone('any')
-    .withMessage('Invalid phone number'),
-    
+  phone: body('phone').optional().trim().isMobilePhone('any').withMessage('Invalid phone number'),
+
   // URL validator
   url: body('url')
     .optional()
@@ -190,13 +209,13 @@ export const validators = {
       require_protocol: true,
     })
     .withMessage('Invalid URL format'),
-    
+
   // Amount validator (for financial transactions)
   amount: body('amount')
     .isFloat({ min: 0, max: 999999.99 })
     .withMessage('Amount must be between 0 and 999999.99')
     .toFloat(),
-    
+
   // Percentage validator
   percentage: body('percentage')
     .isFloat({ min: 0, max: 100 })
@@ -208,7 +227,7 @@ export const validators = {
  * Sanitize input fields to prevent XSS attacks
  */
 export const sanitizeInput = (fields: string[]): ValidationChain[] => {
-  return fields.map(field => 
+  return fields.map(field =>
     body(field)
       .trim()
       .escape()
@@ -236,7 +255,7 @@ export const preventSQLInjection = (req: Request, _res: Response, next: NextFunc
     /(\bOR\b\s*\d+\s*=\s*\d+)/gi,
     /(\bAND\b\s*\d+\s*=\s*\d+)/gi,
   ];
-  
+
   const checkValue = (value: unknown): boolean => {
     if (typeof value === 'string') {
       return suspiciousPatterns.some(pattern => pattern.test(value));
@@ -246,21 +265,21 @@ export const preventSQLInjection = (req: Request, _res: Response, next: NextFunc
     }
     return false;
   };
-  
+
   if (checkValue(req.body) || checkValue(req.query) || checkValue(req.params)) {
     logger.error('Potential SQL injection attempt detected', {
       ip: req.ip,
       path: req.path,
       method: req.method,
     });
-    
+
     __res.status(400).json({
       success: false,
       error: 'Invalid input detected',
     });
     return;
   }
-  
+
   next();
 };
 
@@ -276,7 +295,7 @@ export const validateFileUpload = (
       next();
       return;
     }
-    
+
     // Check file type
     if (!allowedTypes.includes(req.file.mimetype)) {
       __res.status(400).json({
@@ -286,7 +305,7 @@ export const validateFileUpload = (
       });
       return;
     }
-    
+
     // Check file size
     if (req.file.size > maxSize) {
       __res.status(400).json({
@@ -296,14 +315,12 @@ export const validateFileUpload = (
       });
       return;
     }
-    
+
     // Sanitize file name
-    const sanitizedName = req.file.originalname
-      .replace(/[^a-zA-Z0-9.-]/g, '_')
-      .substring(0, 255);
-      
+    const sanitizedName = req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_').substring(0, 255);
+
     req.file.originalname = sanitizedName;
-    
+
     next();
   };
 };
@@ -312,8 +329,5 @@ export const validateFileUpload = (
  * Combine multiple validation chains with error handling
  */
 export const validate = (...validations: ValidationChain[]) => {
-  return [
-    ...validations,
-    validateRequest,
-  ];
-}; 
+  return [...validations, validateRequest];
+};

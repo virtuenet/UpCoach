@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import CoachIntelligenceService from '../../services/coaching/CoachIntelligenceService';
 import CoachMemory from '../../models/coaching/CoachMemory';
@@ -116,10 +118,12 @@ describe('CoachIntelligenceService', () => {
       getOverallHealthScore: jest.fn().mockReturnValue(78),
       getTrendingDirection: jest.fn().mockReturnValue('up'),
       isAtRisk: jest.fn().mockReturnValue(false),
-      getPersonalizedRecommendations: jest.fn().mockReturnValue([
-        'Continue current engagement level',
-        'Focus on completing remaining goal',
-      ]),
+      getPersonalizedRecommendations: jest
+        .fn()
+        .mockReturnValue([
+          'Continue current engagement level',
+          'Focus on completing remaining goal',
+        ]),
     };
 
     // Setup mock KPI tracker
@@ -172,7 +176,8 @@ describe('CoachIntelligenceService', () => {
       MockedCoachMemory.create.mockResolvedValue(mockMemory as any);
       MockedCoachMemory.findAll.mockResolvedValue([]);
 
-      const conversationContent = 'User discussed productivity challenges and wants to set better goals';
+      const conversationContent =
+        'User discussed productivity challenges and wants to set better goals';
       const sessionDuration = 30;
       const userFeedback = { rating: 8, comments: 'Very helpful session' };
 
@@ -223,11 +228,7 @@ describe('CoachIntelligenceService', () => {
 
       // Act & Assert
       await expect(
-        service.processCoachingSession(
-          mockCoachingContext,
-          'test content',
-          30
-        )
+        service.processCoachingSession(mockCoachingContext, 'test content', 30)
       ).rejects.toThrow('Database error');
     });
   });
@@ -280,7 +281,9 @@ describe('CoachIntelligenceService', () => {
 
     it('should limit results to specified count', async () => {
       // Arrange
-      const memories = Array(15).fill(0).map((_, i) => ({ ...mockMemory, id: `memory-${i}` }));
+      const memories = Array(15)
+        .fill(0)
+        .map((_, i) => ({ ...mockMemory, id: `memory-${i}` }));
       MockedCoachMemory.findAll.mockResolvedValue(memories as any);
 
       const currentContext = {
@@ -418,7 +421,12 @@ describe('CoachIntelligenceService', () => {
       MockedUserAnalytics.upsert.mockResolvedValue([mockAnalytics] as any);
 
       // Test different periods
-      const periods: Array<'daily' | 'weekly' | 'monthly' | 'quarterly'> = ['daily', 'weekly', 'monthly', 'quarterly'];
+      const periods: Array<'daily' | 'weekly' | 'monthly' | 'quarterly'> = [
+        'daily',
+        'weekly',
+        'monthly',
+        'quarterly',
+      ];
 
       for (const period of periods) {
         // Act
@@ -459,28 +467,29 @@ describe('CoachIntelligenceService', () => {
       it('should correctly analyze positive sentiment', () => {
         const service = new CoachIntelligenceService();
         const positiveText = 'I feel great and happy about my progress. Excellent session!';
-        
+
         // Access private method for testing
         const sentiment = (service as any).analyzeSentiment(positiveText);
-        
+
         expect(sentiment).toBeGreaterThan(0);
       });
 
       it('should correctly analyze negative sentiment', () => {
         const service = new CoachIntelligenceService();
-        const negativeText = 'I feel terrible and frustrated. This is a bad situation with many problems.';
-        
+        const negativeText =
+          'I feel terrible and frustrated. This is a bad situation with many problems.';
+
         const sentiment = (service as any).analyzeSentiment(negativeText);
-        
+
         expect(sentiment).toBeLessThan(0);
       });
 
       it('should return neutral for balanced text', () => {
         const service = new CoachIntelligenceService();
         const neutralText = 'This is a normal session with regular discussion about topics.';
-        
+
         const sentiment = (service as any).analyzeSentiment(neutralText);
-        
+
         expect(sentiment).toBe(0);
       });
     });
@@ -488,10 +497,11 @@ describe('CoachIntelligenceService', () => {
     describe('extractActionItems', () => {
       it('should extract action items from conversation', () => {
         const service = new CoachIntelligenceService();
-        const content = 'I will complete the task tomorrow. You should review the document. Next week we will discuss progress.';
-        
+        const content =
+          'I will complete the task tomorrow. You should review the document. Next week we will discuss progress.';
+
         const actionItems = (service as any).extractActionItems(content);
-        
+
         expect(actionItems).toBeInstanceOf(Array);
         expect(actionItems.length).toBeGreaterThan(0);
       });
@@ -499,9 +509,9 @@ describe('CoachIntelligenceService', () => {
       it('should handle content without action items', () => {
         const service = new CoachIntelligenceService();
         const content = 'We talked about general topics and had a nice conversation.';
-        
+
         const actionItems = (service as any).extractActionItems(content);
-        
+
         expect(actionItems).toBeInstanceOf(Array);
       });
     });
@@ -511,32 +521,32 @@ describe('CoachIntelligenceService', () => {
         const service = new CoachIntelligenceService();
         const insights = { actionItems: [], followUpNeeded: false, sentiment: 0.5 };
         const userFeedback = { rating: 9 };
-        
+
         const importance = (service as any).calculateMemoryImportance(insights, userFeedback);
-        
+
         expect(importance).toBeGreaterThan(5);
       });
 
       it('should assign higher importance to sessions with action items', () => {
         const service = new CoachIntelligenceService();
         const insights = { actionItems: ['Complete task'], followUpNeeded: true, sentiment: 0.8 };
-        
+
         const importance = (service as any).calculateMemoryImportance(insights);
-        
+
         expect(importance).toBeGreaterThan(5);
       });
 
       it('should cap importance at maximum value', () => {
         const service = new CoachIntelligenceService();
-        const insights = { 
-          actionItems: ['Task 1', 'Task 2'], 
-          followUpNeeded: true, 
-          sentiment: 0.9 
+        const insights = {
+          actionItems: ['Task 1', 'Task 2'],
+          followUpNeeded: true,
+          sentiment: 0.9,
         };
         const userFeedback = { rating: 10 };
-        
+
         const importance = (service as any).calculateMemoryImportance(insights, userFeedback);
-        
+
         expect(importance).toBeLessThanOrEqual(10);
       });
     });
@@ -618,4 +628,4 @@ export const createMockAnalytics = (overrides = {}) => ({
   },
   getOverallHealthScore: jest.fn().mockReturnValue(75),
   ...overrides,
-}); 
+});

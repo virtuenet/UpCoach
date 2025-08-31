@@ -24,22 +24,24 @@ export interface UnifiedTagAttributes {
   updatedAt?: Date;
 }
 
-export interface UnifiedTagCreationAttributes extends Optional<
-  UnifiedTagAttributes,
-  | 'id'
-  | 'color'
-  | 'icon'
-  | 'description'
-  | 'usageCount'
-  | 'isActive'
-  | 'metadata'
-  | 'createdAt'
-  | 'updatedAt'
-> {}
+export interface UnifiedTagCreationAttributes
+  extends Optional<
+    UnifiedTagAttributes,
+    | 'id'
+    | 'color'
+    | 'icon'
+    | 'description'
+    | 'usageCount'
+    | 'isActive'
+    | 'metadata'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
-export class UnifiedTag extends Model<UnifiedTagAttributes, UnifiedTagCreationAttributes> 
-  implements UnifiedTagAttributes {
-  
+export class UnifiedTag
+  extends Model<UnifiedTagAttributes, UnifiedTagCreationAttributes>
+  implements UnifiedTagAttributes
+{
   public id!: string;
   public name!: string;
   public slug!: string;
@@ -50,10 +52,10 @@ export class UnifiedTag extends Model<UnifiedTagAttributes, UnifiedTagCreationAt
   public usageCount!: number;
   public isActive!: boolean;
   public metadata?: UnifiedTagAttributes['metadata'];
-  
+
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
-  
+
   public static initialize(sequelize: Sequelize): void {
     UnifiedTag.init(
       {

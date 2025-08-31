@@ -27,9 +27,7 @@ router.post(
 router.post(
   '/totp/enable',
   authenticate,
-  [
-    body('token').isString().isLength({ min: 6, max: 6 }).withMessage('Invalid token format'),
-  ],
+  [body('token').isString().isLength({ min: 6, max: 6 }).withMessage('Invalid token format')],
   validateRequest,
   TwoFactorAuthController.verifyAndEnableTOTP.bind(TwoFactorAuthController)
 );
@@ -62,9 +60,7 @@ router.post(
 router.post(
   '/backup-codes/regenerate',
   authenticate,
-  [
-    body('token').isString().isLength({ min: 6, max: 8 }).withMessage('Invalid token format'),
-  ],
+  [body('token').isString().isLength({ min: 6, max: 8 }).withMessage('Invalid token format')],
   validateRequest,
   TwoFactorAuthController.regenerateBackupCodes.bind(TwoFactorAuthController)
 );
@@ -79,9 +75,7 @@ router.get(
 router.delete(
   '/trusted-devices/:deviceId',
   authenticate,
-  [
-    param('deviceId').isString().notEmpty().withMessage('Invalid device ID'),
-  ],
+  [param('deviceId').isString().notEmpty().withMessage('Invalid device ID')],
   validateRequest,
   TwoFactorAuthController.removeTrustedDevice.bind(TwoFactorAuthController)
 );
@@ -106,9 +100,7 @@ router.post(
 
 router.post(
   '/webauthn/authenticate/start',
-  [
-    body('userId').optional().isUUID().withMessage('Invalid user ID'),
-  ],
+  [body('userId').optional().isUUID().withMessage('Invalid user ID')],
   validateRequest,
   TwoFactorAuthController.startWebAuthnAuthentication.bind(TwoFactorAuthController)
 );
@@ -132,9 +124,7 @@ router.get(
 router.delete(
   '/webauthn/credentials/:credentialId',
   authenticate,
-  [
-    param('credentialId').isString().notEmpty().withMessage('Invalid credential ID'),
-  ],
+  [param('credentialId').isString().notEmpty().withMessage('Invalid credential ID')],
   validateRequest,
   TwoFactorAuthController.deleteWebAuthnCredential.bind(TwoFactorAuthController)
 );

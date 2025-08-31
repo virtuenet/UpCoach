@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   AppBar,
   Toolbar,
@@ -9,54 +9,54 @@ import {
   Typography,
   IconButton,
   Badge,
-} from "@mui/material";
+} from '@mui/material';
 
 const StyledAppBar = styled(AppBar)(() => ({
-  backgroundColor: "#ffffff",
-  borderBottom: "1px solid #e5e7eb",
-  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-  position: "fixed",
+  backgroundColor: '#ffffff',
+  borderBottom: '1px solid #e5e7eb',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+  position: 'fixed',
   top: 0,
   left: 260,
-  width: "calc(100% - 260px)",
+  width: 'calc(100% - 260px)',
   zIndex: 1100,
 }));
 
 const SearchField = styled(TextField)(() => ({
-  backgroundColor: "#f9fafb",
-  borderRadius: "8px",
-  "& .MuiOutlinedInput-root": {
-    "& fieldset": {
-      border: "1px solid #e5e7eb",
+  backgroundColor: '#f9fafb',
+  borderRadius: '8px',
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': {
+      border: '1px solid #e5e7eb',
     },
-    "&:hover fieldset": {
-      borderColor: "#d1d5db",
+    '&:hover fieldset': {
+      borderColor: '#d1d5db',
     },
-    "&.Mui-focused fieldset": {
-      borderColor: "#3b82f6",
-      borderWidth: "1px",
+    '&.Mui-focused fieldset': {
+      borderColor: '#3b82f6',
+      borderWidth: '1px',
     },
   },
-  "& .MuiInputBase-input": {
-    padding: "8px 16px",
-    fontSize: "14px",
-    color: "#000000",
-    "&::placeholder": {
-      color: "#9ca3af",
+  '& .MuiInputBase-input': {
+    padding: '8px 16px',
+    fontSize: '14px',
+    color: '#000000',
+    '&::placeholder': {
+      color: '#9ca3af',
     },
   },
 }));
 
 const UserInfo = styled(Box)(() => ({
-  display: "flex",
-  alignItems: "center",
-  gap: "12px",
-  padding: "8px 16px",
-  borderRadius: "8px",
-  cursor: "pointer",
-  transition: "background-color 0.2s",
-  "&:hover": {
-    backgroundColor: "#f3f4f6",
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
+  padding: '8px 16px',
+  borderRadius: '8px',
+  cursor: 'pointer',
+  transition: 'background-color 0.2s',
+  '&:hover': {
+    backgroundColor: '#f3f4f6',
   },
 }));
 
@@ -68,8 +68,8 @@ export interface TopBarProps {
 }
 
 const TopBar: React.FC<TopBarProps> = ({
-  userName = "John Doe",
-  userRole = "Admin",
+  userName = 'John Doe',
+  userRole = 'Admin',
   userAvatar,
 }) => {
   return (
@@ -84,7 +84,7 @@ const TopBar: React.FC<TopBarProps> = ({
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <Search sx={{ color: "#9ca3af", fontSize: 20 }} />
+                  <Search sx={{ color: '#9ca3af', fontSize: 20 }} />
                 </InputAdornment>
               ),
             }}
@@ -92,28 +92,28 @@ const TopBar: React.FC<TopBarProps> = ({
         </Box>
 
         {/* Right side actions */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {/* Notifications */}
           <IconButton size="small">
             <Badge badgeContent={3} color="error">
-              <Notifications sx={{ color: "#6b7280" }} />
+              <Notifications sx={{ color: '#6b7280' }} />
             </Badge>
           </IconButton>
 
           {/* Settings */}
           <IconButton size="small">
-            <Settings sx={{ color: "#6b7280" }} />
+            <Settings sx={{ color: '#6b7280' }} />
           </IconButton>
 
           {/* User Profile */}
           <UserInfo>
-            <Box sx={{ textAlign: "right" }}>
+            <Box sx={{ textAlign: 'right' }}>
               <Typography
                 variant="body2"
                 sx={{
-                  color: "#000000",
+                  color: '#000000',
                   fontWeight: 500,
-                  fontSize: "14px",
+                  fontSize: '14px',
                   lineHeight: 1.2,
                 }}
               >
@@ -122,8 +122,8 @@ const TopBar: React.FC<TopBarProps> = ({
               <Typography
                 variant="caption"
                 sx={{
-                  color: "#6b7280",
-                  fontSize: "12px",
+                  color: '#6b7280',
+                  fontSize: '12px',
                 }}
               >
                 {userRole}
@@ -135,8 +135,8 @@ const TopBar: React.FC<TopBarProps> = ({
               sx={{
                 width: 36,
                 height: 36,
-                bgcolor: "#3b82f6",
-                fontSize: "14px",
+                bgcolor: '#3b82f6',
+                fontSize: '14px',
               }}
             >
               {userName.charAt(0)}

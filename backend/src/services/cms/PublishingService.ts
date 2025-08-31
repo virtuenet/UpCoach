@@ -55,7 +55,7 @@ export class PublishingService {
       for (const schedule of schedules) {
         try {
           await this.executeScheduledAction(schedule);
-          
+
           // Mark as processed
           schedule.status = 'completed';
           schedule.processedAt = new Date();
@@ -78,7 +78,7 @@ export class PublishingService {
     if (!article) {
       throw new Error(`Article not found for scheduled content ${schedule.id}`);
     }
-    
+
     const action = schedule.scheduleType;
     const actionData = schedule.metadata || {};
 
@@ -253,10 +253,9 @@ export class PublishingService {
       seoScore -= 20;
     }
 
-    const contentBody = typeof article.content === 'string' 
-      ? article.content 
-      : article.content?.body;
-    
+    const contentBody =
+      typeof article.content === 'string' ? article.content : article.content?.body;
+
     if (!contentBody || contentBody.length < 100) {
       errors.push('Content must be at least 100 characters long');
       seoScore -= 30;
@@ -308,10 +307,7 @@ export class PublishingService {
   }
 
   // Review workflow
-  async submitForReview(
-    articleId: number,
-    reviewerId?: number
-  ): Promise<ContentArticle> {
+  async submitForReview(articleId: number, reviewerId?: number): Promise<ContentArticle> {
     const article = await ContentArticle.findByPk(articleId, {
       include: [{ model: User, as: 'author' }],
     });

@@ -16,22 +16,16 @@ export class TwoFactorAuthController {
   async get2FAStatus(req: AuthenticatedRequest, _res: Response) {
     try {
       const userId = req.user!.id;
-      
-      const [
-        is2FAEnabled,
-        method,
-        config,
-        trustedDevices,
-        webAuthnCredentials,
-        webAuthnStats
-      ] = await Promise.all([
-        twoFactorAuthService.is2FAEnabled(userId),
-        twoFactorAuthService.get2FAMethod(userId),
-        twoFactorAuthService.get2FAConfig(userId),
-        twoFactorAuthService.getTrustedDevices(userId),
-        webAuthnService.getUserCredentials(userId),
-        webAuthnService.getUserCredentialStats(userId),
-      ]);
+
+      const [is2FAEnabled, method, config, trustedDevices, webAuthnCredentials, webAuthnStats] =
+        await Promise.all([
+          twoFactorAuthService.is2FAEnabled(userId),
+          twoFactorAuthService.get2FAMethod(userId),
+          twoFactorAuthService.get2FAConfig(userId),
+          twoFactorAuthService.getTrustedDevices(userId),
+          webAuthnService.getUserCredentials(userId),
+          webAuthnService.getUserCredentialStats(userId),
+        ]);
 
       _res.json({
         enabled: is2FAEnabled,
@@ -146,7 +140,7 @@ export class TwoFactorAuthController {
 
       if (verified) {
         await twoFactorAuthService.clear2FARateLimit(userId);
-        
+
         // Check device trust
         const { trustDevice, deviceName } = req.body;
         if (trustDevice && deviceName) {

@@ -1,3 +1,6 @@
+import React, { Component, ReactNode, ErrorInfo } from 'react';
+import { AlertCircle, RefreshCw } from 'lucide-react';
+import { Button } from '../components/ui/button';
 // Temporarily disabled for development
 // import { sentryFrontend } from '../services/monitoring/sentryInit';
 
@@ -32,7 +35,7 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
+
     // Send to Sentry monitoring (temporarily disabled for development)
     // sentryFrontend.captureException(error, {
     //   component: 'ErrorBoundary',
@@ -67,7 +70,8 @@ export default class ErrorBoundary extends Component<Props, State> {
                 Something went wrong
               </h2>
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                An unexpected error occurred. Please try refreshing the page or contact support if the problem persists.
+                An unexpected error occurred. Please try refreshing the page or contact support if
+                the problem persists.
               </p>
               {import.meta.env.DEV && this.state.error && (
                 <div className="mt-4 text-left">
@@ -91,10 +95,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Try Again
                 </Button>
-                <Button
-                  onClick={() => window.location.href = '/'}
-                  variant="default"
-                >
+                <Button onClick={() => (window.location.href = '/')} variant="default">
                   Go Home
                 </Button>
               </div>

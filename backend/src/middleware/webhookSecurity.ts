@@ -21,54 +21,54 @@ export function verifyWebhookSignature(config: WebhookConfig) {
       algorithm = 'sha256',
       headerName = 'x-webhook-signature',
       maxAge = 300, // 5 minutes default
-      replayProtection = true
+      replayProtection = true,
     } = config;
 
     try {
       // Get signature from header
       const signature = req.headers[headerName] as string;
-      
+
       if (!signature) {
         logger.error(`Missing webhook signature header: ${headerName}`);
-        return _res.status(401).json({ 
+        return _res.status(401).json({
           error: 'Missing signature',
-          code: 'MISSING_SIGNATURE' 
+          code: 'MISSING_SIGNATURE',
         });
       }
 
       // Get timestamp if included in signature
       const timestamp = req.headers['x-webhook-timestamp'] as string;
-      
+
       // Check timestamp to prevent replay attacks
       if (replayProtection && timestamp) {
         const currentTime = Math.floor(Date.now() / 1000);
         const webhookTime = parseInt(timestamp, 10);
-        
+
         if (isNaN(webhookTime)) {
-          return _res.status(401).json({ 
+          return _res.status(401).json({
             error: 'Invalid timestamp',
-            code: 'INVALID_TIMESTAMP' 
+            code: 'INVALID_TIMESTAMP',
           });
         }
-        
+
         const age = currentTime - webhookTime;
         if (age > maxAge || age < -maxAge) {
-          logger.warn('Webhook timestamp outside allowed window', { 
-            age, 
-            maxAge 
+          logger.warn('Webhook timestamp outside allowed window', {
+            age,
+            maxAge,
           });
-          return _res.status(401).json({ 
+          return _res.status(401).json({
             error: 'Request too old',
-            code: 'REQUEST_TOO_OLD' 
+            code: 'REQUEST_TOO_OLD',
           });
         }
       }
 
       // Calculate expected signature
-      const payload = timestamp 
+      const payload = timestamp
         ? `${timestamp}.${JSON.stringify(req.body)}`
         : JSON.stringify(req.body);
-        
+
       const expectedSignature = crypto
         .createHmac(algorithm, secret)
         .update(payload, 'utf8')
@@ -77,20 +77,20 @@ export function verifyWebhookSignature(config: WebhookConfig) {
       // Compare signatures using timing-safe comparison
       const signatureBuffer = Buffer.from(signature, 'hex');
       const expectedBuffer = Buffer.from(expectedSignature, 'hex');
-      
+
       if (signatureBuffer.length !== expectedBuffer.length) {
         logger.error('Signature length mismatch');
-        return _res.status(401).json({ 
+        return _res.status(401).json({
           error: 'Invalid signature',
-          code: 'INVALID_SIGNATURE' 
+          code: 'INVALID_SIGNATURE',
         });
       }
-      
+
       if (!crypto.timingSafeEqual(signatureBuffer, expectedBuffer)) {
         logger.error('Webhook signature verification failed');
-        return _res.status(401).json({ 
+        return _res.status(401).json({
           error: 'Invalid signature',
-          code: 'INVALID_SIGNATURE' 
+          code: 'INVALID_SIGNATURE',
         });
       }
 
@@ -98,15 +98,15 @@ export function verifyWebhookSignature(config: WebhookConfig) {
       if (replayProtection && req.body.id) {
         const eventKey = `webhook:processed:${req.body.id}`;
         const wasProcessed = await redis.get(eventKey);
-        
+
         if (wasProcessed) {
           logger.warn('Duplicate webhook detected', { eventId: req.body.id });
-          return _res.status(200).json({ 
+          return _res.status(200).json({
             received: true,
-            duplicate: true 
+            duplicate: true,
           });
         }
-        
+
         // Mark as processed (expire after 24 hours)
         await redis.setEx(eventKey, 86400, 'true');
       }
@@ -115,9 +115,9 @@ export function verifyWebhookSignature(config: WebhookConfig) {
       next();
     } catch (error) {
       logger.error('Webhook verification error:', error);
-      _res.status(500).json({ 
+      _res.status(500).json({
         error: 'Verification error',
-        code: 'VERIFICATION_ERROR' 
+        code: 'VERIFICATION_ERROR',
       });
     }
   };
@@ -128,35 +128,36 @@ export function verifyWebhookSignature(config: WebhookConfig) {
  */
 export function webhookRateLimit(maxRequests: number = 100, windowMs: number = 60000) {
   const requests = new Map<string, number[]>();
-  
+
   return (req: Request, _res: Response, next: NextFunction) => {
     const identifier = req.ip || 'unknown';
     const now = Date.now();
     const windowStart = now - windowMs;
-    
+
     // Get existing requests for this identifier
     const existingRequests = requests.get(identifier) || [];
-    
+
     // Filter out old requests
     const recentRequests = existingRequests.filter(time => time > windowStart);
-    
+
     if (recentRequests.length >= maxRequests) {
-      logger.warn('Webhook rate limit exceeded', { 
-        identifier, 
-        requests: recentRequests.length 
+      logger.warn('Webhook rate limit exceeded', {
+        identifier,
+        requests: recentRequests.length,
       });
-      return _res.status(429).json({ 
+      return _res.status(429).json({
         error: 'Too many requests',
-        code: 'RATE_LIMIT_EXCEEDED' 
+        code: 'RATE_LIMIT_EXCEEDED',
       });
     }
-    
+
     // Add current request
     recentRequests.push(now);
     requests.set(identifier, recentRequests);
-    
+
     // Clean up old entries periodically
-    if (Math.random() < 0.01) { // 1% chance
+    if (Math.random() < 0.01) {
+      // 1% chance
       for (const [key, times] of requests.entries()) {
         const recent = times.filter(time => time > windowStart);
         if (recent.length === 0) {
@@ -166,7 +167,7 @@ export function webhookRateLimit(maxRequests: number = 100, windowMs: number = 6
         }
       }
     }
-    
+
     next();
   };
 }
@@ -177,7 +178,7 @@ export function webhookRateLimit(maxRequests: number = 100, windowMs: number = 6
 export function webhookIPWhitelist(allowedIPs: string[]) {
   return (req: Request, _res: Response, next: NextFunction) => {
     const clientIP = req.ip || req.connection.remoteAddress || '';
-    
+
     // Check if IP is in whitelist
     const isAllowed = allowedIPs.some(ip => {
       if (ip.includes('/')) {
@@ -186,15 +187,15 @@ export function webhookIPWhitelist(allowedIPs: string[]) {
       }
       return clientIP === ip;
     });
-    
+
     if (!isAllowed) {
       logger.warn('Webhook from unauthorized IP', { clientIP });
-      return _res.status(403).json({ 
+      return _res.status(403).json({
         error: 'Unauthorized IP',
-        code: 'UNAUTHORIZED_IP' 
+        code: 'UNAUTHORIZED_IP',
       });
     }
-    
+
     next();
   };
 }
@@ -205,10 +206,10 @@ export function webhookIPWhitelist(allowedIPs: string[]) {
 function isIPInCIDR(ip: string, cidr: string): boolean {
   const [range, bits] = cidr.split('/');
   const mask = (0xffffffff << (32 - parseInt(bits, 10))) >>> 0;
-  
+
   const ipNum = ipToNumber(ip);
   const rangeNum = ipToNumber(range);
-  
+
   return (ipNum & mask) === (rangeNum & mask);
 }
 
@@ -217,9 +218,11 @@ function isIPInCIDR(ip: string, cidr: string): boolean {
  */
 function ipToNumber(ip: string): number {
   const parts = ip.split('.');
-  return parts.reduce((acc, part, i) => {
-    return acc + (parseInt(part, 10) << (8 * (3 - i)));
-  }, 0) >>> 0;
+  return (
+    parts.reduce((acc, part, i) => {
+      return acc + (parseInt(part, 10) << (8 * (3 - i)));
+    }, 0) >>> 0
+  );
 }
 
 /**
@@ -230,7 +233,7 @@ export async function deduplicateWebhook(
   ttl: number = 86400 // 24 hours default
 ): Promise<boolean> {
   const key = `webhook:event:${eventId}`;
-  
+
   try {
     // Check if event was already processed
     const exists = await redis.get(key);
@@ -238,13 +241,17 @@ export async function deduplicateWebhook(
       logger.info('Duplicate webhook event detected', { eventId });
       return true; // Is duplicate
     }
-    
+
     // Mark as processed
-    await redis.setEx(key, ttl, JSON.stringify({
-      processedAt: new Date().toISOString(),
-      eventId
-    }));
-    
+    await redis.setEx(
+      key,
+      ttl,
+      JSON.stringify({
+        processedAt: new Date().toISOString(),
+        eventId,
+      })
+    );
+
     return false; // Not duplicate
   } catch (error) {
     logger.error('Error checking webhook deduplication', { error, eventId });

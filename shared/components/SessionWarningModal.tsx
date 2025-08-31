@@ -29,10 +29,10 @@ export const SessionWarningModal: React.FC<SessionWarningModalProps> = ({
     const handleWarningShown = (remainingTime: string) => {
       // Store current focus
       previousFocusRef.current = document.activeElement as HTMLElement;
-      
+
       setIsVisible(true);
       setTimeRemaining(remainingTime);
-      
+
       // Focus the extend button when modal opens
       setTimeout(() => {
         extendButtonRef.current?.focus();
@@ -42,11 +42,11 @@ export const SessionWarningModal: React.FC<SessionWarningModalProps> = ({
       if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current);
       }
-      
+
       countdownIntervalRef.current = setInterval(() => {
         const remaining = sessionManager.getRemainingTimeString();
         setTimeRemaining(remaining);
-        
+
         // Update ARIA live region
         const liveRegion = document.getElementById('session-countdown');
         if (liveRegion) {
@@ -57,13 +57,13 @@ export const SessionWarningModal: React.FC<SessionWarningModalProps> = ({
 
     const handleWarningHidden = () => {
       setIsVisible(false);
-      
+
       // Clear countdown
       if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current);
         countdownIntervalRef.current = null;
       }
-      
+
       // Restore previous focus
       if (previousFocusRef.current) {
         previousFocusRef.current.focus();
@@ -73,13 +73,13 @@ export const SessionWarningModal: React.FC<SessionWarningModalProps> = ({
 
     const handleSessionExpired = () => {
       setIsVisible(false);
-      
+
       // Clear countdown
       if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current);
         countdownIntervalRef.current = null;
       }
-      
+
       if (onExpire) {
         onExpire();
       }
@@ -87,7 +87,7 @@ export const SessionWarningModal: React.FC<SessionWarningModalProps> = ({
 
     const handleSessionExtended = () => {
       handleWarningHidden();
-      
+
       if (onExtend) {
         onExtend();
       }
@@ -105,7 +105,7 @@ export const SessionWarningModal: React.FC<SessionWarningModalProps> = ({
       sessionManager.off('warningHidden', handleWarningHidden);
       sessionManager.off('sessionExpired', handleSessionExpired);
       sessionManager.off('sessionExtended', handleSessionExtended);
-      
+
       if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current);
       }
@@ -131,7 +131,7 @@ export const SessionWarningModal: React.FC<SessionWarningModalProps> = ({
 
     const handleFocusTrap = (e: FocusEvent) => {
       if (!modalRef.current || !isVisible) return;
-      
+
       // Keep focus within modal
       if (!modalRef.current.contains(e.target as Node)) {
         e.preventDefault();
@@ -155,7 +155,7 @@ export const SessionWarningModal: React.FC<SessionWarningModalProps> = ({
 
   const handleLogout = () => {
     setIsVisible(false);
-    
+
     if (onExpire) {
       onExpire();
     }
@@ -166,10 +166,7 @@ export const SessionWarningModal: React.FC<SessionWarningModalProps> = ({
   return (
     <>
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-40 bg-black bg-opacity-50"
-        aria-hidden="true"
-      />
+      <div className="fixed inset-0 z-40 bg-black bg-opacity-50" aria-hidden="true" />
 
       {/* Modal */}
       <div
@@ -212,12 +209,8 @@ export const SessionWarningModal: React.FC<SessionWarningModalProps> = ({
 
           {/* Description */}
           <div id="session-warning-description" className="text-center mb-6">
-            <p className="text-gray-600 mb-2">
-              Your session will expire due to inactivity.
-            </p>
-            <p className="text-lg font-semibold text-gray-900">
-              Time remaining: {timeRemaining}
-            </p>
+            <p className="text-gray-600 mb-2">Your session will expire due to inactivity.</p>
+            <p className="text-lg font-semibold text-gray-900">Time remaining: {timeRemaining}</p>
           </div>
 
           {/* Live region for countdown updates */}
@@ -252,21 +245,19 @@ export const SessionWarningModal: React.FC<SessionWarningModalProps> = ({
 
           {/* Help text */}
           <p className="mt-4 text-xs text-center text-gray-500">
-            For your security, sessions expire after {process.env.REACT_APP_SESSION_TIMEOUT ? `${parseInt(process.env.REACT_APP_SESSION_TIMEOUT) / 60000} minutes` : '30 minutes'} of inactivity.
+            For your security, sessions expire after{' '}
+            {process.env.REACT_APP_SESSION_TIMEOUT
+              ? `${parseInt(process.env.REACT_APP_SESSION_TIMEOUT) / 60000} minutes`
+              : '30 minutes'}{' '}
+            of inactivity.
           </p>
         </div>
       </div>
 
       {/* Screen reader announcement for critical moments */}
-      <div
-        role="status"
-        aria-live="assertive"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        {parseInt(timeRemaining) <= 30 && 
-          `Warning: Only ${timeRemaining} remaining. Please choose to continue working or log out.`
-        }
+      <div role="status" aria-live="assertive" aria-atomic="true" className="sr-only">
+        {parseInt(timeRemaining) <= 30 &&
+          `Warning: Only ${timeRemaining} remaining. Please choose to continue working or log out.`}
       </div>
     </>
   );
@@ -277,25 +268,25 @@ export const SessionWarningModal: React.FC<SessionWarningModalProps> = ({
  */
 export function useSessionWarning() {
   const [showModal, setShowModal] = useState(false);
-  
+
   useEffect(() => {
     const sessionManager = getSessionManager();
-    
+
     const handleWarning = () => setShowModal(true);
     const handleHidden = () => setShowModal(false);
     const handleExpired = () => setShowModal(false);
-    
+
     sessionManager.on('warningShown', handleWarning);
     sessionManager.on('warningHidden', handleHidden);
     sessionManager.on('sessionExpired', handleExpired);
-    
+
     return () => {
       sessionManager.off('warningShown', handleWarning);
       sessionManager.off('warningHidden', handleHidden);
       sessionManager.off('sessionExpired', handleExpired);
     };
   }, []);
-  
+
   return showModal;
 }
 

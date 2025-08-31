@@ -270,12 +270,12 @@ export interface IEmailRetryStrategy {
   retryDelay: number; // in milliseconds
   backoffMultiplier?: number;
   maxDelay?: number; // in milliseconds
-  
+
   /**
    * Calculate delay for next retry
    */
   getDelay(attempt: number): number;
-  
+
   /**
    * Determine if should retry based on error
    */
@@ -300,15 +300,10 @@ export class ExponentialBackoffRetryStrategy implements IEmailRetryStrategy {
 
   shouldRetry(error: Error, attempt: number): boolean {
     if (attempt >= this.maxRetries) return false;
-    
+
     // Don't retry for permanent failures
-    const permanentErrors = [
-      'InvalidEmailAddress',
-      'Unsubscribed',
-      'Bounced',
-      'Complained',
-    ];
-    
+    const permanentErrors = ['InvalidEmailAddress', 'Unsubscribed', 'Bounced', 'Complained'];
+
     return !permanentErrors.some(e => error.message.includes(e));
   }
 }

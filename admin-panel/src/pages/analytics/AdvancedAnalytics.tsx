@@ -1,4 +1,6 @@
-import Grid from "@mui/material";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import Grid from '@mui/material';
 import {
   Box,
   Card,
@@ -27,7 +29,7 @@ import {
   IconButton,
   Tooltip,
   LinearProgress,
-} from "@mui/material";
+} from '@mui/material';
 import {
   TrendingUp,
   People,
@@ -41,8 +43,8 @@ import {
   Insights,
   DateRange,
   Download,
-} from "@mui/icons-material";
-import apiService from "../../services/api";
+} from '@mui/icons-material';
+import apiService from '../../services/api';
 import {
   LineChart,
   Line,
@@ -57,7 +59,7 @@ import {
   Legend,
   ResponsiveContainer,
   ReferenceLine,
-} from "recharts";
+} from 'recharts';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -91,9 +93,9 @@ const AdvancedAnalytics: React.FC = () => {
   const [cohortComparison, setCohortComparison] = useState<any>(null);
   const [cohortDialog, setCohortDialog] = useState(false);
   const [newCohort, setNewCohort] = useState({
-    name: "",
-    description: "",
-    type: "signup_date",
+    name: '',
+    description: '',
+    type: 'signup_date',
     startDate: subDays(new Date(), 30),
     endDate: new Date(),
   });
@@ -104,23 +106,21 @@ const AdvancedAnalytics: React.FC = () => {
   const [funnelAnalytics, setFunnelAnalytics] = useState<any[]>([]);
   const [funnelDialog, setFunnelDialog] = useState(false);
   const [newFunnel, setNewFunnel] = useState({
-    name: "",
-    description: "",
+    name: '',
+    description: '',
     steps: [
-      { name: "", eventType: "" },
-      { name: "", eventType: "" },
+      { name: '', eventType: '' },
+      { name: '', eventType: '' },
     ],
   });
 
   // Feature adoption state
   const [featureAdoption, setFeatureAdoption] = useState<any[]>([]);
-  const [selectedFeature, setSelectedFeature] = useState<string>("");
+  const [selectedFeature, setSelectedFeature] = useState<string>('');
 
   // Revenue analytics state
   const [revenueData, setRevenueData] = useState<any[]>([]);
-  const [revenueGroupBy, setRevenueGroupBy] = useState<
-    "day" | "week" | "month"
-  >("day");
+  const [revenueGroupBy, setRevenueGroupBy] = useState<'day' | 'week' | 'month'>('day');
 
   // Date filters
   const [dateRange, setDateRange] = useState({
@@ -135,20 +135,19 @@ const AdvancedAnalytics: React.FC = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [cohortsRes, funnelsRes, featureRes, revenueRes] =
-        await Promise.all([
-          apiService.get("/advanced-analytics/cohorts"),
-          apiService.get("/advanced-analytics/funnels"),
-          apiService.get("/advanced-analytics/feature-adoption"),
-          apiService.get("/advanced-analytics/revenue"),
-        ]);
+      const [cohortsRes, funnelsRes, featureRes, revenueRes] = await Promise.all([
+        apiService.get('/advanced-analytics/cohorts'),
+        apiService.get('/advanced-analytics/funnels'),
+        apiService.get('/advanced-analytics/feature-adoption'),
+        apiService.get('/advanced-analytics/revenue'),
+      ]);
 
       setCohorts(cohortsRes.data.data);
       setFunnels(funnelsRes.data.data);
       setFeatureAdoption(featureRes.data.data);
       setRevenueData(revenueRes.data.data);
     } catch (error) {
-      enqueueSnackbar("Failed to fetch analytics data", { variant: "error" });
+      enqueueSnackbar('Failed to fetch analytics data', { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -157,80 +156,75 @@ const AdvancedAnalytics: React.FC = () => {
   // Cohort functions
   const handleCreateCohort = async () => {
     try {
-      await apiService.post("/advanced-analytics/cohorts", newCohort);
-      enqueueSnackbar("Cohort created successfully", { variant: "success" });
+      await apiService.post('/advanced-analytics/cohorts', newCohort);
+      enqueueSnackbar('Cohort created successfully', { variant: 'success' });
       setCohortDialog(false);
       setNewCohort({
-        name: "",
-        description: "",
-        type: "signup_date",
+        name: '',
+        description: '',
+        type: 'signup_date',
         startDate: subDays(new Date(), 30),
         endDate: new Date(),
       });
       fetchData();
     } catch (error) {
-      enqueueSnackbar("Failed to create cohort", { variant: "error" });
+      enqueueSnackbar('Failed to create cohort', { variant: 'error' });
     }
   };
 
   const handleCompareCohorts = async (metricType: string) => {
     if (selectedCohorts.length < 2) {
-      enqueueSnackbar("Select at least 2 cohorts to compare", {
-        variant: "warning",
+      enqueueSnackbar('Select at least 2 cohorts to compare', {
+        variant: 'warning',
       });
       return;
     }
 
     try {
-      const response = await apiService.post(
-        "/advanced-analytics/cohorts/compare",
-        {
-          cohortIds: selectedCohorts,
-          metricType,
-        },
-      );
+      const response = await apiService.post('/advanced-analytics/cohorts/compare', {
+        cohortIds: selectedCohorts,
+        metricType,
+      });
       setCohortComparison({ data: response.data.data, type: metricType });
     } catch (error) {
-      enqueueSnackbar("Failed to compare cohorts", { variant: "error" });
+      enqueueSnackbar('Failed to compare cohorts', { variant: 'error' });
     }
   };
 
   // Funnel functions
   const handleCreateFunnel = async () => {
     try {
-      await apiService.post("/advanced-analytics/funnels", newFunnel);
-      enqueueSnackbar("Funnel created successfully", { variant: "success" });
+      await apiService.post('/advanced-analytics/funnels', newFunnel);
+      enqueueSnackbar('Funnel created successfully', { variant: 'success' });
       setFunnelDialog(false);
       setNewFunnel({
-        name: "",
-        description: "",
+        name: '',
+        description: '',
         steps: [
-          { name: "", eventType: "" },
-          { name: "", eventType: "" },
+          { name: '', eventType: '' },
+          { name: '', eventType: '' },
         ],
       });
       fetchData();
     } catch (error) {
-      enqueueSnackbar("Failed to create funnel", { variant: "error" });
+      enqueueSnackbar('Failed to create funnel', { variant: 'error' });
     }
   };
 
   const handleSelectFunnel = async (funnelId: number) => {
     try {
       setSelectedFunnel(funnelId);
-      const response = await apiService.get(
-        `/advanced-analytics/funnels/${funnelId}/analytics`,
-      );
+      const response = await apiService.get(`/advanced-analytics/funnels/${funnelId}/analytics`);
       setFunnelAnalytics(response.data.data);
     } catch (error) {
-      enqueueSnackbar("Failed to fetch funnel analytics", { variant: "error" });
+      enqueueSnackbar('Failed to fetch funnel analytics', { variant: 'error' });
     }
   };
 
   const addFunnelStep = () => {
     setNewFunnel({
       ...newFunnel,
-      steps: [...newFunnel.steps, { name: "", eventType: "" }],
+      steps: [...newFunnel.steps, { name: '', eventType: '' }],
     });
   };
 
@@ -243,7 +237,7 @@ const AdvancedAnalytics: React.FC = () => {
   // Revenue functions
   const fetchRevenueData = async () => {
     try {
-      const response = await apiService.get("/advanced-analytics/revenue", {
+      const response = await apiService.get('/advanced-analytics/revenue', {
         params: {
           startDate: dateRange.startDate.toISOString(),
           endDate: dateRange.endDate.toISOString(),
@@ -252,7 +246,7 @@ const AdvancedAnalytics: React.FC = () => {
       });
       setRevenueData(response.data.data);
     } catch (error) {
-      enqueueSnackbar("Failed to fetch revenue data", { variant: "error" });
+      enqueueSnackbar('Failed to fetch revenue data', { variant: 'error' });
     }
   };
 
@@ -263,17 +257,17 @@ const AdvancedAnalytics: React.FC = () => {
   }, [dateRange, revenueGroupBy, tabValue]);
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
     }).format(value);
   };
 
-  const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7c7c", "#8dd1e1"];
+  const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1'];
 
   if (loading) {
     return (
-      <Box sx={{ width: "100%", mt: 4 }}>
+      <Box sx={{ width: '100%', mt: 4 }}>
         <LinearProgress />
       </Box>
     );
@@ -286,45 +280,25 @@ const AdvancedAnalytics: React.FC = () => {
           Advanced Analytics
         </Typography>
 
-        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={tabValue} onChange={(_e, v) => setTabValue(v)}>
-            <Tab
-              label="Cohort Analysis"
-              icon={<People />}
-              iconPosition="start"
-            />
-            <Tab
-              label="Funnel Analysis"
-              icon={<Timeline />}
-              iconPosition="start"
-            />
-            <Tab
-              label="Feature Adoption"
-              icon={<Insights />}
-              iconPosition="start"
-            />
-            <Tab
-              label="Revenue Analytics"
-              icon={<AttachMoney />}
-              iconPosition="start"
-            />
+            <Tab label="Cohort Analysis" icon={<People />} iconPosition="start" />
+            <Tab label="Funnel Analysis" icon={<Timeline />} iconPosition="start" />
+            <Tab label="Feature Adoption" icon={<Insights />} iconPosition="start" />
+            <Tab label="Revenue Analytics" icon={<AttachMoney />} iconPosition="start" />
           </Tabs>
         </Box>
 
         {/* Cohort Analysis Tab */}
         <TabPanel value={tabValue} index={0}>
-          <Box sx={{ mb: 3, display: "flex", gap: 2 }}>
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={() => setCohortDialog(true)}
-            >
+          <Box sx={{ mb: 3, display: 'flex', gap: 2 }}>
+            <Button variant="contained" startIcon={<Add />} onClick={() => setCohortDialog(true)}>
               Create Cohort
             </Button>
             <Button
               variant="outlined"
               startIcon={<CompareArrows />}
-              onClick={() => handleCompareCohorts("retention")}
+              onClick={() => handleCompareCohorts('retention')}
               disabled={selectedCohorts.length < 2}
             >
               Compare Retention
@@ -332,7 +306,7 @@ const AdvancedAnalytics: React.FC = () => {
             <Button
               variant="outlined"
               startIcon={<AttachMoney />}
-              onClick={() => handleCompareCohorts("revenue")}
+              onClick={() => handleCompareCohorts('revenue')}
               disabled={selectedCohorts.length < 2}
             >
               Compare Revenue
@@ -356,19 +330,17 @@ const AdvancedAnalytics: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {cohorts.map((cohort) => (
+                {cohorts.map(cohort => (
                   <TableRow key={cohort.id}>
                     <TableCell padding="checkbox">
                       <input
                         type="checkbox"
                         checked={selectedCohorts.includes(cohort.id)}
-                        onChange={(e) => {
+                        onChange={e => {
                           if (e.target.checked) {
                             setSelectedCohorts([...selectedCohorts, cohort.id]);
                           } else {
-                            setSelectedCohorts(
-                              selectedCohorts.filter((id) => id !== cohort.id),
-                            );
+                            setSelectedCohorts(selectedCohorts.filter(id => id !== cohort.id));
                           }
                         }}
                       />
@@ -386,18 +358,12 @@ const AdvancedAnalytics: React.FC = () => {
                     </TableCell>
                     <TableCell>{cohort.current_user_count || 0}</TableCell>
                     <TableCell>
-                      {cohort.day7_retention
-                        ? `${cohort.day7_retention}%`
-                        : "-"}
+                      {cohort.day7_retention ? `${cohort.day7_retention}%` : '-'}
                     </TableCell>
                     <TableCell>
-                      {cohort.day30_retention
-                        ? `${cohort.day30_retention}%`
-                        : "-"}
+                      {cohort.day30_retention ? `${cohort.day30_retention}%` : '-'}
                     </TableCell>
-                    <TableCell>
-                      {format(parseISO(cohort.created_at), "MMM dd, yyyy")}
-                    </TableCell>
+                    <TableCell>{format(parseISO(cohort.created_at), 'MMM dd, yyyy')}</TableCell>
                     <TableCell>
                       <Tooltip title="View Retention">
                         <IconButton
@@ -426,35 +392,29 @@ const AdvancedAnalytics: React.FC = () => {
                   <LineChart data={cohortComparison.data}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
-                      dataKey={
-                        cohortComparison.type === "retention"
-                          ? "period_number"
-                          : "date"
-                      }
+                      dataKey={cohortComparison.type === 'retention' ? 'period_number' : 'date'}
                     />
                     <YAxis />
                     <RechartsTooltip />
                     <Legend />
-                    {Array.from(
-                      new Set(
-                        cohortComparison.data.map((d: any) => d.cohort_name),
-                      ),
-                    ).map((cohortName, index) => (
-                      <Line
-                        key={cohortName as string}
-                        type="monotone"
-                        dataKey={
-                          cohortComparison.type === "retention"
-                            ? "retention_rate"
-                            : "total_revenue"
-                        }
-                        data={cohortComparison.data.filter(
-                          (d: any) => d.cohort_name === cohortName,
-                        )}
-                        name={cohortName as string}
-                        stroke={COLORS[index % COLORS.length]}
-                      />
-                    ))}
+                    {Array.from(new Set(cohortComparison.data.map((d: any) => d.cohort_name))).map(
+                      (cohortName, index) => (
+                        <Line
+                          key={cohortName as string}
+                          type="monotone"
+                          dataKey={
+                            cohortComparison.type === 'retention'
+                              ? 'retention_rate'
+                              : 'total_revenue'
+                          }
+                          data={cohortComparison.data.filter(
+                            (d: any) => d.cohort_name === cohortName
+                          )}
+                          name={cohortName as string}
+                          stroke={COLORS[index % COLORS.length]}
+                        />
+                      )
+                    )}
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -465,11 +425,7 @@ const AdvancedAnalytics: React.FC = () => {
         {/* Funnel Analysis Tab */}
         <TabPanel value={tabValue} index={1}>
           <Box sx={{ mb: 3 }}>
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={() => setFunnelDialog(true)}
-            >
+            <Button variant="contained" startIcon={<Add />} onClick={() => setFunnelDialog(true)}>
               Create Funnel
             </Button>
           </Box>
@@ -481,26 +437,23 @@ const AdvancedAnalytics: React.FC = () => {
                   <Typography variant="h6" gutterBottom>
                     Funnels
                   </Typography>
-                  {funnels.map((funnel) => (
+                  {funnels.map(funnel => (
                     <Box
                       key={funnel.id}
                       sx={{
                         p: 2,
                         mb: 1,
-                        border: "1px solid",
-                        borderColor:
-                          selectedFunnel === funnel.id
-                            ? "primary.main"
-                            : "divider",
+                        border: '1px solid',
+                        borderColor: selectedFunnel === funnel.id ? 'primary.main' : 'divider',
                         borderRadius: 1,
-                        cursor: "pointer",
+                        cursor: 'pointer',
                       }}
                       onClick={() => handleSelectFunnel(funnel.id)}
                     >
                       <Typography variant="subtitle2">{funnel.name}</Typography>
                       <Typography variant="caption" color="textSecondary">
-                        {funnel.total_entries || 0} entries •{" "}
-                        {funnel.total_completions || 0} completions
+                        {funnel.total_entries || 0} entries • {funnel.total_completions || 0}{' '}
+                        completions
                       </Typography>
                     </Box>
                   ))}
@@ -547,20 +500,16 @@ const AdvancedAnalytics: React.FC = () => {
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {funnelAnalytics.map((step) => (
+                          {funnelAnalytics.map(step => (
                             <TableRow key={step.step}>
                               <TableCell>{step.step}</TableCell>
                               <TableCell align="right">{step.users}</TableCell>
-                              <TableCell align="right">
-                                {step.conversionRate}%
-                              </TableCell>
-                              <TableCell align="right">
-                                {step.dropoffRate}%
-                              </TableCell>
+                              <TableCell align="right">{step.conversionRate}%</TableCell>
+                              <TableCell align="right">{step.dropoffRate}%</TableCell>
                               <TableCell align="right">
                                 {step.avgTimeToComplete
                                   ? `${Math.round(step.avgTimeToComplete / 60)} min`
-                                  : "-"}
+                                  : '-'}
                               </TableCell>
                             </TableRow>
                           ))}
@@ -588,31 +537,27 @@ const AdvancedAnalytics: React.FC = () => {
                   <YAxis />
                   <RechartsTooltip />
                   <Legend />
-                  {Array.from(
-                    new Set(featureAdoption.map((d) => d.feature_name)),
-                  ).map((feature, index) => (
-                    <Line
-                      key={feature as string}
-                      type="monotone"
-                      dataKey="unique_users"
-                      data={featureAdoption.filter(
-                        (d) => d.feature_name === feature,
-                      )}
-                      name={feature as string}
-                      stroke={COLORS[index % COLORS.length]}
-                    />
-                  ))}
+                  {Array.from(new Set(featureAdoption.map(d => d.feature_name))).map(
+                    (feature, index) => (
+                      <Line
+                        key={feature as string}
+                        type="monotone"
+                        dataKey="unique_users"
+                        data={featureAdoption.filter(d => d.feature_name === feature)}
+                        name={feature as string}
+                        stroke={COLORS[index % COLORS.length]}
+                      />
+                    )
+                  )}
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
           <Grid container spacing={3} sx={{ mt: 2 }}>
-            {Array.from(
-              new Set(featureAdoption.map((d) => d.feature_name)),
-            ).map((feature) => {
+            {Array.from(new Set(featureAdoption.map(d => d.feature_name))).map(feature => {
               const latestData = featureAdoption
-                .filter((d) => d.feature_name === feature)
+                .filter(d => d.feature_name === feature)
                 .sort((a, b) => b.date.localeCompare(a.date))[0];
 
               return (
@@ -644,28 +589,24 @@ const AdvancedAnalytics: React.FC = () => {
 
         {/* Revenue Analytics Tab */}
         <TabPanel value={tabValue} index={3}>
-          <Box sx={{ mb: 3, display: "flex", gap: 2, alignItems: "center" }}>
+          <Box sx={{ mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
             <DatePicker
               label="Start Date"
               value={dateRange.startDate}
-              onChange={(date) =>
-                date && setDateRange({ ...dateRange, startDate: date })
-              }
-              renderInput={(params) => <TextField {...params} size="small" />}
+              onChange={date => date && setDateRange({ ...dateRange, startDate: date })}
+              renderInput={params => <TextField {...params} size="small" />}
             />
             <DatePicker
               label="End Date"
               value={dateRange.endDate}
-              onChange={(date) =>
-                date && setDateRange({ ...dateRange, endDate: date })
-              }
-              renderInput={(params) => <TextField {...params} size="small" />}
+              onChange={date => date && setDateRange({ ...dateRange, endDate: date })}
+              renderInput={params => <TextField {...params} size="small" />}
             />
             <FormControl size="small" sx={{ minWidth: 120 }}>
               <InputLabel>Group By</InputLabel>
               <Select
                 value={revenueGroupBy}
-                onChange={(e) => setRevenueGroupBy(e.target.value as any)}
+                onChange={e => setRevenueGroupBy(e.target.value as any)}
                 label="Group By"
               >
                 <MenuItem value="day">Day</MenuItem>
@@ -685,15 +626,9 @@ const AdvancedAnalytics: React.FC = () => {
                   <ResponsiveContainer width="100%" height={400}>
                     <AreaChart data={revenueData}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey={
-                          revenueGroupBy === "day" ? "date" : revenueGroupBy
-                        }
-                      />
-                      <YAxis tickFormatter={(value) => `$${value}`} />
-                      <RechartsTooltip
-                        formatter={(value: number) => formatCurrency(value)}
-                      />
+                      <XAxis dataKey={revenueGroupBy === 'day' ? 'date' : revenueGroupBy} />
+                      <YAxis tickFormatter={value => `$${value}`} />
+                      <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
                       <Legend />
                       <Area
                         type="monotone"
@@ -734,21 +669,10 @@ const AdvancedAnalytics: React.FC = () => {
                   <ResponsiveContainer width="100%" height={300}>
                     <LineChart data={revenueData}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey={
-                          revenueGroupBy === "day" ? "date" : revenueGroupBy
-                        }
-                      />
-                      <YAxis tickFormatter={(value) => `$${value}`} />
-                      <RechartsTooltip
-                        formatter={(value: number) => formatCurrency(value)}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="avg_arpu"
-                        stroke="#8884d8"
-                        name="ARPU"
-                      />
+                      <XAxis dataKey={revenueGroupBy === 'day' ? 'date' : revenueGroupBy} />
+                      <YAxis tickFormatter={value => `$${value}`} />
+                      <RechartsTooltip formatter={(value: number) => formatCurrency(value)} />
+                      <Line type="monotone" dataKey="avg_arpu" stroke="#8884d8" name="ARPU" />
                     </LineChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -764,15 +688,9 @@ const AdvancedAnalytics: React.FC = () => {
                   <ResponsiveContainer width="100%" height={300}>
                     <LineChart data={revenueData}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey={
-                          revenueGroupBy === "day" ? "date" : revenueGroupBy
-                        }
-                      />
-                      <YAxis tickFormatter={(value) => `${value}%`} />
-                      <RechartsTooltip
-                        formatter={(value: number) => `${value}%`}
-                      />
+                      <XAxis dataKey={revenueGroupBy === 'day' ? 'date' : revenueGroupBy} />
+                      <YAxis tickFormatter={value => `${value}%`} />
+                      <RechartsTooltip formatter={(value: number) => `${value}%`} />
                       <ReferenceLine y={0} stroke="#666" />
                       <Line
                         type="monotone"
@@ -789,30 +707,21 @@ const AdvancedAnalytics: React.FC = () => {
         </TabPanel>
 
         {/* Create Cohort Dialog */}
-        <Dialog
-          open={cohortDialog}
-          onClose={() => setCohortDialog(false)}
-          maxWidth="sm"
-          fullWidth
-        >
+        <Dialog open={cohortDialog} onClose={() => setCohortDialog(false)} maxWidth="sm" fullWidth>
           <DialogTitle>Create New Cohort</DialogTitle>
           <DialogContent>
             <TextField
               fullWidth
               label="Cohort Name"
               value={newCohort.name}
-              onChange={(e) =>
-                setNewCohort({ ...newCohort, name: e.target.value })
-              }
+              onChange={e => setNewCohort({ ...newCohort, name: e.target.value })}
               margin="normal"
             />
             <TextField
               fullWidth
               label="Description"
               value={newCohort.description}
-              onChange={(e) =>
-                setNewCohort({ ...newCohort, description: e.target.value })
-              }
+              onChange={e => setNewCohort({ ...newCohort, description: e.target.value })}
               margin="normal"
               multiline
               rows={2}
@@ -821,9 +730,7 @@ const AdvancedAnalytics: React.FC = () => {
               <InputLabel>Cohort Type</InputLabel>
               <Select
                 value={newCohort.type}
-                onChange={(e) =>
-                  setNewCohort({ ...newCohort, type: e.target.value as any })
-                }
+                onChange={e => setNewCohort({ ...newCohort, type: e.target.value as any })}
                 label="Cohort Type"
               >
                 <MenuItem value="signup_date">Signup Date</MenuItem>
@@ -832,27 +739,19 @@ const AdvancedAnalytics: React.FC = () => {
                 <MenuItem value="custom">Custom</MenuItem>
               </Select>
             </FormControl>
-            {newCohort.type === "signup_date" && (
+            {newCohort.type === 'signup_date' && (
               <Box sx={{ mt: 2 }}>
                 <DatePicker
                   label="Start Date"
                   value={newCohort.startDate}
-                  onChange={(date) =>
-                    date && setNewCohort({ ...newCohort, startDate: date })
-                  }
-                  renderInput={(params) => (
-                    <TextField {...params} fullWidth margin="normal" />
-                  )}
+                  onChange={date => date && setNewCohort({ ...newCohort, startDate: date })}
+                  renderInput={params => <TextField {...params} fullWidth margin="normal" />}
                 />
                 <DatePicker
                   label="End Date"
                   value={newCohort.endDate}
-                  onChange={(date) =>
-                    date && setNewCohort({ ...newCohort, endDate: date })
-                  }
-                  renderInput={(params) => (
-                    <TextField {...params} fullWidth margin="normal" />
-                  )}
+                  onChange={date => date && setNewCohort({ ...newCohort, endDate: date })}
+                  renderInput={params => <TextField {...params} fullWidth margin="normal" />}
                 />
               </Box>
             )}
@@ -866,30 +765,21 @@ const AdvancedAnalytics: React.FC = () => {
         </Dialog>
 
         {/* Create Funnel Dialog */}
-        <Dialog
-          open={funnelDialog}
-          onClose={() => setFunnelDialog(false)}
-          maxWidth="md"
-          fullWidth
-        >
+        <Dialog open={funnelDialog} onClose={() => setFunnelDialog(false)} maxWidth="md" fullWidth>
           <DialogTitle>Create New Funnel</DialogTitle>
           <DialogContent>
             <TextField
               fullWidth
               label="Funnel Name"
               value={newFunnel.name}
-              onChange={(e) =>
-                setNewFunnel({ ...newFunnel, name: e.target.value })
-              }
+              onChange={e => setNewFunnel({ ...newFunnel, name: e.target.value })}
               margin="normal"
             />
             <TextField
               fullWidth
               label="Description"
               value={newFunnel.description}
-              onChange={(e) =>
-                setNewFunnel({ ...newFunnel, description: e.target.value })
-              }
+              onChange={e => setNewFunnel({ ...newFunnel, description: e.target.value })}
               margin="normal"
               multiline
               rows={2}
@@ -898,33 +788,24 @@ const AdvancedAnalytics: React.FC = () => {
               Funnel Steps
             </Typography>
             {newFunnel.steps.map((step, index) => (
-              <Box key={index} sx={{ display: "flex", gap: 2, mb: 2 }}>
+              <Box key={index} sx={{ display: 'flex', gap: 2, mb: 2 }}>
                 <TextField
                   fullWidth
                   label={`Step ${index + 1} Name`}
                   value={step.name}
-                  onChange={(e) =>
-                    updateFunnelStep(index, "name", e.target.value)
-                  }
+                  onChange={e => updateFunnelStep(index, 'name', e.target.value)}
                   size="small"
                 />
                 <TextField
                   fullWidth
                   label="Event Type"
                   value={step.eventType}
-                  onChange={(e) =>
-                    updateFunnelStep(index, "eventType", e.target.value)
-                  }
+                  onChange={e => updateFunnelStep(index, 'eventType', e.target.value)}
                   size="small"
                 />
               </Box>
             ))}
-            <Button
-              variant="outlined"
-              startIcon={<Add />}
-              onClick={addFunnelStep}
-              size="small"
-            >
+            <Button variant="outlined" startIcon={<Add />} onClick={addFunnelStep} size="small">
               Add Step
             </Button>
           </DialogContent>

@@ -19,12 +19,12 @@ export default defineConfig({
         'dist/',
         '.eslintrc.cjs',
         'src/main.tsx',
-        'src/vite-env.d.ts'
-      ]
+        'src/vite-env.d.ts',
+      ],
     },
     css: true,
     mockReset: true,
-    restoreMocks: true
+    restoreMocks: true,
   },
   resolve: {
     alias: {

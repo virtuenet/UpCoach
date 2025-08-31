@@ -2,7 +2,7 @@
 
 /**
  * Test Report Generator
- * 
+ *
  * Generates a comprehensive HTML dashboard with test results,
  * coverage metrics, and performance trends.
  */
@@ -19,19 +19,19 @@ class TestReportGenerator {
         unit: { total: 0, passed: 0, failed: 0, skipped: 0 },
         scenarios: { total: 0, passed: 0, failed: 0, skipped: 0 },
         performance: { total: 0, passed: 0, failed: 0, skipped: 0 },
-        coverage: { lines: 0, branches: 0, functions: 0, statements: 0 }
+        coverage: { lines: 0, branches: 0, functions: 0, statements: 0 },
       },
       backend: {
         unit: { total: 0, passed: 0, failed: 0, skipped: 0 },
         integration: { total: 0, passed: 0, failed: 0, skipped: 0 },
         scenarios: { total: 0, passed: 0, failed: 0, skipped: 0 },
         performance: { total: 0, passed: 0, failed: 0, skipped: 0 },
-        coverage: { lines: 0, branches: 0, functions: 0, statements: 0 }
+        coverage: { lines: 0, branches: 0, functions: 0, statements: 0 },
       },
       performance: {
         landingPage: {},
-        aiServices: {}
-      }
+        aiServices: {},
+      },
     };
   }
 
@@ -43,13 +43,13 @@ class TestReportGenerator {
 
     // Landing Page Tests
     await this.runLandingPageTests();
-    
+
     // Backend Tests
     await this.runBackendTests();
-    
+
     // Performance Results
     this.collectPerformanceResults();
-    
+
     // Coverage Reports
     this.collectCoverageReports();
   }
@@ -59,20 +59,19 @@ class TestReportGenerator {
    */
   async runLandingPageTests() {
     console.log('🌐 Running Landing Page tests...');
-    
+
     try {
       const testOutput = execSync(
         'cd landing-page && npm test -- --json --outputFile=test-results.json',
         { encoding: 'utf8', stdio: 'pipe' }
       );
-      
+
       const results = JSON.parse(
         fs.readFileSync(path.join(__dirname, '../landing-page/test-results.json'), 'utf8')
       );
-      
+
       // Parse test results
       this.parseJestResults(results, 'landingPage');
-      
     } catch (error) {
       console.error('❌ Landing page tests failed:', error.message);
     }
@@ -83,20 +82,19 @@ class TestReportGenerator {
    */
   async runBackendTests() {
     console.log('🤖 Running Backend tests...');
-    
+
     try {
       const testOutput = execSync(
         'cd backend && npm test -- --json --outputFile=test-results.json',
         { encoding: 'utf8', stdio: 'pipe' }
       );
-      
+
       const results = JSON.parse(
         fs.readFileSync(path.join(__dirname, '../backend/test-results.json'), 'utf8')
       );
-      
+
       // Parse test results
       this.parseJestResults(results, 'backend');
-      
     } catch (error) {
       console.error('❌ Backend tests failed:', error.message);
     }
@@ -107,11 +105,11 @@ class TestReportGenerator {
    */
   parseJestResults(results, category) {
     const testResults = results.testResults || [];
-    
+
     testResults.forEach(testFile => {
       const fileName = path.basename(testFile.name);
       let testType = 'unit';
-      
+
       if (fileName.includes('scenario') || fileName.includes('Scenario')) {
         testType = 'scenarios';
       } else if (fileName.includes('integration') || fileName.includes('Integration')) {
@@ -119,7 +117,7 @@ class TestReportGenerator {
       } else if (fileName.includes('performance') || fileName.includes('Performance')) {
         testType = 'performance';
       }
-      
+
       this.results[category][testType].total += testFile.numTotalTests;
       this.results[category][testType].passed += testFile.numPassingTests;
       this.results[category][testType].failed += testFile.numFailingTests;
@@ -132,21 +130,17 @@ class TestReportGenerator {
    */
   collectPerformanceResults() {
     console.log('⚡ Collecting performance results...');
-    
+
     // Landing page performance
     const landingPerfPath = path.join(__dirname, '../landing-page/performance-results.json');
     if (fs.existsSync(landingPerfPath)) {
-      this.results.performance.landingPage = JSON.parse(
-        fs.readFileSync(landingPerfPath, 'utf8')
-      );
+      this.results.performance.landingPage = JSON.parse(fs.readFileSync(landingPerfPath, 'utf8'));
     }
-    
+
     // Backend performance
     const backendPerfPath = path.join(__dirname, '../backend/performance-results.json');
     if (fs.existsSync(backendPerfPath)) {
-      this.results.performance.aiServices = JSON.parse(
-        fs.readFileSync(backendPerfPath, 'utf8')
-      );
+      this.results.performance.aiServices = JSON.parse(fs.readFileSync(backendPerfPath, 'utf8'));
     }
   }
 
@@ -155,19 +149,22 @@ class TestReportGenerator {
    */
   collectCoverageReports() {
     console.log('📈 Collecting coverage reports...');
-    
+
     // Landing page coverage
-    const landingCoveragePath = path.join(__dirname, '../landing-page/coverage/coverage-summary.json');
+    const landingCoveragePath = path.join(
+      __dirname,
+      '../landing-page/coverage/coverage-summary.json'
+    );
     if (fs.existsSync(landingCoveragePath)) {
       const coverage = JSON.parse(fs.readFileSync(landingCoveragePath, 'utf8'));
       this.results.landingPage.coverage = {
         lines: coverage.total.lines.pct,
         branches: coverage.total.branches.pct,
         functions: coverage.total.functions.pct,
-        statements: coverage.total.statements.pct
+        statements: coverage.total.statements.pct,
       };
     }
-    
+
     // Backend coverage
     const backendCoveragePath = path.join(__dirname, '../backend/coverage/coverage-summary.json');
     if (fs.existsSync(backendCoveragePath)) {
@@ -176,7 +173,7 @@ class TestReportGenerator {
         lines: coverage.total.lines.pct,
         branches: coverage.total.branches.pct,
         functions: coverage.total.functions.pct,
-        statements: coverage.total.statements.pct
+        statements: coverage.total.statements.pct,
       };
     }
   }
@@ -186,7 +183,7 @@ class TestReportGenerator {
    */
   generateHTMLReport() {
     console.log('\n📝 Generating HTML report...');
-    
+
     const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -466,27 +463,37 @@ class TestReportGenerator {
       {
         title: 'Landing Page Tests',
         icon: '🌐',
-        data: this.results.landingPage
+        data: this.results.landingPage,
       },
       {
         title: 'Backend Tests',
         icon: '🤖',
-        data: this.results.backend
-      }
+        data: this.results.backend,
+      },
     ];
-    
-    return categories.map(cat => {
-      const total = cat.data.unit.total + cat.data.scenarios.total + 
-                   (cat.data.integration?.total || 0) + cat.data.performance.total;
-      const passed = cat.data.unit.passed + cat.data.scenarios.passed + 
-                    (cat.data.integration?.passed || 0) + cat.data.performance.passed;
-      const failed = cat.data.unit.failed + cat.data.scenarios.failed + 
-                    (cat.data.integration?.failed || 0) + cat.data.performance.failed;
-      const passRate = total > 0 ? (passed / total * 100).toFixed(1) : 0;
-      
-      const statusIcon = failed === 0 ? '✅' : '❌';
-      
-      return `
+
+    return categories
+      .map(cat => {
+        const total =
+          cat.data.unit.total +
+          cat.data.scenarios.total +
+          (cat.data.integration?.total || 0) +
+          cat.data.performance.total;
+        const passed =
+          cat.data.unit.passed +
+          cat.data.scenarios.passed +
+          (cat.data.integration?.passed || 0) +
+          cat.data.performance.passed;
+        const failed =
+          cat.data.unit.failed +
+          cat.data.scenarios.failed +
+          (cat.data.integration?.failed || 0) +
+          cat.data.performance.failed;
+        const passRate = total > 0 ? ((passed / total) * 100).toFixed(1) : 0;
+
+        const statusIcon = failed === 0 ? '✅' : '❌';
+
+        return `
         <div class="card">
             <div class="card-header">
                 <h2>${cat.icon} ${cat.title}</h2>
@@ -523,7 +530,8 @@ class TestReportGenerator {
             </div>
         </div>
       `;
-    }).join('');
+      })
+      .join('');
   }
 
   /**
@@ -531,17 +539,34 @@ class TestReportGenerator {
    */
   generateCoverageCards() {
     const coverageData = [
-      { label: 'Lines', landing: this.results.landingPage.coverage.lines, backend: this.results.backend.coverage.lines },
-      { label: 'Branches', landing: this.results.landingPage.coverage.branches, backend: this.results.backend.coverage.branches },
-      { label: 'Functions', landing: this.results.landingPage.coverage.functions, backend: this.results.backend.coverage.functions },
-      { label: 'Statements', landing: this.results.landingPage.coverage.statements, backend: this.results.backend.coverage.statements }
+      {
+        label: 'Lines',
+        landing: this.results.landingPage.coverage.lines,
+        backend: this.results.backend.coverage.lines,
+      },
+      {
+        label: 'Branches',
+        landing: this.results.landingPage.coverage.branches,
+        backend: this.results.backend.coverage.branches,
+      },
+      {
+        label: 'Functions',
+        landing: this.results.landingPage.coverage.functions,
+        backend: this.results.backend.coverage.functions,
+      },
+      {
+        label: 'Statements',
+        landing: this.results.landingPage.coverage.statements,
+        backend: this.results.backend.coverage.statements,
+      },
     ];
-    
-    return coverageData.map(item => {
-      const avg = ((item.landing + item.backend) / 2).toFixed(1);
-      const colorClass = avg >= 80 ? 'good' : avg >= 60 ? 'warning' : 'danger';
-      
-      return `
+
+    return coverageData
+      .map(item => {
+        const avg = ((item.landing + item.backend) / 2).toFixed(1);
+        const colorClass = avg >= 80 ? 'good' : avg >= 60 ? 'warning' : 'danger';
+
+        return `
         <div class="coverage-item">
             <h3 style="color: #4a5568; margin-bottom: 10px;">${item.label}</h3>
             <div class="coverage-percentage ${colorClass}">${avg}%</div>
@@ -551,7 +576,8 @@ class TestReportGenerator {
             </div>
         </div>
       `;
-    }).join('');
+      })
+      .join('');
   }
 
   /**
@@ -559,35 +585,39 @@ class TestReportGenerator {
    */
   generatePerformanceCards() {
     const perfMetrics = [];
-    
+
     // Landing page metrics
     Object.entries(this.results.performance.landingPage).forEach(([key, value]) => {
       if (typeof value === 'number') {
         perfMetrics.push({
           name: `Landing/${key}`,
           value: value.toFixed(2) + 'ms',
-          colorClass: this.getPerformanceColor(key, value, 'landing')
+          colorClass: this.getPerformanceColor(key, value, 'landing'),
         });
       }
     });
-    
+
     // AI service metrics
     Object.entries(this.results.performance.aiServices).forEach(([key, value]) => {
       if (typeof value === 'number') {
         perfMetrics.push({
           name: `AI/${key}`,
           value: value.toFixed(2) + 'ms',
-          colorClass: this.getPerformanceColor(key, value, 'ai')
+          colorClass: this.getPerformanceColor(key, value, 'ai'),
         });
       }
     });
-    
-    return perfMetrics.map(metric => `
+
+    return perfMetrics
+      .map(
+        metric => `
       <div class="perf-item">
         <span class="perf-name">${metric.name}</span>
         <span class="perf-value ${metric.colorClass}">${metric.value}</span>
       </div>
-    `).join('');
+    `
+      )
+      .join('');
   }
 
   /**
@@ -599,18 +629,18 @@ class TestReportGenerator {
         hero: 100,
         features: 150,
         pricing: 150,
-        leadForm: 50
+        leadForm: 50,
       },
       ai: {
         aiResponse: 2000,
         profileCreation: 500,
-        recommendations: 1000
-      }
+        recommendations: 1000,
+      },
     };
-    
+
     const threshold = thresholds[type]?.[metric];
     if (!threshold) return '';
-    
+
     const percentage = (value / threshold) * 100;
     if (percentage <= 80) return 'good';
     if (percentage <= 95) return 'warning';
@@ -630,20 +660,26 @@ class TestReportGenerator {
    * Generate markdown summary
    */
   generateMarkdownSummary() {
-    const totalTests = 
-      this.results.landingPage.unit.total + this.results.landingPage.scenarios.total +
-      this.results.landingPage.performance.total + this.results.backend.unit.total +
-      this.results.backend.scenarios.total + this.results.backend.performance.total +
+    const totalTests =
+      this.results.landingPage.unit.total +
+      this.results.landingPage.scenarios.total +
+      this.results.landingPage.performance.total +
+      this.results.backend.unit.total +
+      this.results.backend.scenarios.total +
+      this.results.backend.performance.total +
       (this.results.backend.integration?.total || 0);
-      
-    const totalPassed = 
-      this.results.landingPage.unit.passed + this.results.landingPage.scenarios.passed +
-      this.results.landingPage.performance.passed + this.results.backend.unit.passed +
-      this.results.backend.scenarios.passed + this.results.backend.performance.passed +
+
+    const totalPassed =
+      this.results.landingPage.unit.passed +
+      this.results.landingPage.scenarios.passed +
+      this.results.landingPage.performance.passed +
+      this.results.backend.unit.passed +
+      this.results.backend.scenarios.passed +
+      this.results.backend.performance.passed +
       (this.results.backend.integration?.passed || 0);
-      
-    const passRate = totalTests > 0 ? (totalPassed / totalTests * 100).toFixed(1) : 0;
-    
+
+    const passRate = totalTests > 0 ? ((totalPassed / totalTests) * 100).toFixed(1) : 0;
+
     const markdown = `# Test Report Summary
 
 Generated: ${new Date().toLocaleString()}
@@ -673,17 +709,21 @@ View full report: [test-report.html](test-report.html)
    */
   generatePerformanceSummary() {
     const highlights = [];
-    
+
     if (this.results.performance.landingPage.hero) {
       highlights.push(`- Hero render: ${this.results.performance.landingPage.hero.toFixed(2)}ms`);
     }
     if (this.results.performance.landingPage.fullPageLoad) {
-      highlights.push(`- Full page load: ${this.results.performance.landingPage.fullPageLoad.toFixed(2)}ms`);
+      highlights.push(
+        `- Full page load: ${this.results.performance.landingPage.fullPageLoad.toFixed(2)}ms`
+      );
     }
     if (this.results.performance.aiServices.aiResponse) {
-      highlights.push(`- AI response: ${this.results.performance.aiServices.aiResponse.toFixed(2)}ms`);
+      highlights.push(
+        `- AI response: ${this.results.performance.aiServices.aiResponse.toFixed(2)}ms`
+      );
     }
-    
+
     return highlights.join('\n');
   }
 }
@@ -691,19 +731,18 @@ View full report: [test-report.html](test-report.html)
 // Main execution
 async function main() {
   const generator = new TestReportGenerator();
-  
+
   try {
     // Collect all test results
     await generator.collectResults();
-    
+
     // Generate reports
     generator.generateHTMLReport();
     generator.generateJSONReport();
     generator.generateMarkdownSummary();
-    
+
     console.log('\n✅ Test report generation complete!');
     console.log('📄 View the report: test-report.html');
-    
   } catch (error) {
     console.error('❌ Error generating test report:', error);
     process.exit(1);

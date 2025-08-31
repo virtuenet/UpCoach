@@ -77,11 +77,11 @@ export function authorize(resourceType: ResourceType, requiredRole: Role | Role[
             const membershipRow = teamMembership[0] as any;
             const teamRole = membershipRow.team_role as Role;
             const orgRole = membershipRow.org_role as Role;
-            
+
             // Check if user has sufficient team role or organization role
             const teamRoleLevel = roleHierarchy[teamRole];
             const orgRoleLevel = roleHierarchy[orgRole];
-            
+
             hasPermission = teamRoleLevel >= minRoleLevel || orgRoleLevel >= minRoleLevel;
           }
           break;
@@ -161,11 +161,7 @@ export async function checkPermission(
 }
 
 // Middleware to load user's organization context
-export async function loadOrganizationContext(
-  req: Request,
-  _res: Response,
-  next: NextFunction
-) {
+export async function loadOrganizationContext(req: Request, _res: Response, next: NextFunction) {
   try {
     const userId = (req as any).user?.id;
     if (!userId) {

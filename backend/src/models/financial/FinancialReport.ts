@@ -1,8 +1,5 @@
-import {
-  Model,
-  DataTypes,
-} from 'sequelize';
-import { sequelize } from '../index';
+import { Model, DataTypes } from 'sequelize';
+import { sequelize } from '../../config/sequelize';
 
 export enum ReportType {
   DAILY_SUMMARY = 'daily_summary',
@@ -44,9 +41,13 @@ interface FinancialReportAttributes {
   updatedAt?: Date;
 }
 
-interface FinancialReportCreationAttributes extends Omit<FinancialReportAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
+interface FinancialReportCreationAttributes
+  extends Omit<FinancialReportAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
 
-export class FinancialReport extends Model<FinancialReportAttributes, FinancialReportCreationAttributes> implements FinancialReportAttributes {
+export class FinancialReport
+  extends Model<FinancialReportAttributes, FinancialReportCreationAttributes>
+  implements FinancialReportAttributes
+{
   public id!: string;
   public type!: ReportType;
   public title!: string;
@@ -181,4 +182,4 @@ FinancialReport.init(
   }
 );
 
-export default FinancialReport; 
+export default FinancialReport;

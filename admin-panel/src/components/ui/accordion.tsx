@@ -1,4 +1,5 @@
 import React from 'react';
+import { FolderOpen, ExpandMore } from '@mui/icons-material';
 
 interface AccordionProps {
   type?: 'single' | 'multiple';
@@ -31,9 +32,7 @@ const Accordion = ({ type = 'single', children }: AccordionProps) => {
       setOpenItems(openItems.includes(value) ? [] : [value]);
     } else {
       setOpenItems(
-        openItems.includes(value)
-          ? openItems.filter((item) => item !== value)
-          : [...openItems, value]
+        openItems.includes(value) ? openItems.filter(item => item !== value) : [...openItems, value]
       );
     }
   };
@@ -47,7 +46,7 @@ const Accordion = ({ type = 'single', children }: AccordionProps) => {
 
 const AccordionItem = ({ value, children }: AccordionItemProps) => {
   const ItemContext = React.createContext(value);
-  
+
   return (
     <ItemContext.Provider value={value}>
       <div className="border-b">{children}</div>

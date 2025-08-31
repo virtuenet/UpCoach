@@ -2,7 +2,7 @@
  * Enhanced CSRF Token Manager with retry logic and security improvements
  * Handles CSRF token fetching, caching, automatic refresh, and validation
  */
-
+import { apiClient } from '../api/client';
 
 interface CSRFTokenResponse {
   token: string;
@@ -18,7 +18,7 @@ class CSRFTokenManager {
   private retryCount: number = 0;
   private readonly maxRetries: number = 3;
   private readonly retryDelay: number = 1000; // Start with 1 second
-  
+
   /**
    * Regenerate CSRF token
    */
@@ -45,7 +45,7 @@ class CSRFTokenManager {
 
     // Fetch new token with retry logic
     this.fetchPromise = this.fetchNewTokenWithRetry();
-    
+
     try {
       const token = await this.fetchPromise;
       return token;
@@ -59,26 +59,26 @@ class CSRFTokenManager {
    */
   private async fetchNewTokenWithRetry(): Promise<string> {
     this.retryCount = 0;
-    
+
     while (this.retryCount < this.maxRetries) {
       try {
         return await this.fetchNewToken();
       } catch (error) {
         this.retryCount++;
-        
+
         if (this.retryCount >= this.maxRetries) {
           console.error('Failed to fetch CSRF token after max retries:', error);
           // Throw error for critical operations
           throw new Error('CSRF token unavailable - security check failed');
         }
-        
+
         // Exponential backoff
         const delay = this.retryDelay * Math.pow(2, this.retryCount - 1);
         console.warn(`CSRF token fetch failed, retrying in ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
-    
+
     throw new Error('Failed to obtain CSRF token');
   }
 
@@ -90,12 +90,12 @@ class CSRFTokenManager {
       withCredentials: true,
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-Request': 'true'
-      }
+        'X-CSRF-Request': 'true',
+      },
     });
 
     const { token, expiresIn = 3600, signature } = response.data;
-    
+
     if (!token) {
       throw new Error('No CSRF token received from server');
     }
@@ -113,7 +113,7 @@ class CSRFTokenManager {
     // Store token and expiry
     this.token = token;
     // Set expiry 5 minutes before actual expiry for safety
-    this.tokenExpiry = Date.now() + ((expiresIn - 300) * 1000);
+    this.tokenExpiry = Date.now() + (expiresIn - 300) * 1000;
 
     // Schedule automatic refresh
     this.scheduleRefresh(expiresIn);
@@ -143,10 +143,7 @@ class CSRFTokenManager {
     }
 
     // Refresh 10 minutes before expiry (or at 80% of lifetime for shorter tokens)
-    const refreshTime = Math.min(
-      (expiresIn - 600) * 1000,
-      expiresIn * 0.8 * 1000
-    );
+    const refreshTime = Math.min((expiresIn - 600) * 1000, expiresIn * 0.8 * 1000);
 
     if (refreshTime > 0) {
       this.refreshTimer = setTimeout(() => {

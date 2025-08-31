@@ -194,11 +194,7 @@ export class AnalyticsService {
   }
 
   // Track errors
-  async trackError(
-    error: Error,
-    context?: Record<string, any>,
-    userId?: number
-  ): Promise<void> {
+  async trackError(error: Error, context?: Record<string, any>, userId?: number): Promise<void> {
     await this.track({
       userId,
       event: 'Error Occurred',

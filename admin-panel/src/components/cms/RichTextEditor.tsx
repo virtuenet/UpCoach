@@ -1,10 +1,13 @@
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
-import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
-import TextAlign from "@tiptap/extension-text-align";
-import Highlight from "@tiptap/extension-highlight";
-import CodeBlock from "@tiptap/extension-code-block";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { useNavigate, useParams, useLocation, Link as RouterLink } from 'react-router-dom';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Placeholder from '@tiptap/extension-placeholder';
+import Link from '@tiptap/extension-link';
+import Image from '@tiptap/extension-image';
+import TextAlign from '@tiptap/extension-text-align';
+import Highlight from '@tiptap/extension-highlight';
+import CodeBlock from '@tiptap/extension-code-block';
 import {
   Bold,
   Italic,
@@ -23,7 +26,7 @@ import {
   Undo,
   Redo,
   RemoveFormatting,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface RichTextEditorProps {
   value: string;
@@ -36,7 +39,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   value,
   onChange,
   onImageClick,
-  placeholder = "Start writing your content...",
+  placeholder = 'Start writing your content...',
 }) => {
   const editor = useEditor({
     extensions: [
@@ -51,25 +54,25 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: "text-blue-600 underline",
+          class: 'text-blue-600 underline',
         },
       }),
       Image.configure({
         HTMLAttributes: {
-          class: "max-w-full h-auto rounded-lg",
+          class: 'max-w-full h-auto rounded-lg',
         },
       }),
       TextAlign.configure({
-        types: ["heading", "paragraph"],
+        types: ['heading', 'paragraph'],
       }),
       Highlight.configure({
         HTMLAttributes: {
-          class: "bg-yellow-200",
+          class: 'bg-yellow-200',
         },
       }),
       CodeBlock.configure({
         HTMLAttributes: {
-          class: "bg-gray-100 rounded-lg p-4 font-mono text-sm",
+          class: 'bg-gray-100 rounded-lg p-4 font-mono text-sm',
         },
       }),
     ],
@@ -82,26 +85,26 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const setLink = useCallback(() => {
     if (!editor) return;
 
-    const previousUrl = editor.getAttributes("link").href;
-    const url = window.prompt("URL", previousUrl);
+    const previousUrl = editor.getAttributes('link').href;
+    const url = window.prompt('URL', previousUrl);
 
     if (url === null) {
       return;
     }
 
-    if (url === "") {
-      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+    if (url === '') {
+      editor.chain().focus().extendMarkRange('link').unsetLink().run();
       return;
     }
 
-    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
   }, [editor]);
 
   const addImage = useCallback(() => {
     if (onImageClick) {
       onImageClick();
     } else {
-      const url = window.prompt("Image URL");
+      const url = window.prompt('Image URL');
       if (url && editor) {
         editor.chain().focus().setImage({ src: url }).run();
       }
@@ -125,8 +128,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       title={title}
       className={`
         p-2 rounded hover:bg-gray-100 transition-colors
-        ${active ? "bg-gray-200 text-blue-600" : "text-gray-700"}
-        ${disabled ? "opacity-50 cursor-not-allowed" : ""}
+        ${active ? 'bg-gray-200 text-blue-600' : 'text-gray-700'}
+        ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
       `}
     >
       {children}
@@ -158,20 +161,16 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <Separator />
 
         <ToolbarButton
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 1 }).run()
-          }
-          active={editor.isActive("heading", { level: 1 })}
+          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          active={editor.isActive('heading', { level: 1 })}
           title="Heading 1"
         >
           <Heading1 className="w-4 h-4" />
         </ToolbarButton>
 
         <ToolbarButton
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 2 }).run()
-          }
-          active={editor.isActive("heading", { level: 2 })}
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          active={editor.isActive('heading', { level: 2 })}
           title="Heading 2"
         >
           <Heading2 className="w-4 h-4" />
@@ -181,7 +180,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
-          active={editor.isActive("bold")}
+          active={editor.isActive('bold')}
           title="Bold"
         >
           <Bold className="w-4 h-4" />
@@ -189,7 +188,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          active={editor.isActive("italic")}
+          active={editor.isActive('italic')}
           title="Italic"
         >
           <Italic className="w-4 h-4" />
@@ -197,7 +196,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleHighlight().run()}
-          active={editor.isActive("highlight")}
+          active={editor.isActive('highlight')}
           title="Highlight"
         >
           <Highlighter className="w-4 h-4" />
@@ -205,7 +204,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleCode().run()}
-          active={editor.isActive("code")}
+          active={editor.isActive('code')}
           title="Inline Code"
         >
           <Code className="w-4 h-4" />
@@ -214,24 +213,24 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <Separator />
 
         <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign("left").run()}
-          active={editor.isActive({ textAlign: "left" })}
+          onClick={() => editor.chain().focus().setTextAlign('left').run()}
+          active={editor.isActive({ textAlign: 'left' })}
           title="Align Left"
         >
           <AlignLeft className="w-4 h-4" />
         </ToolbarButton>
 
         <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign("center").run()}
-          active={editor.isActive({ textAlign: "center" })}
+          onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          active={editor.isActive({ textAlign: 'center' })}
           title="Align Center"
         >
           <AlignCenter className="w-4 h-4" />
         </ToolbarButton>
 
         <ToolbarButton
-          onClick={() => editor.chain().focus().setTextAlign("right").run()}
-          active={editor.isActive({ textAlign: "right" })}
+          onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          active={editor.isActive({ textAlign: 'right' })}
           title="Align Right"
         >
           <AlignRight className="w-4 h-4" />
@@ -241,7 +240,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          active={editor.isActive("bulletList")}
+          active={editor.isActive('bulletList')}
           title="Bullet List"
         >
           <List className="w-4 h-4" />
@@ -249,7 +248,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          active={editor.isActive("orderedList")}
+          active={editor.isActive('orderedList')}
           title="Numbered List"
         >
           <ListOrdered className="w-4 h-4" />
@@ -257,7 +256,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          active={editor.isActive("blockquote")}
+          active={editor.isActive('blockquote')}
           title="Quote"
         >
           <Quote className="w-4 h-4" />
@@ -265,7 +264,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          active={editor.isActive("codeBlock")}
+          active={editor.isActive('codeBlock')}
           title="Code Block"
         >
           <Code className="w-4 h-4" />
@@ -273,11 +272,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
         <Separator />
 
-        <ToolbarButton
-          onClick={setLink}
-          active={editor.isActive("link")}
-          title="Add Link"
-        >
+        <ToolbarButton onClick={setLink} active={editor.isActive('link')} title="Add Link">
           <LinkIcon className="w-4 h-4" />
         </ToolbarButton>
 
@@ -288,9 +283,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <Separator />
 
         <ToolbarButton
-          onClick={() =>
-            editor.chain().focus().clearNodes().unsetAllMarks().run()
-          }
+          onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}
           title="Clear Formatting"
         >
           <RemoveFormatting className="w-4 h-4" />
@@ -299,10 +292,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
       {/* Editor Content */}
       <div className="p-4 min-h-[400px]">
-        <EditorContent
-          editor={editor}
-          className="prose prose-sm max-w-none focus:outline-none"
-        />
+        <EditorContent editor={editor} className="prose prose-sm max-w-none focus:outline-none" />
       </div>
     </div>
   );

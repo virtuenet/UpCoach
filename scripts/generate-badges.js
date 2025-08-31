@@ -2,7 +2,7 @@
 
 /**
  * Badge Generator for Test Coverage and Status
- * 
+ *
  * Generates SVG badges for README files showing test status,
  * coverage percentages, and build status.
  */
@@ -37,10 +37,10 @@ class BadgeGenerator {
     <path fill="url(#b)" d="M0 0h${totalWidth}v20H0z"/>
   </g>
   <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
-    <text x="${labelWidth/2}" y="15" fill="#010101" fill-opacity=".3">${label}</text>
-    <text x="${labelWidth/2}" y="14">${label}</text>
-    <text x="${labelWidth + valueWidth/2}" y="15" fill="#010101" fill-opacity=".3">${value}</text>
-    <text x="${labelWidth + valueWidth/2}" y="14">${value}</text>
+    <text x="${labelWidth / 2}" y="15" fill="#010101" fill-opacity=".3">${label}</text>
+    <text x="${labelWidth / 2}" y="14">${label}</text>
+    <text x="${labelWidth + valueWidth / 2}" y="15" fill="#010101" fill-opacity=".3">${value}</text>
+    <text x="${labelWidth + valueWidth / 2}" y="14">${value}</text>
   </g>
 </svg>`;
   }
@@ -49,7 +49,7 @@ class BadgeGenerator {
    * Get color based on percentage
    */
   getColorForPercentage(percentage) {
-    if (percentage >= 80) return '#4c1';  // Green
+    if (percentage >= 80) return '#4c1'; // Green
     if (percentage >= 60) return '#dfb317'; // Yellow
     if (percentage >= 40) return '#fe7d37'; // Orange
     return '#e05d44'; // Red
@@ -74,12 +74,12 @@ class BadgeGenerator {
     const coverageFiles = [
       {
         path: path.join(__dirname, '../landing-page/coverage/coverage-summary.json'),
-        prefix: 'landing'
+        prefix: 'landing',
       },
       {
         path: path.join(__dirname, '../backend/coverage/coverage-summary.json'),
-        prefix: 'backend'
-      }
+        prefix: 'backend',
+      },
     ];
 
     coverageFiles.forEach(({ path: coveragePath, prefix }) => {
@@ -92,16 +92,9 @@ class BadgeGenerator {
           ['lines', 'branches', 'functions', 'statements'].forEach(metric => {
             const percentage = Math.round(total[metric].pct);
             const color = this.getColorForPercentage(percentage);
-            const badge = this.generateBadge(
-              `${prefix} ${metric}`,
-              `${percentage}%`,
-              color
-            );
+            const badge = this.generateBadge(`${prefix} ${metric}`, `${percentage}%`, color);
 
-            const badgePath = path.join(
-              __dirname,
-              `../badges/${prefix}-${metric}-coverage.svg`
-            );
+            const badgePath = path.join(__dirname, `../badges/${prefix}-${metric}-coverage.svg`);
             this.saveBadge(badgePath, badge);
           });
         } catch (error) {
@@ -121,12 +114,12 @@ class BadgeGenerator {
     const testFiles = [
       {
         path: path.join(__dirname, '../landing-page/test-results.json'),
-        name: 'landing-tests'
+        name: 'landing-tests',
       },
       {
         path: path.join(__dirname, '../backend/test-results.json'),
-        name: 'backend-tests'
-      }
+        name: 'backend-tests',
+      },
     ];
 
     testFiles.forEach(({ path: testPath, name }) => {
@@ -141,22 +134,12 @@ class BadgeGenerator {
           const color = this.getColorForStatus(passed, failed);
           const badge = this.generateBadge(name, status, color);
 
-          const badgePath = path.join(
-            __dirname,
-            `../badges/${name}-status.svg`
-          );
+          const badgePath = path.join(__dirname, `../badges/${name}-status.svg`);
           this.saveBadge(badgePath, badge);
 
           // Also generate a test count badge
-          const countBadge = this.generateBadge(
-            `${name} count`,
-            `${passed}/${total}`,
-            color
-          );
-          const countPath = path.join(
-            __dirname,
-            `../badges/${name}-count.svg`
-          );
+          const countBadge = this.generateBadge(`${name} count`, `${passed}/${total}`, color);
+          const countPath = path.join(__dirname, `../badges/${name}-count.svg`);
           this.saveBadge(countPath, countBadge);
         } catch (error) {
           console.error(`Error processing ${name}:`, error.message);
@@ -189,15 +172,15 @@ class BadgeGenerator {
         path: path.join(__dirname, '../landing-page/performance-results.json'),
         metrics: {
           'hero-render': { key: 'hero', threshold: 100, unit: 'ms' },
-          'page-load': { key: 'fullPageLoad', threshold: 3000, unit: 's', divisor: 1000 }
-        }
+          'page-load': { key: 'fullPageLoad', threshold: 3000, unit: 's', divisor: 1000 },
+        },
       },
       {
         path: path.join(__dirname, '../backend/performance-results.json'),
         metrics: {
-          'ai-response': { key: 'aiResponse', threshold: 2000, unit: 's', divisor: 1000 }
-        }
-      }
+          'ai-response': { key: 'aiResponse', threshold: 2000, unit: 's', divisor: 1000 },
+        },
+      },
     ];
 
     perfFiles.forEach(({ path: perfPath, metrics }) => {
@@ -217,16 +200,9 @@ class BadgeGenerator {
 
               const percentage = (value / config.threshold) * 100;
               const color = this.getColorForPercentage(100 - percentage);
-              const badge = this.generateBadge(
-                name,
-                `${displayValue}${config.unit}`,
-                color
-              );
+              const badge = this.generateBadge(name, `${displayValue}${config.unit}`, color);
 
-              const badgePath = path.join(
-                __dirname,
-                `../badges/${name}-performance.svg`
-              );
+              const badgePath = path.join(__dirname, `../badges/${name}-performance.svg`);
               this.saveBadge(badgePath, badge);
             }
           });
@@ -328,7 +304,6 @@ function main() {
 
     console.log(`\n✅ Generated ${generator.badges.length} badges successfully!`);
     console.log('📁 Badges saved to: badges/');
-
   } catch (error) {
     console.error('❌ Error generating badges:', error);
     process.exit(1);

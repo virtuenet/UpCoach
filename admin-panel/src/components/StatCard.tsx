@@ -1,11 +1,11 @@
-import React from "react";
+import React from 'react';
 
 interface StatCardProps {
   title: string;
   value: string | number;
   icon?: React.ReactNode;
   trend?: number;
-  color?: "primary" | "secondary" | "error" | "warning" | "info" | "success";
+  color?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
   subtitle?: string;
 }
 
@@ -14,19 +14,17 @@ const StatCard: React.FC<StatCardProps> = ({
   value,
   icon,
   trend,
-  color = "primary",
+  color = 'primary',
   subtitle,
 }) => {
   const theme = useTheme();
   const isPositiveTrend = trend && trend > 0;
-  const trendColor = isPositiveTrend
-    ? theme.palette.success.main
-    : theme.palette.error.main;
+  const trendColor = isPositiveTrend ? theme.palette.success.main : theme.palette.error.main;
 
   return (
-    <Card sx={{ height: "100%" }}>
+    <Card sx={{ height: '100%' }}>
       <CardContent>
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
           <Typography variant="body2" color="text.secondary">
             {title}
           </Typography>
@@ -35,15 +33,15 @@ const StatCard: React.FC<StatCardProps> = ({
               sx={{
                 color: theme.palette[color].main,
                 backgroundColor: theme.palette[color].light,
-                borderRadius: "50%",
+                borderRadius: '50%',
                 p: 1,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
               {React.cloneElement(icon as React.ReactElement, {
-                fontSize: "small",
+                fontSize: 'small',
               })}
             </Box>
           )}
@@ -56,26 +54,19 @@ const StatCard: React.FC<StatCardProps> = ({
         {(trend !== undefined || subtitle) && (
           <Box
             sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
             }}
           >
             {trend !== undefined && (
-              <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 {isPositiveTrend ? (
-                  <TrendingUp
-                    sx={{ fontSize: 16, color: trendColor, mr: 0.5 }}
-                  />
+                  <TrendingUp sx={{ fontSize: 16, color: trendColor, mr: 0.5 }} />
                 ) : (
-                  <TrendingDown
-                    sx={{ fontSize: 16, color: trendColor, mr: 0.5 }}
-                  />
+                  <TrendingDown sx={{ fontSize: 16, color: trendColor, mr: 0.5 }} />
                 )}
-                <Typography
-                  variant="body2"
-                  sx={{ color: trendColor, fontWeight: 500 }}
-                >
+                <Typography variant="body2" sx={{ color: trendColor, fontWeight: 500 }}>
                   {Math.abs(trend)}%
                 </Typography>
               </Box>

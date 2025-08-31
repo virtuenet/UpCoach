@@ -1,23 +1,14 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Gift,
-  Copy,
-  Check,
-  Share2,
-  Users,
-  DollarSign,
-  TrendingUp,
-  X,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { trackEvent } from "@/services/analytics";
-import { api } from "@/services/api";
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Gift, Copy, Check, Share2, Users, DollarSign, TrendingUp, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { trackEvent } from '@/services/analytics';
+import { api } from '@/services/api';
 
 interface ReferralStats {
   totalReferrals: number;
@@ -32,15 +23,12 @@ interface ReferralWidgetProps {
   userId?: number;
 }
 
-export default function ReferralWidget({
-  isAuthenticated = false,
-  userId,
-}: ReferralWidgetProps) {
+export default function ReferralWidget({ isAuthenticated = false, userId }: ReferralWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [stats, setStats] = useState<ReferralStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [shareEmails, setShareEmails] = useState("");
+  const [shareEmails, setShareEmails] = useState('');
   const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
@@ -52,10 +40,10 @@ export default function ReferralWidget({
   const fetchReferralStats = async () => {
     setLoading(true);
     try {
-      const response = await api.get("/referrals/stats");
+      const response = await api.get('/referrals/stats');
       setStats(response.data.data);
     } catch (error) {
-      console.error("Failed to fetch referral stats:", error);
+      console.error('Failed to fetch referral stats:', error);
     } finally {
       setLoading(false);
     }
@@ -63,12 +51,12 @@ export default function ReferralWidget({
 
   const generateReferralCode = async () => {
     try {
-      const response = await api.post("/referrals/code");
+      const response = await api.post('/referrals/code');
       const newCode = response.data.data.code;
-      setStats((prev) => (prev ? { ...prev, referralCode: newCode } : null));
-      trackEvent("Referral Code Generated", { source: "widget" });
+      setStats(prev => (prev ? { ...prev, referralCode: newCode } : null));
+      trackEvent('Referral Code Generated', { source: 'widget' });
     } catch (error) {
-      console.error("Failed to generate referral code:", error);
+      console.error('Failed to generate referral code:', error);
     }
   };
 
@@ -78,7 +66,7 @@ export default function ReferralWidget({
       navigator.clipboard.writeText(link);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-      trackEvent("Referral Link Copied", { code: stats.referralCode });
+      trackEvent('Referral Link Copied', { code: stats.referralCode });
     }
   };
 
@@ -87,12 +75,12 @@ export default function ReferralWidget({
 
     setSharing(true);
     try {
-      const emails = shareEmails.split(",").map((e) => e.trim());
-      await api.post("/referrals/share", { emails });
-      setShareEmails("");
-      trackEvent("Referral Shared", { method: "email", count: emails.length });
+      const emails = shareEmails.split(',').map(e => e.trim());
+      await api.post('/referrals/share', { emails });
+      setShareEmails('');
+      trackEvent('Referral Shared', { method: 'email', count: emails.length });
     } catch (error) {
-      console.error("Failed to share referral:", error);
+      console.error('Failed to share referral:', error);
     } finally {
       setSharing(false);
     }
@@ -102,24 +90,24 @@ export default function ReferralWidget({
     if (!stats?.referralCode) return;
 
     const link = `${window.location.origin}/signup?ref=${stats.referralCode}`;
-    const text = "Join me on UpCoach and get 20% off your first month! 🎉";
+    const text = 'Join me on UpCoach and get 20% off your first month! 🎉';
 
-    let shareUrl = "";
+    let shareUrl = '';
     switch (platform) {
-      case "twitter":
+      case 'twitter':
         shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(link)}`;
         break;
-      case "facebook":
+      case 'facebook':
         shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`;
         break;
-      case "linkedin":
+      case 'linkedin':
         shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(link)}`;
         break;
     }
 
     if (shareUrl) {
-      window.open(shareUrl, "_blank", "width=600,height=400");
-      trackEvent("Referral Shared", { method: platform });
+      window.open(shareUrl, '_blank', 'width=600,height=400');
+      trackEvent('Referral Shared', { method: platform });
     }
   };
 
@@ -135,9 +123,7 @@ export default function ReferralWidget({
             <Gift className="h-6 w-6 text-primary" />
             <div>
               <p className="font-semibold">Earn rewards!</p>
-              <p className="text-sm text-gray-600">
-                Sign up to start referring friends
-              </p>
+              <p className="text-sm text-gray-600">Sign up to start referring friends</p>
             </div>
           </div>
         </Card>
@@ -158,9 +144,7 @@ export default function ReferralWidget({
       >
         <Gift className="h-6 w-6" />
         {stats && stats.totalEarnings > 0 && (
-          <Badge className="absolute -top-2 -right-2 bg-green-500">
-            ${stats.totalEarnings}
-          </Badge>
+          <Badge className="absolute -top-2 -right-2 bg-green-500">${stats.totalEarnings}</Badge>
         )}
       </motion.button>
 
@@ -202,21 +186,13 @@ export default function ReferralWidget({
                     <div className="grid grid-cols-2 gap-3">
                       <div className="text-center p-3 bg-gray-50 rounded-lg">
                         <Users className="h-5 w-5 text-primary mx-auto mb-1" />
-                        <div className="text-2xl font-bold">
-                          {stats.totalReferrals}
-                        </div>
-                        <div className="text-xs text-gray-600">
-                          Total Referrals
-                        </div>
+                        <div className="text-2xl font-bold">{stats.totalReferrals}</div>
+                        <div className="text-xs text-gray-600">Total Referrals</div>
                       </div>
                       <div className="text-center p-3 bg-gray-50 rounded-lg">
                         <DollarSign className="h-5 w-5 text-green-600 mx-auto mb-1" />
-                        <div className="text-2xl font-bold">
-                          ${stats.totalEarnings}
-                        </div>
-                        <div className="text-xs text-gray-600">
-                          Total Earned
-                        </div>
+                        <div className="text-2xl font-bold">${stats.totalEarnings}</div>
+                        <div className="text-xs text-gray-600">Total Earned</div>
                       </div>
                     </div>
 
@@ -226,9 +202,7 @@ export default function ReferralWidget({
                           <TrendingUp className="h-5 w-5 text-yellow-600" />
                           <span className="text-sm">Pending Earnings</span>
                         </div>
-                        <span className="font-semibold">
-                          ${stats.pendingEarnings}
-                        </span>
+                        <span className="font-semibold">${stats.pendingEarnings}</span>
                       </div>
                     )}
 
@@ -239,16 +213,8 @@ export default function ReferralWidget({
                           Your Referral Code
                         </label>
                         <div className="flex gap-2 mt-1">
-                          <Input
-                            value={stats.referralCode}
-                            readOnly
-                            className="font-mono"
-                          />
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={copyReferralLink}
-                          >
+                          <Input value={stats.referralCode} readOnly className="font-mono" />
+                          <Button variant="outline" size="icon" onClick={copyReferralLink}>
                             {copied ? (
                               <Check className="h-4 w-4 text-green-600" />
                             ) : (
@@ -269,28 +235,26 @@ export default function ReferralWidget({
                     {/* Share Options */}
                     {stats.referralCode && (
                       <div>
-                        <label className="text-sm font-medium text-gray-700">
-                          Share Your Code
-                        </label>
+                        <label className="text-sm font-medium text-gray-700">Share Your Code</label>
                         <div className="flex gap-2 mt-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => shareOnSocial("twitter")}
+                            onClick={() => shareOnSocial('twitter')}
                           >
                             Twitter
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => shareOnSocial("facebook")}
+                            onClick={() => shareOnSocial('facebook')}
                           >
                             Facebook
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => shareOnSocial("linkedin")}
+                            onClick={() => shareOnSocial('linkedin')}
                           >
                             LinkedIn
                           </Button>
@@ -300,10 +264,8 @@ export default function ReferralWidget({
                           <Input
                             placeholder="Email addresses (comma separated)"
                             value={shareEmails}
-                            onChange={(e) => setShareEmails(e.target.value)}
-                            onKeyPress={(e) =>
-                              e.key === "Enter" && shareViaEmail()
-                            }
+                            onChange={e => setShareEmails(e.target.value)}
+                            onKeyPress={e => e.key === 'Enter' && shareViaEmail()}
                           />
                           <Button
                             onClick={shareViaEmail}
@@ -312,7 +274,7 @@ export default function ReferralWidget({
                             variant="outline"
                           >
                             <Share2 className="h-4 w-4 mr-2" />
-                            {sharing ? "Sending..." : "Share via Email"}
+                            {sharing ? 'Sending...' : 'Share via Email'}
                           </Button>
                         </div>
                       </div>
@@ -320,7 +282,7 @@ export default function ReferralWidget({
 
                     {/* Terms */}
                     <p className="text-xs text-gray-500 text-center">
-                      By participating, you agree to our{" "}
+                      By participating, you agree to our{' '}
                       <a href="/terms#referral" className="underline">
                         referral terms
                       </a>
@@ -328,9 +290,7 @@ export default function ReferralWidget({
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-gray-600">
-                      Unable to load referral data
-                    </p>
+                    <p className="text-gray-600">Unable to load referral data</p>
                     <Button onClick={fetchReferralStats} className="mt-4">
                       Retry
                     </Button>

@@ -1,5 +1,5 @@
 import { Model, DataTypes, Optional } from 'sequelize';
-import { sequelize } from './index';
+import { sequelize } from '../config/sequelize';
 
 export interface ChatAttributes {
   id: string;
@@ -15,7 +15,20 @@ export interface ChatAttributes {
   updatedAt?: Date;
 }
 
-export interface ChatCreationAttributes extends Optional<ChatAttributes, 'id' | 'title' | 'type' | 'context' | 'isActive' | 'lastMessageAt' | 'messageCount' | 'metadata' | 'createdAt' | 'updatedAt'> {}
+export interface ChatCreationAttributes
+  extends Optional<
+    ChatAttributes,
+    | 'id'
+    | 'title'
+    | 'type'
+    | 'context'
+    | 'isActive'
+    | 'lastMessageAt'
+    | 'messageCount'
+    | 'metadata'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
 export class Chat extends Model<ChatAttributes, ChatCreationAttributes> implements ChatAttributes {
   public id!: string;

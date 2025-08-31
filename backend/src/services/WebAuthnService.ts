@@ -31,8 +31,8 @@ export interface WebAuthnConfig {
 }
 
 export interface WebAuthnCredential {
-  credentialID: Uint8Array;
-  credentialPublicKey: Uint8Array;
+  credentialID: string;
+  credentialPublicKey: string;
   counter: number;
   transports?: AuthenticatorTransportFuture[];
   userId: string;
@@ -154,8 +154,13 @@ class WebAuthnService {
       });
 
       if (verification.verified && verification.registrationInfo) {
-        const { credentialPublicKey, credentialID, counter, credentialBackedUp, credentialDeviceType } = 
-          verification.registrationInfo;
+        const {
+          credentialPublicKey,
+          credentialID,
+          counter,
+          credentialBackedUp,
+          credentialDeviceType,
+        } = verification.registrationInfo;
 
         // Store credential
         const credential: WebAuthnCredential = {
@@ -177,7 +182,10 @@ class WebAuthnService {
         // Clear challenge
         await this.clearChallenge(userId, 'registration');
 
-        logger.info('WebAuthn credential registered', { userId, credentialId: credential.credentialID });
+        logger.info('WebAuthn credential registered', {
+          userId,
+          credentialId: credential.credentialID,
+        });
 
         return {
           verified: true,
@@ -252,15 +260,15 @@ class WebAuthnService {
       // Get stored challenge
       const challengeUserId = userId || credential.userId;
       const expectedChallenge = await this.getChallenge(challengeUserId, 'authentication');
-      
+
       if (!expectedChallenge) {
         throw new Error('Authentication challenge not found or expired');
       }
 
       // Prepare authenticator for verification
       const authenticator: any = {
-        credentialID: Uint8Array.from(credential.credentialID, 'base64'),
-        credentialPublicKey: Uint8Array.from(credential.credentialPublicKey, 'base64'),
+        credentialID: Buffer.from(credential.credentialID, 'base64'),
+        credentialPublicKey: Buffer.from(credential.credentialPublicKey, 'base64'),
         counter: credential.counter,
         transports: credential.transports,
       };
@@ -284,9 +292,9 @@ class WebAuthnService {
         // Clear challenge
         await this.clearChallenge(challengeUserId, 'authentication');
 
-        logger.info('WebAuthn authentication successful', { 
-          userId: credential.userId, 
-          credentialId: credential.credentialID 
+        logger.info('WebAuthn authentication successful', {
+          userId: credential.userId,
+          credentialId: credential.credentialID,
         });
 
         return {
@@ -310,7 +318,7 @@ class WebAuthnService {
     try {
       const key = `webauthn:credentials:${userId}`;
       const data = await redis.get(key);
-      
+
       if (!data) {
         return [];
       }
@@ -329,7 +337,7 @@ class WebAuthnService {
     try {
       const key = `webauthn:credential:${credentialId}`;
       const data = await redis.get(key);
-      
+
       if (!data) {
         return null;
       }
@@ -356,9 +364,9 @@ class WebAuthnService {
       const credentialKey = `webauthn:credential:${credential.credentialID}`;
       await redis.set(credentialKey, JSON.stringify(credential));
 
-      logger.info('Stored WebAuthn credential', { 
-        userId: credential.userId, 
-        credentialId: credential.credentialID 
+      logger.info('Stored WebAuthn credential', {
+        userId: credential.userId,
+        credentialId: credential.credentialID,
       });
     } catch (error) {
       logger.error('Error storing credential', error);
@@ -375,7 +383,7 @@ class WebAuthnService {
       const userKey = `webauthn:credentials:${credential.userId}`;
       const userCredentials = await this.getUserCredentials(credential.userId);
       const index = userCredentials.findIndex(c => c.credentialID === credential.credentialID);
-      
+
       if (index !== -1) {
         userCredentials[index] = credential;
         await redis.set(userKey, JSON.stringify(userCredentials));
@@ -415,14 +423,10 @@ class WebAuthnService {
   /**
    * Rename credential
    */
-  async renameCredential(
-    userId: string,
-    credentialId: string,
-    newName: string
-  ): Promise<void> {
+  async renameCredential(userId: string, credentialId: string, newName: string): Promise<void> {
     try {
       const credential = await this.getCredentialById(credentialId);
-      
+
       if (!credential || credential.userId !== userId) {
         throw new Error('Credential not found');
       }
@@ -454,11 +458,7 @@ class WebAuthnService {
       expiresAt: new Date(Date.now() + this.challengeExpiry),
     };
 
-    await redis.setEx(
-      key,
-      Math.floor(this.challengeExpiry / 1000),
-      JSON.stringify(challengeData)
-    );
+    await redis.setEx(key, Math.floor(this.challengeExpiry / 1000), JSON.stringify(challengeData));
   }
 
   /**
@@ -470,13 +470,13 @@ class WebAuthnService {
   ): Promise<string | null> {
     const key = `webauthn:challenge:${type}:${userId}`;
     const data = await redis.get(key);
-    
+
     if (!data) {
       return null;
     }
 
     const challengeData: WebAuthnChallenge = JSON.parse(data);
-    
+
     // Check if expired
     if (new Date() > new Date(challengeData.expiresAt)) {
       await redis.del(key);
@@ -515,7 +515,7 @@ class WebAuthnService {
     lastUsed?: Date;
   }> {
     const credentials = await this.getUserCredentials(userId);
-    
+
     const stats = {
       total: credentials.length,
       platformCredentials: credentials.filter(c => c.deviceType === 'singleDevice').length,

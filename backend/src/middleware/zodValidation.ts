@@ -8,13 +8,16 @@ import { sanitizeObject } from '../utils/sanitization';
 import { createRateLimiter } from './rateLimiter';
 
 // Validation result cache configuration with memory limits
-const validationCache = new LRUCache<string, {
-  result: any;
-  timestamp: number;
-}>({
+const validationCache = new LRUCache<
+  string,
+  {
+    result: any;
+    timestamp: number;
+  }
+>({
   max: 1000, // Maximum number of cached validations
   maxSize: 50 * 1024 * 1024, // 50MB memory limit
-  sizeCalculation: (value) => {
+  sizeCalculation: value => {
     // Estimate memory size of cached object
     try {
       return JSON.stringify(value).length;
@@ -51,20 +54,20 @@ const validationMetrics = {
   slowValidations: 0, // Validations taking > 100ms
   cacheHits: 0,
   cacheMisses: 0,
-  schemaMetrics: new Map<string, {
-    count: number;
-    totalDuration: number;
-    failures: number;
-    avgDuration?: number;
-  }>()
+  schemaMetrics: new Map<
+    string,
+    {
+      count: number;
+      totalDuration: number;
+      failures: number;
+      avgDuration?: number;
+    }
+  >(),
 };
 
 // Helper to generate cache key
 function generateCacheKey(schema: ZodSchema, data: any, schemaName: string): string {
-  const dataHash = crypto
-    .createHash('sha256')
-    .update(JSON.stringify(data))
-    .digest('hex');
+  const dataHash = crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex');
   return `${schemaName}_${dataHash}`;
 }
 
@@ -73,25 +76,30 @@ export function getValidationMetrics() {
   const schemas = Array.from(validationMetrics.schemaMetrics.entries()).map(([name, metrics]) => ({
     schema: name,
     ...metrics,
-    avgDuration: metrics.count > 0 ? metrics.totalDuration / metrics.count : 0
+    avgDuration: metrics.count > 0 ? metrics.totalDuration / metrics.count : 0,
   }));
 
   return {
     ...validationMetrics,
-    avgDuration: validationMetrics.totalValidations > 0 
-      ? validationMetrics.totalDuration / validationMetrics.totalValidations 
-      : 0,
-    successRate: validationMetrics.totalValidations > 0
-      ? (validationMetrics.successfulValidations / validationMetrics.totalValidations) * 100
-      : 0,
-    cacheHitRate: (validationMetrics.cacheHits + validationMetrics.cacheMisses) > 0
-      ? (validationMetrics.cacheHits / (validationMetrics.cacheHits + validationMetrics.cacheMisses)) * 100
-      : 0,
+    avgDuration:
+      validationMetrics.totalValidations > 0
+        ? validationMetrics.totalDuration / validationMetrics.totalValidations
+        : 0,
+    successRate:
+      validationMetrics.totalValidations > 0
+        ? (validationMetrics.successfulValidations / validationMetrics.totalValidations) * 100
+        : 0,
+    cacheHitRate:
+      validationMetrics.cacheHits + validationMetrics.cacheMisses > 0
+        ? (validationMetrics.cacheHits /
+            (validationMetrics.cacheHits + validationMetrics.cacheMisses)) *
+          100
+        : 0,
     cacheStats: {
       size: validationCache.size,
-      ...cacheStats
+      ...cacheStats,
     },
-    schemas
+    schemas,
   };
 }
 
@@ -125,30 +133,30 @@ interface ValidationOptions {
    * @default true
    */
   stripUnknown?: boolean;
-  
+
   /**
    * Whether to abort early on first error
    * @default false
    */
   abortEarly?: boolean;
-  
+
   /**
    * Custom error message
    */
   message?: string;
-  
+
   /**
    * HTTP status code for validation errors
    * @default 400
    */
   statusCode?: number;
-  
+
   /**
    * Whether to log validation errors
    * @default true
    */
   logErrors?: boolean;
-  
+
   /**
    * Rate limiting configuration
    */
@@ -162,7 +170,7 @@ interface ValidationOptions {
  * Format Zod errors for API response
  */
 function formatZodError(error: ZodError): Array<{ field: string; message: string; code?: string }> {
-  return error.errors.map((err) => {
+  return error.errors.map(err => {
     const field = err.path.join('.');
     return {
       field: field || 'unknown',
@@ -193,16 +201,16 @@ export function validate(
 
   return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     const startTime = Date.now();
-    
+
     try {
       // Get data from the specified source
       const data = req[source];
-      
+
       // Check cache for validation result (only for GET requests with query params)
       let validatedData;
       let cacheHit = false;
       const cacheKey = generateCacheKey(schema, data, schemaName);
-      
+
       if (req.method === 'GET' && source === 'query') {
         const cached = validationCache.get(cacheKey);
         if (cached) {
@@ -215,49 +223,49 @@ export function validate(
           cacheStats.misses++;
         }
       }
-      
+
       // If not cached, perform validation
       if (!cacheHit) {
         validatedData = await schema.parseAsync(data, {
           abortEarly,
           stripUnknown,
         });
-        
+
         // Cache successful validation (only for GET requests)
         if (req.method === 'GET' && source === 'query') {
           validationCache.set(cacheKey, {
             result: validatedData,
-            timestamp: Date.now()
+            timestamp: Date.now(),
           });
         }
       }
-      
+
       // Replace the original data with validated data
       (req as any)[source] = validatedData;
-      
+
       // Track successful validation metrics with mutex for thread safety
       const duration = Date.now() - startTime;
-      
+
       await metricsMutex.runExclusive(async () => {
         validationMetrics.totalValidations++;
         validationMetrics.successfulValidations++;
         validationMetrics.totalDuration += duration;
-        
+
         if (duration > 100) {
           validationMetrics.slowValidations++;
         }
-        
+
         // Update schema-specific metrics
         const schemaMetric = validationMetrics.schemaMetrics.get(schemaName) || {
           count: 0,
           totalDuration: 0,
-          failures: 0
+          failures: 0,
         };
         schemaMetric.count++;
         schemaMetric.totalDuration += duration;
         validationMetrics.schemaMetrics.set(schemaName, schemaMetric);
       });
-      
+
       if (duration > 100) {
         logger.warn('Slow validation detected', {
           schema: schemaName,
@@ -265,32 +273,32 @@ export function validate(
           path: req.path,
         });
       }
-      
+
       next();
     } catch (error) {
       const duration = Date.now() - startTime;
-      
+
       // Track failed validation metrics with mutex for thread safety
       await metricsMutex.runExclusive(async () => {
         validationMetrics.totalValidations++;
         validationMetrics.failedValidations++;
         validationMetrics.totalDuration += duration;
-        
+
         // Update schema-specific metrics
         const schemaMetric = validationMetrics.schemaMetrics.get(schemaName) || {
           count: 0,
           totalDuration: 0,
-          failures: 0
+          failures: 0,
         };
         schemaMetric.count++;
         schemaMetric.totalDuration += duration;
         schemaMetric.failures++;
         validationMetrics.schemaMetrics.set(schemaName, schemaMetric);
       });
-      
+
       if (error instanceof ZodError) {
         const errors = formatZodError(error);
-        
+
         if (logErrors) {
           logger.warn('Validation error', {
             source,
@@ -301,7 +309,7 @@ export function validate(
             duration,
           });
         }
-        
+
         __res.status(statusCode).json({
           success: false,
           error: message,
@@ -310,7 +318,7 @@ export function validate(
         });
         return;
       }
-      
+
       // Handle unexpected errors
       logger.error('Unexpected validation error', error);
       __res.status(500).json({
@@ -333,7 +341,7 @@ export function validateMultiple(
 ) {
   return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
     const allErrors: Array<{ source: ValidationSource; errors: Array<any> }> = [];
-    
+
     for (const validation of validations) {
       try {
         const data = req[validation.source];
@@ -341,7 +349,7 @@ export function validateMultiple(
           abortEarly: validation.options?.abortEarly ?? false,
           stripUnknown: validation.options?.stripUnknown ?? true,
         });
-        
+
         (req as any)[validation.source] = validatedData;
       } catch (error) {
         if (error instanceof ZodError) {
@@ -352,16 +360,16 @@ export function validateMultiple(
         }
       }
     }
-    
+
     if (allErrors.length > 0) {
       const statusCode = validations[0]?.options?.statusCode ?? 400;
-      
+
       logger.warn('Multiple validation errors', {
         path: req.path,
         method: req.method,
         errors: allErrors,
       });
-      
+
       __res.status(statusCode).json({
         success: false,
         error: 'Validation failed',
@@ -370,7 +378,7 @@ export function validateMultiple(
       });
       return;
     }
-    
+
     next();
   };
 }
@@ -401,11 +409,11 @@ export function validateAsync<T>(
     try {
       // First, validate with Zod
       const validatedData = await schema.parseAsync(req.body);
-      
+
       // Then, run custom validation if provided
       if (customValidator) {
         const customResult = await customValidator(validatedData);
-        
+
         if (customResult === false) {
           __res.status(400).json({
             success: false,
@@ -413,7 +421,7 @@ export function validateAsync<T>(
           });
           return;
         }
-        
+
         if (typeof customResult === 'object' && customResult.error) {
           __res.status(400).json({
             success: false,
@@ -422,13 +430,13 @@ export function validateAsync<T>(
           return;
         }
       }
-      
+
       req.body = validatedData;
       next();
     } catch (error) {
       if (error instanceof ZodError) {
         const errors = formatZodError(error);
-        
+
         __res.status(400).json({
           success: false,
           error: 'Validation failed',
@@ -436,7 +444,7 @@ export function validateAsync<T>(
         });
         return;
       }
-      
+
       logger.error('Validation error', error);
       __res.status(500).json({
         success: false,
@@ -487,11 +495,11 @@ export function sanitizeAndValidate(schema: ZodSchema) {
     try {
       // Use DOMPurify-based sanitization for robust XSS prevention
       req.body = sanitizeObject(req.body, true);
-      
+
       // Validate with Zod
       const validatedData = await schema.parseAsync(req.body);
       req.body = validatedData;
-      
+
       next();
     } catch (error) {
       if (error instanceof ZodError) {
@@ -503,7 +511,7 @@ export function sanitizeAndValidate(schema: ZodSchema) {
         });
         return;
       }
-      
+
       next(error);
     }
   };
@@ -516,12 +524,12 @@ export function sanitizeAndValidate(schema: ZodSchema) {
 export function createValidatedEndpoint(
   schema: ZodSchema,
   source: ValidationSource = 'body',
-  options: ValidationOptions & { 
-    rateLimit?: { windowMs?: number; max?: number } 
+  options: ValidationOptions & {
+    rateLimit?: { windowMs?: number; max?: number };
   } = {}
 ) {
   const middlewares: Array<any> = [];
-  
+
   // Add rate limiting if configured
   if (options.rateLimit) {
     const rateLimiter = createRateLimiter({
@@ -532,10 +540,10 @@ export function createValidatedEndpoint(
     });
     middlewares.push(rateLimiter);
   }
-  
+
   // Add validation
   middlewares.push(validate(schema, source, options));
-  
+
   return middlewares;
 }
 

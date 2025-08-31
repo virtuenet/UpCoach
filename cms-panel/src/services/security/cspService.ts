@@ -33,6 +33,8 @@ export interface CSPDirectives {
   'report-to'?: string[];
   'require-trusted-types-for'?: string[];
   'trusted-types'?: string[];
+  'upgrade-insecure-requests'?: string[];
+  'block-all-mixed-content'?: string[];
 }
 
 class ContentSecurityPolicyService {
@@ -40,46 +42,34 @@ class ContentSecurityPolicyService {
   private nonces: Set<string> = new Set();
   private readonly NONCE_LENGTH = 16;
   private readonly MAX_NONCES = 1000;
-  
+
   // Production-ready CSP directives (no unsafe-inline or unsafe-eval)
   private readonly defaultDirectives: CSPDirectives = {
     'default-src': ["'self'"],
     'script-src': [
       "'self'",
       "'strict-dynamic'", // Allow scripts loaded by trusted scripts
-      "https://cdn.jsdelivr.net", // For libraries
-      "https://*.sentry.io", // For Sentry
-      "https://*.datadog.com", // For DataDog
+      'https://cdn.jsdelivr.net', // For libraries
+      'https://*.sentry.io', // For Sentry
+      'https://*.datadog.com', // For DataDog
     ],
-    'style-src': [
-      "'self'",
-      "https://fonts.googleapis.com",
-    ],
-    'img-src': [
-      "'self'",
-      "data:",
-      "blob:",
-      "https:",
-    ],
-    'font-src': [
-      "'self'",
-      "data:",
-      "https://fonts.gstatic.com",
-    ],
+    'style-src': ["'self'", 'https://fonts.googleapis.com'],
+    'img-src': ["'self'", 'data:', 'blob:', 'https:'],
+    'font-src': ["'self'", 'data:', 'https://fonts.gstatic.com'],
     'connect-src': [
       "'self'",
-      "http://localhost:7000", // Backend API (dev)
-      "http://localhost:8080", // Backend API (dev)
-      "https://api.upcoach.ai", // Production API
-      "https://*.sentry.io", // Sentry
-      "https://*.datadog.com", // DataDog
-      "wss:", // WebSocket connections
+      'http://localhost:7000', // Backend API (dev)
+      'http://localhost:8080', // Backend API (dev)
+      'https://api.upcoach.ai', // Production API
+      'https://*.sentry.io', // Sentry
+      'https://*.datadog.com', // DataDog
+      'wss:', // WebSocket connections
     ],
     'media-src': ["'self'"],
     'object-src': ["'none'"],
     'child-src': ["'self'"],
     'frame-src': ["'none'"],
-    'worker-src': ["'self'", "blob:"],
+    'worker-src': ["'self'", 'blob:'],
     'form-action': ["'self'"],
     'frame-ancestors': ["'none'"],
     'base-uri': ["'self'"],
@@ -103,16 +93,18 @@ class ContentSecurityPolicyService {
    */
   generateNonce(): string {
     const nonce = crypto.randomBytes(this.NONCE_LENGTH).toString('base64');
-    
+
     // Store nonce for validation
     this.nonces.add(nonce);
-    
+
     // Prevent memory leak
     if (this.nonces.size > this.MAX_NONCES) {
       const firstNonce = this.nonces.values().next().value;
-      this.nonces.delete(firstNonce);
+      if (firstNonce) {
+        this.nonces.delete(firstNonce);
+      }
     }
-    
+
     return nonce;
   }
 
@@ -132,20 +124,14 @@ class ContentSecurityPolicyService {
     config?: CSPConfig
   ): string {
     const directives = { ...this.defaultDirectives, ...customDirectives };
-    
+
     // Add nonce to script-src and style-src if provided
     if (nonce) {
       if (directives['script-src']) {
-        directives['script-src'] = [
-          ...directives['script-src'],
-          `'nonce-${nonce}'`,
-        ];
+        directives['script-src'] = [...directives['script-src'], `'nonce-${nonce}'`];
       }
       if (directives['style-src']) {
-        directives['style-src'] = [
-          ...directives['style-src'],
-          `'nonce-${nonce}'`,
-        ];
+        directives['style-src'] = [...directives['style-src'], `'nonce-${nonce}'`];
       }
     }
 
@@ -200,7 +186,7 @@ class ContentSecurityPolicyService {
       endpoints: [{ url: endpoint }],
       include_subdomains: true,
     };
-    
+
     return JSON.stringify(reportTo);
   }
 
@@ -217,7 +203,7 @@ class ContentSecurityPolicyService {
     sample?: string;
   } {
     const cspReport = report['csp-report'] || report;
-    
+
     return {
       documentUri: cspReport['document-uri'] || cspReport.documentURI,
       violatedDirective: cspReport['violated-directive'] || cspReport.violatedDirective,
@@ -234,10 +220,10 @@ class ContentSecurityPolicyService {
    */
   handleViolationReport(report: any): void {
     const violation = this.parseViolationReport(report);
-    
+
     // Log violation for monitoring
     logger.warn('CSP violation detected', violation);
-    
+
     // Track violations for analysis
     this.trackViolation(violation);
   }
@@ -249,7 +235,7 @@ class ContentSecurityPolicyService {
     // This could be sent to monitoring service
     // For now, just log it
     const violationKey = `${violation.violatedDirective}:${violation.blockedUri}`;
-    
+
     // You could implement rate limiting here to prevent spam
     logger.info('CSP violation tracked', {
       key: violationKey,
@@ -266,7 +252,7 @@ class ContentSecurityPolicyService {
     if (this.nonces.size > this.MAX_NONCES / 2) {
       const toDelete = this.nonces.size - this.MAX_NONCES / 2;
       const iterator = this.nonces.values();
-      
+
       for (let i = 0; i < toDelete; i++) {
         const nonce = iterator.next().value;
         if (nonce) {
@@ -309,25 +295,25 @@ class ContentSecurityPolicyService {
     return (req: any, res: any, next: any) => {
       // Generate nonce for this request
       const nonce = this.generateNonce();
-      
+
       // Store nonce in response locals for use in templates
       res.locals.cspNonce = nonce;
-      
+
       // Generate CSP header
       const cspHeader = this.generateCSPHeader(nonce, {}, config);
-      
+
       // Set appropriate header based on config
       const headerName = config?.reportOnly
         ? 'Content-Security-Policy-Report-Only'
         : 'Content-Security-Policy';
-      
+
       res.setHeader(headerName, cspHeader);
-      
+
       // Add Report-To header if configured
       if (config?.reportUri) {
         res.setHeader('Report-To', this.generateReportToHeader(config.reportUri));
       }
-      
+
       next();
     };
   }
@@ -341,17 +327,17 @@ class ContentSecurityPolicyService {
       return {
         ...this.defaultDirectives,
         'script-src': [
-          ...this.defaultDirectives['script-src'] || [],
+          ...(this.defaultDirectives['script-src'] || []),
           "'unsafe-eval'", // Required for HMR in development
-          "http://localhost:*", // Allow local development servers
+          'http://localhost:*', // Allow local development servers
         ],
         'connect-src': [
-          ...this.defaultDirectives['connect-src'] || [],
-          "ws://localhost:*", // WebSocket for HMR
+          ...(this.defaultDirectives['connect-src'] || []),
+          'ws://localhost:*', // WebSocket for HMR
         ],
       };
     }
-    
+
     return this.defaultDirectives;
   }
 
@@ -365,11 +351,11 @@ class ContentSecurityPolicyService {
   } {
     const warnings: string[] = [];
     const errors: string[] = [];
-    
+
     // Check for unsafe directives in production
     if (typeof import.meta !== 'undefined' && import.meta.env?.PROD) {
       const unsafePatterns = ["'unsafe-inline'", "'unsafe-eval'"];
-      
+
       for (const [directive, values] of Object.entries(directives)) {
         if (values && Array.isArray(values)) {
           for (const pattern of unsafePatterns) {
@@ -380,21 +366,21 @@ class ContentSecurityPolicyService {
         }
       }
     }
-    
+
     // Check for overly permissive directives
     if (directives['default-src']?.includes('*')) {
       warnings.push("default-src contains '*' which is overly permissive");
     }
-    
+
     // Ensure critical directives are set
     if (!directives['default-src']) {
-      warnings.push("default-src is not set, consider adding it for defense in depth");
+      warnings.push('default-src is not set, consider adding it for defense in depth');
     }
-    
+
     if (!directives['frame-ancestors']) {
-      warnings.push("frame-ancestors is not set, consider adding it to prevent clickjacking");
+      warnings.push('frame-ancestors is not set, consider adding it to prevent clickjacking');
     }
-    
+
     return {
       isValid: errors.length === 0,
       warnings,
@@ -412,7 +398,7 @@ export function useCSPNonce(): string {
   if (typeof window !== 'undefined' && (window as any).__CSP_NONCE__) {
     return (window as any).__CSP_NONCE__;
   }
-  
+
   // Generate new nonce if not available (client-side only)
   return cspService.generateNonce();
 }

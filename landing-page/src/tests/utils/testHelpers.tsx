@@ -1,12 +1,9 @@
-import { render, RenderOptions, act } from "@testing-library/react";
-import { ReactElement } from "react";
-import userEvent from "@testing-library/user-event";
+import { render, RenderOptions, act } from '@testing-library/react';
+import { ReactElement } from 'react';
+import userEvent from '@testing-library/user-event';
 
 // Custom render function with providers
-export function renderWithProviders(
-  ui: ReactElement,
-  options?: Omit<RenderOptions, "wrapper">,
-) {
+export function renderWithProviders(ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) {
   // Add any global providers here
   const Wrapper = ({ children }: { children: React.ReactNode }) => {
     return <>{children}</>;
@@ -35,47 +32,47 @@ export const mockApiResponses = {
   leadCapture: {
     success: {
       success: true,
-      message: "Lead captured successfully",
+      message: 'Lead captured successfully',
       data: {
-        id: "lead-123",
-        email: "test@example.com",
+        id: 'lead-123',
+        email: 'test@example.com',
         createdAt: new Date().toISOString(),
       },
     },
     error: {
       success: false,
-      error: "Failed to capture lead",
+      error: 'Failed to capture lead',
     },
   },
   newsletter: {
     success: {
       success: true,
-      message: "Subscribed successfully",
+      message: 'Subscribed successfully',
     },
     error: {
       success: false,
-      error: "Email already subscribed",
+      error: 'Email already subscribed',
     },
   },
 };
 
 // Test data generators
 export const generateTestUser = (overrides = {}) => ({
-  id: "test-user-123",
-  email: "test@example.com",
-  name: "Test User",
+  id: 'test-user-123',
+  email: 'test@example.com',
+  name: 'Test User',
   createdAt: new Date().toISOString(),
   ...overrides,
 });
 
 export const generateTestLead = (overrides = {}) => ({
-  name: "John Doe",
-  email: "john@company.com",
-  company: "Acme Inc",
-  role: "manager",
-  interest: "productivity",
+  name: 'John Doe',
+  email: 'john@company.com',
+  company: 'Acme Inc',
+  role: 'manager',
+  interest: 'productivity',
   marketingConsent: true,
-  source: "test",
+  source: 'test',
   ...overrides,
 });
 
@@ -84,16 +81,16 @@ export const checkAccessibility = async (container: HTMLElement) => {
   const results = [];
 
   // Check for alt text on images
-  const images = container.querySelectorAll("img");
-  images.forEach((img) => {
+  const images = container.querySelectorAll('img');
+  images.forEach(img => {
     if (!img.alt) {
       results.push(`Image missing alt text: ${img.src}`);
     }
   });
 
   // Check for form labels
-  const inputs = container.querySelectorAll("input, select, textarea");
-  inputs.forEach((input) => {
+  const inputs = container.querySelectorAll('input, select, textarea');
+  inputs.forEach(input => {
     const id = input.id;
     if (id) {
       const label = container.querySelector(`label[for="${id}"]`);
@@ -104,14 +101,12 @@ export const checkAccessibility = async (container: HTMLElement) => {
   });
 
   // Check for heading hierarchy
-  const headings = container.querySelectorAll("h1, h2, h3, h4, h5, h6");
+  const headings = container.querySelectorAll('h1, h2, h3, h4, h5, h6');
   let lastLevel = 0;
-  headings.forEach((heading) => {
+  headings.forEach(heading => {
     const level = parseInt(heading.tagName[1]);
     if (level > lastLevel + 1) {
-      results.push(
-        `Heading hierarchy issue: ${heading.tagName} after H${lastLevel}`,
-      );
+      results.push(`Heading hierarchy issue: ${heading.tagName} after H${lastLevel}`);
     }
     lastLevel = level;
   });
@@ -120,9 +115,7 @@ export const checkAccessibility = async (container: HTMLElement) => {
 };
 
 // Performance testing helpers
-export const measureRenderTime = async (
-  component: () => ReactElement,
-): Promise<number> => {
+export const measureRenderTime = async (component: () => ReactElement): Promise<number> => {
   const start = performance.now();
   act(() => {
     render(component());
@@ -149,14 +142,14 @@ export class MockIntersectionObserver {
       },
     } as any;
 
-    global.IntersectionObserver = jest.fn((callback) => {
+    global.IntersectionObserver = jest.fn(callback => {
       this.callbacks.set(document.body, callback);
       return this.observer;
     }) as any;
   }
 
   triggerIntersection(entries: Partial<IntersectionObserverEntry>[]) {
-    this.callbacks.forEach((callback) => {
+    this.callbacks.forEach(callback => {
       callback(entries as IntersectionObserverEntry[], this.observer);
     });
   }
@@ -164,7 +157,7 @@ export class MockIntersectionObserver {
 
 // Wait for animations to complete
 export const waitForAnimation = (duration = 1000) =>
-  new Promise((resolve) => setTimeout(resolve, duration));
+  new Promise(resolve => setTimeout(resolve, duration));
 
 // Mock fetch with response queue
 export class MockFetch {

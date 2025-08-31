@@ -14,7 +14,7 @@ function generateAuthToken(context, events, done) {
     },
     process.env.JWT_SECRET || 'test-secret'
   );
-  
+
   context.vars.authToken = token;
   return done();
 }
@@ -23,8 +23,10 @@ function generateAuthToken(context, events, done) {
 function generateTestData(context, events, done) {
   context.vars.randomEmail = `test-${Date.now()}@example.com`;
   context.vars.randomUsername = `user_${crypto.randomBytes(4).toString('hex')}`;
-  context.vars.randomGoal = ['weight-loss', 'muscle-gain', 'stress-reduction'][Math.floor(Math.random() * 3)];
-  
+  context.vars.randomGoal = ['weight-loss', 'muscle-gain', 'stress-reduction'][
+    Math.floor(Math.random() * 3)
+  ];
+
   return done();
 }
 
@@ -36,19 +38,19 @@ function collectCustomMetrics(req, res, context, events, done) {
       events.emit('counter', 'business.mrr.requests', 1);
       events.emit('histogram', 'business.mrr.value', res.body.mrr);
     }
-    
+
     if (res.body.responseTime) {
       events.emit('histogram', 'ai.response.time', res.body.responseTime);
     }
   }
-  
+
   return done();
 }
 
 // Validate response structure
 function validateResponse(req, res, context, events, done) {
   const path = req.url;
-  
+
   // Validate based on endpoint
   if (path.includes('/api/dashboard/financial')) {
     if (!res.body.mrr || !res.body.revenue) {
@@ -56,7 +58,7 @@ function validateResponse(req, res, context, events, done) {
       return done(new Error('Invalid financial dashboard response'));
     }
   }
-  
+
   if (path.includes('/api/users')) {
     if (Array.isArray(res.body.data)) {
       const invalidUsers = res.body.data.filter(user => !user.id || !user.email);
@@ -65,22 +67,22 @@ function validateResponse(req, res, context, events, done) {
       }
     }
   }
-  
+
   return done();
 }
 
 // Simulate real user behavior with think times
 function simulateUserBehavior(context, events, done) {
   const actions = [
-    { weight: 0.4, thinkTime: 2 },  // Quick navigation
-    { weight: 0.3, thinkTime: 5 },  // Reading content
+    { weight: 0.4, thinkTime: 2 }, // Quick navigation
+    { weight: 0.3, thinkTime: 5 }, // Reading content
     { weight: 0.2, thinkTime: 10 }, // Filling forms
     { weight: 0.1, thinkTime: 15 }, // Extended interaction
   ];
-  
+
   const random = Math.random();
   let cumulative = 0;
-  
+
   for (const action of actions) {
     cumulative += action.weight;
     if (random <= cumulative) {
@@ -88,7 +90,7 @@ function simulateUserBehavior(context, events, done) {
       break;
     }
   }
-  
+
   return done();
 }
 
@@ -105,11 +107,11 @@ function refreshAuthToken(context, events, done) {
       },
       process.env.JWT_SECRET || 'test-secret'
     );
-    
+
     context.vars.authToken = newToken;
     events.emit('counter', 'auth.token.refreshed', 1);
   }
-  
+
   return done();
 }
 

@@ -8,9 +8,13 @@ export interface ForumVoteAttributes {
   createdAt: Date;
 }
 
-export interface ForumVoteCreationAttributes extends Omit<ForumVoteAttributes, 'id' | 'createdAt'> {}
+export interface ForumVoteCreationAttributes
+  extends Omit<ForumVoteAttributes, 'id' | 'createdAt'> {}
 
-export class ForumVote extends Model<ForumVoteAttributes, ForumVoteCreationAttributes> implements ForumVoteAttributes {
+export class ForumVote
+  extends Model<ForumVoteAttributes, ForumVoteCreationAttributes>
+  implements ForumVoteAttributes
+{
   public id!: string;
   public userId!: string;
   public postId!: string;
@@ -24,12 +28,12 @@ export class ForumVote extends Model<ForumVoteAttributes, ForumVoteCreationAttri
   public static associate(models: any) {
     ForumVote.belongsTo(models.User, {
       foreignKey: 'userId',
-      as: 'user'
+      as: 'user',
     });
-    
+
     ForumVote.belongsTo(models.ForumPost, {
       foreignKey: 'postId',
-      as: 'post'
+      as: 'post',
     });
   }
 }

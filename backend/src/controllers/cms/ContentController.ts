@@ -23,24 +23,24 @@ export class ContentController {
         search,
         // tags,
         sortBy = 'publishedAt',
-        sortOrder = 'DESC'
+        sortOrder = 'DESC',
       } = req.query;
 
       const offset = (Number(page) - 1) * Number(limit);
-      
+
       const where: any = {};
-      
+
       if (status) where.status = status;
       if (type) where.type = type;
       if (categoryId) where.categoryId = categoryId;
       if (authorId) where.authorId = authorId;
       if (isPremium !== undefined) where.isPremium = isPremium === 'true';
-      
+
       if (search) {
         where[Op.or as any] = [
           { title: { [Op.iLike]: `%${search}%` } },
           { content: { [Op.iLike]: `%${search}%` } },
-          { excerpt: { [Op.iLike]: `%${search}%` } }
+          { excerpt: { [Op.iLike]: `%${search}%` } },
         ];
       }
 
@@ -50,28 +50,28 @@ export class ContentController {
           {
             model: User,
             as: 'author',
-            attributes: ['id', 'name', 'email', 'avatar']
+            attributes: ['id', 'name', 'email', 'avatar'],
           },
           {
             model: ContentCategory,
             as: 'category',
-            attributes: ['id', 'name', 'slug', 'color']
+            attributes: ['id', 'name', 'slug', 'color'],
           },
           {
             model: ContentTag,
             as: 'tags',
             attributes: ['id', 'name', 'slug', 'color'],
-            through: { attributes: [] }
+            through: { attributes: [] },
           },
           {
             model: ContentMedia,
             as: 'media',
-            attributes: ['id', 'type', 'url', 'thumbnailUrl']
-          }
+            attributes: ['id', 'type', 'url', 'thumbnailUrl'],
+          },
         ],
         order: [[sortBy as string, sortOrder as string]],
         limit: Number(limit),
-        offset
+        offset,
       });
 
       _res.json({
@@ -80,8 +80,8 @@ export class ContentController {
           page: Number(page),
           limit: Number(limit),
           total: count,
-          totalPages: Math.ceil(count / Number(limit))
-        }
+          totalPages: Math.ceil(count / Number(limit)),
+        },
       });
     } catch (error) {
       logger.error('Error fetching content:', error);
@@ -93,7 +93,7 @@ export class ContentController {
   static async getOne(req: Request, _res: Response) {
     try {
       const { id } = req.params;
-      
+
       const where = id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
         ? { id }
         : { slug: id };
@@ -104,22 +104,22 @@ export class ContentController {
           {
             model: User,
             as: 'author',
-            attributes: ['id', 'name', 'email', 'avatar', 'bio']
+            attributes: ['id', 'name', 'email', 'avatar', 'bio'],
           },
           {
             model: ContentCategory,
-            as: 'category'
+            as: 'category',
           },
           {
             model: ContentTag,
             as: 'tags',
-            through: { attributes: [] }
+            through: { attributes: [] },
           },
           {
             model: ContentMedia,
-            as: 'media'
-          }
-        ]
+            as: 'media',
+          },
+        ],
       });
 
       if (!content) {
@@ -154,14 +154,14 @@ export class ContentController {
         scheduledAt,
         isPremium,
         settings,
-        tags
+        tags,
       } = req.body;
 
       // Generate slug
       const baseSlug = slugify(title, { lower: true, strict: true });
       let slug = baseSlug;
       let counter = 1;
-      
+
       // Ensure unique slug
       while (await Content.findOne({ where: { slug } })) {
         slug = `${baseSlug}-${counter}`;
@@ -189,13 +189,13 @@ export class ContentController {
         scheduledAt,
         readingTime,
         isPremium: isPremium || false,
-        settings
+        settings,
       });
 
       // Add tags if provided
       if (tags && tags.length > 0) {
         const tagInstances = await ContentTag.findAll({
-          where: { id: tags }
+          where: { id: tags },
         });
         await newContent.setTags(tagInstances);
       }
@@ -205,8 +205,8 @@ export class ContentController {
         include: [
           { model: User, as: 'author', attributes: ['id', 'name', 'email', 'avatar'] },
           { model: ContentCategory, as: 'category' },
-          { model: ContentTag, as: 'tags', through: { attributes: [] } }
-        ]
+          { model: ContentTag, as: 'tags', through: { attributes: [] } },
+        ],
       });
 
       _res.status(201).json(completeContent);
@@ -237,7 +237,7 @@ export class ContentController {
         const baseSlug = slugify(updates.title, { lower: true, strict: true });
         let slug = baseSlug;
         let counter = 1;
-        
+
         while (await Content.findOne({ where: { slug, id: { [Op.ne as any]: id } } })) {
           slug = `${baseSlug}-${counter}`;
           counter++;
@@ -261,7 +261,7 @@ export class ContentController {
       // Update tags if provided
       if (updates.tags !== undefined) {
         const tagInstances = await ContentTag.findAll({
-          where: { id: updates.tags }
+          where: { id: updates.tags },
         });
         await content.setTags(tagInstances);
       }
@@ -272,8 +272,8 @@ export class ContentController {
           { model: User, as: 'author', attributes: ['id', 'name', 'email', 'avatar'] },
           { model: ContentCategory, as: 'category' },
           { model: ContentTag, as: 'tags', through: { attributes: [] } },
-          { model: ContentMedia, as: 'media' }
-        ]
+          { model: ContentMedia, as: 'media' },
+        ],
       });
 
       _res.json(updatedContent);
@@ -318,9 +318,9 @@ export class ContentController {
       // Check permissions
       if ((req as any).user!.role !== 'admin') {
         const contents = await Content.findAll({
-          where: { id: ids }
+          where: { id: ids },
         });
-        
+
         const unauthorized = contents.some(c => c.authorId !== (req as any).user!.id);
         if (unauthorized) {
           return _res.status(403).json({ error: 'Unauthorized to update some content' });
@@ -328,7 +328,7 @@ export class ContentController {
       }
 
       await Content.update(updates, {
-        where: { id: ids }
+        where: { id: ids },
       });
 
       _res.json({ message: `Updated ${ids.length} content items` });
@@ -355,7 +355,7 @@ export class ContentController {
         totalLikes: content.likeCount,
         totalShares: content.shareCount,
         readingTime: content.readingTime,
-        publishedAt: content.publishedAt
+        publishedAt: content.publishedAt,
       };
 
       // TODO: Add more detailed analytics from content_views table

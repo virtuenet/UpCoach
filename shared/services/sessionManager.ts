@@ -21,14 +21,14 @@ class SessionManager {
 
   constructor(config?: Partial<SessionConfig>) {
     this.emitter = new EventEmitter();
-    
+
     this.config = {
       sessionTimeout: 1800000, // 30 minutes default
       warningTime: 120000, // 2 minutes default
       checkInterval: 10000, // Check every 10 seconds
-      ...config
+      ...config,
     };
-    
+
     this.lastActivity = Date.now();
   }
 
@@ -37,17 +37,17 @@ class SessionManager {
    */
   public startSession(): void {
     if (this.sessionActive) return;
-    
+
     this.sessionActive = true;
     this.lastActivity = Date.now();
     this.warningShown = false;
-    
+
     // Set up activity listeners
     this.setupActivityListeners();
-    
+
     // Start checking session
     this.startChecking();
-    
+
     // Announce to screen readers
     this.announceToScreenReader('Session monitoring started');
   }
@@ -57,15 +57,15 @@ class SessionManager {
    */
   public stopSession(): void {
     if (!this.sessionActive) return;
-    
+
     this.sessionActive = false;
     this.clearActivityListeners();
-    
+
     if (this.checkTimer) {
       clearInterval(this.checkTimer);
       this.checkTimer = null;
     }
-    
+
     // Announce to screen readers
     this.announceToScreenReader('Session monitoring stopped');
   }
@@ -76,13 +76,13 @@ class SessionManager {
   public extendSession(): void {
     this.lastActivity = Date.now();
     this.warningShown = false;
-    
+
     this.emit('sessionExtended');
-    
+
     if (this.config.onSessionExtended) {
       this.config.onSessionExtended();
     }
-    
+
     // Announce to screen readers
     this.announceToScreenReader('Session extended successfully');
   }
@@ -103,7 +103,7 @@ class SessionManager {
     const remaining = this.getRemainingTime();
     const minutes = Math.floor(remaining / 60000);
     const seconds = Math.floor((remaining % 60000) / 1000);
-    
+
     if (minutes > 0) {
       return `${minutes} minute${minutes !== 1 ? 's' : ''} ${seconds} second${seconds !== 1 ? 's' : ''}`;
     }
@@ -123,10 +123,10 @@ class SessionManager {
    */
   public updateActivity(): void {
     if (!this.sessionActive) return;
-    
+
     const wasWarningShown = this.warningShown;
     this.lastActivity = Date.now();
-    
+
     // Hide warning if it was shown
     if (wasWarningShown) {
       this.warningShown = false;
@@ -139,16 +139,14 @@ class SessionManager {
    */
   private setupActivityListeners(): void {
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
-    
+
     const activityHandler = () => {
       this.updateActivity();
     };
-    
+
     events.forEach(event => {
       document.addEventListener(event, activityHandler, { passive: true });
-      this.activityListeners.push(() => 
-        document.removeEventListener(event, activityHandler)
-      );
+      this.activityListeners.push(() => document.removeEventListener(event, activityHandler));
     });
   }
 
@@ -167,11 +165,11 @@ class SessionManager {
     if (this.checkTimer) {
       clearInterval(this.checkTimer);
     }
-    
+
     this.checkTimer = setInterval(() => {
       this.checkSession();
     }, this.config.checkInterval);
-    
+
     // Initial check
     this.checkSession();
   }
@@ -181,15 +179,15 @@ class SessionManager {
    */
   private checkSession(): void {
     if (!this.sessionActive) return;
-    
+
     const remaining = this.getRemainingTime();
-    
+
     // Session expired
     if (remaining <= 0) {
       this.handleSessionExpired();
       return;
     }
-    
+
     // Should show warning
     if (this.shouldShowWarning()) {
       this.showWarning();
@@ -201,14 +199,14 @@ class SessionManager {
    */
   private showWarning(): void {
     if (this.warningShown) return;
-    
+
     this.warningShown = true;
     this.emit('warningShown', this.getRemainingTimeString());
-    
+
     if (this.config.onWarningShown) {
       this.config.onWarningShown();
     }
-    
+
     // Announce to screen readers with high priority
     this.announceToScreenReader(
       `Warning: Your session will expire in ${this.getRemainingTimeString()}. Press Enter to extend your session.`,
@@ -222,11 +220,11 @@ class SessionManager {
   private handleSessionExpired(): void {
     this.stopSession();
     this.emit('sessionExpired');
-    
+
     if (this.config.onSessionExpired) {
       this.config.onSessionExpired();
     }
-    
+
     // Announce to screen readers with high priority
     this.announceToScreenReader(
       'Your session has expired. You will be redirected to the login page.',
@@ -237,16 +235,19 @@ class SessionManager {
   /**
    * Announce message to screen readers
    */
-  private announceToScreenReader(message: string, priority: 'polite' | 'assertive' = 'polite'): void {
+  private announceToScreenReader(
+    message: string,
+    priority: 'polite' | 'assertive' = 'polite'
+  ): void {
     const announcement = document.createElement('div');
     announcement.setAttribute('role', 'status');
     announcement.setAttribute('aria-live', priority);
     announcement.setAttribute('aria-atomic', 'true');
     announcement.className = 'sr-only';
     announcement.textContent = message;
-    
+
     document.body.appendChild(announcement);
-    
+
     // Remove after announcement
     setTimeout(() => {
       document.body.removeChild(announcement);
@@ -268,7 +269,7 @@ class SessionManager {
       remaining: this.getRemainingTime(),
       remainingString: this.getRemainingTimeString(),
       warningShown: this.warningShown,
-      lastActivity: new Date(this.lastActivity)
+      lastActivity: new Date(this.lastActivity),
     };
   }
 
@@ -307,23 +308,23 @@ export function useSessionManager() {
     const manager = getSessionManager();
     return manager.getStatus();
   });
-  
+
   React.useEffect(() => {
     const manager = getSessionManager();
-    
+
     const updateStatus = () => {
       setSessionStatus(manager.getStatus());
     };
-    
+
     // Listen to session events
     manager.on('warningShown', updateStatus);
     manager.on('warningHidden', updateStatus);
     manager.on('sessionExtended', updateStatus);
     manager.on('sessionExpired', updateStatus);
-    
+
     // Update status periodically
     const interval = setInterval(updateStatus, 1000);
-    
+
     return () => {
       manager.off('warningShown', updateStatus);
       manager.off('warningHidden', updateStatus);
@@ -332,12 +333,12 @@ export function useSessionManager() {
       clearInterval(interval);
     };
   }, []);
-  
+
   return {
     ...sessionStatus,
     extendSession: () => getSessionManager().extendSession(),
     startSession: () => getSessionManager().startSession(),
-    stopSession: () => getSessionManager().stopSession()
+    stopSession: () => getSessionManager().stopSession(),
   };
 }
 

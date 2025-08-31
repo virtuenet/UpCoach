@@ -47,14 +47,36 @@ export interface ContentArticleAttributes {
   updatedAt?: Date;
 }
 
-export interface ContentArticleCreationAttributes extends Optional<ContentArticleAttributes, 
-  'id' | 'summary' | 'featuredImage' | 'tags' | 'status' | 'visibility' | 'publishDate' | 
-  'readTime' | 'viewCount' | 'likeCount' | 'commentCount' | 'shareCount' | 'seoTitle' | 
-  'seoDescription' | 'seoKeywords' | 'allowComments' | 'isPinned' | 'lastModifiedBy' | 
-  'metadata' | 'createdAt' | 'updatedAt'> {}
+export interface ContentArticleCreationAttributes
+  extends Optional<
+    ContentArticleAttributes,
+    | 'id'
+    | 'summary'
+    | 'featuredImage'
+    | 'tags'
+    | 'status'
+    | 'visibility'
+    | 'publishDate'
+    | 'readTime'
+    | 'viewCount'
+    | 'likeCount'
+    | 'commentCount'
+    | 'shareCount'
+    | 'seoTitle'
+    | 'seoDescription'
+    | 'seoKeywords'
+    | 'allowComments'
+    | 'isPinned'
+    | 'lastModifiedBy'
+    | 'metadata'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
-export class ContentArticle extends Model<ContentArticleAttributes, ContentArticleCreationAttributes> 
-  implements ContentArticleAttributes {
+export class ContentArticle
+  extends Model<ContentArticleAttributes, ContentArticleCreationAttributes>
+  implements ContentArticleAttributes
+{
   declare id: number;
   public slug!: string;
   public title!: string;
@@ -95,7 +117,7 @@ export class ContentArticle extends Model<ContentArticleAttributes, ContentArtic
   // Instance methods
   public async createVersion(userId: number, changeSummary?: string): Promise<ContentVersion> {
     const versionCount = await ContentVersion.count({
-      where: { contentId: this.id }
+      where: { contentId: this.id },
     });
 
     return ContentVersion.create({
@@ -123,8 +145,7 @@ export class ContentArticle extends Model<ContentArticleAttributes, ContentArtic
   }
 
   public isPublished(): boolean {
-    return this.status === 'published' && 
-           (!this.publishDate || this.publishDate <= new Date());
+    return this.status === 'published' && (!this.publishDate || this.publishDate <= new Date());
   }
 
   public async incrementViewCount(): Promise<void> {
@@ -317,10 +338,10 @@ ContentArticle.init(
         if (!article.slug) {
           article.slug = slugify(article.title, { lower: true, strict: true });
         }
-        
+
         // Calculate read time
         article.readTime = await article.calculateReadTime();
-        
+
         // Set SEO fields if not provided
         if (!article.seoTitle) {
           article.seoTitle = article.title;
@@ -334,7 +355,7 @@ ContentArticle.init(
         if (article.changed('content')) {
           article.readTime = await article.calculateReadTime();
         }
-        
+
         // Update slug if title changed
         if (article.changed('title') && !article.changed('slug')) {
           article.slug = slugify(article.title, { lower: true, strict: true });

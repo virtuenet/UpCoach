@@ -41,11 +41,11 @@ export interface RegisterData {
 }
 
 // Content types
-export type ContentType = 
-  | 'article' 
-  | 'guide' 
-  | 'exercise' 
-  | 'lesson' 
+export type ContentType =
+  | 'article'
+  | 'guide'
+  | 'exercise'
+  | 'lesson'
   | 'tip'
   | 'course'
   | 'template'
@@ -53,13 +53,7 @@ export type ContentType =
   | 'faq'
   | 'announcement';
 
-export type ContentStatus = 
-  | 'draft' 
-  | 'published' 
-  | 'scheduled' 
-  | 'archived'
-  | 'review'
-  | 'expired';
+export type ContentStatus = 'draft' | 'published' | 'scheduled' | 'archived' | 'review' | 'expired';
 
 export interface Content {
   id: string;

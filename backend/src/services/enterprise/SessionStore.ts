@@ -27,11 +27,7 @@ export class SessionStore {
         createdAt: new Date(),
       };
 
-      await redis.setEx(
-        `${this.prefix}${state}`,
-        this.ttl,
-        JSON.stringify(session)
-      );
+      await redis.setEx(`${this.prefix}${state}`, this.ttl, JSON.stringify(session));
 
       logger.info('OIDC session created', { state, configId });
 
@@ -45,7 +41,7 @@ export class SessionStore {
   async getSession(state: string): Promise<OIDCSession | null> {
     try {
       const data = await redis.get(`${this.prefix}${state}`);
-      
+
       if (!data) {
         return null;
       }

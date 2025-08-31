@@ -5,17 +5,30 @@ export const paginationSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
   sortBy: z.string().optional(),
-  order: z.enum(['ASC', 'DESC', 'asc', 'desc']).transform(val => val.toUpperCase()).optional(),
+  order: z
+    .enum(['ASC', 'DESC', 'asc', 'desc'])
+    .transform(val => val.toUpperCase())
+    .optional(),
 });
 
 // Date range schema
-export const dateRangeSchema = z.object({
-  startDate: z.string().datetime().or(z.date()).transform(val => new Date(val)),
-  endDate: z.string().datetime().or(z.date()).transform(val => new Date(val)),
-}).refine((data) => data.startDate <= data.endDate, {
-  message: 'Start date must be before or equal to end date',
-  path: ['startDate'],
-});
+export const dateRangeSchema = z
+  .object({
+    startDate: z
+      .string()
+      .datetime()
+      .or(z.date())
+      .transform(val => new Date(val)),
+    endDate: z
+      .string()
+      .datetime()
+      .or(z.date())
+      .transform(val => new Date(val)),
+  })
+  .refine(data => data.startDate <= data.endDate, {
+    message: 'Start date must be before or equal to end date',
+    path: ['startDate'],
+  });
 
 // ID parameter schema
 export const idParamSchema = z.object({
@@ -47,18 +60,26 @@ export const fileUploadSchema = z.object({
     'text/plain',
     'text/csv',
   ]),
-  size: z.number().positive().max(10 * 1024 * 1024, 'File size must be less than 10MB'),
+  size: z
+    .number()
+    .positive()
+    .max(10 * 1024 * 1024, 'File size must be less than 10MB'),
 });
 
 // Image upload schema (stricter for images)
 export const imageUploadSchema = z.object({
   filename: z.string().min(1).max(255),
   mimetype: z.enum(['image/jpeg', 'image/png', 'image/gif', 'image/webp']),
-  size: z.number().positive().max(5 * 1024 * 1024, 'Image size must be less than 5MB'),
-  dimensions: z.object({
-    width: z.number().positive().max(4096),
-    height: z.number().positive().max(4096),
-  }).optional(),
+  size: z
+    .number()
+    .positive()
+    .max(5 * 1024 * 1024, 'Image size must be less than 5MB'),
+  dimensions: z
+    .object({
+      width: z.number().positive().max(4096),
+      height: z.number().positive().max(4096),
+    })
+    .optional(),
 });
 
 // Address schema
@@ -166,11 +187,13 @@ export const apiKeySchema = z.object({
 export const batchOperationSchema = z.object({
   operation: z.enum(['create', 'update', 'delete']),
   items: z.array(z.record(z.unknown())).min(1).max(100, 'Maximum 100 items per batch'),
-  options: z.object({
-    skipErrors: z.boolean().optional(),
-    validateOnly: z.boolean().optional(),
-    transaction: z.boolean().optional(),
-  }).optional(),
+  options: z
+    .object({
+      skipErrors: z.boolean().optional(),
+      validateOnly: z.boolean().optional(),
+      transaction: z.boolean().optional(),
+    })
+    .optional(),
 });
 
 // Export request schema

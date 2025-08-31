@@ -1,8 +1,8 @@
 import { DataTypes, Model, Optional } from 'sequelize';
-import { sequelize } from '../index';
+import { sequelize } from '../../config/sequelize';
 
 export interface PersonalityTraits {
-  openness: number;        // 0-100 scale
+  openness: number; // 0-100 scale
   conscientiousness: number;
   extraversion: number;
   agreeableness: number;
@@ -57,12 +57,13 @@ export interface PersonalityProfileAttributes {
   updatedAt: Date;
 }
 
-interface PersonalityProfileCreationAttributes 
+interface PersonalityProfileCreationAttributes
   extends Optional<PersonalityProfileAttributes, 'id' | 'createdAt' | 'updatedAt' | 'isActive'> {}
 
-class PersonalityProfile extends Model<PersonalityProfileAttributes, PersonalityProfileCreationAttributes> 
-  implements PersonalityProfileAttributes {
-  
+class PersonalityProfile
+  extends Model<PersonalityProfileAttributes, PersonalityProfileCreationAttributes>
+  implements PersonalityProfileAttributes
+{
   public id!: string;
   public userId!: string;
   public assessmentType!: 'big_five' | 'mbti' | 'disc' | 'custom';
@@ -84,38 +85,43 @@ class PersonalityProfile extends Model<PersonalityProfileAttributes, Personality
   public getDominantTrait(): string {
     const traits = this.traits;
     const traitNames = Object.keys(traits) as (keyof PersonalityTraits)[];
-    
-    return traitNames.reduce((dominant, current) => 
+
+    return traitNames.reduce((dominant, current) =>
       traits[current] > traits[dominant] ? current : dominant
     );
   }
 
   public getTraitDescription(trait: keyof PersonalityTraits): string {
     const descriptions = {
-      openness: this.traits.openness > 50 
-        ? 'Creative, curious, and open to new experiences'
-        : 'Practical, conventional, and prefers routine',
-      conscientiousness: this.traits.conscientiousness > 50
-        ? 'Organized, disciplined, and goal-oriented'
-        : 'Flexible, spontaneous, and adaptable',
-      extraversion: this.traits.extraversion > 50
-        ? 'Outgoing, energetic, and socially confident'
-        : 'Reserved, thoughtful, and prefers smaller groups',
-      agreeableness: this.traits.agreeableness > 50
-        ? 'Cooperative, trusting, and empathetic'
-        : 'Competitive, skeptical, and direct',
-      neuroticism: this.traits.neuroticism > 50
-        ? 'Sensitive to stress and prone to worry'
-        : 'Emotionally stable and resilient'
+      openness:
+        this.traits.openness > 50
+          ? 'Creative, curious, and open to new experiences'
+          : 'Practical, conventional, and prefers routine',
+      conscientiousness:
+        this.traits.conscientiousness > 50
+          ? 'Organized, disciplined, and goal-oriented'
+          : 'Flexible, spontaneous, and adaptable',
+      extraversion:
+        this.traits.extraversion > 50
+          ? 'Outgoing, energetic, and socially confident'
+          : 'Reserved, thoughtful, and prefers smaller groups',
+      agreeableness:
+        this.traits.agreeableness > 50
+          ? 'Cooperative, trusting, and empathetic'
+          : 'Competitive, skeptical, and direct',
+      neuroticism:
+        this.traits.neuroticism > 50
+          ? 'Sensitive to stress and prone to worry'
+          : 'Emotionally stable and resilient',
     };
-    
+
     return descriptions[trait];
   }
 
   public getRecommendedAvatar(): string {
     // Logic to recommend avatar based on personality
     const { extraversion, agreeableness, conscientiousness, openness, neuroticism } = this.traits;
-    
+
     if (extraversion > 70 && agreeableness > 60) {
       return 'energetic-mentor';
     } else if (conscientiousness > 70 && openness > 60) {
@@ -142,12 +148,12 @@ class PersonalityProfile extends Model<PersonalityProfileAttributes, Personality
     description: string;
   }[] {
     const traits = this.traits;
-    
+
     return Object.entries(traits).map(([trait, score]) => ({
       trait: trait.charAt(0).toUpperCase() + trait.slice(1),
       score,
       level: score < 33 ? 'low' : score < 67 ? 'moderate' : 'high',
-      description: this.getTraitDescription(trait as keyof PersonalityTraits)
+      description: this.getTraitDescription(trait as keyof PersonalityTraits),
     }));
   }
 
@@ -169,16 +175,13 @@ class PersonalityProfile extends Model<PersonalityProfileAttributes, Personality
   ): Promise<PersonalityProfile> {
     // This would be called after processing assessment responses
     // The actual trait calculation would be done in the PersonalityService
-    
+
     const traits = await this.calculateTraitsFromResponses(responses, assessmentType);
     const insights = await this.generateInsights(traits);
-    
+
     // Deactivate previous profiles
-    await this.update(
-      { isActive: false },
-      { where: { userId, isActive: true } }
-    );
-    
+    await this.update({ isActive: false }, { where: { userId, isActive: true } });
+
     return this.create({
       userId,
       assessmentType,
@@ -200,7 +203,7 @@ class PersonalityProfile extends Model<PersonalityProfileAttributes, Personality
   ): Promise<PersonalityTraits> {
     // Simplified calculation - in real implementation, this would use
     // validated psychological assessment algorithms
-    
+
     const scores = {
       openness: 0,
       conscientiousness: 0,
@@ -214,13 +217,13 @@ class PersonalityProfile extends Model<PersonalityProfileAttributes, Personality
       const value = parseInt(response.value) || 0;
       const questionMap = this.getQuestionMapping(assessmentType);
       const trait = questionMap[index % 5]; // Simplified mapping
-      
+
       scores[trait as keyof PersonalityTraits] += value;
     });
 
     // Normalize scores to 0-100 scale
-    const maxScore = responses.length / 5 * 5; // Assuming 5-point scale
-    
+    const maxScore = (responses.length / 5) * 5; // Assuming 5-point scale
+
     return {
       openness: Math.round((scores.openness / maxScore) * 100),
       conscientiousness: Math.round((scores.conscientiousness / maxScore) * 100),
@@ -232,7 +235,7 @@ class PersonalityProfile extends Model<PersonalityProfileAttributes, Personality
 
   private static async generateInsights(traits: PersonalityTraits): Promise<PersonalityInsights> {
     const primaryTraits = Object.entries(traits)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 2)
       .map(([trait]) => trait);
 
@@ -254,77 +257,87 @@ class PersonalityProfile extends Model<PersonalityProfileAttributes, Personality
 
   private static getStrengthsForTraits(traits: PersonalityTraits): string[] {
     const strengths: string[] = [];
-    
+
     if (traits.openness > 60) strengths.push('Creative thinking', 'Adaptability');
     if (traits.conscientiousness > 60) strengths.push('Organization', 'Reliability');
     if (traits.extraversion > 60) strengths.push('Leadership', 'Communication');
     if (traits.agreeableness > 60) strengths.push('Teamwork', 'Empathy');
     if (traits.neuroticism < 40) strengths.push('Emotional stability', 'Stress resilience');
-    
+
     return strengths.slice(0, 4); // Limit to top 4 strengths
   }
 
   private static getGrowthAreasForTraits(traits: PersonalityTraits): string[] {
     const growthAreas: string[] = [];
-    
+
     if (traits.openness < 40) growthAreas.push('Embracing change', 'Creative exploration');
     if (traits.conscientiousness < 40) growthAreas.push('Time management', 'Goal setting');
     if (traits.extraversion < 40) growthAreas.push('Social confidence', 'Networking');
     if (traits.agreeableness < 40) growthAreas.push('Collaboration', 'Conflict resolution');
     if (traits.neuroticism > 60) growthAreas.push('Stress management', 'Emotional regulation');
-    
+
     return growthAreas.slice(0, 3); // Limit to top 3 growth areas
   }
 
   private static getCoachingStyle(traits: PersonalityTraits): CoachingStylePreference {
     return {
-      approach: traits.conscientiousness > 60 ? 'directive' : 
-                traits.agreeableness > 60 ? 'supportive' : 'collaborative',
-      feedback: traits.neuroticism > 60 ? 'gentle' : 
-                traits.extraversion > 60 ? 'direct' : 'encouraging',
-      pace: traits.conscientiousness > 60 ? 'fast' : 
-            traits.neuroticism > 60 ? 'slow' : 'moderate',
-      structure: traits.conscientiousness > 60 ? 'high' : 
-                 traits.openness > 60 ? 'low' : 'medium',
+      approach:
+        traits.conscientiousness > 60
+          ? 'directive'
+          : traits.agreeableness > 60
+            ? 'supportive'
+            : 'collaborative',
+      feedback:
+        traits.neuroticism > 60 ? 'gentle' : traits.extraversion > 60 ? 'direct' : 'encouraging',
+      pace: traits.conscientiousness > 60 ? 'fast' : traits.neuroticism > 60 ? 'slow' : 'moderate',
+      structure: traits.conscientiousness > 60 ? 'high' : traits.openness > 60 ? 'low' : 'medium',
     };
   }
 
   private static getCommunicationStyle(traits: PersonalityTraits): CommunicationStyle {
     return {
-      tone: traits.agreeableness > 60 ? 'warm' : 
-            traits.conscientiousness > 60 ? 'professional' : 'casual',
-      detail: traits.conscientiousness > 60 ? 'detailed' : 
-              traits.extraversion > 60 ? 'brief' : 'moderate',
+      tone:
+        traits.agreeableness > 60
+          ? 'warm'
+          : traits.conscientiousness > 60
+            ? 'professional'
+            : 'casual',
+      detail:
+        traits.conscientiousness > 60
+          ? 'detailed'
+          : traits.extraversion > 60
+            ? 'brief'
+            : 'moderate',
       examples: traits.openness > 60 ? 'abstract' : 'concrete',
-      encouragement: traits.agreeableness > 60 ? 'high' : 
-                     traits.neuroticism > 60 ? 'high' : 'medium',
+      encouragement:
+        traits.agreeableness > 60 ? 'high' : traits.neuroticism > 60 ? 'high' : 'medium',
     };
   }
 
   private static getMotivationFactors(traits: PersonalityTraits): MotivationFactor[] {
     const factors: MotivationFactor[] = [];
-    
+
     if (traits.extraversion > 60) {
       factors.push({
         factor: 'Social Recognition',
         importance: traits.extraversion,
-        description: 'Achievement acknowledgment from others'
+        description: 'Achievement acknowledgment from others',
       });
     }
-    
+
     if (traits.conscientiousness > 60) {
       factors.push({
         factor: 'Goal Achievement',
         importance: traits.conscientiousness,
-        description: 'Completing objectives and reaching targets'
+        description: 'Completing objectives and reaching targets',
       });
     }
-    
+
     if (traits.openness > 60) {
       factors.push({
         factor: 'Learning & Growth',
         importance: traits.openness,
-        description: 'Acquiring new skills and knowledge'
+        description: 'Acquiring new skills and knowledge',
       });
     }
 
@@ -335,8 +348,8 @@ class PersonalityProfile extends Model<PersonalityProfileAttributes, Personality
     // Simple confidence calculation based on response consistency
     const completion = responses.length >= 20 ? 100 : (responses.length / 20) * 100;
     const consistency = this.calculateResponseConsistency(responses);
-    
-    return Math.round((completion * 0.6) + (consistency * 0.4));
+
+    return Math.round(completion * 0.6 + consistency * 0.4);
   }
 
   private static calculateResponseConsistency(responses: Record<string, any>[]): number {
@@ -344,7 +357,7 @@ class PersonalityProfile extends Model<PersonalityProfileAttributes, Personality
     // This is a simplified implementation
     const values = responses.map(r => parseInt(r.value) || 0);
     const variance = this.calculateVariance(values);
-    
+
     // Lower variance indicates more consistent responses
     return Math.max(0, 100 - variance * 20);
   }
@@ -362,10 +375,14 @@ class PersonalityProfile extends Model<PersonalityProfileAttributes, Personality
 
   private static getTotalQuestions(assessmentType: string): number {
     switch (assessmentType) {
-      case 'big_five': return 50;
-      case 'mbti': return 60;
-      case 'disc': return 40;
-      default: return 50;
+      case 'big_five':
+        return 50;
+      case 'mbti':
+        return 60;
+      case 'disc':
+        return 40;
+      default:
+        return 50;
     }
   }
 }
@@ -395,9 +412,19 @@ PersonalityProfile.init(
       allowNull: false,
       validate: {
         isValidTraits(value: PersonalityTraits) {
-          const requiredTraits = ['openness', 'conscientiousness', 'extraversion', 'agreeableness', 'neuroticism'];
+          const requiredTraits = [
+            'openness',
+            'conscientiousness',
+            'extraversion',
+            'agreeableness',
+            'neuroticism',
+          ];
           for (const trait of requiredTraits) {
-            if (!(trait in value) || value[trait as keyof PersonalityTraits] < 0 || value[trait as keyof PersonalityTraits] > 100) {
+            if (
+              !(trait in value) ||
+              value[trait as keyof PersonalityTraits] < 0 ||
+              value[trait as keyof PersonalityTraits] > 100
+            ) {
               throw new Error(`Invalid trait value for ${trait}`);
             }
           }
@@ -482,4 +509,4 @@ PersonalityProfile.init(
   }
 );
 
-export { PersonalityProfile }; 
+export { PersonalityProfile };

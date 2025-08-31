@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import { AIService } from '../../services/ai/AIService';
 import { UserProfilingService } from '../../services/ai/UserProfilingService';
 import { RecommendationEngine } from '../../services/ai/RecommendationEngine';
@@ -26,7 +28,7 @@ describe('AI Coaching Scenarios', () => {
 
   beforeAll(async () => {
     await sequelize.sync({ force: true });
-    
+
     // Initialize services
     aiService = new AIService();
     userProfilingService = new UserProfilingService();
@@ -42,7 +44,7 @@ describe('AI Coaching Scenarios', () => {
       id: 'scenario-user-123',
       email: 'john@example.com',
       name: 'John Doe',
-      password: 'hashedpassword'
+      password: 'hashedpassword',
     });
   });
 
@@ -58,25 +60,25 @@ describe('AI Coaching Scenarios', () => {
     test('AI creates personalized profile and initial recommendations', async () => {
       // Step 1: Create user profile
       const profile = await userProfilingService.createOrUpdateProfile(testUser.id);
-      
+
       expect(profile).toBeDefined();
       expect(profile.userId).toBe(testUser.id);
       expect(profile.learningStyle).toBe('balanced');
-      
+
       // Step 2: Generate onboarding recommendations
       jest.spyOn(aiService, 'generateStructuredResponse').mockResolvedValue({
         recommendations: [
           {
             title: 'Set Your First Goal',
             description: 'Start with one achievable goal',
-            reason: 'Building momentum is key for new users'
+            reason: 'Building momentum is key for new users',
           },
           {
             title: 'Try Voice Journaling',
             description: 'Record your thoughts for 5 minutes',
-            reason: 'Helps establish daily reflection habit'
-          }
-        ]
+            reason: 'Helps establish daily reflection habit',
+          },
+        ],
       });
 
       const recommendations = await recommendationEngine.generateRecommendations(
@@ -91,24 +93,23 @@ describe('AI Coaching Scenarios', () => {
 
     test('AI adapts communication style based on initial interactions', async () => {
       // User expresses preference for direct communication
-      const messages = [
-        { role: 'user' as const, content: 'Just tell me what to do, no fluff' }
-      ];
+      const messages = [{ role: 'user' as const, content: 'Just tell me what to do, no fluff' }];
 
       jest.spyOn(aiService, 'generateResponse').mockResolvedValue({
-        content: 'Got it. Here\'s your action plan: 1) Set one goal today. 2) Track it daily. 3) Review weekly.',
+        content:
+          "Got it. Here's your action plan: 1) Set one goal today. 2) Track it daily. 3) Review weekly.",
         provider: 'openai',
         model: 'gpt-4',
-        usage: { totalTokens: 100 }
+        usage: { totalTokens: 100 },
       });
 
       const response = await aiService.generateResponse(messages, {
-        personality: 'direct'
+        personality: 'direct',
       });
 
       // Update profile based on preference
       await userProfilingService.updatePreferences(testUser.id, {
-        communicationStyle: 'direct'
+        communicationStyle: 'direct',
       });
 
       const profile = await userProfilingService.getUserProfile(testUser.id);
@@ -126,12 +127,12 @@ describe('AI Coaching Scenarios', () => {
         profileMetrics: {
           streakDays: 0,
           goalsCompleted: 0,
-          averageSessionsPerWeek: 0.5
+          averageSessionsPerWeek: 0.5,
         },
         behaviorPatterns: {
           averageMoodScore: 3.5,
-          consistencyScore: 20
-        }
+          consistencyScore: 20,
+        },
       });
 
       // Create low mood entries
@@ -140,7 +141,7 @@ describe('AI Coaching Scenarios', () => {
           userId: testUser.id,
           moodValue: Math.floor(Math.random() * 3) + 2, // 2-4
           note: 'Feeling unmotivated',
-          createdAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000)
+          createdAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
         });
       }
     });
@@ -148,10 +149,10 @@ describe('AI Coaching Scenarios', () => {
     test('AI detects struggling pattern and provides intervention', async () => {
       // Analyze user state
       const riskAssessment = await predictiveAnalytics.predictChurnRisk(testUser.id);
-      
+
       expect(riskAssessment.riskLevel).toBe('high');
       expect(riskAssessment.riskScore).toBeGreaterThan(0.7);
-      
+
       // Generate intervention plan
       const interventionPlan = await predictiveAnalytics.generateInterventionPlan(
         testUser.id,
@@ -165,35 +166,34 @@ describe('AI Coaching Scenarios', () => {
 
     test('AI provides empathetic support and micro-goals', async () => {
       jest.spyOn(aiService, 'generateResponse').mockResolvedValue({
-        content: 'I notice you\'ve been having a tough week. Let\'s start small - just 5 minutes today. You\'ve got this!',
+        content:
+          "I notice you've been having a tough week. Let's start small - just 5 minutes today. You've got this!",
         provider: 'openai',
         model: 'gpt-4',
-        usage: { totalTokens: 100 }
+        usage: { totalTokens: 100 },
       });
 
-      const messages = [
-        { role: 'user' as const, content: 'I can\'t seem to stick to anything' }
-      ];
+      const messages = [{ role: 'user' as const, content: "I can't seem to stick to anything" }];
 
       const response = await aiService.generateResponse(messages, {
         personality: 'empathetic',
         context: {
           userMood: 'low',
-          recentStruggle: true
-        }
+          recentStruggle: true,
+        },
       });
 
       expect(response.content).toContain('small');
-      
+
       // Generate micro-recommendations
       jest.spyOn(aiService, 'generateStructuredResponse').mockResolvedValue({
         recommendations: [
           {
             title: 'One Minute Win',
             description: 'Do one push-up or write one sentence',
-            reason: 'Building momentum with tiny wins'
-          }
-        ]
+            reason: 'Building momentum with tiny wins',
+          },
+        ],
       });
 
       const recommendations = await recommendationEngine.generateRecommendations(
@@ -217,13 +217,13 @@ describe('AI Coaching Scenarios', () => {
         profileMetrics: {
           streakDays: 90,
           goalsCompleted: 15,
-          averageSessionsPerWeek: 6
+          averageSessionsPerWeek: 6,
         },
         behaviorPatterns: {
           averageMoodScore: 8.5,
           consistencyScore: 95,
-          goalCompletionRate: 85
-        }
+          goalCompletionRate: 85,
+        },
       });
 
       // Create completed goals
@@ -233,14 +233,14 @@ describe('AI Coaching Scenarios', () => {
           title: `Goal ${i + 1}`,
           category: 'productivity',
           status: 'completed',
-          progress: 100
+          progress: 100,
         });
       }
     });
 
     test('AI provides advanced challenges and optimization strategies', async () => {
       const readinessAssessment = await userProfilingService.assessReadiness(testUser.id);
-      
+
       expect(readinessAssessment.overallReadiness).toBeGreaterThan(85);
       expect(readinessAssessment.readyForAdvanced).toBe(true);
 
@@ -250,20 +250,20 @@ describe('AI Coaching Scenarios', () => {
           {
             title: 'Implement Deep Work Sessions',
             description: '90-minute focused work blocks',
-            reason: 'You\'re ready for advanced productivity techniques'
+            reason: "You're ready for advanced productivity techniques",
           },
           {
             title: 'Mentor Others',
             description: 'Share your success strategies',
-            reason: 'Teaching reinforces your own habits'
-          }
-        ]
+            reason: 'Teaching reinforces your own habits',
+          },
+        ],
       });
 
-      const recommendations = await recommendationEngine.generateRecommendations(
-        testUser.id,
-        ['goal', 'habit']
-      );
+      const recommendations = await recommendationEngine.generateRecommendations(testUser.id, [
+        'goal',
+        'habit',
+      ]);
 
       const advancedRecs = recommendations.filter(r => r.difficulty === 'hard');
       expect(advancedRecs.length).toBeGreaterThan(0);
@@ -271,11 +271,9 @@ describe('AI Coaching Scenarios', () => {
 
     test('AI identifies optimization opportunities', async () => {
       const insights = await insightGenerator.generateInsightReport(testUser.id);
-      
-      const optimizationInsights = insights.insights.filter(
-        i => i.type === 'opportunity'
-      );
-      
+
+      const optimizationInsights = insights.insights.filter(i => i.type === 'opportunity');
+
       expect(optimizationInsights.length).toBeGreaterThan(0);
       expect(insights.summary.potentialGrowthAreas).toBeDefined();
     });
@@ -284,14 +282,16 @@ describe('AI Coaching Scenarios', () => {
   describe('Scenario 4: Voice Journal Analysis', () => {
     test('AI analyzes voice patterns for emotional insights', async () => {
       const mockAudioBuffer = Buffer.from('mock-audio-data');
-      
+
       // Mock transcription
-      jest.spyOn(voiceAI as any, 'transcribeAudio').mockResolvedValue(
-        'I had a really productive day today. Finished my project ahead of schedule!'
-      );
+      jest
+        .spyOn(voiceAI as any, 'transcribeAudio')
+        .mockResolvedValue(
+          'I had a really productive day today. Finished my project ahead of schedule!'
+        );
 
       const analysis = await voiceAI.analyzeVoice(testUser.id, mockAudioBuffer, {
-        sessionType: 'reflection'
+        sessionType: 'reflection',
       });
 
       expect(analysis.transcription).toBeDefined();
@@ -305,7 +305,7 @@ describe('AI Coaching Scenarios', () => {
       const sessions = [
         { sentiment: 'neutral', energy: 'low', date: new Date('2024-01-01') },
         { sentiment: 'positive', energy: 'medium', date: new Date('2024-01-02') },
-        { sentiment: 'positive', energy: 'high', date: new Date('2024-01-03') }
+        { sentiment: 'positive', energy: 'high', date: new Date('2024-01-03') },
       ];
 
       // Create mock voice analysis data
@@ -315,12 +315,12 @@ describe('AI Coaching Scenarios', () => {
           sentiment: { overall: session.sentiment as any, score: 0.7 },
           speechPatterns: { pace: 'normal', volume: 'medium', pauses: 'few' },
           insights: { emotionalState: session.energy, confidence: 0.8 },
-          keyThemes: []
+          keyThemes: [],
         } as any);
       }
 
       const summary = await voiceAI.getVoiceInsightSummary(testUser.id, 7);
-      
+
       expect(summary.trend).toBe('improving');
       expect(summary.averageSentiment).toBeGreaterThan(0.5);
       expect(summary.insights).toContain('positive trend');
@@ -334,7 +334,7 @@ describe('AI Coaching Scenarios', () => {
         userId: testUser.id,
         title: 'Become a better public speaker',
         category: 'professional',
-        targetDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
+        targetDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
       });
 
       // Mock AI response for learning path
@@ -344,21 +344,20 @@ describe('AI Coaching Scenarios', () => {
             id: 'mod1',
             title: 'Overcoming Speech Anxiety',
             duration: 7,
-            activities: ['breathing exercises', 'visualization']
+            activities: ['breathing exercises', 'visualization'],
           },
           {
             id: 'mod2',
             title: 'Voice and Body Language',
             duration: 14,
-            activities: ['voice exercises', 'posture practice']
-          }
-        ]
+            activities: ['voice exercises', 'posture practice'],
+          },
+        ],
       });
 
-      const learningPath = await (predictiveAnalytics as any).adaptiveLearning.createPersonalizedLearningPath(
-        testUser.id,
-        goal.id
-      );
+      const learningPath = await (
+        predictiveAnalytics as any
+      ).adaptiveLearning.createPersonalizedLearningPath(testUser.id, goal.id);
 
       expect(learningPath.modules.length).toBeGreaterThan(0);
       expect(learningPath.estimatedDuration).toBeGreaterThan(0);
@@ -371,7 +370,7 @@ describe('AI Coaching Scenarios', () => {
         moduleId: 'mod1',
         completed: true,
         performance: 85,
-        timeSpent: 450 // minutes
+        timeSpent: 450, // minutes
       };
 
       // Mock adaptation logic
@@ -394,13 +393,13 @@ describe('AI Coaching Scenarios', () => {
         title: 'Run a marathon',
         category: 'fitness',
         targetDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
-        progress: 20
+        progress: 20,
       });
 
       // Create historical data
       await Task.bulkCreate([
         { goalId: goal.id, userId: testUser.id, title: 'Run 5k', status: 'completed' },
-        { goalId: goal.id, userId: testUser.id, title: 'Run 10k', status: 'in_progress' }
+        { goalId: goal.id, userId: testUser.id, title: 'Run 10k', status: 'in_progress' },
       ]);
 
       const prediction = await predictiveAnalytics.predictGoalCompletion(goal.id);
@@ -417,7 +416,7 @@ describe('AI Coaching Scenarios', () => {
         userId: testUser.id,
         title: 'Learn Spanish',
         targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        progress: 10 // Low progress with approaching deadline
+        progress: 10, // Low progress with approaching deadline
       });
 
       const riskAnalysis = await predictiveAnalytics.analyzeGoalRisk(goal.id);
@@ -438,29 +437,28 @@ describe('AI Coaching Scenarios', () => {
           title: 'Fitness goal',
           category: 'health',
           progress: 75,
-          status: 'active'
+          status: 'active',
         }),
         // Moods
-        ...Array(30).fill(null).map((_, i) => 
-          Mood.create({
-            userId: testUser.id,
-            moodValue: 6 + Math.floor(Math.random() * 4),
-            createdAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000)
-          })
-        )
+        ...Array(30)
+          .fill(null)
+          .map((_, i) =>
+            Mood.create({
+              userId: testUser.id,
+              moodValue: 6 + Math.floor(Math.random() * 4),
+              createdAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
+            })
+          ),
       ]);
 
-      const monthlyReport = await insightGenerator.generateInsightReport(
-        testUser.id,
-        { days: 30 }
-      );
+      const monthlyReport = await insightGenerator.generateInsightReport(testUser.id, { days: 30 });
 
       expect(monthlyReport.insights.length).toBeGreaterThan(0);
       expect(monthlyReport.summary).toBeDefined();
       expect(monthlyReport.summary.overallProgress).toBeDefined();
       expect(monthlyReport.keyAchievements).toBeDefined();
       expect(monthlyReport.recommendations).toBeDefined();
-      
+
       // Check insight categories
       const insightTypes = new Set(monthlyReport.insights.map(i => i.type));
       expect(insightTypes.size).toBeGreaterThan(2); // Multiple insight types

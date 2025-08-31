@@ -44,22 +44,22 @@ export class RecommendationEngine {
 
   private initializeStrategies() {
     // Habit recommendations
-    this.recommendationStrategies.set('habit', async (context) => {
+    this.recommendationStrategies.set('habit', async context => {
       return this.generateHabitRecommendations(context);
     });
 
     // Goal recommendations
-    this.recommendationStrategies.set('goal', async (context) => {
+    this.recommendationStrategies.set('goal', async context => {
       return this.generateGoalRecommendations(context);
     });
 
     // Task recommendations
-    this.recommendationStrategies.set('task', async (context) => {
+    this.recommendationStrategies.set('task', async context => {
       return this.generateTaskRecommendations(context);
     });
 
     // Wellness recommendations
-    this.recommendationStrategies.set('wellness', async (context) => {
+    this.recommendationStrategies.set('wellness', async context => {
       return this.generateWellnessRecommendations(context);
     });
   }
@@ -72,13 +72,13 @@ export class RecommendationEngine {
     try {
       // Get user profile
       const profile = await userProfilingService.createOrUpdateProfile(userId);
-      
+
       // Build context
       const context = await this.buildRecommendationContext(userId, profile);
-      
+
       // Generate recommendations from each type
       const allRecommendations: Recommendation[] = [];
-      
+
       for (const type of types) {
         const strategy = this.recommendationStrategies.get(type);
         if (strategy) {
@@ -114,7 +114,7 @@ export class RecommendationEngine {
   ): Promise<RecommendationContext> {
     const now = new Date();
     const hour = now.getHours();
-    
+
     let timeOfDay: 'morning' | 'afternoon' | 'evening' | 'night';
     if (hour < 6) timeOfDay = 'night';
     else if (hour < 12) timeOfDay = 'morning';
@@ -125,7 +125,7 @@ export class RecommendationEngine {
     // Get recent mood
     const recentMood = await Mood.findOne({
       where: { userId },
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
     });
 
     // Get recent activity
@@ -133,11 +133,11 @@ export class RecommendationEngine {
       where: {
         userId,
         updatedAt: {
-          [Op.gte]: new Date(Date.now() - 24 * 60 * 60 * 1000)
-        }
+          [Op.gte]: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        },
       },
       limit: 10,
-      order: [['updatedAt', 'DESC']]
+      order: [['updatedAt', 'DESC']],
     });
 
     return {
@@ -148,9 +148,9 @@ export class RecommendationEngine {
       energyLevel: recentMood?.energyLevel,
       recentActivity: {
         tasks: recentTasks,
-        profile
+        profile,
       },
-      preferences: profile.coachingPreferences
+      preferences: profile.coachingPreferences,
     };
   }
 
@@ -164,8 +164,10 @@ export class RecommendationEngine {
         id: 'habit-morning-routine',
         type: 'habit',
         title: '5-Minute Morning Routine',
-        description: 'Start your day with a simple routine: 2 minutes of stretching, 2 minutes of gratitude journaling, 1 minute of day planning.',
-        reason: 'Morning routines significantly improve daily productivity and mood. Your consistency score suggests this could help establish better habits.',
+        description:
+          'Start your day with a simple routine: 2 minutes of stretching, 2 minutes of gratitude journaling, 1 minute of day planning.',
+        reason:
+          'Morning routines significantly improve daily productivity and mood. Your consistency score suggests this could help establish better habits.',
         priority: 'high',
         estimatedTime: 5,
         difficulty: 'easy',
@@ -173,10 +175,10 @@ export class RecommendationEngine {
         actionItems: [
           'Set alarm 5 minutes earlier',
           'Keep journal by bedside',
-          'Start with just 3 days this week'
+          'Start with just 3 days this week',
         ],
         expectedOutcome: 'Increased energy and focus throughout the day',
-        confidence: 0.85
+        confidence: 0.85,
       });
     }
 
@@ -186,8 +188,10 @@ export class RecommendationEngine {
         id: 'habit-evening-reflection',
         type: 'habit',
         title: 'Evening Reflection Practice',
-        description: 'Spend 3 minutes before bed reflecting on your day: What went well? What could improve? What are you grateful for?',
-        reason: 'Evening reflection improves sleep quality and helps process daily experiences for better learning.',
+        description:
+          'Spend 3 minutes before bed reflecting on your day: What went well? What could improve? What are you grateful for?',
+        reason:
+          'Evening reflection improves sleep quality and helps process daily experiences for better learning.',
         priority: 'medium',
         estimatedTime: 3,
         difficulty: 'easy',
@@ -195,10 +199,10 @@ export class RecommendationEngine {
         actionItems: [
           'Set reminder 30 min before bed',
           'Use voice recording if writing feels hard',
-          'Start with just one question'
+          'Start with just one question',
         ],
         expectedOutcome: 'Better sleep and increased self-awareness',
-        confidence: 0.78
+        confidence: 0.78,
       });
     }
 
@@ -208,8 +212,10 @@ export class RecommendationEngine {
         id: 'habit-hydration',
         type: 'habit',
         title: 'Hydration Tracking Habit',
-        description: 'Track your water intake with a simple method: move a rubber band on your water bottle each time you finish it.',
-        reason: 'Proper hydration improves energy, focus, and overall wellbeing - key areas you want to work on.',
+        description:
+          'Track your water intake with a simple method: move a rubber band on your water bottle each time you finish it.',
+        reason:
+          'Proper hydration improves energy, focus, and overall wellbeing - key areas you want to work on.',
         priority: 'medium',
         estimatedTime: 1,
         difficulty: 'easy',
@@ -217,10 +223,10 @@ export class RecommendationEngine {
         actionItems: [
           'Get a reusable water bottle',
           'Add 4-5 rubber bands',
-          'Aim for 8 glasses daily'
+          'Aim for 8 glasses daily',
         ],
         expectedOutcome: 'Improved energy levels and mental clarity',
-        confidence: 0.82
+        confidence: 0.82,
       });
     }
 
@@ -230,8 +236,10 @@ export class RecommendationEngine {
         id: 'habit-focus-sessions',
         type: 'habit',
         title: '25-Minute Focus Sessions',
-        description: 'Use the Pomodoro Technique: 25 minutes of focused work followed by a 5-minute break.',
-        reason: 'Your interest in productivity combined with your task patterns suggest this could significantly boost your output.',
+        description:
+          'Use the Pomodoro Technique: 25 minutes of focused work followed by a 5-minute break.',
+        reason:
+          'Your interest in productivity combined with your task patterns suggest this could significantly boost your output.',
         priority: 'high',
         estimatedTime: 30,
         difficulty: 'medium',
@@ -240,10 +248,10 @@ export class RecommendationEngine {
           'Choose one important task',
           'Set timer for 25 minutes',
           'Turn off all notifications',
-          'Take a real break after'
+          'Take a real break after',
         ],
         expectedOutcome: 'Complete tasks 40% faster with better quality',
-        confidence: 0.88
+        confidence: 0.88,
       });
     }
 
@@ -258,8 +266,8 @@ export class RecommendationEngine {
     const currentGoals = await Goal.findAll({
       where: {
         userId: context.userId,
-        status: 'active'
-      }
+        status: 'active',
+      },
     });
 
     // Check if user needs more specific goals
@@ -268,8 +276,10 @@ export class RecommendationEngine {
         id: 'goal-quarterly-objective',
         type: 'goal',
         title: 'Set a 90-Day Challenge Goal',
-        description: 'Choose one significant area of improvement and commit to a 90-day transformation challenge.',
-        reason: 'You have capacity for more goals. 90-day challenges are long enough for real change but short enough to maintain motivation.',
+        description:
+          'Choose one significant area of improvement and commit to a 90-day transformation challenge.',
+        reason:
+          'You have capacity for more goals. 90-day challenges are long enough for real change but short enough to maintain motivation.',
         priority: 'high',
         estimatedTime: 30,
         difficulty: 'medium',
@@ -278,10 +288,10 @@ export class RecommendationEngine {
           'Identify your biggest pain point',
           'Define what success looks like',
           'Break into monthly milestones',
-          'Set weekly check-in reminders'
+          'Set weekly check-in reminders',
         ],
         expectedOutcome: 'Significant progress in one key life area',
-        confidence: 0.85
+        confidence: 0.85,
       });
     }
 
@@ -302,10 +312,10 @@ export class RecommendationEngine {
           'Find a course or mentor',
           'Practice 20 minutes daily',
           'Track progress weekly',
-          'Apply learning immediately'
+          'Apply learning immediately',
         ],
         expectedOutcome: `Noticeable improvement in ${primaryGrowthArea} within 30 days`,
-        confidence: 0.79
+        confidence: 0.79,
       });
     }
 
@@ -315,8 +325,10 @@ export class RecommendationEngine {
         id: 'goal-energy-optimization',
         type: 'goal',
         title: 'Optimize Your Energy Levels',
-        description: 'Implement a comprehensive approach to boost your daily energy through sleep, nutrition, and movement.',
-        reason: 'Your current energy levels are below optimal. Improving this will enhance all other areas of your life.',
+        description:
+          'Implement a comprehensive approach to boost your daily energy through sleep, nutrition, and movement.',
+        reason:
+          'Your current energy levels are below optimal. Improving this will enhance all other areas of your life.',
         priority: 'high',
         estimatedTime: 45,
         difficulty: 'medium',
@@ -325,10 +337,10 @@ export class RecommendationEngine {
           'Track sleep for one week',
           'Add 10-minute walks after meals',
           'Reduce sugar intake by 50%',
-          'Create consistent sleep schedule'
+          'Create consistent sleep schedule',
         ],
         expectedOutcome: 'Feel 30% more energetic within 2 weeks',
-        confidence: 0.87
+        confidence: 0.87,
       });
     }
 
@@ -344,8 +356,10 @@ export class RecommendationEngine {
       id: 'task-quick-wins',
       type: 'task',
       title: 'Complete 3 Quick Wins',
-      description: 'Identify and complete 3 tasks that take less than 5 minutes each but have been lingering on your list.',
-      reason: 'Quick wins build momentum and clear mental clutter. Perfect for your current energy level.',
+      description:
+        'Identify and complete 3 tasks that take less than 5 minutes each but have been lingering on your list.',
+      reason:
+        'Quick wins build momentum and clear mental clutter. Perfect for your current energy level.',
       priority: 'medium',
       estimatedTime: 15,
       difficulty: 'easy',
@@ -354,32 +368,35 @@ export class RecommendationEngine {
         'List all tasks under 5 minutes',
         'Pick the 3 most annoying ones',
         'Do them right now',
-        'Celebrate completion'
+        'Celebrate completion',
       ],
       expectedOutcome: 'Instant mood boost and clearer mind',
-      confidence: 0.92
+      confidence: 0.92,
     });
 
     // Weekly planning session
-    if (context.dayOfWeek === 0 || context.dayOfWeek === 1) { // Sunday or Monday
+    if (context.dayOfWeek === 0 || context.dayOfWeek === 1) {
+      // Sunday or Monday
       recommendations.push({
         id: 'task-weekly-planning',
         type: 'task',
         title: 'Weekly Planning Session',
-        description: 'Spend 20 minutes planning your week: review last week, set priorities, and schedule important tasks.',
-        reason: 'It\'s the perfect time to set up your week for success. Planning reduces stress and increases achievement.',
+        description:
+          'Spend 20 minutes planning your week: review last week, set priorities, and schedule important tasks.',
+        reason:
+          "It's the perfect time to set up your week for success. Planning reduces stress and increases achievement.",
         priority: 'high',
         estimatedTime: 20,
         difficulty: 'medium',
         category: 'planning',
         actionItems: [
-          'Review last week\'s progress',
+          "Review last week's progress",
           'Identify top 3 priorities',
           'Block time for deep work',
-          'Schedule self-care activities'
+          'Schedule self-care activities',
         ],
         expectedOutcome: '40% more productive week ahead',
-        confidence: 0.89
+        confidence: 0.89,
       });
     }
 
@@ -390,7 +407,8 @@ export class RecommendationEngine {
         type: 'task',
         title: 'Batch Similar Tasks',
         description: 'Group similar tasks together and complete them in one focused session.',
-        reason: 'Your task pattern shows frequent context switching. Batching will save time and mental energy.',
+        reason:
+          'Your task pattern shows frequent context switching. Batching will save time and mental energy.',
         priority: 'medium',
         estimatedTime: 60,
         difficulty: 'medium',
@@ -399,10 +417,10 @@ export class RecommendationEngine {
           'Group tasks by type',
           'Schedule batch sessions',
           'Eliminate distractions',
-          'Take breaks between batches'
+          'Take breaks between batches',
         ],
         expectedOutcome: 'Save 2+ hours per week',
-        confidence: 0.83
+        confidence: 0.83,
       });
     }
 
@@ -418,8 +436,10 @@ export class RecommendationEngine {
         id: 'wellness-stress-relief',
         type: 'wellness',
         title: '5-Minute Stress Relief Practice',
-        description: 'Use the 4-7-8 breathing technique: Inhale for 4, hold for 7, exhale for 8. Repeat 4 times.',
-        reason: 'Your current stress levels need immediate attention. This technique activates your parasympathetic nervous system.',
+        description:
+          'Use the 4-7-8 breathing technique: Inhale for 4, hold for 7, exhale for 8. Repeat 4 times.',
+        reason:
+          'Your current stress levels need immediate attention. This technique activates your parasympathetic nervous system.',
         priority: 'high',
         estimatedTime: 5,
         difficulty: 'easy',
@@ -428,10 +448,10 @@ export class RecommendationEngine {
           'Find a quiet spot',
           'Set phone to do not disturb',
           'Practice the breathing pattern',
-          'Notice how you feel after'
+          'Notice how you feel after',
         ],
         expectedOutcome: 'Immediate 30% reduction in stress feelings',
-        confidence: 0.91
+        confidence: 0.91,
       });
     }
 
@@ -442,7 +462,8 @@ export class RecommendationEngine {
         type: 'wellness',
         title: 'Natural Energy Booster',
         description: 'Take a 10-minute walk outside, preferably in nature or sunlight.',
-        reason: 'Your energy is low. Natural light and movement are the fastest ways to boost energy without caffeine.',
+        reason:
+          'Your energy is low. Natural light and movement are the fastest ways to boost energy without caffeine.',
         priority: 'high',
         estimatedTime: 10,
         difficulty: 'easy',
@@ -451,10 +472,10 @@ export class RecommendationEngine {
           'Step outside right now',
           'Walk at moderate pace',
           'Focus on breathing',
-          'Notice nature around you'
+          'Notice nature around you',
         ],
         expectedOutcome: 'Feel 40% more energized for next 2 hours',
-        confidence: 0.88
+        confidence: 0.88,
       });
     }
 
@@ -464,8 +485,9 @@ export class RecommendationEngine {
         id: 'wellness-afternoon-recharge',
         type: 'wellness',
         title: 'Afternoon Recharge Routine',
-        description: 'Combat afternoon slump with a mini routine: stretch, hydrate, and do 20 jumping jacks.',
-        reason: 'It\'s prime time for energy dips. This routine prevents the 3pm crash.',
+        description:
+          'Combat afternoon slump with a mini routine: stretch, hydrate, and do 20 jumping jacks.',
+        reason: "It's prime time for energy dips. This routine prevents the 3pm crash.",
         priority: 'medium',
         estimatedTime: 5,
         difficulty: 'easy',
@@ -474,10 +496,10 @@ export class RecommendationEngine {
           'Stand and stretch arms overhead',
           'Drink a full glass of water',
           'Do 20 jumping jacks',
-          'Take 5 deep breaths'
+          'Take 5 deep breaths',
         ],
         expectedOutcome: 'Maintain productivity through afternoon',
-        confidence: 0.84
+        confidence: 0.84,
       });
     }
 
@@ -488,7 +510,8 @@ export class RecommendationEngine {
         type: 'wellness',
         title: 'Sleep Optimization Routine',
         description: 'Prepare for quality sleep: dim lights, no screens, and gentle stretching.',
-        reason: 'Quality sleep is the foundation of wellbeing. Your evening routine directly impacts tomorrow\'s energy.',
+        reason:
+          "Quality sleep is the foundation of wellbeing. Your evening routine directly impacts tomorrow's energy.",
         priority: 'high',
         estimatedTime: 15,
         difficulty: 'easy',
@@ -497,10 +520,10 @@ export class RecommendationEngine {
           'Dim all lights',
           'Put phone in another room',
           'Do gentle yoga stretches',
-          'Read or journal briefly'
+          'Read or journal briefly',
         ],
         expectedOutcome: 'Fall asleep 50% faster, wake refreshed',
-        confidence: 0.86
+        confidence: 0.86,
       });
     }
 
@@ -519,9 +542,7 @@ export class RecommendationEngine {
       // Adjust for learning style
       switch (profile.learningStyle) {
         case 'visual':
-          rec.actionItems = rec.actionItems.map(item => 
-            `📌 ${item} (visualize the outcome)`
-          );
+          rec.actionItems = rec.actionItems.map(item => `📌 ${item} (visualize the outcome)`);
           break;
         case 'auditory':
           rec.actionItems.push('🎵 Explain this aloud to yourself');
@@ -552,20 +573,21 @@ export class RecommendationEngine {
   }
 
   private hasRecentReflectionActivity(tasks: any[]): boolean {
-    return tasks.some(task => 
-      task.title.toLowerCase().includes('reflect') ||
-      task.title.toLowerCase().includes('journal') ||
-      task.title.toLowerCase().includes('review')
+    return tasks.some(
+      task =>
+        task.title.toLowerCase().includes('reflect') ||
+        task.title.toLowerCase().includes('journal') ||
+        task.title.toLowerCase().includes('review')
     );
   }
 
   private hasFragmentedTasks(tasks: any[]): boolean {
     if (tasks.length < 5) return false;
-    
+
     // Check if tasks are spread throughout the day
     const taskHours = tasks.map((t: any) => new Date(t.createdAt).getHours());
     const uniqueHours = new Set(taskHours);
-    
+
     return uniqueHours.size > tasks.length * 0.7;
   }
 
@@ -574,7 +596,10 @@ export class RecommendationEngine {
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
   }
 
-  async getOptimalTiming(userId: string, activityType: string): Promise<{
+  async getOptimalTiming(
+    userId: string,
+    activityType: string
+  ): Promise<{
     bestTime: string;
     reason: string;
     alternativeTimes: string[];
@@ -586,33 +611,43 @@ export class RecommendationEngine {
     // const preferredHours = patterns.preferredHours || [9, 14, 19];
     const mostActiveTime = patterns.mostActiveTime || 'morning';
 
-    const timingMap: Record<string, { bestTime: string; reason: string; alternativeTimes: string[] }> = {
+    const timingMap: Record<
+      string,
+      { bestTime: string; reason: string; alternativeTimes: string[] }
+    > = {
       'deep-work': {
         bestTime: mostActiveTime === 'morning' ? '9:00 AM' : '2:00 PM',
         reason: `Your cognitive performance peaks in the ${mostActiveTime}`,
-        alternativeTimes: ['10:00 AM', '3:00 PM', '7:00 PM']
+        alternativeTimes: ['10:00 AM', '3:00 PM', '7:00 PM'],
       },
-      'exercise': {
-        bestTime: profile.behaviorPatterns?.avgSessionDuration && profile.behaviorPatterns?.avgSessionDuration > 30 ? '7:00 AM' : '5:30 PM',
+      exercise: {
+        bestTime:
+          profile.behaviorPatterns?.avgSessionDuration &&
+          profile.behaviorPatterns?.avgSessionDuration > 30
+            ? '7:00 AM'
+            : '5:30 PM',
         reason: 'Based on your energy patterns and session durations',
-        alternativeTimes: ['6:00 AM', '12:00 PM', '6:00 PM']
+        alternativeTimes: ['6:00 AM', '12:00 PM', '6:00 PM'],
       },
-      'reflection': {
+      reflection: {
         bestTime: '9:00 PM',
         reason: 'Evening reflection helps process the day and improves sleep',
-        alternativeTimes: ['8:00 PM', '10:00 PM', '7:00 AM']
+        alternativeTimes: ['8:00 PM', '10:00 PM', '7:00 AM'],
       },
-      'planning': {
+      planning: {
         bestTime: mostActiveTime === 'morning' ? '8:00 AM' : '5:00 PM',
         reason: 'Planning when fresh helps set clear intentions',
-        alternativeTimes: ['7:00 AM', '4:00 PM', '9:00 PM']
-      }
+        alternativeTimes: ['7:00 AM', '4:00 PM', '9:00 PM'],
+      },
     };
 
     return timingMap[activityType] || timingMap['deep-work'];
   }
 
-  async generateAdaptiveSchedule(userId: string, _date: Date): Promise<{
+  async generateAdaptiveSchedule(
+    userId: string,
+    _date: Date
+  ): Promise<{
     schedule: Array<{
       time: string;
       activity: string;
@@ -622,9 +657,13 @@ export class RecommendationEngine {
     }>;
     tips: string[];
   }> {
-    const recommendations = await this.generateRecommendations(userId, ['task', 'habit', 'wellness'], 10);
+    const recommendations = await this.generateRecommendations(
+      userId,
+      ['task', 'habit', 'wellness'],
+      10
+    );
     const profile = await userProfilingService.createOrUpdateProfile(userId);
-    
+
     const schedule = [];
     const tips = [];
 
@@ -635,7 +674,7 @@ export class RecommendationEngine {
         activity: 'Morning Routine',
         duration: 15,
         type: 'wellness',
-        priority: 'high'
+        priority: 'high',
       });
     }
 
@@ -650,14 +689,17 @@ export class RecommendationEngine {
           activity: rec.title,
           duration: rec.estimatedTime || 30,
           type: rec.type,
-          priority: rec.priority
+          priority: rec.priority,
         });
         slotIndex++;
       }
     }
 
     // Add tips based on profile
-    if (profile.behaviorPatterns?.consistencyScore && profile.behaviorPatterns?.consistencyScore < 50) {
+    if (
+      profile.behaviorPatterns?.consistencyScore &&
+      profile.behaviorPatterns?.consistencyScore < 50
+    ) {
       tips.push('Start with just 2-3 activities to build consistency');
     }
     if (profile.progressMetrics?.currentStreak && profile.progressMetrics?.currentStreak > 7) {

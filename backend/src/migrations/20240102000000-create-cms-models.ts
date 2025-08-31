@@ -565,4 +565,4 @@ export async function down(queryInterface: QueryInterface): Promise<void> {
   await queryInterface.dropTable('categories');
 
   logger.info('✅ CMS models dropped successfully');
-} 
+}

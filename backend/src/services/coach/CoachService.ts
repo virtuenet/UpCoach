@@ -62,14 +62,14 @@ export class CoachService {
       };
 
       if (filters.specialization) {
-        where.specializations = { 
-          [Op.contains]: [filters.specialization] 
+        where.specializations = {
+          [Op.contains]: [filters.specialization],
         };
       }
 
       if (filters.minRating !== undefined) {
-        where.averageRating = { 
-          [Op.gte]: filters.minRating 
+        where.averageRating = {
+          [Op.gte]: filters.minRating,
         };
       }
 
@@ -84,8 +84,8 @@ export class CoachService {
       }
 
       if (filters.language) {
-        where.languages = { 
-          [Op.contains]: [filters.language] 
+        where.languages = {
+          [Op.contains]: [filters.language],
         };
       }
 
@@ -98,8 +98,8 @@ export class CoachService {
       }
 
       if (filters.hasVideo) {
-        where.introVideoUrl = { 
-          [Op.not as any]: null 
+        where.introVideoUrl = {
+          [Op.not as any]: null,
         };
       }
 
@@ -223,20 +223,22 @@ export class CoachService {
       const current = new Date(startDate);
 
       while (current <= endDate) {
-        const dayOfWeek = current.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase() as keyof typeof coach.availabilitySchedule;
+        const dayOfWeek = current
+          .toLocaleDateString('en-US', { weekday: 'long' })
+          .toLowerCase() as keyof typeof coach.availabilitySchedule;
         const daySlots = coach.availabilitySchedule[dayOfWeek] || [];
 
         for (const slot of daySlots) {
           const slotDate = new Date(current);
           const [startHour, startMinute] = slot.start.split(':').map(Number);
           const [_endHour, _endMinute] = slot.end.split(':').map(Number);
-          
+
           slotDate.setHours(startHour, startMinute, 0, 0);
-          
+
           // Check if slot is in the future and respects booking buffer
           const bufferTime = new Date();
           bufferTime.setHours(bufferTime.getHours() + coach.bookingBufferHours);
-          
+
           if (slotDate > bufferTime) {
             // Check for conflicts
             const hasConflict = await CoachSession.checkConflicts(
@@ -265,10 +267,7 @@ export class CoachService {
   }
 
   // Book a session
-  async bookSession(
-    booking: BookingRequest,
-    transaction?: Transaction
-  ): Promise<CoachSession> {
+  async bookSession(booking: BookingRequest, transaction?: Transaction): Promise<CoachSession> {
     try {
       // Validate coach exists and is available
       const coach = await CoachProfile.findByPk(booking.coachId);
@@ -375,10 +374,7 @@ export class CoachService {
   }
 
   // Process session payment
-  async processSessionPayment(
-    sessionId: number,
-    paymentMethodId: string
-  ): Promise<void> {
+  async processSessionPayment(sessionId: number, paymentMethodId: string): Promise<void> {
     try {
       const session = await CoachSession.findByPk(sessionId, {
         include: [CoachProfile, User],
@@ -547,17 +543,11 @@ export class CoachService {
       await this.sendPackagePurchaseEmail(clientPackage, pkg);
 
       // Track analytics
-      await analyticsService.trackRevenue(
-        clientId,
-        pkg.price,
-        pkg.currency,
-        'package_purchase',
-        {
-          packageId,
-          coachId: pkg.coachId,
-          sessionCount: pkg.sessionCount,
-        }
-      );
+      await analyticsService.trackRevenue(clientId, pkg.price, pkg.currency, 'package_purchase', {
+        packageId,
+        coachId: pkg.coachId,
+        sessionCount: pkg.sessionCount,
+      });
 
       logger.info('Package purchased', {
         packageId,
@@ -696,11 +686,15 @@ export class CoachService {
         },
         attributes: [
           [Sequelize.fn('SUM', Sequelize.col('total_amount')), 'totalRevenue'],
-          [Sequelize.fn('SUM', 
-            Sequelize.literal(
-              `CASE WHEN created_at >= '${startOfMonth.toISOString()}' THEN total_amount ELSE 0 END`
-            )
-          ), 'monthlyRevenue'],
+          [
+            Sequelize.fn(
+              'SUM',
+              Sequelize.literal(
+                `CASE WHEN created_at >= '${startOfMonth.toISOString()}' THEN total_amount ELSE 0 END`
+              )
+            ),
+            'monthlyRevenue',
+          ],
         ],
         raw: true,
       });
@@ -725,10 +719,7 @@ export class CoachService {
         where: {
           paymentStatus: 'paid',
         },
-        attributes: [
-          'coachId',
-          [Sequelize.fn('SUM', Sequelize.col('total_amount')), 'revenue'],
-        ],
+        attributes: ['coachId', [Sequelize.fn('SUM', Sequelize.col('total_amount')), 'revenue']],
         include: [
           {
             model: CoachProfile,
@@ -744,16 +735,14 @@ export class CoachService {
 
       // Get session types distribution
       const sessionTypes = await CoachSession.findAll({
-        attributes: [
-          'sessionType',
-          [Sequelize.fn('COUNT', '*'), 'value'],
-        ],
+        attributes: ['sessionType', [Sequelize.fn('COUNT', '*'), 'value']],
         group: ['sessionType'],
         raw: true,
       });
 
       // Get top specializations
-      const topSpecializations = await sequelize.query(`
+      const topSpecializations = await sequelize.query(
+        `
         SELECT 
           unnest(specializations) as specialization,
           COUNT(*) as count
@@ -762,7 +751,9 @@ export class CoachService {
         GROUP BY specialization
         ORDER BY count DESC
         LIMIT 10
-      `, { type: QueryTypes.SELECT });
+      `,
+        { type: QueryTypes.SELECT }
+      );
 
       return {
         totalCoaches,
@@ -798,7 +789,7 @@ export class CoachService {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
       date.setHours(0, 0, 0, 0);
-      
+
       const nextDate = new Date(date);
       nextDate.setDate(nextDate.getDate() + 1);
 
@@ -836,13 +827,14 @@ export class CoachService {
     activePackages: CoachPackage[];
   }> {
     try {
-      const [profile, upcomingSessions, earnings, recentReviews, activePackages] = await Promise.all([
-        CoachProfile.findByPk(coachId, { include: [User] }),
-        CoachSession.getUpcomingSessions(coachId, 'coach'),
-        this.calculateCoachEarnings(coachId),
-        CoachReview.getCoachReviews(coachId, { limit: 5, sortBy: 'recent' }),
-        CoachPackage.getActivePackages(coachId),
-      ]);
+      const [profile, upcomingSessions, earnings, recentReviews, activePackages] =
+        await Promise.all([
+          CoachProfile.findByPk(coachId, { include: [User] }),
+          CoachSession.getUpcomingSessions(coachId, 'coach'),
+          this.calculateCoachEarnings(coachId),
+          CoachReview.getCoachReviews(coachId, { limit: 5, sortBy: 'recent' }),
+          CoachPackage.getActivePackages(coachId),
+        ]);
 
       if (!profile) {
         throw new Error('Coach profile not found');
@@ -875,12 +867,22 @@ export class CoachService {
     const sessions = await CoachSession.findAll({
       where: { coachId },
       attributes: [
-        [Sequelize.fn('SUM', Sequelize.literal(
-          `CASE WHEN payment_status = 'paid' THEN total_amount ELSE 0 END`
-        )), 'totalPaid'],
-        [Sequelize.fn('SUM', Sequelize.literal(
-          `CASE WHEN payment_status = 'pending' AND status IN ('confirmed', 'completed') THEN total_amount ELSE 0 END`
-        )), 'totalPending'],
+        [
+          Sequelize.fn(
+            'SUM',
+            Sequelize.literal(`CASE WHEN payment_status = 'paid' THEN total_amount ELSE 0 END`)
+          ),
+          'totalPaid',
+        ],
+        [
+          Sequelize.fn(
+            'SUM',
+            Sequelize.literal(
+              `CASE WHEN payment_status = 'pending' AND status IN ('confirmed', 'completed') THEN total_amount ELSE 0 END`
+            )
+          ),
+          'totalPending',
+        ],
       ],
       raw: true,
     });
@@ -961,11 +963,9 @@ export class CoachService {
     }
   }
 
-  private async sendPaymentConfirmationEmails(
-    session: CoachSession
-  ): Promise<void> {
+  private async sendPaymentConfirmationEmails(session: CoachSession): Promise<void> {
     const client = await User.findByPk(session.clientId);
-    
+
     if (client) {
       await emailService.send({
         to: client.email,
@@ -987,7 +987,7 @@ export class CoachService {
     pkg: CoachPackage
   ): Promise<void> {
     const client = await User.findByPk(clientPackage.clientId);
-    
+
     if (client) {
       await emailService.send({
         to: client.email,
@@ -1030,7 +1030,10 @@ export class CoachService {
           scheduledAt: session.scheduledAt,
           cancelledBy: cancelledBy === 'coach' ? coach?.displayName : 'UpCoach Support',
           reason,
-          refundInfo: session.paymentStatus === 'paid' ? 'A full refund will be processed within 5-7 business days.' : null,
+          refundInfo:
+            session.paymentStatus === 'paid'
+              ? 'A full refund will be processed within 5-7 business days.'
+              : null,
         },
       });
     }

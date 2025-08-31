@@ -53,7 +53,7 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthProps> = ({
     requirements.push({
       label: `At least ${minLength} characters`,
       met: hasMinLength,
-      description: `Password must be at least ${minLength} characters long`
+      description: `Password must be at least ${minLength} characters long`,
     });
     if (hasMinLength) score += 20;
     else feedback.push(`Use at least ${minLength} characters`);
@@ -64,7 +64,7 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthProps> = ({
       requirements.push({
         label: 'One uppercase letter',
         met: hasUppercase,
-        description: 'Include at least one uppercase letter (A-Z)'
+        description: 'Include at least one uppercase letter (A-Z)',
       });
       if (hasUppercase) score += 20;
       else feedback.push('Add an uppercase letter');
@@ -76,7 +76,7 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthProps> = ({
       requirements.push({
         label: 'One lowercase letter',
         met: hasLowercase,
-        description: 'Include at least one lowercase letter (a-z)'
+        description: 'Include at least one lowercase letter (a-z)',
       });
       if (hasLowercase) score += 20;
       else feedback.push('Add a lowercase letter');
@@ -88,7 +88,7 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthProps> = ({
       requirements.push({
         label: 'One number',
         met: hasNumbers,
-        description: 'Include at least one number (0-9)'
+        description: 'Include at least one number (0-9)',
       });
       if (hasNumbers) score += 20;
       else feedback.push('Add a number');
@@ -100,7 +100,7 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthProps> = ({
       requirements.push({
         label: 'One special character',
         met: hasSpecialChars,
-        description: 'Include at least one special character (!@#$%^&*)'
+        description: 'Include at least one special character (!@#$%^&*)',
       });
       if (hasSpecialChars) score += 20;
       else feedback.push('Add a special character');
@@ -119,7 +119,11 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthProps> = ({
       }
 
       // Sequential characters
-      if (/(?:abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz|012|123|234|345|456|567|678|789)/i.test(password)) {
+      if (
+        /(?:abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz|012|123|234|345|456|567|678|789)/i.test(
+          password
+        )
+      ) {
         score -= 10;
         feedback.push('Avoid sequential characters');
       }
@@ -150,9 +154,16 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthProps> = ({
       level,
       feedback,
       requirements,
-      isValid
+      isValid,
     };
-  }, [password, minLength, requireUppercase, requireLowercase, requireNumbers, requireSpecialChars]);
+  }, [
+    password,
+    minLength,
+    requireUppercase,
+    requireLowercase,
+    requireNumbers,
+    requireSpecialChars,
+  ]);
 
   // Notify parent of strength changes
   useEffect(() => {
@@ -165,10 +176,10 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthProps> = ({
   useEffect(() => {
     if (strength.level !== lastAnnouncedLevel.current && password.length > 0) {
       lastAnnouncedLevel.current = strength.level;
-      
+
       const announcement = `Password strength: ${strength.level}. ${
-        strength.isValid 
-          ? 'All requirements met.' 
+        strength.isValid
+          ? 'All requirements met.'
           : `${strength.requirements.filter(r => !r.met).length} requirements remaining.`
       }`;
 
@@ -179,7 +190,7 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthProps> = ({
       announceElement.className = 'sr-only';
       announceElement.textContent = announcement;
       document.body.appendChild(announceElement);
-      
+
       setTimeout(() => {
         document.body.removeChild(announceElement);
       }, 1000);
@@ -188,28 +199,40 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthProps> = ({
 
   const getStrengthColor = () => {
     switch (strength.level) {
-      case 'weak': return 'bg-red-500';
-      case 'fair': return 'bg-yellow-500';
-      case 'good': return 'bg-blue-500';
-      case 'strong': return 'bg-green-500';
+      case 'weak':
+        return 'bg-red-500';
+      case 'fair':
+        return 'bg-yellow-500';
+      case 'good':
+        return 'bg-blue-500';
+      case 'strong':
+        return 'bg-green-500';
     }
   };
 
   const getStrengthTextColor = () => {
     switch (strength.level) {
-      case 'weak': return 'text-red-700';
-      case 'fair': return 'text-yellow-700';
-      case 'good': return 'text-blue-700';
-      case 'strong': return 'text-green-700';
+      case 'weak':
+        return 'text-red-700';
+      case 'fair':
+        return 'text-yellow-700';
+      case 'good':
+        return 'text-blue-700';
+      case 'strong':
+        return 'text-green-700';
     }
   };
 
   const getStrengthLabel = () => {
     switch (strength.level) {
-      case 'weak': return 'Weak';
-      case 'fair': return 'Fair';
-      case 'good': return 'Good';
-      case 'strong': return 'Strong';
+      case 'weak':
+        return 'Weak';
+      case 'fair':
+        return 'Fair';
+      case 'good':
+        return 'Good';
+      case 'strong':
+        return 'Strong';
     }
   };
 
@@ -220,19 +243,14 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthProps> = ({
       {/* Strength bar */}
       <div>
         <div className="flex justify-between items-center mb-1">
-          <span className="text-sm font-medium text-gray-700">
-            Password Strength
-          </span>
-          <span 
-            className={`text-sm font-medium ${getStrengthTextColor()}`}
-            aria-live="polite"
-          >
+          <span className="text-sm font-medium text-gray-700">Password Strength</span>
+          <span className={`text-sm font-medium ${getStrengthTextColor()}`} aria-live="polite">
             {getStrengthLabel()}
           </span>
         </div>
-        
+
         {/* Progress bar */}
-        <div 
+        <div
           className="w-full bg-gray-200 rounded-full h-2 overflow-hidden"
           role="progressbar"
           aria-valuenow={strength.score}
@@ -250,31 +268,33 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthProps> = ({
       {/* Requirements list */}
       {showRequirements && (
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-2">
-            Requirements:
-          </p>
+          <p className="text-sm font-medium text-gray-700 mb-2">Requirements:</p>
           <ul className="space-y-1" role="list">
             {strength.requirements.map((req, index) => (
-              <li
-                key={index}
-                className="flex items-center text-sm"
-                role="listitem"
-              >
+              <li key={index} className="flex items-center text-sm" role="listitem">
                 {/* Icon */}
                 <span className="mr-2" aria-hidden="true">
                   {req.met ? (
                     <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   ) : (
                     <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   )}
                 </span>
-                
+
                 {/* Label */}
-                <span 
+                <span
                   className={req.met ? 'text-green-700' : 'text-gray-600'}
                   title={req.description}
                 >
@@ -291,10 +311,7 @@ export const PasswordStrengthIndicator: React.FC<PasswordStrengthProps> = ({
 
       {/* Feedback for improvements */}
       {strength.feedback.length > 0 && (
-        <div 
-          className="text-sm text-gray-600 bg-gray-50 p-2 rounded"
-          role="alert"
-        >
+        <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded" role="alert">
           <p className="font-medium mb-1">Suggestions:</p>
           <ul className="list-disc list-inside">
             {strength.feedback.map((tip, index) => (
@@ -325,7 +342,7 @@ export function usePasswordStrength(password: string, options?: Partial<Password
     level: 'weak',
     feedback: [],
     requirements: [],
-    isValid: false
+    isValid: false,
   });
 
   const handleStrengthChange = React.useCallback((newStrength: PasswordStrength) => {
@@ -340,7 +357,7 @@ export function usePasswordStrength(password: string, options?: Partial<Password
         onStrengthChange={handleStrengthChange}
         {...options}
       />
-    )
+    ),
   };
 }
 

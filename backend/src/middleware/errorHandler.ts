@@ -18,7 +18,7 @@ declare global {
 }
 
 export const asyncHandler = (fn: Function) => {
-  return (req: Request, _res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 };
@@ -52,7 +52,7 @@ export const errorMiddleware = (
     statusCode = 400;
     message = 'Database validation error';
     details = {
-      errors: (error as SequelizeError).errors?.map((err) => ({
+      errors: (error as SequelizeError).errors?.map(err => ({
         field: err.path,
         message: err.message,
         value: err.value,
@@ -130,5 +130,5 @@ export const errorMiddleware = (
     response.stack = error.stack;
   }
 
-  __res.status(statusCode).json(response);
-}; 
+  res.status(statusCode).json(response);
+};

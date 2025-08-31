@@ -1,12 +1,4 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  CreatedAt,
-  UpdatedAt,
-  Index,
-} from 'sequelize-typescript';
+import { Table, Column, Model, DataType, CreatedAt, UpdatedAt, Index } from 'sequelize-typescript';
 
 export enum AnalyticsPeriod {
   DAILY = 'daily',
@@ -297,7 +289,6 @@ export class RevenueAnalytics extends Model {
   }
 
   get isForecastReliable(): boolean {
-    return (this.forecastConfidence || 0) > 80 && 
-           (this.forecastAccuracy || 0) > 85;
+    return (this.forecastConfidence || 0) > 80 && (this.forecastAccuracy || 0) > 85;
   }
-} 
+}

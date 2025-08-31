@@ -30,16 +30,8 @@ export default defineConfig({
         statements: 70,
       },
     },
-    include: [
-      'src/**/*.{test,spec}.{ts,tsx}',
-    ],
-    exclude: [
-      'node_modules',
-      'dist',
-      '.idea',
-      '.git',
-      '.cache',
-    ],
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['node_modules', 'dist', '.idea', '.git', '.cache'],
     mockReset: true,
     restoreMocks: true,
     clearMocks: true,

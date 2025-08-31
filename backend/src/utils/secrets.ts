@@ -32,7 +32,7 @@ export function validateSecret(secret: string, minLength: number = 64): boolean 
     'example',
     '12345',
     'admin',
-    'default'
+    'default',
   ];
 
   const lowerSecret = secret.toLowerCase();
@@ -62,10 +62,7 @@ export function generateApiKey(prefix: string = 'key_'): string {
  * @returns Hashed secret
  */
 export function hashSecret(secret: string): string {
-  return crypto
-    .createHash('sha256')
-    .update(secret)
-    .digest('hex');
+  return crypto.createHash('sha256').update(secret).digest('hex');
 }
 
 /**
@@ -76,10 +73,7 @@ export function hashSecret(secret: string): string {
  */
 export function compareSecrets(plain: string, hashed: string): boolean {
   const plainHashed = hashSecret(plain);
-  return crypto.timingSafeEqual(
-    Buffer.from(plainHashed),
-    Buffer.from(hashed)
-  );
+  return crypto.timingSafeEqual(Buffer.from(plainHashed), Buffer.from(hashed));
 }
 
 /**
@@ -94,18 +88,13 @@ export function encrypt(text: string, key: string): string {
   const derivedKey = crypto.pbkdf2Sync(key, salt, 100000, 32, 'sha256');
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv(algorithm, derivedKey, iv);
-  
+
   let encrypted = cipher.update(text, 'utf8', 'hex');
   encrypted += cipher.final('hex');
-  
+
   const authTag = cipher.getAuthTag();
-  
-  return Buffer.concat([
-    salt,
-    iv,
-    authTag,
-    Buffer.from(encrypted, 'hex')
-  ]).toString('base64');
+
+  return Buffer.concat([salt, iv, authTag, Buffer.from(encrypted, 'hex')]).toString('base64');
 }
 
 /**
@@ -117,19 +106,19 @@ export function encrypt(text: string, key: string): string {
 export function decrypt(encryptedText: string, key: string): string {
   const algorithm = 'aes-256-gcm';
   const buffer = Buffer.from(encryptedText, 'base64');
-  
+
   const salt = buffer.slice(0, 16);
   const iv = buffer.slice(16, 32);
   const authTag = buffer.slice(32, 48);
   const encrypted = buffer.slice(48);
-  
+
   const derivedKey = crypto.pbkdf2Sync(key, salt, 100000, 32, 'sha256');
   const decipher = crypto.createDecipheriv(algorithm, derivedKey, iv);
   decipher.setAuthTag(authTag);
-  
+
   let decrypted = decipher.update(encrypted, undefined, 'utf8');
   decrypted += decipher.final('utf8');
-  
+
   return decrypted;
 }
 
@@ -141,7 +130,7 @@ export function rotateSecret(): { current: string; previous: string; rotatedAt: 
   return {
     current: generateSecret(),
     previous: process.env.JWT_SECRET || generateSecret(),
-    rotatedAt: new Date()
+    rotatedAt: new Date(),
   };
 }
 
@@ -152,7 +141,7 @@ export function validateEnvironmentSecrets(): void {
   const requiredSecrets = [
     { name: 'JWT_SECRET', value: process.env.JWT_SECRET, minLength: 64 },
     { name: 'JWT_REFRESH_SECRET', value: process.env.JWT_REFRESH_SECRET, minLength: 64 },
-    { name: 'DATABASE_URL', value: process.env.DATABASE_URL, minLength: 20 }
+    { name: 'DATABASE_URL', value: process.env.DATABASE_URL, minLength: 20 },
   ];
 
   const errors: string[] = [];

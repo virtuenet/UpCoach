@@ -66,19 +66,19 @@ export class DataDogService {
         env: config.env || process.env.NODE_ENV,
         service: config.service || 'upcoach-backend',
         version: config.version || process.env.npm_package_version,
-        
+
         // Enable analytics
         analytics: config.analyticsEnabled !== false,
-        
+
         // Log injection for correlating logs with traces
         logInjection: config.logInjection !== false,
-        
+
         // Profiling
         profiling: config.profiling || false,
-        
+
         // Runtime metrics
         runtimeMetrics: config.runtimeMetrics !== false,
-        
+
         // Sampling rules
         samplingRules: [
           // Sample all requests in development
@@ -95,7 +95,7 @@ export class DataDogService {
             maxPerSecond: 10,
           },
         ],
-        
+
         // Tags for all spans
         tags: {
           env: config.env || process.env.NODE_ENV,
@@ -145,7 +145,7 @@ export class DataDogService {
         span.setTag('http.method', req.method);
         span.setTag('http.url', req.url);
         span.setTag('http.route', req.route?.path);
-        
+
         // Add user context if available
         if ((req as any).user) {
           span.setTag('user.id', (req as any).user.id);
@@ -161,10 +161,10 @@ export class DataDogService {
 
       // Track response time
       const startTime = Date.now();
-      
+
       _res.on('finish', () => {
         const duration = Date.now() - startTime;
-        
+
         // Record response time histogram
         this.histogram('api.response_time', duration, {
           method: req.method,
@@ -197,7 +197,7 @@ export class DataDogService {
    */
   createSpan(name: string, options?: any): any {
     if (!this.initialized) return null;
-    
+
     return tracer.startSpan(name, options);
   }
 
@@ -222,7 +222,7 @@ export class DataDogService {
 
     return tracer.trace(name, async () => {
       const span = tracer.scope().active();
-      
+
       try {
         const result = await fn();
         span?.setTag('status', 'success');
@@ -239,11 +239,7 @@ export class DataDogService {
   /**
    * Increment a counter metric
    */
-  incrementMetric(
-    metric: string,
-    tags?: { [key: string]: string },
-    value: number = 1
-  ): void {
+  incrementMetric(metric: string, tags?: { [key: string]: string }, value: number = 1): void {
     if (!this.statsD) return;
 
     const tagArray = this.formatTags(tags);
@@ -253,11 +249,7 @@ export class DataDogService {
   /**
    * Decrement a counter metric
    */
-  decrementMetric(
-    metric: string,
-    tags?: { [key: string]: string },
-    value: number = 1
-  ): void {
+  decrementMetric(metric: string, tags?: { [key: string]: string }, value: number = 1): void {
     if (!this.statsD) return;
 
     const tagArray = this.formatTags(tags);
@@ -267,11 +259,7 @@ export class DataDogService {
   /**
    * Record a gauge metric
    */
-  gauge(
-    metric: string,
-    value: number,
-    tags?: { [key: string]: string }
-  ): void {
+  gauge(metric: string, value: number, tags?: { [key: string]: string }): void {
     if (!this.statsD) return;
 
     const tagArray = this.formatTags(tags);
@@ -281,11 +269,7 @@ export class DataDogService {
   /**
    * Record a histogram metric
    */
-  histogram(
-    metric: string,
-    value: number,
-    tags?: { [key: string]: string }
-  ): void {
+  histogram(metric: string, value: number, tags?: { [key: string]: string }): void {
     if (!this.statsD) return;
 
     const tagArray = this.formatTags(tags);
@@ -295,11 +279,7 @@ export class DataDogService {
   /**
    * Record a timing metric
    */
-  timing(
-    metric: string,
-    duration: number,
-    tags?: { [key: string]: string }
-  ): void {
+  timing(metric: string, duration: number, tags?: { [key: string]: string }): void {
     if (!this.statsD) return;
 
     const tagArray = this.formatTags(tags);
@@ -315,7 +295,7 @@ export class DataDogService {
     tags?: { [key: string]: string }
   ): Promise<T> {
     const startTime = Date.now();
-    
+
     try {
       const result = await fn();
       const duration = Date.now() - startTime;
@@ -331,16 +311,11 @@ export class DataDogService {
   /**
    * Track custom business metrics
    */
-  trackBusinessMetric(
-    category: string,
-    metric: string,
-    value: number,
-    metadata?: any
-  ): void {
+  trackBusinessMetric(category: string, metric: string, value: number, metadata?: any): void {
     if (!this.initialized) return;
 
     const fullMetric = `business.${category}.${metric}`;
-    
+
     // Record the metric
     this.histogram(fullMetric, value, metadata);
 
@@ -360,11 +335,7 @@ export class DataDogService {
   /**
    * Track user activity metrics
    */
-  trackUserActivity(
-    userId: string,
-    action: string,
-    metadata?: any
-  ): void {
+  trackUserActivity(userId: string, action: string, metadata?: any): void {
     this.incrementMetric('user.activity', {
       action,
       ...metadata,
@@ -390,21 +361,16 @@ export class DataDogService {
     });
 
     if (statusCode >= 500) {
-      this.incrementMetric('api.5xx_errors', { endpoint, method });
+      this.incrementMetric('api.5xxerrors', { endpoint, method });
     } else if (statusCode >= 400) {
-      this.incrementMetric('api.4xx_errors', { endpoint, method });
+      this.incrementMetric('api.4xxerrors', { endpoint, method });
     }
   }
 
   /**
    * Track database performance
    */
-  trackDatabaseQuery(
-    operation: string,
-    table: string,
-    duration: number,
-    success: boolean
-  ): void {
+  trackDatabaseQuery(operation: string, table: string, duration: number, success: boolean): void {
     this.histogram('database.query_time', duration, {
       operation,
       table,
@@ -419,11 +385,7 @@ export class DataDogService {
   /**
    * Track cache performance
    */
-  trackCacheOperation(
-    operation: 'get' | 'set' | 'delete',
-    hit: boolean,
-    duration: number
-  ): void {
+  trackCacheOperation(operation: 'get' | 'set' | 'delete', hit: boolean, duration: number): void {
     this.histogram('cache.operation_time', duration, {
       operation,
       result: hit ? 'hit' : 'miss',
@@ -442,25 +404,25 @@ export class DataDogService {
 
     setInterval(() => {
       const memoryUsage = process.memoryUsage();
-      
+
       // Memory metrics
       this.gauge('process.memory.rss', memoryUsage.rss);
       this.gauge('process.memory.heap_total', memoryUsage.heapTotal);
       this.gauge('process.memory.heap_used', memoryUsage.heapUsed);
       this.gauge('process.memory.external', memoryUsage.external);
-      
+
       // CPU metrics
       const cpuUsage = process.cpuUsage();
       this.gauge('process.cpu.user', cpuUsage.user);
       this.gauge('process.cpu.system', cpuUsage.system);
-      
+
       // Event loop metrics
       // @ts-ignore
       if (process._getActiveHandles) {
         // @ts-ignore
         this.gauge('process.handles.active', process._getActiveHandles().length);
       }
-      
+
       // @ts-ignore
       if (process._getActiveRequests) {
         // @ts-ignore
@@ -474,7 +436,7 @@ export class DataDogService {
    */
   private formatTags(tags?: { [key: string]: string }): string[] {
     if (!tags) return [];
-    
+
     return Object.entries(tags).map(([key, value]) => `${key}:${value}`);
   }
 
@@ -483,7 +445,7 @@ export class DataDogService {
    */
   flush(): void {
     if (!this.statsD) return;
-    
+
     // StatsD client doesn't have a flush method, but we can close and reconnect
     logger.info('DataDog metrics flushed');
   }
@@ -496,7 +458,7 @@ export class DataDogService {
 
     try {
       // Flush any pending traces
-      await new Promise((resolve) => {
+      await new Promise(resolve => {
         tracer.flush(resolve);
       });
 
@@ -518,29 +480,22 @@ export const dataDogService = DataDogService.getInstance();
 
 // Convenience functions for direct metric tracking
 export const metrics = {
-  increment: (metric: string, tags?: any) => 
-    dataDogService.incrementMetric(metric, tags),
-  
-  decrement: (metric: string, tags?: any) => 
-    dataDogService.decrementMetric(metric, tags),
-  
-  gauge: (metric: string, value: number, tags?: any) => 
-    dataDogService.gauge(metric, value, tags),
-  
-  histogram: (metric: string, value: number, tags?: any) => 
+  increment: (metric: string, tags?: any) => dataDogService.incrementMetric(metric, tags),
+
+  decrement: (metric: string, tags?: any) => dataDogService.decrementMetric(metric, tags),
+
+  gauge: (metric: string, value: number, tags?: any) => dataDogService.gauge(metric, value, tags),
+
+  histogram: (metric: string, value: number, tags?: any) =>
     dataDogService.histogram(metric, value, tags),
-  
-  timing: (metric: string, duration: number, tags?: any) => 
+
+  timing: (metric: string, duration: number, tags?: any) =>
     dataDogService.timing(metric, duration, tags),
 };
 
 // Decorator for method tracing
 export function TraceMethod(name?: string) {
-  return function (
-    target: any,
-    propertyKey: string,
-    descriptor: PropertyDescriptor
-  ) {
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     const traceName = name || `${target.constructor.name}.${propertyKey}`;
 

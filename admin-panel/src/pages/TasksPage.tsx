@@ -1,11 +1,16 @@
-import LoadingSpinner from "../components/LoadingSpinner";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
+import { Search, Calendar } from 'lucide-react';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { tasksApi } from '../api/tasks';
 
 interface Task {
   id: string;
   title: string;
   description: string;
-  priority: "low" | "medium" | "high" | "urgent";
-  status: "pending" | "in_progress" | "completed" | "cancelled";
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
   dueDate?: string;
   createdAt: string;
   user: {
@@ -16,44 +21,44 @@ interface Task {
 }
 
 export default function TasksPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [priorityFilter, setPriorityFilter] = useState<string>('all');
 
   const { data: tasks, isLoading } = useQuery({
-    queryKey: ["admin-tasks", searchTerm, statusFilter, priorityFilter],
+    queryKey: ['admin-tasks', searchTerm, statusFilter, priorityFilter],
     queryFn: () =>
       tasksApi.getAllTasks({
         search: searchTerm,
-        status: statusFilter === "all" ? undefined : statusFilter,
-        priority: priorityFilter === "all" ? undefined : priorityFilter,
+        status: statusFilter === 'all' ? undefined : statusFilter,
+        priority: priorityFilter === 'all' ? undefined : priorityFilter,
       }),
   });
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   };
 
   const getPriorityBadge = (priority: string) => {
     const colors = {
-      urgent: "bg-red-100 text-red-800",
-      high: "bg-orange-100 text-orange-800",
-      medium: "bg-yellow-100 text-yellow-800",
-      low: "bg-green-100 text-green-800",
+      urgent: 'bg-red-100 text-red-800',
+      high: 'bg-orange-100 text-orange-800',
+      medium: 'bg-yellow-100 text-yellow-800',
+      low: 'bg-green-100 text-green-800',
     };
     return colors[priority as keyof typeof colors] || colors.low;
   };
 
   const getStatusBadge = (status: string) => {
     const colors = {
-      pending: "bg-gray-100 text-gray-800",
-      in_progress: "bg-blue-100 text-blue-800",
-      completed: "bg-green-100 text-green-800",
-      cancelled: "bg-red-100 text-red-800",
+      pending: 'bg-gray-100 text-gray-800',
+      in_progress: 'bg-blue-100 text-blue-800',
+      completed: 'bg-green-100 text-green-800',
+      cancelled: 'bg-red-100 text-red-800',
     };
     return colors[status as keyof typeof colors] || colors.pending;
   };
@@ -85,7 +90,7 @@ export default function TasksPage() {
                 type="text"
                 placeholder="Search tasks..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
@@ -93,7 +98,7 @@ export default function TasksPage() {
           <div className="flex gap-2">
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={e => setStatusFilter(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="all">All Status</option>
@@ -104,7 +109,7 @@ export default function TasksPage() {
             </select>
             <select
               value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
+              onChange={e => setPriorityFilter(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="all">All Priorities</option>
@@ -160,12 +165,8 @@ export default function TasksPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {task.user.fullName}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {task.user.email}
-                      </div>
+                      <div className="text-sm font-medium text-gray-900">{task.user.fullName}</div>
+                      <div className="text-sm text-gray-500">{task.user.email}</div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -179,7 +180,7 @@ export default function TasksPage() {
                     <span
                       className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(task.status)}`}
                     >
-                      {task.status.replace("_", " ")}
+                      {task.status.replace('_', ' ')}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -189,7 +190,7 @@ export default function TasksPage() {
                         {formatDate(task.dueDate)}
                       </div>
                     ) : (
-                      "No due date"
+                      'No due date'
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

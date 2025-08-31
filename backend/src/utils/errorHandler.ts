@@ -93,11 +93,7 @@ export function handleError(error: unknown): UserFriendlyError {
 /**
  * Handle controller errors consistently
  */
-export function handleControllerError(
-  error: unknown,
-  res: Response,
-  context: string
-): void {
+export function handleControllerError(error: unknown, res: Response, context: string): void {
   const userFriendlyError = handleError(error);
 
   // Log the technical details

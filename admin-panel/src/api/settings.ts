@@ -1,3 +1,4 @@
+import { apiClient } from './client';
 
 export interface SystemSettings {
   siteName: string;
@@ -18,14 +19,12 @@ export interface SystemSettings {
 
 export const settingsApi = {
   getSettings: async (): Promise<SystemSettings> => {
-    const response = await apiClient.get("/admin/settings");
+    const response = await apiClient.get('/admin/settings');
     return response.data;
   },
 
-  updateSettings: async (
-    settings: Partial<SystemSettings>,
-  ): Promise<SystemSettings> => {
-    const response = await apiClient.put("/admin/settings", settings);
+  updateSettings: async (settings: Partial<SystemSettings>): Promise<SystemSettings> => {
+    const response = await apiClient.put('/admin/settings', settings);
     return response.data;
   },
 };

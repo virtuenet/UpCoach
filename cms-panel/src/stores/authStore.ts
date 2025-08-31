@@ -1,30 +1,30 @@
-import { create } from 'zustand'
-import { authApi } from '../api/auth'
-import { secureAuth } from '../services/secureAuth'
-import { logger } from '../utils/logger'
-import toast from 'react-hot-toast'
+import { create } from 'zustand';
+import { authApi } from '../api/auth';
+import { secureAuth } from '../services/secureAuth';
+import { logger } from '../utils/logger';
+import toast from 'react-hot-toast';
 
 export interface User {
-  id: string
-  email: string
-  fullName: string
-  name?: string // Added for compatibility
-  role: 'coach' | 'content_creator' | 'admin'
-  avatarUrl?: string
-  bio?: string
-  expertise?: string[]
-  createdAt: string
+  id: string;
+  email: string;
+  fullName: string;
+  name?: string; // Added for compatibility
+  role: 'coach' | 'content_creator' | 'admin';
+  avatarUrl?: string;
+  bio?: string;
+  expertise?: string[];
+  createdAt: string;
 }
 
 interface AuthState {
-  user: User | null
-  isLoading: boolean
-  isAuthenticated: boolean
-  login: (email: string, password: string) => Promise<void>
-  logout: () => void
-  checkAuth: () => Promise<void>
-  updateProfile: (data: Partial<User>) => void
-  initializeAuth: () => Promise<void>
+  user: User | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  checkAuth: () => Promise<void>;
+  updateProfile: (data: Partial<User>) => void;
+  initializeAuth: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()((set, get) => ({
@@ -37,7 +37,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       // Initialize secure auth service
       await secureAuth.initialize();
       secureAuth.setupInterceptor();
-      
+
       // Check if user has valid session
       const hasSession = await secureAuth.checkSession();
       if (hasSession) {
@@ -52,8 +52,12 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     try {
       set({ isLoading: true });
       const response = await authApi.login(email, password);
-      
-      if (response.user.role !== 'coach' && response.user.role !== 'content_creator' && response.user.role !== 'admin') {
+
+      if (
+        response.user.role !== 'coach' &&
+        response.user.role !== 'content_creator' &&
+        response.user.role !== 'admin'
+      ) {
         throw new Error('Access denied. Coach or content creator privileges required.');
       }
 
@@ -64,7 +68,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         isLoading: false,
         isAuthenticated: true,
       });
-      
+
       toast.success('Welcome back!');
     } catch (error) {
       set({ isLoading: false, isAuthenticated: false });
@@ -78,7 +82,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       await secureAuth.clearSession();
       set({ user: null, isAuthenticated: false });
       toast.success('Logged out successfully');
-      
+
       // Redirect to login page
       window.location.href = '/login';
     } catch (error) {
@@ -91,7 +95,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   checkAuth: async () => {
     try {
       set({ isLoading: true });
-      
+
       // Check if we have a valid session
       const hasSession = await secureAuth.checkSession();
       if (!hasSession) {
@@ -101,7 +105,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
       // Get user profile using cookie-based auth
       const user = await authApi.getProfile();
-      
+
       if (user.role !== 'coach' && user.role !== 'content_creator' && user.role !== 'admin') {
         set({ user: null, isLoading: false, isAuthenticated: false });
         return;
@@ -119,4 +123,4 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
       set({ user: { ...user, ...data } });
     }
   },
-})) 
+}));

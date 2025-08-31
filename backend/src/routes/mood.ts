@@ -5,12 +5,7 @@ import { ApiError } from '../utils/apiError';
 import { AuthenticatedRequest } from '../middleware/auth';
 import { db } from '../services/database';
 import { logger } from '../utils/logger';
-import { 
-  MoodLevel, 
-  MoodCategory, 
-  CreateMoodEntryDto,
-  MoodFilters 
-} from '../types/database';
+import { MoodLevel, MoodCategory, CreateMoodEntryDto, MoodFilters } from '../types/database';
 
 const router = Router();
 
@@ -35,111 +30,117 @@ const moodFiltersSchema = z.object({
 });
 
 // Get all mood entries for the current user
-router.get('/', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const filters = moodFiltersSchema.parse(req.query);
+router.get(
+  '/',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const filters = moodFiltersSchema.parse(req.query);
 
-  // Build query
-  let query = `
+    // Build query
+    let query = `
     SELECT id, level, category, notes, activities, timestamp, created_at
     FROM mood_entries 
     WHERE user_id = $1
   `;
-  const params: any[] = [userId];
-  let paramIndex = 2;
+    const params: any[] = [userId];
+    let paramIndex = 2;
 
-  // Add filters
-  if (filters.level) {
-    query += ` AND level = $${paramIndex}`;
-    params.push(filters.level);
-    paramIndex++;
-  }
+    // Add filters
+    if (filters.level) {
+      query += ` AND level = $${paramIndex}`;
+      params.push(filters.level);
+      paramIndex++;
+    }
 
-  if (filters.category) {
-    query += ` AND category = $${paramIndex}`;
-    params.push(filters.category);
-    paramIndex++;
-  }
+    if (filters.category) {
+      query += ` AND category = $${paramIndex}`;
+      params.push(filters.category);
+      paramIndex++;
+    }
 
-  if (filters.dateFrom) {
-    query += ` AND timestamp >= $${paramIndex}`;
-    params.push(filters.dateFrom);
-    paramIndex++;
-  }
+    if (filters.dateFrom) {
+      query += ` AND timestamp >= $${paramIndex}`;
+      params.push(filters.dateFrom);
+      paramIndex++;
+    }
 
-  if (filters.dateTo) {
-    query += ` AND timestamp <= $${paramIndex}`;
-    params.push(filters.dateTo);
-    paramIndex++;
-  }
+    if (filters.dateTo) {
+      query += ` AND timestamp <= $${paramIndex}`;
+      params.push(filters.dateTo);
+      paramIndex++;
+    }
 
-  // Add sorting
-  query += ` ORDER BY ${filters.sortBy} ${filters.sortOrder}`;
+    // Add sorting
+    query += ` ORDER BY ${filters.sortBy} ${filters.sortOrder}`;
 
-  // Add pagination
-  const offset = (filters.page - 1) * filters.limit;
-  query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-  params.push(filters.limit, offset);
+    // Add pagination
+    const offset = (filters.page - 1) * filters.limit;
+    query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(filters.limit, offset);
 
-  // Execute query
-  const result = await db.query(query, params);
+    // Execute query
+    const result = await db.query(query, params);
 
-  // Get total count for pagination
-  let countQuery = `SELECT COUNT(*) FROM mood_entries WHERE user_id = $1`;
-  const countParams = [userId];
-  let countParamIndex = 2;
+    // Get total count for pagination
+    let countQuery = `SELECT COUNT(*) FROM mood_entries WHERE user_id = $1`;
+    const countParams = [userId];
+    let countParamIndex = 2;
 
-  if (filters.level) {
-    countQuery += ` AND level = $${countParamIndex}`;
-    countParams.push(filters.level);
-    countParamIndex++;
-  }
+    if (filters.level) {
+      countQuery += ` AND level = $${countParamIndex}`;
+      countParams.push(filters.level);
+      countParamIndex++;
+    }
 
-  if (filters.category) {
-    countQuery += ` AND category = $${countParamIndex}`;
-    countParams.push(filters.category);
-    countParamIndex++;
-  }
+    if (filters.category) {
+      countQuery += ` AND category = $${countParamIndex}`;
+      countParams.push(filters.category);
+      countParamIndex++;
+    }
 
-  if (filters.dateFrom) {
-    countQuery += ` AND timestamp >= $${countParamIndex}`;
-    countParams.push(filters.dateFrom);
-    countParamIndex++;
-  }
+    if (filters.dateFrom) {
+      countQuery += ` AND timestamp >= $${countParamIndex}`;
+      countParams.push(filters.dateFrom);
+      countParamIndex++;
+    }
 
-  if (filters.dateTo) {
-    countQuery += ` AND timestamp <= $${countParamIndex}`;
-    countParams.push(filters.dateTo);
-  }
+    if (filters.dateTo) {
+      countQuery += ` AND timestamp <= $${countParamIndex}`;
+      countParams.push(filters.dateTo);
+    }
 
-  const countResult = await db.query(countQuery, countParams);
-  const total = parseInt(countResult.rows[0].count);
-  const totalPages = Math.ceil(total / filters.limit);
+    const countResult = await db.query(countQuery, countParams);
+    const total = parseInt(countResult.rows[0].count);
+    const totalPages = Math.ceil(total / filters.limit);
 
-  _res.json({
-    success: true,
-    data: {
-      moodEntries: result.rows,
-      pagination: {
-        page: filters.page,
-        limit: filters.limit,
-        total,
-        totalPages,
+    _res.json({
+      success: true,
+      data: {
+        moodEntries: result.rows,
+        pagination: {
+          page: filters.page,
+          limit: filters.limit,
+          total,
+          totalPages,
+        },
       },
-    },
-  });
-}));
+    });
+  })
+);
 
 // Get today's mood entry
-router.get('/today', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+router.get(
+  '/today',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
 
-  const moodEntry = await db.query(`
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const moodEntry = await db.query(
+      `
     SELECT id, level, category, notes, activities, timestamp, created_at
     FROM mood_entries 
     WHERE user_id = $1 
@@ -147,22 +148,28 @@ router.get('/today', asyncHandler(async (req: AuthenticatedRequest, _res: Respon
       AND timestamp < $3
     ORDER BY timestamp DESC
     LIMIT 1
-  `, [userId, today.toISOString(), tomorrow.toISOString()]);
+  `,
+      [userId, today.toISOString(), tomorrow.toISOString()]
+    );
 
-  _res.json({
-    success: true,
-    data: {
-      moodEntry: moodEntry.rows[0] || null,
-    },
-  });
-}));
+    _res.json({
+      success: true,
+      data: {
+        moodEntry: moodEntry.rows[0] || null,
+      },
+    });
+  })
+);
 
 // Get mood statistics and insights
-router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
+router.get(
+  '/stats/overview',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
 
-  // Overall statistics
-  const overallStats = await db.query(`
+    // Overall statistics
+    const overallStats = await db.query(
+      `
     SELECT 
       COUNT(*) as total_entries,
       AVG(CASE 
@@ -174,10 +181,13 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _re
       END) as avg_mood_score
     FROM mood_entries 
     WHERE user_id = $1
-  `, [userId]);
+  `,
+      [userId]
+    );
 
-  // Mood distribution
-  const moodDistribution = await db.query(`
+    // Mood distribution
+    const moodDistribution = await db.query(
+      `
     SELECT 
       level,
       COUNT(*) as count,
@@ -193,10 +203,13 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _re
         WHEN 'sad' THEN 2
         WHEN 'very_sad' THEN 1
       END DESC
-  `, [userId]);
+  `,
+      [userId]
+    );
 
-  // Weekly trend (last 7 days)
-  const weeklyTrend = await db.query(`
+    // Weekly trend (last 7 days)
+    const weeklyTrend = await db.query(
+      `
     SELECT 
       DATE(timestamp) as date,
       AVG(CASE 
@@ -212,10 +225,13 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _re
       AND timestamp >= NOW() - INTERVAL '7 days'
     GROUP BY DATE(timestamp)
     ORDER BY date
-  `, [userId]);
+  `,
+      [userId]
+    );
 
-  // Monthly trend (last 30 days)
-  const monthlyTrend = await db.query(`
+    // Monthly trend (last 30 days)
+    const monthlyTrend = await db.query(
+      `
     SELECT 
       DATE(timestamp) as date,
       AVG(CASE 
@@ -231,10 +247,13 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _re
       AND timestamp >= NOW() - INTERVAL '30 days'
     GROUP BY DATE(timestamp)
     ORDER BY date
-  `, [userId]);
+  `,
+      [userId]
+    );
 
-  // Category insights
-  const categoryInsights = await db.query(`
+    // Category insights
+    const categoryInsights = await db.query(
+      `
     SELECT 
       category,
       COUNT(*) as total_entries,
@@ -249,10 +268,13 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _re
     WHERE user_id = $1
     GROUP BY category
     ORDER BY avg_mood_score DESC
-  `, [userId]);
+  `,
+      [userId]
+    );
 
-  // Activity insights (most common activities for positive moods)
-  const activityInsights = await db.query(`
+    // Activity insights (most common activities for positive moods)
+    const activityInsights = await db.query(
+      `
     SELECT 
       activity,
       COUNT(*) as frequency,
@@ -272,137 +294,161 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _re
     HAVING COUNT(*) >= 3
     ORDER BY avg_mood_score DESC, frequency DESC
     LIMIT 10
-  `, [userId]);
+  `,
+      [userId]
+    );
 
-  _res.json({
-    success: true,
-    data: {
-      overview: overallStats.rows[0],
-      distribution: moodDistribution.rows,
-      weeklyTrend: weeklyTrend.rows,
-      monthlyTrend: monthlyTrend.rows,
-      categoryInsights: categoryInsights.rows,
-      activityInsights: activityInsights.rows,
-    },
-  });
-}));
+    _res.json({
+      success: true,
+      data: {
+        overview: overallStats.rows[0],
+        distribution: moodDistribution.rows,
+        weeklyTrend: weeklyTrend.rows,
+        monthlyTrend: monthlyTrend.rows,
+        categoryInsights: categoryInsights.rows,
+        activityInsights: activityInsights.rows,
+      },
+    });
+  })
+);
 
 // Get a single mood entry by ID
-router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const { id } = req.params;
+router.get(
+  '/:id',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const { id } = req.params;
 
-  const moodEntry = await db.findOne('mood_entries', { id, user_id: userId });
-  
-  if (!moodEntry) {
-    throw new ApiError(404, 'Mood entry not found');
-  }
+    const moodEntry = await db.findOne('mood_entries', { id, user_id: userId });
 
-  _res.json({
-    success: true,
-    data: {
-      moodEntry,
-    },
-  });
-}));
+    if (!moodEntry) {
+      throw new ApiError(404, 'Mood entry not found');
+    }
+
+    _res.json({
+      success: true,
+      data: {
+        moodEntry,
+      },
+    });
+  })
+);
 
 // Create a new mood entry
-router.post('/', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const validatedData = createMoodEntrySchema.parse(req.body);
+router.post(
+  '/',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const validatedData = createMoodEntrySchema.parse(req.body);
 
-  // Check if user already has a mood entry for today
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+    // Check if user already has a mood entry for today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
-  const existingEntry = await db.query(`
+    const existingEntry = await db.query(
+      `
     SELECT id FROM mood_entries 
     WHERE user_id = $1 
       AND timestamp >= $2 
       AND timestamp < $3
-  `, [userId, today.toISOString(), tomorrow.toISOString()]);
+  `,
+      [userId, today.toISOString(), tomorrow.toISOString()]
+    );
 
-  if (existingEntry.rows.length > 0) {
-    throw new ApiError(409, 'Mood entry for today already exists. Use PUT to update it.');
-  }
+    if (existingEntry.rows.length > 0) {
+      throw new ApiError(409, 'Mood entry for today already exists. Use PUT to update it.');
+    }
 
-  const moodEntryData = {
-    user_id: userId,
-    level: validatedData.level,
-    category: validatedData.category,
-    notes: validatedData.notes || null,
-    activities: validatedData.activities,
-    timestamp: validatedData.timestamp ? new Date(validatedData.timestamp) : new Date(),
-    metadata: {},
-  };
+    const moodEntryData = {
+      user_id: userId,
+      level: validatedData.level,
+      category: validatedData.category,
+      notes: validatedData.notes || null,
+      activities: validatedData.activities,
+      timestamp: validatedData.timestamp ? new Date(validatedData.timestamp) : new Date(),
+      metadata: {},
+    };
 
-  const moodEntry = await db.insert('mood_entries', moodEntryData);
+    const moodEntry = await db.insert('mood_entries', moodEntryData);
 
-  logger.info('Mood entry created:', { moodEntryId: moodEntry.id, userId, level: validatedData.level });
+    logger.info('Mood entry created:', {
+      moodEntryId: moodEntry.id,
+      userId,
+      level: validatedData.level,
+    });
 
-  _res.status(201).json({
-    success: true,
-    message: 'Mood entry created successfully',
-    data: {
-      moodEntry,
-    },
-  });
-}));
+    _res.status(201).json({
+      success: true,
+      message: 'Mood entry created successfully',
+      data: {
+        moodEntry,
+      },
+    });
+  })
+);
 
 // Update a mood entry
-router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const { id } = req.params;
-  const validatedData = createMoodEntrySchema.parse(req.body);
+router.put(
+  '/:id',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const { id } = req.params;
+    const validatedData = createMoodEntrySchema.parse(req.body);
 
-  // Check if mood entry exists and belongs to user
-  const existingMoodEntry = await db.findOne('mood_entries', { id, user_id: userId });
-  if (!existingMoodEntry) {
-    throw new ApiError(404, 'Mood entry not found');
-  }
+    // Check if mood entry exists and belongs to user
+    const existingMoodEntry = await db.findOne('mood_entries', { id, user_id: userId });
+    if (!existingMoodEntry) {
+      throw new ApiError(404, 'Mood entry not found');
+    }
 
-  const updateData = {
-    level: validatedData.level,
-    category: validatedData.category,
-    notes: validatedData.notes || null,
-    activities: validatedData.activities,
-    timestamp: validatedData.timestamp ? new Date(validatedData.timestamp) : existingMoodEntry.timestamp,
-  };
+    const updateData = {
+      level: validatedData.level,
+      category: validatedData.category,
+      notes: validatedData.notes || null,
+      activities: validatedData.activities,
+      timestamp: validatedData.timestamp
+        ? new Date(validatedData.timestamp)
+        : existingMoodEntry.timestamp,
+    };
 
-  const updatedMoodEntry = await db.update('mood_entries', updateData, { id, user_id: userId });
+    const updatedMoodEntry = await db.update('mood_entries', updateData, { id, user_id: userId });
 
-  logger.info('Mood entry updated:', { moodEntryId: id, userId });
+    logger.info('Mood entry updated:', { moodEntryId: id, userId });
 
-  _res.json({
-    success: true,
-    message: 'Mood entry updated successfully',
-    data: {
-      moodEntry: updatedMoodEntry,
-    },
-  });
-}));
+    _res.json({
+      success: true,
+      message: 'Mood entry updated successfully',
+      data: {
+        moodEntry: updatedMoodEntry,
+      },
+    });
+  })
+);
 
 // Delete a mood entry
-router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const { id } = req.params;
+router.delete(
+  '/:id',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const { id } = req.params;
 
-  // Check if mood entry exists and belongs to user
-  const existingMoodEntry = await db.findOne('mood_entries', { id, user_id: userId });
-  if (!existingMoodEntry) {
-    throw new ApiError(404, 'Mood entry not found');
-  }
+    // Check if mood entry exists and belongs to user
+    const existingMoodEntry = await db.findOne('mood_entries', { id, user_id: userId });
+    if (!existingMoodEntry) {
+      throw new ApiError(404, 'Mood entry not found');
+    }
 
-  await db.delete('mood_entries', { id, user_id: userId });
+    await db.delete('mood_entries', { id, user_id: userId });
 
-  logger.info('Mood entry deleted:', { moodEntryId: id, userId });
+    logger.info('Mood entry deleted:', { moodEntryId: id, userId });
 
-  _res.json({
-    success: true,
-    message: 'Mood entry deleted successfully',
-  });
-}));
+    _res.json({
+      success: true,
+      message: 'Mood entry deleted successfully',
+    });
+  })
+);
 
-export default router; 
+export default router;

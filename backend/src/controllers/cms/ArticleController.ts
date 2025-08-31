@@ -126,13 +126,13 @@ export class ArticleController {
       // Track view if requested
       if (trackView === 'true') {
         await article.incrementViewCount();
-        
+
         // Create analytics record
         await ContentAnalytics.create({
           contentType: 'article',
           contentId: article.id,
           userId: (req as any).user?.id || null,
-          sessionId: req.headers['x-session-id'] as string || 'anonymous',
+          sessionId: (req.headers['x-session-id'] as string) || 'anonymous',
           event: 'view',
           metadata: {
             referrer: req.get('Referrer'),
@@ -582,7 +582,7 @@ export class ArticleController {
    */
   private static getDeviceType(userAgent?: string): string {
     if (!userAgent) return 'unknown';
-    
+
     if (/Mobile|Android|iPhone|iPad/.test(userAgent)) {
       return 'mobile';
     } else if (/Tablet/.test(userAgent)) {
@@ -593,4 +593,4 @@ export class ArticleController {
   }
 }
 
-export default ArticleController; 
+export default ArticleController;

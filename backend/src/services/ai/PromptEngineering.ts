@@ -29,7 +29,7 @@ export class PromptEngineering {
 
 Guide them to make it Specific, Measurable, Achievable, Relevant, and Time-bound.`,
       variables: ['goal_description', 'current_state', 'timeline'],
-      category: 'goal'
+      category: 'goal',
     });
 
     // Habit Formation Templates
@@ -43,7 +43,7 @@ Guide them to make it Specific, Measurable, Achievable, Relevant, and Time-bound
 
 Use the Tiny Habits method: After I [ANCHOR], I will [TINY BEHAVIOR]. Then celebrate!`,
       variables: ['desired_habit', 'current_routine', 'motivation_level'],
-      category: 'habit'
+      category: 'habit',
     });
 
     // Reflection Templates
@@ -58,7 +58,7 @@ Use the Tiny Habits method: After I [ANCHOR], I will [TINY BEHAVIOR]. Then celeb
 
 Help them extract insights and plan for tomorrow.`,
       variables: ['date', 'accomplishments', 'challenges', 'mood'],
-      category: 'reflection'
+      category: 'reflection',
     });
 
     // Motivation Templates
@@ -73,7 +73,7 @@ Help them extract insights and plan for tomorrow.`,
 
 Provide practical strategies and emotional support.`,
       variables: ['obstacle', 'previous_attempts', 'resources', 'success_criteria'],
-      category: 'motivation'
+      category: 'motivation',
     });
   }
 
@@ -91,7 +91,7 @@ Provide practical strategies and emotional support.`,
       if (summary) {
         optimized.splice(0, messages.length - 5, {
           role: 'assistant',
-          content: `Previous conversation summary: ${summary}`
+          content: `Previous conversation summary: ${summary}`,
         });
       }
     }
@@ -109,7 +109,10 @@ Provide practical strategies and emotional support.`,
     if (options.context && Object.keys(options.context).length > 0) {
       const contextString = this.formatContext(options.context);
       if (contextString) {
-        const lastUserIndex = optimized.slice().reverse().findIndex(m => m.role === 'user');
+        const lastUserIndex = optimized
+          .slice()
+          .reverse()
+          .findIndex(m => m.role === 'user');
         if (lastUserIndex >= 0) {
           optimized[lastUserIndex].content += `\n\nContext: ${contextString}`;
         }
@@ -119,19 +122,17 @@ Provide practical strategies and emotional support.`,
     return optimized;
   }
 
-  generatePersonalizedPrompt(
-    basePrompt: string,
-    userContext: any,
-    promptType: string
-  ): string {
-    const template = this.templates.get(`${promptType}-${userContext.preferredMethod || 'default'}`);
-    
+  generatePersonalizedPrompt(basePrompt: string, userContext: any, promptType: string): string {
+    const template = this.templates.get(
+      `${promptType}-${userContext.preferredMethod || 'default'}`
+    );
+
     if (!template) {
       return this.enhanceBasePrompt(basePrompt, userContext);
     }
 
     let personalizedPrompt = template.template;
-    
+
     // Replace variables with context values
     template.variables.forEach(variable => {
       const value = this.extractContextValue(userContext, variable);
@@ -159,22 +160,20 @@ Provide practical strategies and emotional support.`,
       }
     });
 
-    return keyPoints.length > 0 
-      ? `Key points discussed: ${keyPoints.slice(0, 3).join('; ')}`
-      : '';
+    return keyPoints.length > 0 ? `Key points discussed: ${keyPoints.slice(0, 3).join('; ')}` : '';
   }
 
   private applyPersonalityTone(content: string, personality: string): string {
     // Personality tone adjustments
     const toneAdjustments: Record<string, (content: string) => string> = {
-      motivational: (c) => c.replace(/you can/gi, 'you absolutely can')
-        .replace(/try to/gi, 'confidently'),
-      analytical: (c) => c.replace(/maybe/gi, 'analysis suggests')
-        .replace(/probably/gi, 'statistically'),
-      empathetic: (c) => c.replace(/you should/gi, 'you might want to')
-        .replace(/must/gi, 'could consider'),
-      direct: (c) => c.replace(/you might want to/gi, 'you should')
-        .replace(/perhaps/gi, 'definitely')
+      motivational: c =>
+        c.replace(/you can/gi, 'you absolutely can').replace(/try to/gi, 'confidently'),
+      analytical: c =>
+        c.replace(/maybe/gi, 'analysis suggests').replace(/probably/gi, 'statistically'),
+      empathetic: c =>
+        c.replace(/you should/gi, 'you might want to').replace(/must/gi, 'could consider'),
+      direct: c =>
+        c.replace(/you might want to/gi, 'you should').replace(/perhaps/gi, 'definitely'),
     };
 
     const adjuster = toneAdjustments[personality];
@@ -185,7 +184,12 @@ Provide practical strategies and emotional support.`,
     const relevantContext: string[] = [];
 
     if (context.userGoals?.length > 0) {
-      relevantContext.push(`Active goals: ${context.userGoals.slice(0, 2).map(g => g.title).join(', ')}`);
+      relevantContext.push(
+        `Active goals: ${context.userGoals
+          .slice(0, 2)
+          .map(g => g.title)
+          .join(', ')}`
+      );
     }
 
     if (context.recentProgress) {
@@ -245,7 +249,7 @@ Provide practical strategies and emotional support.`,
       obstacle: 'currentChallenge.description',
       previous_attempts: 'currentChallenge.previousAttempts',
       resources: 'availableResources',
-      success_criteria: 'currentChallenge.successCriteria'
+      success_criteria: 'currentChallenge.successCriteria',
     };
 
     const path = mappings[variable];
@@ -283,28 +287,21 @@ Provide practical strategies and emotional support.`,
       layers.push(`They are in the ${context.progressStage} stage of their journey.`);
     }
 
-    return layers.length > 0 
-      ? `${prompt}\n\nPersonalization notes: ${layers.join(' ')}`
-      : prompt;
+    return layers.length > 0 ? `${prompt}\n\nPersonalization notes: ${layers.join(' ')}` : prompt;
   }
 
   // Track prompt effectiveness
-  async trackPromptEffectiveness(
-    templateId: string,
-    userFeedback: number,
-    completionRate: number
-  ) {
+  async trackPromptEffectiveness(templateId: string, userFeedback: number, completionRate: number) {
     const template = this.templates.get(templateId);
     if (template) {
       // Update effectiveness score (weighted average)
       const currentScore = template.effectiveness || 0.5;
       const feedbackWeight = 0.7;
       const completionWeight = 0.3;
-      
-      template.effectiveness = (
-        (currentScore * 0.8) + // Historical weight
-        (userFeedback * feedbackWeight + completionRate * completionWeight) * 0.2
-      );
+
+      template.effectiveness =
+        currentScore * 0.8 + // Historical weight
+        (userFeedback * feedbackWeight + completionRate * completionWeight) * 0.2;
 
       logger.info(`Updated prompt effectiveness for ${templateId}: ${template.effectiveness}`);
     }
@@ -312,8 +309,9 @@ Provide practical strategies and emotional support.`,
 
   // Get best prompt for a given context
   getBestPromptTemplate(category: string, userContext: any): PromptTemplate | null {
-    const categoryTemplates = Array.from(this.templates.values())
-      .filter(t => t.category === category);
+    const categoryTemplates = Array.from(this.templates.values()).filter(
+      t => t.category === category
+    );
 
     if (categoryTemplates.length === 0) return null;
 
@@ -329,11 +327,11 @@ Provide practical strategies and emotional support.`,
     let relevance = 1.0;
 
     // Check if all required variables are available in context
-    const availableVars = template.variables.filter(v => 
-      this.extractContextValue(context, v) !== `{${v}}`
+    const availableVars = template.variables.filter(
+      v => this.extractContextValue(context, v) !== `{${v}}`
     );
-    
-    relevance *= (availableVars.length / template.variables.length);
+
+    relevance *= availableVars.length / template.variables.length;
 
     // Boost relevance for user's preferred methods
     if (context.preferredMethods?.includes(template.category)) {

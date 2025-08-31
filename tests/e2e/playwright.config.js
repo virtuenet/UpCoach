@@ -11,9 +11,9 @@ module.exports = defineConfig({
     ['html', { outputFolder: '../../test-results/playwright-report' }],
     ['json', { outputFile: '../../test-results/results.json' }],
     ['junit', { outputFile: '../../test-results/junit.xml' }],
-    ['list']
+    ['list'],
   ],
-  
+
   use: {
     baseURL: process.env.BASE_URL || 'http://localhost:3000',
     trace: 'on-first-retry',
@@ -26,34 +26,34 @@ module.exports = defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
     },
     {
       name: 'firefox',
-      use: { 
+      use: {
         ...devices['Desktop Firefox'],
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
     },
     {
       name: 'webkit',
-      use: { 
+      use: {
         ...devices['Desktop Safari'],
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
     },
     {
       name: 'Mobile Chrome',
-      use: { 
+      use: {
         ...devices['Pixel 5'],
       },
     },
     {
       name: 'Mobile Safari',
-      use: { 
+      use: {
         ...devices['iPhone 13'],
       },
     },
@@ -85,4 +85,4 @@ module.exports = defineConfig({
       reuseExistingServer: !process.env.CI,
     },
   ],
-}); 
+});

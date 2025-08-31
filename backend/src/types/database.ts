@@ -327,4 +327,4 @@ export interface ApiResponse<T = any> {
     message: string;
     details?: any;
   };
-} 
+}

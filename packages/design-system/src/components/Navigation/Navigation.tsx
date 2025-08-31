@@ -76,7 +76,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 }));
 
 const StyledDrawer = styled(Drawer, {
-  shouldForwardProp: (prop) => prop !== 'variant'
+  shouldForwardProp: prop => prop !== 'variant',
 })<{ variant: string }>(({ theme, variant }) => ({
   width: variant === 'mini' ? miniDrawerWidth : drawerWidth,
   flexShrink: 0,
@@ -91,7 +91,7 @@ const StyledDrawer = styled(Drawer, {
 }));
 
 const StyledAppBar = styled(AppBar, {
-  shouldForwardProp: (prop) => prop !== 'open'
+  shouldForwardProp: prop => prop !== 'open',
 })<{ open?: boolean }>(({ theme, open }) => ({
   transition: theme.transitions.create(['margin', 'width'], {
     easing: theme.transitions.easing.sharp,
@@ -130,10 +130,8 @@ export const Navigation: React.FC<NavigationProps> = ({
   };
 
   const handleExpandToggle = (itemId: string) => {
-    setExpandedItems((prev) =>
-      prev.includes(itemId)
-        ? prev.filter((id) => id !== itemId)
-        : [...prev, itemId]
+    setExpandedItems(prev =>
+      prev.includes(itemId) ? prev.filter(id => id !== itemId) : [...prev, itemId]
     );
   };
 
@@ -157,7 +155,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   };
 
   const renderNavItems = (items: NavigationItem[], depth = 0) => {
-    return items.map((item) => {
+    return items.map(item => {
       const hasChildren = item.children && item.children.length > 0;
       const isExpanded = expandedItems.includes(item.id);
       const isActive = item.path === currentPath;
@@ -257,11 +255,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                 )}
               </IconButton>
             </Tooltip>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleUserMenuClose}
-            >
+            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleUserMenuClose}>
               <Box sx={{ px: 2, py: 1 }}>
                 <Typography variant="subtitle1">{user.name}</Typography>
                 {user.email && (
@@ -271,10 +265,20 @@ export const Navigation: React.FC<NavigationProps> = ({
                 )}
               </Box>
               <Divider />
-              <MenuItem onClick={() => { handleUserMenuClose(); onNavigate?.('/settings'); }}>
+              <MenuItem
+                onClick={() => {
+                  handleUserMenuClose();
+                  onNavigate?.('/settings');
+                }}
+              >
                 Settings
               </MenuItem>
-              <MenuItem onClick={() => { handleUserMenuClose(); onLogout?.(); }}>
+              <MenuItem
+                onClick={() => {
+                  handleUserMenuClose();
+                  onLogout?.();
+                }}
+              >
                 Logout
               </MenuItem>
             </Menu>

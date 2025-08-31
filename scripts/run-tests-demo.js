@@ -2,7 +2,7 @@
 
 /**
  * Test Runner Demo
- * 
+ *
  * This script demonstrates the test automation pipeline
  * by simulating test runs and generating reports.
  */
@@ -51,7 +51,7 @@ function simulateTestRun() {
         numPassingTests: 16,
         numFailingTests: 0,
         numPendingTests: 0,
-        numTotalTests: 16
+        numTotalTests: 16,
       },
       {
         name: 'LeadCaptureForm.test.tsx',
@@ -59,9 +59,9 @@ function simulateTestRun() {
         numPassingTests: 14,
         numFailingTests: 0,
         numPendingTests: 0,
-        numTotalTests: 14
-      }
-    ]
+        numTotalTests: 14,
+      },
+    ],
   };
 
   const backendResults = {
@@ -79,9 +79,9 @@ function simulateTestRun() {
         numPassingTests: 20,
         numFailingTests: 0,
         numPendingTests: 0,
-        numTotalTests: 20
-      }
-    ]
+        numTotalTests: 20,
+      },
+    ],
   };
 
   // Save mock results
@@ -101,8 +101,8 @@ function simulateTestRun() {
       lines: { pct: 92.5 },
       branches: { pct: 88.3 },
       functions: { pct: 95.2 },
-      statements: { pct: 91.7 }
-    }
+      statements: { pct: 91.7 },
+    },
   };
 
   const coverageDir = path.join(__dirname, '../landing-page/coverage');
@@ -120,14 +120,18 @@ function simulateTestRun() {
   }
   fs.writeFileSync(
     path.join(backendCoverageDir, 'coverage-summary.json'),
-    JSON.stringify({
-      total: {
-        lines: { pct: 89.4 },
-        branches: { pct: 85.2 },
-        functions: { pct: 91.8 },
-        statements: { pct: 88.9 }
-      }
-    }, null, 2)
+    JSON.stringify(
+      {
+        total: {
+          lines: { pct: 89.4 },
+          branches: { pct: 85.2 },
+          functions: { pct: 91.8 },
+          statements: { pct: 88.9 },
+        },
+      },
+      null,
+      2
+    )
   );
 }
 
@@ -142,9 +146,9 @@ console.log('🔧 Running automation tools...\n');
 try {
   // Generate test report
   console.log('📝 Generating test report...');
-  execSync('node scripts/generate-test-report.js', { 
+  execSync('node scripts/generate-test-report.js', {
     cwd: path.join(__dirname, '..'),
-    stdio: 'inherit'
+    stdio: 'inherit',
   });
 } catch (error) {
   console.error('Error generating test report:', error.message);
@@ -153,9 +157,9 @@ try {
 try {
   // Generate badges
   console.log('\n🎖️  Generating badges...');
-  execSync('node scripts/generate-badges.js', { 
+  execSync('node scripts/generate-badges.js', {
     cwd: path.join(__dirname, '..'),
-    stdio: 'inherit'
+    stdio: 'inherit',
   });
 } catch (error) {
   console.error('Error generating badges:', error.message);
@@ -164,9 +168,9 @@ try {
 try {
   // Run performance analysis
   console.log('\n📊 Analyzing performance...');
-  execSync('node scripts/analyze-performance.js', { 
+  execSync('node scripts/analyze-performance.js', {
     cwd: path.join(__dirname, '..'),
-    stdio: 'inherit'
+    stdio: 'inherit',
   });
 } catch (error) {
   console.error('Error analyzing performance:', error.message);
@@ -175,9 +179,9 @@ try {
 try {
   // Check for notifications
   console.log('\n🔔 Checking for notifications...');
-  execSync('node scripts/test-notifier.js', { 
+  execSync('node scripts/test-notifier.js', {
     cwd: path.join(__dirname, '..'),
-    stdio: 'inherit'
+    stdio: 'inherit',
   });
 } catch (error) {
   console.error('Error running notifier:', error.message);

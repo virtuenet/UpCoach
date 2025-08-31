@@ -1,10 +1,11 @@
+import { apiClient } from './client';
 
 export interface Task {
   id: string;
   title: string;
   description: string;
-  priority: "low" | "medium" | "high" | "urgent";
-  status: "pending" | "in_progress" | "completed" | "cancelled";
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
   dueDate?: string;
   createdAt: string;
   updatedAt: string;
@@ -26,7 +27,7 @@ export interface GetTasksParams {
 
 export const tasksApi = {
   getAllTasks: async (params: GetTasksParams = {}): Promise<Task[]> => {
-    const response = await apiClient.get("/admin/tasks", { params });
+    const response = await apiClient.get('/admin/tasks', { params });
     return response.data;
   },
 
@@ -37,7 +38,7 @@ export const tasksApi = {
     completed: number;
     cancelled: number;
   }> => {
-    const response = await apiClient.get("/admin/tasks/stats");
+    const response = await apiClient.get('/admin/tasks/stats');
     return response.data;
   },
 };

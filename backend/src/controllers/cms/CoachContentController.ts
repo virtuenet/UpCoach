@@ -27,16 +27,14 @@ export class CoachContentController {
       // Get recent articles
       const recentArticles = await ContentArticle.findAll({
         where: { authorId: coachId },
-        include: [
-          { model: ContentCategory, as: 'category' },
-        ],
+        include: [{ model: ContentCategory, as: 'category' }],
         order: [['updatedAt', 'DESC']],
         limit: 5,
       });
 
       // Get popular articles
       const popularArticles = await ContentArticle.findAll({
-        where: { 
+        where: {
           authorId: coachId,
           status: 'published',
         },
@@ -89,9 +87,7 @@ export class CoachContentController {
 
       const { count, rows } = await ContentArticle.findAndCountAll({
         where,
-        include: [
-          { model: ContentCategory, as: 'category' },
-        ],
+        include: [{ model: ContentCategory, as: 'category' }],
         order: [['updatedAt', 'DESC']],
         limit: Number(limit),
         offset,
@@ -376,9 +372,13 @@ export class CoachContentController {
         size: file.size,
         url: `/uploads/content/${file.filename}`,
         uploadedBy: coachId,
-        type: file.mimetype.startsWith('image/') ? 'image' : 
-              file.mimetype.startsWith('video/') ? 'video' : 
-              file.mimetype.startsWith('audio/') ? 'audio' : 'document',
+        type: file.mimetype.startsWith('image/')
+          ? 'image'
+          : file.mimetype.startsWith('video/')
+            ? 'video'
+            : file.mimetype.startsWith('audio/')
+              ? 'audio'
+              : 'document',
         isPublic: false,
       });
 
@@ -465,7 +465,7 @@ export class CoachContentController {
       // Calculate date range
       const endDate = new Date();
       const startDate = new Date();
-      
+
       switch (period) {
         case '7d':
           startDate.setDate(startDate.getDate() - 7);
@@ -498,7 +498,10 @@ export class CoachContentController {
       // Calculate growth
       const previousEndDate = new Date(startDate);
       const previousStartDate = new Date(startDate);
-      previousStartDate.setDate(previousStartDate.getDate() - (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      previousStartDate.setDate(
+        previousStartDate.getDate() -
+          (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
 
       const previousArticles = await ContentArticle.findAll({
         where: {
@@ -511,7 +514,8 @@ export class CoachContentController {
       });
 
       const previousViews = previousArticles.reduce((sum, article) => sum + article.viewCount, 0);
-      const viewsGrowth = previousViews > 0 ? ((totalViews - previousViews) / previousViews) * 100 : 0;
+      const viewsGrowth =
+        previousViews > 0 ? ((totalViews - previousViews) / previousViews) * 100 : 0;
 
       _res.json({
         success: true,

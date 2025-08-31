@@ -81,7 +81,7 @@ export class UnifiedEmailService {
     this.transporter = nodemailer.createTransport(config);
 
     // Verify connection
-    this.transporter.verify((error) => {
+    this.transporter.verify(error => {
       if (error) {
         logger.error('Email service initialization failed:', error);
       } else {
@@ -114,13 +114,16 @@ export class UnifiedEmailService {
     });
 
     // Conditional helpers
-    handlebars.registerHelper('ifEquals', function(this: any, arg1: any, arg2: any, options: any) {
+    handlebars.registerHelper('ifEquals', function (this: any, arg1: any, arg2: any, options: any) {
       return arg1 === arg2 ? options.fn(this) : options.inverse(this);
     });
 
-    handlebars.registerHelper('ifGreaterThan', function(this: any, arg1: number, arg2: number, options: any) {
-      return arg1 > arg2 ? options.fn(this) : options.inverse(this);
-    });
+    handlebars.registerHelper(
+      'ifGreaterThan',
+      function (this: any, arg1: number, arg2: number, options: any) {
+        return arg1 > arg2 ? options.fn(this) : options.inverse(this);
+      }
+    );
   }
 
   /**
@@ -133,17 +136,13 @@ export class UnifiedEmailService {
     }
 
     try {
-      const templatePath = path.join(
-        __dirname,
-        '../../templates/emails',
-        `${templateName}.hbs`
-      );
+      const templatePath = path.join(__dirname, '../../templates/emails', `${templateName}.hbs`);
       const templateContent = await fs.readFile(templatePath, 'utf-8');
       const compiled = handlebars.compile(templateContent);
-      
+
       // Cache compiled template
       this.templateCache.set(templateName, compiled);
-      
+
       return compiled;
     } catch (error) {
       logger.error(`Failed to load email template ${templateName}:`, error);
@@ -163,7 +162,7 @@ export class UnifiedEmailService {
       if (options.template && options.data) {
         const template = await this.loadTemplate(options.template);
         html = template(options.data);
-        
+
         // Generate text version from HTML if not provided
         if (!text) {
           text = this.htmlToText(html);
@@ -190,7 +189,7 @@ export class UnifiedEmailService {
       };
 
       const info = await this.transporter.sendMail(mailOptions);
-      
+
       this.metrics.sent++;
       logger.info('Email sent successfully:', {
         messageId: info.messageId,
@@ -202,12 +201,12 @@ export class UnifiedEmailService {
     } catch (error) {
       this.metrics.failed++;
       logger.error('Failed to send email:', error);
-      
+
       // Add to retry queue if it's a temporary failure
       if (this.isTemporaryFailure(error)) {
         this.queuedEmails.push(options);
       }
-      
+
       return false;
     }
   }
@@ -217,7 +216,7 @@ export class UnifiedEmailService {
    */
   async queue(options: EmailOptions): Promise<void> {
     this.queuedEmails.push(options);
-    
+
     // Start processing if not already running
     if (!this.isProcessing) {
       this.processQueue();
@@ -236,10 +235,10 @@ export class UnifiedEmailService {
 
     while (this.queuedEmails.length > 0) {
       const email = this.queuedEmails.shift()!;
-      
+
       try {
         await this.send(email);
-        
+
         // Rate limiting - wait between emails
         await new Promise(resolve => setTimeout(resolve, 100));
       } catch (error) {
@@ -365,7 +364,7 @@ export class UnifiedEmailService {
     const batchSize = 50;
     for (let i = 0; i < campaign.recipients.length; i += batchSize) {
       const batch = campaign.recipients.slice(i, i + batchSize);
-      
+
       const promises = batch.map(recipient =>
         this.send({
           to: recipient,
@@ -380,7 +379,7 @@ export class UnifiedEmailService {
       );
 
       const results = await Promise.allSettled(promises);
-      
+
       results.forEach(result => {
         if (result.status === 'fulfilled' && result.value) {
           successful++;
@@ -405,18 +404,14 @@ export class UnifiedEmailService {
   /**
    * Send automated email based on trigger
    */
-  async sendAutomatedEmail(
-    trigger: string,
-    userId: number,
-    data?: any
-  ): Promise<boolean> {
+  async sendAutomatedEmail(trigger: string, userId: number, data?: any): Promise<boolean> {
     // Map triggers to templates
     const triggerTemplates: Record<string, any> = {
-      'goal_completed': 'goal-completion',
-      'streak_milestone': 'streak-achievement',
-      'subscription_expired': 'subscription-reminder',
-      'weekly_summary': 'weekly-summary',
-      'inactivity_7days': 're-engagement',
+      goal_completed: 'goal-completion',
+      streak_milestone: 'streak-achievement',
+      subscription_expired: 'subscription-reminder',
+      weekly_summary: 'weekly-summary',
+      inactivity_7days: 're-engagement',
     };
 
     const template = triggerTemplates[trigger];
@@ -448,11 +443,11 @@ export class UnifiedEmailService {
    */
   private getAutomatedSubject(trigger: string, data?: any): string {
     const subjects: Record<string, any> = {
-      'goal_completed': `🎉 Congratulations! You've completed your goal`,
-      'streak_milestone': `🔥 Amazing! ${data?.days || 0} day streak`,
-      'subscription_expired': 'Your UpCoach subscription has expired',
-      'weekly_summary': 'Your Weekly UpCoach Summary',
-      'inactivity_7days': 'We miss you! Come back to UpCoach',
+      goal_completed: `🎉 Congratulations! You've completed your goal`,
+      streak_milestone: `🔥 Amazing! ${data?.days || 0} day streak`,
+      subscription_expired: 'Your UpCoach subscription has expired',
+      weekly_summary: 'Your Weekly UpCoach Summary',
+      inactivity_7days: 'We miss you! Come back to UpCoach',
     };
 
     return subjects[trigger] || 'Update from UpCoach';
@@ -481,17 +476,17 @@ export class UnifiedEmailService {
     const recipientStr = Array.isArray(recipient) ? recipient[0] : recipient;
     const timestamp = Date.now();
     const secret = process.env.EMAIL_TRACKING_SECRET || crypto.randomBytes(32).toString('hex');
-    
+
     // Create a cryptographically secure hash
     const hash = crypto
       .createHmac('sha256', secret)
       .update(`${recipientStr}:${timestamp}`)
       .digest('hex');
-    
+
     // Store the mapping in cache for reverse lookup
     const trackingData = { email: recipientStr, timestamp, hash };
     this.cache.set(`email:tracking:${hash}`, trackingData, { ttl: 86400 }); // 24 hours TTL
-    
+
     return hash;
   }
 
@@ -499,14 +494,8 @@ export class UnifiedEmailService {
    * Check if error is temporary
    */
   private isTemporaryFailure(error: any): boolean {
-    const temporaryErrors = [
-      'ETIMEDOUT',
-      'ECONNRESET',
-      'ENOTFOUND',
-      'ENETUNREACH',
-      'EHOSTUNREACH',
-    ];
-    
+    const temporaryErrors = ['ETIMEDOUT', 'ECONNRESET', 'ENOTFOUND', 'ENETUNREACH', 'EHOSTUNREACH'];
+
     return temporaryErrors.includes(error.code);
   }
 
@@ -520,21 +509,21 @@ export class UnifiedEmailService {
         logger.warn('Invalid tracking ID format');
         return;
       }
-      
+
       // Retrieve tracking data from cache
       const trackingData = await this.cache.get<{
         email: string;
         timestamp: number;
         hash: string;
       }>(`email:tracking:${trackingId}`);
-      
+
       if (!trackingData) {
         logger.warn('Tracking ID not found or expired');
         return;
       }
-      
+
       this.metrics.opened++;
-      
+
       logger.info('Email opened:', {
         email: trackingData.email,
         timestamp: new Date(trackingData.timestamp),
@@ -554,14 +543,14 @@ export class UnifiedEmailService {
         logger.warn('Invalid tracking ID format');
         return;
       }
-      
+
       // Validate URL to prevent open redirect vulnerabilities
       try {
         const urlObj = new URL(url);
         const allowedDomains = (process.env.ALLOWED_REDIRECT_DOMAINS || 'localhost,upcoach.ai')
           .split(',')
           .map(d => d.trim());
-        
+
         if (!allowedDomains.some(domain => urlObj.hostname.endsWith(domain))) {
           logger.warn('Attempted redirect to unauthorized domain:', urlObj.hostname);
           return;
@@ -570,21 +559,21 @@ export class UnifiedEmailService {
         logger.warn('Invalid URL provided:', url);
         return;
       }
-      
+
       // Retrieve tracking data from cache
       const trackingData = await this.cache.get<{
         email: string;
         timestamp: number;
         hash: string;
       }>(`email:tracking:${trackingId}`);
-      
+
       if (!trackingData) {
         logger.warn('Tracking ID not found or expired');
         return;
       }
-      
+
       this.metrics.clicked++;
-      
+
       logger.info('Email link clicked:', {
         email: trackingData.email,
         url,
@@ -627,27 +616,27 @@ export class UnifiedEmailService {
    */
   async shutdown(): Promise<void> {
     logger.info('Shutting down UnifiedEmailService...');
-    
+
     // Stop queue processor
     if (this.queueProcessInterval) {
       clearInterval(this.queueProcessInterval);
       this.queueProcessInterval = undefined;
     }
-    
+
     // Process remaining queued emails with timeout
     if (this.queuedEmails.length > 0) {
       logger.info(`Processing ${this.queuedEmails.length} remaining emails...`);
       const timeout = setTimeout(() => {
         logger.warn('Email queue processing timeout during shutdown');
       }, 5000);
-      
+
       try {
         await this.processQueue();
       } finally {
         clearTimeout(timeout);
       }
     }
-    
+
     // Close transporter connection
     if (this.transporter) {
       try {
@@ -656,10 +645,10 @@ export class UnifiedEmailService {
         logger.error('Error closing email transporter:', error);
       }
     }
-    
+
     // Clear template cache
     this.templateCache.clear();
-    
+
     logger.info('UnifiedEmailService shutdown complete');
   }
 }

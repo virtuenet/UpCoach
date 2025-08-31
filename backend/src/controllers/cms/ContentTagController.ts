@@ -15,19 +15,19 @@ export class ContentTagController {
         search,
         isActive,
         sortBy = 'usageCount',
-        sortOrder = 'DESC'
+        sortOrder = 'DESC',
       } = req.query;
 
       const offset = (Number(page) - 1) * Number(limit);
-      
+
       const where: any = {};
-      
+
       if (isActive !== undefined) where.isActive = isActive === 'true';
-      
+
       if (search) {
         where[Op.or as any] = [
           { name: { [Op.iLike]: `%${search}%` } },
-          { description: { [Op.iLike]: `%${search}%` } }
+          { description: { [Op.iLike]: `%${search}%` } },
         ];
       }
 
@@ -35,7 +35,7 @@ export class ContentTagController {
         where,
         order: [[sortBy as string, sortOrder as string]],
         limit: Number(limit),
-        offset
+        offset,
       });
 
       _res.json({
@@ -44,8 +44,8 @@ export class ContentTagController {
           page: Number(page),
           limit: Number(limit),
           total: count,
-          totalPages: Math.ceil(count / Number(limit))
-        }
+          totalPages: Math.ceil(count / Number(limit)),
+        },
       });
     } catch (error) {
       logger.error('Error fetching tags:', error);
@@ -57,7 +57,7 @@ export class ContentTagController {
   static async getOne(req: Request, _res: Response) {
     try {
       const { id } = req.params;
-      
+
       const where = id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
         ? { id }
         : { slug: id };
@@ -71,9 +71,9 @@ export class ContentTagController {
             attributes: ['id', 'title', 'slug', 'type', 'status', 'publishedAt'],
             where: { status: 'published' },
             required: false,
-            through: { attributes: [] }
-          }
-        ]
+            through: { attributes: [] },
+          },
+        ],
       });
 
       if (!tag) {
@@ -96,7 +96,7 @@ export class ContentTagController {
       const baseSlug = slugify(name, { lower: true, strict: true });
       let slug = baseSlug;
       let counter = 1;
-      
+
       // Ensure unique slug
       while (await ContentTag.findOne({ where: { slug } })) {
         slug = `${baseSlug}-${counter}`;
@@ -109,7 +109,7 @@ export class ContentTagController {
         description,
         color: color || '#6B7280',
         isActive: true,
-        usageCount: 0
+        usageCount: 0,
       });
 
       _res.status(201).json(tag);
@@ -135,7 +135,7 @@ export class ContentTagController {
         const baseSlug = slugify(updates.name, { lower: true, strict: true });
         let slug = baseSlug;
         let counter = 1;
-        
+
         while (await ContentTag.findOne({ where: { slug, id: { [Op.ne as any]: id } } })) {
           slug = `${baseSlug}-${counter}`;
           counter++;
@@ -199,33 +199,33 @@ export class ContentTagController {
             model: ContentTag,
             as: 'tags',
             where: { id: sourceTagIds },
-            through: { attributes: [] }
-          }
-        ]
+            through: { attributes: [] },
+          },
+        ],
       });
 
       // Update content tags
       for (const content of contents) {
         const currentTags = await content.getTags();
         const currentTagIds = currentTags.map((t: ContentTag) => t.id);
-        
+
         // Remove source tags
         const newTagIds = currentTagIds.filter((id: string) => !sourceTagIds.includes(id));
-        
+
         // Add target tag if not already present
         if (!newTagIds.includes(targetTagId)) {
           newTagIds.push(targetTagId);
         }
 
         const tagInstances = await ContentTag.findAll({
-          where: { id: newTagIds }
+          where: { id: newTagIds },
         });
         await content.setTags(tagInstances);
       }
 
       // Delete source tags
       await ContentTag.destroy({
-        where: { id: sourceTagIds }
+        where: { id: sourceTagIds },
       });
 
       _res.json({ message: 'Tags merged successfully' });
@@ -243,10 +243,10 @@ export class ContentTagController {
       const tags = await ContentTag.findAll({
         where: {
           isActive: true,
-          usageCount: { [Op.gt]: 0 }
+          usageCount: { [Op.gt]: 0 },
         },
         order: [['usageCount', 'DESC']],
-        limit: Number(limit)
+        limit: Number(limit),
       });
 
       _res.json(tags);
@@ -268,11 +268,11 @@ export class ContentTagController {
       const tags = await ContentTag.findAll({
         where: {
           isActive: true,
-          name: { [Op.iLike]: `%${query}%` }
+          name: { [Op.iLike]: `%${query}%` },
         },
         order: [['usageCount', 'DESC']],
         limit: 10,
-        attributes: ['id', 'name', 'slug', 'color']
+        attributes: ['id', 'name', 'slug', 'color'],
       });
 
       _res.json(tags);

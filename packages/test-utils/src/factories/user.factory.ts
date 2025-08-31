@@ -38,9 +38,9 @@ export function createTestUsers(count: number = 10): User[] {
   return UserFactory.buildList(count);
 }
 
-export function createTestUsersWithRoles(): { 
-  admin: User; 
-  coach: User; 
+export function createTestUsersWithRoles(): {
+  admin: User;
+  coach: User;
   user: User;
 } {
   return {

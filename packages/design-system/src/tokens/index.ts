@@ -21,7 +21,14 @@ export { darkColors, withOpacity } from './colors';
 export { responsiveTypography } from './typography';
 export { componentSpacing, layout, getSpacing, createSpacing } from './spacing';
 export { shadows, borders, transitions, animation, blur, opacity, zIndex } from './effects';
-export { media, container, grid, isBreakpoint, getCurrentBreakpoint, responsiveValue } from './breakpoints';
+export {
+  media,
+  container,
+  grid,
+  isBreakpoint,
+  getCurrentBreakpoint,
+  responsiveValue,
+} from './breakpoints';
 
 // Complete tokens object
 export const tokens = {

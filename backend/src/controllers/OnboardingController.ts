@@ -83,37 +83,43 @@ export class OnboardingController {
       });
 
       if (!created) {
-        await userProfile.update({
-          age: onboardingData.profile.age,
-          occupation: onboardingData.profile.occupation,
-          timezone: onboardingData.profile.timezone || userProfile.timezone,
-          coachingStyle: onboardingData.preferences.coachingStyle,
-          sessionFrequency: onboardingData.preferences.sessionFrequency,
-          commitmentLevel: onboardingData.availability.commitmentLevel,
-          preferences: {
-            ...userProfile.preferences,
-            focusAreas: onboardingData.preferences.focusAreas,
-            challenges: onboardingData.preferences.challenges,
-            preferredDays: onboardingData.availability.preferredDays,
-            preferredTimes: onboardingData.availability.preferredTimes,
+        await userProfile.update(
+          {
+            age: onboardingData.profile.age,
+            occupation: onboardingData.profile.occupation,
+            timezone: onboardingData.profile.timezone || userProfile.timezone,
+            coachingStyle: onboardingData.preferences.coachingStyle,
+            sessionFrequency: onboardingData.preferences.sessionFrequency,
+            commitmentLevel: onboardingData.availability.commitmentLevel,
+            preferences: {
+              ...userProfile.preferences,
+              focusAreas: onboardingData.preferences.focusAreas,
+              challenges: onboardingData.preferences.challenges,
+              preferredDays: onboardingData.availability.preferredDays,
+              preferredTimes: onboardingData.availability.preferredTimes,
+            },
           },
-        }, { transaction });
+          { transaction }
+        );
       }
 
       // Create initial goals
-      const goalPromises = onboardingData.goals.specificGoals.map(async (goalTitle) => {
-        return Goal.create({
-          userId,
-          title: goalTitle,
-          category: onboardingData.goals.primaryGoal,
-          status: 'in_progress',
-          priority: 'high',
-          targetDate: this.calculateTargetDate(onboardingData.goals.timeline),
-          milestones: {
-            createdDuringOnboarding: true,
-            primaryGoal: onboardingData.goals.primaryGoal,
+      const goalPromises = onboardingData.goals.specificGoals.map(async goalTitle => {
+        return Goal.create(
+          {
+            userId,
+            title: goalTitle,
+            category: onboardingData.goals.primaryGoal,
+            status: 'in_progress',
+            priority: 'high',
+            targetDate: this.calculateTargetDate(onboardingData.goals.timeline),
+            milestones: {
+              createdDuringOnboarding: true,
+              primaryGoal: onboardingData.goals.primaryGoal,
+            },
           },
-        }, { transaction });
+          { transaction }
+        );
       });
 
       await Promise.all(goalPromises);
@@ -215,8 +221,8 @@ export class OnboardingController {
       const user = await User.findByPk(userId, {
         include: [
           { model: UserProfile, as: 'profile' },
-          { model: Goal, as: 'goals' }
-        ]
+          { model: Goal, as: 'goals' },
+        ],
       });
 
       if (!user) {
@@ -344,7 +350,9 @@ export class OnboardingController {
     }
   }
 
-  private calculateOnboardingProgress(user: User & { profile?: UserProfile; goals?: Goal[] }): number {
+  private calculateOnboardingProgress(
+    user: User & { profile?: UserProfile; goals?: Goal[] }
+  ): number {
     let progress = 0;
     const steps = 5;
     let completedSteps = 0;

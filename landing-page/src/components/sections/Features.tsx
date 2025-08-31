@@ -1,66 +1,62 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { Mic, Target, Camera, BarChart3, Wifi, Brain } from "lucide-react";
+import { motion } from 'framer-motion';
+import { Mic, Target, Camera, BarChart3, Wifi, Brain } from 'lucide-react';
 
 const features = [
   {
     icon: Mic,
-    title: "Voice Journaling",
+    title: 'Voice Journaling',
     description:
-      "Express yourself naturally with AI-powered voice journaling. Record your thoughts, get automatic transcriptions, and gain insights from your reflections.",
-    color: "text-purple-600",
-    bgColor: "bg-purple-100",
-    highlights: ["AI Transcription", "Voice Analytics", "Mood Detection"],
+      'Express yourself naturally with AI-powered voice journaling. Record your thoughts, get automatic transcriptions, and gain insights from your reflections.',
+    color: 'text-purple-600',
+    bgColor: 'bg-purple-100',
+    highlights: ['AI Transcription', 'Voice Analytics', 'Mood Detection'],
   },
   {
     icon: Target,
-    title: "Smart Habit Tracking",
+    title: 'Smart Habit Tracking',
     description:
-      "Build lasting habits with our intelligent tracking system. Set goals, track streaks, and celebrate achievements with gamification features.",
-    color: "text-blue-600",
-    bgColor: "bg-blue-100",
-    highlights: ["Streak Tracking", "Gamification", "Custom Reminders"],
+      'Build lasting habits with our intelligent tracking system. Set goals, track streaks, and celebrate achievements with gamification features.',
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-100',
+    highlights: ['Streak Tracking', 'Gamification', 'Custom Reminders'],
   },
   {
     icon: Camera,
-    title: "Progress Photos",
+    title: 'Progress Photos',
     description:
-      "Visualize your transformation journey with before/after photo comparisons. Track physical changes and celebrate your progress.",
-    color: "text-green-600",
-    bgColor: "bg-green-100",
-    highlights: ["Photo Timeline", "Side-by-side Compare", "Private Gallery"],
+      'Visualize your transformation journey with before/after photo comparisons. Track physical changes and celebrate your progress.',
+    color: 'text-green-600',
+    bgColor: 'bg-green-100',
+    highlights: ['Photo Timeline', 'Side-by-side Compare', 'Private Gallery'],
   },
   {
     icon: Brain,
-    title: "AI Coaching Intelligence",
+    title: 'AI Coaching Intelligence',
     description:
-      "Get personalized guidance from an AI coach that learns your patterns and provides tailored recommendations for your growth.",
-    color: "text-orange-600",
-    bgColor: "bg-orange-100",
-    highlights: [
-      "Personalized Tips",
-      "Pattern Recognition",
-      "Smart Suggestions",
-    ],
+      'Get personalized guidance from an AI coach that learns your patterns and provides tailored recommendations for your growth.',
+    color: 'text-orange-600',
+    bgColor: 'bg-orange-100',
+    highlights: ['Personalized Tips', 'Pattern Recognition', 'Smart Suggestions'],
   },
   {
     icon: Wifi,
-    title: "Offline-First Design",
+    title: 'Offline-First Design',
     description:
       "Never lose your progress. All features work offline and automatically sync when you're back online. Your journey never stops.",
-    color: "text-pink-600",
-    bgColor: "bg-pink-100",
-    highlights: ["Offline Mode", "Auto Sync", "Data Security"],
+    color: 'text-pink-600',
+    bgColor: 'bg-pink-100',
+    highlights: ['Offline Mode', 'Auto Sync', 'Data Security'],
   },
   {
     icon: BarChart3,
-    title: "Advanced Analytics",
+    title: 'Advanced Analytics',
     description:
-      "Understand your progress with detailed analytics. Track trends, identify patterns, and make data-driven decisions about your growth.",
-    color: "text-indigo-600",
-    bgColor: "bg-indigo-100",
-    highlights: ["Visual Charts", "Weekly Reports", "Trend Analysis"],
+      'Understand your progress with detailed analytics. Track trends, identify patterns, and make data-driven decisions about your growth.',
+    color: 'text-indigo-600',
+    bgColor: 'bg-indigo-100',
+    highlights: ['Visual Charts', 'Weekly Reports', 'Trend Analysis'],
   },
 ];
 
@@ -87,10 +83,7 @@ const itemVariants = {
 
 export default function Features() {
   return (
-    <section
-      id="features"
-      className="py-24 bg-gradient-to-b from-white to-gray-50"
-    >
+    <section id="features" className="py-24 bg-gradient-to-b from-white to-gray-50">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -105,14 +98,13 @@ export default function Features() {
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 mt-2">
             Everything You Need to
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-secondary-600">
-              {" "}
+              {' '}
               Transform
             </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            UpCoach combines voice journaling, habit tracking, and AI
-            intelligence to create a personalized coaching experience that
-            adapts to your unique journey.
+            UpCoach combines voice journaling, habit tracking, and AI intelligence to create a
+            personalized coaching experience that adapts to your unique journey.
           </p>
         </motion.div>
 
@@ -140,13 +132,9 @@ export default function Features() {
                   <Icon className={`w-8 h-8 ${feature.color}`} />
                 </div>
 
-                <h3 className="text-2xl font-semibold text-gray-900 mb-3">
-                  {feature.title}
-                </h3>
+                <h3 className="text-2xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
 
-                <p className="text-gray-600 leading-relaxed mb-4">
-                  {feature.description}
-                </p>
+                <p className="text-gray-600 leading-relaxed mb-4">{feature.description}</p>
 
                 {/* Feature Highlights */}
                 <div className="flex flex-wrap gap-2 mt-4">
@@ -172,21 +160,14 @@ export default function Features() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-center mt-16"
         >
-          <p className="text-lg text-gray-600 mb-6">
-            Ready to start your transformation journey?
-          </p>
+          <p className="text-lg text-gray-600 mb-6">Ready to start your transformation journey?</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href="#download"
               className="inline-flex items-center px-8 py-4 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-colors duration-300"
             >
               Get Started Free
-              <svg
-                className="w-5 h-5 ml-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -200,12 +181,7 @@ export default function Features() {
               className="inline-flex items-center px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:border-gray-400 transition-colors duration-300"
             >
               Watch Demo
-              <svg
-                className="w-5 h-5 ml-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

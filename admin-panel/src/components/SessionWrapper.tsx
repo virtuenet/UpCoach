@@ -1,4 +1,8 @@
-import SessionWarningModal from "../../../shared/components/SessionWarningModal";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
+import { useAuthStore } from '../stores/authStore';
+import { getSessionManager } from '../../../shared/services/sessionManager';
+import SessionWarningModal from '../../../shared/components/SessionWarningModal';
 
 interface SessionWrapperProps {
   children: React.ReactNode;
@@ -18,7 +22,7 @@ export default function SessionWrapper({ children }: SessionWrapperProps) {
         onSessionExpired: () => {
           logout();
           navigate('/login');
-        }
+        },
       });
     }
 
@@ -64,10 +68,7 @@ export default function SessionWrapper({ children }: SessionWrapperProps) {
   return (
     <>
       {children}
-      <SessionWarningModal 
-        onExtend={handleExtendSession}
-        onExpire={handleSessionExpire}
-      />
+      <SessionWarningModal onExtend={handleExtendSession} onExpire={handleSessionExpire} />
     </>
   );
 }

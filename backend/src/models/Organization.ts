@@ -114,12 +114,18 @@ export class Organization extends Model<OrganizationAttributes> implements Organ
     const tierFeatures: Record<string, string[]> = {
       team: ['basic_teams', 'shared_goals', 'basic_analytics'],
       business: ['unlimited_teams', 'advanced_analytics', 'api_access', 'custom_branding'],
-      enterprise: ['sso', 'audit_logs', 'unlimited_teams', 'dedicated_support', 'custom_integrations'],
+      enterprise: [
+        'sso',
+        'audit_logs',
+        'unlimited_teams',
+        'dedicated_support',
+        'custom_integrations',
+      ],
     };
 
     const features = tierFeatures[this.subscriptionTier] || [];
     const customFeatures = this.settings?.features || [];
-    
+
     return features.includes(feature) || customFeatures.includes(feature);
   }
 

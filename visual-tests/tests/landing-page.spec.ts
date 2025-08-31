@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 /**
  * Visual Regression Tests for Landing Page
- * 
+ *
  * These tests capture screenshots of key components and compare
  * them against baseline images to detect visual regressions.
  */
@@ -11,10 +11,10 @@ test.describe('Landing Page Visual Tests', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to landing page
     await page.goto('/');
-    
+
     // Wait for page to be fully loaded
     await page.waitForLoadState('networkidle');
-    
+
     // Disable animations for consistent screenshots
     await page.addStyleTag({
       content: `
@@ -36,9 +36,9 @@ test.describe('Landing Page Visual Tests', () => {
         html {
           scroll-behavior: auto !important;
         }
-      `
+      `,
     });
-    
+
     // Wait a bit for any JavaScript animations to settle
     await page.waitForTimeout(1000);
   });
@@ -46,24 +46,24 @@ test.describe('Landing Page Visual Tests', () => {
   test('Hero section visual snapshot', async ({ page }) => {
     const heroSection = page.locator('section').first();
     await expect(heroSection).toBeVisible();
-    
+
     // Wait for any lazy-loaded images
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);
-    
+
     // Take screenshot of hero section
     await expect(heroSection).toHaveScreenshot('hero-section.png', {
       fullPage: false,
       animations: 'disabled',
-      mask: [page.locator('[class*="animate"]')],  // Mask any animated elements
-      maxDiffPixelRatio: 0.05  // Allow up to 5% difference
+      mask: [page.locator('[class*="animate"]')], // Mask any animated elements
+      maxDiffPixelRatio: 0.05, // Allow up to 5% difference
     });
   });
 
   test('Full page visual snapshot', async ({ page }) => {
     // Scroll to load all lazy-loaded content
     await page.evaluate(() => {
-      return new Promise<void>((resolve) => {
+      return new Promise<void>(resolve => {
         let totalHeight = 0;
         const distance = 100;
         const timer = setInterval(() => {
@@ -82,10 +82,10 @@ test.describe('Landing Page Visual Tests', () => {
 
     // Wait for all images to load
     await page.waitForLoadState('networkidle');
-    
+
     // Take full page screenshot
     await expect(page).toHaveScreenshot('landing-page-full.png', {
-      fullPage: true
+      fullPage: true,
     });
   });
 
@@ -93,7 +93,7 @@ test.describe('Landing Page Visual Tests', () => {
     const featuresSection = page.locator('section:has-text("Features")');
     await featuresSection.scrollIntoViewIfNeeded();
     await expect(featuresSection).toBeVisible();
-    
+
     await expect(featuresSection).toHaveScreenshot('features-section.png');
   });
 
@@ -101,7 +101,7 @@ test.describe('Landing Page Visual Tests', () => {
     const pricingSection = page.locator('section:has-text("Pricing")');
     await pricingSection.scrollIntoViewIfNeeded();
     await expect(pricingSection).toBeVisible();
-    
+
     await expect(pricingSection).toHaveScreenshot('pricing-section.png');
   });
 
@@ -109,7 +109,7 @@ test.describe('Landing Page Visual Tests', () => {
     const footer = page.locator('footer');
     await footer.scrollIntoViewIfNeeded();
     await expect(footer).toBeVisible();
-    
+
     await expect(footer).toHaveScreenshot('footer.png');
   });
 
@@ -124,7 +124,7 @@ test.describe('Landing Page Visual Tests', () => {
     if (await menuButton.isVisible()) {
       await menuButton.click();
       await page.waitForTimeout(300); // Wait for menu animation
-      
+
       // Take screenshot of mobile menu
       await expect(page).toHaveScreenshot('mobile-menu.png');
     }
@@ -135,11 +135,11 @@ test.describe('Landing Page Visual Tests', () => {
     const leadButton = page.locator('button:has-text("Get Started")').first();
     if (await leadButton.isVisible()) {
       await leadButton.click();
-      
+
       // Wait for modal to appear
       const modal = page.locator('[role="dialog"]');
       await expect(modal).toBeVisible();
-      
+
       await expect(modal).toHaveScreenshot('lead-capture-modal.png');
     }
   });
@@ -150,10 +150,10 @@ test.describe('Landing Page Visual Tests', () => {
     if (await darkModeToggle.isVisible()) {
       await darkModeToggle.click();
       await page.waitForTimeout(300); // Wait for theme transition
-      
+
       // Take screenshot in dark mode
       await expect(page).toHaveScreenshot('landing-page-dark.png', {
-        fullPage: true
+        fullPage: true,
       });
     }
   });
@@ -162,10 +162,10 @@ test.describe('Landing Page Visual Tests', () => {
 test.describe('Component Interaction Visual Tests', () => {
   test('Button hover states', async ({ page }) => {
     await page.goto('/');
-    
+
     const primaryButton = page.locator('button.primary').first();
     await primaryButton.scrollIntoViewIfNeeded();
-    
+
     // Capture hover state
     await primaryButton.hover();
     await expect(primaryButton).toHaveScreenshot('button-hover.png');
@@ -173,15 +173,15 @@ test.describe('Component Interaction Visual Tests', () => {
 
   test('Form field focus states', async ({ page }) => {
     await page.goto('/');
-    
+
     // Open lead form if available
     const leadButton = page.locator('button:has-text("Get Started")').first();
     if (await leadButton.isVisible()) {
       await leadButton.click();
-      
+
       const emailField = page.locator('input[type="email"]');
       await expect(emailField).toBeVisible();
-      
+
       // Capture focus state
       await emailField.focus();
       await expect(emailField).toHaveScreenshot('input-focus.png');
@@ -190,17 +190,17 @@ test.describe('Component Interaction Visual Tests', () => {
 
   test('Loading states', async ({ page }) => {
     await page.goto('/');
-    
+
     // Intercept API calls to simulate loading
     await page.route('**/api/**', route => {
       setTimeout(() => route.continue(), 1000);
     });
-    
+
     // Trigger an action that causes loading
     const submitButton = page.locator('button[type="submit"]').first();
     if (await submitButton.isVisible()) {
       await submitButton.click();
-      
+
       // Capture loading state
       const loadingIndicator = page.locator('.loading, .spinner').first();
       if (await loadingIndicator.isVisible()) {
@@ -218,17 +218,19 @@ test.describe('Responsive Design Visual Tests', () => {
     { name: 'tablet-landscape', width: 1024, height: 768 },
     { name: 'tablet-portrait', width: 768, height: 1024 },
     { name: 'mobile-large', width: 414, height: 896 },
-    { name: 'mobile-small', width: 375, height: 667 }
+    { name: 'mobile-small', width: 375, height: 667 },
   ];
 
   for (const viewport of viewports) {
-    test(`Landing page at ${viewport.name} (${viewport.width}x${viewport.height})`, async ({ page }) => {
+    test(`Landing page at ${viewport.name} (${viewport.width}x${viewport.height})`, async ({
+      page,
+    }) => {
       await page.setViewportSize(viewport);
       await page.goto('/');
       await page.waitForLoadState('networkidle');
-      
+
       await expect(page).toHaveScreenshot(`landing-${viewport.name}.png`, {
-        fullPage: true
+        fullPage: true,
       });
     });
   }
@@ -238,14 +240,14 @@ test.describe('Cross-browser Visual Tests', () => {
   test('Hero section consistency across browsers', async ({ page, browserName }) => {
     await page.goto('/');
     const heroSection = page.locator('section').first();
-    
+
     await expect(heroSection).toHaveScreenshot(`hero-${browserName}.png`);
   });
 
   test('CSS grid layout consistency', async ({ page, browserName }) => {
     await page.goto('/');
     const gridSection = page.locator('.grid, [class*="grid"]').first();
-    
+
     if (await gridSection.isVisible()) {
       await gridSection.scrollIntoViewIfNeeded();
       await expect(gridSection).toHaveScreenshot(`grid-${browserName}.png`);
@@ -256,30 +258,30 @@ test.describe('Cross-browser Visual Tests', () => {
 test.describe('Accessibility Visual Tests', () => {
   test('High contrast mode', async ({ page }) => {
     await page.goto('/');
-    
+
     // Enable high contrast mode via CSS
     await page.addStyleTag({
       content: `
         * {
           filter: contrast(2) !important;
         }
-      `
+      `,
     });
-    
+
     await expect(page).toHaveScreenshot('high-contrast.png', {
-      fullPage: true
+      fullPage: true,
     });
   });
 
   test('Focus indicators visibility', async ({ page }) => {
     await page.goto('/');
-    
+
     // Tab through interactive elements
     for (let i = 0; i < 5; i++) {
       await page.keyboard.press('Tab');
       await page.waitForTimeout(100);
     }
-    
+
     // Capture the focused element
     const focusedElement = page.locator(':focus');
     if (await focusedElement.isVisible()) {
@@ -291,19 +293,19 @@ test.describe('Accessibility Visual Tests', () => {
 test.describe('Error State Visual Tests', () => {
   test('Form validation error states', async ({ page }) => {
     await page.goto('/');
-    
+
     // Open lead form
     const leadButton = page.locator('button:has-text("Get Started")').first();
     if (await leadButton.isVisible()) {
       await leadButton.click();
-      
+
       // Submit empty form to trigger validation
       const submitButton = page.locator('button[type="submit"]');
       await submitButton.click();
-      
+
       // Wait for error messages
       await page.waitForTimeout(500);
-      
+
       const form = page.locator('form');
       await expect(form).toHaveScreenshot('form-errors.png');
     }
@@ -312,9 +314,9 @@ test.describe('Error State Visual Tests', () => {
   test('404 page visual', async ({ page }) => {
     await page.goto('/non-existent-page');
     await page.waitForLoadState('networkidle');
-    
+
     await expect(page).toHaveScreenshot('404-page.png', {
-      fullPage: true
+      fullPage: true,
     });
   });
 });

@@ -15,7 +15,9 @@ interface InputFormFieldProps extends BaseFormFieldProps, InputHTMLAttributes<HT
   rightIcon?: React.ReactNode;
 }
 
-interface TextareaFormFieldProps extends BaseFormFieldProps, TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface TextareaFormFieldProps
+  extends BaseFormFieldProps,
+    TextareaHTMLAttributes<HTMLTextAreaElement> {
   type?: 'textarea';
 }
 
@@ -25,7 +27,7 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement, FormFieldPr
   ({ label, error, hint, required, className, ...props }, ref) => {
     const id = props.id || `field-${label.toLowerCase().replace(/\s+/g, '-')}`;
     const hasError = !!error;
-    
+
     const baseInputStyles = cn(
       'block w-full rounded-md border px-3 py-2',
       'text-gray-900 placeholder-gray-400',
@@ -36,15 +38,12 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement, FormFieldPr
         : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
       'disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed'
     );
-    
+
     const isTextarea = props.type === 'textarea';
-    
+
     return (
       <div className={cn('space-y-1', className)}>
-        <label
-          htmlFor={id}
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700">
           {label}
           {required && (
             <span className="ml-1 text-red-500" aria-label="required">
@@ -52,7 +51,7 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement, FormFieldPr
             </span>
           )}
         </label>
-        
+
         <div className="relative">
           {!isTextarea && 'leftIcon' in props && props.leftIcon && (
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -61,19 +60,14 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement, FormFieldPr
               </span>
             </div>
           )}
-          
+
           {isTextarea ? (
             <textarea
               ref={ref as React.Ref<HTMLTextAreaElement>}
               id={id}
-              className={cn(
-                baseInputStyles,
-                'min-h-[80px] resize-y'
-              )}
+              className={cn(baseInputStyles, 'min-h-[80px] resize-y')}
               aria-invalid={hasError}
-              aria-describedby={
-                hasError ? `${id}-error` : hint ? `${id}-hint` : undefined
-              }
+              aria-describedby={hasError ? `${id}-error` : hint ? `${id}-hint` : undefined}
               aria-required={required}
               {...(props as TextareaHTMLAttributes<HTMLTextAreaElement>)}
             />
@@ -87,14 +81,12 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement, FormFieldPr
                 'rightIcon' in props && props.rightIcon && 'pr-10'
               )}
               aria-invalid={hasError}
-              aria-describedby={
-                hasError ? `${id}-error` : hint ? `${id}-hint` : undefined
-              }
+              aria-describedby={hasError ? `${id}-error` : hint ? `${id}-hint` : undefined}
               aria-required={required}
               {...(props as InputHTMLAttributes<HTMLInputElement>)}
             />
           )}
-          
+
           {!isTextarea && 'rightIcon' in props && props.rightIcon && (
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
               <span className="text-gray-400" aria-hidden="true">
@@ -103,13 +95,9 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement, FormFieldPr
             </div>
           )}
         </div>
-        
+
         {hasError && (
-          <p
-            id={`${id}-error`}
-            className="text-sm text-red-600 flex items-center"
-            role="alert"
-          >
+          <p id={`${id}-error`} className="text-sm text-red-600 flex items-center" role="alert">
             <svg
               className="h-4 w-4 mr-1 flex-shrink-0"
               fill="currentColor"
@@ -125,7 +113,7 @@ const FormField = forwardRef<HTMLInputElement | HTMLTextAreaElement, FormFieldPr
             {error}
           </p>
         )}
-        
+
         {hint && !hasError && (
           <p id={`${id}-hint`} className="text-sm text-gray-500">
             {hint}
@@ -167,13 +155,10 @@ export const SelectFormField: React.FC<SelectFormFieldProps> = ({
 }) => {
   const id = `field-${label.toLowerCase().replace(/\s+/g, '-')}`;
   const hasError = !!error;
-  
+
   return (
     <div className={cn('space-y-1', className)}>
-      <label
-        htmlFor={id}
-        className="block text-sm font-medium text-gray-700"
-      >
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700">
         {label}
         {required && (
           <span className="ml-1 text-red-500" aria-label="required">
@@ -181,11 +166,11 @@ export const SelectFormField: React.FC<SelectFormFieldProps> = ({
           </span>
         )}
       </label>
-      
+
       <select
         id={id}
         value={value}
-        onChange={(e) => onChange?.(e.target.value)}
+        onChange={e => onChange?.(e.target.value)}
         disabled={disabled}
         className={cn(
           'block w-full rounded-md border px-3 py-2',
@@ -198,31 +183,21 @@ export const SelectFormField: React.FC<SelectFormFieldProps> = ({
           'disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed'
         )}
         aria-invalid={hasError}
-        aria-describedby={
-          hasError ? `${id}-error` : hint ? `${id}-hint` : undefined
-        }
+        aria-describedby={hasError ? `${id}-error` : hint ? `${id}-hint` : undefined}
         aria-required={required}
       >
         <option value="" disabled>
           {placeholder}
         </option>
-        {options.map((option) => (
-          <option
-            key={option.value}
-            value={option.value}
-            disabled={option.disabled}
-          >
+        {options.map(option => (
+          <option key={option.value} value={option.value} disabled={option.disabled}>
             {option.label}
           </option>
         ))}
       </select>
-      
+
       {hasError && (
-        <p
-          id={`${id}-error`}
-          className="text-sm text-red-600 flex items-center"
-          role="alert"
-        >
+        <p id={`${id}-error`} className="text-sm text-red-600 flex items-center" role="alert">
           <svg
             className="h-4 w-4 mr-1 flex-shrink-0"
             fill="currentColor"
@@ -238,7 +213,7 @@ export const SelectFormField: React.FC<SelectFormFieldProps> = ({
           {error}
         </p>
       )}
-      
+
       {hint && !hasError && (
         <p id={`${id}-hint`} className="text-sm text-gray-500">
           {hint}

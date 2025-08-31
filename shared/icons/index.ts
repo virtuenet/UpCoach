@@ -1,6 +1,6 @@
 /**
  * Unified Icon System for UpCoach Platform
- * 
+ *
  * This module provides a consistent icon set across all platforms
  * using Lucide React icons as the standard.
  */
@@ -17,14 +17,14 @@ import {
   ChevronDown,
   ArrowLeft,
   ArrowRight,
-  
+
   // Dashboard
   LayoutDashboard,
   BarChart3,
   TrendingUp,
   TrendingDown,
   Activity,
-  
+
   // User & Auth
   User,
   Users,
@@ -35,7 +35,7 @@ import {
   Lock,
   Shield,
   Key,
-  
+
   // Content
   FileText,
   File,
@@ -46,27 +46,27 @@ import {
   Edit,
   Save,
   Trash2,
-  
+
   // Media
   Image,
   Camera,
   Video,
   Mic,
   Volume2,
-  
+
   // Communication
   Mail,
   MessageSquare,
   Send,
   Bell,
   BellOff,
-  
+
   // Settings
   Settings,
   Sliders,
   ToggleLeft,
   ToggleRight,
-  
+
   // Actions
   Plus,
   Minus,
@@ -77,19 +77,19 @@ import {
   RefreshCw,
   Search,
   Filter,
-  
+
   // Status
   AlertCircle,
   Info,
   CheckCircle,
   XCircle,
   AlertTriangle,
-  
+
   // Finance
   DollarSign,
   CreditCard,
   Receipt,
-  
+
   // Misc
   Calendar,
   Clock,
@@ -114,7 +114,7 @@ import {
   Loader2,
   MoreHorizontal,
   MoreVertical,
-  
+
   // Build icon (keeping for backward compatibility)
   Wrench as Build,
 } from 'lucide-react';
@@ -133,7 +133,7 @@ export const Icons = {
   ArrowRight,
   Back: ArrowLeft,
   Forward: ArrowRight,
-  
+
   // Dashboard & Analytics
   Dashboard: LayoutDashboard,
   Analytics: BarChart3,
@@ -141,7 +141,7 @@ export const Icons = {
   TrendingUp,
   TrendingDown,
   Activity,
-  
+
   // User & Authentication
   User,
   Users,
@@ -154,7 +154,7 @@ export const Icons = {
   Security: Shield,
   Key,
   Password: Key,
-  
+
   // Content Management
   Content: FileText,
   Document: FileText,
@@ -168,7 +168,7 @@ export const Icons = {
   Save,
   Delete: Trash2,
   Trash: Trash2,
-  
+
   // Media
   Media: Image,
   Image,
@@ -177,7 +177,7 @@ export const Icons = {
   Audio: Mic,
   Microphone: Mic,
   Volume: Volume2,
-  
+
   // Communication
   Email: Mail,
   Mail,
@@ -186,14 +186,14 @@ export const Icons = {
   Send,
   Notifications: Bell,
   NotificationsOff: BellOff,
-  
+
   // Settings & Configuration
   Settings,
   Configuration: Sliders,
   Preferences: Sliders,
   ToggleOff: ToggleLeft,
   ToggleOn: ToggleRight,
-  
+
   // Common Actions
   Add: Plus,
   Plus,
@@ -208,21 +208,21 @@ export const Icons = {
   Sync: RefreshCw,
   Search,
   Filter,
-  
+
   // Status & Alerts
   Alert: AlertCircle,
   Info,
   Success: CheckCircle,
   Error: XCircle,
   Warning: AlertTriangle,
-  
+
   // Finance & Billing
   Billing: DollarSign,
   Payment: CreditCard,
   CreditCard,
   Receipt,
   Invoice: Receipt,
-  
+
   // Common UI Elements
   Calendar,
   Clock,
@@ -250,7 +250,7 @@ export const Icons = {
   Loading: Loader2,
   MoreHorizontal,
   MoreVertical,
-  
+
   // Legacy (for backward compatibility)
   Build,
 };

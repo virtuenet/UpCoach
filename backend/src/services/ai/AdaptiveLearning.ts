@@ -97,7 +97,7 @@ export class AdaptiveLearning {
       // Get user profile and goal
       const [profile, goal] = await Promise.all([
         UserProfile.findOne({ where: { userId } }),
-        Goal.findByPk(goalId)
+        Goal.findByPk(goalId),
       ]);
 
       if (!profile || !goal) {
@@ -106,17 +106,12 @@ export class AdaptiveLearning {
 
       // Analyze user's learning style and capabilities
       const learningAnalysis = await this.analyzeUserLearningProfile(userId, profile);
-      
+
       // Generate initial learning path
       const basePath = await this.generateBaseLearningPath(goal, learningAnalysis);
-      
+
       // Adapt path based on user preferences and constraints
-      const adaptedPath = await this.adaptPathToUser(
-        basePath,
-        profile,
-        learningAnalysis,
-        options
-      );
+      const adaptedPath = await this.adaptPathToUser(basePath, profile, learningAnalysis, options);
 
       // Store the learning path
       this.storeLearningPath(userId, adaptedPath);
@@ -140,19 +135,19 @@ export class AdaptiveLearning {
   }> {
     // Analyze historical performance
     const performance = await this.getHistoricalPerformance(userId);
-    
+
     // Determine learning style weights
     const learningStyle = this.calculateLearningStyle(profile, performance);
-    
+
     // Assess current capabilities
     const capabilities = await this.assessCurrentCapabilities(userId);
-    
+
     // Determine optimal difficulty
     const difficulty = this.determineOptimalDifficulty(performance, profile);
-    
+
     // Calculate optimal session length
     const sessionLength = this.calculateOptimalSessionLength(profile, performance);
-    
+
     // Identify best learning times
     const bestTimes = this.identifyBestLearningTimes(profile);
 
@@ -161,7 +156,7 @@ export class AdaptiveLearning {
       currentCapabilities: capabilities,
       preferredDifficulty: difficulty,
       optimalSessionLength: sessionLength,
-      bestLearningTimes: bestTimes
+      bestLearningTimes: bestTimes,
     };
   }
 
@@ -174,7 +169,7 @@ export class AdaptiveLearning {
       visual: 0.25,
       auditory: 0.25,
       kinesthetic: 0.25,
-      reading: 0.25
+      reading: 0.25,
     };
 
     // Adjust based on profile preference
@@ -202,13 +197,10 @@ export class AdaptiveLearning {
     return baseStyle;
   }
 
-  private async generateBaseLearningPath(
-    goal: Goal,
-    learningAnalysis: any
-  ): Promise<LearningPath> {
+  private async generateBaseLearningPath(goal: Goal, learningAnalysis: any): Promise<LearningPath> {
     // Use AI to generate a comprehensive learning path
     const pathStructure = await this.generatePathStructureWithAI(goal, learningAnalysis);
-    
+
     // Create modules based on the structure
     const modules = await this.createLearningModules(
       pathStructure,
@@ -227,16 +219,13 @@ export class AdaptiveLearning {
       modules,
       estimatedDuration: this.estimatePathDuration(modules),
       adaptations: [],
-      progress: 0
+      progress: 0,
     };
 
     return learningPath;
   }
 
-  private async generatePathStructureWithAI(
-    goal: Goal,
-    learningAnalysis: any
-  ): Promise<any> {
+  private async generatePathStructureWithAI(goal: Goal, learningAnalysis: any): Promise<any> {
     const prompt = `Create a structured learning path for this goal:
 Goal: ${goal.title}
 Description: ${goal.description}
@@ -257,19 +246,23 @@ Generate a JSON structure with:
 Ensure progressive difficulty and logical skill building.`;
 
     try {
-      const response = await aiService.generateResponse([
+      const response = await aiService.generateResponse(
+        [
+          {
+            role: 'system',
+            content:
+              'You are an expert instructional designer. Create comprehensive, well-structured learning paths. Always respond with valid JSON.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
         {
-          role: 'system',
-          content: 'You are an expert instructional designer. Create comprehensive, well-structured learning paths. Always respond with valid JSON.'
-        },
-        {
-          role: 'user',
-          content: prompt
+          temperature: 0.6,
+          maxTokens: 1500,
         }
-      ], {
-        temperature: 0.6,
-        maxTokens: 1500
-      });
+      );
 
       return JSON.parse(response.content);
     } catch (error) {
@@ -287,15 +280,9 @@ Ensure progressive difficulty and logical skill building.`;
     const modules: LearningModule[] = [];
 
     for (const moduleData of pathStructure.modules) {
-      const content = await this.generateModuleContent(
-        moduleData,
-        learningStyle
-      );
+      const content = await this.generateModuleContent(moduleData, learningStyle);
 
-      const assessments = this.createModuleAssessments(
-        moduleData,
-        preferredDifficulty
-      );
+      const assessments = this.createModuleAssessments(moduleData, preferredDifficulty);
 
       const module: LearningModule = {
         id: `module_${modules.length + 1}`,
@@ -306,7 +293,7 @@ Ensure progressive difficulty and logical skill building.`;
         prerequisites: moduleData.prerequisites || [],
         content,
         assessments,
-        completed: false
+        completed: false,
       };
 
       modules.push(module);
@@ -327,11 +314,7 @@ Ensure progressive difficulty and logical skill building.`;
 
     for (const [type, weight] of Object.entries(contentMix)) {
       if (weight > 0.1) {
-        const moduleContent = await this.createContentPiece(
-          type as any,
-          moduleData,
-          weight
-        );
+        const moduleContent = await this.createContentPiece(type as any, moduleData, weight);
         content.push(moduleContent);
       }
     }
@@ -394,38 +377,35 @@ Ensure progressive difficulty and logical skill building.`;
     const contentTemplates = {
       text: {
         content: `Read about ${moduleData.title}: Key concepts include ${moduleData.key_concepts?.join(', ') || 'core principles'}`,
-        resources: ['Article link', 'PDF guide']
+        resources: ['Article link', 'PDF guide'],
       },
       video: {
         content: `Watch: "${moduleData.title} Explained" - Visual guide to ${moduleData.objective}`,
-        resources: ['Video tutorial', 'Supplementary animations']
+        resources: ['Video tutorial', 'Supplementary animations'],
       },
       exercise: {
         content: `Practice Exercise: Apply ${moduleData.title} concepts in a hands-on activity`,
-        resources: ['Exercise worksheet', 'Solution guide']
+        resources: ['Exercise worksheet', 'Solution guide'],
       },
       reflection: {
         content: `Reflection: How does ${moduleData.title} apply to your personal goals? Journal your thoughts.`,
-        resources: ['Reflection prompts', 'Journal template']
+        resources: ['Reflection prompts', 'Journal template'],
       },
       practice: {
         content: `Real-world Practice: Implement ${moduleData.title} in your daily routine`,
-        resources: ['Practice checklist', 'Progress tracker']
-      }
+        resources: ['Practice checklist', 'Progress tracker'],
+      },
     };
 
     return {
       type,
       content: contentTemplates[type].content,
       duration,
-      resources: contentTemplates[type].resources
+      resources: contentTemplates[type].resources,
     };
   }
 
-  private createModuleAssessments(
-    moduleData: any,
-    preferredDifficulty: string
-  ): Assessment[] {
+  private createModuleAssessments(moduleData: any, preferredDifficulty: string): Assessment[] {
     const assessments: Assessment[] = [];
 
     // Knowledge check
@@ -434,7 +414,7 @@ Ensure progressive difficulty and logical skill building.`;
       type: 'quiz',
       questions: this.generateQuizQuestions(moduleData, preferredDifficulty),
       passingScore: 70,
-      attempts: 0
+      attempts: 0,
     });
 
     // Practical application
@@ -442,12 +422,14 @@ Ensure progressive difficulty and logical skill building.`;
       assessments.push({
         id: `assess_practical_${Date.now()}`,
         type: 'practical',
-        questions: [{
-          task: `Apply ${moduleData.title} concepts to solve a real problem`,
-          rubric: ['Understanding', 'Application', 'Innovation']
-        }],
+        questions: [
+          {
+            task: `Apply ${moduleData.title} concepts to solve a real problem`,
+            rubric: ['Understanding', 'Application', 'Innovation'],
+          },
+        ],
         passingScore: 60,
-        attempts: 0
+        attempts: 0,
       });
     }
 
@@ -455,8 +437,7 @@ Ensure progressive difficulty and logical skill building.`;
   }
 
   private generateQuizQuestions(moduleData: any, difficulty: string): any[] {
-    const questionCount = difficulty === 'beginner' ? 3 : 
-                         difficulty === 'intermediate' ? 5 : 7;
+    const questionCount = difficulty === 'beginner' ? 3 : difficulty === 'intermediate' ? 5 : 7;
 
     const questions = [];
     for (let i = 0; i < questionCount; i++) {
@@ -464,7 +445,7 @@ Ensure progressive difficulty and logical skill building.`;
         question: `Question ${i + 1} about ${moduleData.title}`,
         options: ['Option A', 'Option B', 'Option C', 'Option D'],
         correctAnswer: 0,
-        explanation: 'Explanation of the correct answer'
+        explanation: 'Explanation of the correct answer',
       });
     }
 
@@ -508,7 +489,7 @@ Ensure progressive difficulty and logical skill building.`;
       reason: 'Personalized based on user profile',
       previousValue: 'base path',
       newValue: 'adapted path',
-      impact: 'Optimized for user learning style and constraints'
+      impact: 'Optimized for user learning style and constraints',
     });
 
     return adaptedPath;
@@ -553,7 +534,7 @@ Ensure progressive difficulty and logical skill building.`;
         reason: adaptation.reason,
         previousValue: adaptation.previousValue,
         newValue: adaptation.newValue,
-        impact: adaptation.expectedImpact
+        impact: adaptation.expectedImpact,
       });
     }
 
@@ -577,7 +558,7 @@ Ensure progressive difficulty and logical skill building.`;
         action: 'decrease',
         previousValue: path.currentLevel,
         newValue: Math.max(1, path.currentLevel - 1),
-        expectedImpact: 'Improved comprehension and confidence'
+        expectedImpact: 'Improved comprehension and confidence',
       });
     } else if (performance.averageScore > 90 && performance.completionRate > 0.9) {
       adaptations.push({
@@ -586,7 +567,7 @@ Ensure progressive difficulty and logical skill building.`;
         action: 'increase',
         previousValue: path.currentLevel,
         newValue: Math.min(10, path.currentLevel + 1),
-        expectedImpact: 'Increased challenge and engagement'
+        expectedImpact: 'Increased challenge and engagement',
       });
     }
 
@@ -598,7 +579,7 @@ Ensure progressive difficulty and logical skill building.`;
         action: 'slow_down',
         previousValue: 'current pace',
         newValue: 'reduced pace with more practice',
-        expectedImpact: 'Better retention and reduced frustration'
+        expectedImpact: 'Better retention and reduced frustration',
       });
     }
 
@@ -610,7 +591,7 @@ Ensure progressive difficulty and logical skill building.`;
         action: 'vary_content',
         previousValue: 'current mix',
         newValue: 'increased variety and repetition',
-        expectedImpact: 'Improved long-term retention'
+        expectedImpact: 'Improved long-term retention',
       });
     }
 
@@ -624,7 +605,7 @@ Ensure progressive difficulty and logical skill building.`;
     // Adjust current and future modules
     for (let i = currentModuleIndex; i < path.modules.length; i++) {
       const module = path.modules[i];
-      
+
       if (adaptation.action === 'decrease') {
         // Simplify content
         module.difficulty = module.difficulty === 'advanced' ? 'intermediate' : 'beginner';
@@ -633,7 +614,7 @@ Ensure progressive difficulty and logical skill building.`;
           type: 'text',
           content: 'Additional examples and simplified explanations',
           duration: 10,
-          resources: ['Beginner-friendly guide']
+          resources: ['Beginner-friendly guide'],
         });
       } else if (adaptation.action === 'increase') {
         // Add challenge
@@ -643,7 +624,7 @@ Ensure progressive difficulty and logical skill building.`;
           type: 'exercise',
           content: 'Advanced challenge: Apply concepts in complex scenarios',
           duration: 20,
-          resources: ['Challenge problems']
+          resources: ['Challenge problems'],
         });
       }
     }
@@ -663,14 +644,16 @@ Ensure progressive difficulty and logical skill building.`;
           difficulty: 'beginner',
           estimatedTime: 30,
           prerequisites: [],
-          content: [{
-            type: 'reflection',
-            content: 'Review and reflect on what you\'ve learned so far',
-            duration: 30,
-            resources: ['Review guide', 'Key concepts summary']
-          }],
+          content: [
+            {
+              type: 'reflection',
+              content: "Review and reflect on what you've learned so far",
+              duration: 30,
+              resources: ['Review guide', 'Key concepts summary'],
+            },
+          ],
           assessments: [],
-          completed: false
+          completed: false,
         };
 
         path.modules.splice(currentModuleIndex, 0, reviewModule);
@@ -692,14 +675,14 @@ Ensure progressive difficulty and logical skill building.`;
           type: 'video',
           content: 'Alternative explanation through visual demonstration',
           duration: 15,
-          resources: ['Video tutorial']
+          resources: ['Video tutorial'],
         },
         {
           type: 'practice',
           content: 'Hands-on practice with immediate feedback',
           duration: 20,
-          resources: ['Interactive exercise']
-        }
+          resources: ['Interactive exercise'],
+        },
       ];
 
       currentModule.content.push(...newContent);
@@ -768,7 +751,7 @@ Ensure progressive difficulty and logical skill building.`;
     progress: any
   ): Promise<void> {
     const history = this.performanceHistory.get(userId) || [];
-    
+
     // Get or create current metrics
     let currentMetrics = history[history.length - 1] || {
       completionRate: 0,
@@ -777,17 +760,17 @@ Ensure progressive difficulty and logical skill building.`;
       strugglingAreas: [],
       strongAreas: [],
       learningVelocity: 0,
-      retentionRate: 0
+      retentionRate: 0,
     };
 
     // Update metrics
     if (progress.completed) {
-      currentMetrics.completionRate = 
+      currentMetrics.completionRate =
         (currentMetrics.completionRate * history.length + 1) / (history.length + 1);
     }
 
     if (progress.score !== undefined) {
-      currentMetrics.averageScore = 
+      currentMetrics.averageScore =
         (currentMetrics.averageScore * history.length + progress.score) / (history.length + 1);
     }
 
@@ -815,21 +798,23 @@ Ensure progressive difficulty and logical skill building.`;
         strugglingAreas: [],
         strongAreas: [],
         learningVelocity: 0,
-        retentionRate: 0
+        retentionRate: 0,
       };
     }
 
     // Calculate aggregated metrics
     const recentMetrics = history.slice(-5); // Last 5 entries
-    
+
     return {
-      completionRate: recentMetrics.reduce((sum, m) => sum + m.completionRate, 0) / recentMetrics.length,
-      averageScore: recentMetrics.reduce((sum, m) => sum + m.averageScore, 0) / recentMetrics.length,
+      completionRate:
+        recentMetrics.reduce((sum, m) => sum + m.completionRate, 0) / recentMetrics.length,
+      averageScore:
+        recentMetrics.reduce((sum, m) => sum + m.averageScore, 0) / recentMetrics.length,
       timeSpent: recentMetrics.reduce((sum, m) => sum + m.timeSpent, 0),
       strugglingAreas: [...new Set(recentMetrics.flatMap(m => m.strugglingAreas))],
       strongAreas: [...new Set(recentMetrics.flatMap(m => m.strongAreas))],
       learningVelocity: this.calculateVelocity(recentMetrics),
-      retentionRate: this.calculateRetention(history)
+      retentionRate: this.calculateRetention(history),
     };
   }
 
@@ -838,13 +823,14 @@ Ensure progressive difficulty and logical skill building.`;
 
     const progressRates = [];
     for (let i = 1; i < metrics.length; i++) {
-      const rate = metrics[i].completionRate - metrics[i-1].completionRate;
+      const rate = metrics[i].completionRate - metrics[i - 1].completionRate;
       progressRates.push(rate);
     }
 
-    return Math.max(0, Math.min(1, 
-      progressRates.reduce((sum, r) => sum + r, 0) / progressRates.length + 0.5
-    ));
+    return Math.max(
+      0,
+      Math.min(1, progressRates.reduce((sum, r) => sum + r, 0) / progressRates.length + 0.5)
+    );
   }
 
   private calculateRetention(history: PerformanceMetrics[]): number {
@@ -881,7 +867,7 @@ Ensure progressive difficulty and logical skill building.`;
   private storeLearningPath(userId: string, path: LearningPath) {
     const userPaths = this.learningPaths.get(userId) || [];
     const index = userPaths.findIndex(p => p.id === path.id);
-    
+
     if (index >= 0) {
       userPaths[index] = path;
     } else {
@@ -908,7 +894,7 @@ Ensure progressive difficulty and logical skill building.`;
     if (performance.length === 0) return 'beginner';
 
     const avgScore = performance.reduce((sum, p) => sum + p.averageScore, 0) / performance.length;
-    
+
     if (avgScore < 60) return 'beginner';
     if (avgScore > 85) return 'advanced';
     return 'intermediate';
@@ -919,9 +905,10 @@ Ensure progressive difficulty and logical skill building.`;
     performance: PerformanceMetrics[]
   ): number {
     const baseLength = profile?.coachingPreferences?.sessionDuration || 30;
-    
+
     if (performance.length > 0) {
-      const avgTimeSpent = performance.reduce((sum, p) => sum + p.timeSpent, 0) / performance.length;
+      const avgTimeSpent =
+        performance.reduce((sum, p) => sum + p.timeSpent, 0) / performance.length;
       // Adjust based on actual engagement
       if (avgTimeSpent > baseLength * 1.5) return baseLength + 15;
       if (avgTimeSpent < baseLength * 0.5) return Math.max(15, baseLength - 10);
@@ -936,12 +923,12 @@ Ensure progressive difficulty and logical skill building.`;
 
   private determinePathType(goal: Goal): 'skill' | 'habit' | 'knowledge' | 'wellness' {
     const category = goal.category?.toLowerCase() || '';
-    
+
     if (category.includes('skill') || category.includes('learn')) return 'skill';
     if (category.includes('habit') || category.includes('routine')) return 'habit';
     if (category.includes('knowledge') || category.includes('study')) return 'knowledge';
     if (category.includes('health') || category.includes('wellness')) return 'wellness';
-    
+
     return 'skill'; // default
   }
 
@@ -951,10 +938,7 @@ Ensure progressive difficulty and logical skill building.`;
     return Math.ceil(totalMinutes / (hoursPerDay * 60));
   }
 
-  private adjustDurationForPace(
-    baseDuration: number,
-    pace: 'slow' | 'moderate' | 'fast'
-  ): number {
+  private adjustDurationForPace(baseDuration: number, pace: 'slow' | 'moderate' | 'fast'): number {
     switch (pace) {
       case 'slow':
         return Math.round(baseDuration * 1.5);
@@ -985,7 +969,7 @@ Ensure progressive difficulty and logical skill building.`;
   ): LearningModule[] {
     // Ensure smooth difficulty progression
     let currentDifficulty = 'beginner';
-    
+
     return modules.map((module, index) => {
       if (index === 0) {
         module.difficulty = 'beginner';
@@ -995,12 +979,12 @@ Ensure progressive difficulty and logical skill building.`;
         // Gradual progression
         if (currentDifficulty === 'beginner' && index > modules.length / 3) {
           currentDifficulty = 'intermediate';
-        } else if (currentDifficulty === 'intermediate' && index > 2 * modules.length / 3) {
+        } else if (currentDifficulty === 'intermediate' && index > (2 * modules.length) / 3) {
           currentDifficulty = preferredDifficulty;
         }
         module.difficulty = currentDifficulty as any;
       }
-      
+
       return module;
     });
   }
@@ -1015,7 +999,7 @@ Ensure progressive difficulty and logical skill building.`;
           difficulty_level: 'beginner',
           estimated_hours: 1,
           prerequisites: [],
-          content_types: ['text', 'video', 'reflection']
+          content_types: ['text', 'video', 'reflection'],
         },
         {
           title: 'Building Skills',
@@ -1024,7 +1008,7 @@ Ensure progressive difficulty and logical skill building.`;
           difficulty_level: 'intermediate',
           estimated_hours: 2,
           prerequisites: [0],
-          content_types: ['exercise', 'practice', 'video']
+          content_types: ['exercise', 'practice', 'video'],
         },
         {
           title: 'Advanced Application',
@@ -1033,9 +1017,9 @@ Ensure progressive difficulty and logical skill building.`;
           difficulty_level: 'advanced',
           estimated_hours: 2,
           prerequisites: [1],
-          content_types: ['exercise', 'practice', 'reflection']
-        }
-      ]
+          content_types: ['exercise', 'practice', 'reflection'],
+        },
+      ],
     };
   }
 
@@ -1043,23 +1027,20 @@ Ensure progressive difficulty and logical skill building.`;
     return this.learningPaths.get(userId) || [];
   }
 
-  async getRecommendedNextModule(
-    userId: string,
-    pathId: string
-  ): Promise<LearningModule | null> {
+  async getRecommendedNextModule(userId: string, pathId: string): Promise<LearningModule | null> {
     const paths = this.learningPaths.get(userId) || [];
     const path = paths.find(p => p.id === pathId);
-    
+
     if (!path) return null;
 
     // Find next incomplete module
     const nextModule = path.modules.find(m => !m.completed);
-    
+
     if (!nextModule) return null;
 
     // Check prerequisites
-    const prereqsMet = nextModule.prerequisites.every((prereqIndex: any) => 
-      path.modules[prereqIndex]?.completed
+    const prereqsMet = nextModule.prerequisites.every(
+      (prereqIndex: any) => path.modules[prereqIndex]?.completed
     );
 
     if (!prereqsMet) {

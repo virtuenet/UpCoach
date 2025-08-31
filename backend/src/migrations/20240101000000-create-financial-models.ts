@@ -31,7 +31,14 @@ export default {
         allowNull: false,
       },
       status: {
-        type: DataTypes.ENUM('pending', 'processing', 'completed', 'failed', 'cancelled', 'refunded'),
+        type: DataTypes.ENUM(
+          'pending',
+          'processing',
+          'completed',
+          'failed',
+          'cancelled',
+          'refunded'
+        ),
         allowNull: false,
         defaultValue: 'pending',
       },
@@ -206,7 +213,15 @@ export default {
         allowNull: false,
       },
       status: {
-        type: DataTypes.ENUM('trialing', 'active', 'past_due', 'canceled', 'unpaid', 'paused', 'expired'),
+        type: DataTypes.ENUM(
+          'trialing',
+          'active',
+          'past_due',
+          'canceled',
+          'unpaid',
+          'paused',
+          'expired'
+        ),
         allowNull: false,
       },
       billingInterval: {
@@ -388,8 +403,18 @@ export default {
         primaryKey: true,
       },
       category: {
-        type: DataTypes.ENUM('infrastructure', 'api_services', 'personnel', 'marketing', 
-                            'development', 'support', 'legal', 'accounting', 'office', 'other'),
+        type: DataTypes.ENUM(
+          'infrastructure',
+          'api_services',
+          'personnel',
+          'marketing',
+          'development',
+          'support',
+          'legal',
+          'accounting',
+          'office',
+          'other'
+        ),
         allowNull: false,
       },
       subcategory: {
@@ -423,7 +448,15 @@ export default {
         allowNull: false,
       },
       billingPeriod: {
-        type: DataTypes.ENUM('one_time', 'hourly', 'daily', 'weekly', 'monthly', 'quarterly', 'yearly'),
+        type: DataTypes.ENUM(
+          'one_time',
+          'hourly',
+          'daily',
+          'weekly',
+          'monthly',
+          'quarterly',
+          'yearly'
+        ),
         allowNull: false,
       },
       billingStartDate: {
@@ -754,15 +787,34 @@ export default {
       },
       eventType: {
         type: DataTypes.ENUM(
-          'subscription_created', 'subscription_updated', 'subscription_cancelled',
-          'payment_succeeded', 'payment_failed', 'payment_refunded',
-          'invoice_created', 'invoice_paid', 'invoice_failed',
-          'trial_started', 'trial_ended', 'trial_converted',
-          'plan_upgraded', 'plan_downgraded', 'plan_changed',
-          'discount_applied', 'discount_removed', 'promo_code_used',
-          'payment_method_added', 'payment_method_removed', 'payment_method_updated',
-          'chargeback_created', 'chargeback_lost', 'chargeback_won',
-          'dunning_started', 'dunning_attempt', 'dunning_recovered', 'dunning_failed'
+          'subscription_created',
+          'subscription_updated',
+          'subscription_cancelled',
+          'payment_succeeded',
+          'payment_failed',
+          'payment_refunded',
+          'invoice_created',
+          'invoice_paid',
+          'invoice_failed',
+          'trial_started',
+          'trial_ended',
+          'trial_converted',
+          'plan_upgraded',
+          'plan_downgraded',
+          'plan_changed',
+          'discount_applied',
+          'discount_removed',
+          'promo_code_used',
+          'payment_method_added',
+          'payment_method_removed',
+          'payment_method_updated',
+          'chargeback_created',
+          'chargeback_lost',
+          'chargeback_won',
+          'dunning_started',
+          'dunning_attempt',
+          'dunning_recovered',
+          'dunning_failed'
         ),
         allowNull: false,
       },
@@ -916,9 +968,16 @@ export default {
         primaryKey: true,
       },
       reportType: {
-        type: DataTypes.ENUM('daily_summary', 'weekly_review', 'monthly_report', 
-                            'quarterly_earnings', 'annual_report', 'investor_update', 
-                            'board_report', 'custom'),
+        type: DataTypes.ENUM(
+          'daily_summary',
+          'weekly_review',
+          'monthly_report',
+          'quarterly_earnings',
+          'annual_report',
+          'investor_update',
+          'board_report',
+          'custom'
+        ),
         allowNull: false,
       },
       reportName: {
@@ -1041,7 +1100,9 @@ export default {
     await queryInterface.addIndex('cost_tracking', ['status']);
     await queryInterface.addIndex('cost_tracking', ['billingStartDate']);
 
-    await queryInterface.addIndex('financial_snapshots', ['snapshotType', 'snapshotDate'], { unique: true });
+    await queryInterface.addIndex('financial_snapshots', ['snapshotType', 'snapshotDate'], {
+      unique: true,
+    });
     await queryInterface.addIndex('financial_snapshots', ['isFinalized']);
 
     await queryInterface.addIndex('revenue_analytics', ['analysisType']);
@@ -1065,4 +1126,4 @@ export default {
     await queryInterface.dropTable('subscriptions');
     await queryInterface.dropTable('transactions');
   },
-}; 
+};

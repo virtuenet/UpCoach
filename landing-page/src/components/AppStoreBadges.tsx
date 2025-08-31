@@ -1,23 +1,23 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { motion } from "framer-motion";
+import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 interface AppStoreBadgesProps {
   className?: string;
-  variant?: "default" | "compact";
+  variant?: 'default' | 'compact';
   animated?: boolean;
 }
 
 export default function AppStoreBadges({
-  className = "",
-  variant = "default",
+  className = '',
+  variant = 'default',
   animated = true,
 }: AppStoreBadgesProps) {
   const badges = [
     {
-      name: "App Store",
-      href: "https://apps.apple.com/app/upcoach",
+      name: 'App Store',
+      href: 'https://apps.apple.com/app/upcoach',
       svg: (
         <svg
           className="h-full w-full"
@@ -57,8 +57,8 @@ export default function AppStoreBadges({
       ),
     },
     {
-      name: "Google Play",
-      href: "https://play.google.com/store/apps/details?id=com.upcoach.app",
+      name: 'Google Play',
+      href: 'https://play.google.com/store/apps/details?id=com.upcoach.app',
       svg: (
         <svg
           className="h-full w-full"
@@ -144,7 +144,7 @@ export default function AppStoreBadges({
     },
   ];
 
-  const BadgeWrapper = animated ? motion.div : "div";
+  const BadgeWrapper = animated ? motion.div : 'div';
   const badgeProps = animated
     ? {
         whileHover: { scale: 1.05 },
@@ -152,10 +152,10 @@ export default function AppStoreBadges({
       }
     : {};
 
-  if (variant === "compact") {
+  if (variant === 'compact') {
     return (
       <div className={`flex flex-col sm:flex-row gap-3 ${className}`}>
-        {badges.map((badge) => (
+        {badges.map(badge => (
           <BadgeWrapper key={badge.name} {...badgeProps}>
             <Link
               href={badge.href}
@@ -174,7 +174,7 @@ export default function AppStoreBadges({
 
   return (
     <div className={`flex flex-col sm:flex-row gap-4 ${className}`}>
-      {badges.map((badge) => (
+      {badges.map(badge => (
         <BadgeWrapper key={badge.name} {...badgeProps}>
           <Link
             href={badge.href}

@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import { vi, beforeAll, afterAll } from 'vitest';
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -39,8 +40,7 @@ beforeAll(() => {
   console.error = (...args: any[]) => {
     if (
       typeof args[0] === 'string' &&
-      (args[0].includes('Warning: ReactDOM.render') ||
-       args[0].includes('Warning: useLayoutEffect'))
+      (args[0].includes('Warning: ReactDOM.render') || args[0].includes('Warning: useLayoutEffect'))
     ) {
       return;
     }
@@ -53,7 +53,7 @@ afterAll(() => {
 });
 
 // Handle unhandled promise rejections in tests
-process.on('unhandledRejection', (reason) => {
+process.on('unhandledRejection', reason => {
   // Suppress unhandled rejections from test mocks
   if (reason && typeof reason === 'object' && 'message' in reason) {
     const message = (reason as any).message;

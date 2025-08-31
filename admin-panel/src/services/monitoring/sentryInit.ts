@@ -4,6 +4,7 @@
  */
 
 import * as React from 'react';
+import { logger } from '../../utils/logger';
 
 export interface SentryFrontendConfig {
   dsn: string;
@@ -28,9 +29,9 @@ export class SentryFrontendService {
   public initialize(config: SentryFrontendConfig): void {
     this.config = config;
     this.initialized = true;
-    logger.info('SentryFrontendService initialized (MOCK)', { 
+    logger.info('SentryFrontendService initialized (MOCK)', {
       environment: config.environment,
-      dsn: config.dsn.substring(0, 20) + '...'
+      dsn: config.dsn.substring(0, 20) + '...',
     });
   }
 
@@ -50,11 +51,13 @@ export class SentryFrontendService {
   ): React.ComponentType<any> {
     if (!this.initialized) {
       // Return a simple fallback if Sentry is not initialized
-      return ({ children }: { children: React.ReactNode }) => React.createElement(React.Fragment, null, children);
+      return ({ children }: { children: React.ReactNode }) =>
+        React.createElement(React.Fragment, null, children);
     }
 
     // Mock error boundary
-    return ({ children }: { children: React.ReactNode }) => React.createElement(React.Fragment, null, children);
+    return ({ children }: { children: React.ReactNode }) =>
+      React.createElement(React.Fragment, null, children);
   }
 
   /**
@@ -63,7 +66,7 @@ export class SentryFrontendService {
   startTransaction(context: any): any {
     logger.debug('SentryFrontendService: Mock transaction started', context);
     return {
-      finish: () => logger.debug('SentryFrontendService: Mock transaction finished')
+      finish: () => logger.debug('SentryFrontendService: Mock transaction finished'),
     };
   }
 

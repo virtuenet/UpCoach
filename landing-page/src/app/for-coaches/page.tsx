@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   ArrowRight,
   TrendingUp,
@@ -14,47 +14,45 @@ import {
   Shield,
   Globe,
   Award,
-} from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { trackEvent } from "@/services/analytics";
+} from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { trackEvent } from '@/services/analytics';
 
 const features = [
   {
     icon: Users,
-    title: "Expand Your Reach",
+    title: 'Expand Your Reach',
     description:
-      "Connect with clients globally and scale your coaching practice beyond geographical limits.",
+      'Connect with clients globally and scale your coaching practice beyond geographical limits.',
   },
   {
     icon: Calendar,
-    title: "Flexible Scheduling",
-    description:
-      "AI handles scheduling, reminders, and follow-ups so you can focus on coaching.",
+    title: 'Flexible Scheduling',
+    description: 'AI handles scheduling, reminders, and follow-ups so you can focus on coaching.',
   },
   {
     icon: DollarSign,
-    title: "Increase Revenue",
+    title: 'Increase Revenue',
     description:
-      "Serve more clients efficiently with AI assistance, multiplying your income potential.",
+      'Serve more clients efficiently with AI assistance, multiplying your income potential.',
   },
   {
     icon: BarChart3,
-    title: "Track Progress",
-    description:
-      "Advanced analytics show client progress and coaching effectiveness in real-time.",
+    title: 'Track Progress',
+    description: 'Advanced analytics show client progress and coaching effectiveness in real-time.',
   },
   {
     icon: MessageSquare,
-    title: "24/7 AI Support",
+    title: '24/7 AI Support',
     description:
-      "Your AI assistant provides support to clients between sessions, enhancing outcomes.",
+      'Your AI assistant provides support to clients between sessions, enhancing outcomes.',
   },
   {
     icon: Sparkles,
-    title: "Personalized Programs",
+    title: 'Personalized Programs',
     description:
       "AI helps create customized coaching programs based on each client's unique needs.",
   },
@@ -62,45 +60,44 @@ const features = [
 
 const testimonials = [
   {
-    name: "Sarah Johnson",
-    role: "Executive Coach",
-    image: "/images/coach-1.jpg",
+    name: 'Sarah Johnson',
+    role: 'Executive Coach',
+    image: '/images/coach-1.jpg',
     quote:
       "UpCoach has transformed my practice. I'm now helping 3x more clients while maintaining quality.",
-    revenue: "+180% revenue increase",
+    revenue: '+180% revenue increase',
   },
   {
-    name: "Michael Chen",
-    role: "Life Coach",
-    image: "/images/coach-2.jpg",
+    name: 'Michael Chen',
+    role: 'Life Coach',
+    image: '/images/coach-2.jpg',
     quote:
-      "The AI assistant handles routine tasks, letting me focus on deep, transformative coaching work.",
-    revenue: "500+ clients served",
+      'The AI assistant handles routine tasks, letting me focus on deep, transformative coaching work.',
+    revenue: '500+ clients served',
   },
   {
-    name: "Emma Williams",
-    role: "Career Coach",
-    image: "/images/coach-3.jpg",
-    quote:
-      "My clients love the 24/7 support. Their progress has accelerated dramatically.",
-    revenue: "95% client retention",
+    name: 'Emma Williams',
+    role: 'Career Coach',
+    image: '/images/coach-3.jpg',
+    quote: 'My clients love the 24/7 support. Their progress has accelerated dramatically.',
+    revenue: '95% client retention',
   },
 ];
 
 const benefits = [
-  { label: "Average Revenue Increase", value: "156%" },
-  { label: "Client Capacity", value: "3-5x" },
-  { label: "Time Saved Weekly", value: "15+ hours" },
-  { label: "Client Satisfaction", value: "4.9/5" },
+  { label: 'Average Revenue Increase', value: '156%' },
+  { label: 'Client Capacity', value: '3-5x' },
+  { label: 'Time Saved Weekly', value: '15+ hours' },
+  { label: 'Client Satisfaction', value: '4.9/5' },
 ];
 
 export default function ForCoachesPage() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    trackEvent("Coach Signup Started", {
-      source: "for-coaches-page",
+    trackEvent('Coach Signup Started', {
+      source: 'for-coaches-page',
       email,
     });
     // Handle coach signup
@@ -125,8 +122,8 @@ export default function ForCoachesPage() {
                 <span className="text-primary block">With AI Technology</span>
               </h1>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-                Empower more clients, increase your revenue, and deliver better
-                outcomes with UpCoach's AI-enhanced coaching platform.
+                Empower more clients, increase your revenue, and deliver better outcomes with
+                UpCoach's AI-enhanced coaching platform.
               </p>
             </motion.div>
 
@@ -141,7 +138,7 @@ export default function ForCoachesPage() {
                 type="email"
                 placeholder="Enter your email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={e => setEmail(e.target.value)}
                 className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 required
               />
@@ -157,8 +154,7 @@ export default function ForCoachesPage() {
               transition={{ duration: 0.5, delay: 0.4 }}
               className="mt-4 text-sm text-gray-600"
             >
-              Join 5,000+ coaches already using UpCoach • No credit card
-              required
+              Join 5,000+ coaches already using UpCoach • No credit card required
             </motion.p>
           </div>
 
@@ -186,9 +182,7 @@ export default function ForCoachesPage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Everything You Need to Scale
-            </h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Everything You Need to Scale</h2>
             <p className="text-xl text-gray-600">
               Powerful tools designed specifically for professional coaches
             </p>
@@ -205,9 +199,7 @@ export default function ForCoachesPage() {
               >
                 <Card className="p-6 h-full hover:shadow-lg transition-shadow">
                   <feature.icon className="h-12 w-12 text-primary mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">
-                    {feature.title}
-                  </h3>
+                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
                   <p className="text-gray-600">{feature.description}</p>
                 </Card>
               </motion.div>
@@ -235,12 +227,10 @@ export default function ForCoachesPage() {
                     <span className="text-primary font-bold">1</span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg mb-1">
-                      Onboard Clients Seamlessly
-                    </h3>
+                    <h3 className="font-semibold text-lg mb-1">Onboard Clients Seamlessly</h3>
                     <p className="text-gray-600">
-                      AI helps assess client needs, set goals, and create
-                      personalized coaching plans.
+                      AI helps assess client needs, set goals, and create personalized coaching
+                      plans.
                     </p>
                   </div>
                 </div>
@@ -249,12 +239,9 @@ export default function ForCoachesPage() {
                     <span className="text-primary font-bold">2</span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg mb-1">
-                      Provide 24/7 Support
-                    </h3>
+                    <h3 className="font-semibold text-lg mb-1">Provide 24/7 Support</h3>
                     <p className="text-gray-600">
-                      Your AI assistant engages clients between sessions,
-                      reinforcing your coaching.
+                      Your AI assistant engages clients between sessions, reinforcing your coaching.
                     </p>
                   </div>
                 </div>
@@ -263,12 +250,10 @@ export default function ForCoachesPage() {
                     <span className="text-primary font-bold">3</span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg mb-1">
-                      Track & Optimize
-                    </h3>
+                    <h3 className="font-semibold text-lg mb-1">Track & Optimize</h3>
                     <p className="text-gray-600">
-                      Get insights on client progress and coaching effectiveness
-                      to improve outcomes.
+                      Get insights on client progress and coaching effectiveness to improve
+                      outcomes.
                     </p>
                   </div>
                 </div>
@@ -300,9 +285,7 @@ export default function ForCoachesPage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Coaches Love UpCoach
-            </h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Coaches Love UpCoach</h2>
             <p className="text-xl text-gray-600">
               See how coaches are transforming their practices
             </p>
@@ -326,14 +309,10 @@ export default function ForCoachesPage() {
                     />
                     <div>
                       <h4 className="font-semibold">{testimonial.name}</h4>
-                      <p className="text-sm text-gray-600">
-                        {testimonial.role}
-                      </p>
+                      <p className="text-sm text-gray-600">{testimonial.role}</p>
                     </div>
                   </div>
-                  <p className="text-gray-700 mb-4 italic">
-                    "{testimonial.quote}"
-                  </p>
+                  <p className="text-gray-700 mb-4 italic">"{testimonial.quote}"</p>
                   <Badge variant="secondary">{testimonial.revenue}</Badge>
                 </Card>
               </motion.div>
@@ -346,12 +325,8 @@ export default function ForCoachesPage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Coach Partnership Plans
-            </h2>
-            <p className="text-xl text-gray-600">
-              Flexible pricing that grows with your practice
-            </p>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Coach Partnership Plans</h2>
+            <p className="text-xl text-gray-600">Flexible pricing that grows with your practice</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -360,9 +335,7 @@ export default function ForCoachesPage() {
               <p className="text-gray-600 mb-4">For coaches getting started</p>
               <div className="text-4xl font-bold mb-6">
                 $99
-                <span className="text-base font-normal text-gray-600">
-                  /month
-                </span>
+                <span className="text-base font-normal text-gray-600">/month</span>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center gap-2">
@@ -389,9 +362,7 @@ export default function ForCoachesPage() {
               <p className="text-gray-600 mb-4">For growing practices</p>
               <div className="text-4xl font-bold mb-6">
                 $249
-                <span className="text-base font-normal text-gray-600">
-                  /month
-                </span>
+                <span className="text-base font-normal text-gray-600">/month</span>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center gap-2">
@@ -447,19 +418,12 @@ export default function ForCoachesPage() {
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-primary text-white">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-4">
-            Ready to Scale Your Coaching Practice?
-          </h2>
+          <h2 className="text-4xl font-bold mb-4">Ready to Scale Your Coaching Practice?</h2>
           <p className="text-xl mb-8 opacity-90">
             Join thousands of coaches already transforming lives with AI
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              size="lg"
-              variant="secondary"
-              className="text-lg px-8 py-6"
-              asChild
-            >
+            <Button size="lg" variant="secondary" className="text-lg px-8 py-6" asChild>
               <Link href="/register?type=coach">
                 Start Free Trial
                 <ArrowRight className="ml-2 h-5 w-5" />

@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
-import { createHtmlPlugin } from 'vite-plugin-html'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import { createHtmlPlugin } from 'vite-plugin-html';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -51,7 +51,12 @@ export default defineConfig({
         // Manual chunking for better caching
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-ui': ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
+          'vendor-ui': [
+            '@mui/material',
+            '@mui/icons-material',
+            '@emotion/react',
+            '@emotion/styled',
+          ],
           'vendor-forms': ['react-hook-form', 'zod', '@hookform/resolvers'],
           'vendor-utils': ['axios', 'date-fns', 'lodash', 'clsx'],
           'vendor-charts': ['recharts'],
@@ -73,12 +78,6 @@ export default defineConfig({
   },
   // Optimize dependencies
   optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      'react-router-dom',
-      '@mui/material',
-      'axios',
-    ],
+    include: ['react', 'react-dom', 'react-router-dom', '@mui/material', 'axios'],
   },
-})
+});

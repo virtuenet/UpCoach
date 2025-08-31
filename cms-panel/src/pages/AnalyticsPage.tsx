@@ -1,62 +1,53 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { 
-  TrendingUp, 
-  Eye, 
-  Users, 
-  Clock, 
-  ArrowUp,
-  ArrowDown,
-  Download
-} from 'lucide-react'
-import { 
-  LineChart, 
-  Line, 
-  AreaChart, 
-  Area, 
-  PieChart, 
-  Pie, 
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { TrendingUp, Eye, Users, Clock, ArrowUp, ArrowDown, Download } from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  PieChart,
+  Pie,
   Cell,
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer 
-} from 'recharts'
-import LoadingSpinner from '../components/LoadingSpinner'
-import { format, subDays } from 'date-fns'
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { format, subDays } from 'date-fns';
 
 interface AnalyticsCard {
-  title: string
-  value: string | number
-  change: number
-  icon: React.ComponentType<any>
-  color: 'blue' | 'green' | 'purple' | 'orange' | 'red'
+  title: string;
+  value: string | number;
+  change: number;
+  icon: React.ComponentType<any>;
+  color: 'blue' | 'green' | 'purple' | 'orange' | 'red';
 }
 
-
 interface DashboardData {
-  totalArticles: number
-  totalCourses: number
-  totalViews: number
-  activeLearners: number
-  articlesGrowth: number
-  coursesGrowth: number
-  viewsGrowth: number
-  learnersGrowth: number
+  totalArticles: number;
+  totalCourses: number;
+  totalViews: number;
+  activeLearners: number;
+  articlesGrowth: number;
+  coursesGrowth: number;
+  viewsGrowth: number;
+  learnersGrowth: number;
 }
 
 const StatCard = ({ title, value, change, icon: Icon, color }: AnalyticsCard) => {
   const colorClasses = {
     blue: 'bg-blue-50 text-blue-600 border-blue-200',
-    green: 'bg-green-50 text-green-600 border-green-200', 
+    green: 'bg-green-50 text-green-600 border-green-200',
     purple: 'bg-purple-50 text-purple-600 border-purple-200',
     orange: 'bg-orange-50 text-orange-600 border-orange-200',
     red: 'bg-red-50 text-red-600 border-red-200',
-  }
+  };
 
-  const isPositive = change >= 0
+  const isPositive = change >= 0;
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -76,19 +67,17 @@ const StatCard = ({ title, value, change, icon: Icon, color }: AnalyticsCard) =>
           ) : (
             <ArrowDown className="h-4 w-4 mr-1" />
           )}
-          <span className="text-sm font-medium">
-            {Math.abs(change)}%
-          </span>
+          <span className="text-sm font-medium">{Math.abs(change)}%</span>
         </div>
         <span className="text-sm text-gray-500 ml-2">vs last period</span>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default function AnalyticsPage() {
-  const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>('month')
-  const [contentType, setContentType] = useState<'all' | 'article' | 'course'>('all')
+  const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>('month');
+  const [contentType, setContentType] = useState<'all' | 'article' | 'course'>('all');
 
   // Mock data - in production would come from API
   const dashboardData: DashboardData = {
@@ -100,7 +89,7 @@ export default function AnalyticsPage() {
     coursesGrowth: 8.3,
     viewsGrowth: 18.7,
     learnersGrowth: 6.2,
-  }
+  };
 
   // Fetch analytics data
   const { data: analytics, isLoading } = useQuery({
@@ -122,27 +111,27 @@ export default function AnalyticsPage() {
         locationBreakdown: {
           'United States': 35,
           'United Kingdom': 15,
-          'Canada': 12,
-          'Australia': 10,
-          'Other': 28,
+          Canada: 12,
+          Australia: 10,
+          Other: 28,
         },
-      })
+      });
     },
-  })
+  });
 
   // Mock trend data
   const viewsTrendData = Array.from({ length: 30 }, (_, i) => ({
     date: format(subDays(new Date(), 29 - i), 'MMM dd'),
     views: Math.floor(Math.random() * 2000) + 1000,
     uniqueUsers: Math.floor(Math.random() * 800) + 400,
-  }))
+  }));
 
   const contentPerformanceData = [
     { name: 'Week 1', articles: 45, courses: 12, engagement: 85 },
     { name: 'Week 2', articles: 52, courses: 15, engagement: 88 },
     { name: 'Week 3', articles: 48, courses: 18, engagement: 82 },
     { name: 'Week 4', articles: 61, courses: 22, engagement: 91 },
-  ]
+  ];
 
   const topContentData = [
     { title: 'Effective Leadership Strategies', views: 12500, readTime: 8.5, engagement: 92 },
@@ -150,22 +139,24 @@ export default function AnalyticsPage() {
     { title: 'Building High-Performance Teams', views: 8600, readTime: 12.1, engagement: 89 },
     { title: 'Communication Skills Masterclass', views: 7200, readTime: 15.3, engagement: 85 },
     { title: 'Time Management Fundamentals', views: 6900, readTime: 7.8, engagement: 83 },
-  ]
+  ];
 
-  const deviceData = analytics ? Object.entries(analytics.deviceBreakdown).map(([device, percentage]) => ({
-    name: device,
-    value: percentage,
-    fill: device === 'Desktop' ? '#3B82F6' : device === 'Mobile' ? '#10B981' : '#F59E0B'
-  })) : []
+  const deviceData = analytics
+    ? Object.entries(analytics.deviceBreakdown).map(([device, percentage]) => ({
+        name: device,
+        value: percentage,
+        fill: device === 'Desktop' ? '#3B82F6' : device === 'Mobile' ? '#10B981' : '#F59E0B',
+      }))
+    : [];
 
-  const _COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6']
+  // const _COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6']
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner size="lg" />
       </div>
-    )
+    );
   }
 
   return (
@@ -181,7 +172,7 @@ export default function AnalyticsPage() {
         <div className="flex items-center space-x-3">
           <select
             value={timeframe}
-            onChange={(e) => setTimeframe(e.target.value as any)}
+            onChange={e => setTimeframe(e.target.value as any)}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-secondary-500 focus:border-secondary-500"
           >
             <option value="week">Last Week</option>
@@ -190,7 +181,7 @@ export default function AnalyticsPage() {
           </select>
           <select
             value={contentType}
-            onChange={(e) => setContentType(e.target.value as any)}
+            onChange={e => setContentType(e.target.value as any)}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-secondary-500 focus:border-secondary-500"
           >
             <option value="all">All Content</option>
@@ -259,17 +250,17 @@ export default function AnalyticsPage() {
               <XAxis dataKey="date" />
               <YAxis />
               <Tooltip />
-              <Line 
-                type="monotone" 
-                dataKey="views" 
-                stroke="#3B82F6" 
+              <Line
+                type="monotone"
+                dataKey="views"
+                stroke="#3B82F6"
                 strokeWidth={2}
                 dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
               />
-              <Line 
-                type="monotone" 
-                dataKey="uniqueUsers" 
-                stroke="#10B981" 
+              <Line
+                type="monotone"
+                dataKey="uniqueUsers"
+                stroke="#10B981"
                 strokeWidth={2}
                 dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
               />
@@ -365,7 +356,9 @@ export default function AnalyticsPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <Eye className="h-4 w-4 text-gray-400 mr-2" />
-                      <span className="text-sm text-gray-900">{content.views.toLocaleString()}</span>
+                      <span className="text-sm text-gray-900">
+                        {content.views.toLocaleString()}
+                      </span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -377,8 +370,8 @@ export default function AnalyticsPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="w-16 bg-gray-200 rounded-full h-2 mr-3">
-                        <div 
-                          className="bg-green-500 h-2 rounded-full" 
+                        <div
+                          className="bg-green-500 h-2 rounded-full"
                           style={{ width: `${content.engagement}%` }}
                         ></div>
                       </div>
@@ -386,14 +379,20 @@ export default function AnalyticsPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      content.engagement >= 90 ? 'bg-green-100 text-green-800' :
-                      content.engagement >= 80 ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {content.engagement >= 90 ? 'Excellent' :
-                       content.engagement >= 80 ? 'Good' :
-                       'Needs Improvement'}
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        content.engagement >= 90
+                          ? 'bg-green-100 text-green-800'
+                          : content.engagement >= 80
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      {content.engagement >= 90
+                        ? 'Excellent'
+                        : content.engagement >= 80
+                          ? 'Good'
+                          : 'Needs Improvement'}
                     </span>
                   </td>
                 </tr>
@@ -419,8 +418,8 @@ export default function AnalyticsPage() {
                 </div>
                 <div className="flex items-center">
                   <div className="w-24 bg-gray-200 rounded-full h-2 mr-3">
-                    <div 
-                      className="bg-blue-500 h-2 rounded-full" 
+                    <div
+                      className="bg-blue-500 h-2 rounded-full"
                       style={{ width: `${Math.max(20, 100 - index * 20)}%` }}
                     ></div>
                   </div>
@@ -435,25 +434,26 @@ export default function AnalyticsPage() {
         <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
           <h3 className="text-lg font-medium text-gray-900 mb-6">Top Locations</h3>
           <div className="space-y-4">
-            {analytics && Object.entries(analytics.locationBreakdown).map(([location, percentage], index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                    <span className="text-sm font-medium text-green-600">{index + 1}</span>
+            {analytics &&
+              Object.entries(analytics.locationBreakdown).map(([location, percentage], index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-sm font-medium text-green-600">{index + 1}</span>
+                    </div>
+                    <span className="text-sm font-medium text-gray-900">{location}</span>
                   </div>
-                  <span className="text-sm font-medium text-gray-900">{location}</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-24 bg-gray-200 rounded-full h-2 mr-3">
-                    <div 
-                      className="bg-green-500 h-2 rounded-full" 
-                      style={{ width: `${percentage}%` }}
-                    ></div>
+                  <div className="flex items-center">
+                    <div className="w-24 bg-gray-200 rounded-full h-2 mr-3">
+                      <div
+                        className="bg-green-500 h-2 rounded-full"
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-sm text-gray-500">{percentage}%</span>
                   </div>
-                  <span className="text-sm text-gray-500">{percentage}%</span>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       </div>
@@ -468,10 +468,11 @@ export default function AnalyticsPage() {
               <h4 className="font-medium text-blue-900">Growing Engagement</h4>
             </div>
             <p className="text-sm text-blue-700">
-              Mobile engagement is up 23% this month. Consider optimizing more content for mobile readers.
+              Mobile engagement is up 23% this month. Consider optimizing more content for mobile
+              readers.
             </p>
           </div>
-          
+
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
             <div className="flex items-center mb-2">
               <Users className="h-5 w-5 text-green-600 mr-2" />
@@ -481,7 +482,7 @@ export default function AnalyticsPage() {
               New user acquisition is strong. Your content is reaching 15% more unique visitors.
             </p>
           </div>
-          
+
           <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
             <div className="flex items-center mb-2">
               <Clock className="h-5 w-5 text-orange-600 mr-2" />
@@ -494,5 +495,5 @@ export default function AnalyticsPage() {
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

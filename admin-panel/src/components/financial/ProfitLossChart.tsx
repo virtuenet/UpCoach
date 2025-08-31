@@ -1,3 +1,7 @@
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
+import { financialApi, type ProfitLossStatement } from '../../services/financialApi';
 import {
   BarChart,
   Bar,
@@ -7,7 +11,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from "recharts";
+} from 'recharts';
 
 interface ProfitLossChartProps {
   dateRange: {
@@ -28,21 +32,21 @@ export function ProfitLossChart({ dateRange }: ProfitLossChartProps) {
     try {
       setLoading(true);
       const data = await financialApi.getProfitLossStatement(
-        format(dateRange.from, "yyyy-MM-dd"),
-        format(dateRange.to, "yyyy-MM-dd"),
+        format(dateRange.from, 'yyyy-MM-dd'),
+        format(dateRange.to, 'yyyy-MM-dd')
       );
       setPnlData(data);
     } catch (error) {
-      console.error("Failed to load P&L data:", error);
+      console.error('Failed to load P&L data:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
@@ -53,29 +57,21 @@ export function ProfitLossChart({ dateRange }: ProfitLossChartProps) {
   };
 
   if (loading) {
-    return (
-      <div className="h-[400px] flex items-center justify-center">
-        Loading...
-      </div>
-    );
+    return <div className="h-[400px] flex items-center justify-center">Loading...</div>;
   }
 
   if (!pnlData) {
-    return (
-      <div className="h-[400px] flex items-center justify-center">
-        No data available
-      </div>
-    );
+    return <div className="h-[400px] flex items-center justify-center">No data available</div>;
   }
 
   const chartData = [
-    { name: "Revenue", gross: pnlData.revenue.gross, net: pnlData.revenue.net },
+    { name: 'Revenue', gross: pnlData.revenue.gross, net: pnlData.revenue.net },
     {
-      name: "Costs",
+      name: 'Costs',
       direct: pnlData.costs.directCosts,
       operating: pnlData.costs.operatingExpenses,
     },
-    { name: "Profit", gross: pnlData.profit.gross, net: pnlData.profit.net },
+    { name: 'Profit', gross: pnlData.profit.gross, net: pnlData.profit.net },
   ];
 
   return (
@@ -84,30 +80,21 @@ export function ProfitLossChart({ dateRange }: ProfitLossChartProps) {
       <div className="grid grid-cols-4 gap-4">
         <div className="bg-green-50 p-4 rounded-lg">
           <p className="text-sm text-green-600 font-medium">Net Revenue</p>
-          <p className="text-2xl font-bold text-green-700">
-            {formatCurrency(pnlData.revenue.net)}
-          </p>
+          <p className="text-2xl font-bold text-green-700">{formatCurrency(pnlData.revenue.net)}</p>
           <p className="text-xs text-green-600 mt-1">
             After {formatCurrency(pnlData.revenue.refunds)} refunds
           </p>
         </div>
         <div className="bg-red-50 p-4 rounded-lg">
           <p className="text-sm text-red-600 font-medium">Total Costs</p>
-          <p className="text-2xl font-bold text-red-700">
-            {formatCurrency(pnlData.costs.total)}
-          </p>
+          <p className="text-2xl font-bold text-red-700">{formatCurrency(pnlData.costs.total)}</p>
           <p className="text-xs text-red-600 mt-1">
-            {formatPercentage(
-              (pnlData.costs.total / pnlData.revenue.net) * 100,
-            )}{" "}
-            of revenue
+            {formatPercentage((pnlData.costs.total / pnlData.revenue.net) * 100)} of revenue
           </p>
         </div>
         <div className="bg-blue-50 p-4 rounded-lg">
           <p className="text-sm text-blue-600 font-medium">Net Profit</p>
-          <p className="text-2xl font-bold text-blue-700">
-            {formatCurrency(pnlData.profit.net)}
-          </p>
+          <p className="text-2xl font-bold text-blue-700">{formatCurrency(pnlData.profit.net)}</p>
           <p className="text-xs text-blue-600 mt-1">
             {formatPercentage(pnlData.profit.netMargin)} margin
           </p>
@@ -127,26 +114,20 @@ export function ProfitLossChart({ dateRange }: ProfitLossChartProps) {
       <div>
         <h4 className="text-sm font-medium mb-4">Cost Breakdown by Category</h4>
         <div className="grid grid-cols-2 gap-4">
-          {Object.entries(pnlData.costs.byCategory).map(
-            ([category, amount]) => (
-              <div
-                key={category}
-                className="flex justify-between items-center p-3 bg-gray-50 rounded"
-              >
-                <span className="text-sm font-medium capitalize">
-                  {category.replace(/_/g, " ")}
+          {Object.entries(pnlData.costs.byCategory).map(([category, amount]) => (
+            <div
+              key={category}
+              className="flex justify-between items-center p-3 bg-gray-50 rounded"
+            >
+              <span className="text-sm font-medium capitalize">{category.replace(/_/g, ' ')}</span>
+              <div className="text-right">
+                <span className="text-sm font-bold">{formatCurrency(amount)}</span>
+                <span className="text-xs text-muted-foreground ml-2">
+                  ({formatPercentage((amount / pnlData.costs.total) * 100)})
                 </span>
-                <div className="text-right">
-                  <span className="text-sm font-bold">
-                    {formatCurrency(amount)}
-                  </span>
-                  <span className="text-xs text-muted-foreground ml-2">
-                    ({formatPercentage((amount / pnlData.costs.total) * 100)})
-                  </span>
-                </div>
               </div>
-            ),
-          )}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -157,9 +138,7 @@ export function ProfitLossChart({ dateRange }: ProfitLossChartProps) {
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
-            <YAxis
-              tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-            />
+            <YAxis tickFormatter={value => `$${(value / 1000).toFixed(0)}k`} />
             <Tooltip formatter={(value: number) => formatCurrency(value)} />
             <Legend />
             <Bar dataKey="gross" fill="#10b981" name="Gross" />

@@ -52,11 +52,7 @@ export class NotificationService extends EventEmitter {
   /**
    * Show a success notification
    */
-  async showSuccess(
-    userId: string,
-    message: string,
-    action?: () => void
-  ): Promise<void> {
+  async showSuccess(userId: string, message: string, action?: () => void): Promise<void> {
     const notification: NotificationOptions = {
       userId,
       type: 'success',
@@ -66,9 +62,7 @@ export class NotificationService extends EventEmitter {
     };
 
     if (action) {
-      notification.actions = [
-        { label: 'View', action: 'view', primary: true },
-      ];
+      notification.actions = [{ label: 'View', action: 'view', primary: true }];
     }
 
     await this.send(notification);
@@ -164,9 +158,7 @@ export class NotificationService extends EventEmitter {
     }
 
     // Check cache
-    const cached = await this.cache.get<ProgressNotification>(
-      `progress:${operationId}`
-    );
+    const cached = await this.cache.get<ProgressNotification>(`progress:${operationId}`);
     return cached;
   }
 
@@ -185,12 +177,7 @@ export class NotificationService extends EventEmitter {
       if (estimatedTimeRemaining !== undefined) {
         existing.estimatedTimeRemaining = estimatedTimeRemaining;
       }
-      await this.showProgress(
-        operationId,
-        existing.operation,
-        progress,
-        existing.message
-      );
+      await this.showProgress(operationId, existing.operation, progress, existing.message);
     }
   }
 
@@ -215,11 +202,7 @@ export class NotificationService extends EventEmitter {
   /**
    * Show an info notification
    */
-  async showInfo(
-    userId: string,
-    message: string,
-    persistent: boolean = false
-  ): Promise<void> {
+  async showInfo(userId: string, message: string, persistent: boolean = false): Promise<void> {
     await this.send({
       userId,
       type: 'info',
@@ -261,9 +244,7 @@ export class NotificationService extends EventEmitter {
   /**
    * Send email notification for critical issues
    */
-  private async sendEmailNotification(
-    notification: NotificationOptions
-  ): Promise<void> {
+  private async sendEmailNotification(notification: NotificationOptions): Promise<void> {
     try {
       // Get user email from cache or database
       const userEmail = await this.getUserEmail(notification.userId);
@@ -336,13 +317,13 @@ export class NotificationService extends EventEmitter {
       clearInterval(this.cleanupInterval);
       this.cleanupInterval = undefined;
     }
-    
+
     // Clear all listeners
     this.removeAllListeners();
-    
+
     // Clear progress trackers
     this.progressTrackers.clear();
-    
+
     logger.info('NotificationService shutdown complete');
   }
 }

@@ -37,7 +37,7 @@ export const authMiddleware = async (
 ): Promise<void> => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
-    
+
     if (!token) {
       _res.status(401).json({
         success: false,
@@ -45,7 +45,7 @@ export const authMiddleware = async (
       });
       return;
     }
-    
+
     // Check if token is blacklisted
     const isBlacklisted = await redis.get(`blacklist:${token}`);
     if (isBlacklisted) {
@@ -55,9 +55,9 @@ export const authMiddleware = async (
       });
       return;
     }
-    
+
     const decoded = jwt.verify(token, config.jwt.secret) as any;
-    
+
     // Validate token structure
     if (!decoded.id || !decoded.email || !decoded.role) {
       _res.status(401).json({
@@ -66,33 +66,33 @@ export const authMiddleware = async (
       });
       return;
     }
-    
+
     (req as any).user = {
       id: decoded.id,
       email: decoded.email,
       role: decoded.role,
     };
-    
+
     next();
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
       _res.status(401).json({
         success: false,
         error: 'Token has expired',
-        code: 'TOKEN_EXPIRED'
+        code: 'TOKEN_EXPIRED',
       });
       return;
     }
-    
+
     if (error instanceof jwt.JsonWebTokenError) {
       _res.status(401).json({
         success: false,
         error: 'Invalid token',
-        code: 'INVALID_TOKEN'
+        code: 'INVALID_TOKEN',
       });
       return;
     }
-    
+
     logger.error('Auth middleware error:', error);
     _res.status(500).json({
       success: false,
@@ -104,11 +104,7 @@ export const authMiddleware = async (
 /**
  * Admin authorization middleware
  */
-export const adminMiddleware = (
-  req: Request,
-  _res: Response,
-  next: NextFunction
-): void => {
+export const adminMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
   if (!(req as any).user || (req as any).user.role !== 'admin') {
     _res.status(403).json({
       success: false,
@@ -116,7 +112,7 @@ export const adminMiddleware = (
     });
     return;
   }
-  
+
   next();
 };
 
@@ -130,13 +126,13 @@ export const optionalAuthMiddleware = async (
 ): Promise<void> => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
-    
+
     if (token) {
       // Check if token is blacklisted
       const isBlacklisted = await redis.get(`blacklist:${token}`);
       if (!isBlacklisted) {
         const decoded = jwt.verify(token, config.jwt.secret) as any;
-        
+
         // Validate token structure
         if (decoded.id && decoded.email && decoded.role) {
           (req as any).user = {
@@ -147,7 +143,7 @@ export const optionalAuthMiddleware = async (
         }
       }
     }
-    
+
     next();
   } catch (error) {
     // Continue without auth if token is invalid
@@ -158,7 +154,7 @@ export const optionalAuthMiddleware = async (
 
 export const requireRole = (roles: string | string[]) => {
   const allowedRoles = Array.isArray(roles) ? roles : [roles];
-  
+
   return (req: Request, _res: Response, next: NextFunction): void => {
     if (!(req as any).user) {
       _res.status(401).json({
@@ -207,7 +203,7 @@ export const requireOwnership = (resourceIdParam: string = 'id') => {
       // This would need to be customized based on the specific resource
       // For now, we'll assume the resource has a userId field
       const ownership = await checkResourceOwnership(resourceId, userId);
-      
+
       if (!ownership) {
         _res.status(403).json({
           error: 'Access denied',
@@ -232,27 +228,29 @@ async function checkResourceOwnership(resourceId: string, userId: string): Promi
   try {
     // We'll need to implement proper resource checking based on the actual resource type
     // This would typically involve database queries specific to each resource
-    
+
     // Check if the resource belongs to the user
     // This assumes resources have a userId field or similar ownership indicator
     // You'll need to customize this based on your actual resource types
-    
+
     // Example implementation for user-owned resources:
     // For user-specific resources, check if the resourceId matches userId
     if (resourceId === userId) {
       return true;
     }
-    
+
     // For other resources, you might need to query the database
     // This is a generic check that should be customized per resource type
     // For example:
     // - For goals: SELECT * FROM goals WHERE id = resourceId AND user_id = userId
     // - For sessions: SELECT * FROM sessions WHERE id = resourceId AND coach_id = userId
-    
+
     // Since we don't know the resource type from just the ID,
     // this needs to be implemented based on your routing patterns
     // For now, return false to be secure by default
-    logger.warn(`Resource ownership check not fully implemented for resource: ${resourceId}, user: ${userId}`);
+    logger.warn(
+      `Resource ownership check not fully implemented for resource: ${resourceId}, user: ${userId}`
+    );
     return false;
   } catch (error) {
     logger.error('Error checking resource ownership:', error);
@@ -261,17 +259,13 @@ async function checkResourceOwnership(resourceId: string, userId: string): Promi
 }
 
 export const generateTokens = (userId: string): { accessToken: string; refreshToken: string } => {
-  const accessToken = jwt.sign(
-    { userId, type: 'access' },
-    config.jwt.secret,
-    { expiresIn: config.jwt.expiresIn } as any
-  );
+  const accessToken = jwt.sign({ userId, type: 'access' }, config.jwt.secret, {
+    expiresIn: config.jwt.expiresIn,
+  } as any);
 
-  const refreshToken = jwt.sign(
-    { userId, type: 'refresh' },
-    config.jwt.refreshSecret,
-    { expiresIn: config.jwt.refreshExpiresIn } as any
-  );
+  const refreshToken = jwt.sign({ userId, type: 'refresh' }, config.jwt.refreshSecret, {
+    expiresIn: config.jwt.refreshExpiresIn,
+  } as any);
 
   return { accessToken, refreshToken };
 };
@@ -279,7 +273,7 @@ export const generateTokens = (userId: string): { accessToken: string; refreshTo
 export const verifyRefreshToken = (token: string): { userId: string } => {
   try {
     const decoded = jwt.verify(token, config.jwt.refreshSecret) as any;
-    
+
     if (decoded.type !== 'refresh') {
       throw new Error('Invalid token type');
     }
@@ -312,4 +306,4 @@ export const blacklistToken = async (token: string): Promise<void> => {
 // Export aliases for common middleware names
 export const authenticate = authMiddleware;
 export const authorize = adminMiddleware;
-export const authenticateToken = authMiddleware; 
+export const authenticateToken = authMiddleware;

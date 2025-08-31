@@ -136,7 +136,7 @@ export class GamificationService {
 
     if (levelInfo[0]) {
       const level = levelInfo[0] as any;
-      
+
       // Send notification
       await emailService.send({
         to: await this.getUserEmail(userId),
@@ -241,10 +241,7 @@ export class GamificationService {
   }
 
   // Unlock achievement
-  private async unlockAchievement(
-    userId: number,
-    achievementId: number
-  ): Promise<void> {
+  private async unlockAchievement(userId: number, achievementId: number): Promise<void> {
     try {
       // Mark as unlocked
       await sequelize.query(
@@ -268,7 +265,7 @@ export class GamificationService {
 
       if (achievement[0]) {
         const ach = achievement[0] as any;
-        
+
         // Award points
         if (ach.points > 0) {
           await this.awardPoints(userId, ach.points, `Achievement: ${ach.name}`);
@@ -302,7 +299,7 @@ export class GamificationService {
   ): Promise<void> {
     try {
       const today = startOfDay(activityDate);
-      
+
       // Get current streak
       const streakData = await sequelize.query<any>(
         `SELECT * FROM user_streaks 
@@ -315,9 +312,7 @@ export class GamificationService {
 
       if (streakData[0]) {
         const streak = streakData[0] as any;
-        const lastActivity = streak.last_activity_date 
-          ? new Date(streak.last_activity_date) 
-          : null;
+        const lastActivity = streak.last_activity_date ? new Date(streak.last_activity_date) : null;
 
         let newStreak = streak.current_streak;
         let shouldUpdate = false;
@@ -328,7 +323,7 @@ export class GamificationService {
           shouldUpdate = true;
         } else {
           const daysSinceLastActivity = differenceInDays(today, lastActivity);
-          
+
           if (daysSinceLastActivity === 1) {
             // Consecutive day
             newStreak = streak.current_streak + 1;
@@ -358,7 +353,7 @@ export class GamificationService {
 
         if (shouldUpdate) {
           const longestStreak = Math.max(newStreak, streak.longest_streak);
-          
+
           await sequelize.query(
             `UPDATE user_streaks 
              SET current_streak = :newStreak,
@@ -466,14 +461,11 @@ export class GamificationService {
   }
 
   // Get user achievements
-  async getUserAchievements(
-    userId: number,
-    category?: string
-  ): Promise<AchievementProgress[]> {
+  async getUserAchievements(userId: number, category?: string): Promise<AchievementProgress[]> {
     try {
       let categoryFilter = '';
       const replacements: any = { userId };
-      
+
       if (category) {
         categoryFilter = 'AND a.category = :category';
         replacements.category = category;
@@ -500,10 +492,7 @@ export class GamificationService {
         achievementId: ach.id,
         currentProgress: ach.current_progress,
         targetProgress: ach.criteria_target,
-        percentComplete: Math.min(
-          100,
-          (ach.current_progress / ach.criteria_target) * 100
-        ),
+        percentComplete: Math.min(100, (ach.current_progress / ach.criteria_target) * 100),
         isUnlocked: !!ach.unlocked_at,
         ...ach,
       }));
@@ -524,7 +513,7 @@ export class GamificationService {
     rewardPoints: number;
   }): Promise<number> {
     try {
-      const result = await sequelize.query(
+      const result = (await sequelize.query(
         `INSERT INTO challenges 
          (name, description, type, start_date, end_date, requirements, reward_points)
          VALUES (:name, :description, :type, :startDate, :endDate, :requirements, :rewardPoints)
@@ -536,7 +525,7 @@ export class GamificationService {
           },
           type: QueryTypes.INSERT,
         }
-      ) as unknown as [any[], any];
+      )) as unknown as [any[], any];
 
       return result[0][0].id;
     } catch (error) {
@@ -594,16 +583,16 @@ export class GamificationService {
       if (current[0]) {
         const progressData = (current[0] as any).progress || {};
         const requirements = (current[0] as any).requirements;
-        
+
         progressData[requirementIndex] = progress;
-        
+
         // Calculate completion percentage
         let totalProgress = 0;
         requirements.forEach((req: any, index: number) => {
           const reqProgress = progressData[index] || 0;
           totalProgress += Math.min(100, (reqProgress / req.target) * 100);
         });
-        
+
         const completionPercentage = totalProgress / requirements.length;
         const isCompleted = completionPercentage >= 100;
 
@@ -637,10 +626,7 @@ export class GamificationService {
   }
 
   // Handle challenge completion
-  private async onChallengeComplete(
-    userId: number,
-    challengeId: number
-  ): Promise<void> {
+  private async onChallengeComplete(userId: number, challengeId: number): Promise<void> {
     const challenge = await sequelize.query<any>(
       `SELECT * FROM challenges WHERE id = :challengeId`,
       {
@@ -771,10 +757,7 @@ export class GamificationService {
   }
 
   // Purchase reward
-  async purchaseReward(
-    userId: number,
-    rewardItemId: number
-  ): Promise<void> {
+  async purchaseReward(userId: number, rewardItemId: number): Promise<void> {
     try {
       // Start transaction
       const t = await sequelize.transaction();
@@ -790,14 +773,11 @@ export class GamificationService {
               transaction: t,
             }
           ),
-          sequelize.query<any>(
-            `SELECT * FROM user_levels WHERE user_id = :userId`,
-            {
-              replacements: { userId },
-              type: QueryTypes.SELECT,
-              transaction: t,
-            }
-          ),
+          sequelize.query<any>(`SELECT * FROM user_levels WHERE user_id = :userId`, {
+            replacements: { userId },
+            type: QueryTypes.SELECT,
+            transaction: t,
+          }),
         ]);
 
         if (!rewardItem[0]) {
@@ -904,13 +884,10 @@ export class GamificationService {
 
   // Helper methods
   private async getUserEmail(userId: number): Promise<string> {
-    const user = await sequelize.query<any>(
-      `SELECT email FROM users WHERE id = :userId`,
-      {
-        replacements: { userId },
-        type: QueryTypes.SELECT,
-      }
-    );
+    const user = await sequelize.query<any>(`SELECT email FROM users WHERE id = :userId`, {
+      replacements: { userId },
+      type: QueryTypes.SELECT,
+    });
     return (user[0] as any)?.email || '';
   }
 
@@ -941,11 +918,7 @@ export class GamificationService {
   }
 
   // Check specific achievement
-  async checkAchievement(
-    userId: number,
-    achievementType: string,
-    value: number
-  ): Promise<void> {
+  async checkAchievement(userId: number, achievementType: string, value: number): Promise<void> {
     const achievements = await sequelize.query<any>(
       `SELECT a.*, ua.unlocked_at
        FROM achievements a

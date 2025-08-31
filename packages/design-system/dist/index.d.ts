@@ -8,5 +8,13 @@ export { default as tokens } from './tokens';
 export { lightTheme, darkTheme, createCustomTheme } from './theme/mui-theme';
 export { default as theme } from './theme/mui-theme';
 export type { ThemeOptions } from '@mui/material/styles';
-export { withOpacity, responsiveTypography, getSpacing, createSpacing, isBreakpoint, getCurrentBreakpoint, responsiveValue } from './tokens';
+export {
+  withOpacity,
+  responsiveTypography,
+  getSpacing,
+  createSpacing,
+  isBreakpoint,
+  getCurrentBreakpoint,
+  responsiveValue,
+} from './tokens';
 //# sourceMappingURL=index.d.ts.map

@@ -10,7 +10,7 @@ export const dateUtils = {
    */
   formatDate(date: Date | string, format: 'short' | 'long' | 'iso' = 'short'): string {
     const d = new Date(date);
-    
+
     if (isNaN(d.getTime())) {
       return 'Invalid Date';
     }
@@ -22,7 +22,7 @@ export const dateUtils = {
           month: 'long',
           day: 'numeric',
           hour: '2-digit',
-          minute: '2-digit'
+          minute: '2-digit',
         });
       case 'iso':
         return d.toISOString();
@@ -31,7 +31,7 @@ export const dateUtils = {
         return d.toLocaleDateString('en-US', {
           year: 'numeric',
           month: 'short',
-          day: 'numeric'
+          day: 'numeric',
         });
     }
   },
@@ -43,7 +43,7 @@ export const dateUtils = {
     const d = new Date(date);
     const now = new Date();
     const diff = now.getTime() - d.getTime();
-    
+
     const seconds = Math.floor(diff / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
@@ -84,14 +84,14 @@ export const dateUtils = {
     const dates: Date[] = [];
     const current = new Date(start);
     const endDate = new Date(end);
-    
+
     while (current <= endDate) {
       dates.push(new Date(current));
       current.setDate(current.getDate() + 1);
     }
-    
+
     return dates;
-  }
+  },
 };
 
 // ==================== String Utilities ====================
@@ -157,7 +157,7 @@ export const stringUtils = {
       result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return result;
-  }
+  },
 };
 
 // ==================== Number Utilities ====================
@@ -175,7 +175,7 @@ export const numberUtils = {
   formatCurrency(amount: number, currency = 'USD'): string {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency
+      currency,
     }).format(amount);
   },
 
@@ -191,13 +191,13 @@ export const numberUtils = {
    */
   formatBytes(bytes: number, decimals = 2): string {
     if (bytes === 0) return '0 Bytes';
-    
+
     const k = 1024;
     const dm = decimals < 0 ? 0 : decimals;
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-    
+
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
+
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
   },
 
@@ -214,7 +214,7 @@ export const numberUtils = {
   round(num: number, decimals = 2): number {
     const factor = Math.pow(10, decimals);
     return Math.round(num * factor) / factor;
-  }
+  },
 };
 
 // ==================== Array Utilities ====================
@@ -241,12 +241,15 @@ export const arrayUtils = {
    * Group array by key
    */
   groupBy<T>(array: T[], key: keyof T): Record<string, T[]> {
-    return array.reduce((groups, item) => {
-      const group = String(item[key]);
-      groups[group] = groups[group] || [];
-      groups[group].push(item);
-      return groups;
-    }, {} as Record<string, T[]>);
+    return array.reduce(
+      (groups, item) => {
+        const group = String(item[key]);
+        groups[group] = groups[group] || [];
+        groups[group].push(item);
+        return groups;
+      },
+      {} as Record<string, T[]>
+    );
   },
 
   /**
@@ -256,7 +259,7 @@ export const arrayUtils = {
     return [...array].sort((a, b) => {
       const aVal = a[key];
       const bVal = b[key];
-      
+
       if (aVal < bVal) return order === 'asc' ? -1 : 1;
       if (aVal > bVal) return order === 'asc' ? 1 : -1;
       return 0;
@@ -280,7 +283,7 @@ export const arrayUtils = {
    */
   random<T>(array: T[]): T | undefined {
     return array[Math.floor(Math.random() * array.length)];
-  }
+  },
 };
 
 // ==================== Object Utilities ====================
@@ -292,7 +295,7 @@ export const objectUtils = {
     if (obj === null || typeof obj !== 'object') return obj;
     if (obj instanceof Date) return new Date(obj.getTime()) as any;
     if (obj instanceof Array) return obj.map(item => deepClone(item)) as any;
-    
+
     const cloned = {} as T;
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
@@ -307,7 +310,7 @@ export const objectUtils = {
    */
   deepMerge<T extends Record<string, any>>(...objects: Partial<T>[]): T {
     const result = {} as T;
-    
+
     for (const obj of objects) {
       for (const key in obj) {
         if (obj.hasOwnProperty(key)) {
@@ -320,7 +323,7 @@ export const objectUtils = {
         }
       }
     }
-    
+
     return result;
   },
 
@@ -353,7 +356,7 @@ export const objectUtils = {
    */
   isEmpty(obj: Record<string, any>): boolean {
     return Object.keys(obj).length === 0;
-  }
+  },
 };
 
 // ==================== Validation Utilities ====================
@@ -394,7 +397,7 @@ export const validationUtils = {
     errors: string[];
   } {
     const errors: string[] = [];
-    
+
     if (password.length < 8) {
       errors.push('Password must be at least 8 characters');
     }
@@ -410,12 +413,12 @@ export const validationUtils = {
     if (!/[!@#$%^&*]/.test(password)) {
       errors.push('Password must contain special character');
     }
-    
+
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
-  }
+  },
 };
 
 // ==================== Browser Utilities ====================
@@ -445,10 +448,8 @@ export const browserUtils = {
    * Download file
    */
   downloadFile(data: Blob | string, filename: string, type?: string): void {
-    const blob = typeof data === 'string' 
-      ? new Blob([data], { type: type || 'text/plain' })
-      : data;
-    
+    const blob = typeof data === 'string' ? new Blob([data], { type: type || 'text/plain' }) : data;
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -509,7 +510,7 @@ export const browserUtils = {
         func(...args);
       }
     };
-  }
+  },
 };
 
 // Export all utilities
@@ -520,5 +521,5 @@ export default {
   array: arrayUtils,
   object: objectUtils,
   validation: validationUtils,
-  browser: browserUtils
+  browser: browserUtils,
 };

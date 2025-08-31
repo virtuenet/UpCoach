@@ -12,7 +12,7 @@ declare global {
       organization?: any;
       organizationRole?: string;
     }
-    
+
     interface Response {
       __: (phrase: string, ...replace: any[]) => string;
       __n: (singular: string, plural: string, count: number) => string;
@@ -20,4 +20,8 @@ declare global {
   }
 }
 
-export {};
+export type ExpressMiddleware = (
+  req: Request, 
+  res: Response, 
+  next: NextFunction
+) => void | Promise<void>;

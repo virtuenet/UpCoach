@@ -39,14 +39,14 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const { level = 'component', onError } = this.props;
-    
+
     // Log error with appropriate level
     logger.error(`[${level.toUpperCase()} Error Boundary]`, error, {
       componentStack: errorInfo.componentStack,
       level,
       errorCount: this.state.errorCount + 1,
     });
-    
+
     // Call custom error handler
     if (onError) {
       onError(error, errorInfo);
@@ -94,7 +94,7 @@ export default class ErrorBoundary extends Component<Props, State> {
       componentStack: errorInfo.componentStack,
       errorCount: this.state.errorCount,
     });
-    
+
     // Store in session storage for debugging
     try {
       const errors = JSON.parse(sessionStorage.getItem('app_errors') || '[]');
@@ -113,7 +113,7 @@ export default class ErrorBoundary extends Component<Props, State> {
     if (this.resetTimeoutId) {
       clearTimeout(this.resetTimeoutId);
     }
-    
+
     this.resetTimeoutId = setTimeout(() => {
       this.resetError();
       logger.info('Error boundary auto-reset after multiple errors');

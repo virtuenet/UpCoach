@@ -57,10 +57,7 @@ export class AdvancedAnalyticsController {
         const cohortId = parseInt(req.params.cohortId);
         const periodType = (req.query.periodType as any) || 'day';
 
-        const retention = await advancedAnalyticsService.calculateRetention(
-          cohortId,
-          periodType
-        );
+        const retention = await advancedAnalyticsService.calculateRetention(cohortId, periodType);
 
         _res.json({
           success: true,
@@ -89,10 +86,7 @@ export class AdvancedAnalyticsController {
         }
 
         const { cohortIds, metricType } = req.body;
-        const comparison = await advancedAnalyticsService.compareCohorts(
-          cohortIds,
-          metricType
-        );
+        const comparison = await advancedAnalyticsService.compareCohorts(cohortIds, metricType);
 
         _res.json({
           success: true,
@@ -124,11 +118,7 @@ export class AdvancedAnalyticsController {
         }
 
         const { name, description, steps } = req.body;
-        const funnelId = await advancedAnalyticsService.createFunnel(
-          name,
-          steps,
-          description
-        );
+        const funnelId = await advancedAnalyticsService.createFunnel(name, steps, description);
 
         _res.status(201).json({
           success: true,
@@ -157,12 +147,8 @@ export class AdvancedAnalyticsController {
         }
 
         const funnelId = parseInt(req.params.funnelId);
-        const startDate = req.query.startDate
-          ? new Date(req.query.startDate as string)
-          : undefined;
-        const endDate = req.query.endDate
-          ? new Date(req.query.endDate as string)
-          : undefined;
+        const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+        const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
 
         const analytics = await advancedAnalyticsService.getFunnelAnalytics(
           funnelId,
@@ -199,12 +185,7 @@ export class AdvancedAnalyticsController {
         const userId = (req as any).userId;
         const { activityType, data, sessionId } = req.body;
 
-        await advancedAnalyticsService.trackActivity(
-          userId,
-          activityType,
-          data,
-          sessionId
-        );
+        await advancedAnalyticsService.trackActivity(userId, activityType, data, sessionId);
 
         _res.json({
           success: true,
@@ -235,12 +216,7 @@ export class AdvancedAnalyticsController {
         const userId = (req as any).userId;
         const { funnelId, stepIndex, attribution } = req.body;
 
-        await advancedAnalyticsService.trackFunnelStep(
-          funnelId,
-          userId,
-          stepIndex,
-          attribution
-        );
+        await advancedAnalyticsService.trackFunnelStep(funnelId, userId, stepIndex, attribution);
 
         _res.json({
           success: true,
@@ -269,12 +245,8 @@ export class AdvancedAnalyticsController {
         }
 
         const featureName = req.query.featureName as string;
-        const startDate = req.query.startDate
-          ? new Date(req.query.startDate as string)
-          : undefined;
-        const endDate = req.query.endDate
-          ? new Date(req.query.endDate as string)
-          : undefined;
+        const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+        const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
 
         const adoption = await advancedAnalyticsService.getFeatureAdoption(
           featureName,
@@ -330,9 +302,7 @@ export class AdvancedAnalyticsController {
         const startDate = req.query.startDate
           ? new Date(req.query.startDate as string)
           : new Date(new Date().setMonth(new Date().getMonth() - 1));
-        const endDate = req.query.endDate
-          ? new Date(req.query.endDate as string)
-          : new Date();
+        const endDate = req.query.endDate ? new Date(req.query.endDate as string) : new Date();
         const groupBy = (req.query.groupBy as string) || 'day';
 
         const { sequelize } = require('../models');

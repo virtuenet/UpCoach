@@ -1,4 +1,5 @@
 /**
+import { format, formatDistanceToNow, parseISO } from "date-fns";
  * Request Limits Service
  * Configures size limits, timeouts, and request constraints
  */
@@ -6,18 +7,18 @@
 import { logger } from '../../utils/logger';
 
 export interface RequestLimitsConfig {
-  maxBodySize?: string | number;           // Max request body size (e.g., '10mb')
-  maxUrlLength?: number;                   // Max URL length
-  maxHeaderSize?: number;                  // Max header size
-  maxParameterCount?: number;              // Max number of parameters
-  maxFileSize?: string | number;           // Max file upload size
-  maxFiles?: number;                       // Max number of files in upload
-  requestTimeout?: number;                 // Request timeout in ms
-  uploadTimeout?: number;                  // Upload timeout in ms
-  allowedMethods?: string[];              // Allowed HTTP methods
-  allowedContentTypes?: string[];         // Allowed content types
-  maxJsonDepth?: number;                  // Max JSON nesting depth
-  maxArrayLength?: number;                // Max array length in JSON
+  maxBodySize?: string | number; // Max request body size (e.g., '10mb')
+  maxUrlLength?: number; // Max URL length
+  maxHeaderSize?: number; // Max header size
+  maxParameterCount?: number; // Max number of parameters
+  maxFileSize?: string | number; // Max file upload size
+  maxFiles?: number; // Max number of files in upload
+  requestTimeout?: number; // Request timeout in ms
+  uploadTimeout?: number; // Upload timeout in ms
+  allowedMethods?: string[]; // Allowed HTTP methods
+  allowedContentTypes?: string[]; // Allowed content types
+  maxJsonDepth?: number; // Max JSON nesting depth
+  maxArrayLength?: number; // Max array length in JSON
 }
 
 interface ParsedSize {
@@ -49,10 +50,10 @@ class RequestLimitsService {
       'image/jpeg',
       'image/png',
       'image/gif',
-      'image/webp'
+      'image/webp',
     ],
     maxJsonDepth: 10,
-    maxArrayLength: 1000
+    maxArrayLength: 1000,
   };
 
   private constructor() {
@@ -72,9 +73,9 @@ class RequestLimitsService {
   configure(config: RequestLimitsConfig): void {
     this.config = {
       ...this.config,
-      ...config
+      ...config,
     };
-    
+
     logger.info('Request limits configured', this.config);
   }
 
@@ -90,11 +91,11 @@ class RequestLimitsService {
       b: 1,
       kb: 1024,
       mb: 1024 * 1024,
-      gb: 1024 * 1024 * 1024
+      gb: 1024 * 1024 * 1024,
     };
 
     const match = size.toLowerCase().match(/^(\d+(?:\.\d+)?)\s*([a-z]+)?$/);
-    
+
     if (!match) {
       throw new Error(`Invalid size format: ${size}`);
     }
@@ -114,12 +115,12 @@ class RequestLimitsService {
    */
   checkBodySize(size: number): { valid: boolean; maxSize: number; error?: string } {
     const maxSize = this.parseSize(this.config.maxBodySize);
-    
+
     if (size > maxSize) {
       return {
         valid: false,
         maxSize,
-        error: `Request body too large. Maximum size is ${this.config.maxBodySize}`
+        error: `Request body too large. Maximum size is ${this.config.maxBodySize}`,
       };
     }
 
@@ -134,7 +135,7 @@ class RequestLimitsService {
       return {
         valid: false,
         maxLength: this.config.maxUrlLength,
-        error: `URL too long. Maximum length is ${this.config.maxUrlLength} characters`
+        error: `URL too long. Maximum length is ${this.config.maxUrlLength} characters`,
       };
     }
 
@@ -146,12 +147,12 @@ class RequestLimitsService {
    */
   checkFileSize(size: number): { valid: boolean; maxSize: number; error?: string } {
     const maxSize = this.parseSize(this.config.maxFileSize);
-    
+
     if (size > maxSize) {
       return {
         valid: false,
         maxSize,
-        error: `File too large. Maximum size is ${this.config.maxFileSize}`
+        error: `File too large. Maximum size is ${this.config.maxFileSize}`,
       };
     }
 
@@ -163,11 +164,11 @@ class RequestLimitsService {
    */
   checkMethod(method: string): { valid: boolean; error?: string } {
     const upperMethod = method.toUpperCase();
-    
+
     if (!this.config.allowedMethods.includes(upperMethod)) {
       return {
         valid: false,
-        error: `HTTP method ${upperMethod} is not allowed`
+        error: `HTTP method ${upperMethod} is not allowed`,
       };
     }
 
@@ -180,7 +181,7 @@ class RequestLimitsService {
   checkContentType(contentType: string): { valid: boolean; error?: string } {
     // Extract base content type (without charset, etc.)
     const baseType = contentType.split(';')[0].trim().toLowerCase();
-    
+
     // Check exact match or wildcard match
     const isAllowed = this.config.allowedContentTypes.some(allowed => {
       if (allowed === baseType) return true;
@@ -194,7 +195,7 @@ class RequestLimitsService {
     if (!isAllowed) {
       return {
         valid: false,
-        error: `Content type ${baseType} is not allowed`
+        error: `Content type ${baseType} is not allowed`,
       };
     }
 
@@ -214,7 +215,7 @@ class RequestLimitsService {
 
     while (stack.length > 0) {
       const current = stack.pop()!;
-      
+
       if (current.depth > maxDepth) {
         return false;
       }
@@ -303,7 +304,7 @@ class RequestLimitsService {
       if (!this.checkJsonDepth(request.body)) {
         errors.push(`JSON nesting depth exceeds maximum of ${this.config.maxJsonDepth}`);
       }
-      
+
       if (!this.checkArrayLength(request.body)) {
         errors.push(`Array length exceeds maximum of ${this.config.maxArrayLength}`);
       }
@@ -311,7 +312,7 @@ class RequestLimitsService {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -329,7 +330,7 @@ class RequestLimitsService {
           logger.warn(`Invalid HTTP method: ${req.method}`);
           return res.status(405).json({
             error: 'Method Not Allowed',
-            message: methodCheck.error
+            message: methodCheck.error,
           });
         }
 
@@ -340,7 +341,7 @@ class RequestLimitsService {
           logger.warn(`URL too long: ${fullUrl.length} characters`);
           return res.status(414).json({
             error: 'URI Too Long',
-            message: urlCheck.error
+            message: urlCheck.error,
           });
         }
 
@@ -351,7 +352,7 @@ class RequestLimitsService {
             logger.warn(`Invalid content type: ${req.headers['content-type']}`);
             return res.status(415).json({
               error: 'Unsupported Media Type',
-              message: contentTypeCheck.error
+              message: contentTypeCheck.error,
             });
           }
         }
@@ -364,21 +365,19 @@ class RequestLimitsService {
             logger.warn(`Request body too large: ${size} bytes`);
             return res.status(413).json({
               error: 'Payload Too Large',
-              message: bodySizeCheck.error
+              message: bodySizeCheck.error,
             });
           }
         }
 
         // Set request timeout
-        const timeout = req.path.includes('upload') 
-          ? config.uploadTimeout 
-          : config.requestTimeout;
+        const timeout = req.path.includes('upload') ? config.uploadTimeout : config.requestTimeout;
 
         req.setTimeout(timeout, () => {
           logger.warn(`Request timeout: ${req.method} ${req.path}`);
           res.status(408).json({
             error: 'Request Timeout',
-            message: `Request exceeded timeout of ${timeout}ms`
+            message: `Request exceeded timeout of ${timeout}ms`,
           });
         });
 
@@ -387,7 +386,7 @@ class RequestLimitsService {
         logger.error('Request limits middleware error', error);
         res.status(500).json({
           error: 'Internal Server Error',
-          message: 'Failed to validate request limits'
+          message: 'Failed to validate request limits',
         });
       }
     };
@@ -401,7 +400,7 @@ class RequestLimitsService {
       // This would be used with multer or similar
       req.uploadLimits = {
         fileSize: this.parseSize(this.config.maxFileSize),
-        files: this.config.maxFiles
+        files: this.config.maxFiles,
       };
 
       next();
@@ -436,8 +435,7 @@ class RequestLimitsService {
 export const requestLimits = RequestLimitsService.getInstance();
 
 // Export middleware factories
-export const requestLimitsMiddleware = (options?: Partial<RequestLimitsConfig>) => 
+export const requestLimitsMiddleware = (options?: Partial<RequestLimitsConfig>) =>
   requestLimits.middleware(options);
 
-export const uploadLimitsMiddleware = () => 
-  requestLimits.uploadMiddleware();
+export const uploadLimitsMiddleware = () => requestLimits.uploadMiddleware();

@@ -6,12 +6,12 @@ export interface PersonalityProfile {
   description: string;
   systemPrompt: string;
   traits: {
-    empathy: number;      // 0-10
-    directness: number;   // 0-10
-    motivation: number;   // 0-10
-    analytical: number;   // 0-10
-    warmth: number;       // 0-10
-    formality: number;    // 0-10
+    empathy: number; // 0-10
+    directness: number; // 0-10
+    motivation: number; // 0-10
+    analytical: number; // 0-10
+    warmth: number; // 0-10
+    formality: number; // 0-10
   };
   communicationStyle: {
     greetings: string[];
@@ -70,40 +70,40 @@ Always remember to be respectful, non-judgmental, and supportive. If users share
         motivation: 7,
         analytical: 6,
         warmth: 8,
-        formality: 5
+        formality: 5,
       },
       communicationStyle: {
         greetings: [
           "Hello! I'm here to support you today.",
-          "Welcome back! How can I help you?",
-          "Great to see you! What's on your mind?"
+          'Welcome back! How can I help you?',
+          "Great to see you! What's on your mind?",
         ],
         encouragements: [
           "You're making great progress!",
           "That's a wonderful insight.",
-          "I believe in your ability to achieve this."
+          'I believe in your ability to achieve this.',
         ],
         acknowledgments: [
-          "I understand how you feel.",
-          "That makes complete sense.",
-          "Thank you for sharing that with me."
+          'I understand how you feel.',
+          'That makes complete sense.',
+          'Thank you for sharing that with me.',
         ],
         transitions: [
           "Let's explore that further...",
-          "Building on what you said...",
-          "That brings us to an important point..."
+          'Building on what you said...',
+          'That brings us to an important point...',
         ],
         closings: [
           "Remember, I'm here whenever you need support.",
           "You've got this! Feel free to check in anytime.",
-          "Take care, and I look forward to our next conversation."
-        ]
+          'Take care, and I look forward to our next conversation.',
+        ],
       },
       responsePatterns: {
         questionStyle: 'open',
         feedbackStyle: 'balanced',
-        suggestionStyle: 'collaborative'
-      }
+        suggestionStyle: 'collaborative',
+      },
     });
 
     // Motivational Coach
@@ -135,40 +135,40 @@ Remember to balance enthusiasm with genuine support and understanding.`,
         motivation: 10,
         analytical: 4,
         warmth: 7,
-        formality: 3
+        formality: 3,
       },
       communicationStyle: {
         greetings: [
-          "Hey champion! Ready to crush your goals today?",
+          'Hey champion! Ready to crush your goals today?',
           "Welcome, superstar! Let's make amazing things happen!",
-          "There's my achiever! What mountains are we moving today?"
+          "There's my achiever! What mountains are we moving today?",
         ],
         encouragements: [
           "You're absolutely crushing it!",
           "That's the spirit of a true champion!",
-          "You're unstoppable when you put your mind to it!"
+          "You're unstoppable when you put your mind to it!",
         ],
         acknowledgments: [
-          "I feel your energy and determination!",
-          "Your commitment is truly inspiring!",
-          "That shows incredible self-awareness!"
+          'I feel your energy and determination!',
+          'Your commitment is truly inspiring!',
+          'That shows incredible self-awareness!',
         ],
         transitions: [
           "Now let's channel that energy...",
           "Here's how we turn that into action...",
-          "Let's build on that momentum..."
+          "Let's build on that momentum...",
         ],
         closings: [
           "Go show the world what you're made of!",
           "Remember: you're capable of extraordinary things!",
-          "Keep that fire burning bright!"
-        ]
+          'Keep that fire burning bright!',
+        ],
       },
       responsePatterns: {
         questionStyle: 'directed',
         feedbackStyle: 'supportive',
-        suggestionStyle: 'direct'
-      }
+        suggestionStyle: 'direct',
+      },
     });
 
     // Analytical Coach
@@ -200,40 +200,40 @@ Balance analytical insights with emotional intelligence and support.`,
         motivation: 5,
         analytical: 10,
         warmth: 4,
-        formality: 8
+        formality: 8,
       },
       communicationStyle: {
         greetings: [
           "Good to see you. Let's review your progress.",
-          "Welcome. Ready to analyze your performance?",
-          "Hello. What metrics shall we focus on today?"
+          'Welcome. Ready to analyze your performance?',
+          'Hello. What metrics shall we focus on today?',
         ],
         encouragements: [
-          "The data shows clear improvement.",
-          "Your consistency is yielding measurable results.",
-          "Excellent execution of the strategy."
+          'The data shows clear improvement.',
+          'Your consistency is yielding measurable results.',
+          'Excellent execution of the strategy.',
         ],
         acknowledgments: [
           "I've noted that pattern.",
           "That's a logical observation.",
-          "Your analysis is accurate."
+          'Your analysis is accurate.',
         ],
         transitions: [
-          "Based on this data...",
-          "The evidence suggests...",
-          "Let's examine the metrics..."
+          'Based on this data...',
+          'The evidence suggests...',
+          "Let's examine the metrics...",
         ],
         closings: [
-          "Continue tracking your progress.",
-          "The data will guide your next steps.",
-          "Stay focused on the measurable outcomes."
-        ]
+          'Continue tracking your progress.',
+          'The data will guide your next steps.',
+          'Stay focused on the measurable outcomes.',
+        ],
       },
       responsePatterns: {
         questionStyle: 'socratic',
         feedbackStyle: 'constructive',
-        suggestionStyle: 'direct'
-      }
+        suggestionStyle: 'direct',
+      },
     });
 
     // Empathetic Coach
@@ -265,40 +265,40 @@ Always prioritize emotional safety and create a space where users feel heard and
         motivation: 5,
         analytical: 3,
         warmth: 10,
-        formality: 2
+        formality: 2,
       },
       communicationStyle: {
         greetings: [
-          "Hello, dear friend. How are you feeling today?",
+          'Hello, dear friend. How are you feeling today?',
           "It's so good to see you. How has your heart been?",
-          "Welcome back. I'm here to listen and support you."
+          "Welcome back. I'm here to listen and support you.",
         ],
         encouragements: [
           "You're showing such courage in this journey.",
           "Every small step matters, and you're doing beautifully.",
-          "I'm so proud of how far you've come."
+          "I'm so proud of how far you've come.",
         ],
         acknowledgments: [
-          "I hear you, and your feelings are completely valid.",
-          "That must be really challenging for you.",
-          "Thank you for trusting me with this."
+          'I hear you, and your feelings are completely valid.',
+          'That must be really challenging for you.',
+          'Thank you for trusting me with this.',
         ],
         transitions: [
           "When you're ready, we could explore...",
-          "I wonder if it might help to...",
-          "What feels right for you is..."
+          'I wonder if it might help to...',
+          'What feels right for you is...',
         ],
         closings: [
-          "Be gentle with yourself today.",
+          'Be gentle with yourself today.',
           "Remember, you're not alone in this journey.",
-          "Sending you warmth and support."
-        ]
+          'Sending you warmth and support.',
+        ],
       },
       responsePatterns: {
         questionStyle: 'open',
         feedbackStyle: 'supportive',
-        suggestionStyle: 'gentle'
-      }
+        suggestionStyle: 'gentle',
+      },
     });
 
     // Direct Coach
@@ -330,40 +330,36 @@ Balance directness with respect and understanding of individual circumstances.`,
         motivation: 6,
         analytical: 6,
         warmth: 3,
-        formality: 6
+        formality: 6,
       },
       communicationStyle: {
         greetings: [
           "Let's get to work. What's the priority?",
           "Time to take action. What's first?",
-          "Good to see you. What needs to get done?"
+          'Good to see you. What needs to get done?',
         ],
         encouragements: [
-          "Good. Keep going.",
+          'Good. Keep going.',
           "That's progress. Don't stop now.",
-          "Solid work. What's next?"
+          "Solid work. What's next?",
         ],
         acknowledgments: [
           "Got it. Let's move forward.",
           "Understood. Here's what to do.",
-          "Clear. Now let's act on it."
+          "Clear. Now let's act on it.",
         ],
-        transitions: [
-          "Next step:",
-          "Moving on to action items:",
-          "Here's what you need to do:"
-        ],
+        transitions: ['Next step:', 'Moving on to action items:', "Here's what you need to do:"],
         closings: [
-          "Get it done. Check in when complete.",
-          "No excuses. You know what to do.",
-          "Time to execute. Make it happen."
-        ]
+          'Get it done. Check in when complete.',
+          'No excuses. You know what to do.',
+          'Time to execute. Make it happen.',
+        ],
       },
       responsePatterns: {
         questionStyle: 'directed',
         feedbackStyle: 'constructive',
-        suggestionStyle: 'direct'
-      }
+        suggestionStyle: 'direct',
+      },
     });
   }
 
@@ -396,7 +392,10 @@ Balance directness with respect and understanding of individual circumstances.`,
       return 'direct';
     }
 
-    if (userContext.preferredMethods?.includes('data') || communicationPreference === 'analytical') {
+    if (
+      userContext.preferredMethods?.includes('data') ||
+      communicationPreference === 'analytical'
+    ) {
       return 'analytical';
     }
 
@@ -414,13 +413,13 @@ Balance directness with respect and understanding of individual circumstances.`,
   ): string {
     const personality = this.getPersonality(personalityId);
     const style = personality.communicationStyle[`${responseType}s`];
-    
+
     if (!style || style.length === 0) return response;
 
     // Occasionally add personality-specific phrases
     if (Math.random() < 0.3) {
       const phrase = style[Math.floor(Math.random() * style.length)];
-      
+
       switch (responseType) {
         case 'greeting':
           return `${phrase} ${response}`;
@@ -472,11 +471,11 @@ Balance directness with respect and understanding of individual circumstances.`,
 
   private makeFormal(text: string): string {
     return text
-      .replace(/\bI'd\b/gi, "I would")
-      .replace(/\bYou're\b/gi, "You are")
-      .replace(/\bIt's\b/gi, "It is")
-      .replace(/\bCan't\b/gi, "Cannot")
-      .replace(/\bWon't\b/gi, "Will not");
+      .replace(/\bI'd\b/gi, 'I would')
+      .replace(/\bYou're\b/gi, 'You are')
+      .replace(/\bIt's\b/gi, 'It is')
+      .replace(/\bCan't\b/gi, 'Cannot')
+      .replace(/\bWon't\b/gi, 'Will not');
   }
 
   private addWarmth(text: string): string {
@@ -485,7 +484,7 @@ Balance directness with respect and understanding of individual circumstances.`,
       'I appreciate you sharing this',
       'Thank you for your openness',
       'Your efforts are valued',
-      'I\'m here to support you'
+      "I'm here to support you",
     ];
 
     // Simple implementation - in production, use NLP for better placement
@@ -499,11 +498,11 @@ Balance directness with respect and understanding of individual circumstances.`,
 
   private makeDirect(text: string): string {
     return text
-      .replace(/\bPerhaps you could\b/gi, "You should")
-      .replace(/\bIt might be helpful to\b/gi, "")
-      .replace(/\bYou might want to consider\b/gi, "Consider")
-      .replace(/\bI would suggest\b/gi, "I suggest")
-      .replace(/\bIt seems like\b/gi, "");
+      .replace(/\bPerhaps you could\b/gi, 'You should')
+      .replace(/\bIt might be helpful to\b/gi, '')
+      .replace(/\bYou might want to consider\b/gi, 'Consider')
+      .replace(/\bI would suggest\b/gi, 'I suggest')
+      .replace(/\bIt seems like\b/gi, '');
   }
 
   // Track personality effectiveness
@@ -511,17 +510,17 @@ Balance directness with respect and understanding of individual circumstances.`,
     personalityId: string,
     userId: string,
     metrics: {
-      userSatisfaction?: number;  // 1-5
-      goalProgress?: number;       // 0-100
-      engagementLevel?: number;    // 1-10
-      sessionDuration?: number;    // minutes
+      userSatisfaction?: number; // 1-5
+      goalProgress?: number; // 0-100
+      engagementLevel?: number; // 1-10
+      sessionDuration?: number; // minutes
     }
   ) {
     // In production, store this data for analysis
     logger.info('Personality effectiveness tracked:', {
       personalityId,
       userId,
-      metrics
+      metrics,
     });
 
     // Could use this data to:
@@ -534,7 +533,7 @@ Balance directness with respect and understanding of individual circumstances.`,
   async getPersonalityRecommendation(userId: string, userHistory?: any): Promise<string> {
     // In production, analyze user history to recommend personality
     // For now, return based on simple heuristics
-    
+
     if (!userHistory) return 'default';
 
     const avgSessionDuration = userHistory.avgSessionDuration || 10;
@@ -543,7 +542,8 @@ Balance directness with respect and understanding of individual circumstances.`,
 
     if (avgSessionDuration < 5) return 'direct';
     if (preferredTopics.includes('emotional_support')) return 'empathetic';
-    if (preferredTopics.includes('data') || preferredTopics.includes('metrics')) return 'analytical';
+    if (preferredTopics.includes('data') || preferredTopics.includes('metrics'))
+      return 'analytical';
     if (engagementStyle === 'high_energy') return 'motivational';
 
     return 'default';

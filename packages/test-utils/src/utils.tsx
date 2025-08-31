@@ -25,9 +25,7 @@ export function renderWithProviders(
   const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return (
       <MemoryRouter initialEntries={[initialRoute]}>
-        <div data-theme={theme}>
-          {children}
-        </div>
+        <div data-theme={theme}>{children}</div>
       </MemoryRouter>
     );
   };
@@ -38,12 +36,11 @@ export function renderWithProviders(
 }
 
 // Wait for async operations
-export const waitFor = (ms: number) => 
-  new Promise(resolve => setTimeout(resolve, ms));
+export const waitFor = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Mock API response
 export const mockApiResponse = (data: any, delay = 0) => {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     setTimeout(() => {
       resolve({
         ok: true,
@@ -58,7 +55,7 @@ export const mockApiResponse = (data: any, delay = 0) => {
 
 // Mock API error
 export const mockApiError = (message = 'API Error', status = 500, delay = 0) => {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     setTimeout(() => {
       resolve({
         ok: false,
@@ -78,22 +75,22 @@ export const testIds = {
   loginEmail: 'login-email',
   loginPassword: 'login-password',
   loginSubmit: 'login-submit',
-  
+
   // Navigation
   navbar: 'navbar',
   sidebar: 'sidebar',
   menuToggle: 'menu-toggle',
-  
+
   // Dashboard
   dashboardStats: 'dashboard-stats',
   revenueChart: 'revenue-chart',
   userChart: 'user-chart',
-  
+
   // Content
   contentList: 'content-list',
   contentItem: 'content-item',
   contentEditor: 'content-editor',
-  
+
   // Modals
   modal: 'modal',
   modalClose: 'modal-close',
@@ -138,10 +135,7 @@ export const checkAccessibility = (container: HTMLElement) => {
   // Check for ARIA labels
   const buttons = container.querySelectorAll('button');
   buttons.forEach(button => {
-    expect(
-      button.getAttribute('aria-label') || 
-      button.textContent
-    ).toBeTruthy();
+    expect(button.getAttribute('aria-label') || button.textContent).toBeTruthy();
   });
 
   // Check for alt text on images
@@ -179,10 +173,10 @@ export const fillForm = async (container: HTMLElement, values: Record<string, st
 };
 
 export const submitForm = (container: HTMLElement, formTestId?: string) => {
-  const form = formTestId 
+  const form = formTestId
     ? container.querySelector(`[data-testid="${formTestId}"]`)
     : container.querySelector('form');
-  
+
   if (form) {
     form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
   }

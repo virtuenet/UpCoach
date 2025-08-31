@@ -120,11 +120,11 @@ export class SSOService {
 
   async initiateSAMLLogin(configId: number): Promise<string> {
     const saml = await this.getSAMLProvider(configId);
-    
-    const loginUrl = await saml.getAuthorizeUrlAsync('', { } as any, {} as any);
-    
+
+    const loginUrl = await saml.getAuthorizeUrlAsync('', {} as any, {} as any);
+
     logger.info('SAML login initiated', { configId });
-    
+
     return loginUrl;
   }
 
@@ -218,28 +218,28 @@ export class SSOService {
 
   async initiateOIDCLogin(configId: number): Promise<string> {
     const client = await this.getOIDCClient(configId);
-    
+
     const codeVerifier = generators.codeVerifier();
     const codeChallenge = generators.codeChallenge(codeVerifier);
-    
+
     // Get redirect URI from config
     const [configs] = await sequelize.query(
       `SELECT oidc_redirect_uri FROM sso_configurations WHERE id = :configId`,
       { replacements: { configId } }
     );
-    
+
     const redirectUri = (configs[0] as any).oidc_redirect_uri;
-    
+
     // Create session with code verifier
     const state = await sessionStore.createSession(configId, redirectUri);
-    
+
     // Store code verifier in session
     const session = await sessionStore.getSession(state);
     if (session) {
       session.codeVerifier = codeVerifier;
       await sessionStore.createSession(configId, redirectUri); // Re-save with verifier
     }
-    
+
     const authUrl = client.authorizationUrl({
       scope: 'openid email profile',
       code_challenge: codeChallenge,
@@ -247,9 +247,9 @@ export class SSOService {
       state,
       redirect_uri: redirectUri,
     });
-    
+
     logger.info('OIDC login initiated', { configId, state });
-    
+
     return authUrl;
   }
 
@@ -262,13 +262,9 @@ export class SSOService {
 
     try {
       const client = await this.getOIDCClient(configId);
-      
+
       // Exchange code for tokens
-      const tokenSet = await client.callback(
-        undefined,
-        { code },
-        { code_verifier: codeVerifier }
-      );
+      const tokenSet = await client.callback(undefined, { code }, { code_verifier: codeVerifier });
 
       // Get user info
       const userinfo = await client.userinfo(tokenSet.access_token);
@@ -406,12 +402,18 @@ export class SSOService {
     transaction: any
   ): Promise<User> {
     // Create user
-    const user = await User.create({
-      email: attributes.email,
-      name: attributes.fullName || `${attributes.firstName} ${attributes.lastName}` || attributes.email,
-      role: defaultRole || 'user', // Add role field
-      // SSO users are pre-verified
-    } as any, { transaction });
+    const user = await User.create(
+      {
+        email: attributes.email,
+        name:
+          attributes.fullName ||
+          `${attributes.firstName} ${attributes.lastName}` ||
+          attributes.email,
+        role: defaultRole || 'user', // Add role field
+        // SSO users are pre-verified
+      } as any,
+      { transaction }
+    );
 
     // Add to organization
     await sequelize.query(
@@ -586,30 +588,30 @@ export class SSOService {
     const key = Buffer.from(process.env.ENCRYPTION_KEY!, 'hex');
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv(algorithm, key, iv);
-    
+
     let encrypted = cipher.update(text, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    
+
     const authTag = cipher.getAuthTag();
-    
+
     return iv.toString('hex') + ':' + authTag.toString('hex') + ':' + encrypted;
   }
 
   private decrypt(encryptedText: string): string {
     const algorithm = 'aes-256-gcm';
     const key = Buffer.from(process.env.ENCRYPTION_KEY!, 'hex');
-    
+
     const parts = encryptedText.split(':');
     const iv = Buffer.from(parts[0], 'hex');
     const authTag = Buffer.from(parts[1], 'hex');
     const encrypted = parts[2];
-    
+
     const decipher = crypto.createDecipheriv(algorithm, key, iv);
     decipher.setAuthTag(authTag);
-    
+
     let decrypted = decipher.update(encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
-    
+
     return decrypted;
   }
 

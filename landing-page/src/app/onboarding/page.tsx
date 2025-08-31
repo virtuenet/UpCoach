@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight,
   ArrowLeft,
@@ -12,17 +12,17 @@ import {
   Brain,
   Sparkles,
   ChevronRight,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { trackEvent } from "@/services/analytics";
-import { api } from "@/services/api";
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { trackEvent } from '@/services/analytics';
+import { api } from '@/services/api';
 
 interface OnboardingData {
   profile: {
@@ -50,45 +50,45 @@ interface OnboardingData {
 }
 
 const steps = [
-  { id: "welcome", title: "Welcome", icon: Sparkles },
-  { id: "profile", title: "Your Profile", icon: User },
-  { id: "goals", title: "Your Goals", icon: Target },
-  { id: "preferences", title: "Preferences", icon: Brain },
-  { id: "availability", title: "Availability", icon: Calendar },
-  { id: "complete", title: "All Set!", icon: Check },
+  { id: 'welcome', title: 'Welcome', icon: Sparkles },
+  { id: 'profile', title: 'Your Profile', icon: User },
+  { id: 'goals', title: 'Your Goals', icon: Target },
+  { id: 'preferences', title: 'Preferences', icon: Brain },
+  { id: 'availability', title: 'Availability', icon: Calendar },
+  { id: 'complete', title: 'All Set!', icon: Check },
 ];
 
 const goalOptions = [
-  "Career Growth",
-  "Personal Development",
-  "Health & Wellness",
-  "Relationship Building",
-  "Financial Success",
-  "Work-Life Balance",
-  "Leadership Skills",
-  "Stress Management",
+  'Career Growth',
+  'Personal Development',
+  'Health & Wellness',
+  'Relationship Building',
+  'Financial Success',
+  'Work-Life Balance',
+  'Leadership Skills',
+  'Stress Management',
 ];
 
 const coachingStyles = [
   {
-    value: "supportive",
-    label: "Supportive & Encouraging",
-    description: "Gentle guidance with positive reinforcement",
+    value: 'supportive',
+    label: 'Supportive & Encouraging',
+    description: 'Gentle guidance with positive reinforcement',
   },
   {
-    value: "challenging",
-    label: "Direct & Challenging",
-    description: "Push boundaries and challenge comfort zones",
+    value: 'challenging',
+    label: 'Direct & Challenging',
+    description: 'Push boundaries and challenge comfort zones',
   },
   {
-    value: "analytical",
-    label: "Analytical & Strategic",
-    description: "Data-driven approach with clear strategies",
+    value: 'analytical',
+    label: 'Analytical & Strategic',
+    description: 'Data-driven approach with clear strategies',
   },
   {
-    value: "holistic",
-    label: "Holistic & Balanced",
-    description: "Consider all aspects of life and well-being",
+    value: 'holistic',
+    label: 'Holistic & Balanced',
+    description: 'Consider all aspects of life and well-being',
   },
 ];
 
@@ -96,32 +96,28 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [data, setData] = useState<OnboardingData>({
-    profile: { name: "" },
-    goals: { primaryGoal: "", specificGoals: [], timeline: "" },
+    profile: { name: '' },
+    goals: { primaryGoal: '', specificGoals: [], timeline: '' },
     preferences: {
-      coachingStyle: "",
-      sessionFrequency: "",
+      coachingStyle: '',
+      sessionFrequency: '',
       focusAreas: [],
-      challenges: "",
+      challenges: '',
     },
     availability: {
       preferredDays: [],
       preferredTimes: [],
-      commitmentLevel: "",
+      commitmentLevel: '',
     },
   });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    trackEvent("Onboarding Started", { step: steps[currentStep].id });
+    trackEvent('Onboarding Started', { step: steps[currentStep].id });
   }, []);
 
-  const updateData = (
-    section: keyof OnboardingData,
-    field: string,
-    value: any,
-  ) => {
-    setData((prev) => ({
+  const updateData = (section: keyof OnboardingData, field: string, value: any) => {
+    setData(prev => ({
       ...prev,
       [section]: {
         ...prev[section],
@@ -132,7 +128,7 @@ export default function OnboardingPage() {
 
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
-      trackEvent("Onboarding Step Completed", {
+      trackEvent('Onboarding Step Completed', {
         step: steps[currentStep].id,
         nextStep: steps[currentStep + 1].id,
       });
@@ -149,14 +145,14 @@ export default function OnboardingPage() {
   const completeOnboarding = async () => {
     setLoading(true);
     try {
-      await api.post("/users/onboarding", data);
-      trackEvent("Onboarding Completed", {
+      await api.post('/users/onboarding', data);
+      trackEvent('Onboarding Completed', {
         goals: data.goals.specificGoals.length,
         coachingStyle: data.preferences.coachingStyle,
       });
-      router.push("/dashboard");
+      router.push('/dashboard');
     } catch (error) {
-      console.error("Failed to complete onboarding:", error);
+      console.error('Failed to complete onboarding:', error);
     } finally {
       setLoading(false);
     }
@@ -175,16 +171,16 @@ export default function OnboardingPage() {
               <div
                 key={step.id}
                 className={`flex flex-col items-center ${
-                  index <= currentStep ? "text-primary" : "text-gray-400"
+                  index <= currentStep ? 'text-primary' : 'text-gray-400'
                 }`}
               >
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
                     index < currentStep
-                      ? "bg-primary border-primary text-white"
+                      ? 'bg-primary border-primary text-white'
                       : index === currentStep
-                        ? "border-primary"
-                        : "border-gray-300"
+                        ? 'border-primary'
+                        : 'border-gray-300'
                   }`}
                 >
                   {index < currentStep ? (
@@ -193,9 +189,7 @@ export default function OnboardingPage() {
                     <step.icon className="h-5 w-5" />
                   )}
                 </div>
-                <span className="text-xs mt-1 hidden sm:block">
-                  {step.title}
-                </span>
+                <span className="text-xs mt-1 hidden sm:block">{step.title}</span>
               </div>
             ))}
           </div>
@@ -217,8 +211,7 @@ export default function OnboardingPage() {
                   <Sparkles className="h-16 w-16 text-primary mx-auto" />
                   <h1 className="text-3xl font-bold">Welcome to UpCoach!</h1>
                   <p className="text-lg text-gray-600 max-w-md mx-auto">
-                    Let's personalize your coaching experience. This will take
-                    about 5 minutes.
+                    Let's personalize your coaching experience. This will take about 5 minutes.
                   </p>
                   <div className="space-y-4 text-left max-w-md mx-auto">
                     <div className="flex items-start gap-3">
@@ -226,8 +219,7 @@ export default function OnboardingPage() {
                       <div>
                         <p className="font-semibold">Personalized AI Coach</p>
                         <p className="text-sm text-gray-600">
-                          We'll match you with an AI coach tailored to your
-                          needs
+                          We'll match you with an AI coach tailored to your needs
                         </p>
                       </div>
                     </div>
@@ -245,8 +237,7 @@ export default function OnboardingPage() {
                       <div>
                         <p className="font-semibold">24/7 Support</p>
                         <p className="text-sm text-gray-600">
-                          Your AI coach is always available when you need
-                          guidance
+                          Your AI coach is always available when you need guidance
                         </p>
                       </div>
                     </div>
@@ -258,9 +249,7 @@ export default function OnboardingPage() {
               {currentStep === 1 && (
                 <div className="space-y-6">
                   <div>
-                    <h2 className="text-2xl font-bold mb-2">
-                      Tell us about yourself
-                    </h2>
+                    <h2 className="text-2xl font-bold mb-2">Tell us about yourself</h2>
                     <p className="text-gray-600">
                       This helps us personalize your coaching experience
                     </p>
@@ -271,9 +260,7 @@ export default function OnboardingPage() {
                       <Input
                         id="name"
                         value={data.profile.name}
-                        onChange={(e) =>
-                          updateData("profile", "name", e.target.value)
-                        }
+                        onChange={e => updateData('profile', 'name', e.target.value)}
                         placeholder="John Doe"
                         className="mt-1"
                       />
@@ -283,10 +270,8 @@ export default function OnboardingPage() {
                       <Input
                         id="age"
                         type="number"
-                        value={data.profile.age || ""}
-                        onChange={(e) =>
-                          updateData("profile", "age", parseInt(e.target.value))
-                        }
+                        value={data.profile.age || ''}
+                        onChange={e => updateData('profile', 'age', parseInt(e.target.value))}
                         placeholder="25"
                         className="mt-1"
                       />
@@ -295,10 +280,8 @@ export default function OnboardingPage() {
                       <Label htmlFor="occupation">Occupation (optional)</Label>
                       <Input
                         id="occupation"
-                        value={data.profile.occupation || ""}
-                        onChange={(e) =>
-                          updateData("profile", "occupation", e.target.value)
-                        }
+                        value={data.profile.occupation || ''}
+                        onChange={e => updateData('profile', 'occupation', e.target.value)}
                         placeholder="Software Engineer"
                         className="mt-1"
                       />
@@ -311,9 +294,7 @@ export default function OnboardingPage() {
               {currentStep === 2 && (
                 <div className="space-y-6">
                   <div>
-                    <h2 className="text-2xl font-bold mb-2">
-                      What are your goals?
-                    </h2>
+                    <h2 className="text-2xl font-bold mb-2">What are your goals?</h2>
                     <p className="text-gray-600">
                       Select your primary focus area and specific goals
                     </p>
@@ -323,16 +304,11 @@ export default function OnboardingPage() {
                       <Label>Primary Goal Area</Label>
                       <RadioGroup
                         value={data.goals.primaryGoal}
-                        onValueChange={(value) =>
-                          updateData("goals", "primaryGoal", value)
-                        }
+                        onValueChange={value => updateData('goals', 'primaryGoal', value)}
                         className="mt-2"
                       >
-                        {goalOptions.map((goal) => (
-                          <div
-                            key={goal}
-                            className="flex items-center space-x-2 mb-2"
-                          >
+                        {goalOptions.map(goal => (
+                          <div key={goal} className="flex items-center space-x-2 mb-2">
                             <RadioGroupItem value={goal} id={goal} />
                             <Label htmlFor={goal} className="cursor-pointer">
                               {goal}
@@ -346,12 +322,12 @@ export default function OnboardingPage() {
                       <Textarea
                         id="specific-goals"
                         placeholder="e.g., Get promoted to senior position, improve work-life balance, develop leadership skills..."
-                        value={data.goals.specificGoals.join("\n")}
-                        onChange={(e) =>
+                        value={data.goals.specificGoals.join('\n')}
+                        onChange={e =>
                           updateData(
-                            "goals",
-                            "specificGoals",
-                            e.target.value.split("\n").filter((g) => g),
+                            'goals',
+                            'specificGoals',
+                            e.target.value.split('\n').filter(g => g)
                           )
                         }
                         className="mt-1"
@@ -362,22 +338,12 @@ export default function OnboardingPage() {
                       <Label>Timeline</Label>
                       <RadioGroup
                         value={data.goals.timeline}
-                        onValueChange={(value) =>
-                          updateData("goals", "timeline", value)
-                        }
+                        onValueChange={value => updateData('goals', 'timeline', value)}
                         className="mt-2"
                       >
                         <div className="grid grid-cols-2 gap-4">
-                          {[
-                            "1-3 months",
-                            "3-6 months",
-                            "6-12 months",
-                            "1+ years",
-                          ].map((time) => (
-                            <div
-                              key={time}
-                              className="flex items-center space-x-2"
-                            >
+                          {['1-3 months', '3-6 months', '6-12 months', '1+ years'].map(time => (
+                            <div key={time} className="flex items-center space-x-2">
                               <RadioGroupItem value={time} id={time} />
                               <Label htmlFor={time} className="cursor-pointer">
                                 {time}
@@ -395,37 +361,28 @@ export default function OnboardingPage() {
               {currentStep === 3 && (
                 <div className="space-y-6">
                   <div>
-                    <h2 className="text-2xl font-bold mb-2">
-                      Your coaching preferences
-                    </h2>
-                    <p className="text-gray-600">
-                      Help us understand how you'd like to be coached
-                    </p>
+                    <h2 className="text-2xl font-bold mb-2">Your coaching preferences</h2>
+                    <p className="text-gray-600">Help us understand how you'd like to be coached</p>
                   </div>
                   <div className="space-y-4">
                     <div>
                       <Label>Preferred Coaching Style</Label>
                       <RadioGroup
                         value={data.preferences.coachingStyle}
-                        onValueChange={(value) =>
-                          updateData("preferences", "coachingStyle", value)
-                        }
+                        onValueChange={value => updateData('preferences', 'coachingStyle', value)}
                         className="mt-2 space-y-3"
                       >
-                        {coachingStyles.map((style) => (
+                        {coachingStyles.map(style => (
                           <div
                             key={style.value}
                             className={`p-4 border rounded-lg cursor-pointer transition-colors ${
                               data.preferences.coachingStyle === style.value
-                                ? "border-primary bg-primary/5"
-                                : "border-gray-200 hover:border-gray-300"
+                                ? 'border-primary bg-primary/5'
+                                : 'border-gray-200 hover:border-gray-300'
                             }`}
                           >
                             <div className="flex items-start space-x-2">
-                              <RadioGroupItem
-                                value={style.value}
-                                id={style.value}
-                              />
+                              <RadioGroupItem value={style.value} id={style.value} />
                               <div className="flex-1">
                                 <Label
                                   htmlFor={style.value}
@@ -433,9 +390,7 @@ export default function OnboardingPage() {
                                 >
                                   {style.label}
                                 </Label>
-                                <p className="text-sm text-gray-600 mt-1">
-                                  {style.description}
-                                </p>
+                                <p className="text-sm text-gray-600 mt-1">{style.description}</p>
                               </div>
                             </div>
                           </div>
@@ -448,13 +403,7 @@ export default function OnboardingPage() {
                         id="challenges"
                         placeholder="What obstacles are you facing in achieving your goals?"
                         value={data.preferences.challenges}
-                        onChange={(e) =>
-                          updateData(
-                            "preferences",
-                            "challenges",
-                            e.target.value,
-                          )
-                        }
+                        onChange={e => updateData('preferences', 'challenges', e.target.value)}
                         className="mt-1"
                         rows={4}
                       />
@@ -467,9 +416,7 @@ export default function OnboardingPage() {
               {currentStep === 4 && (
                 <div className="space-y-6">
                   <div>
-                    <h2 className="text-2xl font-bold mb-2">
-                      Your availability
-                    </h2>
+                    <h2 className="text-2xl font-bold mb-2">Your availability</h2>
                     <p className="text-gray-600">
                       When would you like to engage with your AI coach?
                     </p>
@@ -479,34 +426,23 @@ export default function OnboardingPage() {
                       <Label>Preferred Days</Label>
                       <div className="grid grid-cols-2 gap-2 mt-2">
                         {[
-                          "Monday",
-                          "Tuesday",
-                          "Wednesday",
-                          "Thursday",
-                          "Friday",
-                          "Saturday",
-                          "Sunday",
-                        ].map((day) => (
-                          <label
-                            key={day}
-                            className="flex items-center space-x-2 cursor-pointer"
-                          >
+                          'Monday',
+                          'Tuesday',
+                          'Wednesday',
+                          'Thursday',
+                          'Friday',
+                          'Saturday',
+                          'Sunday',
+                        ].map(day => (
+                          <label key={day} className="flex items-center space-x-2 cursor-pointer">
                             <input
                               type="checkbox"
-                              checked={data.availability.preferredDays.includes(
-                                day,
-                              )}
-                              onChange={(e) => {
+                              checked={data.availability.preferredDays.includes(day)}
+                              onChange={e => {
                                 const days = e.target.checked
                                   ? [...data.availability.preferredDays, day]
-                                  : data.availability.preferredDays.filter(
-                                      (d) => d !== day,
-                                    );
-                                updateData(
-                                  "availability",
-                                  "preferredDays",
-                                  days,
-                                );
+                                  : data.availability.preferredDays.filter(d => d !== day);
+                                updateData('availability', 'preferredDays', days);
                               }}
                               className="rounded"
                             />
@@ -519,8 +455,8 @@ export default function OnboardingPage() {
                       <Label>Commitment Level</Label>
                       <RadioGroup
                         value={data.availability.commitmentLevel}
-                        onValueChange={(value) =>
-                          updateData("availability", "commitmentLevel", value)
+                        onValueChange={value =>
+                          updateData('availability', 'commitmentLevel', value)
                         }
                         className="mt-2"
                       >
@@ -556,29 +492,22 @@ export default function OnboardingPage() {
                   <Check className="h-16 w-16 text-green-600 mx-auto" />
                   <h1 className="text-3xl font-bold">You're all set!</h1>
                   <p className="text-lg text-gray-600 max-w-md mx-auto">
-                    Your personalized AI coach is ready. Let's start your
-                    journey to success!
+                    Your personalized AI coach is ready. Let's start your journey to success!
                   </p>
                   <div className="bg-gray-50 rounded-lg p-6 max-w-md mx-auto">
                     <h3 className="font-semibold mb-3">What happens next?</h3>
                     <ul className="space-y-2 text-left">
                       <li className="flex items-start gap-2">
                         <ChevronRight className="h-5 w-5 text-primary mt-0.5" />
-                        <span>
-                          Your AI coach will create a personalized action plan
-                        </span>
+                        <span>Your AI coach will create a personalized action plan</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <ChevronRight className="h-5 w-5 text-primary mt-0.5" />
-                        <span>
-                          You'll receive daily check-ins and motivation
-                        </span>
+                        <span>You'll receive daily check-ins and motivation</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <ChevronRight className="h-5 w-5 text-primary mt-0.5" />
-                        <span>
-                          Track your progress with insights and analytics
-                        </span>
+                        <span>Track your progress with insights and analytics</span>
                       </li>
                     </ul>
                   </div>
@@ -591,7 +520,7 @@ export default function OnboardingPage() {
                   variant="outline"
                   onClick={prevStep}
                   disabled={currentStep === 0}
-                  className={currentStep === 0 ? "invisible" : ""}
+                  className={currentStep === 0 ? 'invisible' : ''}
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back
@@ -610,11 +539,7 @@ export default function OnboardingPage() {
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 ) : (
-                  <Button
-                    onClick={completeOnboarding}
-                    disabled={loading}
-                    className="min-w-[150px]"
-                  >
+                  <Button onClick={completeOnboarding} disabled={loading} className="min-w-[150px]">
                     {loading ? (
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
                     ) : (

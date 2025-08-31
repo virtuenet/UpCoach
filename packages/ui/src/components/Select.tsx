@@ -17,25 +17,28 @@ export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectE
 }
 
 export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
-  ({ 
-    className, 
-    label, 
-    error, 
-    helperText, 
-    options, 
-    placeholder = 'Select an option',
-    size = 'md',
-    id,
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      label,
+      error,
+      helperText,
+      options,
+      placeholder = 'Select an option',
+      size = 'md',
+      id,
+      ...props
+    },
+    ref
+  ) => {
     const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const sizeClasses = {
       sm: 'py-1.5 text-sm',
       md: 'py-2',
       lg: 'py-3 text-lg',
     };
-    
+
     return (
       <div className="w-full">
         {label && (
@@ -55,7 +58,9 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             className
           )}
           aria-invalid={!!error}
-          aria-describedby={error ? `${selectId}-error` : helperText ? `${selectId}-helper` : undefined}
+          aria-describedby={
+            error ? `${selectId}-error` : helperText ? `${selectId}-helper` : undefined
+          }
           {...props}
         >
           {placeholder && (
@@ -63,12 +68,8 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
               {placeholder}
             </option>
           )}
-          {options.map((option) => (
-            <option 
-              key={option.value} 
-              value={option.value} 
-              disabled={option.disabled}
-            >
+          {options.map(option => (
+            <option key={option.value} value={option.value} disabled={option.disabled}>
               {option.label}
             </option>
           ))}

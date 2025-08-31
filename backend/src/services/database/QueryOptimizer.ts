@@ -61,7 +61,7 @@ export class QueryOptimizer {
   ): Promise<{ result: T; stats: QueryStats }> {
     const startTime = performance.now();
     const cacheKey = options.cacheKey || this.generateCacheKey(sql, options.replacements);
-    
+
     // Check cache first
     if (options.cache !== false) {
       const cached = await this.getFromCache<T>(cacheKey);
@@ -89,11 +89,7 @@ export class QueryOptimizer {
       const executionTime = performance.now() - startTime;
 
       // Track performance
-      trackDatabaseQuery(
-        options.type || 'SELECT',
-        this.extractTableName(sql),
-        executionTime
-      );
+      trackDatabaseQuery(options.type || 'SELECT', this.extractTableName(sql), executionTime);
 
       // Cache result if enabled
       if (options.cache !== false && options.type === QueryTypes.SELECT) {
@@ -173,10 +169,7 @@ export class QueryOptimizer {
     }
 
     // Use EXISTS instead of IN for subqueries
-    optimized = optimized.replace(
-      /WHERE\s+(\w+)\s+IN\s*\(SELECT/gi,
-      'WHERE EXISTS (SELECT 1 FROM'
-    );
+    optimized = optimized.replace(/WHERE\s+(\w+)\s+IN\s*\(SELECT/gi, 'WHERE EXISTS (SELECT 1 FROM');
 
     // Add index hints for known slow queries
     const indexHints = {
@@ -187,10 +180,7 @@ export class QueryOptimizer {
 
     for (const [table, index] of Object.entries(indexHints)) {
       if (optimized.includes(`FROM ${table}`) && !optimized.includes('USE INDEX')) {
-        optimized = optimized.replace(
-          `FROM ${table}`,
-          `FROM ${table} USE INDEX (${index})`
-        );
+        optimized = optimized.replace(`FROM ${table}`, `FROM ${table} USE INDEX (${index})`);
       }
     }
 
@@ -200,7 +190,7 @@ export class QueryOptimizer {
   // Connection pool optimization
   async optimizeConnectionPool() {
     const pool = (this.sequelize.connectionManager as any).pool;
-    
+
     if (pool) {
       const config = {
         max: process.env.DB_POOL_MAX ? parseInt(process.env.DB_POOL_MAX) : 20,
@@ -251,7 +241,8 @@ export class QueryOptimizer {
 
   // Monitor and log query patterns
   async getQueryStats(): Promise<any> {
-    const stats = await this.sequelize.query(`
+    const stats = await this.sequelize.query(
+      `
       SELECT 
         query,
         calls,
@@ -264,9 +255,11 @@ export class QueryOptimizer {
       WHERE query NOT LIKE '%pg_stat_statements%'
       ORDER BY mean_time DESC
       LIMIT 20
-    `, {
-      type: QueryTypes.SELECT,
-    });
+    `,
+      {
+        type: QueryTypes.SELECT,
+      }
+    );
 
     return stats;
   }
@@ -275,7 +268,9 @@ export class QueryOptimizer {
   private generateCacheKey(sql: string, replacements?: any): string {
     const normalizedSql = sql.replace(/\s+/g, ' ').trim();
     const replacementsKey = replacements ? JSON.stringify(replacements) : '';
-    return `query:${Buffer.from(normalizedSql + replacementsKey).toString('base64').substring(0, 64)}`;
+    return `query:${Buffer.from(normalizedSql + replacementsKey)
+      .toString('base64')
+      .substring(0, 64)}`;
   }
 
   private async getFromCache<T>(key: string): Promise<T | null> {
@@ -301,8 +296,9 @@ export class QueryOptimizer {
 
     // Cleanup old entries
     if (this.queryCache.size > 1000) {
-      const oldestKey = Array.from(this.queryCache.entries())
-        .sort(([, a], [, b]) => a.timestamp - b.timestamp)[0][0];
+      const oldestKey = Array.from(this.queryCache.entries()).sort(
+        ([, a], [, b]) => a.timestamp - b.timestamp
+      )[0][0];
       this.queryCache.delete(oldestKey);
     }
 
@@ -342,7 +338,9 @@ export class QueryOptimizer {
 
   prepareCriticalQueries() {
     // Prepare frequently used queries
-    this.preparedStatements.set('getUserById', `
+    this.preparedStatements.set(
+      'getUserById',
+      `
       SELECT u.*, 
         COUNT(DISTINCT g.id) as goal_count,
         COUNT(DISTINCT t.id) as task_count
@@ -351,9 +349,12 @@ export class QueryOptimizer {
       LEFT JOIN tasks t ON t.user_id = u.id AND t.status IN ('pending', 'in_progress')
       WHERE u.id = $1
       GROUP BY u.id
-    `);
+    `
+    );
 
-    this.preparedStatements.set('getActiveGoals', `
+    this.preparedStatements.set(
+      'getActiveGoals',
+      `
       SELECT g.*,
         COUNT(t.id) as task_count,
         COUNT(CASE WHEN t.status = 'completed' THEN 1 END) as completed_tasks
@@ -362,9 +363,12 @@ export class QueryOptimizer {
       WHERE g.user_id = $1 AND g.status = 'active'
       GROUP BY g.id
       ORDER BY g.target_date ASC
-    `);
+    `
+    );
 
-    this.preparedStatements.set('getDashboardStats', `
+    this.preparedStatements.set(
+      'getDashboardStats',
+      `
       WITH user_stats AS (
         SELECT 
           COUNT(DISTINCT CASE WHEN created_at > NOW() - INTERVAL '7 days' THEN id END) as new_users,
@@ -384,7 +388,8 @@ export class QueryOptimizer {
         FROM tasks
       )
       SELECT * FROM user_stats, goal_stats, task_stats
-    `);
+    `
+    );
   }
 
   async executePrepared(name: string, params: any[]): Promise<any> {

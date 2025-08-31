@@ -71,7 +71,7 @@ export class CircuitBreakerWrapper extends EventEmitter {
 
   constructor(options: CircuitBreakerOptions = {}) {
     super();
-    
+
     // Create a dummy function that will be replaced
     const dummyFn = async (..._args: any[]) => {
       throw new Error('Function not set. Use execute() method.');

@@ -3,18 +3,13 @@ export class ApiError extends Error {
   public readonly details?: any;
   public readonly isOperational: boolean;
 
-  constructor(
-    statusCode: number,
-    message: string,
-    details?: any,
-    isOperational: boolean = true
-  ) {
+  constructor(statusCode: number, message: string, details?: any, isOperational: boolean = true) {
     super(message);
-    
+
     this.statusCode = statusCode;
     this.details = details;
     this.isOperational = isOperational;
-    
+
     // Maintain proper stack trace
     Error.captureStackTrace(this, this.constructor);
   }
@@ -68,4 +63,4 @@ export class ApiError extends Error {
       isOperational: this.isOperational,
     };
   }
-} 
+}

@@ -1,27 +1,21 @@
-import {
-  Users,
-  CheckSquare,
-  Target,
-  MessageSquare,
-  TrendingUp,
-  TrendingDown,
-} from "lucide-react";
-import LoadingSpinner from "../components/LoadingSpinner";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { Users, CheckSquare, Target, MessageSquare, TrendingUp, TrendingDown } from 'lucide-react';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 interface StatCardProps {
   title: string;
   value: string | number;
   change: number;
   icon: React.ComponentType<any>;
-  color: "blue" | "green" | "purple" | "orange";
+  color: 'blue' | 'green' | 'purple' | 'orange';
 }
 
 function StatCard({ title, value, change, icon: Icon, color }: StatCardProps) {
   const colorClasses = {
-    blue: "bg-blue-500",
-    green: "bg-green-500",
-    purple: "bg-purple-500",
-    orange: "bg-orange-500",
+    blue: 'bg-blue-500',
+    green: 'bg-green-500',
+    purple: 'bg-purple-500',
+    orange: 'bg-orange-500',
   };
 
   return (
@@ -35,16 +29,12 @@ function StatCard({ title, value, change, icon: Icon, color }: StatCardProps) {
           </div>
           <div className="ml-5 w-0 flex-1">
             <dl>
-              <dt className="text-sm font-medium text-gray-500 truncate">
-                {title}
-              </dt>
+              <dt className="text-sm font-medium text-gray-500 truncate">{title}</dt>
               <dd className="flex items-baseline">
-                <div className="text-2xl font-semibold text-gray-900">
-                  {value}
-                </div>
+                <div className="text-2xl font-semibold text-gray-900">{value}</div>
                 <div
                   className={`ml-2 flex items-baseline text-sm font-semibold ${
-                    change >= 0 ? "text-green-600" : "text-red-600"
+                    change >= 0 ? 'text-green-600' : 'text-red-600'
                   }`}
                 >
                   {change >= 0 ? (
@@ -69,18 +59,18 @@ function StatCard({ title, value, change, icon: Icon, color }: StatCardProps) {
  */
 export default function DashboardPageV2() {
   // Example 1: Single API request with automatic cancellation
-  const { 
-    data: stats, 
-    loading: statsLoading, 
+  const {
+    data: stats,
+    loading: statsLoading,
     error: statsError,
-    execute: loadStats 
+    execute: loadStats,
   } = useApiGet('/api/dashboard/stats', {
     immediate: true, // Load immediately on mount
-    retryCount: 3,    // Retry up to 3 times on network failure
+    retryCount: 3, // Retry up to 3 times on network failure
     retryDelay: 1000, // Start with 1 second delay
-    onError: (error) => {
+    onError: error => {
       console.error('Failed to load dashboard stats:', error);
-    }
+    },
   });
 
   // Example 2: Parallel API requests for different data
@@ -119,7 +109,7 @@ export default function DashboardPageV2() {
         <p className="text-red-600 text-sm mt-1">
           {statsError.message || 'An error occurred while loading the dashboard.'}
         </p>
-        <button 
+        <button
           onClick={() => loadStats()}
           className="mt-3 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
         >
@@ -176,9 +166,7 @@ export default function DashboardPageV2() {
       {/* Recent Activity Section */}
       {recentActivity && (
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            Recent Activity
-          </h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h2>
           <div className="space-y-3">
             {(recentActivity as any).items?.map((activity: any) => (
               <div key={activity.id} className="flex items-center text-sm">
@@ -193,9 +181,7 @@ export default function DashboardPageV2() {
       {/* User Growth Chart Placeholder */}
       {userGrowth && (
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            User Growth Trend
-          </h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">User Growth Trend</h2>
           <div className="h-64 flex items-center justify-center text-gray-400">
             {/* Chart would go here - using data from userGrowth */}
             <p>Chart: {(userGrowth as any).summary}</p>
@@ -206,9 +192,7 @@ export default function DashboardPageV2() {
       {/* Revenue Metrics */}
       {revenueMetrics && (
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            Revenue Metrics
-          </h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">Revenue Metrics</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-gray-500">Monthly Recurring Revenue</p>
@@ -229,9 +213,7 @@ export default function DashboardPageV2() {
       {/* Engagement Stats */}
       {engagementStats && (
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            Engagement Statistics
-          </h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">Engagement Statistics</h2>
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-gray-500">Daily Active Users</span>
@@ -239,7 +221,9 @@ export default function DashboardPageV2() {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Session Duration (avg)</span>
-              <span className="font-medium">{(engagementStats as any).avgSessionDuration || '0m'}</span>
+              <span className="font-medium">
+                {(engagementStats as any).avgSessionDuration || '0m'}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Retention Rate</span>

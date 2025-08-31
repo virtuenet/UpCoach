@@ -218,16 +218,14 @@ export class CostTracking extends Model {
   // Calculated properties
   get dailyCost(): number {
     const days = Math.ceil(
-      (this.periodEnd.getTime() - this.periodStart.getTime()) / 
-      (1000 * 60 * 60 * 24)
+      (this.periodEnd.getTime() - this.periodStart.getTime()) / (1000 * 60 * 60 * 24)
     );
     return days > 0 ? this.amount / days : 0;
   }
 
   get monthlyCost(): number {
     const days = Math.ceil(
-      (this.periodEnd.getTime() - this.periodStart.getTime()) / 
-      (1000 * 60 * 60 * 24)
+      (this.periodEnd.getTime() - this.periodStart.getTime()) / (1000 * 60 * 60 * 24)
     );
     return days > 0 ? (this.amount / days) * 30 : 0;
   }
@@ -236,4 +234,4 @@ export class CostTracking extends Model {
     // This would be compared against budget data
     return false; // Placeholder
   }
-} 
+}

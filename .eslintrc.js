@@ -34,26 +34,20 @@ module.exports = {
     'plugin:import/typescript',
     'prettier',
   ],
-  plugins: [
-    '@typescript-eslint',
-    'react',
-    'react-hooks',
-    'jsx-a11y',
-    'import',
-  ],
+  plugins: ['@typescript-eslint', 'react', 'react-hooks', 'jsx-a11y', 'import'],
   rules: {
     // TypeScript
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-non-null-assertion': 'warn',
-    
+
     // React
     'react/react-in-jsx-scope': 'off',
     'react/prop-types': 'off',
     'react/jsx-props-no-spreading': 'off',
     'react/no-unescaped-entities': 'off',
-    
+
     // Import
     'import/order': [
       'error',
@@ -68,7 +62,7 @@ module.exports = {
     ],
     'import/no-cycle': 'error',
     'import/no-unresolved': 'error',
-    
+
     // General
     'no-console': ['warn', { allow: ['warn', 'error'] }],
     'prefer-const': 'error',

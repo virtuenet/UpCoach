@@ -9,11 +9,11 @@ import { User } from '../User';
 
 // ==================== Type Definitions ====================
 
-export type ContentType = 
-  | 'article' 
-  | 'guide' 
-  | 'exercise' 
-  | 'lesson' 
+export type ContentType =
+  | 'article'
+  | 'guide'
+  | 'exercise'
+  | 'lesson'
   | 'tip'
   | 'course'
   | 'template'
@@ -21,27 +21,15 @@ export type ContentType =
   | 'faq'
   | 'announcement';
 
-export type ContentStatus = 
-  | 'draft' 
-  | 'published' 
-  | 'scheduled' 
-  | 'archived'
-  | 'review'
-  | 'expired';
+export type ContentStatus = 'draft' | 'published' | 'scheduled' | 'archived' | 'review' | 'expired';
 
-export type ContentFormat = 
-  | 'markdown'
-  | 'html'
-  | 'rich-text'
-  | 'video'
-  | 'audio'
-  | 'interactive';
+export type ContentFormat = 'markdown' | 'html' | 'rich-text' | 'video' | 'audio' | 'interactive';
 
 // ==================== Interfaces ====================
 
 export interface UnifiedContentAttributes {
   id: string;
-  
+
   // Core Fields (common across all content types)
   type: ContentType;
   format: ContentFormat;
@@ -50,13 +38,13 @@ export interface UnifiedContentAttributes {
   content: string;
   excerpt?: string;
   status: ContentStatus;
-  
+
   // Authorship & Categorization
   authorId: string;
   categoryId?: string;
   parentId?: string; // For hierarchical content (lessons in courses)
   order?: number; // For sequential content
-  
+
   // Media & Visuals
   featuredImageUrl?: string;
   thumbnailUrl?: string;
@@ -69,18 +57,18 @@ export interface UnifiedContentAttributes {
     name: string;
     size: number;
   }>;
-  
+
   // SEO & Metadata
   metaTitle?: string;
   metaDescription?: string;
   metaKeywords?: string[];
   canonicalUrl?: string;
-  
+
   // Publishing & Scheduling
   publishedAt?: Date;
   scheduledAt?: Date;
   expiresAt?: Date;
-  
+
   // Analytics & Engagement
   viewCount: number;
   likeCount: number;
@@ -90,13 +78,13 @@ export interface UnifiedContentAttributes {
   completionRate?: number; // percentage
   avgRating?: number;
   ratingCount?: number;
-  
+
   // Access Control
   isPremium: boolean;
   isPrivate: boolean;
   requiredRoles?: string[];
   requiredTags?: string[];
-  
+
   // Type-specific Fields (stored in JSONB)
   courseData?: {
     duration?: number; // in hours
@@ -114,7 +102,7 @@ export interface UnifiedContentAttributes {
       duration: number;
     }>;
   };
-  
+
   templateData?: {
     category?: string;
     variables?: Record<string, any>;
@@ -122,7 +110,7 @@ export interface UnifiedContentAttributes {
     usageCount?: number;
     lastUsedAt?: Date;
   };
-  
+
   faqData?: {
     question?: string;
     answer?: string;
@@ -130,7 +118,7 @@ export interface UnifiedContentAttributes {
     helpful?: number;
     notHelpful?: number;
   };
-  
+
   // Settings & Configuration
   settings?: {
     allowComments?: boolean;
@@ -143,7 +131,7 @@ export interface UnifiedContentAttributes {
     customCss?: string;
     customJs?: string;
   };
-  
+
   // Version Control
   version: number;
   versionHistory?: Array<{
@@ -152,61 +140,63 @@ export interface UnifiedContentAttributes {
     changedAt: Date;
     changes: string;
   }>;
-  
+
   // Timestamps
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date | null;
 }
 
-export interface UnifiedContentCreationAttributes extends Optional<
-  UnifiedContentAttributes,
-  | 'id'
-  | 'format'
-  | 'excerpt'
-  | 'categoryId'
-  | 'parentId'
-  | 'order'
-  | 'featuredImageUrl'
-  | 'thumbnailUrl'
-  | 'videoUrl'
-  | 'audioUrl'
-  | 'attachments'
-  | 'metaTitle'
-  | 'metaDescription'
-  | 'metaKeywords'
-  | 'canonicalUrl'
-  | 'publishedAt'
-  | 'scheduledAt'
-  | 'expiresAt'
-  | 'viewCount'
-  | 'likeCount'
-  | 'shareCount'
-  | 'commentCount'
-  | 'readingTime'
-  | 'completionRate'
-  | 'avgRating'
-  | 'ratingCount'
-  | 'isPremium'
-  | 'isPrivate'
-  | 'requiredRoles'
-  | 'requiredTags'
-  | 'courseData'
-  | 'templateData'
-  | 'faqData'
-  | 'settings'
-  | 'version'
-  | 'versionHistory'
-  | 'createdAt'
-  | 'updatedAt'
-  | 'deletedAt'
-> {}
+export interface UnifiedContentCreationAttributes
+  extends Optional<
+    UnifiedContentAttributes,
+    | 'id'
+    | 'format'
+    | 'excerpt'
+    | 'categoryId'
+    | 'parentId'
+    | 'order'
+    | 'featuredImageUrl'
+    | 'thumbnailUrl'
+    | 'videoUrl'
+    | 'audioUrl'
+    | 'attachments'
+    | 'metaTitle'
+    | 'metaDescription'
+    | 'metaKeywords'
+    | 'canonicalUrl'
+    | 'publishedAt'
+    | 'scheduledAt'
+    | 'expiresAt'
+    | 'viewCount'
+    | 'likeCount'
+    | 'shareCount'
+    | 'commentCount'
+    | 'readingTime'
+    | 'completionRate'
+    | 'avgRating'
+    | 'ratingCount'
+    | 'isPremium'
+    | 'isPrivate'
+    | 'requiredRoles'
+    | 'requiredTags'
+    | 'courseData'
+    | 'templateData'
+    | 'faqData'
+    | 'settings'
+    | 'version'
+    | 'versionHistory'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'deletedAt'
+  > {}
 
 // ==================== Model Class ====================
 
-export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedContentCreationAttributes> 
-  implements UnifiedContentAttributes {
-  
+export class UnifiedContent
+  extends Model<UnifiedContentAttributes, UnifiedContentCreationAttributes>
+  implements UnifiedContentAttributes
+{
   // Required fields
   public id!: string;
   public type!: ContentType;
@@ -223,7 +213,7 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
   public isPremium!: boolean;
   public isPrivate!: boolean;
   public version!: number;
-  
+
   // Optional fields
   public excerpt?: string;
   public categoryId?: string;
@@ -252,12 +242,12 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
   public faqData?: UnifiedContentAttributes['faqData'];
   public settings?: UnifiedContentAttributes['settings'];
   public versionHistory?: UnifiedContentAttributes['versionHistory'];
-  
+
   // Timestamps
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
   public readonly deletedAt!: Date | null;
-  
+
   // Associations
   public readonly author?: User;
   public readonly category?: any; // ContentCategory
@@ -267,21 +257,21 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
   public readonly media?: any[]; // ContentMedia[]
   public readonly comments?: any[]; // ContentComment[]
   public readonly interactions?: any[]; // ContentInteraction[]
-  
+
   // Association methods
   public setTags!: (tags: any[]) => Promise<void>;
   public getTags!: () => Promise<any[]>;
   public addTag!: (tag: any) => Promise<void>;
   public removeTag!: (tag: any) => Promise<void>;
-  
+
   public static associations: {
     author: Association<UnifiedContent, User>;
     parent: Association<UnifiedContent, UnifiedContent>;
     children: Association<UnifiedContent, UnifiedContent>;
   };
-  
+
   // ==================== Instance Methods ====================
-  
+
   /**
    * Generate unique slug
    */
@@ -292,23 +282,25 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .trim();
-    
+
     let slug = baseSlug;
     let counter = 1;
-    
-    while (await UnifiedContent.findOne({ 
-      where: { 
-        slug, 
-        id: { [Op.ne as any]: this.id } 
-      } 
-    })) {
+
+    while (
+      await UnifiedContent.findOne({
+        where: {
+          slug,
+          id: { [Op.ne as any]: this.id },
+        },
+      })
+    ) {
       slug = `${baseSlug}-${counter}`;
       counter++;
     }
-    
+
     return slug;
   }
-  
+
   /**
    * Calculate reading time
    */
@@ -317,7 +309,7 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
     const wordCount = this.content.split(/\s+/).length;
     return Math.ceil(wordCount / wordsPerMinute);
   }
-  
+
   /**
    * Publish content
    */
@@ -326,7 +318,7 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
     this.publishedAt = new Date();
     await this.save();
   }
-  
+
   /**
    * Archive content
    */
@@ -334,7 +326,7 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
     this.status = 'archived';
     await this.save();
   }
-  
+
   /**
    * Increment view count
    */
@@ -342,7 +334,7 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
     this.viewCount += 1;
     await this.save();
   }
-  
+
   /**
    * Create new version
    */
@@ -353,53 +345,56 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
       version: this.version,
       changedBy,
       changedAt: new Date(),
-      changes
+      changes,
     });
     await this.save();
   }
-  
+
   // ==================== Static Methods ====================
-  
+
   /**
    * Get published content
    */
   static async getPublished(type?: ContentType): Promise<UnifiedContent[]> {
     const where: any = { status: 'published' };
     if (type) where.type = type;
-    
+
     return UnifiedContent.findAll({
       where,
       order: [['publishedAt', 'DESC']],
     });
   }
-  
+
   /**
    * Get featured content
    */
   static async getFeatured(limit = 10): Promise<UnifiedContent[]> {
     return UnifiedContent.findAll({
-      where: { 
+      where: {
         status: 'published',
-        featuredImageUrl: { [Op.ne as any]: null }
+        featuredImageUrl: { [Op.ne as any]: null },
       },
       order: [['publishedAt', 'DESC']],
       limit,
     });
   }
-  
+
   /**
    * Search content
    */
-  static async search(query: string, filters: {
-    type?: ContentType;
-    status?: ContentStatus;
-    category?: string;
-    author?: string;
-    tags?: string[];
-    isPremium?: boolean;
-  } = {}): Promise<UnifiedContent[]> {
+  static async search(
+    query: string,
+    filters: {
+      type?: ContentType;
+      status?: ContentStatus;
+      category?: string;
+      author?: string;
+      tags?: string[];
+      isPremium?: boolean;
+    } = {}
+  ): Promise<UnifiedContent[]> {
     const where: any = {};
-    
+
     if (query) {
       where[Op.or as any] = [
         { title: { [Op.iLike]: `%${query}%` } },
@@ -407,37 +402,37 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
         { excerpt: { [Op.iLike]: `%${query}%` } },
       ];
     }
-    
+
     if (filters.type) where.type = filters.type;
     if (filters.status) where.status = filters.status;
     if (filters.category) where.categoryId = filters.category;
     if (filters.author) where.authorId = filters.author;
     if (filters.isPremium !== undefined) where.isPremium = filters.isPremium;
-    
+
     return UnifiedContent.findAll({
       where,
       order: [['updatedAt', 'DESC']],
     });
   }
-  
+
   /**
    * Get popular content
    */
   static async getPopular(limit = 10, type?: ContentType): Promise<UnifiedContent[]> {
     const where: any = { status: 'published' };
     if (type) where.type = type;
-    
+
     return UnifiedContent.findAll({
       where,
       order: [
         ['viewCount', 'DESC'],
         ['likeCount', 'DESC'],
-        ['avgRating', 'DESC NULLS LAST']
+        ['avgRating', 'DESC NULLS LAST'],
       ],
       limit,
     });
   }
-  
+
   /**
    * Get scheduled content ready for publishing
    */
@@ -446,12 +441,12 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
       where: {
         status: 'scheduled',
         scheduledAt: {
-          [Op.lte]: new Date()
-        }
-      }
+          [Op.lte]: new Date(),
+        },
+      },
     });
   }
-  
+
   /**
    * Get expired content
    */
@@ -460,12 +455,12 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
       where: {
         status: 'published',
         expiresAt: {
-          [Op.lte]: new Date()
-        }
-      }
+          [Op.lte]: new Date(),
+        },
+      },
     });
   }
-  
+
   /**
    * Initialize the model
    */
@@ -479,16 +474,21 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
         },
         type: {
           type: DataTypes.ENUM(
-            'article', 'guide', 'exercise', 'lesson', 'tip',
-            'course', 'template', 'page', 'faq', 'announcement'
+            'article',
+            'guide',
+            'exercise',
+            'lesson',
+            'tip',
+            'course',
+            'template',
+            'page',
+            'faq',
+            'announcement'
           ),
           allowNull: false,
         },
         format: {
-          type: DataTypes.ENUM(
-            'markdown', 'html', 'rich-text', 
-            'video', 'audio', 'interactive'
-          ),
+          type: DataTypes.ENUM('markdown', 'html', 'rich-text', 'video', 'audio', 'interactive'),
           allowNull: false,
           defaultValue: 'markdown',
         },
@@ -516,10 +516,7 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
           allowNull: true,
         },
         status: {
-          type: DataTypes.ENUM(
-            'draft', 'published', 'scheduled', 
-            'archived', 'review', 'expired'
-          ),
+          type: DataTypes.ENUM('draft', 'published', 'scheduled', 'archived', 'review', 'expired'),
           allowNull: false,
           defaultValue: 'draft',
         },
@@ -745,7 +742,7 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
       }
     );
   }
-  
+
   /**
    * Set up associations
    */
@@ -755,13 +752,13 @@ export class UnifiedContent extends Model<UnifiedContentAttributes, UnifiedConte
       foreignKey: 'authorId',
       as: 'author',
     });
-    
+
     // Self-referential association for hierarchical content
     UnifiedContent.belongsTo(UnifiedContent, {
       foreignKey: 'parentId',
       as: 'parent',
     });
-    
+
     UnifiedContent.hasMany(UnifiedContent, {
       foreignKey: 'parentId',
       as: 'children',

@@ -16,4 +16,4 @@ export const notFoundHandler = (req: Request, _res: Response): void => {
     method: req.method,
     timestamp: new Date().toISOString(),
   });
-}; 
+};

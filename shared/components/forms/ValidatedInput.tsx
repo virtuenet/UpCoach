@@ -3,7 +3,8 @@ import { z, ZodSchema, ZodError } from 'zod';
 import { cn } from '../../utils/cn';
 import debounce from 'lodash/debounce';
 
-interface ValidatedInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
+interface ValidatedInputProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   name: string;
   label?: string;
   schema?: ZodSchema;
@@ -38,7 +39,9 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
   disabled,
   ...props
 }) => {
-  const [value, setValue] = useState(props.value as string || props.defaultValue as string || '');
+  const [value, setValue] = useState(
+    (props.value as string) || (props.defaultValue as string) || ''
+  );
   const [error, setError] = useState<string | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [isValid, setIsValid] = useState(false);
@@ -53,7 +56,7 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
 
       setIsValidating(true);
       let hasError = false;
-      
+
       try {
         // Zod validation
         if (schema) {
@@ -97,12 +100,12 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let newValue = e.target.value;
-    
+
     // Apply transformation if provided
     if (transformValue) {
       newValue = transformValue(newValue);
     }
-    
+
     setValue(newValue);
     setIsDirty(true);
 
@@ -122,7 +125,7 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     setIsTouched(true);
-    
+
     // Validate on blur if configured
     if (validateOn === 'blur' || validateOn === 'both') {
       debouncedValidate.cancel();
@@ -134,7 +137,8 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
 
   // Determine visual state
   const showError = error && (isDirty || isTouched) && !isValidating;
-  const showSuccess = isValid && showSuccessIcon && (isDirty || isTouched) && !isValidating && !error;
+  const showSuccess =
+    isValid && showSuccessIcon && (isDirty || isTouched) && !isValidating && !error;
 
   // Animation classes for smooth transitions
   const inputClasses = cn(
@@ -143,7 +147,8 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
     {
       'border-gray-300 focus:border-blue-500 focus:ring-blue-500': !showError && !showSuccess,
       'border-red-500 focus:border-red-500 focus:ring-red-500 bg-red-50 dark:bg-red-950': showError,
-      'border-green-500 focus:border-green-500 focus:ring-green-500 bg-green-50 dark:bg-green-950': showSuccess,
+      'border-green-500 focus:border-green-500 focus:ring-green-500 bg-green-50 dark:bg-green-950':
+        showSuccess,
       'opacity-50 cursor-not-allowed': disabled,
       'pr-10': showError || showSuccess || isValidating,
     },
@@ -155,14 +160,11 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
       {label && (
         <label
           htmlFor={name}
-          className={cn(
-            'block text-sm font-medium mb-1 transition-colors duration-200',
-            {
-              'text-gray-700 dark:text-gray-300': !showError,
-              'text-red-600 dark:text-red-400': showError,
-              'text-green-600 dark:text-green-400': showSuccess,
-            }
-          )}
+          className={cn('block text-sm font-medium mb-1 transition-colors duration-200', {
+            'text-gray-700 dark:text-gray-300': !showError,
+            'text-red-600 dark:text-red-400': showError,
+            'text-green-600 dark:text-green-400': showSuccess,
+          })}
         >
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
@@ -272,10 +274,7 @@ export const ValidatedInput: React.FC<ValidatedInputProps> = ({
 
       {/* Help text */}
       {helpText && !showError && (
-        <p
-          id={`${name}-help`}
-          className="mt-1 text-sm text-gray-500 dark:text-gray-400"
-        >
+        <p id={`${name}-help`} className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           {helpText}
         </p>
       )}
@@ -299,7 +298,13 @@ export const PasswordStrengthIndicator: React.FC<{ password: string }> = ({ pass
   const percentage = (strength / 5) * 100;
 
   const strengthText = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'][Math.max(0, strength - 1)];
-  const strengthColor = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-lime-500', 'bg-green-500'][Math.max(0, strength - 1)];
+  const strengthColor = [
+    'bg-red-500',
+    'bg-orange-500',
+    'bg-yellow-500',
+    'bg-lime-500',
+    'bg-green-500',
+  ][Math.max(0, strength - 1)];
 
   if (!password) return null;
 
@@ -307,13 +312,15 @@ export const PasswordStrengthIndicator: React.FC<{ password: string }> = ({ pass
     <div className="mt-2">
       <div className="flex justify-between mb-1">
         <span className="text-xs text-gray-600 dark:text-gray-400">Password strength</span>
-        <span className={cn('text-xs font-medium', {
-          'text-red-600': strength <= 1,
-          'text-orange-600': strength === 2,
-          'text-yellow-600': strength === 3,
-          'text-lime-600': strength === 4,
-          'text-green-600': strength === 5,
-        })}>
+        <span
+          className={cn('text-xs font-medium', {
+            'text-red-600': strength <= 1,
+            'text-orange-600': strength === 2,
+            'text-yellow-600': strength === 3,
+            'text-lime-600': strength === 4,
+            'text-green-600': strength === 5,
+          })}
+        >
           {strengthText}
         </span>
       </div>

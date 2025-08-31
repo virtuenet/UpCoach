@@ -1,4 +1,7 @@
-import Grid from "@mui/material";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import Grid from '@mui/material';
 import {
   Box,
   Card,
@@ -16,7 +19,7 @@ import {
   IconButton,
   LinearProgress,
   Alert,
-} from "@mui/material";
+} from '@mui/material';
 import {
   Edit as EditIcon,
   Visibility as ViewIcon,
@@ -26,7 +29,7 @@ import {
   Create as CreateIcon,
   Analytics as AnalyticsIcon,
   Schedule as ScheduleIcon,
-} from "@mui/icons-material";
+} from '@mui/icons-material';
 import {
   BarChart,
   Bar,
@@ -40,10 +43,10 @@ import {
   PieChart,
   Pie,
   Cell,
-} from "recharts";
-import api from "../../services/api";
-import PageHeader from "../../components/PageHeader";
-import StatCard from "../../components/StatCard";
+} from 'recharts';
+import api from '../../services/api';
+import PageHeader from '../../components/PageHeader';
+import StatCard from '../../components/StatCard';
 
 interface DashboardData {
   stats: {
@@ -73,15 +76,13 @@ interface PerformanceData {
   engagementRate: number;
 }
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 const CoachDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
-    null,
-  );
-  const [selectedPeriod, setSelectedPeriod] = useState("30d");
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState('30d');
 
   useEffect(() => {
     fetchDashboardData();
@@ -91,7 +92,7 @@ const CoachDashboard: React.FC = () => {
     setLoading(true);
     try {
       const [dashboardRes, performanceRes] = await Promise.all([
-        api.get("/coach-content/dashboard"),
+        api.get('/coach-content/dashboard'),
         api.get(`/coach-content/performance?period=${selectedPeriod}`),
       ]);
 
@@ -100,7 +101,7 @@ const CoachDashboard: React.FC = () => {
         performance: performanceRes.data.data,
       });
     } catch (error) {
-      console.error("Failed to fetch dashboard data:", error);
+      console.error('Failed to fetch dashboard data:', error);
     } finally {
       setLoading(false);
     }
@@ -108,14 +109,14 @@ const CoachDashboard: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "published":
-        return "success";
-      case "draft":
-        return "default";
-      case "review":
-        return "warning";
+      case 'published':
+        return 'success';
+      case 'draft':
+        return 'default';
+      case 'review':
+        return 'warning';
       default:
-        return "default";
+        return 'default';
     }
   };
 
@@ -138,7 +139,7 @@ const CoachDashboard: React.FC = () => {
           <Button
             variant="contained"
             startIcon={<CreateIcon />}
-            onClick={() => navigate("/coach/content/new")}
+            onClick={() => navigate('/coach/content/new')}
           >
             Create Article
           </Button>
@@ -196,12 +197,7 @@ const CoachDashboard: React.FC = () => {
                     <XAxis dataKey="date" />
                     <YAxis />
                     <Tooltip />
-                    <Line
-                      type="monotone"
-                      dataKey="views"
-                      stroke="#8884d8"
-                      strokeWidth={2}
-                    />
+                    <Line type="monotone" dataKey="views" stroke="#8884d8" strokeWidth={2} />
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -228,10 +224,7 @@ const CoachDashboard: React.FC = () => {
                       dataKey="count"
                     >
                       {performance.topCategories.map((_entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
                     <Tooltip />
@@ -248,11 +241,9 @@ const CoachDashboard: React.FC = () => {
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
-              <Box
-                sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
-              >
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                 <Typography variant="h6">Recent Articles</Typography>
-                <Button size="small" onClick={() => navigate("/coach/content")}>
+                <Button size="small" onClick={() => navigate('/coach/content')}>
                   View All
                 </Button>
               </Box>
@@ -266,21 +257,14 @@ const CoachDashboard: React.FC = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {recentArticles.map((article) => (
+                    {recentArticles.map(article => (
                       <TableRow key={article.id}>
                         <TableCell>
-                          <Typography
-                            variant="body2"
-                            noWrap
-                            sx={{ maxWidth: 200 }}
-                          >
+                          <Typography variant="body2" noWrap sx={{ maxWidth: 200 }}>
                             {article.title}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {format(
-                              new Date(article.updatedAt),
-                              "MMM dd, yyyy",
-                            )}
+                            {format(new Date(article.updatedAt), 'MMM dd, yyyy')}
                           </Typography>
                         </TableCell>
                         <TableCell>
@@ -293,17 +277,13 @@ const CoachDashboard: React.FC = () => {
                         <TableCell align="center">
                           <IconButton
                             size="small"
-                            onClick={() =>
-                              navigate(`/coach/content/${article.id}/edit`)
-                            }
+                            onClick={() => navigate(`/coach/content/${article.id}/edit`)}
                           >
                             <EditIcon fontSize="small" />
                           </IconButton>
                           <IconButton
                             size="small"
-                            onClick={() =>
-                              navigate(`/coach/content/${article.id}/analytics`)
-                            }
+                            onClick={() => navigate(`/coach/content/${article.id}/analytics`)}
                           >
                             <AnalyticsIcon fontSize="small" />
                           </IconButton>
@@ -321,9 +301,7 @@ const CoachDashboard: React.FC = () => {
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
-              <Box
-                sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
-              >
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                 <Typography variant="h6">Popular Articles</Typography>
                 <TrendingUpIcon color="action" />
               </Box>
@@ -337,14 +315,10 @@ const CoachDashboard: React.FC = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {popularArticles.map((article) => (
+                    {popularArticles.map(article => (
                       <TableRow key={article.id}>
                         <TableCell>
-                          <Typography
-                            variant="body2"
-                            noWrap
-                            sx={{ maxWidth: 200 }}
-                          >
+                          <Typography variant="body2" noWrap sx={{ maxWidth: 200 }}>
                             {article.title}
                           </Typography>
                         </TableCell>
@@ -355,7 +329,7 @@ const CoachDashboard: React.FC = () => {
                         </TableCell>
                         <TableCell align="center">
                           <Chip
-                            label={article.category?.name || "Uncategorized"}
+                            label={article.category?.name || 'Uncategorized'}
                             size="small"
                             variant="outlined"
                           />
@@ -380,7 +354,7 @@ const CoachDashboard: React.FC = () => {
             <Button
               variant="outlined"
               startIcon={<ScheduleIcon />}
-              onClick={() => navigate("/coach/content/calendar")}
+              onClick={() => navigate('/coach/content/calendar')}
             >
               Content Calendar
             </Button>
@@ -389,7 +363,7 @@ const CoachDashboard: React.FC = () => {
             <Button
               variant="outlined"
               startIcon={<AnalyticsIcon />}
-              onClick={() => navigate("/coach/analytics")}
+              onClick={() => navigate('/coach/analytics')}
             >
               Analytics Overview
             </Button>

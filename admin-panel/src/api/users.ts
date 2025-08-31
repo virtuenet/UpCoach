@@ -1,10 +1,11 @@
+import { apiClient } from './client';
 
 export interface User {
   id: string;
   email: string;
   fullName: string;
-  role: "user" | "coach" | "admin" | "moderator";
-  subscriptionPlan: "free" | "pro" | "team" | "enterprise";
+  role: 'user' | 'coach' | 'admin' | 'moderator';
+  subscriptionPlan: 'free' | 'pro' | 'team' | 'enterprise';
   isActive: boolean;
   createdAt: string;
   lastLoginAt?: string;
@@ -21,7 +22,7 @@ export interface GetUsersParams {
 
 export const usersApi = {
   getUsers: async (params: GetUsersParams = {}): Promise<User[]> => {
-    const response = await apiClient.get("/admin/users", { params });
+    const response = await apiClient.get('/admin/users', { params });
     return response.data;
   },
 

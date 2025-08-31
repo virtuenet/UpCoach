@@ -94,10 +94,10 @@ export const performanceMiddleware = (req: Request, _res: Response, next: NextFu
 
   // Intercept response end
   const originalEnd = _res.end;
-  _res.end = function(...args: any[]): Response {
+  _res.end = function (...args: any[]): Response {
     // Calculate duration
     const duration = req.startTime ? (performance.now() - req.startTime) / 1000 : 0;
-    
+
     // Get response details
     const statusCode = _res.statusCode;
     const status = statusCode >= 400 ? 'error' : 'success';
@@ -139,7 +139,7 @@ export const performanceMiddleware = (req: Request, _res: Response, next: NextFu
 // Database query performance tracking
 export const trackDatabaseQuery = (operation: string, table: string, duration: number) => {
   databaseQueryDuration.observe({ operation, table }, duration / 1000);
-  
+
   if (duration > 100) {
     logger.warn('Slow database query', {
       operation,
@@ -178,7 +178,7 @@ export const healthCheckHandler = (req: Request, _res: Response) => {
     memory: process.memoryUsage(),
     cpu: process.cpuUsage(),
   };
-  
+
   _res.json(health);
 };
 
@@ -187,19 +187,19 @@ export const readyCheckHandler = async (req: Request, _res: Response) => {
   try {
     // Check database connection
     // const dbHealthy = await checkDatabaseConnection();
-    
+
     // Check Redis connection
     // const redisHealthy = await checkRedisConnection();
-    
+
     const ready = {
       status: 'ready',
       timestamp: new Date().toISOString(),
       checks: {
         database: true, // dbHealthy
-        redis: true,    // redisHealthy
+        redis: true, // redisHealthy
       },
     };
-    
+
     _res.json(ready);
   } catch (error) {
     _res.status(503).json({

@@ -1,3 +1,7 @@
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import { ExpandMore } from '@mui/icons-material';
 import {
   Eye,
   Edit,
@@ -8,14 +12,14 @@ import {
   FolderOpen,
   CheckCircle,
   Archive,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface ContentItem {
   id: string;
   title: string;
   slug: string;
-  type: "article" | "guide" | "exercise" | "lesson" | "tip";
-  status: "draft" | "published" | "scheduled" | "archived";
+  type: 'article' | 'guide' | 'exercise' | 'lesson' | 'tip';
+  status: 'draft' | 'published' | 'scheduled' | 'archived';
   excerpt: string;
   author: {
     id: string;
@@ -69,63 +73,62 @@ const ContentList: React.FC<ContentListProps> = ({
     setTimeout(() => {
       setContents([
         {
-          id: "1",
-          title: "10 Habits of Highly Successful People",
-          slug: "10-habits-highly-successful-people",
-          type: "article",
-          status: "published",
+          id: '1',
+          title: '10 Habits of Highly Successful People',
+          slug: '10-habits-highly-successful-people',
+          type: 'article',
+          status: 'published',
           excerpt:
-            "Discover the daily habits that set successful people apart and learn how to implement them in your own life.",
-          author: { id: "1", name: "Sarah Johnson" },
-          category: { id: "1", name: "Productivity", color: "blue" },
+            'Discover the daily habits that set successful people apart and learn how to implement them in your own life.',
+          author: { id: '1', name: 'Sarah Johnson' },
+          category: { id: '1', name: 'Productivity', color: 'blue' },
           tags: [
-            { id: "1", name: "habits", color: "green" },
-            { id: "2", name: "success", color: "purple" },
+            { id: '1', name: 'habits', color: 'green' },
+            { id: '2', name: 'success', color: 'purple' },
           ],
           viewCount: 12543,
           readingTime: 8,
-          publishedAt: "2024-01-15T10:00:00Z",
-          createdAt: "2024-01-10T09:00:00Z",
-          updatedAt: "2024-01-15T09:30:00Z",
+          publishedAt: '2024-01-15T10:00:00Z',
+          createdAt: '2024-01-10T09:00:00Z',
+          updatedAt: '2024-01-15T09:30:00Z',
         },
         {
-          id: "2",
-          title: "Morning Meditation Guide",
-          slug: "morning-meditation-guide",
-          type: "guide",
-          status: "draft",
+          id: '2',
+          title: 'Morning Meditation Guide',
+          slug: 'morning-meditation-guide',
+          type: 'guide',
+          status: 'draft',
           excerpt:
-            "A comprehensive guide to starting your day with mindfulness and meditation practices.",
-          author: { id: "2", name: "Michael Chen" },
-          category: { id: "2", name: "Wellness", color: "green" },
+            'A comprehensive guide to starting your day with mindfulness and meditation practices.',
+          author: { id: '2', name: 'Michael Chen' },
+          category: { id: '2', name: 'Wellness', color: 'green' },
           tags: [
-            { id: "3", name: "meditation", color: "blue" },
-            { id: "4", name: "mindfulness", color: "indigo" },
+            { id: '3', name: 'meditation', color: 'blue' },
+            { id: '4', name: 'mindfulness', color: 'indigo' },
           ],
           viewCount: 0,
           readingTime: 12,
-          createdAt: "2024-01-20T14:00:00Z",
-          updatedAt: "2024-01-22T16:30:00Z",
+          createdAt: '2024-01-20T14:00:00Z',
+          updatedAt: '2024-01-22T16:30:00Z',
         },
         {
-          id: "3",
-          title: "Goal Setting Exercise",
-          slug: "goal-setting-exercise",
-          type: "exercise",
-          status: "scheduled",
-          excerpt:
-            "Step-by-step exercise to help you set and achieve meaningful goals.",
-          author: { id: "1", name: "Sarah Johnson" },
-          category: { id: "3", name: "Goal Setting", color: "purple" },
+          id: '3',
+          title: 'Goal Setting Exercise',
+          slug: 'goal-setting-exercise',
+          type: 'exercise',
+          status: 'scheduled',
+          excerpt: 'Step-by-step exercise to help you set and achieve meaningful goals.',
+          author: { id: '1', name: 'Sarah Johnson' },
+          category: { id: '3', name: 'Goal Setting', color: 'purple' },
           tags: [
-            { id: "5", name: "goals", color: "yellow" },
-            { id: "6", name: "planning", color: "red" },
+            { id: '5', name: 'goals', color: 'yellow' },
+            { id: '6', name: 'planning', color: 'red' },
           ],
           viewCount: 0,
           readingTime: 15,
-          scheduledAt: "2024-02-01T09:00:00Z",
-          createdAt: "2024-01-18T11:00:00Z",
-          updatedAt: "2024-01-19T10:00:00Z",
+          scheduledAt: '2024-02-01T09:00:00Z',
+          createdAt: '2024-01-18T11:00:00Z',
+          updatedAt: '2024-01-19T10:00:00Z',
         },
       ]);
       setLoading(false);
@@ -134,13 +137,13 @@ const ContentList: React.FC<ContentListProps> = ({
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "published":
+      case 'published':
         return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case "draft":
+      case 'draft':
         return <Edit className="w-4 h-4 text-gray-600" />;
-      case "scheduled":
+      case 'scheduled':
         return <Calendar className="w-4 h-4 text-purple-600" />;
-      case "archived":
+      case 'archived':
         return <Archive className="w-4 h-4 text-red-600" />;
       default:
         return null;
@@ -149,16 +152,16 @@ const ContentList: React.FC<ContentListProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "published":
-        return "bg-green-100 text-green-800";
-      case "draft":
-        return "bg-gray-100 text-gray-800";
-      case "scheduled":
-        return "bg-purple-100 text-purple-800";
-      case "archived":
-        return "bg-red-100 text-red-800";
+      case 'published':
+        return 'bg-green-100 text-green-800';
+      case 'draft':
+        return 'bg-gray-100 text-gray-800';
+      case 'scheduled':
+        return 'bg-purple-100 text-purple-800';
+      case 'archived':
+        return 'bg-red-100 text-red-800';
       default:
-        return "bg-gray-100 text-gray-800";
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -171,22 +174,20 @@ const ContentList: React.FC<ContentListProps> = ({
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this content?")) {
+    if (confirm('Are you sure you want to delete this content?')) {
       // Implement delete functionality
-      console.log("Delete content:", id);
+      console.log('Delete content:', id);
     }
   };
 
   const toggleItemSelection = (id: string) => {
-    setSelectedItems((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    setSelectedItems(prev =>
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
   };
 
   const toggleAllSelection = () => {
-    setSelectedItems((prev) =>
-      prev.length === contents.length ? [] : contents.map((c) => c.id),
-    );
+    setSelectedItems(prev => (prev.length === contents.length ? [] : contents.map(c => c.id)));
   };
 
   if (loading) {
@@ -205,8 +206,7 @@ const ContentList: React.FC<ContentListProps> = ({
       {selectedItems.length > 0 && (
         <div className="px-6 py-3 bg-blue-50 border-b border-blue-200 flex items-center justify-between">
           <span className="text-sm text-blue-800">
-            {selectedItems.length} item{selectedItems.length > 1 ? "s" : ""}{" "}
-            selected
+            {selectedItems.length} item{selectedItems.length > 1 ? 's' : ''} selected
           </span>
           <div className="flex gap-2">
             <button className="px-3 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50">
@@ -230,10 +230,7 @@ const ContentList: React.FC<ContentListProps> = ({
               <th className="px-6 py-3 text-left">
                 <input
                   type="checkbox"
-                  checked={
-                    selectedItems.length === contents.length &&
-                    contents.length > 0
-                  }
+                  checked={selectedItems.length === contents.length && contents.length > 0}
                   onChange={toggleAllSelection}
                   className="rounded border-gray-300"
                 />
@@ -265,11 +262,8 @@ const ContentList: React.FC<ContentListProps> = ({
             </tr>
           </thead>
           <tbody>
-            {contents.map((content) => (
-              <tr
-                key={content.id}
-                className="border-b border-gray-200 hover:bg-gray-50"
-              >
+            {contents.map(content => (
+              <tr key={content.id} className="border-b border-gray-200 hover:bg-gray-50">
                 <td className="px-6 py-4">
                   <input
                     type="checkbox"
@@ -280,18 +274,12 @@ const ContentList: React.FC<ContentListProps> = ({
                 </td>
                 <td className="px-6 py-4">
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900">
-                      {content.title}
-                    </h3>
-                    <p className="text-sm text-gray-500 truncate max-w-xs">
-                      {content.excerpt}
-                    </p>
+                    <h3 className="text-sm font-medium text-gray-900">{content.title}</h3>
+                    <p className="text-sm text-gray-500 truncate max-w-xs">{content.excerpt}</p>
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <span className="text-sm text-gray-900 capitalize">
-                    {content.type}
-                  </span>
+                  <span className="text-sm text-gray-900 capitalize">{content.type}</span>
                 </td>
                 <td className="px-6 py-4">
                   <span
@@ -306,9 +294,7 @@ const ContentList: React.FC<ContentListProps> = ({
                     <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                       <User className="w-4 h-4 text-gray-600" />
                     </div>
-                    <span className="text-sm text-gray-900">
-                      {content.author.name}
-                    </span>
+                    <span className="text-sm text-gray-900">{content.author.name}</span>
                   </div>
                 </td>
                 <td className="px-6 py-4">
@@ -328,9 +314,9 @@ const ContentList: React.FC<ContentListProps> = ({
                 <td className="px-6 py-4">
                   <div className="text-sm text-gray-900">
                     {content.publishedAt
-                      ? format(new Date(content.publishedAt), "MMM d, yyyy")
+                      ? format(new Date(content.publishedAt), 'MMM d, yyyy')
                       : content.scheduledAt
-                        ? format(new Date(content.scheduledAt), "MMM d, yyyy")
+                        ? format(new Date(content.scheduledAt), 'MMM d, yyyy')
                         : formatDistanceToNow(new Date(content.updatedAt), {
                             addSuffix: true,
                           })}
@@ -339,11 +325,7 @@ const ContentList: React.FC<ContentListProps> = ({
                 <td className="px-6 py-4">
                   <div className="relative">
                     <button
-                      onClick={() =>
-                        setShowActions(
-                          showActions === content.id ? null : content.id,
-                        )
-                      }
+                      onClick={() => setShowActions(showActions === content.id ? null : content.id)}
                       className="p-1 rounded hover:bg-gray-100"
                     >
                       <MoreVertical className="w-5 h-5 text-gray-600" />
@@ -386,17 +368,14 @@ const ContentList: React.FC<ContentListProps> = ({
       {/* Pagination */}
       <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200">
         <div className="text-sm text-gray-700">
-          Showing <span className="font-medium">1</span> to{" "}
-          <span className="font-medium">3</span> of{" "}
-          <span className="font-medium">248</span> results
+          Showing <span className="font-medium">1</span> to <span className="font-medium">3</span>{' '}
+          of <span className="font-medium">248</span> results
         </div>
         <div className="flex gap-2">
           <button className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">
             Previous
           </button>
-          <button className="px-3 py-1 bg-blue-600 text-white rounded text-sm">
-            1
-          </button>
+          <button className="px-3 py-1 bg-blue-600 text-white rounded text-sm">1</button>
           <button className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50">
             2
           </button>

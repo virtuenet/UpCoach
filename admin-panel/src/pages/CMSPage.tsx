@@ -1,3 +1,6 @@
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
+import { FolderOpen, ExpandMore } from '@mui/icons-material';
 import {
   FileText,
   FolderOpen,
@@ -12,45 +15,39 @@ import {
   Trash2,
   MoreVertical,
   TrendingUp,
-} from "lucide-react";
-import ContentList from "../components/cms/ContentList";
-import ContentStats from "../components/cms/ContentStats";
+} from 'lucide-react';
+import ContentList from '../components/cms/ContentList';
+import ContentStats from '../components/cms/ContentStats';
 
-type ContentTab =
-  | "all"
-  | "articles"
-  | "guides"
-  | "exercises"
-  | "lessons"
-  | "tips";
+type ContentTab = 'all' | 'articles' | 'guides' | 'exercises' | 'lessons' | 'tips';
 
 const CMSPage: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<ContentTab>("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<ContentTab>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const tabs: { id: ContentTab; label: string; icon: React.ReactNode }[] = [
-    { id: "all", label: "All Content", icon: <FileText className="w-4 h-4" /> },
+    { id: 'all', label: 'All Content', icon: <FileText className="w-4 h-4" /> },
     {
-      id: "articles",
-      label: "Articles",
+      id: 'articles',
+      label: 'Articles',
       icon: <FileText className="w-4 h-4" />,
     },
-    { id: "guides", label: "Guides", icon: <FolderOpen className="w-4 h-4" /> },
+    { id: 'guides', label: 'Guides', icon: <FolderOpen className="w-4 h-4" /> },
     {
-      id: "exercises",
-      label: "Exercises",
+      id: 'exercises',
+      label: 'Exercises',
       icon: <TrendingUp className="w-4 h-4" />,
     },
-    { id: "lessons", label: "Lessons", icon: <Calendar className="w-4 h-4" /> },
-    { id: "tips", label: "Tips", icon: <Tag className="w-4 h-4" /> },
+    { id: 'lessons', label: 'Lessons', icon: <Calendar className="w-4 h-4" /> },
+    { id: 'tips', label: 'Tips', icon: <Tag className="w-4 h-4" /> },
   ];
 
   const handleCreateContent = () => {
-    navigate("/cms/content/new");
+    navigate('/cms/content/new');
   };
 
   return (
@@ -59,12 +56,8 @@ const CMSPage: React.FC = () => {
       <div className="mb-8">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Content Management
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Create and manage coaching content
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900">Content Management</h1>
+            <p className="text-gray-600 mt-1">Create and manage coaching content</p>
           </div>
           <button
             onClick={handleCreateContent}
@@ -83,7 +76,7 @@ const CMSPage: React.FC = () => {
       <div className="bg-white rounded-lg shadow-sm mb-6">
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8 px-6" aria-label="Tabs">
-            {tabs.map((tab) => (
+            {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
@@ -91,8 +84,8 @@ const CMSPage: React.FC = () => {
                   flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm
                   ${
                     activeTab === tab.id
-                      ? "border-blue-500 text-blue-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }
                 `}
               >
@@ -113,7 +106,7 @@ const CMSPage: React.FC = () => {
                 type="text"
                 placeholder="Search content..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -122,7 +115,7 @@ const CMSPage: React.FC = () => {
           {/* Status Filter */}
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={e => setStatusFilter(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All Status</option>

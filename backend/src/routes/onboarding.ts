@@ -10,7 +10,9 @@ const router = Router();
 router.use(authenticateToken);
 
 // Get onboarding status
-router.get('/status', (req: Request, _res: Response) => onboardingController.getOnboardingStatus(req, res));
+router.get('/status', (req: Request, _res: Response) =>
+  onboardingController.getOnboardingStatus(req, res)
+);
 
 // Complete onboarding
 router.post(
@@ -23,7 +25,9 @@ router.post(
     body('goals.primaryGoal').notEmpty().isString(),
     body('goals.specificGoals').isArray().notEmpty().withMessage('At least one goal is required'),
     body('goals.timeline').notEmpty().isIn(['1-3 months', '3-6 months', '6-12 months', '1+ years']),
-    body('preferences.coachingStyle').notEmpty().isIn(['supportive', 'challenging', 'analytical', 'holistic']),
+    body('preferences.coachingStyle')
+      .notEmpty()
+      .isIn(['supportive', 'challenging', 'analytical', 'holistic']),
     body('preferences.challenges').optional().isString(),
     body('availability.commitmentLevel').notEmpty().isIn(['daily', 'regular', 'weekly']),
   ],
@@ -32,6 +36,8 @@ router.post(
 );
 
 // Skip onboarding
-router.post('/skip', (req: Request, _res: Response) => onboardingController.skipOnboarding(req, res));
+router.post('/skip', (req: Request, _res: Response) =>
+  onboardingController.skipOnboarding(req, res)
+);
 
 export default router;

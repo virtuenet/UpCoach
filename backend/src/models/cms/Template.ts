@@ -1,5 +1,6 @@
 import { DataTypes, Model, Optional, Op } from 'sequelize';
-import { sequelize } from '../index';
+import { sequelize } from '../../config/sequelize';
+import { logger } from '../../utils/logger';
 
 export interface TemplateAttributes {
   id: string;
@@ -7,7 +8,7 @@ export interface TemplateAttributes {
   description: string;
   category: 'article' | 'course' | 'email' | 'landing-page';
   type: 'content' | 'structure' | 'automation';
-  
+
   // Template content
   template: {
     title?: string;
@@ -55,7 +56,7 @@ export interface TemplateAttributes {
   isActive: boolean;
   version: string;
   tags: string[];
-  
+
   // Relationships
   createdById: string;
   organizationId?: string;
@@ -64,9 +65,13 @@ export interface TemplateAttributes {
   updatedAt: string;
 }
 
-export interface TemplateCreationAttributes extends Optional<TemplateAttributes, 'id' | 'createdAt' | 'updatedAt' | 'usage' | 'version'> {}
+export interface TemplateCreationAttributes
+  extends Optional<TemplateAttributes, 'id' | 'createdAt' | 'updatedAt' | 'usage' | 'version'> {}
 
-export class Template extends Model<TemplateAttributes, TemplateCreationAttributes> implements TemplateAttributes {
+export class Template
+  extends Model<TemplateAttributes, TemplateCreationAttributes>
+  implements TemplateAttributes
+{
   public id!: string;
   public name!: string;
   public description!: string;
@@ -204,16 +209,18 @@ export class Template extends Model<TemplateAttributes, TemplateCreationAttribut
       content: processedContent,
       authorId: data.userId,
       status: data.autoPublish && this.automation?.autoPublish ? 'published' : 'draft',
-      seo: this.template.seoTemplate ? {
-        title: this.template.seoTemplate.titleTemplate?.replace('{{title}}', processedTitle),
-        description: this.template.seoTemplate.descriptionTemplate?.replace('{{title}}', processedTitle),
-        keywords: this.template.seoTemplate.keywordsTemplate || [],
-      } : undefined,
+      seo: this.template.seoTemplate
+        ? {
+            title: this.template.seoTemplate.titleTemplate?.replace('{{title}}', processedTitle),
+            description: this.template.seoTemplate.descriptionTemplate?.replace(
+              '{{title}}',
+              processedTitle
+            ),
+            keywords: this.template.seoTemplate.keywordsTemplate || [],
+          }
+        : undefined,
       metadata: this.template.metadata,
-      tags: [
-        ...(this.template.metadata?.tags || []),
-        ...(this.automation?.autoTags || []),
-      ],
+      tags: [...(this.template.metadata?.tags || []), ...(this.automation?.autoTags || [])],
       templateId: this.id,
     };
 
@@ -360,4 +367,4 @@ Template.init(
   }
 );
 
-export default Template; 
+export default Template;

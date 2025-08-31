@@ -23,10 +23,10 @@ export const DarkModeToggle: React.FC<DarkModeToggleProps> = ({
     const savedTheme = localStorage.getItem('theme');
     const systemPreference = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const initialDarkMode = savedTheme === 'dark' || (!savedTheme && systemPreference);
-    
+
     setIsDarkMode(initialDarkMode);
     applyTheme(initialDarkMode);
-    
+
     // Listen for system theme changes
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e: MediaQueryListEvent) => {
@@ -35,24 +35,24 @@ export const DarkModeToggle: React.FC<DarkModeToggleProps> = ({
         applyTheme(e.matches);
       }
     };
-    
+
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
   const applyTheme = (dark: boolean) => {
     const root = document.documentElement;
-    
+
     // Add no-transitions class to prevent flash
     root.classList.add('no-transitions');
-    
+
     // Apply theme
     root.setAttribute('data-theme', dark ? 'dark' : 'light');
     root.classList.toggle('dark', dark);
-    
+
     // Store preference
     localStorage.setItem('theme', dark ? 'dark' : 'light');
-    
+
     // Remove no-transitions after a frame
     requestAnimationFrame(() => {
       root.classList.remove('no-transitions');
@@ -64,7 +64,7 @@ export const DarkModeToggle: React.FC<DarkModeToggleProps> = ({
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
     applyTheme(newMode);
-    
+
     // Reset animation state
     setTimeout(() => setIsAnimating(false), 300);
   };
@@ -75,9 +75,7 @@ export const DarkModeToggle: React.FC<DarkModeToggleProps> = ({
     lg: { toggle: 'w-16 h-8', circle: 'w-6 h-6', translate: 'translate-x-8' },
   };
 
-  const positionStyles = position === 'fixed' 
-    ? 'fixed top-4 right-4 z-50' 
-    : '';
+  const positionStyles = position === 'fixed' ? 'fixed top-4 right-4 z-50' : '';
 
   return (
     <div className={cn('flex items-center gap-3', positionStyles, className)}>
@@ -86,7 +84,7 @@ export const DarkModeToggle: React.FC<DarkModeToggleProps> = ({
           {isDarkMode ? 'Dark' : 'Light'}
         </span>
       )}
-      
+
       <button
         onClick={toggleDarkMode}
         className={cn(
@@ -117,7 +115,7 @@ export const DarkModeToggle: React.FC<DarkModeToggleProps> = ({
             clipRule="evenodd"
           />
         </svg>
-        
+
         {/* Moon icon (dark mode) */}
         <svg
           className={cn(
@@ -131,7 +129,7 @@ export const DarkModeToggle: React.FC<DarkModeToggleProps> = ({
         >
           <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
         </svg>
-        
+
         {/* Toggle circle */}
         <span
           className={cn(
@@ -158,7 +156,7 @@ export const useDarkModeContext = () => {
     };
 
     checkTheme();
-    
+
     // Watch for theme changes
     const observer = new MutationObserver(checkTheme);
     observer.observe(document.documentElement, {

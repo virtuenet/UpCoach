@@ -14,7 +14,7 @@ export enum TrustServiceCriteria {
   AVAILABILITY = 'availability',
   PROCESSING_INTEGRITY = 'processing_integrity',
   CONFIDENTIALITY = 'confidentiality',
-  PRIVACY = 'privacy'
+  PRIVACY = 'privacy',
 }
 
 export interface SOC2Control {
@@ -164,7 +164,7 @@ class SOC2Service {
    */
   async initializeControls(): Promise<void> {
     const controls = this.getDefaultControls();
-    
+
     for (const control of controls) {
       await this.createOrUpdateControl(control);
     }
@@ -188,9 +188,9 @@ class SOC2Service {
 
       await sequelize.models.SOC2Control.upsert(fullControl);
 
-      logger.info('SOC2 control updated', { 
+      logger.info('SOC2 control updated', {
         controlId: fullControl.controlId,
-        status: fullControl.status 
+        status: fullControl.status,
       });
 
       return fullControl;
@@ -306,9 +306,7 @@ class SOC2Service {
   /**
    * Track change management
    */
-  async recordChange(
-    change: Omit<ChangeManagement, 'id' | 'changeId'>
-  ): Promise<ChangeManagement> {
+  async recordChange(change: Omit<ChangeManagement, 'id' | 'changeId'>): Promise<ChangeManagement> {
     try {
       const record: ChangeManagement = {
         id: crypto.randomUUID(),
@@ -364,10 +362,7 @@ class SOC2Service {
   /**
    * Conduct access review
    */
-  async conductAccessReview(
-    reviewedBy: string,
-    scope: string
-  ): Promise<AccessReview> {
+  async conductAccessReview(reviewedBy: string, scope: string): Promise<AccessReview> {
     try {
       // In production, this would integrate with identity management system
       const review: AccessReview = {
@@ -460,9 +455,7 @@ class SOC2Service {
   /**
    * Manage vendor
    */
-  async recordVendor(
-    vendor: Omit<VendorManagement, 'id'>
-  ): Promise<VendorManagement> {
+  async recordVendor(vendor: Omit<VendorManagement, 'id'>): Promise<VendorManagement> {
     try {
       const record: VendorManagement = {
         id: crypto.randomUUID(),
@@ -488,23 +481,16 @@ class SOC2Service {
    */
   async generateDashboard(): Promise<any> {
     try {
-      const [
-        controls,
-        availability,
-        incidents,
-        vulnerabilities,
-        changes,
-        vendors,
-        accessReviews,
-      ] = await Promise.all([
-        this.getControlsStatus(),
-        this.getAvailabilityMetrics(),
-        this.getIncidentMetrics(),
-        this.getVulnerabilityMetrics(),
-        this.getChangeMetrics(),
-        this.getVendorMetrics(),
-        this.getAccessReviewMetrics(),
-      ]);
+      const [controls, availability, incidents, vulnerabilities, changes, vendors, accessReviews] =
+        await Promise.all([
+          this.getControlsStatus(),
+          this.getAvailabilityMetrics(),
+          this.getIncidentMetrics(),
+          this.getVulnerabilityMetrics(),
+          this.getChangeMetrics(),
+          this.getVendorMetrics(),
+          this.getAccessReviewMetrics(),
+        ]);
 
       const dashboard = {
         timestamp: new Date(),
@@ -512,7 +498,10 @@ class SOC2Service {
         trustServiceCriteria: {
           security: this.getCriteriaStatus(controls, TrustServiceCriteria.SECURITY),
           availability: this.getCriteriaStatus(controls, TrustServiceCriteria.AVAILABILITY),
-          processingIntegrity: this.getCriteriaStatus(controls, TrustServiceCriteria.PROCESSING_INTEGRITY),
+          processingIntegrity: this.getCriteriaStatus(
+            controls,
+            TrustServiceCriteria.PROCESSING_INTEGRITY
+          ),
           confidentiality: this.getCriteriaStatus(controls, TrustServiceCriteria.CONFIDENTIALITY),
           privacy: this.getCriteriaStatus(controls, TrustServiceCriteria.PRIVACY),
         },
@@ -553,7 +542,7 @@ class SOC2Service {
         },
         auditor: 'Internal Audit',
         generatedAt: new Date(),
-        
+
         systemDescription: {
           infrastructure: await this.getInfrastructureDescription(),
           software: await this.getSoftwareDescription(),
@@ -561,9 +550,9 @@ class SOC2Service {
           data: await this.getDataDescription(),
           processes: await this.getProcessDescription(),
         },
-        
+
         controlsTesting: await this.getControlsTestingResults(startDate, endDate),
-        
+
         trustServiceCriteria: {
           CC1: await this.getCommonCriteria('CC1', startDate, endDate), // Control Environment
           CC2: await this.getCommonCriteria('CC2', startDate, endDate), // Communication and Information
@@ -575,10 +564,10 @@ class SOC2Service {
           CC8: await this.getCommonCriteria('CC8', startDate, endDate), // Change Management
           CC9: await this.getCommonCriteria('CC9', startDate, endDate), // Risk Mitigation
         },
-        
+
         exceptions: await this.getExceptions(startDate, endDate),
         managementResponse: await this.getManagementResponse(),
-        
+
         opinion: this.generateAuditOpinion(startDate, endDate),
       };
 
@@ -617,7 +606,7 @@ class SOC2Service {
         description: 'Physical access to facilities is restricted',
         implementation: 'Badge access with visitor logs',
       },
-      
+
       // Availability Controls
       {
         controlId: 'A1.1',
@@ -633,7 +622,7 @@ class SOC2Service {
         description: 'Data is backed up regularly',
         implementation: 'Daily automated backups with offsite storage',
       },
-      
+
       // Processing Integrity Controls
       {
         controlId: 'PI1.1',
@@ -642,7 +631,7 @@ class SOC2Service {
         description: 'System processing is complete, accurate, and timely',
         implementation: 'Automated validation and reconciliation processes',
       },
-      
+
       // Confidentiality Controls
       {
         controlId: 'C1.1',
@@ -651,7 +640,7 @@ class SOC2Service {
         description: 'Confidential information is protected',
         implementation: 'Encryption at rest and in transit',
       },
-      
+
       // Privacy Controls
       {
         controlId: 'P1.1',
@@ -713,8 +702,8 @@ class SOC2Service {
       total: vulnerabilities.length,
       open: vulnerabilities.filter(v => v.status === 'open').length,
       critical: vulnerabilities.filter(v => v.severity === 'critical').length,
-      overdue: vulnerabilities.filter(v => 
-        v.status === 'open' && new Date(v.targetResolutionDate) < new Date()
+      overdue: vulnerabilities.filter(
+        v => v.status === 'open' && new Date(v.targetResolutionDate) < new Date()
       ).length,
     };
   }
@@ -742,9 +731,7 @@ class SOC2Service {
     return {
       total: vendors.length,
       highRisk: vendors.filter(v => v.riskRating === 'high').length,
-      reviewsOverdue: vendors.filter(v => 
-        new Date(v.nextReviewDate) < new Date()
-      ).length,
+      reviewsOverdue: vendors.filter(v => new Date(v.nextReviewDate) < new Date()).length,
     };
   }
 
@@ -757,32 +744,31 @@ class SOC2Service {
     return {
       lastReviewDate: reviews[0]?.reviewDate,
       totalFindings: reviews.reduce((sum, r) => sum + r.findingsCount, 0),
-      inappropriateAccessFound: reviews.reduce((sum, r) => 
-        sum + r.inappropriateAccess.length, 0
-      ),
+      inappropriateAccessFound: reviews.reduce((sum, r) => sum + r.inappropriateAccess.length, 0),
     };
   }
 
   private calculateOverallCompliance(controls: SOC2Control[]): number {
     if (controls.length === 0) return 0;
-    
+
     const effectiveControls = controls.filter(c => c.status === 'effective').length;
     return Math.round((effectiveControls / controls.length) * 100);
   }
 
-  private getCriteriaStatus(
-    controls: SOC2Control[],
-    criteria: TrustServiceCriteria
-  ): any {
+  private getCriteriaStatus(controls: SOC2Control[], criteria: TrustServiceCriteria): any {
     const criteriaControls = controls.filter(c => c.criteria === criteria);
-    
+
     return {
       total: criteriaControls.length,
       effective: criteriaControls.filter(c => c.status === 'effective').length,
-      percentage: criteriaControls.length > 0
-        ? Math.round((criteriaControls.filter(c => c.status === 'effective').length / 
-           criteriaControls.length) * 100)
-        : 0,
+      percentage:
+        criteriaControls.length > 0
+          ? Math.round(
+              (criteriaControls.filter(c => c.status === 'effective').length /
+                criteriaControls.length) *
+                100
+            )
+          : 0,
     };
   }
 
@@ -790,8 +776,9 @@ class SOC2Service {
     const resolved = incidents.filter(i => i.resolvedAt);
     if (resolved.length === 0) return 0;
 
-    const totalDays = resolved.reduce((sum, i) => 
-      sum + differenceInDays(new Date(i.resolvedAt), new Date(i.reportedAt)), 0
+    const totalDays = resolved.reduce(
+      (sum, i) => sum + differenceInDays(new Date(i.resolvedAt), new Date(i.reportedAt)),
+      0
     );
 
     return Math.round(totalDays / resolved.length);

@@ -1,10 +1,11 @@
-import { logger } from '../utils/logger';
 #!/usr/bin/env node
 
 /**
  * Migration script to consolidate CMS models
  * Migrates data from old models to UnifiedContent model
  */
+
+import { logger } from '../utils/logger';
 
 import { Sequelize } from 'sequelize';
 import * as fs from 'fs';
@@ -80,9 +81,10 @@ const migrateModels = async () => {
     const [articles] = await sequelize.query(`
       SELECT * FROM articles WHERE deleted_at IS NULL
     `);
-    
+
     for (const article of articles as any[]) {
-      await sequelize.query(`
+      await sequelize.query(
+        `
         INSERT INTO unified_contents (
           id, type, format, title, slug, content, excerpt, status,
           author_id, category_id, featured_image_url,
@@ -96,30 +98,32 @@ const migrateModels = async () => {
           :publishedAt, :viewCount, :shareCount, :likeCount,
           :readTime, :settings, :createdAt, :updatedAt
         ) ON CONFLICT (id) DO NOTHING
-      `, {
-        replacements: {
-          id: article.id,
-          title: article.title,
-          slug: article.slug,
-          content: article.content,
-          excerpt: article.excerpt,
-          status: article.status,
-          authorId: article.author_id || article.authorId,
-          categoryId: article.category_id || article.categoryId,
-          featuredImage: article.featured_image || article.featuredImage,
-          seoTitle: article.seo_title || article.seoTitle,
-          seoDescription: article.seo_description || article.seoDescription,
-          seoKeywords: article.seo_keywords || article.seoKeywords || [],
-          publishedAt: article.published_at || article.publishedAt,
-          viewCount: article.view_count || article.viewCount || 0,
-          shareCount: article.share_count || article.shareCount || 0,
-          likeCount: article.like_count || article.likeCount || 0,
-          readTime: article.read_time || article.readTime || 0,
-          settings: JSON.stringify(article.settings || {}),
-          createdAt: article.created_at || article.createdAt,
-          updatedAt: article.updated_at || article.updatedAt,
+      `,
+        {
+          replacements: {
+            id: article.id,
+            title: article.title,
+            slug: article.slug,
+            content: article.content,
+            excerpt: article.excerpt,
+            status: article.status,
+            authorId: article.author_id || article.authorId,
+            categoryId: article.category_id || article.categoryId,
+            featuredImage: article.featured_image || article.featuredImage,
+            seoTitle: article.seo_title || article.seoTitle,
+            seoDescription: article.seo_description || article.seoDescription,
+            seoKeywords: article.seo_keywords || article.seoKeywords || [],
+            publishedAt: article.published_at || article.publishedAt,
+            viewCount: article.view_count || article.viewCount || 0,
+            shareCount: article.share_count || article.shareCount || 0,
+            likeCount: article.like_count || article.likeCount || 0,
+            readTime: article.read_time || article.readTime || 0,
+            settings: JSON.stringify(article.settings || {}),
+            createdAt: article.created_at || article.createdAt,
+            updatedAt: article.updated_at || article.updatedAt,
+          },
         }
-      });
+      );
     }
     logger.info(`✅ Migrated ${(articles as any[]).length} articles`);
 
@@ -128,9 +132,10 @@ const migrateModels = async () => {
     const [contents] = await sequelize.query(`
       SELECT * FROM contents
     `);
-    
+
     for (const content of contents as any[]) {
-      await sequelize.query(`
+      await sequelize.query(
+        `
         INSERT INTO unified_contents (
           id, type, format, title, slug, content, excerpt, status,
           author_id, category_id, featured_image_url,
@@ -146,34 +151,36 @@ const migrateModels = async () => {
           :readingTime, :isPremium, :order, :settings,
           :createdAt, :updatedAt
         ) ON CONFLICT (id) DO NOTHING
-      `, {
-        replacements: {
-          id: content.id,
-          type: content.type || 'article',
-          title: content.title,
-          slug: content.slug,
-          content: content.content,
-          excerpt: content.excerpt,
-          status: content.status,
-          authorId: content.author_id || content.authorId,
-          categoryId: content.category_id || content.categoryId,
-          featuredImageUrl: content.featured_image_url || content.featuredImageUrl,
-          metaTitle: content.meta_title || content.metaTitle,
-          metaDescription: content.meta_description || content.metaDescription,
-          metaKeywords: content.meta_keywords || content.metaKeywords || [],
-          publishedAt: content.published_at || content.publishedAt,
-          scheduledAt: content.scheduled_at || content.scheduledAt,
-          viewCount: content.view_count || content.viewCount || 0,
-          likeCount: content.like_count || content.likeCount || 0,
-          shareCount: content.share_count || content.shareCount || 0,
-          readingTime: content.reading_time || content.readingTime,
-          isPremium: content.is_premium || content.isPremium || false,
-          order: content.order,
-          settings: JSON.stringify(content.settings || {}),
-          createdAt: content.created_at || content.createdAt,
-          updatedAt: content.updated_at || content.updatedAt,
+      `,
+        {
+          replacements: {
+            id: content.id,
+            type: content.type || 'article',
+            title: content.title,
+            slug: content.slug,
+            content: content.content,
+            excerpt: content.excerpt,
+            status: content.status,
+            authorId: content.author_id || content.authorId,
+            categoryId: content.category_id || content.categoryId,
+            featuredImageUrl: content.featured_image_url || content.featuredImageUrl,
+            metaTitle: content.meta_title || content.metaTitle,
+            metaDescription: content.meta_description || content.metaDescription,
+            metaKeywords: content.meta_keywords || content.metaKeywords || [],
+            publishedAt: content.published_at || content.publishedAt,
+            scheduledAt: content.scheduled_at || content.scheduledAt,
+            viewCount: content.view_count || content.viewCount || 0,
+            likeCount: content.like_count || content.likeCount || 0,
+            shareCount: content.share_count || content.shareCount || 0,
+            readingTime: content.reading_time || content.readingTime,
+            isPremium: content.is_premium || content.isPremium || false,
+            order: content.order,
+            settings: JSON.stringify(content.settings || {}),
+            createdAt: content.created_at || content.createdAt,
+            updatedAt: content.updated_at || content.updatedAt,
+          },
         }
-      });
+      );
     }
     logger.info(`✅ Migrated ${(contents as any[]).length} contents`);
 
@@ -182,9 +189,10 @@ const migrateModels = async () => {
     const [courses] = await sequelize.query(`
       SELECT * FROM courses
     `);
-    
+
     for (const course of courses as any[]) {
-      await sequelize.query(`
+      await sequelize.query(
+        `
         INSERT INTO unified_contents (
           id, type, format, title, slug, content, excerpt, status,
           author_id, category_id, featured_image_url,
@@ -196,32 +204,34 @@ const migrateModels = async () => {
           :publishedAt, :isPremium, :courseData,
           :createdAt, :updatedAt
         ) ON CONFLICT (id) DO NOTHING
-      `, {
-        replacements: {
-          id: course.id,
-          title: course.title || course.name,
-          slug: course.slug || course.title?.toLowerCase().replace(/\s+/g, '-'),
-          description: course.description || course.content || '',
-          excerpt: course.excerpt || course.summary,
-          status: course.status || 'published',
-          authorId: course.instructor_id || course.author_id || course.authorId,
-          categoryId: course.category_id || course.categoryId,
-          thumbnailUrl: course.thumbnail_url || course.thumbnailUrl,
-          publishedAt: course.published_at || course.publishedAt,
-          isPremium: course.is_premium || course.isPremium || false,
-          courseData: JSON.stringify({
-            duration: course.duration,
-            difficulty: course.difficulty,
-            prerequisites: course.prerequisites,
-            objectives: course.objectives,
-            certificateEnabled: course.certificate_enabled,
-            maxEnrollments: course.max_enrollments,
-            currentEnrollments: course.current_enrollments,
-          }),
-          createdAt: course.created_at || course.createdAt,
-          updatedAt: course.updated_at || course.updatedAt,
+      `,
+        {
+          replacements: {
+            id: course.id,
+            title: course.title || course.name,
+            slug: course.slug || course.title?.toLowerCase().replace(/\s+/g, '-'),
+            description: course.description || course.content || '',
+            excerpt: course.excerpt || course.summary,
+            status: course.status || 'published',
+            authorId: course.instructor_id || course.author_id || course.authorId,
+            categoryId: course.category_id || course.categoryId,
+            thumbnailUrl: course.thumbnail_url || course.thumbnailUrl,
+            publishedAt: course.published_at || course.publishedAt,
+            isPremium: course.is_premium || course.isPremium || false,
+            courseData: JSON.stringify({
+              duration: course.duration,
+              difficulty: course.difficulty,
+              prerequisites: course.prerequisites,
+              objectives: course.objectives,
+              certificateEnabled: course.certificate_enabled,
+              maxEnrollments: course.max_enrollments,
+              currentEnrollments: course.current_enrollments,
+            }),
+            createdAt: course.created_at || course.createdAt,
+            updatedAt: course.updated_at || course.updatedAt,
+          },
         }
-      });
+      );
     }
     logger.info(`✅ Migrated ${(courses as any[]).length} courses`);
 
@@ -230,9 +240,10 @@ const migrateModels = async () => {
     const [templates] = await sequelize.query(`
       SELECT * FROM templates
     `);
-    
+
     for (const template of templates as any[]) {
-      await sequelize.query(`
+      await sequelize.query(
+        `
         INSERT INTO unified_contents (
           id, type, format, title, slug, content, excerpt, status,
           author_id, category_id, template_data,
@@ -242,26 +253,28 @@ const migrateModels = async () => {
           :authorId, :categoryId, :templateData,
           :createdAt, :updatedAt
         ) ON CONFLICT (id) DO NOTHING
-      `, {
-        replacements: {
-          id: template.id,
-          title: template.name || template.title,
-          slug: template.slug || template.name?.toLowerCase().replace(/\s+/g, '-'),
-          content: template.content || template.body || '',
-          description: template.description,
-          authorId: template.author_id || template.authorId || template.created_by,
-          categoryId: template.category_id || template.categoryId,
-          templateData: JSON.stringify({
-            category: template.category,
-            variables: template.variables,
-            previewData: template.preview_data,
-            usageCount: template.usage_count || 0,
-            lastUsedAt: template.last_used_at,
-          }),
-          createdAt: template.created_at || template.createdAt,
-          updatedAt: template.updated_at || template.updatedAt,
+      `,
+        {
+          replacements: {
+            id: template.id,
+            title: template.name || template.title,
+            slug: template.slug || template.name?.toLowerCase().replace(/\s+/g, '-'),
+            content: template.content || template.body || '',
+            description: template.description,
+            authorId: template.author_id || template.authorId || template.created_by,
+            categoryId: template.category_id || template.categoryId,
+            templateData: JSON.stringify({
+              category: template.category,
+              variables: template.variables,
+              previewData: template.preview_data,
+              usageCount: template.usage_count || 0,
+              lastUsedAt: template.last_used_at,
+            }),
+            createdAt: template.created_at || template.createdAt,
+            updatedAt: template.updated_at || template.updatedAt,
+          },
         }
-      });
+      );
     }
     logger.info(`✅ Migrated ${(templates as any[]).length} templates`);
 
@@ -280,7 +293,7 @@ const migrateModels = async () => {
 
     // Update model imports
     logger.info('\n🔧 Updating model imports...');
-    
+
     // Create mapping file
     const mappingContent = `
 // Model Migration Mapping
@@ -297,11 +310,8 @@ export { UnifiedContent } from './UnifiedContent';
 export default UnifiedContent;
 `;
 
-    fs.writeFileSync(
-      path.join(__dirname, '../models/cms/index.ts'),
-      mappingContent
-    );
-    
+    fs.writeFileSync(path.join(__dirname, '../models/cms/index.ts'), mappingContent);
+
     logger.info('✅ Model mapping file created');
 
     logger.info('\n✨ CMS model consolidation complete!');
@@ -309,7 +319,6 @@ export default UnifiedContent;
     logger.info('1. Update service files to use UnifiedContent model');
     logger.info('2. Test all CMS functionality');
     logger.info('3. Remove old model files once verified');
-
   } catch (error) {
     logger.error('❌ Migration failed:', error);
     process.exit(1);

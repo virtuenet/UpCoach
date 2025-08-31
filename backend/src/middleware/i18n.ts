@@ -4,10 +4,11 @@ import i18n, { isValidLanguage } from '../config/i18n';
 
 export function i18nMiddleware(req: Request, _res: Response, next: NextFunction) {
   // Get language from multiple sources
-  let locale = req.query.lang as string ||
-               req.cookies?.locale ||
-               req.headers['accept-language']?.split(',')[0]?.split('-')[0] ||
-               'en';
+  let locale =
+    (req.query.lang as string) ||
+    req.cookies?.locale ||
+    req.headers['accept-language']?.split(',')[0]?.split('-')[0] ||
+    'en';
 
   // Validate and fallback to default if invalid
   if (!isValidLanguage(locale)) {
@@ -16,7 +17,7 @@ export function i18nMiddleware(req: Request, _res: Response, next: NextFunction)
 
   // Set locale for this request
   i18n.setLocale(locale);
-  
+
   // Store locale in response locals for views
   _res.locals.locale = locale;
   _res.locals.__ = _res.__ = (phrase: string, ...replace: any[]) => {

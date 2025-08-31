@@ -23,12 +23,15 @@ export class ContentCategoryController {
             include: [
               {
                 model: ContentCategory,
-                as: 'children'
-              }
-            ]
-          }
+                as: 'children',
+              },
+            ],
+          },
         ],
-        order: [['order', 'ASC'], ['name', 'ASC']]
+        order: [
+          ['order', 'ASC'],
+          ['name', 'ASC'],
+        ],
       });
 
       // Build hierarchical structure
@@ -45,7 +48,7 @@ export class ContentCategoryController {
   static async getOne(req: Request, _res: Response) {
     try {
       const { id } = req.params;
-      
+
       const where = id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
         ? { id }
         : { slug: id };
@@ -55,20 +58,20 @@ export class ContentCategoryController {
         include: [
           {
             model: ContentCategory,
-            as: 'parent'
+            as: 'parent',
           },
           {
             model: ContentCategory,
-            as: 'children'
+            as: 'children',
           },
           {
             model: Content,
             as: 'contents',
             attributes: ['id', 'title', 'slug', 'type', 'status', 'publishedAt'],
             where: { status: 'published' },
-            required: false
-          }
-        ]
+            required: false,
+          },
+        ],
       });
 
       if (!category) {
@@ -85,22 +88,13 @@ export class ContentCategoryController {
   // Create new category
   static async create(req: Request, _res: Response) {
     try {
-      const {
-        name,
-        description,
-        parentId,
-        icon,
-        color,
-        order,
-        isActive,
-        metadata
-      } = req.body;
+      const { name, description, parentId, icon, color, order, isActive, metadata } = req.body;
 
       // Generate slug
       const baseSlug = slugify(name, { lower: true, strict: true });
       let slug = baseSlug;
       let counter = 1;
-      
+
       // Ensure unique slug
       while (await ContentCategory.findOne({ where: { slug } })) {
         slug = `${baseSlug}-${counter}`;
@@ -116,7 +110,7 @@ export class ContentCategoryController {
         color,
         order: order || 0,
         isActive: isActive !== false,
-        metadata
+        metadata,
       });
 
       _res.status(201).json(category);
@@ -142,7 +136,7 @@ export class ContentCategoryController {
         const baseSlug = slugify(updates.name, { lower: true, strict: true });
         let slug = baseSlug;
         let counter = 1;
-        
+
         while (await ContentCategory.findOne({ where: { slug, id: { [Op.ne as any]: id } } })) {
           slug = `${baseSlug}-${counter}`;
           counter++;
@@ -160,8 +154,8 @@ export class ContentCategoryController {
       const updatedCategory = await ContentCategory.findByPk(id, {
         include: [
           { model: ContentCategory, as: 'parent' },
-          { model: ContentCategory, as: 'children' }
-        ]
+          { model: ContentCategory, as: 'children' },
+        ],
       });
 
       _res.json(updatedCategory);
@@ -179,8 +173,8 @@ export class ContentCategoryController {
       const category = await ContentCategory.findByPk(id, {
         include: [
           { model: ContentCategory, as: 'children' },
-          { model: Content, as: 'contents' }
-        ]
+          { model: Content, as: 'contents' },
+        ],
       });
 
       if (!category) {
@@ -216,10 +210,7 @@ export class ContentCategoryController {
 
       // Update order for each category
       for (const cat of categories) {
-        await ContentCategory.update(
-          { order: cat.order },
-          { where: { id: cat.id } }
-        );
+        await ContentCategory.update({ order: cat.order }, { where: { id: cat.id } });
       }
 
       _res.json({ message: 'Categories reordered successfully' });
@@ -244,10 +235,10 @@ export class ContentCategoryController {
               WHERE contents.category_id = "ContentCategory"."id"
               AND contents.status = 'published'
             )`),
-            'contentCount'
-          ]
+            'contentCount',
+          ],
         ],
-        where: { isActive: true }
+        where: { isActive: true },
       });
 
       _res.json(categories);

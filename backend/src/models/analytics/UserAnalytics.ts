@@ -1,5 +1,5 @@
 import { Model, DataTypes, Optional } from 'sequelize';
-import { sequelize } from '../index';
+import { sequelize } from '../../config/sequelize';
 
 /**
  * User Analytics Model
@@ -10,12 +10,12 @@ import { sequelize } from '../index';
 export interface UserAnalyticsAttributes {
   id: string;
   userId: string;
-  
+
   // Time Period
   periodType: 'daily' | 'weekly' | 'monthly' | 'quarterly';
   periodStart: Date;
   periodEnd: Date;
-  
+
   // Engagement Metrics
   engagementMetrics: {
     totalSessions: number;
@@ -23,24 +23,24 @@ export interface UserAnalyticsAttributes {
     averageSessionDuration: number;
     streakCount: number;
     missedSessions: number;
-    
+
     // Interaction Quality
     responsiveness: number; // 0-1 score
     participationScore: number; // 0-1 score
     followThroughRate: number; // 0-1 completion rate of action items
   };
-  
+
   // Coaching Effectiveness
   coachingMetrics: {
     goalsSet: number;
     goalsAchieved: number;
     goalCompletionRate: number;
-    
+
     // Avatar Performance
     avatarId: string;
     avatarEffectivenessScore: number; // 0-1 score
     avatarSwitchCount: number;
-    
+
     // Progress Tracking
     progressMetrics: {
       skillImprovement: number; // 0-1 score
@@ -49,7 +49,7 @@ export interface UserAnalyticsAttributes {
       habitFormation: number; // 0-1 score
     };
   };
-  
+
   // Behavioral Patterns
   behavioralData: {
     preferredSessionTime: string; // "morning", "afternoon", "evening"
@@ -57,14 +57,14 @@ export interface UserAnalyticsAttributes {
     communicationStyle: string; // "formal", "casual", "direct", "supportive"
     topicsOfInterest: string[];
     challengeAreas: string[];
-    
+
     // Emotional Patterns
     moodTrends: {
       date: string;
       mood: string;
       sentiment: number;
     }[];
-    
+
     // Learning Patterns
     learningPreferences: {
       visualLearner: number; // 0-1 score
@@ -72,14 +72,14 @@ export interface UserAnalyticsAttributes {
       kinestheticLearner: number; // 0-1 score
     };
   };
-  
+
   // KPI Tracking
   kpiMetrics: {
     userSatisfactionScore: number; // 1-10
     npsScore: number; // -100 to 100
     retentionProbability: number; // 0-1
     churnRisk: number; // 0-1
-    
+
     // Custom KPIs
     customKpis: {
       name: string;
@@ -88,7 +88,7 @@ export interface UserAnalyticsAttributes {
       trend: 'increasing' | 'decreasing' | 'stable';
     }[];
   };
-  
+
   // Comparative Data
   benchmarkData: {
     userPercentile: number; // Where user ranks compared to others
@@ -96,7 +96,7 @@ export interface UserAnalyticsAttributes {
     industryBenchmark: number;
     personalBest: number;
   };
-  
+
   // Insights & Recommendations
   aiInsights: {
     strengthAreas: string[];
@@ -105,27 +105,33 @@ export interface UserAnalyticsAttributes {
     predictedOutcomes: string[];
     riskFactors: string[];
   };
-  
+
   // Metadata
   calculatedAt: Date;
   nextCalculationDate: Date;
   dataQualityScore: number; // 0-1, how reliable this data is
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface UserAnalyticsCreationAttributes 
-  extends Optional<UserAnalyticsAttributes, 'id' | 'nextCalculationDate' | 'dataQualityScore' | 'createdAt' | 'updatedAt'> {}
+export interface UserAnalyticsCreationAttributes
+  extends Optional<
+    UserAnalyticsAttributes,
+    'id' | 'nextCalculationDate' | 'dataQualityScore' | 'createdAt' | 'updatedAt'
+  > {}
 
-export class UserAnalytics extends Model<UserAnalyticsAttributes, UserAnalyticsCreationAttributes> implements UserAnalyticsAttributes {
+export class UserAnalytics
+  extends Model<UserAnalyticsAttributes, UserAnalyticsCreationAttributes>
+  implements UserAnalyticsAttributes
+{
   public id!: string;
   public userId!: string;
-  
+
   public periodType!: 'daily' | 'weekly' | 'monthly' | 'quarterly';
   public periodStart!: Date;
   public periodEnd!: Date;
-  
+
   public engagementMetrics!: {
     totalSessions: number;
     totalDuration: number;
@@ -136,7 +142,7 @@ export class UserAnalytics extends Model<UserAnalyticsAttributes, UserAnalyticsC
     participationScore: number;
     followThroughRate: number;
   };
-  
+
   public coachingMetrics!: {
     goalsSet: number;
     goalsAchieved: number;
@@ -151,7 +157,7 @@ export class UserAnalytics extends Model<UserAnalyticsAttributes, UserAnalyticsC
       habitFormation: number;
     };
   };
-  
+
   public behavioralData!: {
     preferredSessionTime: string;
     preferredDuration: number;
@@ -169,7 +175,7 @@ export class UserAnalytics extends Model<UserAnalyticsAttributes, UserAnalyticsC
       kinestheticLearner: number;
     };
   };
-  
+
   public kpiMetrics!: {
     userSatisfactionScore: number;
     npsScore: number;
@@ -182,14 +188,14 @@ export class UserAnalytics extends Model<UserAnalyticsAttributes, UserAnalyticsC
       trend: 'increasing' | 'decreasing' | 'stable';
     }[];
   };
-  
+
   public benchmarkData!: {
     userPercentile: number;
     cohortId?: string;
     industryBenchmark: number;
     personalBest: number;
   };
-  
+
   public aiInsights!: {
     strengthAreas: string[];
     improvementAreas: string[];
@@ -197,11 +203,11 @@ export class UserAnalytics extends Model<UserAnalyticsAttributes, UserAnalyticsC
     predictedOutcomes: string[];
     riskFactors: string[];
   };
-  
+
   public calculatedAt!: Date;
   public nextCalculationDate!: Date;
   public dataQualityScore!: number;
-  
+
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
 
@@ -212,7 +218,7 @@ export class UserAnalytics extends Model<UserAnalyticsAttributes, UserAnalyticsC
     const engagement = this.engagementMetrics.participationScore * 0.3;
     const coaching = this.coachingMetrics.goalCompletionRate * 0.4;
     const satisfaction = (this.kpiMetrics.userSatisfactionScore / 10) * 0.3;
-    
+
     return Math.round((engagement + coaching + satisfaction) * 100);
   }
 
@@ -223,7 +229,7 @@ export class UserAnalytics extends Model<UserAnalyticsAttributes, UserAnalyticsC
     const trends = this.kpiMetrics.customKpis.map(kpi => kpi.trend);
     const upCount = trends.filter(t => t === 'increasing').length;
     const downCount = trends.filter(t => t === 'decreasing').length;
-    
+
     if (upCount > downCount) return 'up';
     if (downCount > upCount) return 'down';
     return 'stable';
@@ -233,9 +239,11 @@ export class UserAnalytics extends Model<UserAnalyticsAttributes, UserAnalyticsC
    * Check if user is at risk of churning
    */
   public isAtRisk(): boolean {
-    return this.kpiMetrics.churnRisk > 0.7 || 
-           this.kpiMetrics.userSatisfactionScore < 5 ||
-           this.engagementMetrics.followThroughRate < 0.3;
+    return (
+      this.kpiMetrics.churnRisk > 0.7 ||
+      this.kpiMetrics.userSatisfactionScore < 5 ||
+      this.engagementMetrics.followThroughRate < 0.3
+    );
   }
 
   /**
@@ -243,30 +251,32 @@ export class UserAnalytics extends Model<UserAnalyticsAttributes, UserAnalyticsC
    */
   public getPersonalizedRecommendations(): string[] {
     const recommendations: string[] = [];
-    
+
     // Engagement recommendations
     if (this.engagementMetrics.averageSessionDuration < 15) {
-      recommendations.push('Consider shorter, more focused coaching sessions to improve engagement');
+      recommendations.push(
+        'Consider shorter, more focused coaching sessions to improve engagement'
+      );
     }
-    
+
     if (this.engagementMetrics.missedSessions > 2) {
       recommendations.push('Implement session reminders and flexible scheduling');
     }
-    
+
     // Progress recommendations
     if (this.coachingMetrics.goalCompletionRate < 0.5) {
       recommendations.push('Break down goals into smaller, more achievable milestones');
     }
-    
+
     if (this.coachingMetrics.avatarEffectivenessScore < 0.6) {
       recommendations.push('Consider switching to a different coaching avatar style');
     }
-    
+
     // Behavioral recommendations
     if (this.behavioralData.challengeAreas.length > 3) {
       recommendations.push('Focus on addressing 1-2 primary challenge areas for better results');
     }
-    
+
     return [...recommendations, ...this.aiInsights.recommendedActions];
   }
 }
@@ -447,4 +457,4 @@ UserAnalytics.init(
   }
 );
 
-export default UserAnalytics; 
+export default UserAnalytics;

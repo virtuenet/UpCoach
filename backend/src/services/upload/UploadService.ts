@@ -27,7 +27,8 @@ class UploadService {
 
   constructor() {
     this.uploadDir = process.env.UPLOAD_DIR || 'uploads';
-    this.baseUrl = process.env.CDN_URL || `${process.env.API_URL || 'http://localhost:8080'}/uploads`;
+    this.baseUrl =
+      process.env.CDN_URL || `${process.env.API_URL || 'http://localhost:8080'}/uploads`;
   }
 
   private getStorage() {
@@ -82,10 +83,7 @@ class UploadService {
     });
   }
 
-  public async processImage(
-    filePath: string,
-    options: ImageTransformOptions
-  ): Promise<string> {
+  public async processImage(filePath: string, options: ImageTransformOptions): Promise<string> {
     const { width, height, quality = 80, format = 'jpeg' } = options;
     const outputPath = filePath.replace(
       path.extname(filePath),
@@ -93,7 +91,7 @@ class UploadService {
     );
 
     const image = sharp(filePath);
-    
+
     if (width || height) {
       image.resize(width, height, {
         fit: 'inside',
@@ -101,9 +99,7 @@ class UploadService {
       });
     }
 
-    await image
-      .toFormat(format, { quality })
-      .toFile(outputPath);
+    await image.toFormat(format, { quality }).toFile(outputPath);
 
     return outputPath;
   }
@@ -142,7 +138,7 @@ class UploadService {
 
   public async getFileMetadata(filePath: string): Promise<any> {
     const stats = await fs.stat(filePath);
-    
+
     if (filePath.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
       const metadata = await sharp(filePath).metadata();
       return {
@@ -170,7 +166,7 @@ class UploadService {
   public async uploadFile(file: Express.Multer.File, options?: any): Promise<any> {
     const subdirectory = this.getSubdirectory(file.mimetype);
     const url = this.getFileUrl(file.filename, subdirectory);
-    
+
     const result: any = {
       filename: file.filename,
       url,
@@ -193,7 +189,7 @@ class UploadService {
     }
 
     result.metadata = await this.getFileMetadata(file.path);
-    
+
     return result;
   }
 }

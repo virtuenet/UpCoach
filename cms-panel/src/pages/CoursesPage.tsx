@@ -1,60 +1,61 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
-import { Search, Plus, BookOpen, Users, Clock, Edit, Trash2 } from 'lucide-react'
-import { coursesApi } from '../api/courses'
-import LoadingSpinner from '../components/LoadingSpinner'
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { Search, Plus, BookOpen, Users, Clock, Edit, Trash2 } from 'lucide-react';
+import { coursesApi } from '../api/courses';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 interface Course {
-  id: string
-  title: string
-  description: string
-  category: string
-  difficulty: 'beginner' | 'intermediate' | 'advanced'
-  duration: number // in minutes
-  lessonsCount: number
-  enrolledCount: number
-  status: 'draft' | 'published' | 'archived'
-  createdAt: string
-  updatedAt: string
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  duration: number; // in minutes
+  lessonsCount: number;
+  enrolledCount: number;
+  status: 'draft' | 'published' | 'archived';
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function CoursesPage() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [difficultyFilter, setDifficultyFilter] = useState<string>('all')
+  const [searchTerm, setSearchTerm] = useState('');
+  const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
 
   const { data: courses, isLoading } = useQuery({
     queryKey: ['courses', searchTerm, difficultyFilter],
-    queryFn: () => coursesApi.getCourses({
-      search: searchTerm,
-      difficulty: difficultyFilter === 'all' ? undefined : difficultyFilter,
-    }),
-  })
+    queryFn: () =>
+      coursesApi.getCourses({
+        search: searchTerm,
+        difficulty: difficultyFilter === 'all' ? undefined : difficultyFilter,
+      }),
+  });
 
   const getDifficultyBadge = (difficulty: string) => {
     const colors = {
       beginner: 'bg-green-100 text-green-800',
       intermediate: 'bg-yellow-100 text-yellow-800',
       advanced: 'bg-red-100 text-red-800',
-    }
-    return colors[difficulty as keyof typeof colors] || colors.beginner
-  }
+    };
+    return colors[difficulty as keyof typeof colors] || colors.beginner;
+  };
 
   const getStatusBadge = (status: string) => {
     const colors = {
       published: 'bg-green-100 text-green-800',
       draft: 'bg-gray-100 text-gray-800',
       archived: 'bg-gray-100 text-gray-800',
-    }
-    return colors[status as keyof typeof colors] || colors.draft
-  }
+    };
+    return colors[status as keyof typeof colors] || colors.draft;
+  };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner size="lg" />
       </div>
-    )
+    );
   }
 
   return (
@@ -62,9 +63,7 @@ export default function CoursesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Courses</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Create and manage structured learning paths
-          </p>
+          <p className="mt-1 text-sm text-gray-500">Create and manage structured learning paths</p>
         </div>
         <Link
           to="/courses/create"
@@ -85,14 +84,14 @@ export default function CoursesPage() {
                 type="text"
                 placeholder="Search courses..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-secondary-500 focus:border-secondary-500"
               />
             </div>
           </div>
           <select
             value={difficultyFilter}
-            onChange={(e) => setDifficultyFilter(e.target.value)}
+            onChange={e => setDifficultyFilter(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-secondary-500 focus:border-secondary-500"
           >
             <option value="all">All Levels</option>
@@ -106,7 +105,10 @@ export default function CoursesPage() {
       {/* Courses Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {courses?.map((course: Course) => (
-          <div key={course.id} className="bg-white rounded-lg shadow hover:shadow-md transition-shadow">
+          <div
+            key={course.id}
+            className="bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+          >
             <div className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
@@ -115,17 +117,19 @@ export default function CoursesPage() {
                   </h3>
                   <p className="text-sm text-gray-500 mt-1 capitalize">{course.category}</p>
                 </div>
-                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(course.status)}`}>
+                <span
+                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(course.status)}`}
+                >
                   {course.status}
                 </span>
               </div>
-              
-              <p className="text-gray-600 text-sm line-clamp-3 mb-4">
-                {course.description}
-              </p>
+
+              <p className="text-gray-600 text-sm line-clamp-3 mb-4">{course.description}</p>
 
               <div className="flex items-center justify-between mb-4">
-                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getDifficultyBadge(course.difficulty)}`}>
+                <span
+                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getDifficultyBadge(course.difficulty)}`}
+                >
                   {course.difficulty}
                 </span>
                 <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -174,5 +178,5 @@ export default function CoursesPage() {
         </div>
       )}
     </div>
-  )
-} 
+  );
+}

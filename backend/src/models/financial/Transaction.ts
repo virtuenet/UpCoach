@@ -1,5 +1,5 @@
 import { Model, DataTypes, Optional, Association } from 'sequelize';
-import { sequelize } from '../index';
+import { sequelize } from '../../config/sequelize';
 import { User } from '../User';
 import { Subscription } from './Subscription';
 
@@ -50,9 +50,28 @@ export interface TransactionAttributes {
   updatedAt?: Date;
 }
 
-export interface TransactionCreationAttributes extends Optional<TransactionAttributes, 'id' | 'subscriptionId' | 'description' | 'metadata' | 'stripeInvoiceId' | 'stripeChargeId' | 'stripeRefundId' | 'failureReason' | 'refundedAmount' | 'fee' | 'net' | 'createdAt' | 'updatedAt'> {}
+export interface TransactionCreationAttributes
+  extends Optional<
+    TransactionAttributes,
+    | 'id'
+    | 'subscriptionId'
+    | 'description'
+    | 'metadata'
+    | 'stripeInvoiceId'
+    | 'stripeChargeId'
+    | 'stripeRefundId'
+    | 'failureReason'
+    | 'refundedAmount'
+    | 'fee'
+    | 'net'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
-export class Transaction extends Model<TransactionAttributes, TransactionCreationAttributes> implements TransactionAttributes {
+export class Transaction
+  extends Model<TransactionAttributes, TransactionCreationAttributes>
+  implements TransactionAttributes
+{
   public id!: string;
   public userId!: string;
   public subscriptionId?: string;
@@ -104,7 +123,10 @@ export class Transaction extends Model<TransactionAttributes, TransactionCreatio
 
   public static associate(models: any) {
     Transaction.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
-    Transaction.belongsTo(models.Subscription, { foreignKey: 'subscriptionId', as: 'subscription' });
+    Transaction.belongsTo(models.Subscription, {
+      foreignKey: 'subscriptionId',
+      as: 'subscription',
+    });
   }
 }
 

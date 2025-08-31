@@ -41,7 +41,7 @@ export class FinancialService {
    */
   async calculateChurnRate(startDate: Date, endDate: Date): Promise<number> {
     // Count subscriptions that were active at start of period
-    const [startCountResult] = await sequelize.query(
+    const [startCountResult] = (await sequelize.query(
       `SELECT COUNT(*) as count 
        FROM subscriptions 
        WHERE created_at <= :startDate 
@@ -50,10 +50,10 @@ export class FinancialService {
         replacements: { startDate },
         type: QueryTypes.SELECT,
       }
-    ) as any;
+    )) as any;
 
     // Count subscriptions that churned during the period
-    const [churnedCountResult] = await sequelize.query(
+    const [churnedCountResult] = (await sequelize.query(
       `SELECT COUNT(*) as count 
        FROM subscriptions 
        WHERE canceled_at BETWEEN :startDate AND :endDate`,
@@ -61,7 +61,7 @@ export class FinancialService {
         replacements: { startDate, endDate },
         type: QueryTypes.SELECT,
       }
-    ) as any;
+    )) as any;
 
     const startCount = parseInt(startCountResult.count);
     const churnedCount = parseInt(churnedCountResult.count);
@@ -101,7 +101,7 @@ export class FinancialService {
   async calculateLTV(cohortMonth?: string): Promise<number> {
     const avgRevenuePerUser = await this.calculateARPU();
     const avgLifetimeMonths = 24; // Default estimate, should be calculated from historical data
-    
+
     return avgRevenuePerUser * avgLifetimeMonths;
   }
 
@@ -154,9 +154,7 @@ export class FinancialService {
     // Current metrics
     const currentMRR = await this.calculateMRR();
     const lastMonthMRR = await this.calculateMRR(lastMonthEnd);
-    const mrrGrowth = lastMonthMRR > 0 
-      ? ((currentMRR - lastMonthMRR) / lastMonthMRR) * 100 
-      : 0;
+    const mrrGrowth = lastMonthMRR > 0 ? ((currentMRR - lastMonthMRR) / lastMonthMRR) * 100 : 0;
 
     // Revenue metrics
     const revenue = await Transaction.sum('amount', {
@@ -236,7 +234,7 @@ export class FinancialService {
    */
   async generateDailySnapshot(date: Date = new Date()): Promise<FinancialSnapshot> {
     const metrics = await this.getDashboardMetrics();
-    
+
     // Get detailed cost breakdown
     const costsByCategory = await sequelize.query(
       `SELECT 
@@ -260,13 +258,13 @@ export class FinancialService {
     const snapshot = await FinancialSnapshot.create({
       date,
       period: SnapshotPeriod.DAILY,
-      
+
       // Revenue metrics
       revenue: metrics.revenue.totalRevenue,
       recurringRevenue: metrics.revenue.mrr,
       mrr: metrics.revenue.mrr,
       arr: metrics.revenue.arr,
-      
+
       // Cost metrics
       totalCosts: metrics.costs.total,
       infrastructureCosts: costBreakdown.infrastructure || 0,
@@ -274,13 +272,13 @@ export class FinancialService {
       personnelCosts: costBreakdown.personnel || 0,
       marketingCosts: costBreakdown.marketing || 0,
       operationalCosts: costBreakdown.operations || 0,
-      
+
       // Profit metrics
       grossProfit: metrics.profitLoss.grossProfit,
       netProfit: metrics.profitLoss.grossProfit, // Simplified for now
       grossMargin: metrics.profitLoss.margin,
       netMargin: metrics.profitLoss.margin,
-      
+
       // Customer metrics
       activeCustomers: metrics.subscriptions.active,
       newCustomers: metrics.subscriptions.new,
@@ -289,7 +287,7 @@ export class FinancialService {
       avgRevenuePerUser: metrics.unitEconomics.arpu,
       customerAcquisitionCost: metrics.unitEconomics.cac,
       customerLifetimeValue: metrics.unitEconomics.ltv,
-      
+
       // Unit economics
       ltvToCacRatio: metrics.unitEconomics.ltvToCacRatio,
     });
@@ -336,7 +334,10 @@ export class FinancialService {
       return acc;
     }, {});
 
-    const totalCosts = Object.values(costsByCategory).reduce((sum: number, cost: any) => sum + (cost as number), 0);
+    const totalCosts = Object.values(costsByCategory).reduce(
+      (sum: number, cost: any) => sum + (cost as number),
+      0
+    );
     const netRevenue = (revenue || 0) - (refunds || 0);
     const grossProfit = netRevenue - (costsByCategory.api_services || 0);
     const operatingExpenses = (totalCosts as number) - (costsByCategory.api_services || 0);
@@ -434,4 +435,4 @@ export class FinancialService {
   }
 }
 
-export const financialService = new FinancialService(); 
+export const financialService = new FinancialService();

@@ -1,4 +1,6 @@
-import Grid from "@mui/material";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import Grid from '@mui/material';
 import {
   Box,
   Card,
@@ -31,7 +33,7 @@ import {
   Tooltip,
   Switch,
   FormControlLabel,
-} from "@mui/material";
+} from '@mui/material';
 import {
   Business,
   People,
@@ -46,8 +48,8 @@ import {
   Group,
   Domain,
   CloudUpload,
-} from "@mui/icons-material";
-import api from "../../services/api";
+} from '@mui/icons-material';
+import api from '../../services/api';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -85,22 +87,22 @@ const OrganizationSettings: React.FC = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   const [inviteForm, setInviteForm] = useState({
-    email: "",
-    role: "member",
+    email: '',
+    role: 'member',
     teamIds: [],
   });
 
   const [teamForm, setTeamForm] = useState({
-    name: "",
-    description: "",
-    department: "",
+    name: '',
+    description: '',
+    department: '',
   });
 
   const [ssoForm, setSsoForm] = useState({
-    provider: "saml",
+    provider: 'saml',
     enabled: false,
-    samlIdpUrl: "",
-    samlIdpCert: "",
+    samlIdpUrl: '',
+    samlIdpCert: '',
     allowedDomains: [],
   });
 
@@ -111,7 +113,7 @@ const OrganizationSettings: React.FC = () => {
   const loadOrganizationData = async () => {
     try {
       setLoading(true);
-      const orgId = localStorage.getItem("organizationId");
+      const orgId = localStorage.getItem('organizationId');
 
       const [orgRes, membersRes, teamsRes, ssoRes] = await Promise.all([
         api.get(`/enterprise/organizations/${orgId}`),
@@ -126,8 +128,8 @@ const OrganizationSettings: React.FC = () => {
       setTeams(teamsRes.data.data.teams);
       setSsoProviders(ssoRes.data.data.providers);
     } catch (error) {
-      console.error("Failed to load organization data:", error);
-      enqueueSnackbar("Failed to load organization data", { variant: "error" });
+      console.error('Failed to load organization data:', error);
+      enqueueSnackbar('Failed to load organization data', { variant: 'error' });
     } finally {
       setLoading(false);
     }
@@ -135,92 +137,77 @@ const OrganizationSettings: React.FC = () => {
 
   const handleInviteMember = async () => {
     try {
-      const orgId = localStorage.getItem("organizationId");
-      await api.post(
-        `/enterprise/organizations/${orgId}/invitations`,
-        inviteForm,
-      );
+      const orgId = localStorage.getItem('organizationId');
+      await api.post(`/enterprise/organizations/${orgId}/invitations`, inviteForm);
 
-      enqueueSnackbar("Invitation sent successfully", { variant: "success" });
+      enqueueSnackbar('Invitation sent successfully', { variant: 'success' });
       setInviteDialog(false);
-      setInviteForm({ email: "", role: "member", teamIds: [] });
+      setInviteForm({ email: '', role: 'member', teamIds: [] });
       loadOrganizationData();
     } catch (error) {
-      enqueueSnackbar(
-        error.response?.data?.message || "Failed to send invitation",
-        {
-          variant: "error",
-        },
-      );
+      enqueueSnackbar(error.response?.data?.message || 'Failed to send invitation', {
+        variant: 'error',
+      });
     }
   };
 
   const handleCreateTeam = async () => {
     try {
-      const orgId = localStorage.getItem("organizationId");
+      const orgId = localStorage.getItem('organizationId');
       await api.post(`/enterprise/organizations/${orgId}/teams`, teamForm);
 
-      enqueueSnackbar("Team created successfully", { variant: "success" });
+      enqueueSnackbar('Team created successfully', { variant: 'success' });
       setTeamDialog(false);
-      setTeamForm({ name: "", description: "", department: "" });
+      setTeamForm({ name: '', description: '', department: '' });
       loadOrganizationData();
     } catch (error) {
-      enqueueSnackbar(
-        error.response?.data?.message || "Failed to create team",
-        {
-          variant: "error",
-        },
-      );
+      enqueueSnackbar(error.response?.data?.message || 'Failed to create team', {
+        variant: 'error',
+      });
     }
   };
 
   const handleRemoveMember = async (userId: number) => {
-    if (!window.confirm("Are you sure you want to remove this member?")) return;
+    if (!window.confirm('Are you sure you want to remove this member?')) return;
 
     try {
-      const orgId = localStorage.getItem("organizationId");
+      const orgId = localStorage.getItem('organizationId');
       await api.delete(`/enterprise/organizations/${orgId}/members/${userId}`);
 
-      enqueueSnackbar("Member removed successfully", { variant: "success" });
+      enqueueSnackbar('Member removed successfully', { variant: 'success' });
       loadOrganizationData();
     } catch (error) {
-      enqueueSnackbar(
-        error.response?.data?.message || "Failed to remove member",
-        {
-          variant: "error",
-        },
-      );
+      enqueueSnackbar(error.response?.data?.message || 'Failed to remove member', {
+        variant: 'error',
+      });
     }
   };
 
   const handleConfigureSSO = async () => {
     try {
-      const orgId = localStorage.getItem("organizationId");
+      const orgId = localStorage.getItem('organizationId');
       await api.post(`/enterprise/organizations/${orgId}/sso`, ssoForm);
 
-      enqueueSnackbar("SSO configured successfully", { variant: "success" });
+      enqueueSnackbar('SSO configured successfully', { variant: 'success' });
       setSsoDialog(false);
       setSsoForm({
-        provider: "saml",
+        provider: 'saml',
         enabled: false,
-        samlIdpUrl: "",
-        samlIdpCert: "",
+        samlIdpUrl: '',
+        samlIdpCert: '',
         allowedDomains: [],
       });
       loadOrganizationData();
     } catch (error) {
-      enqueueSnackbar(
-        error.response?.data?.message || "Failed to configure SSO",
-        {
-          variant: "error",
-        },
-      );
+      enqueueSnackbar(error.response?.data?.message || 'Failed to configure SSO', {
+        variant: 'error',
+      });
     }
   };
 
   if (loading) {
     return (
-      <Box sx={{ width: "100%" }}>
+      <Box sx={{ width: '100%' }}>
         <LinearProgress />
       </Box>
     );
@@ -238,7 +225,7 @@ const OrganizationSettings: React.FC = () => {
           <Grid container spacing={3} alignItems="center">
             <Grid>
               <Avatar
-                sx={{ width: 80, height: 80, bgcolor: "primary.main" }}
+                sx={{ width: 80, height: 80, bgcolor: 'primary.main' }}
                 src={organization?.logoUrl}
               >
                 <Business fontSize="large" />
@@ -246,9 +233,7 @@ const OrganizationSettings: React.FC = () => {
             </Grid>
             <Grid xs>
               <Typography variant="h5">{organization?.name}</Typography>
-              <Typography color="textSecondary">
-                {organization?.website}
-              </Typography>
+              <Typography color="textSecondary">{organization?.website}</Typography>
               <Box sx={{ mt: 1 }}>
                 <Chip
                   label={organization?.subscriptionTier}
@@ -265,11 +250,7 @@ const OrganizationSettings: React.FC = () => {
               </Box>
             </Grid>
             <Grid>
-              <Button
-                variant="contained"
-                startIcon={<CloudUpload />}
-                component="label"
-              >
+              <Button variant="contained" startIcon={<CloudUpload />} component="label">
                 Upload Logo
                 <input type="file" hidden accept="image/*" />
               </Button>
@@ -294,13 +275,9 @@ const OrganizationSettings: React.FC = () => {
 
         {/* Members Tab */}
         <TabPanel value={tabValue} index={0}>
-          <Box sx={{ mb: 2, display: "flex", justifyContent: "space-between" }}>
+          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
             <Typography variant="h6">Organization Members</Typography>
-            <Button
-              variant="contained"
-              startIcon={<Send />}
-              onClick={() => setInviteDialog(true)}
-            >
+            <Button variant="contained" startIcon={<Send />} onClick={() => setInviteDialog(true)}>
               Invite Member
             </Button>
           </Box>
@@ -317,17 +294,15 @@ const OrganizationSettings: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {members.map((member) => (
+                {members.map(member => (
                   <TableRow key={member.id}>
                     <TableCell>
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <Avatar src={member.avatar_url} sx={{ mr: 2 }}>
                           {member.full_name?.charAt(0)}
                         </Avatar>
                         <Box>
-                          <Typography variant="body2">
-                            {member.full_name}
-                          </Typography>
+                          <Typography variant="body2">{member.full_name}</Typography>
                           <Typography variant="caption" color="textSecondary">
                             {member.email}
                           </Typography>
@@ -369,26 +344,22 @@ const OrganizationSettings: React.FC = () => {
 
         {/* Teams Tab */}
         <TabPanel value={tabValue} index={1}>
-          <Box sx={{ mb: 2, display: "flex", justifyContent: "space-between" }}>
+          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
             <Typography variant="h6">Teams</Typography>
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={() => setTeamDialog(true)}
-            >
+            <Button variant="contained" startIcon={<Add />} onClick={() => setTeamDialog(true)}>
               Create Team
             </Button>
           </Box>
 
           <Grid container spacing={2}>
-            {teams.map((team) => (
+            {teams.map(team => (
               <Grid item xs={12} md={6} key={team.id}>
                 <Card>
                   <CardContent>
                     <Box
                       sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
+                        display: 'flex',
+                        justifyContent: 'space-between',
                         mb: 2,
                       }}
                     >
@@ -400,11 +371,9 @@ const OrganizationSettings: React.FC = () => {
                     <Typography variant="body2" color="textSecondary" paragraph>
                       {team.description}
                     </Typography>
-                    <Box
-                      sx={{ display: "flex", justifyContent: "space-between" }}
-                    >
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Typography variant="caption" color="textSecondary">
-                        Department: {team.department || "N/A"}
+                        Department: {team.department || 'N/A'}
                       </Typography>
                       <Typography variant="caption" color="textSecondary">
                         {team.member_count} members
@@ -420,57 +389,43 @@ const OrganizationSettings: React.FC = () => {
         {/* SSO & Security Tab */}
         <TabPanel value={tabValue} index={2}>
           <Box sx={{ mb: 3 }}>
-            <Box
-              sx={{ mb: 2, display: "flex", justifyContent: "space-between" }}
-            >
+            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
               <Typography variant="h6">Single Sign-On (SSO)</Typography>
-              <Button
-                variant="contained"
-                startIcon={<Shield />}
-                onClick={() => setSsoDialog(true)}
-              >
+              <Button variant="contained" startIcon={<Shield />} onClick={() => setSsoDialog(true)}>
                 Configure SSO
               </Button>
             </Box>
 
             {ssoProviders.length === 0 ? (
               <Alert severity="info">
-                No SSO providers configured. Configure SSO to enable secure
-                authentication.
+                No SSO providers configured. Configure SSO to enable secure authentication.
               </Alert>
             ) : (
               <Grid container spacing={2}>
-                {ssoProviders.map((provider) => (
+                {ssoProviders.map(provider => (
                   <Grid item xs={12} md={6} key={provider.id}>
                     <Card>
                       <CardContent>
                         <Box
                           sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
+                            display: 'flex',
+                            justifyContent: 'space-between',
                             mb: 2,
                           }}
                         >
-                          <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             <Key sx={{ mr: 1 }} />
-                            <Typography variant="h6">
-                              {provider.provider.toUpperCase()}
-                            </Typography>
+                            <Typography variant="h6">{provider.provider.toUpperCase()}</Typography>
                           </Box>
                           <Switch checked={provider.enabled} />
                         </Box>
                         <Typography variant="body2" color="textSecondary">
-                          {provider.enabled ? "Active" : "Inactive"}
+                          {provider.enabled ? 'Active' : 'Inactive'}
                         </Typography>
                         {provider.allowed_domains && (
                           <Box sx={{ mt: 1 }}>
                             {provider.allowed_domains.map((domain: string) => (
-                              <Chip
-                                key={domain}
-                                label={domain}
-                                size="small"
-                                sx={{ mr: 0.5 }}
-                              />
+                              <Chip key={domain} label={domain} size="small" sx={{ mr: 0.5 }} />
                             ))}
                           </Box>
                         )}
@@ -486,9 +441,7 @@ const OrganizationSettings: React.FC = () => {
             <Typography variant="h6" gutterBottom>
               Security Policies
             </Typography>
-            <Alert severity="info">
-              Enterprise security policies coming soon.
-            </Alert>
+            <Alert severity="info">Enterprise security policies coming soon.</Alert>
           </Box>
         </TabPanel>
 
@@ -499,21 +452,17 @@ const OrganizationSettings: React.FC = () => {
               <TextField
                 fullWidth
                 label="Organization Name"
-                value={organization?.name || ""}
+                value={organization?.name || ''}
                 disabled
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Website"
-                value={organization?.website || ""}
-              />
+              <TextField fullWidth label="Website" value={organization?.website || ''} />
             </Grid>
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Industry</InputLabel>
-                <Select value={organization?.industry || ""}>
+                <Select value={organization?.industry || ''}>
                   <MenuItem value="technology">Technology</MenuItem>
                   <MenuItem value="healthcare">Healthcare</MenuItem>
                   <MenuItem value="finance">Finance</MenuItem>
@@ -526,7 +475,7 @@ const OrganizationSettings: React.FC = () => {
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Organization Size</InputLabel>
-                <Select value={organization?.size || ""}>
+                <Select value={organization?.size || ''}>
                   <MenuItem value="small">Small (1-50)</MenuItem>
                   <MenuItem value="medium">Medium (51-200)</MenuItem>
                   <MenuItem value="large">Large (201-1000)</MenuItem>
@@ -535,11 +484,7 @@ const OrganizationSettings: React.FC = () => {
               </FormControl>
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Billing Email"
-                value={organization?.billingEmail || ""}
-              />
+              <TextField fullWidth label="Billing Email" value={organization?.billingEmail || ''} />
             </Grid>
             <Grid item xs={12}>
               <Button variant="contained" color="primary">
@@ -551,12 +496,7 @@ const OrganizationSettings: React.FC = () => {
       </Card>
 
       {/* Invite Member Dialog */}
-      <Dialog
-        open={inviteDialog}
-        onClose={() => setInviteDialog(false)}
-        maxWidth="sm"
-        fullWidth
-      >
+      <Dialog open={inviteDialog} onClose={() => setInviteDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Invite Member</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
@@ -565,18 +505,14 @@ const OrganizationSettings: React.FC = () => {
               label="Email Address"
               type="email"
               value={inviteForm.email}
-              onChange={(e) =>
-                setInviteForm({ ...inviteForm, email: e.target.value })
-              }
+              onChange={e => setInviteForm({ ...inviteForm, email: e.target.value })}
               sx={{ mb: 2 }}
             />
             <FormControl fullWidth sx={{ mb: 2 }}>
               <InputLabel>Role</InputLabel>
               <Select
                 value={inviteForm.role}
-                onChange={(e) =>
-                  setInviteForm({ ...inviteForm, role: e.target.value })
-                }
+                onChange={e => setInviteForm({ ...inviteForm, role: e.target.value })}
               >
                 <MenuItem value="member">Member</MenuItem>
                 <MenuItem value="manager">Manager</MenuItem>
@@ -588,14 +524,14 @@ const OrganizationSettings: React.FC = () => {
               <Select
                 multiple
                 value={inviteForm.teamIds}
-                onChange={(e) =>
+                onChange={e =>
                   setInviteForm({
                     ...inviteForm,
                     teamIds: e.target.value as any,
                   })
                 }
               >
-                {teams.map((team) => (
+                {teams.map(team => (
                   <MenuItem key={team.id} value={team.id}>
                     {team.name}
                   </MenuItem>
@@ -613,12 +549,7 @@ const OrganizationSettings: React.FC = () => {
       </Dialog>
 
       {/* Create Team Dialog */}
-      <Dialog
-        open={teamDialog}
-        onClose={() => setTeamDialog(false)}
-        maxWidth="sm"
-        fullWidth
-      >
+      <Dialog open={teamDialog} onClose={() => setTeamDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Create Team</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
@@ -626,9 +557,7 @@ const OrganizationSettings: React.FC = () => {
               fullWidth
               label="Team Name"
               value={teamForm.name}
-              onChange={(e) =>
-                setTeamForm({ ...teamForm, name: e.target.value })
-              }
+              onChange={e => setTeamForm({ ...teamForm, name: e.target.value })}
               sx={{ mb: 2 }}
             />
             <TextField
@@ -637,18 +566,14 @@ const OrganizationSettings: React.FC = () => {
               multiline
               rows={3}
               value={teamForm.description}
-              onChange={(e) =>
-                setTeamForm({ ...teamForm, description: e.target.value })
-              }
+              onChange={e => setTeamForm({ ...teamForm, description: e.target.value })}
               sx={{ mb: 2 }}
             />
             <TextField
               fullWidth
               label="Department"
               value={teamForm.department}
-              onChange={(e) =>
-                setTeamForm({ ...teamForm, department: e.target.value })
-              }
+              onChange={e => setTeamForm({ ...teamForm, department: e.target.value })}
             />
           </Box>
         </DialogContent>
@@ -661,12 +586,7 @@ const OrganizationSettings: React.FC = () => {
       </Dialog>
 
       {/* Configure SSO Dialog */}
-      <Dialog
-        open={ssoDialog}
-        onClose={() => setSsoDialog(false)}
-        maxWidth="md"
-        fullWidth
-      >
+      <Dialog open={ssoDialog} onClose={() => setSsoDialog(false)} maxWidth="md" fullWidth>
         <DialogTitle>Configure SSO</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
@@ -674,9 +594,7 @@ const OrganizationSettings: React.FC = () => {
               <InputLabel>Provider</InputLabel>
               <Select
                 value={ssoForm.provider}
-                onChange={(e) =>
-                  setSsoForm({ ...ssoForm, provider: e.target.value })
-                }
+                onChange={e => setSsoForm({ ...ssoForm, provider: e.target.value })}
               >
                 <MenuItem value="saml">SAML 2.0</MenuItem>
                 <MenuItem value="oidc">OpenID Connect</MenuItem>
@@ -686,15 +604,13 @@ const OrganizationSettings: React.FC = () => {
               </Select>
             </FormControl>
 
-            {ssoForm.provider === "saml" && (
+            {ssoForm.provider === 'saml' && (
               <>
                 <TextField
                   fullWidth
                   label="SAML IdP URL"
                   value={ssoForm.samlIdpUrl}
-                  onChange={(e) =>
-                    setSsoForm({ ...ssoForm, samlIdpUrl: e.target.value })
-                  }
+                  onChange={e => setSsoForm({ ...ssoForm, samlIdpUrl: e.target.value })}
                   sx={{ mb: 2 }}
                 />
                 <TextField
@@ -703,9 +619,7 @@ const OrganizationSettings: React.FC = () => {
                   multiline
                   rows={4}
                   value={ssoForm.samlIdpCert}
-                  onChange={(e) =>
-                    setSsoForm({ ...ssoForm, samlIdpCert: e.target.value })
-                  }
+                  onChange={e => setSsoForm({ ...ssoForm, samlIdpCert: e.target.value })}
                   sx={{ mb: 2 }}
                 />
               </>
@@ -715,12 +629,10 @@ const OrganizationSettings: React.FC = () => {
               fullWidth
               label="Allowed Email Domains (comma-separated)"
               placeholder="example.com, company.org"
-              onChange={(e) =>
+              onChange={e =>
                 setSsoForm({
                   ...ssoForm,
-                  allowedDomains: e.target.value
-                    .split(",")
-                    .map((d) => d.trim()),
+                  allowedDomains: e.target.value.split(',').map(d => d.trim()),
                 })
               }
               sx={{ mb: 2 }}
@@ -730,9 +642,7 @@ const OrganizationSettings: React.FC = () => {
               control={
                 <Switch
                   checked={ssoForm.enabled}
-                  onChange={(e) =>
-                    setSsoForm({ ...ssoForm, enabled: e.target.checked })
-                  }
+                  onChange={e => setSsoForm({ ...ssoForm, enabled: e.target.checked })}
                 />
               }
               label="Enable SSO"

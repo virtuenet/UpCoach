@@ -248,10 +248,16 @@ export class CoachReview extends Model {
     let order: any[] = [];
     switch (options.sortBy) {
       case 'rating':
-        order = [['rating', 'DESC'], ['createdAt', 'DESC']];
+        order = [
+          ['rating', 'DESC'],
+          ['createdAt', 'DESC'],
+        ];
         break;
       case 'helpful':
-        order = [['helpfulCount', 'DESC'], ['createdAt', 'DESC']];
+        order = [
+          ['helpfulCount', 'DESC'],
+          ['createdAt', 'DESC'],
+        ];
         break;
       default:
         order = [['createdAt', 'DESC']];
@@ -296,12 +302,7 @@ export class CoachReview extends Model {
         coachId,
         isVisible: true,
       },
-      attributes: [
-        'rating',
-        'communicationRating',
-        'knowledgeRating',
-        'helpfulnessRating',
-      ],
+      attributes: ['rating', 'communicationRating', 'knowledgeRating', 'helpfulnessRating'],
     });
 
     const totalReviews = reviews.length;
@@ -347,10 +348,7 @@ export class CoachReview extends Model {
     return Number((numbers.reduce((sum, n) => sum + n, 0) / numbers.length).toFixed(2));
   }
 
-  static async hasUserReviewedCoach(
-    clientId: number,
-    coachId: number
-  ): Promise<boolean> {
+  static async hasUserReviewedCoach(clientId: number, coachId: number): Promise<boolean> {
     const count = await this.count({
       where: {
         clientId,

@@ -47,7 +47,7 @@ export function sanitizeString(input: string, logSuspicious = true): string {
 
   const originalLength = input.length;
   const sanitized = DOMPurify.sanitize(input, STRICT_CONFIG);
-  
+
   // Log if content was modified (potential XSS attempt)
   if (logSuspicious && sanitized.length !== originalLength) {
     logger.warn('Potential XSS attempt detected and sanitized', {
@@ -86,8 +86,8 @@ export function sanitizeObject<T>(obj: T, strict = true): T {
 
   // Functions shouldn't be in data objects - log and remove
   if (typeof obj === 'function') {
-    logger.warn('Function detected in sanitization - potential security risk', { 
-      stack: new Error().stack?.split('\n').slice(0, 5) 
+    logger.warn('Function detected in sanitization - potential security risk', {
+      stack: new Error().stack?.split('\n').slice(0, 5),
     });
     return undefined as T;
   }
@@ -105,15 +105,21 @@ export function sanitizeObject<T>(obj: T, strict = true): T {
     for (const [key, value] of Object.entries(obj)) {
       // Protect against prototype pollution
       if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
-        logger.warn('Potential prototype pollution attempt detected', { 
+        logger.warn('Potential prototype pollution attempt detected', {
           key,
-          ip: (global as any).currentRequestIp 
+          ip: (global as any).currentRequestIp,
         });
         continue;
       }
-      
+
       // Skip certain fields that shouldn't be sanitized
-      if (key === 'password' || key === 'token' || key === 'hash' || key === 'secret' || key === 'apiKey') {
+      if (
+        key === 'password' ||
+        key === 'token' ||
+        key === 'hash' ||
+        key === 'secret' ||
+        key === 'apiKey'
+      ) {
         sanitized[key] = value;
       } else {
         sanitized[key] = sanitizeObject(value, strict);
@@ -136,14 +142,14 @@ export function sanitizeSqlPattern(input: string): string {
 
   // Log warning about using this function
   logger.warn('sanitizeSqlPattern used - consider using parameterized queries instead', {
-    caller: new Error().stack?.split('\n')[2]
+    caller: new Error().stack?.split('\n')[2],
   });
 
   // Only escape SQL wildcards for LIKE queries and quotes
   // Don't remove keywords as they might be legitimate search terms
   return input
-    .replace(/[%_]/g, '\\$&')  // Escape LIKE wildcards
-    .replace(/'/g, "''")        // Escape single quotes (SQL standard)
+    .replace(/[%_]/g, '\\$&') // Escape LIKE wildcards
+    .replace(/'/g, "''") // Escape single quotes (SQL standard)
     .trim();
 }
 
@@ -173,19 +179,19 @@ export function sanitizeUrl(url: string): string | null {
 
   try {
     const parsed = new URL(url);
-    
+
     // Only allow http(s) protocols
     if (!['http:', 'https:'].includes(parsed.protocol)) {
       logger.warn('Invalid URL protocol attempted', { url, protocol: parsed.protocol });
       return null;
     }
-    
+
     // Prevent javascript: and data: URLs
     if (url.toLowerCase().includes('javascript:') || url.toLowerCase().includes('data:')) {
       logger.warn('Potential XSS URL attempted', { url: url.substring(0, 100) });
       return null;
     }
-    
+
     return parsed.toString();
   } catch (error) {
     return null;
@@ -200,32 +206,32 @@ export function detectMaliciousPatterns(input: string): {
   patterns: string[];
 } {
   const patterns: string[] = [];
-  
+
   // Check for script tags
   if (/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi.test(input)) {
     patterns.push('script_tag');
   }
-  
+
   // Check for event handlers
   if (/on\w+\s*=/gi.test(input)) {
     patterns.push('event_handler');
   }
-  
+
   // Check for javascript: protocol
   if (/javascript:/gi.test(input)) {
     patterns.push('javascript_protocol');
   }
-  
+
   // Check for SQL injection patterns
   if (/(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION)\b.*\b(FROM|INTO|WHERE)\b)/gi.test(input)) {
     patterns.push('sql_injection');
   }
-  
+
   // Check for command injection patterns
   if (/[;&|`$()]/.test(input)) {
     patterns.push('command_injection');
   }
-  
+
   return {
     isSuspicious: patterns.length > 0,
     patterns,
@@ -249,7 +255,7 @@ export function createSanitizationReport(
   const startTime = Date.now();
   const fieldsModified: string[] = [];
   const suspiciousPatterns: string[] = [];
-  
+
   // Calculate data sizes
   let originalSize = 0;
   let sanitizedSize = 0;
@@ -261,7 +267,7 @@ export function createSanitizationReport(
     originalSize = Object.keys(original || {}).length * 50;
     sanitizedSize = Object.keys(sanitized || {}).length * 50;
   }
-  
+
   function compareObjects(orig: any, san: any, path = ''): void {
     if (typeof orig === 'string' && typeof san === 'string' && orig !== san) {
       fieldsModified.push(path || 'root');
@@ -277,9 +283,9 @@ export function createSanitizationReport(
       }
     }
   }
-  
+
   compareObjects(original, sanitized);
-  
+
   return {
     modified: fieldsModified.length > 0,
     fieldsModified: [...new Set(fieldsModified)], // Remove duplicates

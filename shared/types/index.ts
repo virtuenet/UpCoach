@@ -381,7 +381,7 @@ export interface Notification {
   createdAt: Date | string;
 }
 
-export type NotificationType = 
+export type NotificationType =
   | 'info'
   | 'success'
   | 'warning'
@@ -415,17 +415,17 @@ export interface Filter {
   value: any;
 }
 
-export type FilterOperator = 
-  | 'eq' 
-  | 'ne' 
-  | 'gt' 
-  | 'gte' 
-  | 'lt' 
-  | 'lte' 
-  | 'in' 
-  | 'nin' 
-  | 'contains' 
-  | 'startsWith' 
+export type FilterOperator =
+  | 'eq'
+  | 'ne'
+  | 'gt'
+  | 'gte'
+  | 'lt'
+  | 'lte'
+  | 'in'
+  | 'nin'
+  | 'contains'
+  | 'startsWith'
   | 'endsWith';
 
 export interface SortConfig {

@@ -1,3 +1,4 @@
+import { apiClient } from '../api/client';
 
 export interface DashboardMetrics {
   revenue: {
@@ -98,42 +99,39 @@ export interface FinancialSnapshot {
 export const financialApi = {
   getCostBreakdown: async (startDate?: string, endDate?: string) => {
     const params = new URLSearchParams();
-    if (startDate) params.append("startDate", startDate);
-    if (endDate) params.append("endDate", endDate);
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
     const response = await apiClient.get(`/analytics/costs/breakdown?${params}`);
     return response.data;
   },
   // Dashboard
   async getDashboardMetrics(): Promise<DashboardMetrics> {
-    const response = await apiClient.get("/financial/dashboard");
+    const response = await apiClient.get('/financial/dashboard');
     return response.data;
   },
 
   async getRevenueMetrics(startDate?: string, endDate?: string) {
-    const response = await apiClient.get("/financial/dashboard/revenue", {
+    const response = await apiClient.get('/financial/dashboard/revenue', {
       params: { startDate, endDate },
     });
     return response.data;
   },
 
   async getSubscriptionMetrics() {
-    const response = await apiClient.get("/financial/dashboard/subscriptions");
+    const response = await apiClient.get('/financial/dashboard/subscriptions');
     return response.data;
   },
 
   async getCostMetrics(startDate?: string, endDate?: string) {
-    const response = await apiClient.get("/financial/dashboard/costs", {
+    const response = await apiClient.get('/financial/dashboard/costs', {
       params: { startDate, endDate },
     });
     return response.data;
   },
 
   // P&L Statement
-  async getProfitLossStatement(
-    startDate?: string,
-    endDate?: string,
-  ): Promise<ProfitLossStatement> {
-    const response = await apiClient.get("/financial/pnl", {
+  async getProfitLossStatement(startDate?: string, endDate?: string): Promise<ProfitLossStatement> {
+    const response = await apiClient.get('/financial/pnl', {
       params: { startDate, endDate },
     });
     return response.data;
@@ -141,24 +139,24 @@ export const financialApi = {
 
   // Revenue Analytics
   async getMRRMetrics() {
-    const response = await apiClient.get("/financial/revenue/mrr");
+    const response = await apiClient.get('/financial/revenue/mrr');
     return response.data;
   },
 
   async getARRMetrics() {
-    const response = await apiClient.get("/financial/revenue/arr");
+    const response = await apiClient.get('/financial/revenue/arr');
     return response.data;
   },
 
   async getRevenueByPlan(startDate?: string, endDate?: string) {
-    const response = await apiClient.get("/financial/revenue/by-plan", {
+    const response = await apiClient.get('/financial/revenue/by-plan', {
       params: { startDate, endDate },
     });
     return response.data;
   },
 
   async getRevenueForecast(months: number = 6) {
-    const response = await apiClient.get("/financial/revenue/forecast", {
+    const response = await apiClient.get('/financial/revenue/forecast', {
       params: { months },
     });
     return response.data;
@@ -171,26 +169,26 @@ export const financialApi = {
     page?: number;
     limit?: number;
   }) {
-    const response = await apiClient.get("/financial/subscriptions", {
+    const response = await apiClient.get('/financial/subscriptions', {
       params,
     });
     return response.data;
   },
 
   async getActiveSubscriptions() {
-    const response = await apiClient.get("/financial/subscriptions/active");
+    const response = await apiClient.get('/financial/subscriptions/active');
     return response.data;
   },
 
   async getChurnAnalytics(months: number = 12) {
-    const response = await apiClient.get("/financial/subscriptions/churn", {
+    const response = await apiClient.get('/financial/subscriptions/churn', {
       params: { months },
     });
     return response.data;
   },
 
   async getLTVAnalytics() {
-    const response = await apiClient.get("/financial/subscriptions/ltv");
+    const response = await apiClient.get('/financial/subscriptions/ltv');
     return response.data;
   },
 
@@ -202,12 +200,12 @@ export const financialApi = {
     page?: number;
     limit?: number;
   }) {
-    const response = await apiClient.get("/financial/costs", { params });
+    const response = await apiClient.get('/financial/costs', { params });
     return response.data;
   },
 
   async createCost(data: Partial<CostTracking>) {
-    const response = await apiClient.post("/financial/costs", data);
+    const response = await apiClient.post('/financial/costs', data);
     return response.data;
   },
 
@@ -221,58 +219,50 @@ export const financialApi = {
   },
 
   async getCostsByCategory(startDate?: string, endDate?: string) {
-    const response = await apiClient.get("/financial/costs/by-category", {
+    const response = await apiClient.get('/financial/costs/by-category', {
       params: { startDate, endDate },
     });
     return response.data;
   },
 
   async getCostOptimizationSuggestions() {
-    const response = await apiClient.get("/financial/costs/optimization");
+    const response = await apiClient.get('/financial/costs/optimization');
     return response.data;
   },
 
   // Financial Snapshots
-  async getSnapshots(params?: {
-    period?: string;
-    startDate?: string;
-    endDate?: string;
-  }) {
-    const response = await apiClient.get("/financial/snapshots", { params });
+  async getSnapshots(params?: { period?: string; startDate?: string; endDate?: string }) {
+    const response = await apiClient.get('/financial/snapshots', { params });
     return response.data;
   },
 
   async generateSnapshot(date?: string) {
-    const response = await apiClient.post("/financial/snapshots/generate", {
+    const response = await apiClient.post('/financial/snapshots/generate', {
       date,
     });
     return response.data;
   },
 
-  async getLatestSnapshot(period: string = "daily") {
-    const response = await apiClient.get("/financial/snapshots/latest", {
+  async getLatestSnapshot(period: string = 'daily') {
+    const response = await apiClient.get('/financial/snapshots/latest', {
       params: { period },
     });
     return response.data;
   },
 
   // Reports
-  async getReports(params?: {
-    type?: string;
-    status?: string;
-    limit?: number;
-  }) {
+  async getReports(params?: { type?: string; status?: string; limit?: number }) {
     const queryParams = new URLSearchParams();
-    if (params?.type) queryParams.append("type", params.type);
-    if (params?.status) queryParams.append("status", params.status);
-    if (params?.limit) queryParams.append("limit", params.limit.toString());
+    if (params?.type) queryParams.append('type', params.type);
+    if (params?.status) queryParams.append('status', params.status);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
 
     const response = await apiClient.get(`/financial/reports?${queryParams}`);
     return response.data;
   },
 
   async createReport(data: any) {
-    const response = await apiClient.post("/financial/reports", data);
+    const response = await apiClient.post('/financial/reports', data);
     return response.data;
   },
 
@@ -282,19 +272,13 @@ export const financialApi = {
   },
 
   async downloadReport(reportId: string) {
-    const response = await apiClient.get(
-      `/financial/reports/${reportId}/download`,
-      {
-        responseType: "blob",
-      },
-    );
+    const response = await apiClient.get(`/financial/reports/${reportId}/download`, {
+      responseType: 'blob',
+    });
     return response.data;
   },
 
-  async sendReport(
-    id: string,
-    recipients: { email?: string[]; slack?: string[] },
-  ) {
+  async sendReport(id: string, recipients: { email?: string[]; slack?: string[] }) {
     const response = await apiClient.post(`/api/financial/reports/${id}/send`, {
       recipients,
     });

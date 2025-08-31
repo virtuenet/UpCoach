@@ -138,7 +138,7 @@ export class AIInteraction extends Model {
     endDate?: Date
   ): Promise<AIInteraction[]> {
     const where: any = { type };
-    
+
     if (startDate || endDate) {
       where.createdAt = {};
       if (startDate) where.createdAt[Op.gte] = startDate;
@@ -152,7 +152,7 @@ export class AIInteraction extends Model {
     const where: any = {
       createdAt: { [Op.gte]: startDate },
     };
-    
+
     if (endDate) {
       where.createdAt[Op.lte] = endDate;
     }

@@ -7,9 +7,9 @@ export { Card, type CardProps } from './Card';
 export { LoadingState, type LoadingStateProps } from './LoadingState';
 export { Navigation, type NavigationProps, type NavigationItem } from './Navigation';
 export declare const Components: {
-    readonly Button: any;
-    readonly Card: any;
-    readonly LoadingState: any;
-    readonly Navigation: any;
+  readonly Button: any;
+  readonly Card: any;
+  readonly LoadingState: any;
+  readonly Navigation: any;
 };
 //# sourceMappingURL=index.d.ts.map

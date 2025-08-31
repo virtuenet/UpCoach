@@ -31,7 +31,7 @@ interface PreparedStatement {
 class QueryProtectionService {
   private static instance: QueryProtectionService;
   private config: QueryProtectionConfig;
-  
+
   private readonly SQL_INJECTION_PATTERNS = [
     // Classic SQL injection
     /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|ALTER|CREATE|EXEC|EXECUTE)\b)/gi,
@@ -93,12 +93,12 @@ class QueryProtectionService {
   configure(config: QueryProtectionConfig): void {
     this.config = {
       ...this.config,
-      ...config
+      ...config,
     };
-    
+
     logger.info('Query protection configured', {
       allowedTables: this.config.allowedTables?.length,
-      blockRawQueries: this.config.blockRawQueries
+      blockRawQueries: this.config.blockRawQueries,
     });
   }
 
@@ -147,7 +147,7 @@ class QueryProtectionService {
         const columns = match[1];
         const table = match[3];
         const allowedCols = this.config.allowedColumns.get(table);
-        
+
         if (allowedCols && columns !== '*') {
           const selectedCols = columns.split(',').map(c => c.trim().replace(/[`'"]/g, ''));
           for (const col of selectedCols) {
@@ -171,14 +171,14 @@ class QueryProtectionService {
     if (this.config.logSuspiciousQueries && threats.length > 0) {
       logger.warn('Suspicious SQL query detected', {
         query: query.substring(0, 200),
-        threats
+        threats,
       });
     }
 
     return {
       safe: threats.length === 0,
       threats,
-      warnings
+      warnings,
     };
   }
 
@@ -208,14 +208,14 @@ class QueryProtectionService {
     if (this.config.logSuspiciousQueries && threats.length > 0) {
       logger.warn('Suspicious NoSQL query detected', {
         query: queryStr.substring(0, 200),
-        threats
+        threats,
       });
     }
 
     return {
       safe: threats.length === 0,
       threats,
-      warnings
+      warnings,
     };
   }
 
@@ -289,13 +289,10 @@ class QueryProtectionService {
   /**
    * Create safe parameterized query
    */
-  createParameterizedQuery(
-    template: string,
-    params: Record<string, any>
-  ): PreparedStatement {
+  createParameterizedQuery(template: string, params: Record<string, any>): PreparedStatement {
     const parameters: any[] = [];
     let paramIndex = 1;
-    
+
     // Replace named parameters with positional ones
     const query = template.replace(/:(\w+)/g, (match, name) => {
       if (params.hasOwnProperty(name)) {
@@ -307,7 +304,7 @@ class QueryProtectionService {
 
     // Validate the resulting query
     const validation = this.validateSQLQuery(query, parameters);
-    
+
     if (!validation.safe) {
       throw new Error(`Unsafe query: ${validation.threats?.join(', ')}`);
     }
@@ -321,7 +318,7 @@ class QueryProtectionService {
   sanitizeIdentifier(identifier: string): string {
     // Remove everything except alphanumeric and underscore
     const sanitized = identifier.replace(/[^\w]/g, '');
-    
+
     // Check against allowed lists if configured
     if (this.config.allowedTables?.length && !this.config.allowedTables.includes(sanitized)) {
       throw new Error(`Identifier '${sanitized}' is not in the allowed list`);
@@ -358,7 +355,7 @@ class QueryProtectionService {
 
     for (const [field, value] of Object.entries(conditions)) {
       const sanitizedField = this.sanitizeIdentifier(field);
-      
+
       if (value === null) {
         clauses.push(`${sanitizedField} IS NULL`);
       } else if (Array.isArray(value)) {
@@ -381,17 +378,14 @@ class QueryProtectionService {
 
     return {
       clause: clauses.join(' AND '),
-      parameters
+      parameters,
     };
   }
 
   /**
    * Build safe INSERT query
    */
-  buildInsertQuery(
-    table: string,
-    data: Record<string, any>
-  ): PreparedStatement {
+  buildInsertQuery(table: string, data: Record<string, any>): PreparedStatement {
     const sanitizedTable = this.sanitizeIdentifier(table);
     const fields: string[] = [];
     const placeholders: string[] = [];
@@ -445,18 +439,18 @@ class QueryProtectionService {
       // Override query methods with protected versions
       if (req.db) {
         const originalQuery = req.db.query.bind(req.db);
-        
+
         req.db.query = async (query: string, params?: any[]) => {
           const validation = this.validateSQLQuery(query, params);
-          
+
           if (!validation.safe && this.config.blockRawQueries) {
             logger.error('Blocked unsafe query', {
               query: query.substring(0, 200),
-              threats: validation.threats
+              threats: validation.threats,
             });
             throw new Error('Query blocked for security reasons');
           }
-          
+
           return originalQuery(query, params);
         };
       }
@@ -472,9 +466,12 @@ export const queryProtection = QueryProtectionService.getInstance();
 // Export convenience functions
 export const sanitizeIdentifier = (id: string) => queryProtection.sanitizeIdentifier(id);
 export const escapeString = (str: string) => queryProtection.escapeString(str);
-export const buildWhereClause = (conditions: Record<string, any>) => 
+export const buildWhereClause = (conditions: Record<string, any>) =>
   queryProtection.buildWhereClause(conditions);
 export const buildInsertQuery = (table: string, data: Record<string, any>) =>
   queryProtection.buildInsertQuery(table, data);
-export const buildUpdateQuery = (table: string, data: Record<string, any>, conditions: Record<string, any>) =>
-  queryProtection.buildUpdateQuery(table, data, conditions);
+export const buildUpdateQuery = (
+  table: string,
+  data: Record<string, any>,
+  conditions: Record<string, any>
+) => queryProtection.buildUpdateQuery(table, data, conditions);

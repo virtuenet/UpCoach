@@ -1,5 +1,5 @@
 import { Model, DataTypes, Optional } from 'sequelize';
-import { sequelize } from './index';
+import { sequelize } from '../config/sequelize';
 
 export interface MoodAttributes {
   id: string;
@@ -19,7 +19,22 @@ export interface MoodAttributes {
   updatedAt?: Date;
 }
 
-export interface MoodCreationAttributes extends Optional<MoodAttributes, 'id' | 'notes' | 'activities' | 'emotions' | 'physicalSymptoms' | 'sleepQuality' | 'stressLevel' | 'energyLevel' | 'location' | 'weather' | 'createdAt' | 'updatedAt'> {}
+export interface MoodCreationAttributes
+  extends Optional<
+    MoodAttributes,
+    | 'id'
+    | 'notes'
+    | 'activities'
+    | 'emotions'
+    | 'physicalSymptoms'
+    | 'sleepQuality'
+    | 'stressLevel'
+    | 'energyLevel'
+    | 'location'
+    | 'weather'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
 export class Mood extends Model<MoodAttributes, MoodCreationAttributes> implements MoodAttributes {
   public id!: string;

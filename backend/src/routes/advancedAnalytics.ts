@@ -11,14 +11,26 @@ router.use(authenticateToken);
 // Admin routes
 router.post('/cohorts', requireRole('admin'), advancedAnalyticsController.createCohort);
 router.get('/cohorts', requireRole('admin'), advancedAnalyticsController.getCohorts);
-router.get('/cohorts/:cohortId/retention', requireRole('admin'), advancedAnalyticsController.getCohortRetention);
+router.get(
+  '/cohorts/:cohortId/retention',
+  requireRole('admin'),
+  advancedAnalyticsController.getCohortRetention
+);
 router.post('/cohorts/compare', requireRole('admin'), advancedAnalyticsController.compareCohorts);
 
 router.post('/funnels', requireRole('admin'), advancedAnalyticsController.createFunnel);
 router.get('/funnels', requireRole('admin'), advancedAnalyticsController.getFunnels);
-router.get('/funnels/:funnelId/analytics', requireRole('admin'), advancedAnalyticsController.getFunnelAnalytics);
+router.get(
+  '/funnels/:funnelId/analytics',
+  requireRole('admin'),
+  advancedAnalyticsController.getFunnelAnalytics
+);
 
-router.get('/feature-adoption', requireRole('admin'), advancedAnalyticsController.getFeatureAdoption);
+router.get(
+  '/feature-adoption',
+  requireRole('admin'),
+  advancedAnalyticsController.getFeatureAdoption
+);
 router.get('/revenue', requireRole('admin'), advancedAnalyticsController.getRevenueAnalytics);
 
 // User routes (for tracking)

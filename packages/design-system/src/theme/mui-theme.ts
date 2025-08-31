@@ -4,7 +4,16 @@
  */
 
 import { createTheme, ThemeOptions } from '@mui/material/styles';
-import { colors, typography, spacing, shadows, borders, transitions, zIndex, breakpoints } from '../tokens';
+import {
+  colors,
+  typography,
+  spacing,
+  shadows,
+  borders,
+  transitions,
+  zIndex,
+  breakpoints,
+} from '../tokens';
 
 // Convert our breakpoints to MUI format
 const muiBreakpoints = {

@@ -1,3 +1,5 @@
+import React, { Component, ReactNode, ErrorInfo } from 'react';
+import { AlertCircle } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -32,12 +34,12 @@ export class AsyncErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error) {
     // Log async-specific errors
     console.error('Async Error:', error);
-    
+
     // Check if it's a network error
     if (this.isNetworkError(error)) {
       this.handleNetworkError(error);
     }
-    
+
     // Check if it's a chunk loading error
     if (this.isChunkLoadError(error)) {
       this.handleChunkLoadError(error);
@@ -47,21 +49,28 @@ export class AsyncErrorBoundary extends Component<Props, State> {
   }
 
   private isNetworkError(error: Error): boolean {
-    return error.message.toLowerCase().includes('network') ||
-           error.message.toLowerCase().includes('fetch');
+    return (
+      error.message.toLowerCase().includes('network') ||
+      error.message.toLowerCase().includes('fetch')
+    );
   }
 
   private isChunkLoadError(error: Error): boolean {
-    return error.message.toLowerCase().includes('loading chunk') ||
-           error.message.toLowerCase().includes('loading css chunk');
+    return (
+      error.message.toLowerCase().includes('loading chunk') ||
+      error.message.toLowerCase().includes('loading css chunk')
+    );
   }
 
   private handleNetworkError(error: Error) {
     // Store network _error state
-    sessionStorage.setItem('lastNetworkError', JSON.stringify({
-      message: error.message,
-      timestamp: Date.now(),
-    }));
+    sessionStorage.setItem(
+      'lastNetworkError',
+      JSON.stringify({
+        message: error.message,
+        timestamp: Date.now(),
+      })
+    );
   }
 
   private handleChunkLoadError(error: Error) {
@@ -93,9 +102,7 @@ export class AsyncErrorBoundary extends Component<Props, State> {
       return (
         <div className="flex flex-col items-center justify-center p-8">
           <AlertCircle className="h-12 w-12 text-yellow-500 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Loading Error
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Loading Error</h3>
           <p className="text-sm text-gray-600 text-center mb-4">
             {this.isNetworkError(this.state._error)
               ? 'Network connection issue. Please check your internet.'

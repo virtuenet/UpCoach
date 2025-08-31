@@ -1,7 +1,8 @@
+import { apiClient } from './client';
 
 export interface MoodEntry {
   id: string;
-  moodLevel: "very_bad" | "bad" | "neutral" | "good" | "very_good";
+  moodLevel: 'very_bad' | 'bad' | 'neutral' | 'good' | 'very_good';
   notes?: string;
   activities: string[];
   createdAt: string;
@@ -38,17 +39,17 @@ export interface MoodStats {
 
 export const moodApi = {
   getMoodEntries: async (
-    params: GetMoodEntriesParams = {},
+    params: GetMoodEntriesParams = {}
   ): Promise<{
     entries: MoodEntry[];
     total: number;
   }> => {
-    const response = await apiClient.get("/admin/mood", { params });
+    const response = await apiClient.get('/admin/mood', { params });
     return response.data;
   },
 
   getMoodStats: async (params: { days?: number } = {}): Promise<MoodStats> => {
-    const response = await apiClient.get("/admin/mood/stats", { params });
+    const response = await apiClient.get('/admin/mood/stats', { params });
     return response.data;
   },
 };

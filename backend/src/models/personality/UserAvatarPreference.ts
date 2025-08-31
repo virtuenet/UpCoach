@@ -1,5 +1,5 @@
 import { DataTypes, Model, Optional } from 'sequelize';
-import { sequelize } from '../index';
+import { sequelize } from '../../config/sequelize';
 
 export interface CustomizationSettings {
   voiceSettings?: {
@@ -50,12 +50,22 @@ export interface UserAvatarPreferenceAttributes {
   updatedAt: Date;
 }
 
-interface UserAvatarPreferenceCreationAttributes 
-  extends Optional<UserAvatarPreferenceAttributes, 'id' | 'createdAt' | 'updatedAt' | 'usageCount' | 'totalSessionTime' | 'satisfactionScore' | 'feedbackNotes'> {}
+interface UserAvatarPreferenceCreationAttributes
+  extends Optional<
+    UserAvatarPreferenceAttributes,
+    | 'id'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'usageCount'
+    | 'totalSessionTime'
+    | 'satisfactionScore'
+    | 'feedbackNotes'
+  > {}
 
-class UserAvatarPreference extends Model<UserAvatarPreferenceAttributes, UserAvatarPreferenceCreationAttributes> 
-  implements UserAvatarPreferenceAttributes {
-  
+class UserAvatarPreference
+  extends Model<UserAvatarPreferenceAttributes, UserAvatarPreferenceCreationAttributes>
+  implements UserAvatarPreferenceAttributes
+{
   public id!: string;
   public userId!: string;
   public avatarId!: string;
@@ -80,11 +90,13 @@ class UserAvatarPreference extends Model<UserAvatarPreferenceAttributes, UserAva
 
     // Update interaction history
     this.interactionHistory.totalInteractions += 1;
-    
+
     // Update average session length
-    this.interactionHistory.averageSessionLength = 
-      (this.interactionHistory.averageSessionLength * (this.interactionHistory.totalInteractions - 1) + sessionLength) 
-      / this.interactionHistory.totalInteractions;
+    this.interactionHistory.averageSessionLength =
+      (this.interactionHistory.averageSessionLength *
+        (this.interactionHistory.totalInteractions - 1) +
+        sessionLength) /
+      this.interactionHistory.totalInteractions;
 
     // Add topics to common topics
     topics.forEach(topic => {
@@ -96,7 +108,7 @@ class UserAvatarPreference extends Model<UserAvatarPreferenceAttributes, UserAva
     // Record satisfaction rating if provided
     if (rating) {
       this.interactionHistory.satisfactionRatings.push(rating);
-      
+
       // Update overall satisfaction score (weighted average)
       const ratings = this.interactionHistory.satisfactionRatings;
       this.satisfactionScore = ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
@@ -132,7 +144,7 @@ class UserAvatarPreference extends Model<UserAvatarPreferenceAttributes, UserAva
   public calculateRetentionRisk(): 'low' | 'medium' | 'high' {
     const daysSinceLastUse = (Date.now() - this.lastUsedAt.getTime()) / (1000 * 60 * 60 * 24);
     const avgRating = this.getAverageRating();
-    
+
     if (daysSinceLastUse > 14 || avgRating < 6) return 'high';
     if (daysSinceLastUse > 7 || avgRating < 7) return 'medium';
     return 'low';
@@ -151,10 +163,7 @@ class UserAvatarPreference extends Model<UserAvatarPreferenceAttributes, UserAva
 
   static async setActiveAvatar(userId: string, avatarId: string): Promise<UserAvatarPreference> {
     // Deactivate current active avatar
-    await this.update(
-      { isActive: false },
-      { where: { userId, isActive: true } }
-    );
+    await this.update({ isActive: false }, { where: { userId, isActive: true } });
 
     // Check if user has used this avatar before
     const existingPreference = await this.findOne({
@@ -202,12 +211,14 @@ class UserAvatarPreference extends Model<UserAvatarPreferenceAttributes, UserAva
     });
   }
 
-  static async getPopularAvatars(limit: number = 10): Promise<{
-    avatarId: string;
-    userCount: number;
-    averageRating: number;
-    totalUsage: number;
-  }[]> {
+  static async getPopularAvatars(limit: number = 10): Promise<
+    {
+      avatarId: string;
+      userCount: number;
+      averageRating: number;
+      totalUsage: number;
+    }[]
+  > {
     const preferences = await this.findAll({
       attributes: [
         'avatarId',
@@ -244,8 +255,11 @@ class UserAvatarPreference extends Model<UserAvatarPreferenceAttributes, UserAva
     const totalUsers = preferences.length;
     const activeUsers = preferences.filter(p => p.isRecentlyUsed()).length;
     const ratings = preferences.flatMap(p => p.interactionHistory.satisfactionRatings);
-    const averageRating = ratings.length > 0 ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length : 0;
-    const averageSessionTime = preferences.reduce((sum, p) => sum + p.interactionHistory.averageSessionLength, 0) / totalUsers;
+    const averageRating =
+      ratings.length > 0 ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length : 0;
+    const averageSessionTime =
+      preferences.reduce((sum, p) => sum + p.interactionHistory.averageSessionLength, 0) /
+      totalUsers;
     const retentionRate = activeUsers / totalUsers;
 
     // Analyze common customizations
@@ -268,7 +282,7 @@ class UserAvatarPreference extends Model<UserAvatarPreferenceAttributes, UserAva
   }> {
     const userHistory = await this.getUserHistory(userId);
     const popularAvatars = await this.getPopularAvatars(5);
-    
+
     // Get user's personality profile
     const userProfile = await sequelize.models.PersonalityProfile.findOne({
       where: { userId, isActive: true },
@@ -284,7 +298,7 @@ class UserAvatarPreference extends Model<UserAvatarPreferenceAttributes, UserAva
       const compatibleAvatars = await (Avatar as any).findByPersonalityType(
         (userProfile as any).traits
       );
-      
+
       compatibleAvatars.slice(0, 2).forEach((avatar: any) => {
         if (!userHistory.some(h => h.avatarId === avatar.id)) {
           suggestions.push(avatar.id);
@@ -297,21 +311,25 @@ class UserAvatarPreference extends Model<UserAvatarPreferenceAttributes, UserAva
     popularAvatars.forEach(popular => {
       if (suggestions.length < 3 && !userHistory.some(h => h.avatarId === popular.avatarId)) {
         suggestions.push(popular.avatarId);
-        reasons.push(`Popular among users with similar preferences (${popular.averageRating.toFixed(1)}/10 rating)`);
+        reasons.push(
+          `Popular among users with similar preferences (${popular.averageRating.toFixed(1)}/10 rating)`
+        );
       }
     });
 
     return { suggestedAvatars: suggestions, reasons };
   }
 
-  private static analyzeCommonCustomizations(customizations: CustomizationSettings[]): Record<string, any> {
+  private static analyzeCommonCustomizations(
+    customizations: CustomizationSettings[]
+  ): Record<string, any> {
     const analysis: Record<string, any> = {};
-    
+
     // Analyze voice settings
     const voiceSpeeds = customizations
       .map(c => c.voiceSettings?.speed)
       .filter(s => s !== undefined) as number[];
-    
+
     if (voiceSpeeds.length > 0) {
       analysis.averageVoiceSpeed = voiceSpeeds.reduce((sum, s) => sum + s, 0) / voiceSpeeds.length;
     }
@@ -320,7 +338,7 @@ class UserAvatarPreference extends Model<UserAvatarPreferenceAttributes, UserAva
     const encouragementFreqs = customizations
       .map(c => c.behaviorSettings?.encouragementFrequency)
       .filter(f => f !== undefined);
-    
+
     if (encouragementFreqs.length > 0) {
       analysis.mostCommonEncouragementFrequency = this.getMostCommon(encouragementFreqs);
     }
@@ -330,15 +348,13 @@ class UserAvatarPreference extends Model<UserAvatarPreferenceAttributes, UserAva
 
   private static getMostCommon<T>(array: T[]): T {
     const frequency: Record<string, number> = {};
-    
+
     array.forEach(item => {
       const key = String(item);
       frequency[key] = (frequency[key] || 0) + 1;
     });
 
-    return array.reduce((a, b) => 
-      frequency[String(a)] > frequency[String(b)] ? a : b
-    );
+    return array.reduce((a, b) => (frequency[String(a)] > frequency[String(b)] ? a : b));
   }
 }
 
@@ -447,4 +463,4 @@ UserAvatarPreference.init(
   }
 );
 
-export { UserAvatarPreference }; 
+export { UserAvatarPreference };

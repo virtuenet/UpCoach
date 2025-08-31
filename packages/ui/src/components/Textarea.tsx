@@ -11,14 +11,14 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
 export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, label, error, helperText, resize = 'vertical', id, ...props }, ref) => {
     const textareaId = id || `textarea-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const resizeClasses = {
       none: 'resize-none',
       vertical: 'resize-y',
       horizontal: 'resize-x',
       both: 'resize',
     };
-    
+
     return (
       <div className="w-full">
         {label && (
@@ -38,7 +38,9 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             className
           )}
           aria-invalid={!!error}
-          aria-describedby={error ? `${textareaId}-error` : helperText ? `${textareaId}-helper` : undefined}
+          aria-describedby={
+            error ? `${textareaId}-error` : helperText ? `${textareaId}-helper` : undefined
+          }
           {...props}
         />
         {error && (

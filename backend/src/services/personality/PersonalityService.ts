@@ -41,28 +41,36 @@ export class PersonalityService {
       question: 'I enjoy trying new and different activities.',
       trait: 'openness',
       isReversed: false,
-      scale: { min: 1, max: 5, labels: [
-        { value: 1, label: 'Strongly Disagree' },
-        { value: 2, label: 'Disagree' },
-        { value: 3, label: 'Neutral' },
-        { value: 4, label: 'Agree' },
-        { value: 5, label: 'Strongly Agree' }
-      ]},
-      category: 'creativity'
+      scale: {
+        min: 1,
+        max: 5,
+        labels: [
+          { value: 1, label: 'Strongly Disagree' },
+          { value: 2, label: 'Disagree' },
+          { value: 3, label: 'Neutral' },
+          { value: 4, label: 'Agree' },
+          { value: 5, label: 'Strongly Agree' },
+        ],
+      },
+      category: 'creativity',
     },
     {
       id: 'o2',
       question: 'I prefer routine and familiar experiences.',
       trait: 'openness',
       isReversed: true,
-      scale: { min: 1, max: 5, labels: [
-        { value: 1, label: 'Strongly Disagree' },
-        { value: 2, label: 'Disagree' },
-        { value: 3, label: 'Neutral' },
-        { value: 4, label: 'Agree' },
-        { value: 5, label: 'Strongly Agree' }
-      ]},
-      category: 'routine'
+      scale: {
+        min: 1,
+        max: 5,
+        labels: [
+          { value: 1, label: 'Strongly Disagree' },
+          { value: 2, label: 'Disagree' },
+          { value: 3, label: 'Neutral' },
+          { value: 4, label: 'Agree' },
+          { value: 5, label: 'Strongly Agree' },
+        ],
+      },
+      category: 'routine',
     },
     // Conscientiousness questions
     {
@@ -70,28 +78,36 @@ export class PersonalityService {
       question: 'I am always prepared and organized.',
       trait: 'conscientiousness',
       isReversed: false,
-      scale: { min: 1, max: 5, labels: [
-        { value: 1, label: 'Strongly Disagree' },
-        { value: 2, label: 'Disagree' },
-        { value: 3, label: 'Neutral' },
-        { value: 4, label: 'Agree' },
-        { value: 5, label: 'Strongly Agree' }
-      ]},
-      category: 'organization'
+      scale: {
+        min: 1,
+        max: 5,
+        labels: [
+          { value: 1, label: 'Strongly Disagree' },
+          { value: 2, label: 'Disagree' },
+          { value: 3, label: 'Neutral' },
+          { value: 4, label: 'Agree' },
+          { value: 5, label: 'Strongly Agree' },
+        ],
+      },
+      category: 'organization',
     },
     {
       id: 'c2',
       question: 'I tend to be disorganized and scattered.',
       trait: 'conscientiousness',
       isReversed: true,
-      scale: { min: 1, max: 5, labels: [
-        { value: 1, label: 'Strongly Disagree' },
-        { value: 2, label: 'Disagree' },
-        { value: 3, label: 'Neutral' },
-        { value: 4, label: 'Agree' },
-        { value: 5, label: 'Strongly Agree' }
-      ]},
-      category: 'organization'
+      scale: {
+        min: 1,
+        max: 5,
+        labels: [
+          { value: 1, label: 'Strongly Disagree' },
+          { value: 2, label: 'Disagree' },
+          { value: 3, label: 'Neutral' },
+          { value: 4, label: 'Agree' },
+          { value: 5, label: 'Strongly Agree' },
+        ],
+      },
+      category: 'organization',
     },
     // Add more questions for complete assessment...
   ];
@@ -122,7 +138,7 @@ export class PersonalityService {
   ): Promise<PersonalityAssessmentResult> {
     // Calculate personality traits from responses
     const traits = await this.calculateTraits(responses, assessmentType);
-    
+
     // Create or update personality profile
     const profile = await PersonalityProfile.createFromAssessment(
       userId,
@@ -165,7 +181,7 @@ export class PersonalityService {
       if (!question) return;
 
       let score = response.value;
-      
+
       // Reverse score if needed
       if (question.isReversed) {
         score = question.scale.max + 1 - score;
@@ -211,7 +227,7 @@ export class PersonalityService {
       neuroticism: traits.neuroticism,
     };
     const avatarRecommendations = await Avatar.getRecommendedAvatars(traitRecord, 5);
-    
+
     return avatarRecommendations.map(({ avatar, compatibilityScore }) => ({
       avatar,
       compatibilityScore,
@@ -228,24 +244,27 @@ export class PersonalityService {
     compatibilityScore: number
   ): string[] {
     const reasons: string[] = [];
-    
+
     // Add specific reasons based on trait compatibility
     if (traits.extraversion > 70 && avatar.personality.characteristics.includes('Energetic')) {
       reasons.push('Matches your outgoing and energetic personality');
     }
-    
-    if (traits.conscientiousness > 70 && avatar.personality.characteristics.includes('Goal-oriented')) {
+
+    if (
+      traits.conscientiousness > 70 &&
+      avatar.personality.characteristics.includes('Goal-oriented')
+    ) {
       reasons.push('Aligns with your organized and goal-focused approach');
     }
-    
+
     if (traits.agreeableness > 70 && avatar.personality.characteristics.includes('Supportive')) {
       reasons.push('Provides the warm, supportive environment you prefer');
     }
-    
+
     if (traits.openness > 70 && avatar.personality.characteristics.includes('Creative')) {
       reasons.push('Complements your creative and open-minded nature');
     }
-    
+
     if (traits.neuroticism > 60 && avatar.personality.characteristics.includes('Patient')) {
       reasons.push('Offers the patient, understanding approach you need');
     }
@@ -274,7 +293,7 @@ export class PersonalityService {
    * Get dominant personality trait
    */
   private static getDominantTrait(traits: PersonalityTraits): keyof PersonalityTraits {
-    return Object.entries(traits).reduce((a, b) => 
+    return Object.entries(traits).reduce((a, b) =>
       traits[a[0] as keyof PersonalityTraits] > traits[b[0] as keyof PersonalityTraits] ? a : b
     )[0] as keyof PersonalityTraits;
   }
@@ -282,9 +301,7 @@ export class PersonalityService {
   /**
    * Generate personalized insights
    */
-  private static async generatePersonalizedInsights(
-    profile: PersonalityProfile
-  ): Promise<{
+  private static async generatePersonalizedInsights(profile: PersonalityProfile): Promise<{
     summary: string;
     strengths: string[];
     growthAreas: string[];
@@ -292,14 +309,14 @@ export class PersonalityService {
   }> {
     const traits = profile.traits;
     const dominantTrait = this.getDominantTrait(traits);
-    
+
     // Generate summary
     const summary = this.generatePersonalitySummary(traits, dominantTrait);
-    
+
     // Get strengths and growth areas from profile
     const strengths = profile.insights.strengths;
     const growthAreas = profile.insights.growthAreas;
-    
+
     // Generate coaching recommendations
     const coachingRecommendations = this.generateCoachingRecommendations(traits);
 
@@ -328,7 +345,7 @@ export class PersonalityService {
 
     const primaryDescription = traitDescriptions[dominantTrait];
     const secondaryTraits = Object.entries(traits)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(1, 3)
       .map(([trait]) => trait);
 
@@ -417,7 +434,7 @@ export class PersonalityService {
     customizations?: any
   ): Promise<UserAvatarPreference> {
     const preference = await UserAvatarPreference.setActiveAvatar(userId, avatarId);
-    
+
     if (customizations) {
       preference.updateCustomization(customizations);
       await preference.save();
@@ -475,4 +492,4 @@ export class PersonalityService {
   }
 }
 
-export default PersonalityService; 
+export default PersonalityService;

@@ -5,7 +5,9 @@ export default function DataGrid({ data, columns }: any) {
         <thead>
           <tr className="border-b">
             {columns?.map((col: any) => (
-              <th key={col.key} className="text-left p-2">{col.header}</th>
+              <th key={col.key} className="text-left p-2">
+                {col.header}
+              </th>
             ))}
           </tr>
         </thead>
@@ -13,7 +15,9 @@ export default function DataGrid({ data, columns }: any) {
           {data?.map((row: any, i: number) => (
             <tr key={i} className="border-b">
               {columns?.map((col: any) => (
-                <td key={col.key} className="p-2">{row[col.key]}</td>
+                <td key={col.key} className="p-2">
+                  {row[col.key]}
+                </td>
               ))}
             </tr>
           ))}

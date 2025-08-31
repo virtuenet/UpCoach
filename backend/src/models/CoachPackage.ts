@@ -156,9 +156,7 @@ export class CoachPackage extends Model {
   }
 
   // Static methods
-  static async getActivePackages(
-    coachId: number
-  ): Promise<CoachPackage[]> {
+  static async getActivePackages(coachId: number): Promise<CoachPackage[]> {
     return this.findAll({
       where: {
         coachId,
@@ -180,7 +178,7 @@ export class CoachPackage extends Model {
     if (!coach || !coach.hourlyRate) return null;
 
     const regularPrice = coach.calculateSessionPrice(sessionCount * 60);
-    
+
     // Find best package for the session count
     const packages = await this.findAll({
       where: {
@@ -294,9 +292,7 @@ export class ClientCoachPackage extends Model {
 
   // Helper methods
   isValid(): boolean {
-    return this.status === 'active' && 
-           this.expiryDate > new Date() && 
-           this.sessionsRemaining > 0;
+    return this.status === 'active' && this.expiryDate > new Date() && this.sessionsRemaining > 0;
   }
 
   async useSession(): Promise<void> {
@@ -306,7 +302,7 @@ export class ClientCoachPackage extends Model {
 
     this.sessionsUsed += 1;
     this.sessionsRemaining -= 1;
-    
+
     if (this.sessionsRemaining === 0) {
       this.status = 'expired';
     }
@@ -317,7 +313,7 @@ export class ClientCoachPackage extends Model {
   async refundSession(): Promise<void> {
     this.sessionsUsed = Math.max(0, this.sessionsUsed - 1);
     this.sessionsRemaining += 1;
-    
+
     if (this.status === 'expired' && this.sessionsRemaining > 0) {
       this.status = 'active';
     }
@@ -332,9 +328,7 @@ export class ClientCoachPackage extends Model {
   }
 
   // Static methods
-  static async getActivePackagesForClient(
-    clientId: number
-  ): Promise<ClientCoachPackage[]> {
+  static async getActivePackagesForClient(clientId: number): Promise<ClientCoachPackage[]> {
     return this.findAll({
       where: {
         clientId,
@@ -363,10 +357,7 @@ export class ClientCoachPackage extends Model {
       {
         where: {
           status: 'active',
-          [Op.or as any]: [
-            { expiryDate: { [Op.lte]: new Date() } },
-            { sessionsRemaining: 0 },
-          ],
+          [Op.or as any]: [{ expiryDate: { [Op.lte]: new Date() } }, { sessionsRemaining: 0 }],
         },
       }
     );

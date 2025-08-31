@@ -13,9 +13,16 @@ export interface ContentTagAttributes {
   updatedAt?: Date;
 }
 
-export interface ContentTagCreationAttributes extends Optional<ContentTagAttributes, 'id' | 'description' | 'color' | 'usageCount' | 'createdAt' | 'updatedAt'> {}
+export interface ContentTagCreationAttributes
+  extends Optional<
+    ContentTagAttributes,
+    'id' | 'description' | 'color' | 'usageCount' | 'createdAt' | 'updatedAt'
+  > {}
 
-export class ContentTag extends Model<ContentTagAttributes, ContentTagCreationAttributes> implements ContentTagAttributes {
+export class ContentTag
+  extends Model<ContentTagAttributes, ContentTagCreationAttributes>
+  implements ContentTagAttributes
+{
   public id!: string;
   public name!: string;
   public slug!: string;

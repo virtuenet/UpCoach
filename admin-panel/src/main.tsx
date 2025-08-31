@@ -1,9 +1,9 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import App from "./App.tsx";
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App.tsx';
 // Temporarily disabled for development
 // import { initializeSentry } from "./services/monitoring/sentryInit";
-import "./index.css";
+import './index.css';
 
 // Initialize Sentry monitoring
 // initializeSentry();
@@ -17,7 +17,7 @@ const queryClient = new QueryClient({
   },
 });
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -27,12 +27,12 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           toastOptions={{
             duration: 4000,
             style: {
-              background: "#363636",
-              color: "#fff",
+              background: '#363636',
+              color: '#fff',
             },
           }}
         />
       </BrowserRouter>
     </QueryClientProvider>
-  </React.StrictMode>,
+  </React.StrictMode>
 );

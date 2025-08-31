@@ -1,5 +1,5 @@
 import { Model, DataTypes, Optional } from 'sequelize';
-import { sequelize } from './index';
+import { sequelize } from '../config/sequelize';
 import bcrypt from 'bcryptjs';
 
 export interface UserAttributes {
@@ -21,7 +21,22 @@ export interface UserAttributes {
   updatedAt?: Date;
 }
 
-export interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'avatar' | 'bio' | 'googleId' | 'isActive' | 'emailVerified' | 'onboardingCompleted' | 'onboardingCompletedAt' | 'onboardingSkipped' | 'createdAt' | 'updatedAt' | 'lastLoginAt'> {}
+export interface UserCreationAttributes
+  extends Optional<
+    UserAttributes,
+    | 'id'
+    | 'avatar'
+    | 'bio'
+    | 'googleId'
+    | 'isActive'
+    | 'emailVerified'
+    | 'onboardingCompleted'
+    | 'onboardingCompletedAt'
+    | 'onboardingSkipped'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'lastLoginAt'
+  > {}
 
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   public id!: string;

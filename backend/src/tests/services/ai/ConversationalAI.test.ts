@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 // Mock all external dependencies first
 jest.mock('sequelize');
 jest.mock('../../../config/environment', () => ({
@@ -10,7 +12,7 @@ jest.mock('../../../config/environment', () => ({
       apiKey: 'test-key',
       model: 'claude-3-sonnet',
     },
-  }
+  },
 }));
 jest.mock('../../../utils/logger', () => ({
   logger: {
@@ -18,27 +20,27 @@ jest.mock('../../../utils/logger', () => ({
     warn: jest.fn(),
     info: jest.fn(),
     debug: jest.fn(),
-  }
+  },
 }));
 
 // Mock all the services first
 jest.mock('../../../services/ai/AIService', () => ({
   aiService: {
     generateResponse: jest.fn(),
-  }
+  },
 }));
 
 jest.mock('../../../services/ai/ContextManager', () => ({
   contextManager: {
     getUserContext: jest.fn(),
-  }
+  },
 }));
 
 jest.mock('../../../services/ai/PersonalityEngine', () => ({
   personalityEngine: {
     selectOptimalPersonality: jest.fn(),
     getSystemPrompt: jest.fn(),
-  }
+  },
 }));
 
 jest.mock('../../../services/ai/RecommendationEngine', () => ({}));
@@ -48,14 +50,14 @@ jest.mock('../../../models/ChatMessage', () => ({
   ChatMessage: {
     findAll: jest.fn(),
     create: jest.fn(),
-  }
+  },
 }));
 
 jest.mock('../../../models/Chat', () => ({
   Chat: {
     findAll: jest.fn(),
     create: jest.fn(),
-  }
+  },
 }));
 
 jest.mock('openai');
@@ -97,13 +99,13 @@ describe('ConversationalAI', () => {
     it('should process conversation with correct parameters and return expected structure', async () => {
       // Setup mocks
       const mockAIResponse = {
-        content: 'Based on your goals, I recommend starting with 3 workouts per week.'
+        content: 'Based on your goals, I recommend starting with 3 workouts per week.',
       };
-      
+
       const mockUserContext = {
         userId: 'user123',
         preferences: {},
-        goals: []
+        goals: [],
       };
 
       mockAIService.generateResponse.mockResolvedValue(mockAIResponse);
@@ -138,9 +140,7 @@ describe('ConversationalAI', () => {
     it('should handle conversation history correctly', async () => {
       const mockAIResponse = { content: 'I can help you with your workout plan.' };
       const mockUserContext = { userId: 'user123', preferences: {}, goals: [] };
-      const mockHistory = [
-        { role: 'user', content: 'Hi', createdAt: new Date() }
-      ];
+      const mockHistory = [{ role: 'user', content: 'Hi', createdAt: new Date() }];
 
       mockAIService.generateResponse.mockResolvedValue(mockAIResponse);
       mockContextManager.getUserContext.mockResolvedValue(mockUserContext);
@@ -157,7 +157,7 @@ describe('ConversationalAI', () => {
       expect(mockChatMessage.findAll).toHaveBeenCalledWith({
         where: { chatId: 'conversation123' },
         order: [['createdAt', 'ASC']],
-        limit: 20
+        limit: 20,
       });
       expect(result.response).toBeDefined();
     });
@@ -170,11 +170,7 @@ describe('ConversationalAI', () => {
       mockChatMessage.findAll.mockResolvedValue([]);
 
       await expect(
-        conversationalAI.processConversation(
-          'user123',
-          'Hello',
-          'conversation123'
-        )
+        conversationalAI.processConversation('user123', 'Hello', 'conversation123')
       ).rejects.toThrow('AI Service Error');
     });
   });
@@ -184,32 +180,28 @@ describe('ConversationalAI', () => {
       const mockResponse = { content: 'Short motivational response.' };
       mockAIService.generateResponse.mockResolvedValue(mockResponse);
 
-      const result = await conversationalAI.generateSmartResponse(
-        'user123',
-        'I need motivation',
-        {
-          tone: 'motivational',
-          length: 'short',
-          includeAction: true,
-          includeEmotion: true
-        }
-      );
+      const result = await conversationalAI.generateSmartResponse('user123', 'I need motivation', {
+        tone: 'motivational',
+        length: 'short',
+        includeAction: true,
+        includeEmotion: true,
+      });
 
       expect(result).toContain('motivational');
       expect(mockAIService.generateResponse).toHaveBeenCalledWith(
         expect.arrayContaining([
           expect.objectContaining({
             role: 'system',
-            content: expect.stringContaining('motivational')
+            content: expect.stringContaining('motivational'),
           }),
           expect.objectContaining({
             role: 'user',
-            content: 'I need motivation'
-          })
+            content: 'I need motivation',
+          }),
         ]),
         expect.objectContaining({
           temperature: 0.7,
-          maxTokens: 100
+          maxTokens: 100,
         })
       );
     });
@@ -227,15 +219,11 @@ describe('ConversationalAI', () => {
       mockChatMessage.findAll.mockResolvedValue([]);
 
       // Process conversation to create state
-      await conversationalAI.processConversation(
-        'user123',
-        'Test message',
-        'conversation123'
-      );
+      await conversationalAI.processConversation('user123', 'Test message', 'conversation123');
 
       // Get conversation state
       const state = conversationalAI.getConversationState('conversation123');
-      
+
       expect(state).toBeDefined();
       expect(state?.depth).toBeGreaterThan(0);
       expect(state?.topic).toBeDefined();
@@ -254,16 +242,16 @@ describe('ConversationalAI', () => {
       const testCases = [
         {
           message: 'I want to lose 20 pounds',
-          expectedIntent: 'goal_setting'
+          expectedIntent: 'goal_setting',
         },
         {
           message: 'I feel really stressed and overwhelmed',
-          expectedIntent: 'emotional_support'
+          expectedIntent: 'emotional_support',
         },
         {
           message: 'I need to plan my workout schedule for next week',
-          expectedIntent: 'planning'
-        }
+          expectedIntent: 'planning',
+        },
       ];
 
       for (const testCase of testCases) {
@@ -284,7 +272,7 @@ describe('ConversationalAI', () => {
 
         expect(result.intent.primary).toBe(testCase.expectedIntent);
         expect(result.intent.confidence).toBeGreaterThan(0);
-        
+
         // Clear mocks for next iteration
         jest.clearAllMocks();
       }

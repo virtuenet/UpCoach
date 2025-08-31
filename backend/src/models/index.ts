@@ -1,6 +1,5 @@
-import { Sequelize } from 'sequelize';
-import dotenv from 'dotenv';
 import { logger } from '../utils/logger';
+import { sequelize } from '../config/sequelize';
 import { User } from './User';
 import { Goal } from './Goal';
 import { Task } from './Task';
@@ -27,56 +26,35 @@ import { ChatMessage } from './ChatMessage';
 // import { Experiment } from './experiments/Experiment';
 // import { ExperimentAssignment } from './experiments/ExperimentAssignment';
 // import { ExperimentEvent } from './experiments/ExperimentEvent';
-import { 
+import {
   Transaction,
   TransactionStatus,
   TransactionType,
-  PaymentMethod
+  PaymentMethod,
 } from './financial/Transaction';
-import { 
+import {
   Subscription,
   SubscriptionStatus,
   SubscriptionPlan,
-  BillingInterval
+  BillingInterval,
 } from './financial/Subscription';
 import { CostTracking } from './financial/CostTracking';
-import { 
-  FinancialSnapshot,
-  SnapshotPeriod
-} from './financial/FinancialSnapshot';
-import { 
-  BillingEvent,
-  BillingEventType,
-  BillingEventSource
-} from './financial/BillingEvent';
-import { 
+import { FinancialSnapshot, SnapshotPeriod } from './financial/FinancialSnapshot';
+import { BillingEvent, BillingEventType, BillingEventSource } from './financial/BillingEvent';
+import {
   FinancialReport,
   ReportType,
   ReportStatus,
-  ReportFormat
+  ReportFormat,
 } from './financial/FinancialReport';
 import { RevenueAnalytics } from './financial/RevenueAnalytics';
 // import { UserProfile } from './UserProfile';
 // import { AIInteraction } from './AIInteraction';
 // import { AIFeedback } from './AIFeedback';
 
-// Load environment variables
-dotenv.config();
 
-// Initialize Sequelize with PostgreSQL connection
-export const sequelize = new Sequelize(
-  process.env.DATABASE_URL || 'postgresql://localhost:5432/upcoach',
-  {
-    dialect: 'postgres',
-    logging: process.env.NODE_ENV === 'development' ? console.log : false,
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000,
-    },
-  }
-);
+// Export sequelize instance
+export { sequelize };
 
 // Import models
 export {
@@ -138,35 +116,36 @@ export { AIFeedback } from './AIFeedback';
 // Define associations
 export function defineAssociations() {
   // Import models for associations
-  const { Transaction, Subscription, BillingEvent, Article, Course, Category, ContentAnalytics } = sequelize.models;
-  
+  const { Transaction, Subscription, BillingEvent, Article, Course, Category, ContentAnalytics } =
+    sequelize.models;
+
   // Financial associations
   if (Transaction && Subscription) {
     Transaction.belongsTo(Subscription, { foreignKey: 'subscriptionId', as: 'subscription' });
     Subscription.hasMany(Transaction, { foreignKey: 'subscriptionId', as: 'transactions' });
   }
-  
+
   if (BillingEvent) {
     BillingEvent.belongsTo(Transaction, { foreignKey: 'transactionId', as: 'transaction' });
     BillingEvent.belongsTo(Subscription, { foreignKey: 'subscriptionId', as: 'subscription' });
   }
-  
+
   // CMS associations
   if (Article && Category) {
     Article.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });
     Category.hasMany(Article, { foreignKey: 'categoryId', as: 'articles' });
   }
-  
+
   if (Course && Category) {
     Course.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });
     Category.hasMany(Course, { foreignKey: 'categoryId', as: 'courses' });
   }
-  
+
   if (Category) {
     Category.belongsTo(Category, { foreignKey: 'parentId', as: 'parent' });
     Category.hasMany(Category, { foreignKey: 'parentId', as: 'children' });
   }
-  
+
   if (ContentAnalytics && Article && Course) {
     // ContentAnalytics polymorphic associations would be handled in queries
   }
@@ -177,10 +156,10 @@ export async function initializeDatabase() {
   try {
     await sequelize.authenticate();
     logger.info('Database connection established successfully.');
-    
+
     // Define associations
     defineAssociations();
-    
+
     // Sync models with database - temporarily disabled for debugging
     // if (process.env.NODE_ENV !== 'production') {
     //   await sequelize.sync({ alter: true });
@@ -191,4 +170,4 @@ export async function initializeDatabase() {
     logger.error('Unable to connect to the database:', error);
     throw error;
   }
-} 
+}

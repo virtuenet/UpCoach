@@ -117,10 +117,10 @@ class HIPAAService {
     try {
       const iv = crypto.randomBytes(16);
       const cipher = crypto.createCipheriv(this.encryptionAlgorithm, this.encryptionKey, iv);
-      
+
       let encrypted = cipher.update(data, 'utf8', 'hex');
       encrypted += cipher.final('hex');
-      
+
       const authTag = (cipher as any).getAuthTag();
 
       const encryption: PHIEncryption = {
@@ -169,9 +169,7 @@ class HIPAAService {
   /**
    * Log PHI access for audit trail
    */
-  async logPHIAccess(
-    accessLog: Omit<PHIAccessLog, 'id' | 'timestamp'>
-  ): Promise<PHIAccessLog> {
+  async logPHIAccess(accessLog: Omit<PHIAccessLog, 'id' | 'timestamp'>): Promise<PHIAccessLog> {
     try {
       const log: PHIAccessLog = {
         id: crypto.randomUUID(),
@@ -209,7 +207,7 @@ class HIPAAService {
    */
   validatePassword(password: string): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
-    
+
     // HIPAA password requirements
     if (password.length < 12) {
       errors.push('Password must be at least 12 characters');
@@ -226,7 +224,7 @@ class HIPAAService {
     if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
       errors.push('Password must contain special characters');
     }
-    
+
     // Check against common passwords
     const commonPasswords = ['password', 'admin', 'upcoach', 'health'];
     if (commonPasswords.some(common => password.toLowerCase().includes(common))) {
@@ -294,7 +292,7 @@ class HIPAAService {
       }
 
       const session = JSON.parse(data);
-      
+
       // Check if expired
       if (new Date(session.expiresAt) < new Date()) {
         await this.terminateSession(sessionId);
@@ -312,7 +310,7 @@ class HIPAAService {
       // Refresh session
       session.lastActivity = new Date();
       session.expiresAt = addMinutes(new Date(), this.sessionTimeout);
-      
+
       await redis.setex(key, this.sessionTimeout * 60, JSON.stringify(session));
 
       return {
@@ -340,7 +338,7 @@ class HIPAAService {
       }
 
       await redis.del(key);
-      
+
       logger.info('Session terminated', { sessionId });
     } catch (error) {
       logger.error('Error terminating session', error);
@@ -426,7 +424,7 @@ class HIPAAService {
   ): Promise<PHIDisclosure[]> {
     try {
       const where: any = { patientId };
-      
+
       if (startDate || endDate) {
         where.disclosedAt = {};
         if (startDate) where.disclosedAt[sequelize.Sequelize.Op.gte] = startDate;
@@ -448,16 +446,14 @@ class HIPAAService {
   /**
    * Conduct security risk assessment
    */
-  async conductRiskAssessment(
-    conductedBy: string
-  ): Promise<SecurityRiskAssessment> {
+  async conductRiskAssessment(conductedBy: string): Promise<SecurityRiskAssessment> {
     try {
       const vulnerabilities = await this.identifyVulnerabilities();
-      
+
       // Calculate overall risk level
       const criticalCount = vulnerabilities.filter(v => v.severity === 'critical').length;
       const highCount = vulnerabilities.filter(v => v.severity === 'high').length;
-      
+
       let riskLevel: 'low' | 'medium' | 'high' | 'critical';
       if (criticalCount > 0) riskLevel = 'critical';
       else if (highCount > 2) riskLevel = 'high';
@@ -612,11 +608,26 @@ class HIPAAService {
 
     // Safe harbor method - remove 18 identifiers
     const identifiers = [
-      'name', 'email', 'address', 'city', 'state', 'zip',
-      'phone', 'fax', 'ssn', 'medicalRecordNumber',
-      'healthPlanNumber', 'accountNumber', 'certificateNumber',
-      'vehicleId', 'deviceId', 'url', 'ipAddress', 'biometricId',
-      'photo', 'dateOfBirth'
+      'name',
+      'email',
+      'address',
+      'city',
+      'state',
+      'zip',
+      'phone',
+      'fax',
+      'ssn',
+      'medicalRecordNumber',
+      'healthPlanNumber',
+      'accountNumber',
+      'certificateNumber',
+      'vehicleId',
+      'deviceId',
+      'url',
+      'ipAddress',
+      'biometricId',
+      'photo',
+      'dateOfBirth',
     ];
 
     function removeIdentifiers(obj: any) {
@@ -642,19 +653,22 @@ class HIPAAService {
    */
 
   private hashIP(ip: string): string {
-    return crypto.createHash('sha256').update(ip + process.env.IP_SALT).digest('hex');
+    return crypto
+      .createHash('sha256')
+      .update(ip + process.env.IP_SALT)
+      .digest('hex');
   }
 
   private async detectSuspiciousAccess(log: PHIAccessLog): Promise<void> {
     // Check for unusual access patterns
     const recentAccess = await redis.keys(`phi:access:${log.userId}:*`);
-    
+
     if (recentAccess.length > 100) {
       logger.warn('Suspicious PHI access pattern detected', {
         userId: log.userId,
         accessCount: recentAccess.length,
       });
-      
+
       // Could trigger additional security measures
     }
   }
@@ -724,17 +738,13 @@ class HIPAAService {
 
     return {
       active: agreements.length,
-      expiringSoon: agreements.filter(a =>
-        a.expiresAt < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      expiringSoon: agreements.filter(
+        a => a.expiresAt < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
       ).length,
     };
   }
 
-  private async isAccessAllowed(
-    user: any,
-    patientId: string,
-    dataType: string
-  ): Promise<boolean> {
+  private async isAccessAllowed(user: any, patientId: string, dataType: string): Promise<boolean> {
     // Implement role-based access control logic
     // Check if user has legitimate need to access this data type
     return user.role === 'admin' || user.role === 'coach';

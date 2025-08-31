@@ -13,9 +13,13 @@ export interface ForumCategoryAttributes {
   updatedAt: Date;
 }
 
-export interface ForumCategoryCreationAttributes extends Omit<ForumCategoryAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
+export interface ForumCategoryCreationAttributes
+  extends Omit<ForumCategoryAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
 
-export class ForumCategory extends Model<ForumCategoryAttributes, ForumCategoryCreationAttributes> implements ForumCategoryAttributes {
+export class ForumCategory
+  extends Model<ForumCategoryAttributes, ForumCategoryCreationAttributes>
+  implements ForumCategoryAttributes
+{
   public id!: string;
   public name!: string;
   public description?: string;
@@ -33,7 +37,7 @@ export class ForumCategory extends Model<ForumCategoryAttributes, ForumCategoryC
   public static associate(models: any) {
     ForumCategory.hasMany(models.ForumThread, {
       foreignKey: 'categoryId',
-      as: 'threads'
+      as: 'threads',
     });
   }
 }

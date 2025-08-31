@@ -39,10 +39,10 @@ function truncateLogData(data: any, maxDepth = 3, currentDepth = 0): any {
   if (Array.isArray(data)) {
     if (data.length > MAX_ARRAY_LENGTH) {
       return [
-        ...data.slice(0, MAX_ARRAY_LENGTH).map(item => 
-          truncateLogData(item, maxDepth, currentDepth + 1)
-        ),
-        `... [${data.length - MAX_ARRAY_LENGTH} more items]`
+        ...data
+          .slice(0, MAX_ARRAY_LENGTH)
+          .map(item => truncateLogData(item, maxDepth, currentDepth + 1)),
+        `... [${data.length - MAX_ARRAY_LENGTH} more items]`,
       ];
     }
     return data.map(item => truncateLogData(item, maxDepth, currentDepth + 1));
@@ -53,7 +53,7 @@ function truncateLogData(data: any, maxDepth = 3, currentDepth = 0): any {
     const truncated: any = {};
     const keys = Object.keys(data);
     const maxKeys = 50; // Limit number of object keys
-    
+
     for (let i = 0; i < Math.min(keys.length, maxKeys); i++) {
       const key = keys[i];
       // Skip sensitive fields
@@ -63,11 +63,11 @@ function truncateLogData(data: any, maxDepth = 3, currentDepth = 0): any {
         truncated[key] = truncateLogData(data[key], maxDepth, currentDepth + 1);
       }
     }
-    
+
     if (keys.length > maxKeys) {
       truncated['...'] = `[${keys.length - maxKeys} more properties]`;
     }
-    
+
     return truncated;
   }
 
@@ -78,7 +78,7 @@ function truncateLogData(data: any, maxDepth = 3, currentDepth = 0): any {
 // Custom log format with size limits
 const logFormat = winston.format.combine(
   winston.format.timestamp({
-    format: 'YYYY-MM-DD HH:mm:ss'
+    format: 'YYYY-MM-DD HH:mm:ss',
   }),
   winston.format.errors({ stack: true }),
   winston.format.json(),
@@ -88,21 +88,21 @@ const logFormat = winston.format.combine(
       const originalLength = message.length;
       message = message.substring(0, MAX_LOG_SIZE) + `... [truncated from ${originalLength} chars]`;
     }
-    
+
     let log = `${timestamp} [${level.toUpperCase()}]: ${message}`;
-    
+
     if (Object.keys(meta).length > 0) {
       // Truncate metadata
       const truncatedMeta = truncateLogData(meta);
       const metaString = JSON.stringify(truncatedMeta);
-      
+
       if (metaString.length > MAX_META_SIZE) {
         log += ` ${metaString.substring(0, MAX_META_SIZE)}... [meta truncated]`;
       } else {
         log += ` ${metaString}`;
       }
     }
-    
+
     if (stack && typeof stack === 'string') {
       // Limit stack trace to first 20 lines
       const stackLines = stack.split('\n').slice(0, 20);
@@ -111,7 +111,7 @@ const logFormat = winston.format.combine(
         log += '\n... [stack truncated]';
       }
     }
-    
+
     return log;
   })
 );
@@ -120,7 +120,7 @@ const logFormat = winston.format.combine(
 const consoleFormat = winston.format.combine(
   winston.format.colorize(),
   winston.format.timestamp({
-    format: 'HH:mm:ss'
+    format: 'HH:mm:ss',
   }),
   winston.format.printf(({ timestamp, level, message, stack }) => {
     let log = `${timestamp} ${level}: ${message}`;
@@ -146,23 +146,27 @@ const logger = winston.createLogger({
 
 // Add file transport for production
 if (env === 'production' && process.env.LOG_FILE) {
-  logger.add(new winston.transports.File({
-    filename: process.env.LOG_FILE || 'app.log',
-    format: logFormat,
-  }));
-  
-  logger.add(new winston.transports.File({
-    filename: 'error.log',
-    level: 'error',
-    format: logFormat,
-  }));
+  logger.add(
+    new winston.transports.File({
+      filename: process.env.LOG_FILE || 'app.log',
+      format: logFormat,
+    })
+  );
+
+  logger.add(
+    new winston.transports.File({
+      filename: 'error.log',
+      level: 'error',
+      format: logFormat,
+    })
+  );
 }
 
 // Stream interface for Morgan
 export const loggerStream = {
   write: (message: string) => {
     logger.info(message.trim());
-  }
+  },
 };
 
 /**
@@ -216,4 +220,4 @@ class SafeLogger {
 // Export safe logger instance
 const safeLogger = new SafeLogger(logger);
 
-export { safeLogger as logger }; 
+export { safeLogger as logger };

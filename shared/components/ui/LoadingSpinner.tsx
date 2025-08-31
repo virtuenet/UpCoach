@@ -4,10 +4,10 @@ interface LoadingSpinnerProps {
   color?: 'primary' | 'secondary' | 'gray';
 }
 
-export default function LoadingSpinner({ 
-  size = 'md', 
+export default function LoadingSpinner({
+  size = 'md',
   className = '',
-  color = 'primary'
+  color = 'primary',
 }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: 'h-4 w-4',

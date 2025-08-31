@@ -17,26 +17,26 @@ const Skeleton: React.FC<SkeletonProps> = ({
   ...props
 }) => {
   const baseStyles = 'bg-gray-200';
-  
+
   const animations = {
     pulse: 'animate-pulse',
     wave: 'skeleton', // Uses CSS animation defined in layout-fixes.css
     none: '',
   };
-  
+
   const variants = {
     text: 'rounded',
     circular: 'rounded-full',
     rectangular: 'rounded-md',
   };
-  
+
   const getSize = () => {
     const style: React.CSSProperties = {};
-    
+
     if (width) {
       style.width = typeof width === 'number' ? `${width}px` : width;
     }
-    
+
     if (height) {
       style.height = typeof height === 'number' ? `${height}px` : height;
     } else {
@@ -48,18 +48,13 @@ const Skeleton: React.FC<SkeletonProps> = ({
       }
       if (variant === 'rectangular') style.height = '120px';
     }
-    
+
     return style;
   };
-  
+
   return (
     <div
-      className={cn(
-        baseStyles,
-        animations[animation],
-        variants[variant],
-        className
-      )}
+      className={cn(baseStyles, animations[animation], variants[variant], className)}
       style={getSize()}
       aria-busy="true"
       aria-label="Loading..."
@@ -75,11 +70,7 @@ const Skeleton: React.FC<SkeletonProps> = ({
 export const SkeletonText: React.FC<{ lines?: number }> = ({ lines = 3 }) => (
   <div className="space-y-2">
     {Array.from({ length: lines }).map((_, i) => (
-      <Skeleton
-        key={i}
-        variant="text"
-        width={i === lines - 1 ? '60%' : '100%'}
-      />
+      <Skeleton key={i} variant="text" width={i === lines - 1 ? '60%' : '100%'} />
     ))}
   </div>
 );

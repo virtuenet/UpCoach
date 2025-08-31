@@ -11,9 +11,13 @@ export interface ContentInteractionAttributes {
   updatedAt?: Date;
 }
 
-export interface ContentInteractionCreationAttributes extends Optional<ContentInteractionAttributes, 'id' | 'metadata' | 'createdAt' | 'updatedAt'> {}
+export interface ContentInteractionCreationAttributes
+  extends Optional<ContentInteractionAttributes, 'id' | 'metadata' | 'createdAt' | 'updatedAt'> {}
 
-class ContentInteraction extends Model<ContentInteractionAttributes, ContentInteractionCreationAttributes> implements ContentInteractionAttributes {
+class ContentInteraction
+  extends Model<ContentInteractionAttributes, ContentInteractionCreationAttributes>
+  implements ContentInteractionAttributes
+{
   declare id: number;
   public contentId!: number;
   public userId!: number;

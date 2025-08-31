@@ -16,9 +16,16 @@ export interface ForumPostAttributes {
   updatedAt: Date;
 }
 
-export interface ForumPostCreationAttributes extends Omit<ForumPostAttributes, 'id' | 'isSolution' | 'isDeleted' | 'editCount' | 'createdAt' | 'updatedAt'> {}
+export interface ForumPostCreationAttributes
+  extends Omit<
+    ForumPostAttributes,
+    'id' | 'isSolution' | 'isDeleted' | 'editCount' | 'createdAt' | 'updatedAt'
+  > {}
 
-export class ForumPost extends Model<ForumPostAttributes, ForumPostCreationAttributes> implements ForumPostAttributes {
+export class ForumPost
+  extends Model<ForumPostAttributes, ForumPostCreationAttributes>
+  implements ForumPostAttributes
+{
   public id!: string;
   public threadId!: string;
   public userId!: string;
@@ -47,27 +54,27 @@ export class ForumPost extends Model<ForumPostAttributes, ForumPostCreationAttri
   public static associate(models: any) {
     ForumPost.belongsTo(models.ForumThread, {
       foreignKey: 'threadId',
-      as: 'thread'
+      as: 'thread',
     });
-    
+
     ForumPost.belongsTo(models.User, {
       foreignKey: 'userId',
-      as: 'user'
+      as: 'user',
     });
-    
+
     ForumPost.belongsTo(models.ForumPost, {
       foreignKey: 'parentId',
-      as: 'parent'
+      as: 'parent',
     });
-    
+
     ForumPost.hasMany(models.ForumPost, {
       foreignKey: 'parentId',
-      as: 'replies'
+      as: 'replies',
     });
-    
+
     ForumPost.hasMany(models.ForumVote, {
       foreignKey: 'postId',
-      as: 'votes'
+      as: 'votes',
     });
   }
 }

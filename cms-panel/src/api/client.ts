@@ -1,9 +1,9 @@
-import { createApiClient } from '../../../shared/services/apiClient'
-import { useAuthStore } from '../stores/authStore'
-import { csrfManager } from '../services/csrfManager'
-import { logger } from '../utils/logger'
+import { createApiClient } from '../../../shared/services/apiClient';
+import { useAuthStore } from '../stores/authStore';
+import { csrfManager } from '../services/csrfManager';
+import { logger } from '../utils/logger';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7000/api'
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7000/api';
 
 export const apiClient = createApiClient({
   baseURL: BASE_URL,
@@ -12,29 +12,29 @@ export const apiClient = createApiClient({
   // No longer need getAuthToken since we're using httpOnly cookies
   getCSRFToken: async () => {
     try {
-      return await csrfManager.getToken()
+      return await csrfManager.getToken();
     } catch (error) {
-      logger.warn('Failed to get CSRF token', error)
-      return null
+      logger.warn('Failed to get CSRF token', error);
+      return null;
     }
   },
   onUnauthorized: () => {
-    logger.info('User unauthorized, redirecting to login')
+    logger.info('User unauthorized, redirecting to login');
     // Handle logout
-    useAuthStore.getState().logout()
-    window.location.href = '/login'
+    useAuthStore.getState().logout();
+    window.location.href = '/login';
   },
-  onError: (error) => {
+  onError: error => {
     // Log errors with proper logger
     logger.error('API Error', {
       url: error.config?.url,
       method: error.config?.method,
       status: error.response?.status,
       data: error.response?.data,
-      message: error.message
-    })
-  }
-})
+      message: error.message,
+    });
+  },
+});
 
 // Export for backward compatibility
-export default apiClient
+export default apiClient;

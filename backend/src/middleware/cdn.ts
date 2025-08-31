@@ -21,10 +21,10 @@ const cdnConfig: CDNConfig = {
   staticPaths: ['/images', '/css', '/js', '/fonts', '/media'],
   maxAge: {
     images: 31536000, // 1 year
-    css: 31536000,    // 1 year
-    js: 31536000,     // 1 year
-    fonts: 31536000,  // 1 year
-    default: 86400,   // 1 day
+    css: 31536000, // 1 year
+    js: 31536000, // 1 year
+    fonts: 31536000, // 1 year
+    default: 86400, // 1 day
   },
 };
 
@@ -37,11 +37,9 @@ export const cdnMiddleware = (req: Request, _res: Response, next: NextFunction) 
   // Add CDN helper to response locals
   _res.locals.cdn = (path: string): string => {
     if (!path) return '';
-    
+
     // Check if path should use CDN
-    const shouldUseCDN = cdnConfig.staticPaths.some(staticPath => 
-      path.startsWith(staticPath)
-    );
+    const shouldUseCDN = cdnConfig.staticPaths.some(staticPath => path.startsWith(staticPath));
 
     if (shouldUseCDN) {
       // Remove leading slash and append to CDN URL
@@ -52,8 +50,8 @@ export const cdnMiddleware = (req: Request, _res: Response, next: NextFunction) 
   };
 
   // Override _res.json to rewrite URLs in JSON responses
-  const originalJson = _res.json.bind(res);
-  _res.json = function(data: any) {
+  const originalJson = _res.json.bind(_res);
+  _res.json = function (data: any) {
     if (cdnConfig.enabled && data) {
       data = rewriteUrls(data);
     }
@@ -64,7 +62,7 @@ export const cdnMiddleware = (req: Request, _res: Response, next: NextFunction) 
 };
 
 // Static file caching headers
-export const staticCacheMiddleware = (req: Request, _res: Response, next: NextFunction) => {
+export const staticCacheMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const ext = path.extname(req.path).toLowerCase();
   let maxAge = cdnConfig.maxAge.default;
 
@@ -92,11 +90,11 @@ export const staticCacheMiddleware = (req: Request, _res: Response, next: NextFu
   }
 
   // Set cache headers
-  __res.setHeader('Cache-Control', `public, max-age=${maxAge}, immutable`);
-  __res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Cache-Control', `public, max-age=${maxAge}, immutable`);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
 
   // Add ETag support
-  __res.setHeader('ETag', `"${req.path}-${Date.now()}"`);
+  res.setHeader('ETag', `"${req.path}-${Date.now()}"`);
 
   next();
 };
@@ -136,7 +134,7 @@ function rewriteUrls(obj: any): any {
 }
 
 // Image optimization middleware
-export const imageOptimizationMiddleware = (req: Request, _res: Response, next: NextFunction) => {
+export const imageOptimizationMiddleware = (req: Request, res: Response, next: NextFunction) => {
   // Parse query parameters for image transformation
   const { w, h, q, format } = req.query;
 
@@ -150,25 +148,29 @@ export const imageOptimizationMiddleware = (req: Request, _res: Response, next: 
     if (format) transforms.push(`f_${format}`);
 
     if (transforms.length > 0) {
-      __res.setHeader('X-Image-Transform', transforms.join(','));
+      res.setHeader('X-Image-Transform', transforms.join(','));
     }
 
     // Add responsive image hints
-    __res.setHeader('Accept-CH', 'DPR, Width, Viewport-Width');
-    __res.setHeader('Vary', 'Accept, DPR, Width');
+    res.setHeader('Accept-CH', 'DPR, Width, Viewport-Width');
+    res.setHeader('Vary', 'Accept, DPR, Width');
   }
 
   next();
 };
 
 // Preload critical resources
-export const preloadMiddleware = (req: Request, _res: Response, next: NextFunction) => {
+export const preloadMiddleware = (req: Request, res: Response, next: NextFunction) => {
   // Add preload headers for critical resources
   const preloads: string[] = [];
 
   // Preload fonts
-  preloads.push(`<${cdnConfig.baseUrl}/fonts/Inter-Regular.woff2>; rel=preload; as=font; type=font/woff2; crossorigin`);
-  preloads.push(`<${cdnConfig.baseUrl}/fonts/Inter-Bold.woff2>; rel=preload; as=font; type=font/woff2; crossorigin`);
+  preloads.push(
+    `<${cdnConfig.baseUrl}/fonts/Inter-Regular.woff2>; rel=preload; as=font; type=font/woff2; crossorigin`
+  );
+  preloads.push(
+    `<${cdnConfig.baseUrl}/fonts/Inter-Bold.woff2>; rel=preload; as=font; type=font/woff2; crossorigin`
+  );
 
   // Preload critical CSS
   preloads.push(`<${cdnConfig.baseUrl}/css/critical.css>; rel=preload; as=style`);
@@ -177,17 +179,17 @@ export const preloadMiddleware = (req: Request, _res: Response, next: NextFuncti
   preloads.push(`<${cdnConfig.baseUrl}/js/app.js>; rel=preload; as=script`);
 
   if (preloads.length > 0) {
-    __res.setHeader('Link', preloads.join(', '));
+    res.setHeader('Link', preloads.join(', '));
   }
 
   next();
 };
 
 // Service Worker for offline support
-export const serviceWorkerMiddleware = (req: Request, _res: Response, next: NextFunction) => {
+export const serviceWorkerMiddleware = (req: Request, res: Response, next: NextFunction) => {
   if (req.path === '/service-worker.js') {
-    __res.setHeader('Service-Worker-Allowed', '/');
-    __res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Service-Worker-Allowed', '/');
+    res.setHeader('Cache-Control', 'no-cache');
   }
   next();
 };

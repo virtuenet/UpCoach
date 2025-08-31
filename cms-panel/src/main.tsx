@@ -1,15 +1,15 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { BrowserRouter } from 'react-router-dom'
-import { Toaster } from 'react-hot-toast'
-import App from './App.tsx'
-import ErrorBoundary from './components/ErrorBoundary.tsx'
-import { initializeSentry } from './services/monitoring/sentryInit'
-import './index.css'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import App from './App.tsx';
+import ErrorBoundary from './components/ErrorBoundary.tsx';
+import { initializeSentry } from './services/monitoring/sentryInit';
+import './index.css';
 
 // Initialize Sentry monitoring
-initializeSentry()
+initializeSentry();
 
 // Single QueryClient instance for the entire app
 const queryClient = new QueryClient({
@@ -23,7 +23,7 @@ const queryClient = new QueryClient({
       retry: false,
     },
   },
-})
+});
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -54,5 +54,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         </BrowserRouter>
       </QueryClientProvider>
     </ErrorBoundary>
-  </React.StrictMode>,
-) 
+  </React.StrictMode>
+);

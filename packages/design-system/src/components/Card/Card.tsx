@@ -4,8 +4,8 @@
  */
 
 import React from 'react';
-import { 
-  Card as MuiCard, 
+import {
+  Card as MuiCard,
   CardProps as MuiCardProps,
   CardContent,
   CardHeader,
@@ -13,7 +13,7 @@ import {
   CardMedia,
   Typography,
   IconButton,
-  Skeleton
+  Skeleton,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
@@ -33,7 +33,7 @@ export interface CardProps extends Omit<MuiCardProps, 'title'> {
 }
 
 const StyledCard = styled(MuiCard, {
-  shouldForwardProp: (prop) => prop !== 'variant' && prop !== 'padding'
+  shouldForwardProp: prop => prop !== 'variant' && prop !== 'padding',
 })<{ variant?: string; padding?: string }>(({ theme, variant = 'elevated' }) => ({
   transition: theme.transitions.create(['box-shadow', 'transform'], {
     duration: theme.transitions.duration.short,
@@ -88,7 +88,7 @@ export const Card: React.FC<CardProps> = ({
           />
         )}
         {media && <Skeleton variant="rectangular" height={media.height || 200} />}
-        <CardContent sx={{ padding: (theme) => getPaddingValue(padding, theme) }}>
+        <CardContent sx={{ padding: theme => getPaddingValue(padding, theme) }}>
           <Skeleton variant="text" />
           <Skeleton variant="text" />
           <Skeleton variant="text" width="80%" />
@@ -105,22 +105,13 @@ export const Card: React.FC<CardProps> = ({
   return (
     <StyledCard variant={cardVariant} {...props}>
       {(title || subtitle || headerAction) && (
-        <CardHeader
-          title={title}
-          subheader={subtitle}
-          action={headerAction}
-        />
+        <CardHeader title={title} subheader={subtitle} action={headerAction} />
       )}
       {media && (
-        <CardMedia
-          component="img"
-          height={media.height || 200}
-          image={media.src}
-          alt={media.alt}
-        />
+        <CardMedia component="img" height={media.height || 200} image={media.src} alt={media.alt} />
       )}
       {children && (
-        <CardContent sx={{ padding: (theme) => getPaddingValue(padding, theme) }}>
+        <CardContent sx={{ padding: theme => getPaddingValue(padding, theme) }}>
           {children}
         </CardContent>
       )}

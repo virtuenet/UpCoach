@@ -21,17 +21,17 @@ export const colors = {
     successLight: '#34d399',
     successDark: '#059669',
     successBackground: '#ecfdf5',
-    
+
     warning: '#f59e0b',
     warningLight: '#fbbf24',
     warningDark: '#d97706',
     warningBackground: '#fffbeb',
-    
+
     error: '#ef4444',
     errorLight: '#f87171',
     errorDark: '#dc2626',
     errorBackground: '#fef2f2',
-    
+
     info: '#3b82f6',
     infoLight: '#60a5fa',
     infoDark: '#2563eb',
@@ -56,33 +56,33 @@ export const colors = {
 
   // Text Colors
   text: {
-    primary: '#111827',      // Main text
-    secondary: '#6b7280',    // Secondary text
-    tertiary: '#9ca3af',     // Muted text
-    disabled: '#d1d5db',     // Disabled state
-    inverse: '#ffffff',      // Text on dark backgrounds
-    link: '#3b82f6',        // Link color
-    linkHover: '#2563eb',   // Link hover state
+    primary: '#111827', // Main text
+    secondary: '#6b7280', // Secondary text
+    tertiary: '#9ca3af', // Muted text
+    disabled: '#d1d5db', // Disabled state
+    inverse: '#ffffff', // Text on dark backgrounds
+    link: '#3b82f6', // Link color
+    linkHover: '#2563eb', // Link hover state
   },
 
   // Background Colors
   background: {
-    primary: '#ffffff',      // Main background
-    secondary: '#f9fafb',    // Subtle background
-    tertiary: '#f3f4f6',     // Card backgrounds
-    elevated: '#ffffff',     // Elevated surfaces
+    primary: '#ffffff', // Main background
+    secondary: '#f9fafb', // Subtle background
+    tertiary: '#f3f4f6', // Card backgrounds
+    elevated: '#ffffff', // Elevated surfaces
     overlay: 'rgba(0, 0, 0, 0.5)', // Modal overlays
-    hover: '#f3f4f6',       // Hover states
-    pressed: '#e5e7eb',     // Pressed states
+    hover: '#f3f4f6', // Hover states
+    pressed: '#e5e7eb', // Pressed states
   },
 
   // Border Colors
   border: {
-    default: '#e5e7eb',      // Default borders
-    light: '#f3f4f6',        // Light borders
-    dark: '#d1d5db',         // Strong borders
-    focus: '#3b82f6',        // Focus ring color
-    error: '#ef4444',        // Error state borders
+    default: '#e5e7eb', // Default borders
+    light: '#f3f4f6', // Light borders
+    dark: '#d1d5db', // Strong borders
+    focus: '#3b82f6', // Focus ring color
+    error: '#ef4444', // Error state borders
   },
 
   // Chart Colors (for data visualization)

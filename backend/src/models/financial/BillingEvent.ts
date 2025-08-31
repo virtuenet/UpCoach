@@ -1,5 +1,5 @@
 import { Model, DataTypes, Optional, Association } from 'sequelize';
-import { sequelize } from '../index';
+import { sequelize } from '../../config/sequelize';
 import { User } from '../User';
 import { Subscription } from './Subscription';
 import { Transaction } from './Transaction';
@@ -61,9 +61,34 @@ export interface BillingEventAttributes {
   updatedAt?: Date;
 }
 
-export interface BillingEventCreationAttributes extends Optional<BillingEventAttributes, 'id' | 'subscriptionId' | 'transactionId' | 'stripeEventId' | 'amount' | 'currency' | 'previousValue' | 'newValue' | 'eventData' | 'ipAddress' | 'userAgent' | 'performedBy' | 'isProcessed' | 'processedAt' | 'processingError' | 'retryCount' | 'metadata' | 'createdAt' | 'updatedAt'> {}
+export interface BillingEventCreationAttributes
+  extends Optional<
+    BillingEventAttributes,
+    | 'id'
+    | 'subscriptionId'
+    | 'transactionId'
+    | 'stripeEventId'
+    | 'amount'
+    | 'currency'
+    | 'previousValue'
+    | 'newValue'
+    | 'eventData'
+    | 'ipAddress'
+    | 'userAgent'
+    | 'performedBy'
+    | 'isProcessed'
+    | 'processedAt'
+    | 'processingError'
+    | 'retryCount'
+    | 'metadata'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
-export class BillingEvent extends Model<BillingEventAttributes, BillingEventCreationAttributes> implements BillingEventAttributes {
+export class BillingEvent
+  extends Model<BillingEventAttributes, BillingEventCreationAttributes>
+  implements BillingEventAttributes
+{
   public id!: string;
   public eventType!: BillingEventType;
   public source!: BillingEventSource;
@@ -111,11 +136,13 @@ export class BillingEvent extends Model<BillingEventAttributes, BillingEventCrea
   }
 
   get requiresAction(): boolean {
-    return [
-      BillingEventType.PAYMENT_FAILED,
-      BillingEventType.CHARGEBACK_CREATED,
-      BillingEventType.DUNNING_STARTED,
-    ].includes(this.eventType) && !this.isProcessed;
+    return (
+      [
+        BillingEventType.PAYMENT_FAILED,
+        BillingEventType.CHARGEBACK_CREATED,
+        BillingEventType.DUNNING_STARTED,
+      ].includes(this.eventType) && !this.isProcessed
+    );
   }
 
   get severity(): 'low' | 'medium' | 'high' | 'critical' {
@@ -133,7 +160,10 @@ export class BillingEvent extends Model<BillingEventAttributes, BillingEventCrea
 
   public static associate(models: any) {
     BillingEvent.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
-    BillingEvent.belongsTo(models.Subscription, { foreignKey: 'subscriptionId', as: 'subscription' });
+    BillingEvent.belongsTo(models.Subscription, {
+      foreignKey: 'subscriptionId',
+      as: 'subscription',
+    });
     BillingEvent.belongsTo(models.Transaction, { foreignKey: 'transactionId', as: 'transaction' });
   }
 }

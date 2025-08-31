@@ -45,10 +45,7 @@ function generateCsrfToken(): string {
  * Create CSRF token hash
  */
 function hashToken(token: string, secret: string): string {
-  return crypto
-    .createHmac('sha256', secret)
-    .update(token)
-    .digest('hex');
+  return crypto.createHmac('sha256', secret).update(token).digest('hex');
 }
 
 /**
@@ -56,10 +53,7 @@ function hashToken(token: string, secret: string): string {
  */
 function verifyToken(token: string, hash: string, secret: string): boolean {
   const expectedHash = hashToken(token, secret);
-  return crypto.timingSafeEqual(
-    Buffer.from(hash),
-    Buffer.from(expectedHash)
-  );
+  return crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(expectedHash));
 }
 
 /**
@@ -97,49 +91,48 @@ export function csrfProtection(options: CsrfOptions = {}) {
       if (doubleSubmit) {
         // Double Submit Cookie Pattern
         const cookieToken = req.cookies[cookieName];
-        const headerToken = req.headers[headerName] as string || req.body._csrf;
+        const headerToken = (req.headers[headerName] as string) || req.body._csrf;
 
         if (!cookieToken || !headerToken) {
-          logger.warn('CSRF token missing', { 
-            path: req.path, 
+          logger.warn('CSRF token missing', {
+            path: req.path,
             hasCookie: !!cookieToken,
-            hasHeader: !!headerToken 
+            hasHeader: !!headerToken,
           });
-          return _res.status(403).json({ 
+          return _res.status(403).json({
             error: 'CSRF token missing',
-            code: 'CSRF_TOKEN_MISSING' 
+            code: 'CSRF_TOKEN_MISSING',
           });
         }
 
         // Verify tokens match
         if (!crypto.timingSafeEqual(Buffer.from(cookieToken), Buffer.from(headerToken))) {
           logger.warn('CSRF token mismatch', { path: req.path });
-          return _res.status(403).json({ 
+          return _res.status(403).json({
             error: 'Invalid CSRF token',
-            code: 'CSRF_TOKEN_INVALID' 
+            code: 'CSRF_TOKEN_INVALID',
           });
         }
       } else {
         // Synchronizer Token Pattern (using Redis for storage)
         const sessionId = req.session?.id || req.cookies['session-id'];
-        
+
         if (!sessionId) {
           logger.warn('No session for CSRF validation', { path: req.path });
-          return _res.status(403).json({ 
+          return _res.status(403).json({
             error: 'Session required',
-            code: 'SESSION_REQUIRED' 
+            code: 'SESSION_REQUIRED',
           });
         }
 
-        const providedToken = req.headers[headerName] as string || 
-                            req.body._csrf || 
-                            req.query._csrf as string;
+        const providedToken =
+          (req.headers[headerName] as string) || req.body._csrf || (req.query._csrf as string);
 
         if (!providedToken) {
           logger.warn('CSRF token not provided', { path: req.path });
-          return _res.status(403).json({ 
+          return _res.status(403).json({
             error: 'CSRF token required',
-            code: 'CSRF_TOKEN_REQUIRED' 
+            code: 'CSRF_TOKEN_REQUIRED',
           });
         }
 
@@ -149,9 +142,9 @@ export function csrfProtection(options: CsrfOptions = {}) {
 
         if (!storedToken) {
           logger.warn('CSRF token not found in storage', { path: req.path });
-          return _res.status(403).json({ 
+          return _res.status(403).json({
             error: 'CSRF token expired or not found',
-            code: 'CSRF_TOKEN_EXPIRED' 
+            code: 'CSRF_TOKEN_EXPIRED',
           });
         }
 
@@ -159,9 +152,9 @@ export function csrfProtection(options: CsrfOptions = {}) {
         const [_token, hash] = storedToken.split(':');
         if (!verifyToken(providedToken, hash, secret)) {
           logger.warn('CSRF token verification failed', { path: req.path });
-          return _res.status(403).json({ 
+          return _res.status(403).json({
             error: 'Invalid CSRF token',
-            code: 'CSRF_TOKEN_INVALID' 
+            code: 'CSRF_TOKEN_INVALID',
           });
         }
 
@@ -169,7 +162,7 @@ export function csrfProtection(options: CsrfOptions = {}) {
         const newToken = generateCsrfToken();
         const newHash = hashToken(newToken, secret);
         await redis.setEx(storedTokenKey, tokenExpiry, `${newToken}:${newHash}`);
-        
+
         // Send new token in response header
         _res.setHeader('X-CSRF-Token', newToken);
       }
@@ -177,9 +170,9 @@ export function csrfProtection(options: CsrfOptions = {}) {
       next();
     } catch (error) {
       logger.error('CSRF protection error', { error });
-      _res.status(500).json({ 
+      _res.status(500).json({
         error: 'CSRF validation error',
-        code: 'CSRF_ERROR' 
+        code: 'CSRF_ERROR',
       });
     }
   };
@@ -202,7 +195,7 @@ export function csrfToken(options: CsrfOptions = {}) {
       if (doubleSubmit) {
         // Generate token for double submit cookie pattern
         const token = generateCsrfToken();
-        
+
         // Set cookie with secure options
         _res.cookie(cookieName, token, {
           httpOnly: false, // Must be readable by JavaScript
@@ -210,23 +203,23 @@ export function csrfToken(options: CsrfOptions = {}) {
           sameSite: 'strict',
           maxAge: tokenExpiry * 1000,
         });
-        
+
         return token;
       } else {
         // Generate token for synchronizer pattern
         const sessionId = req.session?.id || req.cookies['session-id'];
-        
+
         if (!sessionId) {
           throw new Error('Session required for CSRF token generation');
         }
-        
+
         const token = generateCsrfToken();
         const hash = hashToken(token, secret);
-        
+
         // Store in Redis
         const key = `csrf:${sessionId}`;
         await redis.setEx(key, tokenExpiry, `${token}:${hash}`);
-        
+
         return token;
       }
     };
@@ -249,24 +242,28 @@ export function csrfToken(options: CsrfOptions = {}) {
  */
 export function configureCsrf(app: any): void {
   // Generate CSRF tokens for all requests
-  app.use(csrfToken({
-    doubleSubmit: process.env.CSRF_DOUBLE_SUBMIT === 'true',
-    tokenExpiry: parseInt(process.env.CSRF_TOKEN_EXPIRY || '3600', 10),
-  }));
+  app.use(
+    csrfToken({
+      doubleSubmit: process.env.CSRF_DOUBLE_SUBMIT === 'true',
+      tokenExpiry: parseInt(process.env.CSRF_TOKEN_EXPIRY || '3600', 10),
+    })
+  );
 
   // Apply CSRF protection to state-changing operations
-  app.use(csrfProtection({
-    doubleSubmit: process.env.CSRF_DOUBLE_SUBMIT === 'true',
-    excludePaths: [
-      '/api/auth/login',
-      '/api/auth/register',
-      '/api/auth/refresh',
-      '/api/financial/webhook/stripe',
-      '/api/webhooks', // All webhook endpoints
-      '/health',
-      '/metrics',
-    ],
-  }));
+  app.use(
+    csrfProtection({
+      doubleSubmit: process.env.CSRF_DOUBLE_SUBMIT === 'true',
+      excludePaths: [
+        '/api/auth/login',
+        '/api/auth/register',
+        '/api/auth/refresh',
+        '/api/financial/webhook/stripe',
+        '/api/webhooks', // All webhook endpoints
+        '/health',
+        '/metrics',
+      ],
+    })
+  );
 }
 
 /**
@@ -280,11 +277,11 @@ export async function validateCsrfToken(
   try {
     const key = `csrf:${sessionId}`;
     const stored = await redis.get(key);
-    
+
     if (!stored) {
       return false;
     }
-    
+
     const [, hash] = stored.split(':');
     return verifyToken(token, hash, secret);
   } catch (error) {

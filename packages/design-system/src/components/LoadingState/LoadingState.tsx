@@ -4,13 +4,7 @@
  */
 
 import React from 'react';
-import { 
-  Box, 
-  CircularProgress, 
-  Skeleton, 
-  Typography,
-  LinearProgress
-} from '@mui/material';
+import { Box, CircularProgress, Skeleton, Typography, LinearProgress } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export interface LoadingStateProps {
@@ -28,7 +22,7 @@ export interface LoadingStateProps {
 }
 
 const LoadingContainer = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'fullScreen' && prop !== 'overlay'
+  shouldForwardProp: prop => prop !== 'fullScreen' && prop !== 'overlay',
 })<{ fullScreen?: boolean; overlay?: boolean }>(({ theme, fullScreen, overlay }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -137,11 +131,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({
             )}
             {image && <Skeleton variant="rectangular" height={imageHeight} sx={{ mb: 2 }} />}
             {Array.from({ length: lines }).map((_, index) => (
-              <Skeleton
-                key={index}
-                variant="text"
-                width={index === lines - 1 ? '60%' : '100%'}
-              />
+              <Skeleton key={index} variant="text" width={index === lines - 1 ? '60%' : '100%'} />
             ))}
           </Box>
         );

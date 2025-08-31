@@ -86,7 +86,11 @@ export class UserService {
     }
   }
 
-  static async updatePassword(id: string, currentPassword: string, newPassword: string): Promise<void> {
+  static async updatePassword(
+    id: string,
+    currentPassword: string,
+    newPassword: string
+  ): Promise<void> {
     try {
       const user = await this.findById(id);
       if (!user) {
@@ -204,27 +208,36 @@ export class UserService {
 
       // Get various statistics
       const [tasksResult, goalsResult, moodEntriesResult] = await Promise.all([
-        db.query(`
+        db.query(
+          `
           SELECT 
             COUNT(*) as total_tasks,
             COUNT(*) FILTER (WHERE status = 'completed') as completed_tasks,
             COUNT(*) FILTER (WHERE status = 'pending') as pending_tasks
           FROM tasks 
           WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '30 days'
-        `, [id]),
-        db.query(`
+        `,
+          [id]
+        ),
+        db.query(
+          `
           SELECT 
             COUNT(*) as total_goals,
             COUNT(*) FILTER (WHERE status = 'completed') as completed_goals,
             AVG(progress_percentage) as avg_progress
           FROM goals 
           WHERE user_id = $1
-        `, [id]),
-        db.query(`
+        `,
+          [id]
+        ),
+        db.query(
+          `
           SELECT COUNT(*) as mood_entries_count
           FROM mood_entries 
           WHERE user_id = $1 AND timestamp >= NOW() - INTERVAL '30 days'
-        `, [id])
+        `,
+          [id]
+        ),
       ]);
 
       return {
@@ -308,7 +321,7 @@ export class UserService {
     try {
       // Get token data from Redis
       const tokenData = await redis.get(`password_reset:${token}`);
-      
+
       if (!tokenData) {
         throw new ApiError(400, 'Invalid or expired reset token');
       }
@@ -353,7 +366,7 @@ export class UserService {
       // In production, you would verify the token with Google
       // For now, we'll throw an error to indicate it needs implementation
       throw new ApiError(501, 'Google OAuth not yet implemented');
-      
+
       // Implementation would look like:
       // const ticket = await googleClient.verifyIdToken({
       //   idToken,
@@ -374,19 +387,22 @@ export class UserService {
     isEmailVerified: boolean;
   }): Promise<User> {
     try {
-      const result = await db.query(`
+      const result = await db.query(
+        `
         INSERT INTO users (email, name, google_id, avatar_url, is_email_verified, role, is_active)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *
-      `, [
-        googleData.email,
-        googleData.name,
-        googleData.googleId,
-        googleData.avatarUrl,
-        googleData.isEmailVerified,
-        'user',
-        true
-      ]);
+      `,
+        [
+          googleData.email,
+          googleData.name,
+          googleData.googleId,
+          googleData.avatarUrl,
+          googleData.isEmailVerified,
+          'user',
+          true,
+        ]
+      );
 
       logger.info('User created from Google:', { email: googleData.email });
 
@@ -408,7 +424,7 @@ export class UserService {
         onboardingSkipped: user.onboarding_skipped,
         lastLoginAt: user.last_login_at,
         createdAt: user.created_at,
-        updatedAt: user.updated_at
+        updatedAt: user.updated_at,
       } as unknown as User;
     } catch (error: any) {
       if (error.code === '23505') {
@@ -421,13 +437,13 @@ export class UserService {
 
   static async updateGoogleId(userId: number, googleId: string): Promise<void> {
     try {
-      await db.query(
-        'UPDATE users SET google_id = $1, updated_at = NOW() WHERE id = $2',
-        [googleId, userId]
-      );
+      await db.query('UPDATE users SET google_id = $1, updated_at = NOW() WHERE id = $2', [
+        googleId,
+        userId,
+      ]);
     } catch (error) {
       logger.error('Error updating Google ID:', error);
       throw new ApiError(500, 'Failed to update Google ID');
     }
   }
-} 
+}

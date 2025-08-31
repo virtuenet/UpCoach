@@ -27,7 +27,7 @@ class CSRFTokenManager {
 
     // Fetch new token
     this.fetchPromise = this.fetchNewToken();
-    
+
     try {
       const token = await this.fetchPromise;
       return token;
@@ -44,12 +44,12 @@ class CSRFTokenManager {
       const response = await apiClient.get('/csrf-token', {
         // Skip CSRF check for this request
         headers: {
-          'X-Skip-CSRF': 'true'
-        }
+          'X-Skip-CSRF': 'true',
+        },
       });
 
       const { token, expiresIn = 3600 } = response.data;
-      
+
       if (!token) {
         throw new Error('No CSRF token received from server');
       }
@@ -57,7 +57,7 @@ class CSRFTokenManager {
       // Store token and expiry
       this.token = token;
       // Set expiry 5 minutes before actual expiry for safety
-      this.tokenExpiry = Date.now() + ((expiresIn - 300) * 1000);
+      this.tokenExpiry = Date.now() + (expiresIn - 300) * 1000;
 
       // Schedule automatic refresh
       this.scheduleRefresh(expiresIn);
@@ -81,10 +81,7 @@ class CSRFTokenManager {
     }
 
     // Refresh 10 minutes before expiry (or at 80% of lifetime for shorter tokens)
-    const refreshTime = Math.min(
-      (expiresIn - 600) * 1000,
-      expiresIn * 0.8 * 1000
-    );
+    const refreshTime = Math.min((expiresIn - 600) * 1000, expiresIn * 0.8 * 1000);
 
     if (refreshTime > 0) {
       this.refreshTimer = setTimeout(() => {

@@ -16,13 +16,10 @@ export class RetryMechanism {
     initialDelay: 1000,
     maxDelay: 10000,
     factor: 2,
-    onRetry: () => {}
+    onRetry: () => {},
   };
 
-  async execute<T>(
-    operation: () => Promise<T>,
-    options?: RetryOptions
-  ): Promise<T> {
+  async execute<T>(operation: () => Promise<T>, options?: RetryOptions): Promise<T> {
     const config = { ...this.defaultOptions, ...options };
     let lastError: Error;
 
@@ -31,7 +28,7 @@ export class RetryMechanism {
         return await operation();
       } catch (error) {
         lastError = error as Error;
-        
+
         if (attempt === config.maxRetries) {
           throw lastError;
         }
@@ -43,7 +40,7 @@ export class RetryMechanism {
 
         const delay = this.calculateDelay(attempt, config);
         config.onRetry(lastError, attempt + 1);
-        
+
         await this.sleep(delay);
       }
     }
@@ -53,9 +50,11 @@ export class RetryMechanism {
 
   private isRetryableError(error: Error): boolean {
     // Network errors
-    if (error.message.includes('ECONNREFUSED') || 
-        error.message.includes('ETIMEDOUT') ||
-        error.message.includes('ENOTFOUND')) {
+    if (
+      error.message.includes('ECONNREFUSED') ||
+      error.message.includes('ETIMEDOUT') ||
+      error.message.includes('ENOTFOUND')
+    ) {
       return true;
     }
 
@@ -71,8 +70,10 @@ export class RetryMechanism {
     }
 
     // Temporary failures
-    if (error.message.toLowerCase().includes('temporary') ||
-        error.message.toLowerCase().includes('timeout')) {
+    if (
+      error.message.toLowerCase().includes('temporary') ||
+      error.message.toLowerCase().includes('timeout')
+    ) {
       return true;
     }
 
@@ -92,10 +93,7 @@ export class RetryMechanism {
   /**
    * Create a retryable version of an async function
    */
-  wrap<T extends (...args: any[]) => Promise<any>>(
-    fn: T,
-    options?: RetryOptions
-  ): T {
+  wrap<T extends (...args: any[]) => Promise<any>>(fn: T, options?: RetryOptions): T {
     return (async (...args: Parameters<T>): Promise<ReturnType<T>> => {
       return this.execute(() => fn(...args), options);
     }) as T;

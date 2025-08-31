@@ -1,4 +1,5 @@
 /**
+import { format, formatDistanceToNow, parseISO } from "date-fns";
  * Comprehensive Input Validation and Sanitization
  * Prevents XSS, SQL injection, and other input-based attacks
  */
@@ -40,7 +41,8 @@ const MALICIOUS_PATTERNS = {
 /**
  * Email validation regex (RFC 5322 compliant)
  */
-const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+const EMAIL_REGEX =
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 /**
  * Strong password regex
@@ -50,7 +52,8 @@ const STRONG_PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-
 /**
  * Phone number regex (international format)
  */
-const PHONE_REGEX = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,9}$/;
+const PHONE_REGEX =
+  /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,4}[-\s\.]?[0-9]{1,9}$/;
 
 /**
  * Input validation rules
@@ -76,10 +79,7 @@ export interface ValidationResult {
 /**
  * Validate and sanitize text input
  */
-export function validateText(
-  value: string,
-  rules: ValidationRule = {}
-): ValidationResult {
+export function validateText(value: string, rules: ValidationRule = {}): ValidationResult {
   const errors: string[] = [];
   let sanitized = value;
 
@@ -96,7 +96,7 @@ export function validateText(
   if (rules.minLength && sanitized.length < rules.minLength) {
     errors.push(`Must be at least ${rules.minLength} characters`);
   }
-  
+
   if (rules.maxLength && sanitized.length > rules.maxLength) {
     errors.push(`Must be no more than ${rules.maxLength} characters`);
     sanitized = sanitized.substring(0, rules.maxLength);
@@ -133,7 +133,7 @@ export function validateText(
   return {
     valid: errors.length === 0,
     errors,
-    sanitized
+    sanitized,
   };
 }
 
@@ -166,7 +166,7 @@ export function validateEmail(email: string): ValidationResult {
   return {
     valid: errors.length === 0,
     errors,
-    sanitized
+    sanitized,
   };
 }
 
@@ -190,7 +190,7 @@ export function validatePassword(
     requireLowercase = true,
     requireNumbers = true,
     requireSpecialChars = true,
-    checkStrength = true
+    checkStrength = true,
   } = options;
 
   const errors: string[] = [];
@@ -222,10 +222,18 @@ export function validatePassword(
 
   // Check for common weak passwords
   const weakPasswords = [
-    'password', 'Password1!', '12345678', 'qwerty', 'abc123',
-    'password123', 'admin', 'letmein', 'welcome', 'monkey'
+    'password',
+    'Password1!',
+    '12345678',
+    'qwerty',
+    'abc123',
+    'password123',
+    'admin',
+    'letmein',
+    'welcome',
+    'monkey',
   ];
-  
+
   if (weakPasswords.some(weak => password.toLowerCase().includes(weak))) {
     errors.push('Password is too common or weak');
   }
@@ -248,7 +256,7 @@ export function validatePassword(
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
@@ -275,7 +283,7 @@ export function validatePhone(phone: string): ValidationResult {
   return {
     valid: errors.length === 0,
     errors,
-    sanitized
+    sanitized,
   };
 }
 
@@ -292,10 +300,26 @@ export function sanitizeHTML(
   } = {}
 ): string {
   const {
-    allowedTags = ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote'],
+    allowedTags = [
+      'p',
+      'br',
+      'strong',
+      'em',
+      'u',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+      'ul',
+      'ol',
+      'li',
+      'blockquote',
+    ],
     allowedAttributes = ['class', 'id'],
     allowImages = false,
-    allowLinks = false
+    allowLinks = false,
   } = options;
 
   const tags = [...allowedTags];
@@ -317,7 +341,7 @@ export function sanitizeHTML(
     FORBID_TAGS: ['script', 'style', 'iframe', 'form', 'input', 'textarea'],
     FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'],
     KEEP_CONTENT: false,
-    SAFE_FOR_TEMPLATES: true
+    SAFE_FOR_TEMPLATES: true,
   });
 }
 
@@ -335,7 +359,7 @@ export function validateFile(
   const {
     maxSize = 10 * 1024 * 1024, // 10MB default
     allowedTypes = [],
-    allowedExtensions = []
+    allowedExtensions = [],
   } = options;
 
   const errors: string[] = [];
@@ -361,7 +385,7 @@ export function validateFile(
   const suspiciousPatterns = [
     /\.\./g, // Path traversal
     /[<>:"\/\\|?*]/g, // Invalid characters
-    /\.(exe|bat|cmd|sh|ps1|vbs|js)$/i // Executable extensions
+    /\.(exe|bat|cmd|sh|ps1|vbs|js)$/i, // Executable extensions
   ];
 
   for (const pattern of suspiciousPatterns) {
@@ -373,7 +397,7 @@ export function validateFile(
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
@@ -393,7 +417,7 @@ export function validateJSON(json: string): ValidationResult {
 
   // Check for dangerous keys or values
   const dangerous = ['__proto__', 'constructor', 'prototype'];
-  
+
   function checkObject(obj: any, path: string = ''): void {
     if (typeof obj !== 'object' || obj === null) return;
 
@@ -401,7 +425,7 @@ export function validateJSON(json: string): ValidationResult {
       if (dangerous.includes(key)) {
         errors.push(`Dangerous key "${key}" found at ${path}`);
       }
-      
+
       if (typeof obj[key] === 'object') {
         checkObject(obj[key], path ? `${path}.${key}` : key);
       }
@@ -413,7 +437,7 @@ export function validateJSON(json: string): ValidationResult {
   return {
     valid: errors.length === 0,
     errors,
-    sanitized: parsed
+    sanitized: parsed,
   };
 }
 
@@ -427,10 +451,10 @@ export function escapeHTML(str: string): string {
     '>': '&gt;',
     '"': '&quot;',
     "'": '&#039;',
-    '/': '&#x2F;'
+    '/': '&#x2F;',
   };
-  
-  return str.replace(/[&<>"'\/]/g, (s) => map[s]);
+
+  return str.replace(/[&<>"'\/]/g, s => map[s]);
 }
 
 /**
@@ -447,14 +471,14 @@ export function validateForm(
   for (const field in rules) {
     const value = data[field];
     const rule = rules[field];
-    
+
     const result = validateText(String(value || ''), rule);
-    
+
     if (!result.valid) {
       errors[field] = result.errors;
       valid = false;
     }
-    
+
     sanitized[field] = result.sanitized;
   }
 

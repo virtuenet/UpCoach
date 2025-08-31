@@ -2,7 +2,7 @@
 
 /**
  * Performance Test Results Analyzer
- * 
+ *
  * This script analyzes performance test results from both landing page
  * and AI services tests to track metrics and identify regressions.
  */
@@ -18,7 +18,7 @@ const THRESHOLDS = {
     pricing: 150,
     leadForm: 50,
     firstPaint: 200,
-    fullPageLoad: 3000
+    fullPageLoad: 3000,
   },
   aiServices: {
     aiResponse: 2000,
@@ -26,8 +26,8 @@ const THRESHOLDS = {
     recommendations: 1000,
     predictions: 800,
     insights: 1500,
-    batchOperations: 5000
-  }
+    batchOperations: 5000,
+  },
 };
 
 // Warning thresholds (percentage of limit)
@@ -44,8 +44,8 @@ class PerformanceAnalyzer {
         passed: 0,
         warnings: 0,
         critical: 0,
-        failed: 0
-      }
+        failed: 0,
+      },
     };
   }
 
@@ -102,7 +102,7 @@ class PerformanceAnalyzer {
       threshold,
       percentage: percentage.toFixed(1),
       status,
-      symbol
+      symbol,
     };
   }
 
@@ -117,15 +117,11 @@ class PerformanceAnalyzer {
     if (Object.keys(this.results.landingPage).length > 0) {
       console.log('🌐 Landing Page Performance');
       console.log('---------------------------');
-      
+
       const landingMetrics = [];
       for (const [metric, value] of Object.entries(this.results.landingPage)) {
         if (THRESHOLDS.landingPage[metric]) {
-          const analysis = this.analyzeMetric(
-            metric,
-            value,
-            THRESHOLDS.landingPage[metric]
-          );
+          const analysis = this.analyzeMetric(metric, value, THRESHOLDS.landingPage[metric]);
           landingMetrics.push(analysis);
         }
       }
@@ -137,15 +133,11 @@ class PerformanceAnalyzer {
     if (Object.keys(this.results.aiServices).length > 0) {
       console.log('\n🤖 AI Services Performance');
       console.log('---------------------------');
-      
+
       const aiMetrics = [];
       for (const [metric, value] of Object.entries(this.results.aiServices)) {
         if (THRESHOLDS.aiServices[metric]) {
-          const analysis = this.analyzeMetric(
-            metric,
-            value,
-            THRESHOLDS.aiServices[metric]
-          );
+          const analysis = this.analyzeMetric(metric, value, THRESHOLDS.aiServices[metric]);
           aiMetrics.push(analysis);
         }
       }
@@ -165,13 +157,13 @@ class PerformanceAnalyzer {
    */
   displayMetricsTable(metrics) {
     const maxNameLength = Math.max(...metrics.map(m => m.name.length));
-    
+
     metrics.forEach(metric => {
       const name = metric.name.padEnd(maxNameLength);
       const value = metric.value.toFixed(2).padStart(8);
       const threshold = metric.threshold.toString().padStart(8);
       const percentage = metric.percentage.padStart(6);
-      
+
       console.log(
         `${metric.symbol} ${name} | ${value}ms / ${threshold}ms (${percentage}%) | ${metric.status}`
       );
@@ -183,19 +175,21 @@ class PerformanceAnalyzer {
    */
   displaySummary() {
     const { summary } = this.results;
-    
+
     console.log('\n📈 Summary');
     console.log('----------');
     console.log(`Total Tests: ${summary.totalTests}`);
-    console.log(`✅ Passed: ${summary.passed} (${((summary.passed / summary.totalTests) * 100).toFixed(1)}%)`);
+    console.log(
+      `✅ Passed: ${summary.passed} (${((summary.passed / summary.totalTests) * 100).toFixed(1)}%)`
+    );
     console.log(`🟡 Warnings: ${summary.warnings}`);
     console.log(`🔴 Critical: ${summary.critical}`);
     console.log(`❌ Failed: ${summary.failed}`);
-    
+
     // Overall health score
     const healthScore = ((summary.passed + summary.warnings * 0.5) / summary.totalTests) * 100;
     console.log(`\n🏥 Overall Health Score: ${healthScore.toFixed(1)}%`);
-    
+
     if (healthScore >= 90) {
       console.log('   Status: Excellent! 🎉');
     } else if (healthScore >= 70) {
@@ -213,9 +207,9 @@ class PerformanceAnalyzer {
   generateRecommendations() {
     console.log('\n💡 Recommendations');
     console.log('------------------');
-    
+
     const recommendations = [];
-    
+
     // Check landing page specific issues
     if (this.results.landingPage.hero > THRESHOLDS.landingPage.hero * WARNING_THRESHOLD) {
       recommendations.push({
@@ -225,12 +219,15 @@ class PerformanceAnalyzer {
           'Optimize image sizes and formats (use WebP/AVIF)',
           'Implement lazy loading for below-fold content',
           'Review and minimize CSS/JS in critical path',
-          'Consider static generation for faster initial load'
-        ]
+          'Consider static generation for faster initial load',
+        ],
       });
     }
 
-    if (this.results.landingPage.fullPageLoad > THRESHOLDS.landingPage.fullPageLoad * WARNING_THRESHOLD) {
+    if (
+      this.results.landingPage.fullPageLoad >
+      THRESHOLDS.landingPage.fullPageLoad * WARNING_THRESHOLD
+    ) {
       recommendations.push({
         component: 'Full Page',
         issue: 'High total load time',
@@ -238,8 +235,8 @@ class PerformanceAnalyzer {
           'Enable compression (gzip/brotli)',
           'Implement code splitting',
           'Use CDN for static assets',
-          'Review third-party scripts impact'
-        ]
+          'Review third-party scripts impact',
+        ],
       });
     }
 
@@ -252,12 +249,15 @@ class PerformanceAnalyzer {
           'Implement response caching for common queries',
           'Consider using faster AI models for simple tasks',
           'Add streaming responses for better perceived performance',
-          'Optimize prompt templates to reduce token usage'
-        ]
+          'Optimize prompt templates to reduce token usage',
+        ],
       });
     }
 
-    if (this.results.aiServices.batchOperations > THRESHOLDS.aiServices.batchOperations * WARNING_THRESHOLD) {
+    if (
+      this.results.aiServices.batchOperations >
+      THRESHOLDS.aiServices.batchOperations * WARNING_THRESHOLD
+    ) {
       recommendations.push({
         component: 'Batch Operations',
         issue: 'Slow batch processing',
@@ -265,8 +265,8 @@ class PerformanceAnalyzer {
           'Implement parallel processing',
           'Use database bulk operations',
           'Add background job processing',
-          'Consider pagination for large datasets'
-        ]
+          'Consider pagination for large datasets',
+        ],
       });
     }
 
@@ -288,19 +288,19 @@ class PerformanceAnalyzer {
    */
   compareWithPrevious() {
     const historyPath = path.join(__dirname, '../performance-history.json');
-    
+
     try {
       if (fs.existsSync(historyPath)) {
         const history = JSON.parse(fs.readFileSync(historyPath, 'utf8'));
         const lastRun = history[history.length - 1];
-        
+
         console.log('\n📊 Comparison with Previous Run');
         console.log('--------------------------------');
         console.log(`Last run: ${new Date(lastRun.timestamp).toLocaleString()}`);
-        
+
         // Compare metrics
         const changes = [];
-        
+
         // Compare landing page metrics
         for (const [metric, currentValue] of Object.entries(this.results.landingPage)) {
           if (lastRun.landingPage[metric]) {
@@ -310,11 +310,11 @@ class PerformanceAnalyzer {
               metric: `Landing/${metric}`,
               previous: previousValue,
               current: currentValue,
-              change
+              change,
             });
           }
         }
-        
+
         // Compare AI services metrics
         for (const [metric, currentValue] of Object.entries(this.results.aiServices)) {
           if (lastRun.aiServices[metric]) {
@@ -324,18 +324,19 @@ class PerformanceAnalyzer {
               metric: `AI/${metric}`,
               previous: previousValue,
               current: currentValue,
-              change
+              change,
             });
           }
         }
-        
+
         // Display changes
         changes.sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
-        
+
         console.log('\nTop Changes:');
         changes.slice(0, 5).forEach(change => {
           const symbol = change.change > 0 ? '📈' : '📉';
-          const changeStr = change.change > 0 ? `+${change.change.toFixed(1)}%` : `${change.change.toFixed(1)}%`;
+          const changeStr =
+            change.change > 0 ? `+${change.change.toFixed(1)}%` : `${change.change.toFixed(1)}%`;
           console.log(
             `${symbol} ${change.metric}: ${change.previous.toFixed(2)}ms → ${change.current.toFixed(2)}ms (${changeStr})`
           );
@@ -352,7 +353,7 @@ class PerformanceAnalyzer {
   saveToHistory() {
     const historyPath = path.join(__dirname, '../performance-history.json');
     let history = [];
-    
+
     try {
       if (fs.existsSync(historyPath)) {
         history = JSON.parse(fs.readFileSync(historyPath, 'utf8'));
@@ -360,20 +361,20 @@ class PerformanceAnalyzer {
     } catch (error) {
       // Start fresh if history is corrupted
     }
-    
+
     // Add current results
     history.push({
       timestamp: new Date().toISOString(),
       landingPage: this.results.landingPage,
       aiServices: this.results.aiServices,
-      summary: this.results.summary
+      summary: this.results.summary,
     });
-    
+
     // Keep only last 30 runs
     if (history.length > 30) {
       history = history.slice(-30);
     }
-    
+
     fs.writeFileSync(historyPath, JSON.stringify(history, null, 2));
     console.log('\n✅ Results saved to history');
   }
@@ -383,14 +384,14 @@ class PerformanceAnalyzer {
    */
   generateCIOutput() {
     const ciPath = path.join(__dirname, '../performance-ci-report.json');
-    
+
     const ciReport = {
       timestamp: new Date().toISOString(),
       passed: this.results.summary.failed === 0,
       summary: this.results.summary,
-      failures: []
+      failures: [],
     };
-    
+
     // Collect failures
     for (const [metric, value] of Object.entries(this.results.landingPage)) {
       if (THRESHOLDS.landingPage[metric] && value > THRESHOLDS.landingPage[metric]) {
@@ -399,11 +400,11 @@ class PerformanceAnalyzer {
           metric,
           value,
           threshold: THRESHOLDS.landingPage[metric],
-          exceeded: value - THRESHOLDS.landingPage[metric]
+          exceeded: value - THRESHOLDS.landingPage[metric],
         });
       }
     }
-    
+
     for (const [metric, value] of Object.entries(this.results.aiServices)) {
       if (THRESHOLDS.aiServices[metric] && value > THRESHOLDS.aiServices[metric]) {
         ciReport.failures.push({
@@ -411,13 +412,13 @@ class PerformanceAnalyzer {
           metric,
           value,
           threshold: THRESHOLDS.aiServices[metric],
-          exceeded: value - THRESHOLDS.aiServices[metric]
+          exceeded: value - THRESHOLDS.aiServices[metric],
         });
       }
     }
-    
+
     fs.writeFileSync(ciPath, JSON.stringify(ciReport, null, 2));
-    
+
     // Exit with error code if tests failed
     if (!ciReport.passed) {
       console.error('\n❌ Performance tests failed!');
@@ -429,19 +430,19 @@ class PerformanceAnalyzer {
 // Main execution
 function main() {
   const analyzer = new PerformanceAnalyzer();
-  
+
   // Load results
   analyzer.loadResults();
-  
+
   // Analyze
   analyzer.analyze();
-  
+
   // Compare with previous
   analyzer.compareWithPrevious();
-  
+
   // Save to history
   analyzer.saveToHistory();
-  
+
   // Generate CI output if in CI environment
   if (process.env.CI) {
     analyzer.generateCIOutput();

@@ -20,9 +20,24 @@ export interface ContentCategoryAttributes {
   updatedAt?: Date;
 }
 
-export interface ContentCategoryCreationAttributes extends Optional<ContentCategoryAttributes, 'id' | 'description' | 'parentId' | 'icon' | 'color' | 'order' | 'metadata' | 'createdAt' | 'updatedAt'> {}
+export interface ContentCategoryCreationAttributes
+  extends Optional<
+    ContentCategoryAttributes,
+    | 'id'
+    | 'description'
+    | 'parentId'
+    | 'icon'
+    | 'color'
+    | 'order'
+    | 'metadata'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
-export class ContentCategory extends Model<ContentCategoryAttributes, ContentCategoryCreationAttributes> implements ContentCategoryAttributes {
+export class ContentCategory
+  extends Model<ContentCategoryAttributes, ContentCategoryCreationAttributes>
+  implements ContentCategoryAttributes
+{
   public id!: string;
   public name!: string;
   public slug!: string;

@@ -1,34 +1,34 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import { useEffect } from 'react'
-import { ThemeProvider } from '@mui/material/styles'
-import CssBaseline from '@mui/material/CssBaseline'
-import { useAuthStore } from './stores/authStore'
-import LoginPage from './pages/LoginPage'
-import DashboardPage from './pages/DashboardPage'
-import ContentPage from './pages/ContentPage'
-import CreateContentPage from './pages/CreateContentPage'
-import EditContentPage from './pages/EditContentPage'
-import MediaLibraryPage from './pages/MediaLibraryPage'
-import AnalyticsPage from './pages/AnalyticsPage'
-import CoursesPage from './pages/CoursesPage'
-import CreateCoursePage from './pages/CreateCoursePage'
-import SettingsPage from './pages/SettingsPage'
-import Layout from './components/Layout'
-import SessionWrapper from './components/SessionWrapper'
-import theme from './theme'
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import { useAuthStore } from './stores/authStore';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import ContentPage from './pages/ContentPage';
+import CreateContentPage from './pages/CreateContentPage';
+import EditContentPage from './pages/EditContentPage';
+import MediaLibraryPage from './pages/MediaLibraryPage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import CoursesPage from './pages/CoursesPage';
+import CreateCoursePage from './pages/CreateCoursePage';
+import SettingsPage from './pages/SettingsPage';
+import Layout from './components/Layout';
+import SessionWrapper from './components/SessionWrapper';
+import theme from './theme';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
 function App() {
-  const { initializeAuth } = useAuthStore()
+  const { initializeAuth } = useAuthStore();
 
   useEffect(() => {
     // Initialize secure authentication on app mount
-    initializeAuth()
-  }, [initializeAuth])
+    initializeAuth();
+  }, [initializeAuth]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -61,7 +61,7 @@ function App() {
         </Routes>
       </SessionWrapper>
     </ThemeProvider>
-  )
+  );
 }
 
-export default App 
+export default App;

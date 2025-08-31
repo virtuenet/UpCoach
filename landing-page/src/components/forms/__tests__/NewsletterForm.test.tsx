@@ -1,24 +1,24 @@
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import NewsletterForm from "../NewsletterForm";
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import NewsletterForm from '../NewsletterForm';
 
 // Mock fetch
 global.fetch = jest.fn();
 
 // Mock analytics
-jest.mock("@/services/analytics", () => ({
+jest.mock('@/services/analytics', () => ({
   trackNewsletterSignup: jest.fn(),
 }));
 
 // Mock experiments
-jest.mock("@/services/experiments", () => ({
+jest.mock('@/services/experiments', () => ({
   useExperiment: () => ({
     variant: 'control',
     trackConversion: jest.fn(),
   }),
 }));
 
-describe("NewsletterForm", () => {
+describe('NewsletterForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (global.fetch as jest.Mock).mockResolvedValue({
@@ -27,78 +27,72 @@ describe("NewsletterForm", () => {
     });
   });
 
-  describe("Inline Variant", () => {
-    it("renders inline form correctly", () => {
+  describe('Inline Variant', () => {
+    it('renders inline form correctly', () => {
       render(<NewsletterForm variant="inline" />);
 
-      expect(
-        screen.getByPlaceholderText("Enter your email"),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole("button", { name: /subscribe/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Enter your email')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /subscribe/i })).toBeInTheDocument();
     });
 
-    it("validates email format", async () => {
+    it('validates email format', async () => {
       const user = userEvent.setup();
       render(<NewsletterForm variant="inline" />);
 
-      const input = screen.getByPlaceholderText("Enter your email");
-      const button = screen.getByRole("button", { name: /subscribe/i });
+      const input = screen.getByPlaceholderText('Enter your email');
+      const button = screen.getByRole('button', { name: /subscribe/i });
 
       // Test invalid email
       await act(async () => {
-        await user.type(input, "invalid-email");
+        await user.type(input, 'invalid-email');
         await user.click(button);
       });
 
-      expect(
-        screen.getByText(/please enter a valid email address/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/please enter a valid email address/i)).toBeInTheDocument();
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
-    it("submits valid email successfully", async () => {
+    it('submits valid email successfully', async () => {
       const user = userEvent.setup();
       const onSuccess = jest.fn();
       render(<NewsletterForm variant="inline" onSuccess={onSuccess} />);
 
-      const input = screen.getByPlaceholderText("Enter your email");
-      const button = screen.getByRole("button", { name: /subscribe/i });
+      const input = screen.getByPlaceholderText('Enter your email');
+      const button = screen.getByRole('button', { name: /subscribe/i });
 
       await act(async () => {
-        await user.type(input, "test@example.com");
+        await user.type(input, 'test@example.com');
         await user.click(button);
       });
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith("/api/newsletter", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: "test@example.com" }),
+        expect(global.fetch).toHaveBeenCalledWith('/api/newsletter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: 'test@example.com' }),
         });
       });
 
       await waitFor(() => {
-        expect(onSuccess).toHaveBeenCalledWith("test@example.com");
+        expect(onSuccess).toHaveBeenCalledWith('test@example.com');
       });
 
       expect(
-        screen.getByText(/welcome aboard! check your email for confirmation/i),
+        screen.getByText(/welcome aboard! check your email for confirmation/i)
       ).toBeInTheDocument();
     });
 
-    it("handles API errors gracefully", async () => {
+    it('handles API errors gracefully', async () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: false,
-        json: async () => ({ message: "Server error" }),
+        json: async () => ({ message: 'Server error' }),
       });
 
       render(<NewsletterForm variant="inline" />);
 
-      const input = screen.getByPlaceholderText("Enter your email");
-      await userEvent.type(input, "test@example.com");
-      await userEvent.click(screen.getByRole("button", { name: /subscribe/i }));
+      const input = screen.getByPlaceholderText('Enter your email');
+      await userEvent.type(input, 'test@example.com');
+      await userEvent.click(screen.getByRole('button', { name: /subscribe/i }));
 
       await waitFor(() => {
         expect(screen.getByText(/server error/i)).toBeInTheDocument();
@@ -106,26 +100,22 @@ describe("NewsletterForm", () => {
     });
   });
 
-  describe("Hero Variant", () => {
-    it("renders hero variant with enhanced styling", () => {
+  describe('Hero Variant', () => {
+    it('renders hero variant with enhanced styling', () => {
       render(<NewsletterForm variant="hero" />);
 
-      expect(
-        screen.getByText(/get weekly productivity tips/i),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(/join 25,000\+ professionals/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/get weekly productivity tips/i)).toBeInTheDocument();
+      expect(screen.getByText(/join 25,000\+ professionals/i)).toBeInTheDocument();
       expect(screen.getByText(/no spam, ever/i)).toBeInTheDocument();
     });
 
-    it("shows loading state during submission", async () => {
+    it('shows loading state during submission', async () => {
       render(<NewsletterForm variant="hero" />);
 
-      const input = screen.getByPlaceholderText("Enter your email");
-      await userEvent.type(input, "test@example.com");
+      const input = screen.getByPlaceholderText('Enter your email');
+      await userEvent.type(input, 'test@example.com');
 
-      const button = screen.getByRole("button", { name: /subscribe/i });
+      const button = screen.getByRole('button', { name: /subscribe/i });
       fireEvent.click(button);
 
       expect(screen.getByText(/subscribing/i)).toBeInTheDocument();
@@ -133,57 +123,55 @@ describe("NewsletterForm", () => {
     });
   });
 
-  describe("Modal Variant", () => {
-    it("renders modal variant correctly", () => {
+  describe('Modal Variant', () => {
+    it('renders modal variant correctly', () => {
       render(<NewsletterForm variant="modal" />);
 
       expect(screen.getByText(/stay updated/i)).toBeInTheDocument();
       expect(screen.getByText(/get the latest tips/i)).toBeInTheDocument();
     });
 
-    it("disables form during success state", async () => {
+    it('disables form during success state', async () => {
       render(<NewsletterForm variant="modal" />);
 
-      const input = screen.getByPlaceholderText("Enter your email");
-      await userEvent.type(input, "test@example.com");
-      await userEvent.click(screen.getByRole("button", { name: /subscribe/i }));
+      const input = screen.getByPlaceholderText('Enter your email');
+      await userEvent.type(input, 'test@example.com');
+      await userEvent.click(screen.getByRole('button', { name: /subscribe/i }));
 
       await waitFor(() => {
         expect(
-          screen.getByText(/welcome aboard! check your email for confirmation/i),
+          screen.getByText(/welcome aboard! check your email for confirmation/i)
         ).toBeInTheDocument();
         expect(input).toBeDisabled();
       });
     });
   });
 
-  describe("Analytics Integration", () => {
-    it("tracks newsletter signup on success", async () => {
-      const { trackNewsletterSignup } = require("@/services/analytics");
+  describe('Analytics Integration', () => {
+    it('tracks newsletter signup on success', async () => {
+      const { trackNewsletterSignup } = require('@/services/analytics');
 
       render(<NewsletterForm variant="hero" />);
 
-      const input = screen.getByPlaceholderText("Enter your email");
-      await userEvent.type(input, "test@example.com");
-      await userEvent.click(screen.getByRole("button", { name: /subscribe/i }));
+      const input = screen.getByPlaceholderText('Enter your email');
+      await userEvent.type(input, 'test@example.com');
+      await userEvent.click(screen.getByRole('button', { name: /subscribe/i }));
 
       await waitFor(() => {
-        expect(trackNewsletterSignup).toHaveBeenCalledWith("hero");
+        expect(trackNewsletterSignup).toHaveBeenCalledWith('hero');
       });
     });
   });
 
-  describe("Network Error Handling", () => {
-    it("handles network errors", async () => {
-      (global.fetch as jest.Mock).mockRejectedValueOnce(
-        new Error("Network error"),
-      );
+  describe('Network Error Handling', () => {
+    it('handles network errors', async () => {
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
 
       render(<NewsletterForm />);
 
-      const input = screen.getByPlaceholderText("Enter your email");
-      await userEvent.type(input, "test@example.com");
-      await userEvent.click(screen.getByRole("button", { name: /subscribe/i }));
+      const input = screen.getByPlaceholderText('Enter your email');
+      await userEvent.type(input, 'test@example.com');
+      await userEvent.click(screen.getByRole('button', { name: /subscribe/i }));
 
       await waitFor(() => {
         expect(screen.getByText(/network error/i)).toBeInTheDocument();

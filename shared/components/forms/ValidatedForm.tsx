@@ -79,20 +79,23 @@ export const ValidatedForm: React.FC<ValidatedFormProps> = ({
     }));
   }, []);
 
-  const updateField = useCallback((name: string, value: any) => {
-    setFields(prev => ({
-      ...prev,
-      [name]: {
-        ...prev[name],
-        value,
-        isDirty: true,
-      },
-    }));
+  const updateField = useCallback(
+    (name: string, value: any) => {
+      setFields(prev => ({
+        ...prev,
+        [name]: {
+          ...prev[name],
+          value,
+          isDirty: true,
+        },
+      }));
 
-    if (validateOnChange) {
-      validateField(name);
-    }
-  }, [validateOnChange]);
+      if (validateOnChange) {
+        validateField(name);
+      }
+    },
+    [validateOnChange]
+  );
 
   const setFieldError = useCallback((name: string, error: string | null) => {
     setFields(prev => ({
@@ -105,38 +108,44 @@ export const ValidatedForm: React.FC<ValidatedFormProps> = ({
     }));
   }, []);
 
-  const setFieldTouched = useCallback((name: string) => {
-    setFields(prev => ({
-      ...prev,
-      [name]: {
-        ...prev[name],
-        isTouched: true,
-      },
-    }));
+  const setFieldTouched = useCallback(
+    (name: string) => {
+      setFields(prev => ({
+        ...prev,
+        [name]: {
+          ...prev[name],
+          isTouched: true,
+        },
+      }));
 
-    if (validateOnBlur) {
-      validateField(name);
-    }
-  }, [validateOnBlur]);
-
-  const validateField = useCallback(async (name: string): Promise<boolean> => {
-    const field = fields[name];
-    if (!field) return false;
-
-    try {
-      // Get the specific field schema if it exists
-      const fieldSchema = schema.shape?.[name] || schema;
-      await fieldSchema.parseAsync(field.value);
-      
-      setFieldError(name, null);
-      return true;
-    } catch (error) {
-      if (error instanceof ZodError) {
-        setFieldError(name, error.errors[0]?.message || 'Invalid input');
+      if (validateOnBlur) {
+        validateField(name);
       }
-      return false;
-    }
-  }, [fields, schema]);
+    },
+    [validateOnBlur]
+  );
+
+  const validateField = useCallback(
+    async (name: string): Promise<boolean> => {
+      const field = fields[name];
+      if (!field) return false;
+
+      try {
+        // Get the specific field schema if it exists
+        const fieldSchema = schema.shape?.[name] || schema;
+        await fieldSchema.parseAsync(field.value);
+
+        setFieldError(name, null);
+        return true;
+      } catch (error) {
+        if (error instanceof ZodError) {
+          setFieldError(name, error.errors[0]?.message || 'Invalid input');
+        }
+        return false;
+      }
+    },
+    [fields, schema]
+  );
 
   const validateForm = useCallback(async (): Promise<boolean> => {
     const formData = Object.fromEntries(
@@ -146,17 +155,17 @@ export const ValidatedForm: React.FC<ValidatedFormProps> = ({
     try {
       await schema.parseAsync(formData);
       setFormError(null);
-      
+
       // Clear all field errors
       Object.keys(fields).forEach(name => {
         setFieldError(name, null);
       });
-      
+
       return true;
     } catch (error) {
       if (error instanceof ZodError) {
         const errors: Record<string, string> = {};
-        
+
         error.errors.forEach(err => {
           const path = err.path.join('.');
           if (path && !errors[path]) {
@@ -177,7 +186,7 @@ export const ValidatedForm: React.FC<ValidatedFormProps> = ({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     if (isSubmitting) return;
 
     setIsSubmitting(true);
@@ -200,7 +209,7 @@ export const ValidatedForm: React.FC<ValidatedFormProps> = ({
 
       try {
         await onSubmit(formData);
-        
+
         if (resetOnSubmit) {
           // Reset form
           Object.keys(fields).forEach(name => {
@@ -271,14 +280,12 @@ export const ValidatedForm: React.FC<ValidatedFormProps> = ({
                 <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
                   There was an error with your submission
                 </h3>
-                <p className="mt-1 text-sm text-red-700 dark:text-red-300">
-                  {formError}
-                </p>
+                <p className="mt-1 text-sm text-red-700 dark:text-red-300">{formError}</p>
               </div>
             </div>
           </div>
         )}
-        
+
         {children}
       </form>
     </FormContext.Provider>
@@ -299,7 +306,7 @@ export const FormField: React.FC<{
     isDirty: false,
     isTouched: false,
   };
-  
+
   return <>{children(field)}</>;
 };
 
@@ -310,7 +317,7 @@ export const SubmitButton: React.FC<{
   loadingText?: string;
 }> = ({ children, className, loadingText = 'Submitting...' }) => {
   const { isSubmitting } = useFormContext();
-  
+
   return (
     <button
       type="submit"

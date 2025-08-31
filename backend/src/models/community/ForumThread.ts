@@ -17,9 +17,13 @@ export interface ForumThreadAttributes {
   updatedAt: Date;
 }
 
-export interface ForumThreadCreationAttributes extends Omit<ForumThreadAttributes, 'id' | 'views' | 'replyCount' | 'createdAt' | 'updatedAt'> {}
+export interface ForumThreadCreationAttributes
+  extends Omit<ForumThreadAttributes, 'id' | 'views' | 'replyCount' | 'createdAt' | 'updatedAt'> {}
 
-export class ForumThread extends Model<ForumThreadAttributes, ForumThreadCreationAttributes> implements ForumThreadAttributes {
+export class ForumThread
+  extends Model<ForumThreadAttributes, ForumThreadCreationAttributes>
+  implements ForumThreadAttributes
+{
   public id!: string;
   public categoryId!: string;
   public userId!: string;
@@ -43,17 +47,17 @@ export class ForumThread extends Model<ForumThreadAttributes, ForumThreadCreatio
   public static associate(models: any) {
     ForumThread.belongsTo(models.ForumCategory, {
       foreignKey: 'categoryId',
-      as: 'category'
+      as: 'category',
     });
-    
+
     ForumThread.belongsTo(models.User, {
       foreignKey: 'userId',
-      as: 'user'
+      as: 'user',
     });
-    
+
     ForumThread.hasMany(models.ForumPost, {
       foreignKey: 'threadId',
-      as: 'posts'
+      as: 'posts',
     });
   }
 

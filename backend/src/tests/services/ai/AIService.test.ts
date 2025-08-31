@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import { AIService } from '../../../services/ai/AIService';
 import { PersonalityEngine } from '../../../services/ai/PersonalityEngine';
 import { ContextManager } from '../../../services/ai/ContextManager';
@@ -35,9 +37,9 @@ describe('AIService', () => {
     mockPromptEngine = (PromptEngineering as any).mock.instances[0];
 
     // Setup default mock implementations
-    mockPromptEngine.enhancePrompt.mockImplementation((msg) => msg);
-    mockContextManager.enrichContext.mockImplementation((msg) => msg);
-    mockPersonalityEngine.applyPersonality.mockImplementation((msg) => msg);
+    mockPromptEngine.enhancePrompt.mockImplementation(msg => msg);
+    mockContextManager.enrichContext.mockImplementation(msg => msg);
+    mockPersonalityEngine.applyPersonality.mockImplementation(msg => msg);
     mockPersonalityEngine.getActiveProfile.mockReturnValue({
       id: 'default',
       name: 'Default Coach',
@@ -49,39 +51,39 @@ describe('AIService', () => {
         motivation: 8,
         analytical: 6,
         warmth: 7,
-        formality: 5
+        formality: 5,
       },
       communicationStyle: {
         greetings: ['Hello!'],
         encouragements: ['Great job!'],
         acknowledgments: ['I understand'],
-        transitions: ['Let\'s move on to'],
-        closings: ['Take care!']
+        transitions: ["Let's move on to"],
+        closings: ['Take care!'],
       },
       responsePatterns: {
         questionStyle: 'balanced',
         feedbackStyle: 'balanced',
-        suggestionStyle: 'collaborative'
-      }
+        suggestionStyle: 'collaborative',
+      },
     });
   });
 
   describe('generateResponse', () => {
     it('should generate response using OpenAI by default', async () => {
-      const messages = [
-        { role: 'user' as const, content: 'How can I improve my productivity?' }
-      ];
+      const messages = [{ role: 'user' as const, content: 'How can I improve my productivity?' }];
 
       mockOpenAI.chat = {
         completions: {
           create: jest.fn().mockResolvedValue({
-            choices: [{
-              message: { content: 'Here are some productivity tips...', role: 'assistant' },
-              finish_reason: 'stop'
-            }],
-            usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 }
-          })
-        }
+            choices: [
+              {
+                message: { content: 'Here are some productivity tips...', role: 'assistant' },
+                finish_reason: 'stop',
+              },
+            ],
+            usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 },
+          }),
+        },
       } as any;
 
       const response = await aiService.generateResponse(messages);
@@ -92,9 +94,7 @@ describe('AIService', () => {
     });
 
     it('should generate response using Claude when specified', async () => {
-      const messages = [
-        { role: 'user' as const, content: 'Tell me about mindfulness' }
-      ];
+      const messages = [{ role: 'user' as const, content: 'Tell me about mindfulness' }];
 
       mockAnthropic.messages = {
         create: jest.fn().mockResolvedValue({
@@ -104,8 +104,8 @@ describe('AIService', () => {
           content: [{ type: 'text', text: 'Mindfulness is the practice of...' }],
           model: 'claude-3-opus-20240229',
           stop_reason: 'end_turn',
-          usage: { input_tokens: 15, output_tokens: 25 }
-        })
+          usage: { input_tokens: 15, output_tokens: 25 },
+        }),
       } as any;
 
       const response = await aiService.generateResponse(messages, { provider: 'claude' });
@@ -116,25 +116,25 @@ describe('AIService', () => {
     });
 
     it('should apply personality to messages', async () => {
-      const messages = [
-        { role: 'user' as const, content: 'I need motivation' }
-      ];
+      const messages = [{ role: 'user' as const, content: 'I need motivation' }];
 
       mockPersonalityEngine.applyPersonality.mockReturnValue([
         { role: 'system', content: 'You are an encouraging coach' },
-        ...messages
+        ...messages,
       ]);
 
       mockOpenAI.chat = {
         completions: {
           create: jest.fn().mockResolvedValue({
-            choices: [{
-              message: { content: 'You can do this!', role: 'assistant' },
-              finish_reason: 'stop'
-            }],
-            usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 }
-          })
-        }
+            choices: [
+              {
+                message: { content: 'You can do this!', role: 'assistant' },
+                finish_reason: 'stop',
+              },
+            ],
+            usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+          }),
+        },
       } as any;
 
       const response = await aiService.generateResponse(messages, { personality: 'motivator' });
@@ -144,14 +144,12 @@ describe('AIService', () => {
     });
 
     it('should handle errors gracefully', async () => {
-      const messages = [
-        { role: 'user' as const, content: 'Test error handling' }
-      ];
+      const messages = [{ role: 'user' as const, content: 'Test error handling' }];
 
       mockOpenAI.chat = {
         completions: {
-          create: jest.fn().mockRejectedValue(new Error('API Error'))
-        }
+          create: jest.fn().mockRejectedValue(new Error('API Error')),
+        },
       } as any;
 
       await expect(aiService.generateResponse(messages)).rejects.toThrow('API Error');
@@ -167,31 +165,33 @@ describe('AIService', () => {
       mockContextManager.getUserContext.mockResolvedValue({
         user: { id: userId, name: 'Test User' },
         goals: ['exercise daily'],
-        recentActivity: []
+        recentActivity: [],
       });
 
       mockPromptEngine.generateCoachingPrompt.mockReturnValue({
         role: 'system',
-        content: 'You are a habit coach...'
+        content: 'You are a habit coach...',
       });
 
       mockOpenAI.chat = {
         completions: {
           create: jest.fn().mockResolvedValue({
-            choices: [{
-              message: { content: 'Let\'s start with small steps...', role: 'assistant' },
-              finish_reason: 'stop'
-            }],
-            usage: { prompt_tokens: 30, completion_tokens: 40, total_tokens: 70 }
-          })
-        }
+            choices: [
+              {
+                message: { content: "Let's start with small steps...", role: 'assistant' },
+                finish_reason: 'stop',
+              },
+            ],
+            usage: { prompt_tokens: 30, completion_tokens: 40, total_tokens: 70 },
+          }),
+        },
       } as any;
 
       const response = await aiService.generateCoachingResponse(userId, message, context);
 
       expect(mockContextManager.getUserContext).toHaveBeenCalledWith(userId);
       expect(mockPromptEngine.generateCoachingPrompt).toHaveBeenCalled();
-      expect(response.content).toBe('Let\'s start with small steps...');
+      expect(response.content).toBe("Let's start with small steps...");
     });
   });
 
@@ -199,27 +199,29 @@ describe('AIService', () => {
     it('should analyze conversation for insights', async () => {
       const messages = [
         { role: 'user' as const, content: 'I feel stressed about work' },
-        { role: 'assistant' as const, content: 'Tell me more about what\'s causing stress' },
-        { role: 'user' as const, content: 'Too many deadlines and not enough time' }
+        { role: 'assistant' as const, content: "Tell me more about what's causing stress" },
+        { role: 'user' as const, content: 'Too many deadlines and not enough time' },
       ];
 
       mockOpenAI.chat = {
         completions: {
           create: jest.fn().mockResolvedValue({
-            choices: [{
-              message: {
-                content: JSON.stringify({
-                  sentiment: 'negative',
-                  topics: ['work stress', 'time management'],
-                  suggestedActions: ['prioritization', 'delegation']
-                }),
-                role: 'assistant'
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    sentiment: 'negative',
+                    topics: ['work stress', 'time management'],
+                    suggestedActions: ['prioritization', 'delegation'],
+                  }),
+                  role: 'assistant',
+                },
+                finish_reason: 'stop',
               },
-              finish_reason: 'stop'
-            }],
-            usage: { prompt_tokens: 50, completion_tokens: 30, total_tokens: 80 }
-          })
-        }
+            ],
+            usage: { prompt_tokens: 50, completion_tokens: 30, total_tokens: 80 },
+          }),
+        },
       } as any;
 
       const analysis = await aiService.analyzeConversation(messages);
@@ -227,7 +229,7 @@ describe('AIService', () => {
       expect(analysis).toEqual({
         sentiment: 'negative',
         topics: ['work stress', 'time management'],
-        suggestedActions: ['prioritization', 'delegation']
+        suggestedActions: ['prioritization', 'delegation'],
       });
     });
   });
@@ -238,18 +240,18 @@ describe('AIService', () => {
       const objective = 'improve sleep quality';
       const userProfile = {
         preferences: { communicationStyle: 'gentle' },
-        history: { sleepIssues: true }
+        history: { sleepIssues: true },
       };
 
       mockContextManager.getUserContext.mockResolvedValue({
         user: { id: userId, profile: userProfile },
         goals: [],
-        recentActivity: []
+        recentActivity: [],
       });
 
       mockPromptEngine.generatePersonalizedPrompt.mockReturnValue({
         role: 'system',
-        content: 'Help user improve sleep with gentle guidance...'
+        content: 'Help user improve sleep with gentle guidance...',
       });
 
       const prompt = await aiService.generatePersonalizedPrompt(userId, objective);

@@ -29,9 +29,25 @@ export interface ContentMediaAttributes {
   updatedAt?: Date;
 }
 
-export interface ContentMediaCreationAttributes extends Optional<ContentMediaAttributes, 'id' | 'contentId' | 'thumbnailUrl' | 'width' | 'height' | 'duration' | 'metadata' | 'usageCount' | 'createdAt' | 'updatedAt'> {}
+export interface ContentMediaCreationAttributes
+  extends Optional<
+    ContentMediaAttributes,
+    | 'id'
+    | 'contentId'
+    | 'thumbnailUrl'
+    | 'width'
+    | 'height'
+    | 'duration'
+    | 'metadata'
+    | 'usageCount'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
-export class ContentMedia extends Model<ContentMediaAttributes, ContentMediaCreationAttributes> implements ContentMediaAttributes {
+export class ContentMedia
+  extends Model<ContentMediaAttributes, ContentMediaCreationAttributes>
+  implements ContentMediaAttributes
+{
   public id!: string;
   public contentId?: string;
   public type!: 'image' | 'video' | 'audio' | 'document' | 'other';

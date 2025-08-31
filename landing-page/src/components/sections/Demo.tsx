@@ -1,113 +1,104 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import {
-  Play,
-  Pause,
-  Mic,
-  Target,
-  Camera,
-  Brain,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Play, Pause, Mic, Target, Camera, Brain, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const demoScreens = [
   {
-    id: "voice-journal",
-    title: "Voice Journaling",
+    id: 'voice-journal',
+    title: 'Voice Journaling',
     icon: Mic,
-    color: "purple",
+    color: 'purple',
     content: {
-      title: "Express Yourself Naturally",
+      title: 'Express Yourself Naturally',
       description:
-        "Record your thoughts and feelings with our AI-powered voice journaling. Get instant transcriptions and deep insights.",
+        'Record your thoughts and feelings with our AI-powered voice journaling. Get instant transcriptions and deep insights.',
       features: [
-        "One-tap voice recording",
-        "AI-powered transcription",
-        "Mood detection",
-        "Pattern insights",
+        'One-tap voice recording',
+        'AI-powered transcription',
+        'Mood detection',
+        'Pattern insights',
       ],
       preview: {
-        type: "voice",
+        type: 'voice',
         waveform: true,
       },
     },
   },
   {
-    id: "habit-tracking",
-    title: "Habit Tracking",
+    id: 'habit-tracking',
+    title: 'Habit Tracking',
     icon: Target,
-    color: "blue",
+    color: 'blue',
     content: {
-      title: "Build Lasting Habits",
+      title: 'Build Lasting Habits',
       description:
-        "Track your daily habits with our gamified system. Build streaks, earn achievements, and transform your life.",
+        'Track your daily habits with our gamified system. Build streaks, earn achievements, and transform your life.',
       features: [
-        "Visual habit chains",
-        "Smart reminders",
-        "Achievement system",
-        "Progress analytics",
+        'Visual habit chains',
+        'Smart reminders',
+        'Achievement system',
+        'Progress analytics',
       ],
       preview: {
-        type: "habits",
+        type: 'habits',
         habits: [
-          { name: "Morning Meditation", completed: true, streak: 15 },
-          { name: "Read 30 Minutes", completed: true, streak: 8 },
-          { name: "Exercise", completed: false, streak: 5 },
-          { name: "Gratitude Journal", completed: false, streak: 12 },
+          { name: 'Morning Meditation', completed: true, streak: 15 },
+          { name: 'Read 30 Minutes', completed: true, streak: 8 },
+          { name: 'Exercise', completed: false, streak: 5 },
+          { name: 'Gratitude Journal', completed: false, streak: 12 },
         ],
       },
     },
   },
   {
-    id: "progress-photos",
-    title: "Progress Photos",
+    id: 'progress-photos',
+    title: 'Progress Photos',
     icon: Camera,
-    color: "green",
+    color: 'green',
     content: {
-      title: "Visualize Your Journey",
+      title: 'Visualize Your Journey',
       description:
-        "Track your physical transformation with before/after photos. See your progress over time with our timeline view.",
+        'Track your physical transformation with before/after photos. See your progress over time with our timeline view.',
       features: [
-        "Private photo gallery",
-        "Side-by-side comparison",
-        "Timeline view",
-        "Milestone celebrations",
+        'Private photo gallery',
+        'Side-by-side comparison',
+        'Timeline view',
+        'Milestone celebrations',
       ],
       preview: {
-        type: "photos",
+        type: 'photos',
         timeline: true,
       },
     },
   },
   {
-    id: "ai-coaching",
-    title: "AI Coach",
+    id: 'ai-coaching',
+    title: 'AI Coach',
     icon: Brain,
-    color: "orange",
+    color: 'orange',
     content: {
-      title: "Your Personal AI Coach",
+      title: 'Your Personal AI Coach',
       description:
-        "Get personalized guidance from an AI coach that learns your patterns and adapts to your unique journey.",
+        'Get personalized guidance from an AI coach that learns your patterns and adapts to your unique journey.',
       features: [
-        "Personalized insights",
-        "Goal recommendations",
-        "Motivational support",
-        "Progress predictions",
+        'Personalized insights',
+        'Goal recommendations',
+        'Motivational support',
+        'Progress predictions',
       ],
       preview: {
-        type: "ai",
+        type: 'ai',
         messages: [
           {
-            type: "ai",
+            type: 'ai',
             text: "Great job on your 15-day meditation streak! I've noticed you're most consistent in the mornings.",
           },
-          { type: "user", text: "Thanks! Any tips for my exercise habit?" },
+          { type: 'user', text: 'Thanks! Any tips for my exercise habit?' },
           {
-            type: "ai",
-            text: "Based on your patterns, try scheduling exercise right after meditation. Stack habits for better success!",
+            type: 'ai',
+            text: 'Based on your patterns, try scheduling exercise right after meditation. Stack habits for better success!',
           },
         ],
       },
@@ -122,13 +113,11 @@ export default function Demo() {
   const Icon = currentDemo.icon;
 
   const nextDemo = () => {
-    setActiveDemo((prev) => (prev + 1) % demoScreens.length);
+    setActiveDemo(prev => (prev + 1) % demoScreens.length);
   };
 
   const prevDemo = () => {
-    setActiveDemo(
-      (prev) => (prev - 1 + demoScreens.length) % demoScreens.length,
-    );
+    setActiveDemo(prev => (prev - 1 + demoScreens.length) % demoScreens.length);
   };
 
   return (
@@ -147,13 +136,13 @@ export default function Demo() {
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 mt-2">
             Experience UpCoach
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-secondary-600">
-              {" "}
+              {' '}
               Live
             </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Explore our core features and see how UpCoach can transform your
-            daily routines into lasting success
+            Explore our core features and see how UpCoach can transform your daily routines into
+            lasting success
           </p>
         </motion.div>
 
@@ -169,7 +158,7 @@ export default function Demo() {
                   className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
                     index === activeDemo
                       ? `bg-${screen.color}-100 text-${screen.color}-700 border-2 border-${screen.color}-200`
-                      : "bg-white text-gray-600 border-2 border-gray-200 hover:border-gray-300"
+                      : 'bg-white text-gray-600 border-2 border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   <ScreenIcon className="w-5 h-5" />
@@ -195,20 +184,14 @@ export default function Demo() {
                 <Icon className={`w-8 h-8 text-${currentDemo.color}-600`} />
               </div>
 
-              <h3 className="text-3xl font-bold text-gray-900 mb-4">
-                {currentDemo.content.title}
-              </h3>
+              <h3 className="text-3xl font-bold text-gray-900 mb-4">{currentDemo.content.title}</h3>
 
-              <p className="text-lg text-gray-600 mb-8">
-                {currentDemo.content.description}
-              </p>
+              <p className="text-lg text-gray-600 mb-8">{currentDemo.content.description}</p>
 
               <ul className="space-y-3 mb-8">
                 {currentDemo.content.features.map((feature, index) => (
                   <li key={index} className="flex items-center gap-3">
-                    <div
-                      className={`w-2 h-2 bg-${currentDemo.color}-500 rounded-full`}
-                    ></div>
+                    <div className={`w-2 h-2 bg-${currentDemo.color}-500 rounded-full`}></div>
                     <span className="text-gray-700">{feature}</span>
                   </li>
                 ))}
@@ -253,14 +236,12 @@ export default function Demo() {
 
                         {/* App Content */}
                         <div className="flex-1 px-6 py-4 overflow-hidden">
-                          {currentDemo.content.preview.type === "voice" && (
+                          {currentDemo.content.preview.type === 'voice' && (
                             <div className="h-full flex flex-col items-center justify-center">
                               <div className="w-32 h-32 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-8 animate-pulse">
                                 <Mic className="w-16 h-16 text-white" />
                               </div>
-                              <p className="text-gray-600 mb-4">
-                                Tap to start recording
-                              </p>
+                              <p className="text-gray-600 mb-4">Tap to start recording</p>
                               {currentDemo.content.preview.waveform && (
                                 <div className="flex items-center gap-1 h-16">
                                   {[...Array(20)].map((_, i) => (
@@ -278,64 +259,58 @@ export default function Demo() {
                             </div>
                           )}
 
-                          {currentDemo.content.preview.type === "habits" && (
+                          {currentDemo.content.preview.type === 'habits' && (
                             <div className="space-y-3">
-                              <h4 className="font-semibold text-gray-900 mb-4">
-                                Today's Habits
-                              </h4>
-                              {currentDemo.content.preview.habits?.map(
-                                (habit, index) => (
-                                  <div
-                                    key={index}
-                                    className="flex items-center justify-between bg-gray-50 rounded-xl p-3"
-                                  >
-                                    <div className="flex items-center gap-3">
-                                      <div
-                                        className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                                          habit.completed
-                                            ? "bg-green-500"
-                                            : "border-2 border-gray-300"
-                                        }`}
-                                      >
-                                        {habit.completed && (
-                                          <svg
-                                            className="w-4 h-4 text-white"
-                                            fill="currentColor"
-                                            viewBox="0 0 20 20"
-                                          >
-                                            <path
-                                              fillRule="evenodd"
-                                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                              clipRule="evenodd"
-                                            />
-                                          </svg>
-                                        )}
-                                      </div>
-                                      <div>
-                                        <p className="text-sm font-medium text-gray-900">
-                                          {habit.name}
-                                        </p>
-                                        <p className="text-xs text-gray-500">
-                                          {habit.streak} day streak
-                                        </p>
-                                      </div>
+                              <h4 className="font-semibold text-gray-900 mb-4">Today's Habits</h4>
+                              {currentDemo.content.preview.habits?.map((habit, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center justify-between bg-gray-50 rounded-xl p-3"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div
+                                      className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                                        habit.completed
+                                          ? 'bg-green-500'
+                                          : 'border-2 border-gray-300'
+                                      }`}
+                                    >
+                                      {habit.completed && (
+                                        <svg
+                                          className="w-4 h-4 text-white"
+                                          fill="currentColor"
+                                          viewBox="0 0 20 20"
+                                        >
+                                          <path
+                                            fillRule="evenodd"
+                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                            clipRule="evenodd"
+                                          />
+                                        </svg>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-medium text-gray-900">
+                                        {habit.name}
+                                      </p>
+                                      <p className="text-xs text-gray-500">
+                                        {habit.streak} day streak
+                                      </p>
                                     </div>
                                   </div>
-                                ),
-                              )}
+                                </div>
+                              ))}
                             </div>
                           )}
 
-                          {currentDemo.content.preview.type === "photos" && (
+                          {currentDemo.content.preview.type === 'photos' && (
                             <div className="h-full flex flex-col items-center justify-center">
                               <div className="grid grid-cols-2 gap-4 mb-6">
                                 <div className="w-32 h-40 bg-gray-200 rounded-xl flex items-center justify-center">
                                   <span className="text-gray-400">Before</span>
                                 </div>
                                 <div className="w-32 h-40 bg-green-100 rounded-xl flex items-center justify-center">
-                                  <span className="text-green-600 font-medium">
-                                    After
-                                  </span>
+                                  <span className="text-green-600 font-medium">After</span>
                                 </div>
                               </div>
                               <button className="bg-green-500 text-white px-6 py-3 rounded-xl font-medium">
@@ -344,30 +319,26 @@ export default function Demo() {
                             </div>
                           )}
 
-                          {currentDemo.content.preview.type === "ai" && (
+                          {currentDemo.content.preview.type === 'ai' && (
                             <div className="space-y-4">
-                              {currentDemo.content.preview.messages?.map(
-                                (message, index) => (
+                              {currentDemo.content.preview.messages?.map((message, index) => (
+                                <div
+                                  key={index}
+                                  className={`flex ${
+                                    message.type === 'ai' ? 'justify-start' : 'justify-end'
+                                  }`}
+                                >
                                   <div
-                                    key={index}
-                                    className={`flex ${
-                                      message.type === "ai"
-                                        ? "justify-start"
-                                        : "justify-end"
+                                    className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                                      message.type === 'ai'
+                                        ? 'bg-gray-100 text-gray-800'
+                                        : 'bg-blue-500 text-white'
                                     }`}
                                   >
-                                    <div
-                                      className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                                        message.type === "ai"
-                                          ? "bg-gray-100 text-gray-800"
-                                          : "bg-blue-500 text-white"
-                                      }`}
-                                    >
-                                      <p className="text-sm">{message.text}</p>
-                                    </div>
+                                    <p className="text-sm">{message.text}</p>
                                   </div>
-                                ),
-                              )}
+                                </div>
+                              ))}
                             </div>
                           )}
                         </div>
@@ -388,9 +359,7 @@ export default function Demo() {
             className="mt-24"
           >
             <div className="text-center mb-12">
-              <h3 className="text-3xl font-bold text-gray-900 mb-4">
-                Watch the Full Demo
-              </h3>
+              <h3 className="text-3xl font-bold text-gray-900 mb-4">Watch the Full Demo</h3>
               <p className="text-lg text-gray-600">
                 See how real users transform their lives with UpCoach
               </p>
@@ -414,9 +383,7 @@ export default function Demo() {
                 </div>
 
                 <div className="absolute bottom-8 left-8 text-white">
-                  <p className="text-2xl font-semibold mb-2">
-                    Transform Your Life in 90 Days
-                  </p>
+                  <p className="text-2xl font-semibold mb-2">Transform Your Life in 90 Days</p>
                   <p className="text-lg opacity-90">3-minute demo video</p>
                 </div>
               </div>

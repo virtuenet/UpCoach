@@ -121,8 +121,8 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   return (
     <>
       {[...Array(count)].map((_, index) => (
-        <div 
-          key={index} 
+        <div
+          key={index}
           className={`${count > 1 ? 'mb-3' : ''} skeleton-stagger-${Math.min(index + 1, 5)}`}
           style={{ animationDelay: `${index * 100}ms` }}
         >
@@ -172,13 +172,13 @@ export const DashboardSkeleton: React.FC = () => (
         <CardSkeleton key={i} />
       ))}
     </div>
-    
+
     {/* Charts */}
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <ChartSkeleton />
       <ChartSkeleton />
     </div>
-    
+
     {/* Table */}
     <TableSkeleton />
   </div>

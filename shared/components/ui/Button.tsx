@@ -26,32 +26,28 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    const baseStyles = 'inline-flex items-center justify-center font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
-    
+    const baseStyles =
+      'inline-flex items-center justify-center font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+
     const variants = {
       primary: 'bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-500',
-      secondary: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus-visible:ring-gray-500',
+      secondary:
+        'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus-visible:ring-gray-500',
       danger: 'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500',
       ghost: 'text-gray-700 hover:bg-gray-100 focus-visible:ring-gray-500',
       link: 'text-blue-600 underline-offset-4 hover:underline focus-visible:ring-blue-500',
     };
-    
+
     const sizes = {
       sm: 'px-3 py-1.5 text-sm rounded-md min-h-[32px]',
       md: 'px-4 py-2 text-base rounded-md min-h-[40px]',
       lg: 'px-6 py-3 text-lg rounded-lg min-h-[48px]',
     };
-    
+
     return (
       <button
         ref={ref}
-        className={cn(
-          baseStyles,
-          variants[variant],
-          sizes[size],
-          fullWidth && 'w-full',
-          className
-        )}
+        className={cn(baseStyles, variants[variant], sizes[size], fullWidth && 'w-full', className)}
         disabled={disabled || isLoading}
         aria-busy={isLoading}
         {...props}
@@ -83,9 +79,17 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           </>
         ) : (
           <>
-            {leftIcon && <span className="mr-2" aria-hidden="true">{leftIcon}</span>}
+            {leftIcon && (
+              <span className="mr-2" aria-hidden="true">
+                {leftIcon}
+              </span>
+            )}
             {children}
-            {rightIcon && <span className="ml-2" aria-hidden="true">{rightIcon}</span>}
+            {rightIcon && (
+              <span className="ml-2" aria-hidden="true">
+                {rightIcon}
+              </span>
+            )}
           </>
         )}
       </button>

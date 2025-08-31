@@ -9,32 +9,33 @@ export class CostAnalyticsService {
   /**
    * Calculate cost per user for a period
    */
-  static async calculateCostPerUser(startDate: Date, endDate: Date): Promise<{
+  static async calculateCostPerUser(
+    startDate: Date,
+    endDate: Date
+  ): Promise<{
     totalCostPerUser: number;
     costPerActiveUser: number;
     costsByCategory: Record<string, number>;
   }> {
     // Get total costs
-    const totalCosts = await CostTracking.sum('totalAmount', {
-      where: {
-        billingStartDate: { [Op.between]: [startDate, endDate] },
-        status: ['approved', 'paid'],
-      },
-    }) || 0;
+    const totalCosts =
+      (await CostTracking.sum('totalAmount', {
+        where: {
+          billingStartDate: { [Op.between]: [startDate, endDate] },
+          status: ['approved', 'paid'],
+        },
+      })) || 0;
 
     // Get costs by category
     const categoryCosts = await CostTracking.findAll({
-      attributes: [
-        'category',
-        [sequelize.fn('SUM', sequelize.col('totalAmount')), 'total'],
-      ],
+      attributes: ['category', [sequelize.fn('SUM', sequelize.col('totalAmount')), 'total']],
       where: {
         billingStartDate: { [Op.between]: [startDate, endDate] },
         status: ['approved', 'paid'],
       },
       group: ['category'],
     });
-    
+
     const costsByCategory: Record<string, number> = {};
     categoryCosts.forEach((cost: any) => {
       costsByCategory[cost.category] = parseFloat(cost.get('total'));
@@ -54,7 +55,10 @@ export class CostAnalyticsService {
   /**
    * Analyze infrastructure costs and usage
    */
-  static async analyzeInfrastructureCosts(startDate: Date, endDate: Date): Promise<{
+  static async analyzeInfrastructureCosts(
+    startDate: Date,
+    endDate: Date
+  ): Promise<{
     totalInfrastructureCost: number;
     costBreakdown: {
       compute: number;
@@ -76,7 +80,10 @@ export class CostAnalyticsService {
       },
     });
 
-    const totalCost = infrastructureCosts.reduce((sum: number, cost: any) => sum + cost.totalAmount, 0);
+    const totalCost = infrastructureCosts.reduce(
+      (sum: number, cost: any) => sum + cost.totalAmount,
+      0
+    );
 
     // Categorize infrastructure costs
     const costBreakdown = {
@@ -89,13 +96,29 @@ export class CostAnalyticsService {
 
     infrastructureCosts.forEach((cost: any) => {
       const subcategory = cost.subcategory?.toLowerCase() || 'other';
-      if (subcategory.includes('compute') || subcategory.includes('ec2') || subcategory.includes('lambda')) {
+      if (
+        subcategory.includes('compute') ||
+        subcategory.includes('ec2') ||
+        subcategory.includes('lambda')
+      ) {
         costBreakdown.compute += cost.totalAmount;
-      } else if (subcategory.includes('storage') || subcategory.includes('s3') || subcategory.includes('ebs')) {
+      } else if (
+        subcategory.includes('storage') ||
+        subcategory.includes('s3') ||
+        subcategory.includes('ebs')
+      ) {
         costBreakdown.storage += cost.totalAmount;
-      } else if (subcategory.includes('network') || subcategory.includes('cloudfront') || subcategory.includes('vpc')) {
+      } else if (
+        subcategory.includes('network') ||
+        subcategory.includes('cloudfront') ||
+        subcategory.includes('vpc')
+      ) {
         costBreakdown.network += cost.totalAmount;
-      } else if (subcategory.includes('database') || subcategory.includes('rds') || subcategory.includes('dynamodb')) {
+      } else if (
+        subcategory.includes('database') ||
+        subcategory.includes('rds') ||
+        subcategory.includes('dynamodb')
+      ) {
         costBreakdown.database += cost.totalAmount;
       } else {
         costBreakdown.other += cost.totalAmount;
@@ -113,12 +136,12 @@ export class CostAnalyticsService {
 
     if (costBreakdown.storage > totalCost * 0.3) {
       recommendations.push('Review storage classes and implement lifecycle policies');
-      potentialSavings += costBreakdown.storage * 0.20; // 20% potential savings
+      potentialSavings += costBreakdown.storage * 0.2; // 20% potential savings
     }
 
     if (costBreakdown.database > totalCost * 0.4) {
       recommendations.push('Optimize database queries and consider read replicas');
-      potentialSavings += costBreakdown.database * 0.10; // 10% potential savings
+      potentialSavings += costBreakdown.database * 0.1; // 10% potential savings
     }
 
     return {
@@ -134,7 +157,10 @@ export class CostAnalyticsService {
   /**
    * Analyze API service costs
    */
-  static async analyzeApiServiceCosts(startDate: Date, endDate: Date): Promise<{
+  static async analyzeApiServiceCosts(
+    startDate: Date,
+    endDate: Date
+  ): Promise<{
     totalApiCosts: number;
     costsByProvider: Record<string, number>;
     usageMetrics: {
@@ -164,7 +190,7 @@ export class CostAnalyticsService {
     apiCosts.forEach((cost: any) => {
       const vendor = cost.vendor;
       costsByProvider[vendor] = (costsByProvider[vendor] || 0) + cost.totalAmount;
-      
+
       // Extract usage metrics if available
       if (cost.usageMetrics?.quantity) {
         totalRequests += cost.usageMetrics.quantity;
@@ -179,7 +205,8 @@ export class CostAnalyticsService {
     const recommendations: string[] = [];
     let potentialSavings = 0;
 
-    if (costPerRequest > 0.01) { // If cost per request is high
+    if (costPerRequest > 0.01) {
+      // If cost per request is high
       recommendations.push('Implement request caching to reduce API calls');
       recommendations.push('Consider batching API requests where possible');
       potentialSavings += totalCost * 0.25; // 25% potential savings
@@ -187,7 +214,7 @@ export class CostAnalyticsService {
 
     if (costsByProvider['openai'] > totalCost * 0.7) {
       recommendations.push('Optimize AI prompt lengths and implement result caching');
-      potentialSavings += costsByProvider['openai'] * 0.20; // 20% savings on AI costs
+      potentialSavings += costsByProvider['openai'] * 0.2; // 20% savings on AI costs
     }
 
     return {
@@ -222,7 +249,8 @@ export class CostAnalyticsService {
     const historicalStartDate = new Date();
     historicalStartDate.setMonth(historicalStartDate.getMonth() - 12);
 
-    const historicalCosts = await sequelize.query(`
+    const historicalCosts = await sequelize.query(
+      `
       SELECT 
         DATE_TRUNC('month', billing_start_date) as month,
         category,
@@ -232,42 +260,49 @@ export class CostAnalyticsService {
         AND status IN ('approved', 'paid')
       GROUP BY month, category
       ORDER BY month, category
-    `, {
-      replacements: { startDate: historicalStartDate },
-      type: QueryTypes.SELECT,
-    });
+    `,
+      {
+        replacements: { startDate: historicalStartDate },
+        type: QueryTypes.SELECT,
+      }
+    );
 
     const forecastPeriods: any[] = [];
     const currentDate = new Date();
 
     // Simple linear regression forecast for each category
     const categories = ['infrastructure', 'api_services', 'personnel', 'marketing', 'development'];
-    
+
     for (let i = 1; i <= months; i++) {
       const forecastDate = new Date(currentDate);
       forecastDate.setMonth(forecastDate.getMonth() + i);
       const monthKey = forecastDate.toISOString().substr(0, 7);
 
       for (const category of categories) {
-        const categoryHistory = (historicalCosts as any[]).filter((h: any) => h.category === category);
-        
+        const categoryHistory = (historicalCosts as any[]).filter(
+          (h: any) => h.category === category
+        );
+
         if (categoryHistory.length >= 3) {
           // Calculate trend
           const avgGrowth = this.calculateGrowthTrend(categoryHistory);
           const lastMonthCost = categoryHistory[categoryHistory.length - 1]?.total_cost || 0;
           const predictedCost = lastMonthCost * (1 + avgGrowth) ** i;
-          
+
           forecastPeriods.push({
             month: monthKey,
             predictedCost,
             category,
-            confidence: Math.max(0.5, 0.9 - (i * 0.1)), // Decreasing confidence over time
+            confidence: Math.max(0.5, 0.9 - i * 0.1), // Decreasing confidence over time
           });
         }
       }
     }
 
-    const totalForecastedCost = forecastPeriods.reduce((sum, period) => sum + period.predictedCost, 0);
+    const totalForecastedCost = forecastPeriods.reduce(
+      (sum, period) => sum + period.predictedCost,
+      0
+    );
 
     return {
       forecastPeriods,
@@ -279,7 +314,10 @@ export class CostAnalyticsService {
   /**
    * Analyze budget variance
    */
-  static async analyzeBudgetVariance(startDate: Date, endDate: Date): Promise<{
+  static async analyzeBudgetVariance(
+    startDate: Date,
+    endDate: Date
+  ): Promise<{
     totalBudget: number;
     totalActual: number;
     variance: number;
@@ -321,7 +359,8 @@ export class CostAnalyticsService {
     const categoryVariances = Object.entries(budgetsByCategory).map(([category, budget]) => {
       const actual = actualByCategory[category] || 0;
       const variance = actual - budget;
-      const status = variance > budget * 0.1 ? 'over' : variance < -budget * 0.1 ? 'under' : 'on_track';
+      const status =
+        variance > budget * 0.1 ? 'over' : variance < -budget * 0.1 ? 'under' : 'on_track';
 
       return {
         category,
@@ -403,7 +442,10 @@ export class CostAnalyticsService {
       },
     ];
 
-    const totalPotentialSavings = recommendations.reduce((sum, rec) => sum + rec.potentialSavings, 0);
+    const totalPotentialSavings = recommendations.reduce(
+      (sum, rec) => sum + rec.potentialSavings,
+      0
+    );
 
     return {
       recommendations,
@@ -427,7 +469,8 @@ export class CostAnalyticsService {
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - months);
 
-    const trends = await sequelize.query(`
+    const trends = await sequelize.query(
+      `
       SELECT 
         DATE_TRUNC('month', billing_start_date) as month,
         category,
@@ -437,10 +480,12 @@ export class CostAnalyticsService {
         AND status IN ('approved', 'paid')
       GROUP BY month, category
       ORDER BY month
-    `, {
-      replacements: { startDate },
-      type: QueryTypes.SELECT,
-    });
+    `,
+      {
+        replacements: { startDate },
+        type: QueryTypes.SELECT,
+      }
+    );
 
     // Process trends data
     const processedTrends: any[] = [];
@@ -467,18 +512,18 @@ export class CostAnalyticsService {
       if (index > 0) {
         const currentCost = monthlyTotals[monthKey].totalCost;
         const previousCost = monthlyTotals[monthKeys[index - 1]].totalCost;
-        monthlyTotals[monthKey].growthRate = previousCost > 0 
-          ? ((currentCost - previousCost) / previousCost) * 100 
-          : 0;
+        monthlyTotals[monthKey].growthRate =
+          previousCost > 0 ? ((currentCost - previousCost) / previousCost) * 100 : 0;
       }
       processedTrends.push(monthlyTotals[monthKey]);
     });
 
     // Calculate average growth rate
     const growthRates = processedTrends.slice(1).map(t => t.growthRate);
-    const averageGrowthRate = growthRates.length > 0 
-      ? growthRates.reduce((sum, rate) => sum + rate, 0) / growthRates.length 
-      : 0;
+    const averageGrowthRate =
+      growthRates.length > 0
+        ? growthRates.reduce((sum, rate) => sum + rate, 0) / growthRates.length
+        : 0;
 
     // Calculate seasonality (simplified)
     const seasonalityFactors = Array(12).fill(1); // Placeholder for seasonal analysis
@@ -505,10 +550,10 @@ export class CostAnalyticsService {
       }
     }
 
-    return growthRates.length > 0 
-      ? growthRates.reduce((sum, rate) => sum + rate, 0) / growthRates.length 
+    return growthRates.length > 0
+      ? growthRates.reduce((sum, rate) => sum + rate, 0) / growthRates.length
       : 0;
   }
 }
 
-export default CostAnalyticsService; 
+export default CostAnalyticsService;

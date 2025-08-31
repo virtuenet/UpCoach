@@ -18,13 +18,20 @@ export { darkColors, withOpacity } from './colors';
 export { responsiveTypography } from './typography';
 export { componentSpacing, layout, getSpacing, createSpacing } from './spacing';
 export { shadows, borders, transitions, animation, blur, opacity, zIndex } from './effects';
-export { media, container, grid, isBreakpoint, getCurrentBreakpoint, responsiveValue } from './breakpoints';
+export {
+  media,
+  container,
+  grid,
+  isBreakpoint,
+  getCurrentBreakpoint,
+  responsiveValue,
+} from './breakpoints';
 // Complete tokens object
 export const tokens = {
-    colors: require('./colors').default,
-    typography: require('./typography').default,
-    spacing: require('./spacing').default,
-    effects: require('./effects').default,
-    breakpoints: require('./breakpoints').default,
+  colors: require('./colors').default,
+  typography: require('./typography').default,
+  spacing: require('./spacing').default,
+  effects: require('./effects').default,
+  breakpoints: require('./breakpoints').default,
 };
 export default tokens;

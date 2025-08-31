@@ -1,4 +1,7 @@
-import Grid from "@mui/material";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import Grid from '@mui/material';
 import {
   Box,
   Card,
@@ -24,7 +27,7 @@ import {
   Alert,
   Snackbar,
   CircularProgress,
-} from "@mui/material";
+} from '@mui/material';
 import {
   Save as SaveIcon,
   Publish as PublishIcon,
@@ -43,24 +46,24 @@ import {
   Schedule as ScheduleIcon,
   Analytics as AnalyticsIcon,
   Delete as DeleteIcon,
-} from "@mui/icons-material";
-import api from "../../services/api";
-import MediaLibrary from "../../components/cms/MediaLibrary";
-import SEOAnalyzer from "../../components/cms/SEOAnalyzer";
-import ContentPreview from "../../components/cms/ContentPreview";
+} from '@mui/icons-material';
+import api from '../../services/api';
+import MediaLibrary from '../../components/cms/MediaLibrary';
+import SEOAnalyzer from '../../components/cms/SEOAnalyzer';
+import ContentPreview from '../../components/cms/ContentPreview';
 
 interface ContentData {
   title: string;
   slug: string;
   summary: string;
   content: {
-    format: "html" | "markdown";
+    format: 'html' | 'markdown';
     body: string;
   };
   categoryId: number | null;
   featuredImage: string;
-  status: "draft" | "review" | "published" | "archived";
-  visibility: "public" | "members" | "premium";
+  status: 'draft' | 'review' | 'published' | 'archived';
+  visibility: 'public' | 'members' | 'premium';
   publishDate: Date | null;
   tags: string[];
   seoTitle: string;
@@ -84,21 +87,21 @@ const ContentEditor: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [content, setContent] = useState<ContentData>({
-    title: "",
-    slug: "",
-    summary: "",
+    title: '',
+    slug: '',
+    summary: '',
     content: {
-      format: "html",
-      body: "",
+      format: 'html',
+      body: '',
     },
     categoryId: null,
-    featuredImage: "",
-    status: "draft",
-    visibility: "public",
+    featuredImage: '',
+    status: 'draft',
+    visibility: 'public',
     publishDate: null,
     tags: [],
-    seoTitle: "",
-    seoDescription: "",
+    seoTitle: '',
+    seoDescription: '',
     seoKeywords: [],
     allowComments: true,
     isFeatured: false,
@@ -110,8 +113,8 @@ const ContentEditor: React.FC = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
-    message: "",
-    severity: "success" as any,
+    message: '',
+    severity: 'success' as any,
   });
   const [wordCount, setWordCount] = useState(0);
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
@@ -136,16 +139,16 @@ const ContentEditor: React.FC = () => {
   const fetchInitialData = async () => {
     setLoading(true);
     try {
-      const [categoriesRes] = await Promise.all([api.get("/cms/categories")]);
+      const [categoriesRes] = await Promise.all([api.get('/cms/categories')]);
       setCategories(categoriesRes.data.data);
 
-      if (id && id !== "new") {
+      if (id && id !== 'new') {
         const articleRes = await api.get(`/cms/articles/${id}`);
         setContent(articleRes.data.data);
       }
     } catch (error) {
-      console.error("Failed to fetch data:", error);
-      showSnackbar("Failed to load content", "error");
+      console.error('Failed to fetch data:', error);
+      showSnackbar('Failed to load content', 'error');
     } finally {
       setLoading(false);
     }
@@ -154,26 +157,25 @@ const ContentEditor: React.FC = () => {
   const handleSave = async (isAutoSave = false) => {
     setSaving(true);
     try {
-      const endpoint =
-        id && id !== "new" ? `/cms/articles/${id}` : "/cms/articles";
+      const endpoint = id && id !== 'new' ? `/cms/articles/${id}` : '/cms/articles';
 
-      const method = id && id !== "new" ? "put" : "post";
+      const method = id && id !== 'new' ? 'put' : 'post';
 
       const response = await api[method](endpoint, content);
 
       if (!isAutoSave) {
-        showSnackbar("Content saved successfully", "success");
+        showSnackbar('Content saved successfully', 'success');
       }
 
       // If creating new article, redirect to edit page
-      if (!id || id === "new") {
+      if (!id || id === 'new') {
         navigate(`/cms/content/${response.data.data.id}/edit`, {
           replace: true,
         });
       }
     } catch (error) {
-      console.error("Failed to save content:", error);
-      showSnackbar("Failed to save content", "error");
+      console.error('Failed to save content:', error);
+      showSnackbar('Failed to save content', 'error');
     } finally {
       setSaving(false);
     }
@@ -181,7 +183,7 @@ const ContentEditor: React.FC = () => {
 
   const handlePublish = async () => {
     if (!content.title || !content.content.body) {
-      showSnackbar("Title and content are required", "error");
+      showSnackbar('Title and content are required', 'error');
       return;
     }
 
@@ -191,21 +193,21 @@ const ContentEditor: React.FC = () => {
       await handleSave();
 
       // Then publish
-      if (id && id !== "new") {
+      if (id && id !== 'new') {
         await api.post(`/cms/articles/${id}/publish`);
-        showSnackbar("Content published successfully", "success");
-        navigate("/cms");
+        showSnackbar('Content published successfully', 'success');
+        navigate('/cms');
       }
     } catch (error) {
-      console.error("Failed to publish content:", error);
-      showSnackbar("Failed to publish content", "error");
+      console.error('Failed to publish content:', error);
+      showSnackbar('Failed to publish content', 'error');
     } finally {
       setSaving(false);
     }
   };
 
   const handleEditorChange = (content: string) => {
-    setContent((prev) => ({
+    setContent(prev => ({
       ...prev,
       content: {
         ...prev.content,
@@ -214,16 +216,16 @@ const ContentEditor: React.FC = () => {
     }));
 
     // Update word count
-    const text = content.replace(/<[^>]*>/g, "");
-    setWordCount(text.split(/\s+/).filter((word) => word.length > 0).length);
+    const text = content.replace(/<[^>]*>/g, '');
+    setWordCount(text.split(/\s+/).filter(word => word.length > 0).length);
   };
 
   const handleMediaSelect = (media: any) => {
-    if (mediaLibraryOpen === "featured") {
-      setContent((prev) => ({ ...prev, featuredImage: media.url }));
+    if (mediaLibraryOpen === 'featured') {
+      setContent(prev => ({ ...prev, featuredImage: media.url }));
     } else {
       // Insert into editor
-      const imageHtml = `<img src="${media.url}" alt="${media.altText || ""}" />`;
+      const imageHtml = `<img src="${media.url}" alt="${media.altText || ''}" />`;
       editorRef.current?.insertContent(imageHtml);
     }
     setMediaLibraryOpen(false);
@@ -232,8 +234,8 @@ const ContentEditor: React.FC = () => {
   const generateSlug = (title: string) => {
     return title
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   };
 
   const showSnackbar = (message: string, severity: any) => {
@@ -242,12 +244,7 @@ const ContentEditor: React.FC = () => {
 
   if (loading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="400px"
-      >
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
         <CircularProgress />
       </Box>
     );
@@ -260,13 +257,13 @@ const ContentEditor: React.FC = () => {
         <Box
           sx={{
             mb: 3,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
           }}
         >
           <Typography variant="h4">
-            {id && id !== "new" ? "Edit Content" : "Create New Content"}
+            {id && id !== 'new' ? 'Edit Content' : 'Create New Content'}
           </Typography>
           <Box>
             <Button
@@ -302,11 +299,7 @@ const ContentEditor: React.FC = () => {
           <Grid item xs={12} md={8}>
             <Card>
               <CardContent>
-                <Tabs
-                  value={currentTab}
-                  onChange={(_e, v) => setCurrentTab(v)}
-                  sx={{ mb: 3 }}
-                >
+                <Tabs value={currentTab} onChange={(_e, v) => setCurrentTab(v)} sx={{ mb: 3 }}>
                   <Tab label="Content" />
                   <Tab label="SEO" />
                   <Tab label="Settings" />
@@ -318,8 +311,8 @@ const ContentEditor: React.FC = () => {
                       fullWidth
                       label="Title"
                       value={content.title}
-                      onChange={(e) => {
-                        setContent((prev) => ({
+                      onChange={e => {
+                        setContent(prev => ({
                           ...prev,
                           title: e.target.value,
                           slug: generateSlug(e.target.value),
@@ -333,8 +326,8 @@ const ContentEditor: React.FC = () => {
                       fullWidth
                       label="Slug"
                       value={content.slug}
-                      onChange={(e) =>
-                        setContent((prev) => ({
+                      onChange={e =>
+                        setContent(prev => ({
                           ...prev,
                           slug: e.target.value,
                         }))
@@ -347,8 +340,8 @@ const ContentEditor: React.FC = () => {
                       fullWidth
                       label="Summary"
                       value={content.summary}
-                      onChange={(e) =>
-                        setContent((prev) => ({
+                      onChange={e =>
+                        setContent(prev => ({
                           ...prev,
                           summary: e.target.value,
                         }))
@@ -362,16 +355,13 @@ const ContentEditor: React.FC = () => {
                     <Box
                       sx={{
                         mb: 2,
-                        display: "flex",
-                        justifyContent: "space-between",
+                        display: 'flex',
+                        justifyContent: 'space-between',
                       }}
                     >
-                      <Typography variant="subtitle2">
-                        Content Editor
-                      </Typography>
+                      <Typography variant="subtitle2">Content Editor</Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {wordCount} words | {Math.ceil(wordCount / 200)} min
-                        read
+                        {wordCount} words | {Math.ceil(wordCount / 200)} min read
                       </Typography>
                     </Box>
 
@@ -384,42 +374,42 @@ const ContentEditor: React.FC = () => {
                         height: 500,
                         menubar: true,
                         plugins: [
-                          "advlist",
-                          "autolink",
-                          "lists",
-                          "link",
-                          "image",
-                          "charmap",
-                          "preview",
-                          "anchor",
-                          "searchreplace",
-                          "visualblocks",
-                          "code",
-                          "fullscreen",
-                          "insertdatetime",
-                          "media",
-                          "table",
-                          "code",
-                          "help",
-                          "wordcount",
-                          "codesample",
-                          "emoticons",
-                          "autosave",
+                          'advlist',
+                          'autolink',
+                          'lists',
+                          'link',
+                          'image',
+                          'charmap',
+                          'preview',
+                          'anchor',
+                          'searchreplace',
+                          'visualblocks',
+                          'code',
+                          'fullscreen',
+                          'insertdatetime',
+                          'media',
+                          'table',
+                          'code',
+                          'help',
+                          'wordcount',
+                          'codesample',
+                          'emoticons',
+                          'autosave',
                         ],
                         toolbar:
-                          "undo redo | blocks | " +
-                          "bold italic underline strikethrough | alignleft aligncenter " +
-                          "alignright alignjustify | bullist numlist outdent indent | " +
-                          "link image media | code codesample | removeformat | help",
+                          'undo redo | blocks | ' +
+                          'bold italic underline strikethrough | alignleft aligncenter ' +
+                          'alignright alignjustify | bullist numlist outdent indent | ' +
+                          'link image media | code codesample | removeformat | help',
                         content_style:
-                          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                          'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
                         automatic_uploads: true,
-                        file_picker_types: "image",
-                        file_picker_callback: (cb) => {
-                          setMediaLibraryOpen("editor");
+                        file_picker_types: 'image',
+                        file_picker_callback: cb => {
+                          setMediaLibraryOpen('editor');
                         },
-                        autosave_interval: "30s",
-                        autosave_retention: "30m",
+                        autosave_interval: '30s',
+                        autosave_retention: '30m',
                       }}
                     />
                   </Box>
@@ -432,8 +422,8 @@ const ContentEditor: React.FC = () => {
                       description={content.seoDescription || content.summary}
                       content={content.content.body}
                       keywords={content.seoKeywords}
-                      onUpdate={(seoData) => {
-                        setContent((prev) => ({
+                      onUpdate={seoData => {
+                        setContent(prev => ({
                           ...prev,
                           seoTitle: seoData.title,
                           seoDescription: seoData.description,
@@ -452,8 +442,8 @@ const ContentEditor: React.FC = () => {
                           <InputLabel>Status</InputLabel>
                           <Select
                             value={content.status}
-                            onChange={(e) =>
-                              setContent((prev) => ({
+                            onChange={e =>
+                              setContent(prev => ({
                                 ...prev,
                                 status: e.target.value as any,
                               }))
@@ -473,8 +463,8 @@ const ContentEditor: React.FC = () => {
                           <InputLabel>Visibility</InputLabel>
                           <Select
                             value={content.visibility}
-                            onChange={(e) =>
-                              setContent((prev) => ({
+                            onChange={e =>
+                              setContent(prev => ({
                                 ...prev,
                                 visibility: e.target.value as any,
                               }))
@@ -492,8 +482,8 @@ const ContentEditor: React.FC = () => {
                         <DateTimePicker
                           label="Publish Date"
                           value={content.publishDate}
-                          onChange={(date) =>
-                            setContent((prev) => ({
+                          onChange={date =>
+                            setContent(prev => ({
                               ...prev,
                               publishDate: date,
                             }))
@@ -512,8 +502,8 @@ const ContentEditor: React.FC = () => {
                           control={
                             <Switch
                               checked={content.allowComments}
-                              onChange={(e) =>
-                                setContent((prev) => ({
+                              onChange={e =>
+                                setContent(prev => ({
                                   ...prev,
                                   allowComments: e.target.checked,
                                 }))
@@ -529,8 +519,8 @@ const ContentEditor: React.FC = () => {
                           control={
                             <Switch
                               checked={content.isFeatured}
-                              onChange={(e) =>
-                                setContent((prev) => ({
+                              onChange={e =>
+                                setContent(prev => ({
                                   ...prev,
                                   isFeatured: e.target.checked,
                                 }))
@@ -546,9 +536,7 @@ const ContentEditor: React.FC = () => {
                           control={
                             <Switch
                               checked={autoSaveEnabled}
-                              onChange={(e) =>
-                                setAutoSaveEnabled(e.target.checked)
-                              }
+                              onChange={e => setAutoSaveEnabled(e.target.checked)}
                             />
                           }
                           label="Auto-save enabled"
@@ -573,9 +561,9 @@ const ContentEditor: React.FC = () => {
                 <FormControl fullWidth sx={{ mb: 2 }}>
                   <InputLabel>Category</InputLabel>
                   <Select
-                    value={content.categoryId || ""}
-                    onChange={(e) =>
-                      setContent((prev) => ({
+                    value={content.categoryId || ''}
+                    onChange={e =>
+                      setContent(prev => ({
                         ...prev,
                         categoryId: e.target.value as number,
                       }))
@@ -583,7 +571,7 @@ const ContentEditor: React.FC = () => {
                     label="Category"
                   >
                     <MenuItem value="">None</MenuItem>
-                    {categories.map((cat) => (
+                    {categories.map(cat => (
                       <MenuItem key={cat.id} value={cat.id}>
                         {cat.name}
                       </MenuItem>
@@ -595,13 +583,13 @@ const ContentEditor: React.FC = () => {
                   fullWidth
                   label="Tags"
                   placeholder="Add tags separated by commas"
-                  value={content.tags.join(", ")}
-                  onChange={(e) => {
+                  value={content.tags.join(', ')}
+                  onChange={e => {
                     const tags = e.target.value
-                      .split(",")
-                      .map((tag) => tag.trim())
-                      .filter((tag) => tag.length > 0);
-                    setContent((prev) => ({ ...prev, tags }));
+                      .split(',')
+                      .map(tag => tag.trim())
+                      .filter(tag => tag.length > 0);
+                    setContent(prev => ({ ...prev, tags }));
                   }}
                   helperText="Separate tags with commas"
                 />
@@ -616,22 +604,20 @@ const ContentEditor: React.FC = () => {
                 </Typography>
 
                 {content.featuredImage ? (
-                  <Box sx={{ position: "relative", mb: 2 }}>
+                  <Box sx={{ position: 'relative', mb: 2 }}>
                     <img
                       src={content.featuredImage}
                       alt="Featured"
-                      style={{ width: "100%", borderRadius: 4 }}
+                      style={{ width: '100%', borderRadius: 4 }}
                     />
                     <IconButton
                       sx={{
-                        position: "absolute",
+                        position: 'absolute',
                         top: 8,
                         right: 8,
-                        bgcolor: "background.paper",
+                        bgcolor: 'background.paper',
                       }}
-                      onClick={() =>
-                        setContent((prev) => ({ ...prev, featuredImage: "" }))
-                      }
+                      onClick={() => setContent(prev => ({ ...prev, featuredImage: '' }))}
                     >
                       <DeleteIcon />
                     </IconButton>
@@ -639,28 +625,24 @@ const ContentEditor: React.FC = () => {
                 ) : (
                   <Box
                     sx={{
-                      border: "2px dashed #ccc",
+                      border: '2px dashed #ccc',
                       borderRadius: 1,
                       p: 3,
-                      textAlign: "center",
-                      cursor: "pointer",
+                      textAlign: 'center',
+                      cursor: 'pointer',
                       mb: 2,
                     }}
-                    onClick={() => setMediaLibraryOpen("featured")}
+                    onClick={() => setMediaLibraryOpen('featured')}
                   >
-                    <ImageIcon
-                      sx={{ fontSize: 48, color: "text.secondary", mb: 1 }}
-                    />
-                    <Typography color="text.secondary">
-                      Click to select featured image
-                    </Typography>
+                    <ImageIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
+                    <Typography color="text.secondary">Click to select featured image</Typography>
                   </Box>
                 )}
               </CardContent>
             </Card>
 
             {/* Quick Stats */}
-            {id && id !== "new" && (
+            {id && id !== 'new' && (
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -697,12 +679,7 @@ const ContentEditor: React.FC = () => {
         </Dialog>
 
         {/* Preview Dialog */}
-        <Dialog
-          open={previewOpen}
-          onClose={() => setPreviewOpen(false)}
-          maxWidth="md"
-          fullWidth
-        >
+        <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} maxWidth="md" fullWidth>
           <DialogTitle>Content Preview</DialogTitle>
           <DialogContent>
             <ContentPreview content={content} />
@@ -716,11 +693,11 @@ const ContentEditor: React.FC = () => {
         <Snackbar
           open={snackbar.open}
           autoHideDuration={6000}
-          onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
         >
           <Alert
             severity={snackbar.severity}
-            onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+            onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
           >
             {snackbar.message}
           </Alert>

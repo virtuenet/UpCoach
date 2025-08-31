@@ -1,8 +1,8 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../stores/authStore";
-import SessionWarningModal from "../../../shared/components/SessionWarningModal";
-import { getSessionManager } from "../../../shared/services/sessionManager";
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../stores/authStore';
+import SessionWarningModal from '../../../shared/components/SessionWarningModal';
+import { getSessionManager } from '../../../shared/services/sessionManager';
 
 interface SessionWrapperProps {
   children: React.ReactNode;
@@ -19,7 +19,7 @@ export default function SessionWrapper({ children }: SessionWrapperProps) {
       onSessionExpired: () => {
         logout();
         navigate('/login');
-      }
+      },
     });
 
     if (isAuthenticated) {
@@ -47,10 +47,7 @@ export default function SessionWrapper({ children }: SessionWrapperProps) {
   return (
     <>
       {children}
-      <SessionWarningModal 
-        onExtend={handleExtendSession}
-        onExpire={handleSessionExpire}
-      />
+      <SessionWarningModal onExtend={handleExtendSession} onExpire={handleSessionExpire} />
     </>
   );
 }

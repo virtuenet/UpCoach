@@ -23,10 +23,13 @@ const createConversationSchema = z.object({
 });
 
 // Get all conversations for the current user
-router.get('/conversations', asyncHandler(async (req: Request, _res: Response) => {
-  const userId = (req as any).user!.id;
+router.get(
+  '/conversations',
+  asyncHandler(async (req: Request, _res: Response) => {
+    const userId = (req as any).user!.id;
 
-  const conversations = await db.query(`
+    const conversations = await db.query(
+      `
     SELECT 
       c.id, 
       c.title, 
@@ -40,97 +43,29 @@ router.get('/conversations', asyncHandler(async (req: Request, _res: Response) =
     WHERE c.user_id = $1 AND c.is_active = true
     GROUP BY c.id, c.title, c.is_active, c.created_at, c.updated_at
     ORDER BY COALESCE(MAX(m.created_at), c.created_at) DESC
-  `, [userId]);
+  `,
+      [userId]
+    );
 
-  _res.json({
-    success: true,
-    data: {
-      conversations: conversations.rows,
-    },
-  });
-}));
+    _res.json({
+      success: true,
+      data: {
+        conversations: conversations.rows,
+      },
+    });
+  })
+);
 
 // Get a specific conversation with messages
-router.get('/conversations/:id', asyncHandler(async (req: Request, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const { id } = req.params;
+router.get(
+  '/conversations/:id',
+  asyncHandler(async (req: Request, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const { id } = req.params;
 
-  // Get conversation
-  const conversation = await db.findOne('chat_conversations', { 
-    id, 
-    user_id: userId, 
-    is_active: true 
-  });
-
-  if (!conversation) {
-    throw new ApiError(404, 'Conversation not found');
-  }
-
-  // Get messages for this conversation
-  const messages = await db.query(`
-    SELECT id, content, is_from_user, created_at, metadata
-    FROM chat_messages 
-    WHERE conversation_id = $1
-    ORDER BY created_at ASC
-  `, [id]);
-
-  _res.json({
-    success: true,
-    data: {
-      conversation: {
-        ...conversation,
-        messages: messages.rows,
-      },
-    },
-  });
-}));
-
-// Create a new conversation
-router.post('/conversations', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const validatedData = createConversationSchema.parse(req.body);
-
-  const conversationData = {
-    user_id: userId,
-    title: validatedData.title || 'New Conversation',
-    is_active: true,
-    metadata: {},
-  };
-
-  const conversation = await db.insert('chat_conversations', conversationData);
-
-  logger.info('Conversation created:', { conversationId: conversation.id, userId });
-
-  _res.status(201).json({
-    success: true,
-    message: 'Conversation created successfully',
-    data: {
-      conversation,
-    },
-  });
-}));
-
-// Send a message and get AI response
-router.post('/message', asyncHandler(async (req: Request, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const validatedData = chatMessageSchema.parse(req.body);
-  const aiProvider = validatedData.aiProvider;
-
-  let conversationId = validatedData.conversationId;
-
-  // Create new conversation if none provided
-  if (!conversationId) {
-    const conversation = await db.insert('chat_conversations', {
-      user_id: userId,
-      title: 'New Conversation',
-      is_active: true,
-      metadata: { aiProvider },
-    });
-    conversationId = conversation.id;
-  } else {
-    // Verify conversation belongs to user
+    // Get conversation
     const conversation = await db.findOne('chat_conversations', {
-      id: conversationId,
+      id,
       user_id: userId,
       is_active: true,
     });
@@ -138,171 +73,264 @@ router.post('/message', asyncHandler(async (req: Request, _res: Response) => {
     if (!conversation) {
       throw new ApiError(404, 'Conversation not found');
     }
-  }
 
-  // Save user message
-  const userMessage = await db.insert('chat_messages', {
-    conversation_id: conversationId,
-    content: validatedData.content,
-    is_from_user: true,
-    metadata: { aiProvider },
-  });
+    // Get messages for this conversation
+    const messages = await db.query(
+      `
+    SELECT id, content, is_from_user, created_at, metadata
+    FROM chat_messages 
+    WHERE conversation_id = $1
+    ORDER BY created_at ASC
+  `,
+      [id]
+    );
 
-  try {
-    // Get user profile for personalization
-    const userProfile = await userProfilingService.createOrUpdateProfile(userId);
-    
-    // Get conversation history for context
-    const messageHistory = await db.query(`
+    _res.json({
+      success: true,
+      data: {
+        conversation: {
+          ...conversation,
+          messages: messages.rows,
+        },
+      },
+    });
+  })
+);
+
+// Create a new conversation
+router.post(
+  '/conversations',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const validatedData = createConversationSchema.parse(req.body);
+
+    const conversationData = {
+      user_id: userId,
+      title: validatedData.title || 'New Conversation',
+      is_active: true,
+      metadata: {},
+    };
+
+    const conversation = await db.insert('chat_conversations', conversationData);
+
+    logger.info('Conversation created:', { conversationId: conversation.id, userId });
+
+    _res.status(201).json({
+      success: true,
+      message: 'Conversation created successfully',
+      data: {
+        conversation,
+      },
+    });
+  })
+);
+
+// Send a message and get AI response
+router.post(
+  '/message',
+  asyncHandler(async (req: Request, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const validatedData = chatMessageSchema.parse(req.body);
+    const aiProvider = validatedData.aiProvider;
+
+    let conversationId = validatedData.conversationId;
+
+    // Create new conversation if none provided
+    if (!conversationId) {
+      const conversation = await db.insert('chat_conversations', {
+        user_id: userId,
+        title: 'New Conversation',
+        is_active: true,
+        metadata: { aiProvider },
+      });
+      conversationId = conversation.id;
+    } else {
+      // Verify conversation belongs to user
+      const conversation = await db.findOne('chat_conversations', {
+        id: conversationId,
+        user_id: userId,
+        is_active: true,
+      });
+
+      if (!conversation) {
+        throw new ApiError(404, 'Conversation not found');
+      }
+    }
+
+    // Save user message
+    const userMessage = await db.insert('chat_messages', {
+      conversation_id: conversationId,
+      content: validatedData.content,
+      is_from_user: true,
+      metadata: { aiProvider },
+    });
+
+    try {
+      // Get user profile for personalization
+      const userProfile = await userProfilingService.createOrUpdateProfile(userId);
+
+      // Get conversation history for context
+      const messageHistory = await db.query(
+        `
       SELECT content, is_from_user, created_at
       FROM chat_messages 
       WHERE conversation_id = $1
       ORDER BY created_at ASC
       LIMIT 20
-    `, [conversationId]);
+    `,
+        [conversationId]
+      );
 
-    // Build message history for AI
-    const conversationMessages = messageHistory.rows.slice(0, -1).map((msg) => ({
-      role: msg.is_from_user ? 'user' : 'assistant' as 'user' | 'assistant',
-      content: msg.content,
-    }));
+      // Build message history for AI
+      const conversationMessages = messageHistory.rows.slice(0, -1).map(msg => ({
+        role: msg.is_from_user ? 'user' : ('assistant' as 'user' | 'assistant'),
+        content: msg.content,
+      }));
 
-    // Generate AI response using new AI service
-    const response = await aiService.generateCoachingResponse(
-      validatedData.content,
-      {
+      // Generate AI response using new AI service
+      const response = await aiService.generateCoachingResponse(validatedData.content, {
         conversationHistory: conversationMessages,
         userId,
         personality: userProfile.communicationPreference,
-        provider: aiProvider as 'openai' | 'claude'
+        provider: aiProvider as 'openai' | 'claude',
+      });
+
+      if (!response.content) {
+        throw new Error('No response from AI');
       }
-    );
 
-    if (!response.content) {
-      throw new Error('No response from AI');
-    }
+      // Save AI response
+      const aiMessage = await db.insert('chat_messages', {
+        conversation_id: conversationId,
+        content: response.content,
+        is_from_user: false,
+        metadata: {
+          model: response.model,
+          provider: response.provider,
+          tokens: response.usage?.total_tokens || 0,
+          personality: userProfile.communicationPreference,
+        },
+      });
 
-    // Save AI response
-    const aiMessage = await db.insert('chat_messages', {
-      conversation_id: conversationId,
-      content: response.content,
-      is_from_user: false,
-      metadata: {
-        model: response.model,
+      // Update conversation title if it's the first exchange
+      if (messageHistory.rows.length <= 2) {
+        const title =
+          validatedData.content.length > 50
+            ? validatedData.content.substring(0, 47) + '...'
+            : validatedData.content;
+
+        await db.update('chat_conversations', { title }, { id: conversationId });
+      }
+
+      logger.info('Chat message processed:', {
+        conversationId,
+        userId,
+        userMessageId: userMessage.id,
+        aiMessageId: aiMessage.id,
         provider: response.provider,
         tokens: response.usage?.total_tokens || 0,
-        personality: userProfile.communicationPreference,
-      },
+      });
+
+      _res.json({
+        success: true,
+        data: {
+          conversationId,
+          userMessage,
+          aiMessage,
+        },
+      });
+    } catch (error) {
+      logger.error('Error processing chat message:', error);
+
+      // Save error message for user feedback
+      await db.insert('chat_messages', {
+        conversation_id: conversationId,
+        content:
+          'I apologize, but I encountered an error processing your message. Please try again.',
+        is_from_user: false,
+        metadata: { error: true },
+      });
+
+      throw new ApiError(500, 'Failed to process your message. Please try again.');
+    }
+  })
+);
+
+// Update conversation title
+router.put(
+  '/conversations/:id',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const { id } = req.params;
+    const validatedData = createConversationSchema.parse(req.body);
+
+    // Check if conversation exists and belongs to user
+    const conversation = await db.findOne('chat_conversations', {
+      id,
+      user_id: userId,
+      is_active: true,
     });
 
-    // Update conversation title if it's the first exchange
-    if (messageHistory.rows.length <= 2) {
-      const title = validatedData.content.length > 50 
-        ? validatedData.content.substring(0, 47) + '...'
-        : validatedData.content;
-      
-      await db.update('chat_conversations', { title }, { id: conversationId });
+    if (!conversation) {
+      throw new ApiError(404, 'Conversation not found');
     }
 
-    logger.info('Chat message processed:', { 
-      conversationId, 
-      userId, 
-      userMessageId: userMessage.id,
-      aiMessageId: aiMessage.id,
-      provider: response.provider,
-      tokens: response.usage?.total_tokens || 0,
-    });
+    const updatedConversation = await db.update(
+      'chat_conversations',
+      { title: validatedData.title },
+      { id, user_id: userId }
+    );
+
+    logger.info('Conversation updated:', { conversationId: id, userId });
 
     _res.json({
       success: true,
+      message: 'Conversation updated successfully',
       data: {
-        conversationId,
-        userMessage,
-        aiMessage,
+        conversation: updatedConversation,
       },
     });
-
-  } catch (error) {
-    logger.error('Error processing chat message:', error);
-    
-    // Save error message for user feedback
-    await db.insert('chat_messages', {
-      conversation_id: conversationId,
-      content: 'I apologize, but I encountered an error processing your message. Please try again.',
-      is_from_user: false,
-      metadata: { error: true },
-    });
-
-    throw new ApiError(500, 'Failed to process your message. Please try again.');
-  }
-}));
-
-// Update conversation title
-router.put('/conversations/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const { id } = req.params;
-  const validatedData = createConversationSchema.parse(req.body);
-
-  // Check if conversation exists and belongs to user
-  const conversation = await db.findOne('chat_conversations', {
-    id,
-    user_id: userId,
-    is_active: true,
-  });
-
-  if (!conversation) {
-    throw new ApiError(404, 'Conversation not found');
-  }
-
-  const updatedConversation = await db.update(
-    'chat_conversations',
-    { title: validatedData.title },
-    { id, user_id: userId }
-  );
-
-  logger.info('Conversation updated:', { conversationId: id, userId });
-
-  _res.json({
-    success: true,
-    message: 'Conversation updated successfully',
-    data: {
-      conversation: updatedConversation,
-    },
-  });
-}));
+  })
+);
 
 // Delete a conversation (soft delete)
-router.delete('/conversations/:id', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
-  const { id } = req.params;
+router.delete(
+  '/conversations/:id',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
+    const { id } = req.params;
 
-  // Check if conversation exists and belongs to user
-  const conversation = await db.findOne('chat_conversations', {
-    id,
-    user_id: userId,
-    is_active: true,
-  });
+    // Check if conversation exists and belongs to user
+    const conversation = await db.findOne('chat_conversations', {
+      id,
+      user_id: userId,
+      is_active: true,
+    });
 
-  if (!conversation) {
-    throw new ApiError(404, 'Conversation not found');
-  }
+    if (!conversation) {
+      throw new ApiError(404, 'Conversation not found');
+    }
 
-  // Soft delete by setting is_active to false
-  await db.update('chat_conversations', { is_active: false }, { id, user_id: userId });
+    // Soft delete by setting is_active to false
+    await db.update('chat_conversations', { is_active: false }, { id, user_id: userId });
 
-  logger.info('Conversation deleted:', { conversationId: id, userId });
+    logger.info('Conversation deleted:', { conversationId: id, userId });
 
-  _res.json({
-    success: true,
-    message: 'Conversation deleted successfully',
-  });
-}));
+    _res.json({
+      success: true,
+      message: 'Conversation deleted successfully',
+    });
+  })
+);
 
 // Get chat statistics
-router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-  const userId = (req as any).user!.id;
+router.get(
+  '/stats/overview',
+  asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
+    const userId = (req as any).user!.id;
 
-  const stats = await db.query(`
+    const stats = await db.query(
+      `
     SELECT 
       COUNT(DISTINCT c.id) as total_conversations,
       COUNT(m.id) as total_messages,
@@ -313,9 +341,12 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _re
     FROM chat_conversations c
     LEFT JOIN chat_messages m ON c.id = m.conversation_id
     WHERE c.user_id = $1 AND c.is_active = true
-  `, [userId]);
+  `,
+      [userId]
+    );
 
-  const dailyActivity = await db.query(`
+    const dailyActivity = await db.query(
+      `
     SELECT 
       DATE(m.created_at) as date,
       COUNT(m.id) as message_count,
@@ -327,15 +358,18 @@ router.get('/stats/overview', asyncHandler(async (req: AuthenticatedRequest, _re
       AND m.created_at >= NOW() - INTERVAL '30 days'
     GROUP BY DATE(m.created_at)
     ORDER BY date
-  `, [userId]);
+  `,
+      [userId]
+    );
 
-  _res.json({
-    success: true,
-    data: {
-      overview: stats.rows[0],
-      dailyActivity: dailyActivity.rows,
-    },
-  });
-}));
+    _res.json({
+      success: true,
+      data: {
+        overview: stats.rows[0],
+        dailyActivity: dailyActivity.rows,
+      },
+    });
+  })
+);
 
-export default router; 
+export default router;

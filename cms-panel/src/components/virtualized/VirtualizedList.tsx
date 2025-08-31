@@ -46,7 +46,7 @@ export function VirtualizedList<T = any>({
 }: VirtualizedListProps<T>) {
   const listRef = useRef<List | FixedSizeList>(null);
   const itemCount = hasNextPage ? items.length + 1 : items.length;
-  
+
   // Check if all items are loaded
   const isItemLoaded = useCallback(
     (index: number) => !hasNextPage || index < items.length,
@@ -54,15 +54,12 @@ export function VirtualizedList<T = any>({
   );
 
   // Load more items
-  const loadMoreItems = useCallback(
-    () => {
-      if (isNextPageLoading || !loadNextPage) {
-        return Promise.resolve();
-      }
-      return loadNextPage();
-    },
-    [isNextPageLoading, loadNextPage]
-  );
+  const loadMoreItems = useCallback(() => {
+    if (isNextPageLoading || !loadNextPage) {
+      return Promise.resolve();
+    }
+    return loadNextPage();
+  }, [isNextPageLoading, loadNextPage]);
 
   // Render individual item
   const Item = useCallback(
@@ -211,7 +208,7 @@ export function VirtualizedGrid<T = any>({
   const Cell = useCallback(
     ({ columnIndex, rowIndex, style }: any) => {
       const index = rowIndex * columnCount + columnIndex;
-      
+
       if (index >= items.length) {
         return null;
       }
@@ -243,7 +240,7 @@ export function VirtualizedGrid<T = any>({
       <AutoSizer>
         {({ height, width }) => {
           const calculatedColumnWidth = columnWidth || width / columnCount;
-          
+
           return (
             <FixedSizeGrid
               height={height}
@@ -320,7 +317,7 @@ export function VirtualizedTable<T = any>({
           )}
           onClick={() => onRowClick?.(item, index)}
         >
-          {columns.map((column) => (
+          {columns.map(column => (
             <div
               key={column.key}
               className={cn('px-4 py-2 truncate', column.className)}
@@ -344,7 +341,7 @@ export function VirtualizedTable<T = any>({
         )}
         style={{ height: headerHeight }}
       >
-        {columns.map((column) => (
+        {columns.map(column => (
           <div
             key={column.key}
             className={cn('px-4 py-2 truncate', column.className)}

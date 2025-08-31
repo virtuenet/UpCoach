@@ -49,12 +49,11 @@ const Popover = ({ trigger, children, open, onOpenChange }: PopoverProps) => {
   );
 };
 
-const PopoverContent = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn('grid gap-4', className)} {...props} />
-));
+const PopoverContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn('grid gap-4', className)} {...props} />
+  )
+);
 PopoverContent.displayName = 'PopoverContent';
 
 // Export PopoverTrigger as a compatibility alias (not actually needed in this implementation)

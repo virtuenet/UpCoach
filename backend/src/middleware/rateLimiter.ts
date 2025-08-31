@@ -39,7 +39,7 @@ export const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   // Use fingerprinting for better bot detection
-  keyGenerator: (req) => generateRequestFingerprint(req),
+  keyGenerator: req => generateRequestFingerprint(req),
   handler: (req: Request, _res: Response) => {
     logger.error('Auth rate limit exceeded', {
       ip: req.ip,
@@ -118,12 +118,9 @@ function generateRequestFingerprint(req: Request): string {
     req.get('accept-encoding') || '',
     req.get('sec-ch-ua') || '', // Browser client hints
   ];
-  
+
   // Create hash of combined components
-  return crypto
-    .createHash('sha256')
-    .update(components.join('|'))
-    .digest('hex');
+  return crypto.createHash('sha256').update(components.join('|')).digest('hex');
 }
 
 /**
@@ -144,13 +141,13 @@ export function createRateLimiter(options: {
     standardHeaders: true,
     legacyHeaders: false,
     // Use fingerprint if enabled, otherwise use IP
-    keyGenerator: options.useFingerprint 
-      ? (req) => generateRequestFingerprint(req)
-      : undefined, // Uses default IP-based key
+    keyGenerator: options.useFingerprint ? req => generateRequestFingerprint(req) : undefined, // Uses default IP-based key
     handler: (req: Request, _res: Response) => {
       logger.warn('Custom rate limit exceeded', {
         ip: req.ip,
-        fingerprint: options.useFingerprint ? generateRequestFingerprint(req).substring(0, 10) : undefined,
+        fingerprint: options.useFingerprint
+          ? generateRequestFingerprint(req).substring(0, 10)
+          : undefined,
         path: req.path,
         limit: options.max,
         window: options.windowMs,

@@ -1,3 +1,5 @@
+import { GlobalErrorBoundary, AsyncErrorBoundary } from './components/ErrorBoundary';
+import { FolderOpen, ExpandMore } from '@mui/icons-material';
 /**
  * Enhanced Error Boundary Component
  * Comprehensive error handling with recovery strategies
@@ -35,7 +37,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
-    
+
     this.state = {
       hasError: false,
       error: null,
@@ -44,7 +46,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
       showDetails: false,
       isRecovering: false,
     };
-    
+
     if (props.resetKeys) {
       this.previousResetKeys = props.resetKeys;
     }
@@ -63,7 +65,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const { onError, level = 'component' } = this.props;
-    
+
     // Log error
     logger.error(`Error in ${level}`, {
       error: error.message,
@@ -97,18 +99,16 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
   componentDidUpdate(prevProps: Props) {
     const { resetKeys, resetOnPropsChange } = this.props;
     const { hasError } = this.state;
-    
+
     // Reset on prop changes if enabled
     if (hasError && resetOnPropsChange && prevProps.children !== this.props.children) {
       this.resetErrorBoundary();
     }
-    
+
     // Reset on resetKeys change
     if (resetKeys && prevProps.resetKeys) {
-      const hasResetKeyChanged = resetKeys.some(
-        (key, idx) => key !== this.previousResetKeys[idx]
-      );
-      
+      const hasResetKeyChanged = resetKeys.some((key, idx) => key !== this.previousResetKeys[idx]);
+
       if (hasResetKeyChanged) {
         this.resetErrorBoundary();
         this.previousResetKeys = resetKeys;
@@ -134,7 +134,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
       clearTimeout(this.resetTimeoutId);
       this.resetTimeoutId = null;
     }
-    
+
     this.setState({
       hasError: false,
       error: null,
@@ -150,9 +150,9 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
 
   handleReport = () => {
     const { error, errorInfo } = this.state;
-    
+
     if (!error) return;
-    
+
     // Create error report
     const report = {
       message: error.message,
@@ -162,10 +162,10 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
       userAgent: navigator.userAgent,
       timestamp: new Date().toISOString(),
     };
-    
+
     // Log report
     logger.error('Error report generated', report);
-    
+
     // Send to backend
     fetch('/api/error-report', {
       method: 'POST',
@@ -174,26 +174,20 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
     }).catch(err => {
       logger.error('Failed to send error report', err);
     });
-    
+
     alert('Error report has been sent. Thank you for your feedback!');
   };
 
   renderErrorFallback() {
-    const { 
-      fallback, 
-      level = 'component', 
+    const {
+      fallback,
+      level = 'component',
       isolate = false,
       showDetails: showDetailsProp = true,
       enableReport = true,
     } = this.props;
-    
-    const { 
-      error, 
-      errorInfo, 
-      errorCount, 
-      showDetails, 
-      isRecovering 
-    } = this.state;
+
+    const { error, errorInfo, errorCount, showDetails, isRecovering } = this.state;
 
     if (fallback) {
       return <>{fallback}</>;
@@ -203,7 +197,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
     const isSectionLevel = level === 'section';
 
     return (
-      <div 
+      <div
         className={`
           flex flex-col items-center justify-center
           ${isPageLevel ? 'min-h-screen' : isSectionLevel ? 'min-h-[400px]' : 'min-h-[200px]'}
@@ -239,9 +233,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
 
           {/* Error count warning */}
           {errorCount > 1 && (
-            <p className="text-sm text-amber-600">
-              This error has occurred {errorCount} times
-            </p>
+            <p className="text-sm text-amber-600">This error has occurred {errorCount} times</p>
           )}
 
           {/* Actions */}
@@ -256,7 +248,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
 
             {isPageLevel && (
               <button
-                onClick={() => window.location.href = '/'}
+                onClick={() => (window.location.href = '/')}
                 className="inline-flex items-center justify-center px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors"
               >
                 <Home className="h-4 w-4 mr-2" />
@@ -298,13 +290,13 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
           {showDetails && error && (
             <div className="mt-4 p-4 bg-muted rounded-lg text-left">
               <h3 className="font-semibold mb-2 text-sm">Error Details</h3>
-              
+
               <div className="space-y-2 text-xs font-mono">
                 <div>
                   <span className="text-muted-foreground">Message:</span>
                   <p className="mt-1 break-all">{error.message}</p>
                 </div>
-                
+
                 {error.stack && (
                   <div>
                     <span className="text-muted-foreground">Stack Trace:</span>
@@ -313,7 +305,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
                     </pre>
                   </div>
                 )}
-                
+
                 {errorInfo?.componentStack && (
                   <div>
                     <span className="text-muted-foreground">Component Stack:</span>
@@ -360,10 +352,10 @@ export function useErrorHandler() {
 /**
  * Async Error Boundary for handling promise rejections
  */
-export function AsyncErrorBoundary({ 
+export function AsyncErrorBoundary({
   children,
   fallback,
-}: { 
+}: {
   children: ReactNode;
   fallback?: ReactNode;
 }) {
@@ -383,10 +375,7 @@ export function AsyncErrorBoundary({
 
   if (error) {
     return (
-      <EnhancedErrorBoundary
-        fallback={fallback}
-        onError={() => setError(null)}
-      >
+      <EnhancedErrorBoundary fallback={fallback} onError={() => setError(null)}>
         {children}
       </EnhancedErrorBoundary>
     );
@@ -398,10 +387,10 @@ export function AsyncErrorBoundary({
 /**
  * Network Error Boundary for handling fetch failures
  */
-export function NetworkErrorBoundary({ 
+export function NetworkErrorBoundary({
   children,
   onRetry,
-}: { 
+}: {
   children: ReactNode;
   onRetry?: () => void;
 }) {
@@ -449,22 +438,18 @@ export function NetworkErrorBoundary({
 /**
  * Suspense Error Boundary wrapper
  */
-export function SuspenseErrorBoundary({ 
+export function SuspenseErrorBoundary({
   children,
   fallback,
   errorFallback,
-}: { 
+}: {
   children: ReactNode;
   fallback?: ReactNode;
   errorFallback?: ReactNode;
 }) {
   return (
     <EnhancedErrorBoundary fallback={errorFallback}>
-      <React.Suspense 
-        fallback={fallback || <div>Loading...</div>}
-      >
-        {children}
-      </React.Suspense>
+      <React.Suspense fallback={fallback || <div>Loading...</div>}>{children}</React.Suspense>
     </EnhancedErrorBoundary>
   );
 }

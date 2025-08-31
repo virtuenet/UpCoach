@@ -47,7 +47,11 @@ router.post('/tags/merge', requireRole(['admin']), ContentTagController.merge);
 // Media management
 router.get('/media', MediaController.getAll);
 router.post('/media/upload', MediaController.uploadSingle, MediaController.processUpload);
-router.post('/media/upload-multiple', MediaController.uploadMultiple, MediaController.processMultipleUploads);
+router.post(
+  '/media/upload-multiple',
+  MediaController.uploadMultiple,
+  MediaController.processMultipleUploads
+);
 router.put('/media/:id', MediaController.update);
 router.delete('/media/:id', MediaController.delete);
 router.get('/media/stats', MediaController.getStats);

@@ -1,5 +1,5 @@
 import { DataTypes, Model, Optional, Op, QueryTypes } from 'sequelize';
-import { sequelize } from '../index';
+import { sequelize } from '../../config/sequelize';
 
 // ContentAnalytics interface
 export interface ContentAnalyticsAttributes {
@@ -28,12 +28,17 @@ export interface ContentAnalyticsAttributes {
 }
 
 // Optional fields for creation
-export interface ContentAnalyticsCreationAttributes extends Optional<ContentAnalyticsAttributes, 
-  'id' | 'userId' | 'metadata' | 'ipAddress' | 'createdAt'
-> {}
+export interface ContentAnalyticsCreationAttributes
+  extends Optional<
+    ContentAnalyticsAttributes,
+    'id' | 'userId' | 'metadata' | 'ipAddress' | 'createdAt'
+  > {}
 
 // ContentAnalytics model class
-export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentAnalyticsCreationAttributes> implements ContentAnalyticsAttributes {
+export class ContentAnalytics
+  extends Model<ContentAnalyticsAttributes, ContentAnalyticsCreationAttributes>
+  implements ContentAnalyticsAttributes
+{
   public id!: string;
   public contentType!: 'article' | 'course';
   public contentId!: string;
@@ -46,7 +51,11 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
   declare readonly createdAt: Date;
 
   // Static methods for analytics
-  static async getContentViews(contentType: string, contentId: string, timeframe: 'day' | 'week' | 'month' = 'week'): Promise<number> {
+  static async getContentViews(
+    contentType: string,
+    contentId: string,
+    timeframe: 'day' | 'week' | 'month' = 'week'
+  ): Promise<number> {
     const startDate = new Date();
     if (timeframe === 'day') {
       startDate.setDate(startDate.getDate() - 1);
@@ -61,13 +70,14 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
         contentType,
         contentId,
         event: 'view',
-        timestamp: { [Op.gte]: startDate }
-      }
+        timestamp: { [Op.gte]: startDate },
+      },
     });
   }
 
   static async getPopularContent(contentType: string, limit: number = 10): Promise<any[]> {
-    const result = await sequelize.query(`
+    const result = await sequelize.query(
+      `
       SELECT 
         content_id,
         COUNT(*) as view_count,
@@ -82,10 +92,12 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
       GROUP BY content_id
       ORDER BY view_count DESC
       LIMIT :limit
-    `, {
-      replacements: { contentType, limit },
-      type: QueryTypes.SELECT,
-    });
+    `,
+      {
+        replacements: { contentType, limit },
+        type: QueryTypes.SELECT,
+      }
+    );
 
     return result as any[];
   }
@@ -118,15 +130,15 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
           stats.totalReadTime += record.metadata.readTime;
         }
       }
-      
+
       if (record.event === 'read' && record.contentType === 'article') {
         stats.articlesRead++;
       }
-      
+
       if (record.event === 'view' && record.contentType === 'course') {
         stats.coursesStarted++;
       }
-      
+
       if (record.event === 'complete' && record.contentType === 'course') {
         stats.coursesCompleted++;
       }
@@ -135,7 +147,10 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
     return stats;
   }
 
-  static async getContentPerformance(contentType: string, contentId: string): Promise<{
+  static async getContentPerformance(
+    contentType: string,
+    contentId: string
+  ): Promise<{
     totalViews: number;
     uniqueUsers: number;
     averageReadTime: number;
@@ -154,19 +169,19 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
     const uniqueUsers = new Set(analytics.filter(a => a.userId).map((a: any) => a.userId)).size;
     const views = analytics.filter((a: any) => a.event === 'view');
     const completes = analytics.filter((a: any) => a.event === 'complete');
-    
+
     const readTimes = analytics
       .filter((a: any) => a.metadata?.readTime)
       .map((a: any) => a.metadata.readTime);
-    
+
     const referrers = analytics
       .filter((a: any) => a.metadata?.referrer)
       .map((a: any) => a.metadata.referrer);
-    
+
     const devices = analytics
       .filter((a: any) => a.metadata?.deviceType)
       .map((a: any) => a.metadata.deviceType);
-    
+
     const locations = analytics
       .filter((a: any) => a.metadata?.location?.country)
       .map((a: any) => a.metadata.location.country);
@@ -174,7 +189,10 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
     return {
       totalViews: views.length,
       uniqueUsers,
-      averageReadTime: readTimes.length > 0 ? readTimes.reduce((sum, time) => sum + time, 0) / readTimes.length : 0,
+      averageReadTime:
+        readTimes.length > 0
+          ? readTimes.reduce((sum, time) => sum + time, 0) / readTimes.length
+          : 0,
       completionRate: views.length > 0 ? (completes.length / views.length) * 100 : 0,
       engagementScore: this.calculateEngagementScore(analytics),
       topReferrers: this.getTopItems(referrers, 5),
@@ -187,7 +205,8 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
-    const result = await sequelize.query(`
+    const result = await sequelize.query(
+      `
       SELECT 
         content_type,
         content_id,
@@ -206,10 +225,12 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
       HAVING COUNT(*) >= 5
       ORDER BY growth_factor DESC, recent_views DESC
       LIMIT 20
-    `, {
-      replacements: { startDate },
-      type: QueryTypes.SELECT,
-    });
+    `,
+      {
+        replacements: { startDate },
+        type: QueryTypes.SELECT,
+      }
+    );
 
     return result as any[];
   }
@@ -223,7 +244,7 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
   }> {
     const startDate = new Date();
     const previousPeriodStart = new Date();
-    
+
     if (timeframe === 'day') {
       startDate.setDate(startDate.getDate() - 1);
       previousPeriodStart.setDate(previousPeriodStart.getDate() - 2);
@@ -241,9 +262,11 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
       this.getPopularContent('article', 5),
     ]);
 
-    const userGrowth = previousPeriod.uniqueUsers > 0 
-      ? ((currentPeriod.uniqueUsers - previousPeriod.uniqueUsers) / previousPeriod.uniqueUsers) * 100 
-      : 0;
+    const userGrowth =
+      previousPeriod.uniqueUsers > 0
+        ? ((currentPeriod.uniqueUsers - previousPeriod.uniqueUsers) / previousPeriod.uniqueUsers) *
+          100
+        : 0;
 
     return {
       totalViews: currentPeriod.totalViews,
@@ -254,7 +277,10 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
     };
   }
 
-  private static async getPeriodStats(startDate: Date, endDate: Date): Promise<{
+  private static async getPeriodStats(
+    startDate: Date,
+    endDate: Date
+  ): Promise<{
     totalViews: number;
     uniqueUsers: number;
     averageSessionDuration: number;
@@ -265,7 +291,7 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
         timestamp: {
           [Op.gte]: startDate,
           [Op.lt]: endDate,
-        }
+        },
       },
       attributes: ['userId', 'sessionId', 'metadata'],
       raw: true,
@@ -279,9 +305,10 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
     return {
       totalViews: analytics.length,
       uniqueUsers,
-      averageSessionDuration: sessionDurations.length > 0 
-        ? sessionDurations.reduce((sum, duration) => sum + duration, 0) / sessionDurations.length 
-        : 0,
+      averageSessionDuration:
+        sessionDurations.length > 0
+          ? sessionDurations.reduce((sum, duration) => sum + duration, 0) / sessionDurations.length
+          : 0,
     };
   }
 
@@ -312,10 +339,13 @@ export class ContentAnalytics extends Model<ContentAnalyticsAttributes, ContentA
   }
 
   private static getItemCounts(items: string[]): { [key: string]: number } {
-    return items.reduce((counts, item) => {
-      counts[item] = (counts[item] || 0) + 1;
-      return counts;
-    }, {} as { [key: string]: number });
+    return items.reduce(
+      (counts, item) => {
+        counts[item] = (counts[item] || 0) + 1;
+        return counts;
+      },
+      {} as { [key: string]: number }
+    );
   }
 }
 
@@ -403,4 +433,4 @@ ContentAnalytics.init(
   }
 );
 
-export default ContentAnalytics; 
+export default ContentAnalytics;

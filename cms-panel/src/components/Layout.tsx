@@ -1,24 +1,24 @@
-import { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { 
-  Home, 
-  FileText, 
-  BarChart3, 
-  Settings, 
-  Menu, 
-  X, 
+import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import {
+  Home,
+  FileText,
+  BarChart3,
+  Settings,
+  Menu,
+  X,
   LogOut,
   Users,
   Image,
-  BookOpen
-} from 'lucide-react'
-import { useAuthStore } from '../stores/authStore'
+  BookOpen,
+} from 'lucide-react';
+import { useAuthStore } from '../stores/authStore';
 
 interface SidebarLinkProps {
-  to: string
-  icon: React.ComponentType<any>
-  children: React.ReactNode
-  isActive?: boolean
+  to: string;
+  icon: React.ComponentType<any>;
+  children: React.ReactNode;
+  isActive?: boolean;
 }
 
 const SidebarLink = ({ to, icon: Icon, children, isActive }: SidebarLinkProps) => (
@@ -37,12 +37,12 @@ const SidebarLink = ({ to, icon: Icon, children, isActive }: SidebarLinkProps) =
     />
     {children}
   </Link>
-)
+);
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const location = useLocation()
-  const { user, logout } = useAuthStore()
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+  const { user, logout } = useAuthStore();
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
@@ -51,17 +51,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { name: 'Media Library', href: '/media', icon: Image },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
     { name: 'Settings', href: '/settings', icon: Settings },
-  ]
+  ];
 
   const handleLogout = () => {
-    logout()
-  }
+    logout();
+  };
 
   return (
     <div className="h-screen flex overflow-hidden bg-gray-100">
       {/* Mobile sidebar */}
       <div className={`fixed inset-0 flex z-40 md:hidden ${sidebarOpen ? '' : 'hidden'}`}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 bg-gray-600 bg-opacity-75"
+          onClick={() => setSidebarOpen(false)}
+        />
         <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
           <div className="absolute top-0 right-0 -mr-12 pt-2">
             <button
@@ -81,13 +84,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </div>
             </div>
             <nav className="mt-5 px-2 space-y-1">
-              {navigation.map((item) => (
+              {navigation.map(item => (
                 <SidebarLink
                   key={item.name}
                   to={item.href}
                   icon={item.icon}
-                  isActive={location.pathname === item.href || 
-                           (item.href === '/dashboard' && location.pathname === '/')}
+                  isActive={
+                    location.pathname === item.href ||
+                    (item.href === '/dashboard' && location.pathname === '/')
+                  }
                 >
                   {item.name}
                 </SidebarLink>
@@ -130,13 +135,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
               <nav className="mt-5 flex-1 px-2 space-y-1">
-                {navigation.map((item) => (
+                {navigation.map(item => (
                   <SidebarLink
                     key={item.name}
                     to={item.href}
                     icon={item.icon}
-                    isActive={location.pathname === item.href || 
-                             (item.href === '/dashboard' && location.pathname === '/')}
+                    isActive={
+                      location.pathname === item.href ||
+                      (item.href === '/dashboard' && location.pathname === '/')
+                    }
                   >
                     {item.name}
                   </SidebarLink>
@@ -178,12 +185,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
         <main className="flex-1 relative z-0 overflow-y-auto focus:outline-none">
           <div className="py-6">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-              {children}
-            </div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">{children}</div>
           </div>
         </main>
       </div>
     </div>
-  )
-} 
+  );
+}

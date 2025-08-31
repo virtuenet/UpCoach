@@ -106,10 +106,10 @@ export class EnterpriseController {
     const organization = await this.organizationService.getOrganizationById(
       parseInt(organizationId)
     );
-    
+
     // Get inviter details
     const inviter = await this.teamService.getUserById(parseInt(invitedBy as string));
-    
+
     // Send invitation email
     await emailService.send({
       to: email,
@@ -118,8 +118,8 @@ export class EnterpriseController {
       data: {
         organizationName: organization!.name,
         inviterName: inviter.fullName || inviter.email,
-        invitationToken: token
-      }
+        invitationToken: token,
+      },
     });
 
     const inviteUrl = `${process.env.FRONTEND_URL}/accept-invite?token=${token}`;
@@ -196,9 +196,7 @@ export class EnterpriseController {
   getTeams = catchAsync(async (req: Request, _res: Response) => {
     const { organizationId } = req.params;
 
-    const teams = await this.teamService.getOrganizationTeams(
-      parseInt(organizationId)
-    );
+    const teams = await this.teamService.getOrganizationTeams(parseInt(organizationId));
 
     _res.json({
       success: true,
@@ -227,10 +225,7 @@ export class EnterpriseController {
   removeTeamMember = catchAsync(async (req: Request, _res: Response) => {
     const { teamId, userId } = req.params;
 
-    await this.teamService.removeTeamMember(
-      parseInt(teamId as string),
-      parseInt(userId)
-    );
+    await this.teamService.removeTeamMember(parseInt(teamId as string), parseInt(userId));
 
     _res.json({
       success: true,
@@ -260,9 +255,7 @@ export class EnterpriseController {
   getSSOProviders = catchAsync(async (req: Request, _res: Response) => {
     const { organizationId } = req.params;
 
-    const providers = await this.ssoService.getOrganizationSSOProviders(
-      parseInt(organizationId)
-    );
+    const providers = await this.ssoService.getOrganizationSSOProviders(parseInt(organizationId));
 
     _res.json({
       success: true,
@@ -314,7 +307,7 @@ export class EnterpriseController {
     // Retrieve code verifier from session using state
     const { sessionStore } = require('../services/enterprise/SessionStore');
     const codeVerifier = await sessionStore.getCodeVerifier(state as string);
-    
+
     if (!codeVerifier) {
       throw new AppError('Invalid or expired state parameter', 400);
     }
@@ -324,7 +317,7 @@ export class EnterpriseController {
       code as string,
       codeVerifier
     );
-    
+
     // Clean up session
     await sessionStore.deleteSession(state as string);
 
@@ -340,7 +333,7 @@ export class EnterpriseController {
 
     if (sessionId) {
       const logoutUrl = await this.ssoService.initiateSSOLogout(sessionId);
-      
+
       if (logoutUrl) {
         return _res.json({
           success: true,
@@ -380,9 +373,7 @@ export class EnterpriseController {
   getPolicies = catchAsync(async (req: Request, _res: Response) => {
     const { organizationId } = req.params;
 
-    const policies = await this.teamService.getOrganizationPolicies(
-      parseInt(organizationId)
-    );
+    const policies = await this.teamService.getOrganizationPolicies(parseInt(organizationId));
 
     _res.json({
       success: true,
@@ -395,17 +386,14 @@ export class EnterpriseController {
     const { organizationId } = req.params;
     const { page, limit, action, userId, startDate, endDate } = req.query;
 
-    const logs = await this.teamService.getAuditLogs(
-      parseInt(organizationId as string),
-      {
-        page: page ? parseInt(page as string) : 1,
-        limit: limit ? parseInt(limit as string) : 50,
-        action: action as string,
-        userId: userId ? parseInt(userId as string) : undefined,
-        startDate: startDate as string,
-        endDate: endDate as string,
-      }
-    );
+    const logs = await this.teamService.getAuditLogs(parseInt(organizationId as string), {
+      page: page ? parseInt(page as string) : 1,
+      limit: limit ? parseInt(limit as string) : 50,
+      action: action as string,
+      userId: userId ? parseInt(userId as string) : undefined,
+      startDate: startDate as string,
+      endDate: endDate as string,
+    });
 
     _res.json({
       success: true,
@@ -416,7 +404,7 @@ export class EnterpriseController {
   // Utility methods
   private generateJWT(userId: number, sessionId: string): string {
     const jwt = require('jsonwebtoken');
-    
+
     const payload = {
       userId,
       sessionId,

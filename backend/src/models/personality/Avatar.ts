@@ -1,5 +1,5 @@
 import { DataTypes, Model, Optional } from 'sequelize';
-import { sequelize } from '../index';
+import { sequelize } from '../../config/sequelize';
 
 export interface AvatarPersonality {
   recommendedFor: {
@@ -70,7 +70,7 @@ export interface AvatarAttributes {
   updatedAt: Date;
 }
 
-interface AvatarCreationAttributes 
+interface AvatarCreationAttributes
   extends Optional<AvatarAttributes, 'id' | 'createdAt' | 'updatedAt' | 'isActive' | 'sortOrder'> {}
 
 class Avatar extends Model<AvatarAttributes, AvatarCreationAttributes> implements AvatarAttributes {
@@ -167,7 +167,10 @@ class Avatar extends Model<AvatarAttributes, AvatarCreationAttributes> implement
   static async getActiveAvatars(): Promise<Avatar[]> {
     return this.findAll({
       where: { isActive: true },
-      order: [['sortOrder', 'ASC'], ['name', 'ASC']],
+      order: [
+        ['sortOrder', 'ASC'],
+        ['name', 'ASC'],
+      ],
     });
   }
 
@@ -176,7 +179,7 @@ class Avatar extends Model<AvatarAttributes, AvatarCreationAttributes> implement
     limit: number = 3
   ): Promise<{ avatar: Avatar; compatibilityScore: number }[]> {
     const avatars = await this.getActiveAvatars();
-    
+
     const recommendations = avatars.map(avatar => ({
       avatar,
       compatibilityScore: avatar.calculateCompatibilityScore(traits),
@@ -193,18 +196,18 @@ class Avatar extends Model<AvatarAttributes, AvatarCreationAttributes> implement
     discProfile?: string
   ): Promise<Avatar[]> {
     const avatars = await this.getActiveAvatars();
-    
+
     return avatars.filter(avatar => {
       // Check MBTI compatibility
       if (mbtiType && !avatar.isCompatibleWithMBTI(mbtiType)) {
         return false;
       }
-      
+
       // Check DISC compatibility
       if (discProfile && !avatar.isCompatibleWithDISC(discProfile)) {
         return false;
       }
-      
+
       // Check trait compatibility (minimum score threshold)
       const compatibilityScore = avatar.calculateCompatibilityScore(traits);
       return compatibilityScore >= 60; // 60% compatibility threshold
@@ -225,7 +228,8 @@ class Avatar extends Model<AvatarAttributes, AvatarCreationAttributes> implement
     const defaultAvatars = [
       {
         name: 'Alex the Energetic Mentor',
-        description: 'An enthusiastic and motivating coach who loves to celebrate your wins and push you towards your goals.',
+        description:
+          'An enthusiastic and motivating coach who loves to celebrate your wins and push you towards your goals.',
         category: 'mentor' as const,
         personality: {
           recommendedFor: {
@@ -271,7 +275,7 @@ class Avatar extends Model<AvatarAttributes, AvatarCreationAttributes> implement
         },
         behavior: {
           greetingStyle: [
-            "Hey there, champion! Ready to conquer the day?",
+            'Hey there, champion! Ready to conquer the day?',
             "What's up, superstar? Let's make some magic happen!",
             "Hello, my friend! I'm excited to see what we'll achieve today!",
           ],
@@ -282,13 +286,13 @@ class Avatar extends Model<AvatarAttributes, AvatarCreationAttributes> implement
           ],
           questioningApproach: [
             "What's one thing that would make today absolutely amazing?",
-            "How can we turn this challenge into your greatest opportunity?",
-            "What would success look like for you right now?",
+            'How can we turn this challenge into your greatest opportunity?',
+            'What would success look like for you right now?',
           ],
           celebrationStyle: [
             "🎉 BOOM! You just crushed it! That's what I'm talking about!",
             "YES! Another victory in the books! You're unstoppable!",
-            "Incredible! Look at you making dreams happen!",
+            'Incredible! Look at you making dreams happen!',
           ],
           supportiveResponses: [
             "I hear you, and that sounds really challenging. Let's figure this out together.",
@@ -309,7 +313,8 @@ class Avatar extends Model<AvatarAttributes, AvatarCreationAttributes> implement
       },
       {
         name: 'Sam the Wise Guide',
-        description: 'A thoughtful and analytical coach who helps you think deeply and make well-informed decisions.',
+        description:
+          'A thoughtful and analytical coach who helps you think deeply and make well-informed decisions.',
         category: 'guide' as const,
         personality: {
           recommendedFor: {
@@ -356,33 +361,33 @@ class Avatar extends Model<AvatarAttributes, AvatarCreationAttributes> implement
         behavior: {
           greetingStyle: [
             "Hello there. I'm glad you're here. What's on your mind today?",
-            "Good to see you. Take a moment to settle in. What would you like to explore?",
-            "Welcome. I sense you have something important to work through today.",
+            'Good to see you. Take a moment to settle in. What would you like to explore?',
+            'Welcome. I sense you have something important to work through today.',
           ],
           encouragementPhrases: [
             "That's a really thoughtful insight. You're growing in wisdom.",
             "I can see you're putting in the deep work. That takes courage.",
-            "Your reflection shows real maturity. Keep exploring that thought.",
+            'Your reflection shows real maturity. Keep exploring that thought.',
           ],
           questioningApproach: [
-            "What patterns do you notice when you step back and observe?",
-            "If you imagine yourself five years from now, what would that person advise?",
+            'What patterns do you notice when you step back and observe?',
+            'If you imagine yourself five years from now, what would that person advise?',
             "What's the deeper question underneath this challenge?",
           ],
           celebrationStyle: [
-            "This is a meaningful breakthrough. Honor this moment of growth.",
+            'This is a meaningful breakthrough. Honor this moment of growth.',
             "You've gained real wisdom here. That's something to treasure.",
             "The clarity you've found is beautiful. Well done on this inner work.",
           ],
           supportiveResponses: [
             "That sounds like a complex situation with many layers. Let's unpack it slowly.",
-            "I can sense the weight of this decision. What values want to guide you here?",
+            'I can sense the weight of this decision. What values want to guide you here?',
             "Sometimes the path forward isn't clear immediately, and that's okay.",
           ],
           challengingPrompts: [
             "I wonder if there's another perspective we haven't considered yet?",
-            "What would happen if you questioned that assumption?",
-            "Is there a part of this story you might be avoiding?",
+            'What would happen if you questioned that assumption?',
+            'Is there a part of this story you might be avoiding?',
           ],
         },
         isActive: true,
@@ -393,7 +398,8 @@ class Avatar extends Model<AvatarAttributes, AvatarCreationAttributes> implement
       },
       {
         name: 'Riley the Supportive Friend',
-        description: 'A warm and empathetic companion who creates a safe space for you to share and grow.',
+        description:
+          'A warm and empathetic companion who creates a safe space for you to share and grow.',
         category: 'friend' as const,
         personality: {
           recommendedFor: {
@@ -441,22 +447,22 @@ class Avatar extends Model<AvatarAttributes, AvatarCreationAttributes> implement
           greetingStyle: [
             "Hi honey, how are you feeling today? I'm here for you.",
             "Hey there, beautiful soul. What's in your heart right now?",
-            "Hello, my dear friend. I can sense you might need some support today.",
+            'Hello, my dear friend. I can sense you might need some support today.',
           ],
           encouragementPhrases: [
             "You're being so brave by facing this. I'm proud of you.",
-            "Your heart is in the right place. Trust yourself.",
+            'Your heart is in the right place. Trust yourself.',
             "It's okay to feel whatever you're feeling. You're safe here.",
           ],
           questioningApproach: [
-            "How does your heart feel about this situation?",
-            "What do you need most from yourself right now?",
-            "If your best friend were going through this, what would you tell them?",
+            'How does your heart feel about this situation?',
+            'What do you need most from yourself right now?',
+            'If your best friend were going through this, what would you tell them?',
           ],
           celebrationStyle: [
-            "Oh, this makes my heart so happy! You deserve all this goodness!",
+            'Oh, this makes my heart so happy! You deserve all this goodness!',
             "I'm literally beaming with pride for you right now! 💕",
-            "Your growth is so beautiful to witness. Celebrate yourself!",
+            'Your growth is so beautiful to witness. Celebrate yourself!',
           ],
           supportiveResponses: [
             "I'm holding space for you right now. You don't have to carry this alone.",
@@ -464,9 +470,9 @@ class Avatar extends Model<AvatarAttributes, AvatarCreationAttributes> implement
             "You're allowed to struggle. You're allowed to not be okay. I'm here.",
           ],
           challengingPrompts: [
-            "I believe in you so much. What would self-love look like here?",
+            'I believe in you so much. What would self-love look like here?',
             "You're stronger than you know. What would courage whisper to you?",
-            "What would honoring your authentic self mean in this moment?",
+            'What would honoring your authentic self mean in this moment?',
           ],
         },
         isActive: true,
@@ -568,4 +574,4 @@ Avatar.init(
   }
 );
 
-export { Avatar }; 
+export { Avatar };

@@ -11,14 +11,14 @@ console.log('🔍 Validating Clerk test files...\n');
 const testFiles = [
   'tests/e2e/specs/clerk-auth.spec.js',
   'tests/e2e/specs/clerk-auth-utils-demo.spec.js',
-  'tests/e2e/utils/clerk-test-utils.js'
+  'tests/e2e/utils/clerk-test-utils.js',
 ];
 
 let allValid = true;
 
 testFiles.forEach(filePath => {
   console.log(`📄 Checking ${filePath}...`);
-  
+
   try {
     // Check if file exists
     if (!fs.existsSync(filePath)) {
@@ -26,26 +26,26 @@ testFiles.forEach(filePath => {
       allValid = false;
       return;
     }
-    
+
     // Read and basic syntax check
     const content = fs.readFileSync(filePath, 'utf8');
-    
+
     // Basic checks
     const checks = [
       {
         name: 'Has content',
-        test: content.length > 0
+        test: content.length > 0,
       },
       {
         name: 'No obvious syntax errors',
-        test: !content.includes('undefined') || content.includes('// undefined is expected')
+        test: !content.includes('undefined') || content.includes('// undefined is expected'),
       },
       {
         name: 'Contains test functions',
-        test: content.includes('test(') || content.includes('function')
-      }
+        test: content.includes('test(') || content.includes('function'),
+      },
     ];
-    
+
     checks.forEach(check => {
       if (check.test) {
         console.log(`   ✅ ${check.name}`);
@@ -53,7 +53,7 @@ testFiles.forEach(filePath => {
         console.log(`   ⚠️  ${check.name}`);
       }
     });
-    
+
     // Try to require the file for syntax validation
     if (filePath.endsWith('.js')) {
       try {
@@ -68,12 +68,11 @@ testFiles.forEach(filePath => {
         }
       }
     }
-    
   } catch (error) {
     console.log(`   ❌ Error reading file: ${error.message}`);
     allValid = false;
   }
-  
+
   console.log('');
 });
 
@@ -90,4 +89,4 @@ if (allValid) {
   console.log('Please fix the issues above before running tests');
 }
 
-process.exit(allValid ? 0 : 1); 
+process.exit(allValid ? 0 : 1);

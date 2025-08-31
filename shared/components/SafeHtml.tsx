@@ -27,16 +27,56 @@ export const SafeHtml: React.FC<SafeHtmlProps> = ({
     ? {
         // Relaxed mode: Allow more tags but still remove dangerous content
         ALLOWED_TAGS: [
-          'p', 'br', 'strong', 'em', 'u', 'i', 'b',
-          'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-          'ul', 'ol', 'li', 'blockquote', 'code', 'pre',
-          'a', 'img', 'table', 'thead', 'tbody', 'tr', 'td', 'th',
-          'div', 'span', 'article', 'section', 'nav', 'aside',
-          'header', 'footer', 'figure', 'figcaption',
+          'p',
+          'br',
+          'strong',
+          'em',
+          'u',
+          'i',
+          'b',
+          'h1',
+          'h2',
+          'h3',
+          'h4',
+          'h5',
+          'h6',
+          'ul',
+          'ol',
+          'li',
+          'blockquote',
+          'code',
+          'pre',
+          'a',
+          'img',
+          'table',
+          'thead',
+          'tbody',
+          'tr',
+          'td',
+          'th',
+          'div',
+          'span',
+          'article',
+          'section',
+          'nav',
+          'aside',
+          'header',
+          'footer',
+          'figure',
+          'figcaption',
         ],
         ALLOWED_ATTR: [
-          'href', 'target', 'rel', 'src', 'alt', 'title',
-          'class', 'id', 'style', 'width', 'height',
+          'href',
+          'target',
+          'rel',
+          'src',
+          'alt',
+          'title',
+          'class',
+          'id',
+          'style',
+          'width',
+          'height',
         ],
         ALLOW_DATA_ATTR: false,
         ALLOW_UNKNOWN_PROTOCOLS: false,
@@ -51,9 +91,25 @@ export const SafeHtml: React.FC<SafeHtmlProps> = ({
     : {
         // Strict mode: Only allow basic formatting tags
         ALLOWED_TAGS: allowedTags || [
-          'p', 'br', 'strong', 'em', 'u', 'i', 'b',
-          'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-          'ul', 'ol', 'li', 'blockquote', 'code', 'pre',
+          'p',
+          'br',
+          'strong',
+          'em',
+          'u',
+          'i',
+          'b',
+          'h1',
+          'h2',
+          'h3',
+          'h4',
+          'h5',
+          'h6',
+          'ul',
+          'ol',
+          'li',
+          'blockquote',
+          'code',
+          'pre',
         ],
         ALLOWED_ATTR: allowedAttributes || ['href', 'target', 'rel'],
         ALLOW_DATA_ATTR: false,
@@ -71,12 +127,7 @@ export const SafeHtml: React.FC<SafeHtmlProps> = ({
   // Additional check for javascript: protocol
   const finalSanitized = sanitized.replace(/javascript:/gi, '');
 
-  return (
-    <div
-      className={className}
-      dangerouslySetInnerHTML={{ __html: finalSanitized }}
-    />
-  );
+  return <div className={className} dangerouslySetInnerHTML={{ __html: finalSanitized }} />;
 };
 
 /**
@@ -94,18 +145,29 @@ export const useSanitizeHtml = () => {
     const config: DOMPurify.Config = options?.relaxed
       ? {
           ALLOWED_TAGS: options.allowedTags || [
-            'p', 'br', 'strong', 'em', 'u', 'i', 'b',
-            'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-            'ul', 'ol', 'li', 'a', 'img',
+            'p',
+            'br',
+            'strong',
+            'em',
+            'u',
+            'i',
+            'b',
+            'h1',
+            'h2',
+            'h3',
+            'h4',
+            'h5',
+            'h6',
+            'ul',
+            'ol',
+            'li',
+            'a',
+            'img',
           ],
-          ALLOWED_ATTR: options.allowedAttributes || [
-            'href', 'src', 'alt', 'title', 'class',
-          ],
+          ALLOWED_ATTR: options.allowedAttributes || ['href', 'src', 'alt', 'title', 'class'],
         }
       : {
-          ALLOWED_TAGS: options?.allowedTags || [
-            'p', 'br', 'strong', 'em', 'u', 'i', 'b',
-          ],
+          ALLOWED_TAGS: options?.allowedTags || ['p', 'br', 'strong', 'em', 'u', 'i', 'b'],
           ALLOWED_ATTR: options?.allowedAttributes || [],
         };
 
@@ -143,19 +205,19 @@ export const sanitizeForStorage = (input: string): string => {
 export const sanitizeUrl = (url: string): string => {
   // List of allowed protocols
   const allowedProtocols = ['http:', 'https:', 'mailto:'];
-  
+
   try {
     const parsed = new URL(url);
-    
+
     if (!allowedProtocols.includes(parsed.protocol)) {
       return '#'; // Return safe default for invalid protocols
     }
-    
+
     // Remove any javascript: or data: URLs
     if (parsed.protocol === 'javascript:' || parsed.protocol === 'data:') {
       return '#';
     }
-    
+
     return url;
   } catch {
     // If URL parsing fails, return safe default

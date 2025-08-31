@@ -6,7 +6,7 @@
 export enum CircuitState {
   CLOSED = 'CLOSED',
   OPEN = 'OPEN',
-  HALF_OPEN = 'HALF_OPEN'
+  HALF_OPEN = 'HALF_OPEN',
 }
 
 export interface CircuitBreakerOptions {
@@ -29,7 +29,7 @@ export class CircuitBreaker {
       failureThreshold: 5,
       resetTimeout: 60000, // 1 minute
       monitoringPeriod: 60000, // 1 minute
-      halfOpenRetries: 3
+      halfOpenRetries: 3,
     }
   ) {}
 
@@ -55,7 +55,7 @@ export class CircuitBreaker {
 
   private onSuccess(): void {
     this.failureCount = 0;
-    
+
     if (this.state === CircuitState.HALF_OPEN) {
       this.successCount++;
       if (this.successCount >= this.options.halfOpenRetries) {
@@ -100,7 +100,7 @@ export class CircuitBreaker {
       state: this.state,
       failureCount: this.failureCount,
       successCount: this.successCount,
-      lastFailureTime: this.lastFailureTime
+      lastFailureTime: this.lastFailureTime,
     };
   }
 }

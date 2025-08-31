@@ -1,5 +1,5 @@
 import { DataTypes, Model, Optional } from 'sequelize';
-import { sequelize } from '../index';
+import { sequelize } from '../../config/sequelize';
 
 export interface ExperimentAttributes {
   id: string;
@@ -47,9 +47,13 @@ export interface SegmentRule {
   value: any;
 }
 
-interface ExperimentCreationAttributes extends Optional<ExperimentAttributes, 'id' | 'createdAt' | 'updatedAt' | 'endDate'> {}
+interface ExperimentCreationAttributes
+  extends Optional<ExperimentAttributes, 'id' | 'createdAt' | 'updatedAt' | 'endDate'> {}
 
-class Experiment extends Model<ExperimentAttributes, ExperimentCreationAttributes> implements ExperimentAttributes {
+class Experiment
+  extends Model<ExperimentAttributes, ExperimentCreationAttributes>
+  implements ExperimentAttributes
+{
   public id!: string;
   public name!: string;
   public description!: string;
@@ -69,9 +73,9 @@ class Experiment extends Model<ExperimentAttributes, ExperimentCreationAttribute
   // Instance methods
   public isActive(): boolean {
     const now = new Date();
-    return this.status === 'active' && 
-           this.startDate <= now && 
-           (!this.endDate || this.endDate > now);
+    return (
+      this.status === 'active' && this.startDate <= now && (!this.endDate || this.endDate > now)
+    );
   }
 
   public getVariantByAllocation(hash: number): ExperimentVariant | null {
@@ -125,12 +129,12 @@ Experiment.init(
           if (!Array.isArray(value) || value.length < 2) {
             throw new Error('Experiment must have at least 2 variants');
           }
-          
+
           const controlVariants = value.filter(v => v.isControl);
           if (controlVariants.length !== 1) {
             throw new Error('Experiment must have exactly one control variant');
           }
-          
+
           const totalAllocation = value.reduce((sum, variant) => sum + variant.allocation, 0);
           if (Math.abs(totalAllocation - 100) > 0.01) {
             throw new Error('Variant allocations must sum to 100%');
@@ -172,7 +176,9 @@ Experiment.init(
       validate: {
         isValidCriteria(value: SuccessCriteria) {
           if (!value.primaryMetric || !value.minimumDetectableEffect || !value.confidenceLevel) {
-            throw new Error('Success criteria must include primaryMetric, minimumDetectableEffect, and confidenceLevel');
+            throw new Error(
+              'Success criteria must include primaryMetric, minimumDetectableEffect, and confidenceLevel'
+            );
           }
           if (value.confidenceLevel < 80 || value.confidenceLevel > 99) {
             throw new Error('Confidence level must be between 80 and 99');
@@ -215,4 +221,4 @@ Experiment.init(
   }
 );
 
-export { Experiment }; 
+export { Experiment };

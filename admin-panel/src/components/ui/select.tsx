@@ -1,7 +1,7 @@
 import React from 'react';
+import { FolderOpen, ExpandMore } from '@mui/icons-material';
 
-export interface SelectProps
-  extends React.SelectHTMLAttributes<HTMLSelectElement> {
+export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   options?: Array<{ value: string; label: string }>;
 }
 
@@ -18,7 +18,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           {...props}
         >
           {options
-            ? options.map((option) => (
+            ? options.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>

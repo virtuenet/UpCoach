@@ -5,7 +5,7 @@
 
 import * as React from 'react';
 import { useEffect } from 'react';
-import { useLocation, useNavigationType } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { createRoutesFromChildren, matchRoutes } from 'react-router';
 import * as Sentry from '@sentry/react';
 import { logger } from '../../utils/logger';
@@ -53,15 +53,15 @@ class SentryFrontendService {
         dsn: config.dsn,
         environment: config.environment,
         release: config.release || import.meta.env.VITE_APP_VERSION,
-        
+
         // Performance Monitoring
         integrations: [
-          Sentry.browserTracingIntegration(),
-          Sentry.captureConsoleIntegration({
+          new Sentry.BrowserTracing(),
+          new Sentry.CaptureConsole({
             levels: ['error', 'warn'],
           }),
           // Session Replay
-          Sentry.replayIntegration({
+          new Sentry.Replay({
             // Mask all text and inputs by default for privacy
             maskAllText: true,
             maskAllInputs: true,
@@ -72,22 +72,22 @@ class SentryFrontendService {
             errorSampleRate: config.replaysOnErrorSampleRate || 1.0,
           }),
         ],
-        
+
         // Performance sampling
         tracesSampleRate: config.tracesSampleRate || 0.1,
-        
+
         // Release Health
         autoSessionTracking: true,
-        
+
         // Debug mode
         debug: config.debug || false,
-        
+
         // Breadcrumb configuration
         beforeBreadcrumb: this.beforeBreadcrumb,
-        
+
         // Data scrubbing
         beforeSend: this.beforeSend,
-        
+
         // Ignore certain errors
         ignoreErrors: [
           // Browser extensions
@@ -102,7 +102,7 @@ class SentryFrontendService {
           'User cancelled',
           'User denied',
         ],
-        
+
         // Denied URLs
         denyUrls: [
           // Chrome extensions
@@ -214,7 +214,7 @@ class SentryFrontendService {
   ): React.ComponentType<any> {
     if (!this.initialized) {
       // Return a simple fallback if Sentry is not initialized
-      return ({ children }: { children: React.ReactNode }) => 
+      return ({ children }: { children: React.ReactNode }) =>
         React.createElement(React.Fragment, null, children);
     }
 
@@ -226,7 +226,7 @@ class SentryFrontendService {
    */
   startTransaction(name: string, op: string): any {
     if (!this.initialized) return null;
-    
+
     return Sentry.startTransaction({
       name,
       op,
@@ -239,16 +239,13 @@ class SentryFrontendService {
   /**
    * Measure async operation
    */
-  async measureAsync<T>(
-    name: string,
-    operation: () => Promise<T>
-  ): Promise<T> {
+  async measureAsync<T>(name: string, operation: () => Promise<T>): Promise<T> {
     if (!this.initialized) {
       return operation();
     }
 
     const transaction = this.startTransaction(name, 'async');
-    
+
     try {
       const result = await operation();
       transaction?.setStatus('ok');
@@ -330,7 +327,7 @@ class SentryFrontendService {
    */
   getRouterInstrumentation() {
     if (!this.initialized) return undefined;
-    
+
     return Sentry.reactRouterV6Instrumentation;
   }
 
@@ -342,7 +339,7 @@ class SentryFrontendService {
     errorBoundaryOptions?: Sentry.ErrorBoundaryOptions
   ): React.ComponentType<P> {
     if (!this.initialized) return Component;
-    
+
     return Sentry.withErrorBoundary(Component, errorBoundaryOptions);
   }
 
@@ -354,7 +351,7 @@ class SentryFrontendService {
     name?: string
   ): React.ComponentType<P> {
     if (!this.initialized) return Component;
-    
+
     return Sentry.withProfiler(Component, { name });
   }
 }
@@ -375,7 +372,7 @@ export function initializeSentry(config?: Partial<SentryFrontendConfig>) {
   };
 
   const finalConfig = { ...defaultConfig, ...config };
-  
+
   if (finalConfig.dsn) {
     sentryFrontend.initialize(finalConfig);
   } else {
@@ -390,10 +387,10 @@ export function initializeSentry(config?: Partial<SentryFrontendConfig>) {
  */
 export function useSentryPageTracking() {
   const location = useLocation();
-  
+
   useEffect(() => {
     if (!sentryFrontend) return;
-    
+
     sentryFrontend.addBreadcrumb({
       category: 'navigation',
       message: `Navigated to ${location.pathname}`,

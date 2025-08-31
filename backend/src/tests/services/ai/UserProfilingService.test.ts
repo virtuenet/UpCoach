@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import { UserProfilingService } from '../../../services/ai/UserProfilingService';
 import { UserProfile } from '../../../models/UserProfile';
 import { User } from '../../../models/User';
@@ -27,7 +29,7 @@ describe('UserProfilingService', () => {
     const mockUser = {
       id: mockUserId,
       email: 'test@example.com',
-      createdAt: new Date('2024-01-01')
+      createdAt: new Date('2024-01-01'),
     };
 
     beforeEach(() => {
@@ -36,13 +38,13 @@ describe('UserProfilingService', () => {
 
     it('should create a new profile if none exists', async () => {
       (UserProfile.findOne as jest.Mock).mockResolvedValue(null);
-      
+
       const mockProfile = {
         id: 'profile123',
         userId: mockUserId,
-        save: jest.fn()
+        save: jest.fn(),
       };
-      
+
       (UserProfile.create as jest.Mock).mockResolvedValue(mockProfile);
 
       await userProfilingService.createOrUpdateProfile(mockUserId);
@@ -52,7 +54,7 @@ describe('UserProfilingService', () => {
         expect.objectContaining({
           userId: mockUserId,
           learningStyle: 'balanced',
-          communicationPreference: 'balanced'
+          communicationPreference: 'balanced',
         })
       );
     });
@@ -63,13 +65,13 @@ describe('UserProfilingService', () => {
         userId: mockUserId,
         profileMetrics: {
           totalSessions: 5,
-          totalGoals: 2
+          totalGoals: 2,
         },
-        save: jest.fn()
+        save: jest.fn(),
       };
 
       (UserProfile.findOne as jest.Mock).mockResolvedValue(mockProfile);
-      
+
       // Mock metric calculations
       (Mood.count as jest.Mock).mockResolvedValue(10);
       (Goal.count as jest.Mock).mockResolvedValue(3);
@@ -89,32 +91,32 @@ describe('UserProfilingService', () => {
         id: 'profile123',
         userId: 'user123',
         behaviorPatterns: {},
-        save: jest.fn()
+        save: jest.fn(),
       };
 
       // Mock mood data
       (Mood.findAll as jest.Mock).mockResolvedValue([
         { moodValue: 8, createdAt: new Date('2024-01-01T08:00:00') },
         { moodValue: 7, createdAt: new Date('2024-01-02T09:00:00') },
-        { moodValue: 9, createdAt: new Date('2024-01-03T08:30:00') }
+        { moodValue: 9, createdAt: new Date('2024-01-03T08:30:00') },
       ]);
 
       // Mock goal data
       (Goal.findAll as jest.Mock).mockResolvedValue([
-        { 
+        {
           title: 'Exercise daily',
           category: 'health',
           status: 'active',
           progress: 75,
-          targetDate: new Date('2024-02-01')
+          targetDate: new Date('2024-02-01'),
         },
-        { 
+        {
           title: 'Learn Spanish',
           category: 'learning',
           status: 'completed',
           progress: 100,
-          targetDate: new Date('2024-01-15')
-        }
+          targetDate: new Date('2024-01-15'),
+        },
       ]);
 
       await (userProfilingService as any).analyzeUserBehavior(mockProfile);
@@ -130,7 +132,7 @@ describe('UserProfilingService', () => {
         id: 'profile123',
         userId: 'user123',
         behaviorPatterns: {},
-        save: jest.fn()
+        save: jest.fn(),
       };
 
       (Mood.findAll as jest.Mock).mockResolvedValue([]);
@@ -138,7 +140,7 @@ describe('UserProfilingService', () => {
         { status: 'completed', progress: 100 },
         { status: 'completed', progress: 100 },
         { status: 'active', progress: 50 },
-        { status: 'cancelled', progress: 30 }
+        { status: 'cancelled', progress: 30 },
       ]);
 
       await (userProfilingService as any).analyzeUserBehavior(mockProfile);
@@ -157,27 +159,25 @@ describe('UserProfilingService', () => {
           totalGoals: 10,
           goalsCompleted: 7,
           averageSessionsPerWeek: 5,
-          streakDays: 15
+          streakDays: 15,
         },
         behaviorPatterns: {
           mostActiveTimeOfDay: 'morning',
           averageMoodScore: 7.5,
           goalCompletionRate: 70,
-          preferredCategories: ['health', 'productivity']
+          preferredCategories: ['health', 'productivity'],
         },
         insights: [],
-        save: jest.fn()
+        save: jest.fn(),
       };
 
       await (userProfilingService as any).identifyPatternsAndInsights(mockProfile);
 
       expect(mockProfile.insights).toBeDefined();
       expect(mockProfile.insights.length).toBeGreaterThan(0);
-      
+
       // Check for high performer insight
-      const highPerformerInsight = mockProfile.insights.find(
-        (i: any) => i.type === 'achievement'
-      );
+      const highPerformerInsight = mockProfile.insights.find((i: any) => i.type === 'achievement');
       expect(highPerformerInsight).toBeDefined();
     });
 
@@ -190,16 +190,16 @@ describe('UserProfilingService', () => {
           totalGoals: 10,
           goalsCompleted: 2,
           averageSessionsPerWeek: 1,
-          streakDays: 0
+          streakDays: 0,
         },
         behaviorPatterns: {
           mostActiveTimeOfDay: 'evening',
           averageMoodScore: 4.5,
           goalCompletionRate: 20,
-          preferredCategories: ['productivity']
+          preferredCategories: ['productivity'],
         },
         insights: [],
-        save: jest.fn()
+        save: jest.fn(),
       };
 
       await (userProfilingService as any).identifyPatternsAndInsights(mockProfile);
@@ -217,7 +217,7 @@ describe('UserProfilingService', () => {
       const mockProfile = {
         id: 'profile123',
         userId: 'user123',
-        toJSON: () => ({ id: 'profile123', userId: 'user123' })
+        toJSON: () => ({ id: 'profile123', userId: 'user123' }),
       };
 
       (UserProfile.findOne as jest.Mock).mockResolvedValue(mockProfile);
@@ -242,23 +242,23 @@ describe('UserProfilingService', () => {
         id: 'profile123',
         userId: 'user123',
         preferences: {
-          notifications: true
+          notifications: true,
         },
-        save: jest.fn()
+        save: jest.fn(),
       };
 
       (UserProfile.findOne as jest.Mock).mockResolvedValue(mockProfile);
 
       const newPreferences = {
         notifications: false,
-        emailDigest: 'weekly'
+        emailDigest: 'weekly',
       };
 
       const result = await userProfilingService.updatePreferences('user123', newPreferences);
 
       expect(mockProfile.preferences).toEqual({
         notifications: false,
-        emailDigest: 'weekly'
+        emailDigest: 'weekly',
       });
       expect(mockProfile.save).toHaveBeenCalled();
     });
@@ -266,9 +266,9 @@ describe('UserProfilingService', () => {
     it('should throw error if profile not found', async () => {
       (UserProfile.findOne as jest.Mock).mockResolvedValue(null);
 
-      await expect(
-        userProfilingService.updatePreferences('user123', {})
-      ).rejects.toThrow('User profile not found');
+      await expect(userProfilingService.updatePreferences('user123', {})).rejects.toThrow(
+        'User profile not found'
+      );
     });
   });
 
@@ -280,10 +280,8 @@ describe('UserProfilingService', () => {
       const mockProfile = {
         id: 'profile123',
         userId: 'user123',
-        insights: [
-          { type: 'pattern', message: 'You are most productive in the morning' }
-        ],
-        lastInsightGeneration: recentDate
+        insights: [{ type: 'pattern', message: 'You are most productive in the morning' }],
+        lastInsightGeneration: recentDate,
       };
 
       (UserProfile.findOne as jest.Mock).mockResolvedValue(mockProfile);
@@ -302,15 +300,15 @@ describe('UserProfilingService', () => {
         userId: 'user123',
         insights: [],
         lastInsightGeneration: oldDate,
-        save: jest.fn()
+        save: jest.fn(),
       };
 
       (UserProfile.findOne as jest.Mock).mockResolvedValue(mockProfile);
-      
+
       // Mock the createOrUpdateProfile to return updated profile
       jest.spyOn(userProfilingService, 'createOrUpdateProfile').mockResolvedValue({
         ...mockProfile,
-        insights: [{ type: 'new', message: 'New insight' }]
+        insights: [{ type: 'new', message: 'New insight' }],
       } as any);
 
       const result = await userProfilingService.getInsights('user123');
@@ -327,13 +325,13 @@ describe('UserProfilingService', () => {
         profileMetrics: {
           streakDays: 30,
           averageSessionsPerWeek: 6,
-          goalsCompleted: 15
+          goalsCompleted: 15,
         },
         behaviorPatterns: {
           averageMoodScore: 8,
           consistencyScore: 85,
-          goalCompletionRate: 80
-        }
+          goalCompletionRate: 80,
+        },
       };
 
       (UserProfile.findOne as jest.Mock).mockResolvedValue(mockProfile);
@@ -352,13 +350,13 @@ describe('UserProfilingService', () => {
         profileMetrics: {
           streakDays: 0,
           averageSessionsPerWeek: 1,
-          goalsCompleted: 1
+          goalsCompleted: 1,
         },
         behaviorPatterns: {
           averageMoodScore: 4,
           consistencyScore: 20,
-          goalCompletionRate: 10
-        }
+          goalCompletionRate: 10,
+        },
       };
 
       (UserProfile.findOne as jest.Mock).mockResolvedValue(mockProfile);

@@ -1,5 +1,5 @@
 import { Model, DataTypes, Optional } from 'sequelize';
-import { sequelize } from './index';
+import { sequelize } from '../config/sequelize';
 
 export interface GoalAttributes {
   id: string;
@@ -19,7 +19,23 @@ export interface GoalAttributes {
   updatedAt?: Date;
 }
 
-export interface GoalCreationAttributes extends Optional<GoalAttributes, 'id' | 'description' | 'targetDate' | 'category' | 'priority' | 'status' | 'progress' | 'milestones' | 'reminders' | 'isArchived' | 'completedAt' | 'createdAt' | 'updatedAt'> {}
+export interface GoalCreationAttributes
+  extends Optional<
+    GoalAttributes,
+    | 'id'
+    | 'description'
+    | 'targetDate'
+    | 'category'
+    | 'priority'
+    | 'status'
+    | 'progress'
+    | 'milestones'
+    | 'reminders'
+    | 'isArchived'
+    | 'completedAt'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
 export class Goal extends Model<GoalAttributes, GoalCreationAttributes> implements GoalAttributes {
   public id!: string;

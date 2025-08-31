@@ -1,3 +1,7 @@
+import { GlobalErrorBoundary } from './GlobalErrorBoundary';
+import { AsyncErrorBoundary } from './AsyncErrorBoundary';
+import { useNavigate, useParams, useLocation, useRouteError, Link } from 'react-router-dom';
+import { ArrowLeft, Home, AlertTriangle } from 'lucide-react';
 
 /**
  * Error Boundary for React Router routes
@@ -28,9 +32,7 @@ export function RouteErrorBoundary() {
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="max-w-md w-full text-center">
           <h1 className="text-9xl font-bold text-gray-300">404</h1>
-          <h2 className="mt-4 text-2xl font-semibold text-gray-900">
-            Page Not Found
-          </h2>
+          <h2 className="mt-4 text-2xl font-semibold text-gray-900">Page Not Found</h2>
           <p className="mt-2 text-gray-600">
             The page you're looking for doesn't exist or has been moved.
           </p>
@@ -63,12 +65,10 @@ export function RouteErrorBoundary() {
           <div className="flex items-center justify-center w-16 h-16 mx-auto bg-yellow-100 rounded-full">
             <AlertTriangle className="h-8 w-8 text-yellow-600" />
           </div>
-          <h1 className="mt-4 text-2xl font-bold text-center text-gray-900">
-            Access Denied
-          </h1>
+          <h1 className="mt-4 text-2xl font-bold text-center text-gray-900">Access Denied</h1>
           <p className="mt-2 text-center text-gray-600">
             {error?.status === 401
-              ? "You need to be logged in to access this page."
+              ? 'You need to be logged in to access this page.'
               : "You don't have permission to access this resource."}
           </p>
           <div className="mt-6 space-y-3">
@@ -107,17 +107,13 @@ export function RouteErrorBoundary() {
           <div className="flex items-center justify-center w-16 h-16 mx-auto bg-red-100 rounded-full">
             <AlertTriangle className="h-8 w-8 text-red-600" />
           </div>
-          <h1 className="mt-4 text-2xl font-bold text-center text-gray-900">
-            Server Error
-          </h1>
+          <h1 className="mt-4 text-2xl font-bold text-center text-gray-900">Server Error</h1>
           <p className="mt-2 text-center text-gray-600">
             Something went wrong on our end. Please try again later.
           </p>
           {process.env.NODE_ENV === 'development' && (
             <details className="mt-4 p-4 bg-gray-50 rounded text-xs">
-              <summary className="cursor-pointer text-gray-700 font-medium">
-                Error Details
-              </summary>
+              <summary className="cursor-pointer text-gray-700 font-medium">Error Details</summary>
               <pre className="mt-2 whitespace-pre-wrap text-red-600">
                 {error?.statusText || error?.message}
               </pre>
@@ -157,9 +153,7 @@ export function RouteErrorBoundary() {
         </p>
         {process.env.NODE_ENV === 'development' && error && (
           <details className="mt-4 p-4 bg-gray-50 rounded text-xs">
-            <summary className="cursor-pointer text-gray-700 font-medium">
-              Error Details
-            </summary>
+            <summary className="cursor-pointer text-gray-700 font-medium">Error Details</summary>
             <pre className="mt-2 whitespace-pre-wrap text-red-600">
               {error.statusText || error.message || JSON.stringify(error)}
             </pre>

@@ -1,3 +1,4 @@
+import axios, { CancelTokenSource } from 'axios';
 
 /**
  * Global Request Manager
@@ -44,7 +45,7 @@ class RequestManager {
     if (source) {
       source.cancel(message || `Request ${requestId} cancelled`);
       this.activeRequests.delete(requestId);
-      
+
       // Remove from any groups
       this.requestGroups.forEach(group => {
         group.delete(requestId);
@@ -81,7 +82,7 @@ class RequestManager {
    */
   removeRequest(requestId: string): void {
     this.activeRequests.delete(requestId);
-    
+
     // Remove from any groups
     this.requestGroups.forEach(group => {
       group.delete(requestId);
@@ -156,11 +157,10 @@ export function withCancellation<T = any>(
   groupId?: string
 ): Promise<T> {
   const source = requestManager.createCancelToken(requestId, groupId);
-  
-  return apiCall(source.token)
-    .finally(() => {
-      requestManager.removeRequest(requestId);
-    });
+
+  return apiCall(source.token).finally(() => {
+    requestManager.removeRequest(requestId);
+  });
 }
 
 /**
@@ -168,7 +168,7 @@ export function withCancellation<T = any>(
  */
 export function createRequestGroup(componentName: string) {
   const groupId = `component_${componentName}_${Date.now()}`;
-  
+
   return {
     groupId,
     request: <T = any>(
@@ -193,7 +193,7 @@ export function createDebouncedRequest<T = any>(
   cancel: () => void;
 } {
   let timeoutId: NodeJS.Timeout | null = null;
-  
+
   return {
     execute: () => {
       return new Promise((resolve, reject) => {
@@ -201,15 +201,13 @@ export function createDebouncedRequest<T = any>(
         if (timeoutId) {
           clearTimeout(timeoutId);
         }
-        
+
         // Cancel existing request
         requestManager.cancelRequest(requestId, 'Debounced');
-        
+
         // Set new timeout
         timeoutId = setTimeout(() => {
-          withCancellation(requestId, apiCall)
-            .then(resolve)
-            .catch(reject);
+          withCancellation(requestId, apiCall).then(resolve).catch(reject);
         }, delay);
       });
     },

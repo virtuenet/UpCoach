@@ -1,26 +1,26 @@
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useMutation } from '@tanstack/react-query'
-import { Save, User, Bell, Shield } from 'lucide-react'
-import { useAuthStore } from '../stores/authStore'
-import { authApi } from '../api/auth'
-import LoadingSpinner from '../components/LoadingSpinner'
-import toast from 'react-hot-toast'
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useMutation } from '@tanstack/react-query';
+import { Save, User, Bell, Shield } from 'lucide-react';
+import { useAuthStore } from '../stores/authStore';
+import { authApi } from '../api/auth';
+import LoadingSpinner from '../components/LoadingSpinner';
+import toast from 'react-hot-toast';
 
 const profileSchema = z.object({
   fullName: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   bio: z.string().max(500, 'Bio must be less than 500 characters').optional(),
   expertise: z.string().optional(),
-})
+});
 
-type ProfileFormData = z.infer<typeof profileSchema>
+type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('profile')
-  const { user, updateProfile } = useAuthStore()
+  const [activeTab, setActiveTab] = useState('profile');
+  const { user, updateProfile } = useAuthStore();
 
   const {
     register,
@@ -34,51 +34,52 @@ export default function SettingsPage() {
       bio: user?.bio || '',
       expertise: user?.expertise?.join(', ') || '',
     },
-  })
+  });
 
   const updateMutation = useMutation({
     mutationFn: authApi.updateProfile,
-    onSuccess: (data) => {
-      updateProfile(data)
-      toast.success('Profile updated successfully')
+    onSuccess: data => {
+      updateProfile(data);
+      toast.success('Profile updated successfully');
     },
     onError: () => {
-      toast.error('Failed to update profile')
+      toast.error('Failed to update profile');
     },
-  })
+  });
 
   const onSubmit = async (data: ProfileFormData) => {
     const expertise = data.expertise
-      ? data.expertise.split(',').map(e => e.trim()).filter(Boolean)
-      : []
-    
+      ? data.expertise
+          .split(',')
+          .map(e => e.trim())
+          .filter(Boolean)
+      : [];
+
     await updateMutation.mutateAsync({
       ...data,
       expertise,
-    })
-  }
+    });
+  };
 
   const tabs = [
     { id: 'profile', name: 'Profile', icon: User },
     { id: 'notifications', name: 'Notifications', icon: Bell },
     { id: 'security', name: 'Security', icon: Shield },
-  ]
+  ];
 
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-gray-900">Settings</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Manage your profile and preferences
-        </p>
+        <p className="mt-1 text-sm text-gray-500">Manage your profile and preferences</p>
       </div>
 
       <div className="bg-white shadow rounded-lg">
         {/* Tabs */}
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8 px-6">
-            {tabs.map((tab) => {
-              const Icon = tab.icon
+            {tabs.map(tab => {
+              const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
@@ -92,7 +93,7 @@ export default function SettingsPage() {
                   <Icon className="h-4 w-4" />
                   {tab.name}
                 </button>
-              )
+              );
             })}
           </nav>
         </div>
@@ -103,9 +104,7 @@ export default function SettingsPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
                   <input
                     {...register('fullName')}
                     type="text"
@@ -117,9 +116,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                   <input
                     {...register('email')}
                     type="email"
@@ -133,18 +130,14 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Bio
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
                 <textarea
                   {...register('bio')}
                   rows={4}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-secondary-500 focus:border-secondary-500"
                   placeholder="Tell us about yourself and your coaching experience"
                 />
-                {errors.bio && (
-                  <p className="mt-1 text-sm text-red-600">{errors.bio.message}</p>
-                )}
+                {errors.bio && <p className="mt-1 text-sm text-red-600">{errors.bio.message}</p>}
               </div>
 
               <div>
@@ -157,9 +150,7 @@ export default function SettingsPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-secondary-500 focus:border-secondary-500"
                   placeholder="e.g., Leadership, Productivity, Career Development"
                 />
-                <p className="mt-1 text-sm text-gray-500">
-                  Separate multiple areas with commas
-                </p>
+                <p className="mt-1 text-sm text-gray-500">Separate multiple areas with commas</p>
               </div>
 
               <div className="flex justify-end">
@@ -187,7 +178,9 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-medium text-gray-900">Email Notifications</h3>
-                  <p className="text-sm text-gray-500">Receive updates about your content performance</p>
+                  <p className="text-sm text-gray-500">
+                    Receive updates about your content performance
+                  </p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" className="sr-only peer" defaultChecked />
@@ -262,7 +255,9 @@ export default function SettingsPage() {
               </div>
 
               <div className="pt-6 border-t border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Two-Factor Authentication</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Two-Factor Authentication
+                </h3>
                 <p className="text-sm text-gray-600 mb-4">
                   Add an extra layer of security to your account
                 </p>
@@ -275,5 +270,5 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

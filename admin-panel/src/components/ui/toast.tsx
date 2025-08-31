@@ -35,19 +35,22 @@ const iconVariants = {
 };
 
 const Toast = React.forwardRef<HTMLDivElement, ToastProps>(
-  ({ 
-    className, 
-    title, 
-    description, 
-    variant = 'default', 
-    onClose, 
-    actions,
-    progress,
-    persistent,
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      title,
+      description,
+      variant = 'default',
+      onClose,
+      actions,
+      progress,
+      persistent,
+      ...props
+    },
+    ref
+  ) => {
     const icon = iconVariants[variant];
-    
+
     return (
       <div
         ref={ref}
@@ -66,17 +69,13 @@ const Toast = React.forwardRef<HTMLDivElement, ToastProps>(
             {icon}
           </div>
         )}
-        
+
         <div className="flex-1 space-y-2">
           <div className="space-y-1">
-            {title && (
-              <div className="text-sm font-semibold leading-none">{title}</div>
-            )}
-            {description && (
-              <div className="text-sm opacity-90">{description}</div>
-            )}
+            {title && <div className="text-sm font-semibold leading-none">{title}</div>}
+            {description && <div className="text-sm opacity-90">{description}</div>}
           </div>
-          
+
           {/* Progress bar for progress variant */}
           {variant === 'progress' && progress !== undefined && (
             <div className="mt-2">
@@ -85,7 +84,7 @@ const Toast = React.forwardRef<HTMLDivElement, ToastProps>(
                 <span>{Math.round(progress)}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                <div 
+                <div
                   className="bg-blue-600 h-full rounded-full transition-all duration-300 ease-out"
                   style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
                   role="progressbar"
@@ -96,7 +95,7 @@ const Toast = React.forwardRef<HTMLDivElement, ToastProps>(
               </div>
             </div>
           )}
-          
+
           {/* Action buttons */}
           {actions && actions.length > 0 && (
             <div className="flex items-center space-x-2 pt-2">
@@ -106,11 +105,11 @@ const Toast = React.forwardRef<HTMLDivElement, ToastProps>(
                   onClick={action.onClick}
                   className={cn(
                     'px-3 py-1 text-xs font-medium rounded-md transition-colors',
-                    action.variant === 'primary' 
+                    action.variant === 'primary'
                       ? 'bg-white/20 hover:bg-white/30'
                       : action.variant === 'destructive'
-                      ? 'bg-red-700 hover:bg-red-800 text-white'
-                      : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
+                        ? 'bg-red-700 hover:bg-red-800 text-white'
+                        : 'bg-gray-200 hover:bg-gray-300 text-gray-900'
                   )}
                 >
                   {action.label}
@@ -119,7 +118,7 @@ const Toast = React.forwardRef<HTMLDivElement, ToastProps>(
             </div>
           )}
         </div>
-        
+
         {/* Close button - only show if not persistent */}
         {onClose && !persistent && (
           <button

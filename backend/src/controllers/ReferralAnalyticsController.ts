@@ -9,7 +9,7 @@ export class ReferralAnalyticsController {
   async getReferralStats_(req: Request, _res: Response): Promise<void> {
     try {
       const stats = await referralService.getOverallStats();
-      
+
       _res.json({
         totalReferrals: stats.totalReferrals,
         activeReferrals: stats.activeReferrals,
@@ -30,7 +30,7 @@ export class ReferralAnalyticsController {
       const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
 
       const where: any = {};
-      
+
       if (status && status !== 'all') {
         where.status = status;
       }
@@ -100,7 +100,7 @@ export class ReferralAnalyticsController {
       if (status === 'completed' && !referral.completedAt) {
         referral.completedAt = new Date();
       }
-      
+
       await referral.save();
 
       _res.json({ message: 'Referral status updated successfully' });

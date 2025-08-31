@@ -1,3 +1,4 @@
+import { apiClient } from './client';
 
 export interface DashboardStats {
   totalUsers: number;
@@ -18,7 +19,7 @@ export interface DashboardStats {
 
 export const dashboardApi = {
   getStats: async (): Promise<DashboardStats> => {
-    const response = await apiClient.get("/admin/dashboard/stats");
+    const response = await apiClient.get('/admin/dashboard/stats');
     return response.data;
   },
 };

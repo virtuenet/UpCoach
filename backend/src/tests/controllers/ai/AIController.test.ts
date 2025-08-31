@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import request from 'supertest';
 import express from 'express';
 import { aiController } from '../../../controllers/ai/AIController';
@@ -9,7 +11,7 @@ jest.mock('../../../middleware/auth', () => ({
   authenticate: jest.fn((req, res, next) => {
     (req as any).user = { id: 'test-user-123' };
     next();
-  })
+  }),
 }));
 
 jest.mock('../../../services/ai/AIService');
@@ -28,22 +30,16 @@ describe('AI Controller Integration Tests', () => {
   describe('Recommendation Endpoints', () => {
     it('GET /api/ai/recommendations should return personalized recommendations', async () => {
       const mockRecommendations = {
-        goals: [
-          { id: 'goal1', title: 'Morning Meditation', priority: 'high' }
-        ],
-        habits: [
-          { id: 'habit1', name: 'Daily Water Intake', target: 8 }
-        ],
+        goals: [{ id: 'goal1', title: 'Morning Meditation', priority: 'high' }],
+        habits: [{ id: 'habit1', name: 'Daily Water Intake', target: 8 }],
         activities: ['yoga', 'walking'],
-        content: [
-          { type: 'article', title: 'Benefits of Meditation' }
-        ]
+        content: [{ type: 'article', title: 'Benefits of Meditation' }],
       };
 
       jest.spyOn(aiController as any, 'getRecommendations').mockImplementation((req, res) => {
         (res as any).json({
           success: true,
-          data: mockRecommendations
+          data: mockRecommendations,
         });
       });
 
@@ -83,7 +79,7 @@ describe('AI Controller Integration Tests', () => {
         .set('Authorization', 'Bearer test-token')
         .send({
           message: 'I want to improve my fitness',
-          context: { sessionId: 'session123' }
+          context: { sessionId: 'session123' },
         })
         .expect(200);
 
@@ -96,7 +92,7 @@ describe('AI Controller Integration Tests', () => {
         .set('Authorization', 'Bearer test-token')
         .send({
           message: 'How can I stay motivated?',
-          conversationHistory: []
+          conversationHistory: [],
         })
         .expect(200);
 
@@ -140,7 +136,7 @@ describe('AI Controller Integration Tests', () => {
         .set('Authorization', 'Bearer test-token')
         .send({
           topic: 'stress-management',
-          preferences: { pace: 'moderate', depth: 'comprehensive' }
+          preferences: { pace: 'moderate', depth: 'comprehensive' },
         })
         .expect(200);
 
@@ -163,7 +159,7 @@ describe('AI Controller Integration Tests', () => {
         .send({
           completed: true,
           score: 90,
-          timeSpent: 1200
+          timeSpent: 1200,
         })
         .expect(200);
 
@@ -188,7 +184,7 @@ describe('AI Controller Integration Tests', () => {
         .set('Authorization', 'Bearer test-token')
         .send({
           sessionId: 'voice-session-123',
-          emotions: { stress: 0.7, energy: 0.4 }
+          emotions: { stress: 0.7, energy: 0.4 },
         })
         .expect(200);
 
@@ -241,9 +237,7 @@ describe('AI Controller Integration Tests', () => {
         res.status(401).json({ error: 'Unauthorized' });
       });
 
-      const response = await request(app)
-        .get('/api/ai/recommendations')
-        .expect(401);
+      const response = await request(app).get('/api/ai/recommendations').expect(401);
 
       expect(response.body).toHaveProperty('error', 'Unauthorized');
     });
@@ -271,15 +265,15 @@ describe('AI Controller Integration Tests', () => {
   describe('Rate Limiting', () => {
     it('should enforce rate limits on AI endpoints', async () => {
       // Make multiple requests rapidly
-      const promises = Array(10).fill(null).map(() =>
-        request(app)
-          .get('/api/ai/recommendations')
-          .set('Authorization', 'Bearer test-token')
-      );
+      const promises = Array(10)
+        .fill(null)
+        .map(() =>
+          request(app).get('/api/ai/recommendations').set('Authorization', 'Bearer test-token')
+        );
 
       const responses = await Promise.all(promises);
       const rateLimited = responses.some(r => r.status === 429);
-      
+
       // Depending on rate limit configuration
       expect(rateLimited || responses.every(r => r.status === 200)).toBe(true);
     });

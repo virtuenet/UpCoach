@@ -12,8 +12,8 @@ router.get('/', async (_req, res) => {
     services: {
       api: 'up',
       database: 'checking',
-      redis: 'checking'
-    }
+      redis: 'checking',
+    },
   };
 
   try {
@@ -38,4 +38,4 @@ router.get('/', async (_req, res) => {
   res.status(statusCode).json(health);
 });
 
-export default router; 
+export default router;

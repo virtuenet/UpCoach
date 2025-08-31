@@ -48,11 +48,37 @@ export interface UserProfileAttributes {
   updatedAt?: Date;
 }
 
-export interface UserProfileCreationAttributes 
-  extends Optional<UserProfileAttributes, 'id' | 'age' | 'occupation' | 'timezone' | 'coachingStyle' | 'sessionFrequency' | 'commitmentLevel' | 'learningStyle' | 'communicationPreference' | 'personalityType' | 'aiPersonalization' | 'coachingPreferences' | 'behaviorPatterns' | 'progressMetrics' | 'strengths' | 'growthAreas' | 'motivators' | 'obstacles' | 'preferences' | 'metadata' | 'createdAt' | 'updatedAt'> {}
+export interface UserProfileCreationAttributes
+  extends Optional<
+    UserProfileAttributes,
+    | 'id'
+    | 'age'
+    | 'occupation'
+    | 'timezone'
+    | 'coachingStyle'
+    | 'sessionFrequency'
+    | 'commitmentLevel'
+    | 'learningStyle'
+    | 'communicationPreference'
+    | 'personalityType'
+    | 'aiPersonalization'
+    | 'coachingPreferences'
+    | 'behaviorPatterns'
+    | 'progressMetrics'
+    | 'strengths'
+    | 'growthAreas'
+    | 'motivators'
+    | 'obstacles'
+    | 'preferences'
+    | 'metadata'
+    | 'createdAt'
+    | 'updatedAt'
+  > {}
 
-export class UserProfile extends Model<UserProfileAttributes, UserProfileCreationAttributes> 
-  implements UserProfileAttributes {
+export class UserProfile
+  extends Model<UserProfileAttributes, UserProfileCreationAttributes>
+  implements UserProfileAttributes
+{
   public id!: string;
   public userId!: string;
   public age?: number;
@@ -62,7 +88,12 @@ export class UserProfile extends Model<UserProfileAttributes, UserProfileCreatio
   public sessionFrequency?: string;
   public commitmentLevel?: string;
   public learningStyle?: 'visual' | 'auditory' | 'kinesthetic' | 'reading' | 'balanced';
-  public communicationPreference?: 'supportive' | 'direct' | 'analytical' | 'motivational' | 'empathetic';
+  public communicationPreference?:
+    | 'supportive'
+    | 'direct'
+    | 'analytical'
+    | 'motivational'
+    | 'empathetic';
   public personalityType?: string;
   public aiPersonalization?: any;
   public coachingPreferences?: {

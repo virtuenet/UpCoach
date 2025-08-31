@@ -1,5 +1,7 @@
 import { Router } from 'express';
-import CoachIntelligenceController, { coachIntelligenceValidation } from '../controllers/CoachIntelligenceController';
+import CoachIntelligenceController, {
+  coachIntelligenceValidation,
+} from '../controllers/CoachIntelligenceController';
 
 /**
  * Coach Intelligence Routes
@@ -132,4 +134,4 @@ router.patch(
   coachIntelligenceController.updateKpiProgress.bind(coachIntelligenceController)
 );
 
-export default router; 
+export default router;

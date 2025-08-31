@@ -47,7 +47,7 @@ export function generateCSPWithNonce(nonce: string, isDevelopment: boolean = fal
     `frame-ancestors 'none'`,
     `base-uri 'self'`,
     `manifest-src 'self'`,
-    `upgrade-insecure-requests`
+    `upgrade-insecure-requests`,
   ];
 
   return directives.join('; ');
@@ -73,7 +73,7 @@ export function enhancedSecurityHeaders(isDevelopment: boolean = false) {
     _res.setHeader('X-XSS-Protection', '1; mode=block');
     _res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     _res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
-    
+
     // HSTS header for production
     if (!isDevelopment) {
       _res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');

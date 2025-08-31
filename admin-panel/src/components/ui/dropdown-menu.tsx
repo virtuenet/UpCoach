@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
 
 export interface DropdownMenuProps {
   trigger: React.ReactNode;
@@ -8,7 +9,7 @@ export interface DropdownMenuProps {
 export const DropdownMenu: React.FC<DropdownMenuProps> = ({
   trigger,
   children,
-  align = 'start'
+  align = 'start',
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -26,13 +27,11 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
 
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
-      <div onClick={() => setIsOpen(!isOpen)}>
-        {trigger}
-      </div>
+      <div onClick={() => setIsOpen(!isOpen)}>{trigger}</div>
       {isOpen && (
-        <div 
+        <div
           className={cn(
-            "absolute z-10 mt-2 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none",
+            'absolute z-10 mt-2 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none',
             align === 'end' && 'right-0',
             align === 'center' && 'left-1/2 -translate-x-1/2'
           )}
@@ -57,7 +56,7 @@ export const DropdownMenuTrigger = React.forwardRef<
     <button
       ref={ref}
       className={cn(
-        "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2",
+        'inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2',
         className
       )}
       {...props}
@@ -80,7 +79,7 @@ export const DropdownMenuItem = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-gray-100 hover:text-gray-900",
+        'relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-gray-100 hover:text-gray-900',
         className
       )}
       onClick={onSelect}
@@ -96,10 +95,6 @@ export const DropdownMenuSeparator = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-gray-200", className)}
-    {...props}
-  />
+  <div ref={ref} className={cn('-mx-1 my-1 h-px bg-gray-200', className)} {...props} />
 ));
 DropdownMenuSeparator.displayName = 'DropdownMenuSeparator';

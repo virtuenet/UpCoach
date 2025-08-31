@@ -1,5 +1,5 @@
 import { DataTypes, Model, Optional, Op } from 'sequelize';
-import { sequelize } from '../index';
+import { sequelize } from '../../config/sequelize';
 
 // Article interface
 export interface ArticleAttributes {
@@ -52,14 +52,34 @@ export interface ArticleAttributes {
 }
 
 // Optional fields for creation
-export interface ArticleCreationAttributes extends Optional<ArticleAttributes, 
-  'id' | 'slug' | 'viewCount' | 'shareCount' | 'likeCount' | 'readTime' | 
-  'publishedAt' | 'featuredImage' | 'seoTitle' | 'seoDescription' | 'seoKeywords' |
-  'metadata' | 'settings' | 'publishingSchedule' | 'analytics' | 'createdAt' | 'updatedAt' | 'deletedAt'
-> {}
+export interface ArticleCreationAttributes
+  extends Optional<
+    ArticleAttributes,
+    | 'id'
+    | 'slug'
+    | 'viewCount'
+    | 'shareCount'
+    | 'likeCount'
+    | 'readTime'
+    | 'publishedAt'
+    | 'featuredImage'
+    | 'seoTitle'
+    | 'seoDescription'
+    | 'seoKeywords'
+    | 'metadata'
+    | 'settings'
+    | 'publishingSchedule'
+    | 'analytics'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'deletedAt'
+  > {}
 
 // Article model class
-export class Article extends Model<ArticleAttributes, ArticleCreationAttributes> implements ArticleAttributes {
+export class Article
+  extends Model<ArticleAttributes, ArticleCreationAttributes>
+  implements ArticleAttributes
+{
   public id!: string;
   public title!: string;
   public slug!: string;
@@ -97,12 +117,12 @@ export class Article extends Model<ArticleAttributes, ArticleCreationAttributes>
     // Check for existing slugs
     let slug = baseSlug;
     let counter = 1;
-    
+
     while (await Article.findOne({ where: { slug, id: { [Op.ne as any]: this.id } } })) {
       slug = `${baseSlug}-${counter}`;
       counter++;
     }
-    
+
     return slug;
   }
 
@@ -143,21 +163,24 @@ export class Article extends Model<ArticleAttributes, ArticleCreationAttributes>
 
   static async getFeatured(): Promise<Article[]> {
     return Article.findAll({
-      where: { 
+      where: {
         status: 'published',
-        'settings.isFeatured': true 
+        'settings.isFeatured': true,
       },
       order: [['publishedAt', 'DESC']],
       limit: 10,
     });
   }
 
-  static async searchArticles(query: string, filters: {
-    category?: string;
-    status?: string;
-    author?: string;
-    tags?: string[];
-  } = {}): Promise<Article[]> {
+  static async searchArticles(
+    query: string,
+    filters: {
+      category?: string;
+      status?: string;
+      author?: string;
+      tags?: string[];
+    } = {}
+  ): Promise<Article[]> {
     const whereClause: any = {};
 
     if (query) {
@@ -189,16 +212,19 @@ export class Article extends Model<ArticleAttributes, ArticleCreationAttributes>
   static async getPopular(limit: number = 10): Promise<Article[]> {
     return Article.findAll({
       where: { status: 'published' },
-      order: [['viewCount', 'DESC'], ['analytics.engagementScore', 'DESC']],
+      order: [
+        ['viewCount', 'DESC'],
+        ['analytics.engagementScore', 'DESC'],
+      ],
       limit,
     });
   }
 
   static async getByCategory(categoryId: string): Promise<Article[]> {
     return Article.findAll({
-      where: { 
+      where: {
         categoryId,
-        status: 'published' 
+        status: 'published',
       },
       order: [['publishedAt', 'DESC']],
     });
@@ -221,10 +247,10 @@ export class Article extends Model<ArticleAttributes, ArticleCreationAttributes>
       where: {
         status: 'draft',
         'publishingSchedule.scheduledPublishAt': {
-          [Op.lte]: new Date()
+          [Op.lte]: new Date(),
         },
-        'publishingSchedule.autoPublish': true
-      }
+        'publishingSchedule.autoPublish': true,
+      },
     });
   }
 }
@@ -451,4 +477,4 @@ Article.init(
   }
 );
 
-export default Article; 
+export default Article;

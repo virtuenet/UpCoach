@@ -45,9 +45,11 @@ export interface Subscription {
 }
 
 export const FinancialSnapshotFactory = Factory.define<FinancialSnapshot>(({ params }) => {
-  const revenue = params.revenue || faker.number.float({ min: 10000, max: 100000, precision: 0.01 });
-  const costs = params.costs || revenue * faker.number.float({ min: 0.3, max: 0.7, precision: 0.01 });
-  
+  const revenue =
+    params.revenue || faker.number.float({ min: 10000, max: 100000, precision: 0.01 });
+  const costs =
+    params.costs || revenue * faker.number.float({ min: 0.3, max: 0.7, precision: 0.01 });
+
   return {
     id: params.id || faker.string.uuid(),
     date: params.date || faker.date.recent({ days: 30 }),
@@ -69,7 +71,8 @@ export const TransactionFactory = Factory.define<Transaction>(({ params }) => ({
   userId: params.userId || faker.string.uuid(),
   amount: params.amount || faker.number.float({ min: 9.99, max: 299.99, precision: 0.01 }),
   currency: params.currency || 'USD',
-  type: params.type || faker.helpers.arrayElement(['payment', 'refund', 'subscription', 'one-time']),
+  type:
+    params.type || faker.helpers.arrayElement(['payment', 'refund', 'subscription', 'one-time']),
   status: params.status || 'completed',
   stripeId: params.stripeId || `pi_${faker.string.alphanumeric(24)}`,
   description: params.description || faker.commerce.productDescription(),
@@ -83,13 +86,15 @@ export const TransactionFactory = Factory.define<Transaction>(({ params }) => ({
 export const SubscriptionFactory = Factory.define<Subscription>(({ params }) => {
   const createdAt = params.createdAt || faker.date.past();
   const currentPeriodStart = params.currentPeriodStart || faker.date.recent({ days: 30 });
-  const currentPeriodEnd = params.currentPeriodEnd || new Date(currentPeriodStart.getTime() + 30 * 24 * 60 * 60 * 1000);
-  
+  const currentPeriodEnd =
+    params.currentPeriodEnd || new Date(currentPeriodStart.getTime() + 30 * 24 * 60 * 60 * 1000);
+
   return {
     id: params.id || faker.string.uuid(),
     userId: params.userId || faker.string.uuid(),
     stripeSubscriptionId: params.stripeSubscriptionId || `sub_${faker.string.alphanumeric(24)}`,
-    status: params.status || faker.helpers.arrayElement(['active', 'trialing', 'canceled', 'past_due']),
+    status:
+      params.status || faker.helpers.arrayElement(['active', 'trialing', 'canceled', 'past_due']),
     plan: params.plan || faker.helpers.arrayElement(['basic', 'premium', 'enterprise']),
     amount: params.amount || faker.helpers.arrayElement([9.99, 29.99, 99.99]),
     currency: params.currency || 'USD',
@@ -104,17 +109,17 @@ export const SubscriptionFactory = Factory.define<Subscription>(({ params }) => 
 // Specialized factories
 export const ActiveSubscriptionFactory = SubscriptionFactory.params({ status: 'active' });
 export const TrialingSubscriptionFactory = SubscriptionFactory.params({ status: 'trialing' });
-export const CanceledSubscriptionFactory = SubscriptionFactory.params({ 
+export const CanceledSubscriptionFactory = SubscriptionFactory.params({
   status: 'canceled',
   canceledAt: faker.date.recent(),
 });
 
-export const PaymentTransactionFactory = TransactionFactory.params({ 
+export const PaymentTransactionFactory = TransactionFactory.params({
   type: 'payment',
   status: 'completed',
 });
 
-export const RefundTransactionFactory = TransactionFactory.params({ 
+export const RefundTransactionFactory = TransactionFactory.params({
   type: 'refund',
   status: 'completed',
 });
@@ -123,11 +128,11 @@ export const RefundTransactionFactory = TransactionFactory.params({
 export function createMonthlySnapshots(months: number = 12): FinancialSnapshot[] {
   const snapshots: FinancialSnapshot[] = [];
   const now = new Date();
-  
+
   for (let i = months - 1; i >= 0; i--) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const mrr = 10000 + (months - i) * 1000; // Growing MRR
-    
+
     snapshots.push(
       FinancialSnapshotFactory.build({
         date,
@@ -137,18 +142,18 @@ export function createMonthlySnapshots(months: number = 12): FinancialSnapshot[]
       })
     );
   }
-  
+
   return snapshots;
 }
 
 export function createSubscriptionHistory(userId: string, months: number = 6): Subscription[] {
   const subscriptions: Subscription[] = [];
   const now = new Date();
-  
+
   for (let i = months - 1; i >= 0; i--) {
     const startDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const endDate = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
-    
+
     subscriptions.push(
       SubscriptionFactory.build({
         userId,
@@ -158,6 +163,6 @@ export function createSubscriptionHistory(userId: string, months: number = 6): S
       })
     );
   }
-  
+
   return subscriptions;
 }

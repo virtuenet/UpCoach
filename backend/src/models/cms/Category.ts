@@ -1,5 +1,5 @@
 import { DataTypes, Model, Optional, Op } from 'sequelize';
-import { sequelize } from '../index';
+import { sequelize } from '../../config/sequelize';
 
 // Category interface
 export interface CategoryAttributes {
@@ -32,13 +32,31 @@ export interface CategoryAttributes {
 }
 
 // Optional fields for creation
-export interface CategoryCreationAttributes extends Optional<CategoryAttributes, 
-  'id' | 'slug' | 'description' | 'parentId' | 'level' | 'path' | 'iconUrl' | 
-  'colorCode' | 'isActive' | 'sortOrder' | 'metadata' | 'seo' | 'createdAt' | 'updatedAt' | 'deletedAt'
-> {}
+export interface CategoryCreationAttributes
+  extends Optional<
+    CategoryAttributes,
+    | 'id'
+    | 'slug'
+    | 'description'
+    | 'parentId'
+    | 'level'
+    | 'path'
+    | 'iconUrl'
+    | 'colorCode'
+    | 'isActive'
+    | 'sortOrder'
+    | 'metadata'
+    | 'seo'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'deletedAt'
+  > {}
 
 // Category model class
-export class Category extends Model<CategoryAttributes, CategoryCreationAttributes> implements CategoryAttributes {
+export class Category
+  extends Model<CategoryAttributes, CategoryCreationAttributes>
+  implements CategoryAttributes
+{
   public id!: string;
   public name!: string;
   public slug!: string;
@@ -67,12 +85,12 @@ export class Category extends Model<CategoryAttributes, CategoryCreationAttribut
 
     let slug = baseSlug;
     let counter = 1;
-    
+
     while (await Category.findOne({ where: { slug, id: { [Op.ne as any]: this.id } } })) {
       slug = `${baseSlug}-${counter}`;
       counter++;
     }
-    
+
     return slug;
   }
 
@@ -94,19 +112,22 @@ export class Category extends Model<CategoryAttributes, CategoryCreationAttribut
     this.metadata = {
       ...this.metadata,
       articlesCount: 0, // await Article.count({ where: { categoryId: this.id } }),
-      coursesCount: 0,  // await Course.count({ where: { categoryId: this.id } }),
-      totalViews: 0,    // calculated from articles and courses
+      coursesCount: 0, // await Course.count({ where: { categoryId: this.id } }),
+      totalViews: 0, // calculated from articles and courses
       isPopular: this.metadata.totalViews > 1000,
       isFeatured: this.metadata.articlesCount > 5 || this.metadata.coursesCount > 2,
     };
-    
+
     await this.save();
   }
 
   public async getChildren(): Promise<Category[]> {
     return Category.findAll({
       where: { parentId: this.id, isActive: true },
-      order: [['sortOrder', 'ASC'], ['name', 'ASC']],
+      order: [
+        ['sortOrder', 'ASC'],
+        ['name', 'ASC'],
+      ],
     });
   }
 
@@ -159,20 +180,23 @@ export class Category extends Model<CategoryAttributes, CategoryCreationAttribut
   // Static methods
   static async getRootCategories(): Promise<Category[]> {
     return Category.findAll({
-      where: { 
+      where: {
         parentId: null,
-        isActive: true 
+        isActive: true,
       },
-      order: [['sortOrder', 'ASC'], ['name', 'ASC']],
+      order: [
+        ['sortOrder', 'ASC'],
+        ['name', 'ASC'],
+      ],
     });
   }
 
   static async getTreeStructure(): Promise<any[]> {
     const roots = await Category.getRootCategories();
-    
+
     const buildTree = async (categories: Category[]): Promise<any[]> => {
       const tree = [];
-      
+
       for (const category of categories) {
         const children = await category.getChildren();
         const node = {
@@ -186,7 +210,7 @@ export class Category extends Model<CategoryAttributes, CategoryCreationAttribut
         };
         tree.push(node);
       }
-      
+
       return tree;
     };
 
@@ -195,9 +219,9 @@ export class Category extends Model<CategoryAttributes, CategoryCreationAttribut
 
   static async getPopular(limit: number = 10): Promise<Category[]> {
     return Category.findAll({
-      where: { 
+      where: {
         isActive: true,
-        'metadata.isPopular': true 
+        'metadata.isPopular': true,
       },
       order: [['metadata.totalViews', 'DESC']],
       limit,
@@ -206,11 +230,14 @@ export class Category extends Model<CategoryAttributes, CategoryCreationAttribut
 
   static async getFeatured(): Promise<Category[]> {
     return Category.findAll({
-      where: { 
+      where: {
         isActive: true,
-        'metadata.isFeatured': true 
+        'metadata.isFeatured': true,
       },
-      order: [['sortOrder', 'ASC'], ['name', 'ASC']],
+      order: [
+        ['sortOrder', 'ASC'],
+        ['name', 'ASC'],
+      ],
     });
   }
 
@@ -235,28 +262,31 @@ export class Category extends Model<CategoryAttributes, CategoryCreationAttribut
 
   static async getByLevel(level: number): Promise<Category[]> {
     return Category.findAll({
-      where: { 
+      where: {
         level,
-        isActive: true 
+        isActive: true,
       },
-      order: [['sortOrder', 'ASC'], ['name', 'ASC']],
+      order: [
+        ['sortOrder', 'ASC'],
+        ['name', 'ASC'],
+      ],
     });
   }
 
   static async reorderCategories(categoryIds: string[]): Promise<void> {
     const transaction = await sequelize.transaction();
-    
+
     try {
       for (let i = 0; i < categoryIds.length; i++) {
         await Category.update(
           { sortOrder: i + 1 },
-          { 
+          {
             where: { id: categoryIds[i] },
-            transaction 
+            transaction,
           }
         );
       }
-      
+
       await transaction.commit();
     } catch (error) {
       await transaction.rollback();
@@ -412,7 +442,7 @@ Category.init(
         if (!category.slug) {
           category.slug = await category.generateSlug();
         }
-        
+
         // Set level based on parent
         if (category.parentId) {
           const parent = await Category.findByPk(category.parentId);
@@ -420,17 +450,17 @@ Category.init(
         } else {
           category.level = 0;
         }
-        
+
         category.path = await category.generatePath();
       },
       beforeUpdate: async (category: Category) => {
         if (category.changed('name') && !category.changed('slug')) {
           category.slug = await category.generateSlug();
         }
-        
+
         if (category.changed('parentId') || category.changed('slug')) {
           category.path = await category.generatePath();
-          
+
           if (category.changed('parentId')) {
             if (category.parentId) {
               const parent = await Category.findByPk(category.parentId);
@@ -463,4 +493,4 @@ Category.init(
   }
 );
 
-export default Category; 
+export default Category;

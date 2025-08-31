@@ -1,12 +1,11 @@
 import { Request, Response } from 'express';
 import { financialService } from '../../services/financial/FinancialService';
-import { 
+import {
   Transaction,
   Subscription,
   CostTracking,
   FinancialSnapshot,
   FinancialReport,
-  
   BillingEvent,
 } from '../../models';
 import { Op } from 'sequelize';
@@ -127,14 +126,20 @@ export class FinancialDashboardController {
         group: ['category'],
       });
 
-      const totalCosts = costs.reduce((sum, cost) => sum + parseFloat(cost.getDataValue('total')), 0);
+      const totalCosts = costs.reduce(
+        (sum, cost) => sum + parseFloat(cost.getDataValue('total')),
+        0
+      );
 
       _res.json({
         total: totalCosts,
-        byCategory: costs.reduce((acc, cost) => {
-          acc[cost.category] = parseFloat(cost.getDataValue('total'));
-          return acc;
-        }, {} as Record<string, number>),
+        byCategory: costs.reduce(
+          (acc, cost) => {
+            acc[cost.category] = parseFloat(cost.getDataValue('total'));
+            return acc;
+          },
+          {} as Record<string, number>
+        ),
       });
     } catch (error) {
       _res.status(500).json({ error: (error as Error).message });
@@ -146,11 +151,13 @@ export class FinancialDashboardController {
    */
   async getProfitLossStatement(req: Request, _res: Response): Promise<void> {
     try {
-      const { /* period = 'monthly' */ } = req.params;
+      const {
+        /* period = 'monthly' */
+      } = req.params;
       const { startDate, endDate } = req.query;
-      
+
       let start: Date, end: Date;
-      
+
       if (startDate && endDate) {
         start = new Date(startDate as string);
         end = new Date(endDate as string);
@@ -173,11 +180,11 @@ export class FinancialDashboardController {
   async getMRRMetrics_(req: Request, _res: Response): Promise<void> {
     try {
       const currentMRR = await financialService.calculateMRR();
-      const lastMonthMRR = await financialService.calculateMRR(endOfMonth(subMonths(new Date(), 1)));
-      
-      const growth = lastMonthMRR > 0 
-        ? ((currentMRR - lastMonthMRR) / lastMonthMRR) * 100 
-        : 0;
+      const lastMonthMRR = await financialService.calculateMRR(
+        endOfMonth(subMonths(new Date(), 1))
+      );
+
+      const growth = lastMonthMRR > 0 ? ((currentMRR - lastMonthMRR) / lastMonthMRR) * 100 : 0;
 
       // Get MRR breakdown
       const breakdown = await financialService.getRevenueByPlan(
@@ -242,7 +249,9 @@ export class FinancialDashboardController {
    */
   async getRevenueForecast(req: Request, _res: Response): Promise<void> {
     try {
-      const { /* months = 6 */ } = req.query;
+      const {
+        /* months = 6 */
+      } = req.query;
       // TODO: Implement revenue forecasting logic
       _res.json({
         forecast: [],
@@ -313,9 +322,9 @@ export class FinancialDashboardController {
       for (let i = Number(months) - 1; i >= 0; i--) {
         const monthStart = startOfMonth(subMonths(new Date(), i));
         const monthEnd = endOfMonth(subMonths(new Date(), i));
-        
+
         const churnRate = await financialService.calculateChurnRate(monthStart, monthEnd);
-        
+
         churnData.push({
           month: format(monthStart, 'yyyy-MM'),
           churnRate,
@@ -335,7 +344,7 @@ export class FinancialDashboardController {
     try {
       const ltv = await financialService.calculateLTV();
       const arpu = await financialService.calculateARPU();
-      
+
       _res.json({
         ltv,
         arpu,
@@ -398,7 +407,7 @@ export class FinancialDashboardController {
     try {
       const { id } = req.params;
       const cost = await CostTracking.findByPk(id);
-      
+
       if (!cost) {
         throw new ApiError(404, 'Cost not found');
       }
@@ -417,7 +426,7 @@ export class FinancialDashboardController {
     try {
       const { id } = req.params;
       const cost = await CostTracking.findByPk(id);
-      
+
       if (!cost) {
         throw new ApiError(404, 'Cost not found');
       }
@@ -478,7 +487,7 @@ export class FinancialDashboardController {
     try {
       const { period, startDate, endDate } = req.query;
       const where: any = {};
-      
+
       if (period) where.period = period;
       if (startDate && endDate) {
         where.date = { [Op.between]: [new Date(startDate as string), new Date(endDate as string)] };
@@ -501,7 +510,9 @@ export class FinancialDashboardController {
   async generateSnapshot(req: Request, _res: Response): Promise<void> {
     try {
       const { date } = req.body;
-      const snapshot = await financialService.generateDailySnapshot(date ? new Date(date) : new Date());
+      const snapshot = await financialService.generateDailySnapshot(
+        date ? new Date(date) : new Date()
+      );
       _res.status(201).json(snapshot);
     } catch (error) {
       _res.status(500).json({ error: (error as Error).message });
@@ -574,7 +585,7 @@ export class FinancialDashboardController {
     try {
       const { id } = req.params;
       const report = await FinancialReport.findByPk(id);
-      
+
       if (!report) {
         throw new ApiError(404, 'Report not found');
       }
@@ -592,7 +603,7 @@ export class FinancialDashboardController {
     try {
       const { id } = req.params;
       const report = await FinancialReport.findByPk(id);
-      
+
       if (!report) {
         throw new ApiError(404, 'Report not found');
       }
@@ -610,10 +621,12 @@ export class FinancialDashboardController {
   async sendReport(req: Request, _res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const { /* recipients */ } = req.body;
-      
+      const {
+        /* recipients */
+      } = req.body;
+
       const report = await FinancialReport.findByPk(id);
-      
+
       if (!report) {
         throw new ApiError(404, 'Report not found');
       }
@@ -630,8 +643,10 @@ export class FinancialDashboardController {
    */
   async getCohortAnalysis(req: Request, _res: Response): Promise<void> {
     try {
-      const { /* months = 12 */ } = req.query;
-      
+      const {
+        /* months = 12 */
+      } = req.query;
+
       // TODO: Implement cohort analysis logic
       _res.json({
         cohorts: [],
@@ -647,7 +662,7 @@ export class FinancialDashboardController {
   async getCohortDetails(req: Request, _res: Response): Promise<void> {
     try {
       const { month } = req.params;
-      
+
       // TODO: Implement cohort details logic
       _res.json({
         cohort: month,
@@ -688,7 +703,9 @@ export class FinancialDashboardController {
   async getCAC(req: Request, _res: Response): Promise<void> {
     try {
       const { startDate, endDate } = req.query;
-      const start = startDate ? new Date(startDate as string) : startOfMonth(subMonths(new Date(), 3));
+      const start = startDate
+        ? new Date(startDate as string)
+        : startOfMonth(subMonths(new Date(), 3));
       const end = endDate ? new Date(endDate as string) : new Date();
 
       const cac = await financialService.calculateCAC(start, end);
@@ -756,7 +773,7 @@ export class FinancialDashboardController {
     try {
       const { id } = req.params;
       const event = await BillingEvent.findByPk(id);
-      
+
       if (!event) {
         throw new ApiError(404, 'Billing event not found');
       }
@@ -812,9 +829,9 @@ export class FinancialDashboardController {
           throw new ApiError(400, 'Invalid automation type');
       }
 
-      _res.json({ 
-        success: true, 
-        message: `${type} automation triggered successfully` 
+      _res.json({
+        success: true,
+        message: `${type} automation triggered successfully`,
       });
     } catch (error) {
       _res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
@@ -827,7 +844,7 @@ export class FinancialDashboardController {
   async sendTestEmail(req: Request, _res: Response): Promise<void> {
     try {
       const { email } = req.body;
-      
+
       if (!email) {
         throw new ApiError(400, 'Email address is required');
       }
@@ -835,12 +852,12 @@ export class FinancialDashboardController {
       await emailService.send({
         to: email,
         subject: 'Test Email from Financial Dashboard',
-        text: 'This is a test email to verify email service is working correctly.'
+        text: 'This is a test email to verify email service is working correctly.',
       });
-      
-      _res.json({ 
-        success: true, 
-        message: `Test email sent to ${email}` 
+
+      _res.json({
+        success: true,
+        message: `Test email sent to ${email}`,
       });
     } catch (error) {
       _res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
@@ -866,9 +883,9 @@ export class FinancialDashboardController {
     try {
       const { name } = req.params;
       // Note: This would need to be implemented in SchedulerService
-      _res.json({ 
-        success: true, 
-        message: `Job ${name} start requested` 
+      _res.json({
+        success: true,
+        message: `Job ${name} start requested`,
       });
     } catch (error) {
       _res.status(500).json({ error: (error as Error).message });
@@ -882,13 +899,13 @@ export class FinancialDashboardController {
     try {
       const { name } = req.params;
       const stopped = SchedulerService.stopJob(name);
-      
-      _res.json({ 
-        success: stopped, 
-        message: stopped ? `Job ${name} stopped` : `Job ${name} not found` 
+
+      _res.json({
+        success: stopped,
+        message: stopped ? `Job ${name} stopped` : `Job ${name} not found`,
       });
     } catch (error) {
       _res.status(500).json({ error: (error as Error).message });
     }
   }
-} 
+}

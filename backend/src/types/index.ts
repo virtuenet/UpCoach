@@ -248,7 +248,7 @@ export interface Subscription {
   cancelAtPeriodEnd: boolean;
 }
 
-export type SubscriptionStatus = 
+export type SubscriptionStatus =
   | 'active'
   | 'past_due'
   | 'canceled'
@@ -327,7 +327,12 @@ export interface UserProfile {
 }
 
 export type LearningStyle = 'visual' | 'auditory' | 'kinesthetic' | 'reading' | 'balanced';
-export type CommunicationPreference = 'supportive' | 'direct' | 'analytical' | 'motivational' | 'empathetic';
+export type CommunicationPreference =
+  | 'supportive'
+  | 'direct'
+  | 'analytical'
+  | 'motivational'
+  | 'empathetic';
 
 // ============================================
 // Notification Types
@@ -345,7 +350,7 @@ export interface Notification {
   createdAt: Date;
 }
 
-export type NotificationType = 
+export type NotificationType =
   | 'info'
   | 'success'
   | 'warning'

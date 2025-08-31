@@ -4,39 +4,39 @@
 
 // ARIA live region politeness levels
 export const ARIA_LIVE = {
-  OFF: "off",
-  POLITE: "polite",
-  ASSERTIVE: "assertive",
+  OFF: 'off',
+  POLITE: 'polite',
+  ASSERTIVE: 'assertive',
 } as const;
 
 // Common ARIA roles
 export const ARIA_ROLES = {
-  ALERT: "alert",
-  BUTTON: "button",
-  DIALOG: "dialog",
-  NAVIGATION: "navigation",
-  MAIN: "main",
-  BANNER: "banner",
-  CONTENTINFO: "contentinfo",
-  SEARCH: "search",
-  FORM: "form",
-  REGION: "region",
-  COMPLEMENTARY: "complementary",
-  STATUS: "status",
+  ALERT: 'alert',
+  BUTTON: 'button',
+  DIALOG: 'dialog',
+  NAVIGATION: 'navigation',
+  MAIN: 'main',
+  BANNER: 'banner',
+  CONTENTINFO: 'contentinfo',
+  SEARCH: 'search',
+  FORM: 'form',
+  REGION: 'region',
+  COMPLEMENTARY: 'complementary',
+  STATUS: 'status',
 } as const;
 
 // Keyboard codes
 export const KEYS = {
-  ENTER: "Enter",
-  SPACE: " ",
-  ESCAPE: "Escape",
-  TAB: "Tab",
-  ARROW_UP: "ArrowUp",
-  ARROW_DOWN: "ArrowDown",
-  ARROW_LEFT: "ArrowLeft",
-  ARROW_RIGHT: "ArrowRight",
-  HOME: "Home",
-  END: "End",
+  ENTER: 'Enter',
+  SPACE: ' ',
+  ESCAPE: 'Escape',
+  TAB: 'Tab',
+  ARROW_UP: 'ArrowUp',
+  ARROW_DOWN: 'ArrowDown',
+  ARROW_LEFT: 'ArrowLeft',
+  ARROW_RIGHT: 'ArrowRight',
+  HOME: 'Home',
+  END: 'End',
 } as const;
 
 /**
@@ -44,7 +44,7 @@ export const KEYS = {
  */
 export function trapFocus(container: HTMLElement) {
   const focusableElements = container.querySelectorAll<HTMLElement>(
-    'a[href], button, textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select, [tabindex]:not([tabindex="-1"])',
+    'a[href], button, textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select, [tabindex]:not([tabindex="-1"])'
   );
 
   const firstFocusable = focusableElements[0];
@@ -68,14 +68,14 @@ export function trapFocus(container: HTMLElement) {
     }
   }
 
-  container.addEventListener("keydown", handleKeyDown);
+  container.addEventListener('keydown', handleKeyDown);
 
   // Focus first element
   firstFocusable?.focus();
 
   // Return cleanup function
   return () => {
-    container.removeEventListener("keydown", handleKeyDown);
+    container.removeEventListener('keydown', handleKeyDown);
   };
 }
 
@@ -84,17 +84,17 @@ export function trapFocus(container: HTMLElement) {
  */
 export function announceToScreenReader(
   message: string,
-  politeness: keyof typeof ARIA_LIVE = "POLITE",
+  politeness: keyof typeof ARIA_LIVE = 'POLITE'
 ) {
-  const announcement = document.createElement("div");
-  announcement.setAttribute("role", ARIA_ROLES.STATUS);
-  announcement.setAttribute("aria-live", ARIA_LIVE[politeness]);
-  announcement.setAttribute("aria-atomic", "true");
-  announcement.style.position = "absolute";
-  announcement.style.left = "-10000px";
-  announcement.style.width = "1px";
-  announcement.style.height = "1px";
-  announcement.style.overflow = "hidden";
+  const announcement = document.createElement('div');
+  announcement.setAttribute('role', ARIA_ROLES.STATUS);
+  announcement.setAttribute('aria-live', ARIA_LIVE[politeness]);
+  announcement.setAttribute('aria-atomic', 'true');
+  announcement.style.position = 'absolute';
+  announcement.style.left = '-10000px';
+  announcement.style.width = '1px';
+  announcement.style.height = '1px';
+  announcement.style.overflow = 'hidden';
 
   announcement.textContent = message;
   document.body.appendChild(announcement);
@@ -110,14 +110,14 @@ export function announceToScreenReader(
  */
 export function getAccessibleName(element: HTMLElement): string {
   // Check aria-label
-  const ariaLabel = element.getAttribute("aria-label");
+  const ariaLabel = element.getAttribute('aria-label');
   if (ariaLabel) return ariaLabel;
 
   // Check aria-labelledby
-  const labelledBy = element.getAttribute("aria-labelledby");
+  const labelledBy = element.getAttribute('aria-labelledby');
   if (labelledBy) {
     const labelElement = document.getElementById(labelledBy);
-    if (labelElement) return labelElement.textContent || "";
+    if (labelElement) return labelElement.textContent || '';
   }
 
   // Check for associated label (for form inputs)
@@ -129,12 +129,12 @@ export function getAccessibleName(element: HTMLElement): string {
     const id = element.id;
     if (id) {
       const label = document.querySelector(`label[for="${id}"]`);
-      if (label) return label.textContent || "";
+      if (label) return label.textContent || '';
     }
   }
 
   // Check for text content
-  return element.textContent || "";
+  return element.textContent || '';
 }
 
 /**
@@ -143,7 +143,7 @@ export function getAccessibleName(element: HTMLElement): string {
 export function isFocusable(element: HTMLElement): boolean {
   if (element.tabIndex >= 0) return true;
 
-  const focusableTags = ["A", "BUTTON", "INPUT", "SELECT", "TEXTAREA"];
+  const focusableTags = ['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'];
   if (focusableTags.includes(element.tagName)) {
     return !(element as any).disabled;
   }
@@ -183,15 +183,11 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
     : null;
 }
 
-function getRelativeLuminance(rgb: {
-  r: number;
-  g: number;
-  b: number;
-}): number {
+function getRelativeLuminance(rgb: { r: number; g: number; b: number }): number {
   const { r, g, b } = rgb;
   const sRGB = [r / 255, g / 255, b / 255];
 
-  const rgb2 = sRGB.map((val) => {
+  const rgb2 = sRGB.map(val => {
     if (val <= 0.03928) {
       return val / 12.92;
     }
@@ -206,10 +202,10 @@ function getRelativeLuminance(rgb: {
  */
 export function meetsContrastStandard(
   ratio: number,
-  level: "AA" | "AAA" = "AA",
-  largeText: boolean = false,
+  level: 'AA' | 'AAA' = 'AA',
+  largeText: boolean = false
 ): boolean {
-  if (level === "AA") {
+  if (level === 'AA') {
     return largeText ? ratio >= 3 : ratio >= 4.5;
   } else {
     return largeText ? ratio >= 4.5 : ratio >= 7;
@@ -221,15 +217,15 @@ export function meetsContrastStandard(
  */
 export function createSkipLink(
   targetId: string,
-  text: string = "Skip to main content",
+  text: string = 'Skip to main content'
 ): HTMLAnchorElement {
-  const skipLink = document.createElement("a");
+  const skipLink = document.createElement('a');
   skipLink.href = `#${targetId}`;
   skipLink.className =
-    "sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary-600 text-white px-4 py-2 rounded-lg z-50";
+    'sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary-600 text-white px-4 py-2 rounded-lg z-50';
   skipLink.textContent = text;
 
-  skipLink.addEventListener("click", (e) => {
+  skipLink.addEventListener('click', e => {
     e.preventDefault();
     const target = document.getElementById(targetId);
     if (target) {
@@ -247,7 +243,7 @@ export function createSkipLink(
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number,
+  wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
 
@@ -271,10 +267,9 @@ export function formatTimeForScreenReader(seconds: number): string {
   const secs = seconds % 60;
 
   const parts = [];
-  if (hours > 0) parts.push(`${hours} hour${hours !== 1 ? "s" : ""}`);
-  if (minutes > 0) parts.push(`${minutes} minute${minutes !== 1 ? "s" : ""}`);
-  if (secs > 0 || parts.length === 0)
-    parts.push(`${secs} second${secs !== 1 ? "s" : ""}`);
+  if (hours > 0) parts.push(`${hours} hour${hours !== 1 ? 's' : ''}`);
+  if (minutes > 0) parts.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`);
+  if (secs > 0 || parts.length === 0) parts.push(`${secs} second${secs !== 1 ? 's' : ''}`);
 
-  return parts.join(", ");
+  return parts.join(', ');
 }

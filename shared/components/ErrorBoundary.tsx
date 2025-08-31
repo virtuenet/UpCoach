@@ -57,7 +57,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const { onError } = this.props;
-    
+
     // Log error to console in development
     if (process.env.NODE_ENV === 'development') {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
@@ -87,13 +87,13 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidUpdate(prevProps: Props) {
     const { resetKeys, resetOnPropsChange } = this.props;
-    
+
     // Reset error boundary when resetKeys change
     if (resetKeys && prevProps.resetKeys) {
       const hasResetKeyChanged = resetKeys.some(
         (key, index) => key !== this.previousResetKeys[index]
       );
-      
+
       if (hasResetKeyChanged) {
         this.resetErrorBoundary();
         this.previousResetKeys = resetKeys;
@@ -229,26 +229,26 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
   const showDetails = process.env.NODE_ENV === 'development';
 
   return (
-    <div className={`${getLevelStyles()} ${isolate ? 'bg-gray-50 dark:bg-gray-900 rounded-lg' : ''}`}>
+    <div
+      className={`${getLevelStyles()} ${isolate ? 'bg-gray-50 dark:bg-gray-900 rounded-lg' : ''}`}
+    >
       <div className="text-center max-w-md mx-auto">
         <div className="mb-4">
           <div className="mx-auto w-16 h-16 text-red-500 mb-4">
             <Icons.AlertTriangle className="w-full h-full" />
           </div>
-          
+
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            {level === 'page' 
-              ? 'Oops! Something went wrong' 
-              : 'Error loading content'}
+            {level === 'page' ? 'Oops! Something went wrong' : 'Error loading content'}
           </h2>
-          
+
           <p className="text-gray-600 dark:text-gray-400 mb-6">
             {level === 'page'
               ? "We're sorry, but something unexpected happened. Please try refreshing the page."
               : "This component couldn't load properly. The rest of the page should still work."}
           </p>
 
-          {errorCount > (MAX_ERROR_COUNT_BEFORE_DISABLE - 1) && (
+          {errorCount > MAX_ERROR_COUNT_BEFORE_DISABLE - 1 && (
             <div className="mb-4 p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
               <p className="text-sm text-yellow-800 dark:text-yellow-200">
                 Multiple errors detected. Consider refreshing the page.
@@ -266,7 +266,9 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
                   <span dangerouslySetInnerHTML={{ __html: sanitizeErrorMessage(error.message) }} />
                 </p>
                 <pre className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                  <span dangerouslySetInnerHTML={{ __html: sanitizeErrorMessage(error.stack || '') }} />
+                  <span
+                    dangerouslySetInnerHTML={{ __html: sanitizeErrorMessage(error.stack || '') }}
+                  />
                 </pre>
               </div>
             </details>
@@ -279,10 +281,10 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
             >
               Try again
             </button>
-            
+
             {level === 'page' && (
               <button
-                onClick={() => window.location.href = '/'}
+                onClick={() => (window.location.href = '/')}
                 className="px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
               >
                 Go to homepage
@@ -309,8 +311,7 @@ export function withErrorBoundary<P extends object>(
     </ErrorBoundary>
   );
 
-  WithErrorBoundaryComponent.displayName = 
-    `withErrorBoundary(${Component.displayName || Component.name || 'Component'})`;
+  WithErrorBoundaryComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name || 'Component'})`;
 
   return WithErrorBoundaryComponent;
 }

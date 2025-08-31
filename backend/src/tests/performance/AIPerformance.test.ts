@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import { AIService } from '../../services/ai/AIService';
 import { UserProfilingService } from '../../services/ai/UserProfilingService';
 import { RecommendationEngine } from '../../services/ai/RecommendationEngine';
@@ -18,12 +20,12 @@ describe('AI Services Performance Tests', () => {
 
   // Performance thresholds in milliseconds
   const PERFORMANCE_THRESHOLDS = {
-    aiResponse: 2000,        // 2 seconds for AI response
-    profileCreation: 500,    // 500ms for profile creation
-    recommendations: 1000,   // 1 second for recommendations
-    predictions: 800,        // 800ms for predictions
-    insights: 1500,         // 1.5 seconds for insights
-    batchOperations: 5000   // 5 seconds for batch operations
+    aiResponse: 2000, // 2 seconds for AI response
+    profileCreation: 500, // 500ms for profile creation
+    recommendations: 1000, // 1 second for recommendations
+    predictions: 800, // 800ms for predictions
+    insights: 1500, // 1.5 seconds for insights
+    batchOperations: 5000, // 5 seconds for batch operations
   };
 
   beforeAll(() => {
@@ -38,19 +40,17 @@ describe('AI Services Performance Tests', () => {
       content: 'Mock response',
       provider: 'openai',
       model: 'gpt-4',
-      usage: { totalTokens: 100 }
+      usage: { totalTokens: 100 },
     }));
 
     jest.spyOn(aiService, 'generateStructuredResponse').mockImplementation(async () => ({
-      recommendations: [{ title: 'Mock recommendation' }]
+      recommendations: [{ title: 'Mock recommendation' }],
     }));
   });
 
   describe('AI Response Performance', () => {
     test('generates response within threshold', async () => {
-      const messages = [
-        { role: 'user' as const, content: 'How can I improve my productivity?' }
-      ];
+      const messages = [{ role: 'user' as const, content: 'How can I improve my productivity?' }];
 
       const start = performance.now();
       await aiService.generateResponse(messages);
@@ -61,15 +61,13 @@ describe('AI Services Performance Tests', () => {
     });
 
     test('handles concurrent requests efficiently', async () => {
-      const messages = [
-        { role: 'user' as const, content: 'Test message' }
-      ];
+      const messages = [{ role: 'user' as const, content: 'Test message' }];
 
       const start = performance.now();
-      const promises = Array(5).fill(null).map(() => 
-        aiService.generateResponse(messages)
-      );
-      
+      const promises = Array(5)
+        .fill(null)
+        .map(() => aiService.generateResponse(messages));
+
       await Promise.all(promises);
       const duration = performance.now() - start;
 
@@ -79,9 +77,7 @@ describe('AI Services Performance Tests', () => {
     });
 
     test('streaming response performs well', async () => {
-      const messages = [
-        { role: 'user' as const, content: 'Tell me a story' }
-      ];
+      const messages = [{ role: 'user' as const, content: 'Tell me a story' }];
 
       // Mock streaming
       const mockStream = async function* () {
@@ -90,18 +86,16 @@ describe('AI Services Performance Tests', () => {
         }
       };
 
-      jest.spyOn(aiService, 'streamResponse').mockImplementation(async () => 
-        mockStream()
-      );
+      jest.spyOn(aiService, 'streamResponse').mockImplementation(async () => mockStream());
 
       const start = performance.now();
       const stream = await aiService.streamResponse(messages);
-      
+
       let chunkCount = 0;
       for await (const chunk of stream) {
         chunkCount++;
       }
-      
+
       const duration = performance.now() - start;
 
       expect(chunkCount).toBe(10);
@@ -147,11 +141,7 @@ describe('AI Services Performance Tests', () => {
   describe('Recommendation Engine Performance', () => {
     test('generates recommendations within threshold', async () => {
       const start = performance.now();
-      await recommendationEngine.generateRecommendations(
-        'user123',
-        ['habit', 'goal'],
-        5
-      );
+      await recommendationEngine.generateRecommendations('user123', ['habit', 'goal'], 5);
       const duration = performance.now() - start;
 
       expect(duration).toBeLessThan(PERFORMANCE_THRESHOLDS.recommendations);
@@ -197,12 +187,12 @@ describe('AI Services Performance Tests', () => {
     });
 
     test('batch predictions scale well', async () => {
-      const userIds = Array(10).fill(null).map((_, i) => `user${i}`);
+      const userIds = Array(10)
+        .fill(null)
+        .map((_, i) => `user${i}`);
 
       const start = performance.now();
-      const promises = userIds.map(id => 
-        predictiveAnalytics.predictChurnRisk(id)
-      );
+      const promises = userIds.map(id => predictiveAnalytics.predictChurnRisk(id));
       await Promise.all(promises);
       const duration = performance.now() - start;
 
@@ -237,9 +227,7 @@ describe('AI Services Performance Tests', () => {
 
       // Perform multiple operations
       for (let i = 0; i < 100; i++) {
-        await aiService.generateResponse([
-          { role: 'user' as const, content: 'Test message' }
-        ]);
+        await aiService.generateResponse([{ role: 'user' as const, content: 'Test message' }]);
       }
 
       // Force garbage collection if available
@@ -272,13 +260,17 @@ describe('AI Services Performance Tests', () => {
 
       // Cached call should be at least 5x faster
       expect(secondCallDuration).toBeLessThan(firstCallDuration / 5);
-      logger.info(`First call: ${firstCallDuration.toFixed(2)}ms, Cached: ${secondCallDuration.toFixed(2)}ms`);
+      logger.info(
+        `First call: ${firstCallDuration.toFixed(2)}ms, Cached: ${secondCallDuration.toFixed(2)}ms`
+      );
     });
   });
 
   describe('Database Query Performance', () => {
     test('bulk operations are optimized', async () => {
-      const userIds = Array(50).fill(null).map((_, i) => `bulk-user-${i}`);
+      const userIds = Array(50)
+        .fill(null)
+        .map((_, i) => `bulk-user-${i}`);
 
       const start = performance.now();
       // Simulate bulk profile fetch
@@ -295,10 +287,12 @@ describe('AI Services Performance Tests', () => {
 
   describe('API Rate Limiting', () => {
     test('handles rate limits gracefully', async () => {
-      const requests = Array(20).fill(null).map((_, i) => ({
-        role: 'user' as const,
-        content: `Request ${i}`
-      }));
+      const requests = Array(20)
+        .fill(null)
+        .map((_, i) => ({
+          role: 'user' as const,
+          content: `Request ${i}`,
+        }));
 
       const start = performance.now();
       const results = await Promise.allSettled(
@@ -309,8 +303,10 @@ describe('AI Services Performance Tests', () => {
       const successful = results.filter(r => r.status === 'fulfilled').length;
       const failed = results.filter(r => r.status === 'rejected').length;
 
-      logger.info(`20 requests: ${successful} successful, ${failed} failed in ${duration.toFixed(2)}ms`);
-      
+      logger.info(
+        `20 requests: ${successful} successful, ${failed} failed in ${duration.toFixed(2)}ms`
+      );
+
       // Should complete within reasonable time even with rate limiting
       expect(duration).toBeLessThan(10000); // 10 seconds
     });

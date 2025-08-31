@@ -1,8 +1,9 @@
-import { useState } from 'react'
-import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Link from '@tiptap/extension-link'
-import Image from '@tiptap/extension-image'
+import { useState } from 'react';
+import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Link from '@tiptap/extension-link';
+import Image from '@tiptap/extension-image';
 import {
   Bold,
   Italic,
@@ -16,17 +17,17 @@ import {
   Code,
   Heading1,
   Heading2,
-} from 'lucide-react'
-import UrlInputModal from './UrlInputModal'
+} from 'lucide-react';
+import UrlInputModal from './UrlInputModal';
 
 interface RichTextEditorProps {
-  content: string
-  onChange: (content: string) => void
+  content: string;
+  onChange: (content: string) => void;
 }
 
 export default function RichTextEditor({ content, onChange }: RichTextEditorProps) {
-  const [showLinkModal, setShowLinkModal] = useState(false)
-  const [showImageModal, setShowImageModal] = useState(false)
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -48,26 +49,27 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
     ],
     content,
     onUpdate: ({ editor }: { editor: any }) => {
-      onChange(editor.getHTML())
+      onChange(editor.getHTML());
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none min-h-[200px] p-4',
+        class:
+          'prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none min-h-[200px] p-4',
       },
     },
-  })
+  });
 
   if (!editor) {
-    return null
+    return null;
   }
 
   const handleAddLink = (url: string) => {
-    editor.chain().focus().setLink({ href: url }).run()
-  }
+    editor.chain().focus().setLink({ href: url }).run();
+  };
 
   const handleAddImage = (url: string) => {
-    editor.chain().focus().setImage({ src: url, alt: 'Content image' }).run()
-  }
+    editor.chain().focus().setImage({ src: url, alt: 'Content image' }).run();
+  };
 
   return (
     <div className="border border-gray-300 rounded-lg overflow-hidden">
@@ -182,7 +184,7 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
         </div>
       </div>
       <EditorContent editor={editor} className="tiptap-editor" />
-      
+
       {/* URL Input Modals */}
       <UrlInputModal
         isOpen={showLinkModal}
@@ -191,7 +193,7 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
         title="Add Link"
         placeholder="https://example.com"
       />
-      
+
       <UrlInputModal
         isOpen={showImageModal}
         onClose={() => setShowImageModal(false)}
@@ -201,5 +203,5 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
         validateImage={true}
       />
     </div>
-  )
-} 
+  );
+}

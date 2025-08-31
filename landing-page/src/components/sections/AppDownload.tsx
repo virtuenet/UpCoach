@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import Image from "next/image";
-import Link from "next/link";
-import { Apple, Smartphone, Download, Star } from "lucide-react";
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Apple, Smartphone, Download, Star } from 'lucide-react';
 
 export default function AppDownload() {
   return (
@@ -33,8 +33,8 @@ export default function AppDownload() {
                 Start Your Transformation Journey Today
               </h2>
               <p className="text-xl mb-8 text-white/90">
-                Download UpCoach now and join thousands who are achieving their
-                goals with AI-powered coaching.
+                Download UpCoach now and join thousands who are achieving their goals with
+                AI-powered coaching.
               </p>
 
               {/* App Store Stats */}
@@ -48,16 +48,12 @@ export default function AppDownload() {
                     <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                   </div>
                   <div className="text-2xl font-bold">4.9/5</div>
-                  <div className="text-sm text-white/70">
-                    10,000+ App Store Reviews
-                  </div>
+                  <div className="text-sm text-white/70">10,000+ App Store Reviews</div>
                 </div>
                 <div>
                   <Download className="w-8 h-8 mb-2 text-white/80" />
                   <div className="text-2xl font-bold">50K+</div>
-                  <div className="text-sm text-white/70">
-                    Downloads This Month
-                  </div>
+                  <div className="text-sm text-white/70">Downloads This Month</div>
                 </div>
               </div>
 
@@ -82,11 +78,7 @@ export default function AppDownload() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <svg
-                    className="w-8 h-8"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
+                  <svg className="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z" />
                   </svg>
                   <div className="text-left">
@@ -110,8 +102,7 @@ export default function AppDownload() {
                 <div className="text-sm">
                   <p className="font-semibold mb-1">Scan to Download</p>
                   <p className="text-white/70">
-                    Point your camera at the QR code to download the app
-                    instantly
+                    Point your camera at the QR code to download the app instantly
                   </p>
                 </div>
               </div>
@@ -132,7 +123,7 @@ export default function AppDownload() {
                   transition={{
                     duration: 4,
                     repeat: Infinity,
-                    ease: "easeInOut",
+                    ease: 'easeInOut',
                   }}
                   className="relative z-20"
                 >
@@ -153,7 +144,7 @@ export default function AppDownload() {
                   transition={{
                     duration: 4,
                     repeat: Infinity,
-                    ease: "easeInOut",
+                    ease: 'easeInOut',
                     delay: 2,
                   }}
                   className="relative z-10 -ml-12"
@@ -173,12 +164,12 @@ export default function AppDownload() {
               {/* Floating Elements */}
               <motion.div
                 animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
                 className="absolute -top-8 -right-8 w-24 h-24 bg-white/10 rounded-full blur-xl"
               />
               <motion.div
                 animate={{ rotate: -360 }}
-                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
                 className="absolute -bottom-8 -left-8 w-32 h-32 bg-white/10 rounded-full blur-xl"
               />
             </motion.div>

@@ -84,11 +84,7 @@ router.post(
   enterpriseController.createTeam
 );
 
-router.put(
-  '/teams/:teamId',
-  authorize('team', 'lead'),
-  enterpriseController.updateTeam
-);
+router.put('/teams/:teamId', authorize('team', 'lead'), enterpriseController.updateTeam);
 
 router.get(
   '/organizations/:organizationId/teams',
@@ -99,10 +95,7 @@ router.get(
 router.post(
   '/teams/:teamId/members',
   authorize('team', 'lead'),
-  [
-    body('userId').isInt(),
-    body('role').isIn(['member', 'lead', 'admin']),
-  ],
+  [body('userId').isInt(), body('role').isIn(['member', 'lead', 'admin'])],
   validateRequest,
   enterpriseController.addTeamMember
 );
@@ -139,26 +132,13 @@ router.put(
 );
 
 // SSO authentication endpoints (no auth required)
-router.get(
-  '/sso/login/:configId',
-  enterpriseController.initiateSSOLogin
-);
+router.get('/sso/login/:configId', enterpriseController.initiateSSOLogin);
 
-router.post(
-  '/sso/saml/callback/:configId',
-  enterpriseController.handleSAMLCallback
-);
+router.post('/sso/saml/callback/:configId', enterpriseController.handleSAMLCallback);
 
-router.get(
-  '/sso/oidc/callback/:configId',
-  enterpriseController.handleOIDCCallback
-);
+router.get('/sso/oidc/callback/:configId', enterpriseController.handleOIDCCallback);
 
-router.post(
-  '/sso/logout',
-  authenticate,
-  enterpriseController.ssoLogout
-);
+router.post('/sso/logout', authenticate, enterpriseController.ssoLogout);
 
 // Enterprise policies
 router.post(

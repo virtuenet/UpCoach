@@ -7,11 +7,8 @@ module.exports = defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   workers: 1,
-  reporter: [
-    ['list'],
-    ['html', { outputFolder: '../test-results/playwright-report' }]
-  ],
-  
+  reporter: [['list'], ['html', { outputFolder: '../test-results/playwright-report' }]],
+
   use: {
     baseURL: 'http://localhost:8005',
     trace: 'on-first-retry',
@@ -24,10 +21,10 @@ module.exports = defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
     },
   ],
-}); 
+});

@@ -1,8 +1,13 @@
-import LoadingSpinner from "../components/LoadingSpinner";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useAuthStore } from '../stores/authStore';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -41,15 +46,15 @@ export default function LoginPage() {
             Sign in to access the admin dashboard
           </p>
         </div>
-        <form 
-          className="mt-8 space-y-6" 
+        <form
+          className="mt-8 space-y-6"
           onSubmit={handleSubmit(onSubmit)}
           aria-label="Login form"
           noValidate
         >
           {/* Screen reader announcements */}
           <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-            {isLoading && "Logging in, please wait."}
+            {isLoading && 'Logging in, please wait.'}
           </div>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
@@ -57,13 +62,13 @@ export default function LoginPage() {
                 Email address
               </label>
               <input
-                {...register("email")}
+                {...register('email')}
                 id="email-field"
                 type="email"
                 autoComplete="email"
                 required
                 aria-invalid={!!errors.email}
-                aria-describedby={errors.email ? "email-error" : undefined}
+                aria-describedby={errors.email ? 'email-error' : undefined}
                 aria-required="true"
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
@@ -79,13 +84,13 @@ export default function LoginPage() {
                 Password
               </label>
               <input
-                {...register("password")}
+                {...register('password')}
                 id="password-field"
                 type="password"
                 autoComplete="current-password"
                 required
                 aria-invalid={!!errors.password}
-                aria-describedby={errors.password ? "password-error" : undefined}
+                aria-describedby={errors.password ? 'password-error' : undefined}
                 aria-required="true"
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
@@ -103,7 +108,7 @@ export default function LoginPage() {
               type="submit"
               disabled={isLoading}
               aria-busy={isLoading}
-              aria-label={isLoading ? "Signing in, please wait" : "Sign in"}
+              aria-label={isLoading ? 'Signing in, please wait' : 'Sign in'}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
@@ -112,7 +117,7 @@ export default function LoginPage() {
                   <span className="sr-only">Signing in, please wait</span>
                 </>
               ) : (
-                "Sign in"
+                'Sign in'
               )}
             </button>
           </div>

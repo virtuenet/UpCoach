@@ -43,7 +43,7 @@ export class UserProfilingService {
             sessionFrequency: 'weekly',
             sessionDuration: 30,
             preferredTimes: ['morning', 'evening'],
-            focusAreas: ['productivity', 'wellbeing']
+            focusAreas: ['productivity', 'wellbeing'],
           },
           behaviorPatterns: {
             avgSessionDuration: 0,
@@ -51,7 +51,7 @@ export class UserProfilingService {
             engagementLevel: 0,
             preferredTopics: [],
             responseTime: 0,
-            consistencyScore: 0
+            consistencyScore: 0,
           },
           progressMetrics: {
             totalGoalsSet: 0,
@@ -60,12 +60,12 @@ export class UserProfilingService {
             longestStreak: 0,
             totalSessions: 0,
             accountAge: 0,
-            lastActiveDate: new Date()
+            lastActiveDate: new Date(),
           },
           strengths: [],
           growthAreas: [],
           motivators: [],
-          obstacles: []
+          obstacles: [],
         });
       }
 
@@ -95,13 +95,13 @@ export class UserProfilingService {
     const completedGoals = goals.filter(g => g.status === 'completed');
 
     // Get task metrics
-    const tasks = await Task.findAll({ 
-      where: { 
+    const tasks = await Task.findAll({
+      where: {
         userId: profile.userId,
         updatedAt: {
-          [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
-        }
-      }
+          [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
+        },
+      },
     });
 
     const completedTasks = tasks.filter(t => t.status === 'completed');
@@ -114,10 +114,12 @@ export class UserProfilingService {
     // Get session metrics
     const sessions = await Chat.findAll({
       where: { userId: profile.userId },
-      include: [{
-        model: ChatMessage,
-        as: 'messages'
-      }]
+      include: [
+        {
+          model: ChatMessage,
+          as: 'messages',
+        },
+      ],
     });
 
     const totalSessions = sessions.length;
@@ -131,7 +133,7 @@ export class UserProfilingService {
       longestStreak,
       totalSessions,
       accountAge,
-      lastActiveDate: new Date()
+      lastActiveDate: new Date(),
     };
 
     // Update behavior patterns
@@ -146,19 +148,21 @@ export class UserProfilingService {
   private async analyzeUserBehavior(profile: UserProfile): Promise<void> {
     // Analyze chat messages for communication patterns
     const recentMessages = await ChatMessage.findAll({
-      include: [{
-        model: Chat,
-        as: 'chat',
-        where: { userId: profile.userId }
-      }],
+      include: [
+        {
+          model: Chat,
+          as: 'chat',
+          where: { userId: profile.userId },
+        },
+      ],
       order: [['createdAt', 'DESC']],
-      limit: 100
+      limit: 100,
     });
 
     if (recentMessages.length > 0) {
       // Analyze message patterns
       const patterns = await this.analyzeMessagePatterns(recentMessages);
-      
+
       if (profile.behaviorPatterns) {
         profile.behaviorPatterns?.preferredTopics = patterns.topics;
         profile.behaviorPatterns?.responseTime = patterns.avgResponseTime;
@@ -171,17 +175,17 @@ export class UserProfilingService {
       where: {
         userId: profile.userId,
         createdAt: {
-          [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-        }
+          [Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+        },
       },
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
     });
 
     if (recentMoods.length > 0) {
       const moodPatterns = this.analyzeMoodPatterns(recentMoods);
       profile.metadata = {
         ...profile.metadata,
-        moodPatterns
+        moodPatterns,
       };
     }
 
@@ -193,7 +197,7 @@ export class UserProfilingService {
     const userContext = {
       progressMetrics: profile.progressMetrics,
       behaviorPatterns: profile.behaviorPatterns,
-      metadata: profile.metadata
+      metadata: profile.metadata,
     };
 
     const insights = await this.generateAIInsights(userContext);
@@ -203,7 +207,10 @@ export class UserProfilingService {
       profile.learningStyle = insights.learningStyle as any;
     }
 
-    if (insights.communicationPreference && insights.communicationPreference !== profile.communicationPreference) {
+    if (
+      insights.communicationPreference &&
+      insights.communicationPreference !== profile.communicationPreference
+    ) {
       profile.communicationPreference = insights.communicationPreference as any;
     }
 
@@ -232,10 +239,10 @@ export class UserProfilingService {
         userId,
         status: 'completed',
         completedAt: {
-          [Op.ne as any]: null
-        }
+          [Op.ne as any]: null,
+        },
       } as any,
-      order: [['completedAt', 'DESC']]
+      order: [['completedAt', 'DESC']],
     });
 
     if (tasks.length === 0) return 0;
@@ -245,7 +252,7 @@ export class UserProfilingService {
     today.setHours(0, 0, 0, 0);
 
     let currentDate = new Date(today);
-    
+
     while (true) {
       const tasksOnDate = tasks.filter(t => {
         const taskDate = new Date(t.completedAt!);
@@ -277,22 +284,22 @@ export class UserProfilingService {
 
       const firstMessage = session.messages[session.messages.length - 1];
       const lastMessage = session.messages[0];
-      
-      return (new Date(lastMessage.createdAt).getTime() - 
-              new Date(firstMessage.createdAt).getTime()) / (1000 * 60); // minutes
+
+      return (
+        (new Date(lastMessage.createdAt).getTime() - new Date(firstMessage.createdAt).getTime()) /
+        (1000 * 60)
+      ); // minutes
     });
 
     const validDurations = durations.filter(d => d > 0 && d < 120); // Filter out outliers
     if (validDurations.length === 0) return 0;
 
-    return Math.round(
-      validDurations.reduce((sum, d) => sum + d, 0) / validDurations.length
-    );
+    return Math.round(validDurations.reduce((sum, d) => sum + d, 0) / validDurations.length);
   }
 
   private async analyzeMessagePatterns(messages: any[]): Promise<any> {
     const userMessages = messages.filter((m: any) => m.role === 'user');
-    
+
     // Topic extraction
     const topicKeywords = {
       goals: ['goal', 'objective', 'target', 'achieve', 'plan'],
@@ -300,11 +307,11 @@ export class UserProfilingService {
       productivity: ['productivity', 'efficient', 'task', 'time', 'focus'],
       wellbeing: ['mood', 'stress', 'happy', 'anxious', 'energy', 'health'],
       motivation: ['motivation', 'inspire', 'drive', 'passion', 'purpose'],
-      progress: ['progress', 'improvement', 'growth', 'development', 'success']
+      progress: ['progress', 'improvement', 'growth', 'development', 'success'],
     };
 
     const topicCounts: Record<string, number> = {};
-    
+
     userMessages.forEach(msg => {
       const content = msg.content.toLowerCase();
       Object.entries(topicKeywords).forEach(([topic, keywords]) => {
@@ -322,33 +329,42 @@ export class UserProfilingService {
     // Calculate average response time
     let responseTimes: number[] = [];
     for (let i = 1; i < messages.length; i++) {
-      if (messages[i].role === 'user' && messages[i-1].role === 'assistant') {
-        const timeDiff = (new Date(messages[i].createdAt).getTime() - 
-                         new Date(messages[i-1].createdAt).getTime()) / (1000 * 60);
-        if (timeDiff > 0 && timeDiff < 60) { // Within an hour
+      if (messages[i].role === 'user' && messages[i - 1].role === 'assistant') {
+        const timeDiff =
+          (new Date(messages[i].createdAt).getTime() -
+            new Date(messages[i - 1].createdAt).getTime()) /
+          (1000 * 60);
+        if (timeDiff > 0 && timeDiff < 60) {
+          // Within an hour
           responseTimes.push(timeDiff);
         }
       }
     }
 
-    const avgResponseTime = responseTimes.length > 0
-      ? Math.round(responseTimes.reduce((sum, t) => sum + t, 0) / responseTimes.length)
-      : 10;
+    const avgResponseTime =
+      responseTimes.length > 0
+        ? Math.round(responseTimes.reduce((sum, t) => sum + t, 0) / responseTimes.length)
+        : 10;
 
     // Calculate engagement level (0-100)
-    const messagesPerSession = messages.length / Math.max(1, messages.filter((m: any) => m.isFirstInSession).length);
-    const avgMessageLength = userMessages.reduce((sum, m) => sum + m.content.length, 0) / Math.max(1, userMessages.length);
-    
-    const engagementLevel = Math.min(100, Math.round(
-      (messagesPerSession * 2) + // Weight: 2x
-      (Math.min(avgMessageLength / 10, 10) * 3) + // Weight: 3x, cap at 10
-      (preferredTopics.length * 10) // Weight: 10 per topic
-    ));
+    const messagesPerSession =
+      messages.length / Math.max(1, messages.filter((m: any) => m.isFirstInSession).length);
+    const avgMessageLength =
+      userMessages.reduce((sum, m) => sum + m.content.length, 0) / Math.max(1, userMessages.length);
+
+    const engagementLevel = Math.min(
+      100,
+      Math.round(
+        messagesPerSession * 2 + // Weight: 2x
+          Math.min(avgMessageLength / 10, 10) * 3 + // Weight: 3x, cap at 10
+          preferredTopics.length * 10 // Weight: 10 per topic
+      )
+    );
 
     return {
       topics: preferredTopics,
       avgResponseTime,
-      engagementLevel
+      engagementLevel,
     };
   }
 
@@ -361,8 +377,8 @@ export class UserProfilingService {
       totalEnergy += mood.energy || 5;
     });
 
-    const dominantMood = Object.entries(moodCounts)
-      .sort(([, a], [, b]) => b - a)[0]?.[0] || 'neutral';
+    const dominantMood =
+      Object.entries(moodCounts).sort(([, a], [, b]) => b - a)[0]?.[0] || 'neutral';
 
     const avgEnergy = Math.round(totalEnergy / moods.length);
 
@@ -370,17 +386,23 @@ export class UserProfilingService {
     const recentMoods = moods.slice(0, 7);
     const olderMoods = moods.slice(7, 14);
 
-    const recentAvgEnergy = recentMoods.reduce((sum, m) => sum + (m.energy || 5), 0) / Math.max(1, recentMoods.length);
-    const olderAvgEnergy = olderMoods.reduce((sum, m) => sum + (m.energy || 5), 0) / Math.max(1, olderMoods.length);
+    const recentAvgEnergy =
+      recentMoods.reduce((sum, m) => sum + (m.energy || 5), 0) / Math.max(1, recentMoods.length);
+    const olderAvgEnergy =
+      olderMoods.reduce((sum, m) => sum + (m.energy || 5), 0) / Math.max(1, olderMoods.length);
 
-    const energyTrend = recentAvgEnergy > olderAvgEnergy ? 'improving' : 
-                       recentAvgEnergy < olderAvgEnergy ? 'declining' : 'stable';
+    const energyTrend =
+      recentAvgEnergy > olderAvgEnergy
+        ? 'improving'
+        : recentAvgEnergy < olderAvgEnergy
+          ? 'declining'
+          : 'stable';
 
     return {
       dominantMood,
       avgEnergy,
       energyTrend,
-      moodVariability: Object.keys(moodCounts).length
+      moodVariability: Object.keys(moodCounts).length,
     };
   }
 
@@ -409,25 +431,29 @@ Based on this data, provide a JSON response with:
 Consider completion rates, consistency, engagement patterns, and mood data in your analysis.`;
 
     try {
-      const response = await aiService.generateResponse([
+      const response = await aiService.generateResponse(
+        [
+          {
+            role: 'system',
+            content:
+              'You are an expert behavioral analyst specializing in user profiling and personalized coaching recommendations. Always respond with valid JSON.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
         {
-          role: 'system',
-          content: 'You are an expert behavioral analyst specializing in user profiling and personalized coaching recommendations. Always respond with valid JSON.'
-        },
-        {
-          role: 'user',
-          content: prompt
+          temperature: 0.3,
+          maxTokens: 1000,
         }
-      ], {
-        temperature: 0.3,
-        maxTokens: 1000
-      });
+      );
 
       const insights = JSON.parse(response.content);
       return insights;
     } catch (error) {
       logger.error('Error generating AI insights:', error);
-      
+
       // Return default insights
       return {
         learningStyle: 'balanced',
@@ -437,7 +463,7 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
         growthAreas: ['consistency', 'goal completion'],
         motivators: ['progress tracking', 'achievement'],
         obstacles: ['time management'],
-        recommendations: ['Set smaller, achievable goals', 'Focus on daily habits']
+        recommendations: ['Set smaller, achievable goals', 'Focus on daily habits'],
       };
     }
   }
@@ -452,44 +478,67 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
         category: 'Learning Style',
         insight: `You appear to be a ${profile.learningStyle} learner. We'll adapt coaching to include more ${this.getLearningStyleRecommendations(profile.learningStyle || 'balanced')}.`,
         confidence: 0.8,
-        evidence: ['Based on your interaction patterns', 'Derived from content preferences']
+        evidence: ['Based on your interaction patterns', 'Derived from content preferences'],
       });
     }
 
     // Consistency insight
-    if (profile.behaviorPatterns?.consistencyScore && profile.behaviorPatterns?.consistencyScore > 70) {
+    if (
+      profile.behaviorPatterns?.consistencyScore &&
+      profile.behaviorPatterns?.consistencyScore > 70
+    ) {
       insights.push({
         category: 'Consistency',
-        insight: 'Your consistency is excellent! You engage regularly, which is key to achieving your goals.',
+        insight:
+          'Your consistency is excellent! You engage regularly, which is key to achieving your goals.',
         confidence: 0.9,
-        evidence: [`${profile.behaviorPatterns?.consistencyScore}% consistency score`, `${profile.progressMetrics?.currentStreak} day streak`]
+        evidence: [
+          `${profile.behaviorPatterns?.consistencyScore}% consistency score`,
+          `${profile.progressMetrics?.currentStreak} day streak`,
+        ],
       });
-    } else if (profile.behaviorPatterns?.consistencyScore && profile.behaviorPatterns?.consistencyScore < 40) {
+    } else if (
+      profile.behaviorPatterns?.consistencyScore &&
+      profile.behaviorPatterns?.consistencyScore < 40
+    ) {
       insights.push({
         category: 'Consistency',
-        insight: 'Building consistency could accelerate your progress. Consider setting daily reminders.',
+        insight:
+          'Building consistency could accelerate your progress. Consider setting daily reminders.',
         confidence: 0.85,
-        evidence: [`${profile.behaviorPatterns?.consistencyScore}% consistency score`, 'Irregular engagement patterns']
+        evidence: [
+          `${profile.behaviorPatterns?.consistencyScore}% consistency score`,
+          'Irregular engagement patterns',
+        ],
       });
     }
 
     // Engagement insight
-    if (profile.behaviorPatterns?.engagementLevel && profile.behaviorPatterns?.engagementLevel > 70) {
+    if (
+      profile.behaviorPatterns?.engagementLevel &&
+      profile.behaviorPatterns?.engagementLevel > 70
+    ) {
       insights.push({
         category: 'Engagement',
         insight: 'Your high engagement level shows strong commitment. Keep up the great work!',
         confidence: 0.85,
-        evidence: [`${profile.behaviorPatterns?.engagementLevel}% engagement level`, 'Active participation in sessions']
+        evidence: [
+          `${profile.behaviorPatterns?.engagementLevel}% engagement level`,
+          'Active participation in sessions',
+        ],
       });
     }
 
     // Topic preferences
-    if (profile.behaviorPatterns?.preferredTopics && profile.behaviorPatterns?.preferredTopics.length > 0) {
+    if (
+      profile.behaviorPatterns?.preferredTopics &&
+      profile.behaviorPatterns?.preferredTopics.length > 0
+    ) {
       insights.push({
         category: 'Focus Areas',
         insight: `You're most interested in ${profile.behaviorPatterns?.preferredTopics?.join(', ')}. We'll prioritize content in these areas.`,
         confidence: 0.75,
-        evidence: ['Derived from conversation history', 'Based on goal categories']
+        evidence: ['Derived from conversation history', 'Based on goal categories'],
       });
     }
 
@@ -499,7 +548,10 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
         category: 'Strengths',
         insight: `Your key strengths include ${profile.strengths?.slice(0, 3).join(', ')}. Leverage these for faster progress.`,
         confidence: 0.8,
-        evidence: ['Identified through behavioral analysis', 'Consistent demonstration in activities']
+        evidence: [
+          'Identified through behavioral analysis',
+          'Consistent demonstration in activities',
+        ],
       });
     }
 
@@ -509,7 +561,7 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
         category: 'Growth Opportunities',
         insight: `Focus on developing ${profile.growthAreas[0]} to unlock your next level of growth.`,
         confidence: 0.75,
-        evidence: ['Area with most improvement potential', 'Common challenge in your journey']
+        evidence: ['Area with most improvement potential', 'Common challenge in your journey'],
       });
     }
 
@@ -522,7 +574,7 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
       auditory: 'voice notes, discussions, and audio content',
       kinesthetic: 'hands-on exercises and practical applications',
       reading: 'detailed written guides and documentation',
-      balanced: 'varied content formats'
+      balanced: 'varied content formats',
     };
 
     return recommendations[style] || recommendations.balanced;
@@ -542,7 +594,7 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
     if (preferences.coachingPreferences) {
       profile.coachingPreferences = {
         ...profile.coachingPreferences,
-        ...preferences.coachingPreferences
+        ...preferences.coachingPreferences,
       };
     }
 
@@ -567,13 +619,19 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
     }
 
     // Based on consistency
-    if (profile.behaviorPatterns?.consistencyScore && profile.behaviorPatterns?.consistencyScore < 40) {
+    if (
+      profile.behaviorPatterns?.consistencyScore &&
+      profile.behaviorPatterns?.consistencyScore < 40
+    ) {
       recommendations.push('Set a specific time each day for your coaching check-in');
       recommendations.push('Use reminders to maintain your momentum');
     }
 
     // Based on engagement
-    if (profile.behaviorPatterns?.engagementLevel && profile.behaviorPatterns?.engagementLevel < 30) {
+    if (
+      profile.behaviorPatterns?.engagementLevel &&
+      profile.behaviorPatterns?.engagementLevel < 30
+    ) {
       recommendations.push('Try voice journaling for a more natural interaction');
       recommendations.push('Explore different coaching methods to find what resonates');
     }
@@ -615,23 +673,25 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
 
     // Calculate readiness score
     let score = 0;
-    
+
     // Account age (max 20 points)
     score += Math.min((profile.progressMetrics?.accountAge || 0) / 5, 20);
-    
+
     // Consistency (max 30 points)
     score += ((profile.behaviorPatterns?.consistencyScore || 0) / 100) * 30;
-    
+
     // Completion rate (max 25 points)
     score += ((profile.behaviorPatterns?.completionRate || 0) / 100) * 25;
-    
+
     // Engagement (max 15 points)
     score += ((profile.behaviorPatterns?.engagementLevel || 0) / 100) * 15;
-    
+
     // Goals completed (max 10 points)
-    const goalCompletionRate = (profile.progressMetrics?.totalGoalsSet || 0) > 0
-      ? (profile.progressMetrics?.goalsCompleted || 0) / (profile.progressMetrics?.totalGoalsSet || 1)
-      : 0;
+    const goalCompletionRate =
+      (profile.progressMetrics?.totalGoalsSet || 0) > 0
+        ? (profile.progressMetrics?.goalsCompleted || 0) /
+          (profile.progressMetrics?.totalGoalsSet || 1)
+        : 0;
     score += goalCompletionRate * 10;
 
     // Determine level
@@ -641,21 +701,23 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
 
     if (score < 30) {
       level = 'beginner';
-      reasoning = "You're just getting started on your journey. Focus on building consistent habits.";
+      reasoning =
+        "You're just getting started on your journey. Focus on building consistent habits.";
       nextSteps = [
         'Complete your first week streak',
         'Set one simple, achievable goal',
         'Explore different coaching methods',
-        'Establish a daily check-in routine'
+        'Establish a daily check-in routine',
       ];
     } else if (score < 70) {
       level = 'intermediate';
-      reasoning = "You've built a foundation. Now it's time to challenge yourself and deepen your practice.";
+      reasoning =
+        "You've built a foundation. Now it's time to challenge yourself and deepen your practice.";
       nextSteps = [
         'Increase goal complexity',
         'Mentor or inspire others',
         'Track advanced metrics',
-        'Develop expertise in focus areas'
+        'Develop expertise in focus areas',
       ];
     } else {
       level = 'advanced';
@@ -664,7 +726,7 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
         'Set ambitious stretch goals',
         'Share your success strategies',
         'Become a community leader',
-        'Master advanced techniques'
+        'Master advanced techniques',
       ];
     }
 

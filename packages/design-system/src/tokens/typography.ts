@@ -13,18 +13,18 @@ export const typography = {
 
   // Font sizes
   fontSize: {
-    xs: '0.75rem',     // 12px - Small labels, captions
-    sm: '0.875rem',    // 14px - Secondary text, form labels
-    base: '1rem',      // 16px - Body text
-    lg: '1.125rem',    // 18px - Large body text
-    xl: '1.25rem',     // 20px - Small headings
-    '2xl': '1.5rem',   // 24px - Medium headings
+    xs: '0.75rem', // 12px - Small labels, captions
+    sm: '0.875rem', // 14px - Secondary text, form labels
+    base: '1rem', // 16px - Body text
+    lg: '1.125rem', // 18px - Large body text
+    xl: '1.25rem', // 20px - Small headings
+    '2xl': '1.5rem', // 24px - Medium headings
     '3xl': '1.875rem', // 30px - Large headings
-    '4xl': '2.25rem',  // 36px - Page headings
-    '5xl': '3rem',     // 48px - Hero headings
-    '6xl': '3.75rem',  // 60px - Display text
-    '7xl': '4.5rem',   // 72px - Large display
-    '8xl': '6rem',     // 96px - Extra large display
+    '4xl': '2.25rem', // 36px - Page headings
+    '5xl': '3rem', // 48px - Hero headings
+    '6xl': '3.75rem', // 60px - Display text
+    '7xl': '4.5rem', // 72px - Large display
+    '8xl': '6rem', // 96px - Extra large display
   },
 
   // Line heights

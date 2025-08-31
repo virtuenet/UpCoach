@@ -38,7 +38,14 @@ module.exports = {
         comment: 'Coaching session identifier',
       },
       memoryType: {
-        type: Sequelize.ENUM('conversation', 'insight', 'goal', 'pattern', 'preference', 'milestone'),
+        type: Sequelize.ENUM(
+          'conversation',
+          'insight',
+          'goal',
+          'pattern',
+          'preference',
+          'milestone'
+        ),
         allowNull: false,
       },
       content: {
@@ -328,7 +335,15 @@ module.exports = {
         allowNull: false,
       },
       category: {
-        type: Sequelize.ENUM('financial', 'professional', 'personal', 'health', 'relationships', 'skills', 'custom'),
+        type: Sequelize.ENUM(
+          'financial',
+          'professional',
+          'personal',
+          'health',
+          'relationships',
+          'skills',
+          'custom'
+        ),
         allowNull: false,
       },
       objective: {
@@ -377,7 +392,14 @@ module.exports = {
         },
       },
       status: {
-        type: Sequelize.ENUM('not_started', 'in_progress', 'at_risk', 'completed', 'failed', 'paused'),
+        type: Sequelize.ENUM(
+          'not_started',
+          'in_progress',
+          'at_risk',
+          'completed',
+          'failed',
+          'paused'
+        ),
         allowNull: false,
         defaultValue: 'not_started',
       },
@@ -537,5 +559,5 @@ module.exports = {
     await queryInterface.dropTable('coach_memories');
 
     console.log('❌ Coach Intelligence tables dropped');
-  }
-}; 
+  },
+};

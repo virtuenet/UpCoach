@@ -4,7 +4,8 @@ export const seoConfig = {
   default: {
     title: 'UpCoach - AI-Powered Personal Coaching Platform',
     titleTemplate: '%s | UpCoach',
-    description: 'Transform your life with UpCoach\'s AI-powered coaching platform. Track habits, set goals, journal your thoughts, and get personalized insights to achieve your full potential.',
+    description:
+      "Transform your life with UpCoach's AI-powered coaching platform. Track habits, set goals, journal your thoughts, and get personalized insights to achieve your full potential.",
     canonical: 'https://upcoach.ai',
     openGraph: {
       type: 'website',
@@ -80,33 +81,44 @@ export const seoConfig = {
   pages: {
     home: {
       title: 'AI-Powered Personal Coaching Platform',
-      description: 'Transform your life with personalized AI coaching. Track habits, achieve goals, and unlock your potential with UpCoach\'s intelligent coaching platform.',
-      keywords: 'ai coaching, personal development, habit tracking, goal setting, productivity app, life coach app, wellness platform',
+      description:
+        "Transform your life with personalized AI coaching. Track habits, achieve goals, and unlock your potential with UpCoach's intelligent coaching platform.",
+      keywords:
+        'ai coaching, personal development, habit tracking, goal setting, productivity app, life coach app, wellness platform',
     },
     pricing: {
       title: 'Pricing & Plans - Start Your Transformation',
-      description: 'Choose the perfect UpCoach plan for your journey. Free trial available. No credit card required. Cancel anytime.',
-      keywords: 'upcoach pricing, coaching app cost, ai coach subscription, personal development app pricing',
+      description:
+        'Choose the perfect UpCoach plan for your journey. Free trial available. No credit card required. Cancel anytime.',
+      keywords:
+        'upcoach pricing, coaching app cost, ai coach subscription, personal development app pricing',
     },
     features: {
       title: 'Features - Everything You Need to Succeed',
-      description: 'Discover UpCoach\'s powerful features: AI coaching, habit tracking, voice journaling, progress photos, goal setting, and personalized insights.',
-      keywords: 'ai coaching features, habit tracker, voice journal app, progress tracking, goal achievement tools',
+      description:
+        "Discover UpCoach's powerful features: AI coaching, habit tracking, voice journaling, progress photos, goal setting, and personalized insights.",
+      keywords:
+        'ai coaching features, habit tracker, voice journal app, progress tracking, goal achievement tools',
     },
     about: {
       title: 'About Us - Our Mission to Empower You',
-      description: 'Learn about UpCoach\'s mission to democratize personal coaching through AI technology. Meet our team and discover our story.',
-      keywords: 'about upcoach, coaching platform story, ai coaching company, personal development mission',
+      description:
+        "Learn about UpCoach's mission to democratize personal coaching through AI technology. Meet our team and discover our story.",
+      keywords:
+        'about upcoach, coaching platform story, ai coaching company, personal development mission',
     },
     contact: {
       title: 'Contact Us - Get in Touch',
-      description: 'Have questions about UpCoach? Contact our support team for help with your coaching journey.',
+      description:
+        'Have questions about UpCoach? Contact our support team for help with your coaching journey.',
       keywords: 'contact upcoach, coaching support, customer service, help center',
     },
     blog: {
       title: 'Blog - Insights for Personal Growth',
-      description: 'Expert advice, tips, and strategies for personal development, productivity, and achieving your goals with AI coaching.',
-      keywords: 'personal development blog, coaching tips, productivity advice, goal achievement strategies',
+      description:
+        'Expert advice, tips, and strategies for personal development, productivity, and achieving your goals with AI coaching.',
+      keywords:
+        'personal development blog, coaching tips, productivity advice, goal achievement strategies',
     },
   },
 
@@ -198,14 +210,8 @@ export const seoConfig = {
         'https://www.google-analytics.com',
         'https://www.googletagmanager.com',
       ],
-      preconnect: [
-        'https://fonts.gstatic.com',
-        'https://cdn.upcoach.ai',
-      ],
-      prefetch: [
-        '/api/config',
-        '/api/experiments',
-      ],
+      preconnect: ['https://fonts.gstatic.com', 'https://cdn.upcoach.ai'],
+      prefetch: ['/api/config', '/api/experiments'],
     },
 
     // Critical CSS

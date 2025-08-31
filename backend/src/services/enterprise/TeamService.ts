@@ -57,14 +57,17 @@ export class TeamService {
       // TODO: Check team limits based on subscription
 
       // Create team
-      const team = await Team.create({
-        organizationId: data.organizationId,
-        name: data.name,
-        description: data.description,
-        department: data.department,
-        managerId: data.managerId,
-        settings: {},
-      }, { transaction });
+      const team = await Team.create(
+        {
+          organizationId: data.organizationId,
+          name: data.name,
+          description: data.description,
+          department: data.department,
+          managerId: data.managerId,
+          settings: {},
+        },
+        { transaction }
+      );
 
       // Add manager as team lead if specified
       if (data.managerId) {
