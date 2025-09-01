@@ -1,51 +1,24 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["**/.env.*local"],
   "pipeline": {
+    "clean": {
+      "cache": false
+    },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "build/**"],
-      "env": [
-        "NODE_ENV",
-        "DATABASE_URL",
-        "NEXT_PUBLIC_*",
-        "VITE_*",
-        "REACT_APP_*"
-      ]
+      "outputs": ["dist/**", ".next/**"]
     },
-    "dev": {
-      "persistent": true,
-      "cache": false
-    },
-    "test": {
-      "dependsOn": ["build"],
-      "outputs": ["coverage/**"],
-      "cache": false
-    },
-    "test:unit": {
-      "outputs": ["coverage/**"],
-      "cache": false
-    },
-    "test:e2e": {
-      "dependsOn": ["build"],
-      "cache": false
-    },
-    "test:integration": {
-      "dependsOn": ["build"],
-      "cache": false
+    "verify:build": {
+      "dependsOn": ["build"]
     },
     "lint": {
       "outputs": []
     },
-    "format": {
-      "outputs": []
+    "test:unit": {
+      "outputs": ["coverage/**"]
     },
-    "type-check": {
-      "dependsOn": ["^build"],
-      "outputs": []
-    },
-    "clean": {
-      "cache": false
+    "test:e2e": {
+      "outputs": ["test-results/**"]
     }
   }
 }
