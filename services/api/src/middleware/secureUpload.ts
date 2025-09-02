@@ -1,6 +1,6 @@
 import multer from 'multer';
 import { Request, Response, NextFunction } from 'express';
-import * as fileType from 'file-type';
+import { fileTypeFromBuffer } from 'file-type';
 import crypto from 'crypto';
 import path from 'path';
 import fs from 'fs/promises';
@@ -93,7 +93,7 @@ export class SecureUploadMiddleware {
       }
 
       // Detect actual file type from buffer
-      const detectedType = await fileType.fromBuffer(buffer);
+      const detectedType = await fileTypeFromBuffer(buffer);
 
       if (!detectedType) {
         // Some text files might not have magic bytes

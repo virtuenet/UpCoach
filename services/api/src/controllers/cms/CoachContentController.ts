@@ -436,20 +436,20 @@ export class CoachContentController {
   }
 
   // Get available categories for coaches
-  async getCategories_(req: Request, _res: Response) {
+  async getCategories(req: Request, res: Response) {
     try {
       const categories = await ContentCategory.findAll({
         where: { isActive: true },
         order: [['name', 'ASC']],
       });
 
-      _res.json({
+      res.json({
         success: true,
         data: categories,
       });
     } catch (error) {
       logger.error('Failed to get categories', error);
-      _res.status(500).json({
+      res.status(500).json({
         success: false,
         error: 'Failed to load categories',
       });

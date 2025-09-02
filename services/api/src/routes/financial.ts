@@ -9,7 +9,7 @@ import Stripe from 'stripe';
 const router = Router();
 const financialController = new FinancialDashboardController();
 const stripe = new Stripe(config.stripe.secretKey || '', {
-  apiVersion: '2025-06-30.basil',
+  apiVersion: '2025-08-27.basil',
 });
 
 // Stripe webhook endpoint with proper signature validation
@@ -50,9 +50,9 @@ router.post(
         eventType: event.type,
         eventId: event.id,
       });
-    } catch (_err) {
+    } catch (err) {
       logger.error('Webhook signature verification failed', {
-        error: err.message,
+        error: (err as Error).message,
         signature: sig.substring(0, 20) + '...', // Log partial signature for debugging
       });
 

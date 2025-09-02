@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { aiAnalyticsController } from '../controllers/AIAnalyticsController';
 import { referralAnalyticsController } from '../controllers/ReferralAnalyticsController';
-import { authenticateToken } from '../middleware/auth';
+import { authMiddleware as authenticateToken } from '../middleware/auth';
 import { requireRole } from '../middleware/roleAuth';
 
 const router = Router();

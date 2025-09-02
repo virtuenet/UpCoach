@@ -7,6 +7,7 @@ import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
 import { redis } from '../redis';
 import { sequelize } from '../../config/database';
+import { Op } from 'sequelize';
 import crypto from 'crypto';
 import archiver from 'archiver';
 import fs from 'fs';
@@ -310,7 +311,7 @@ class GDPRService {
       where: {
         userId,
         createdAt: {
-          [sequelize.Sequelize.Op.gte]: addDays(new Date(), -90),
+          [Op.gte]: addDays(new Date(), -90),
         },
       },
       order: [['createdAt', 'DESC']],
@@ -391,7 +392,7 @@ class GDPRService {
       request.retainData = await this.checkLegalRetentionRequirements(userId);
 
       // Store request
-      await sequelize.models.DeletionRequest.create(request);
+      await (sequelize.models as any).DeletionRequest?.create(request as any);
 
       // If immediate, process now
       if (immediate) {
@@ -415,7 +416,7 @@ class GDPRService {
    */
   async cancelDeletion(userId: string, requestId: string): Promise<boolean> {
     try {
-      const request = await sequelize.models.DeletionRequest.findOne({
+      const request = await (sequelize.models as any).DeletionRequest?.findOne({
         where: { id: requestId, userId, status: 'scheduled' },
       });
 
@@ -423,7 +424,7 @@ class GDPRService {
         return false;
       }
 
-      request.status = 'cancelled';
+      (request as any).status = 'cancelled';
       await request.save();
 
       logger.info('Deletion cancelled', { userId, requestId });
@@ -518,7 +519,7 @@ class GDPRService {
       };
 
       // Store incident
-      await sequelize.models.DataBreachIncident.create(breachIncident);
+      await (sequelize.models as any).DataBreachIncident?.create(breachIncident as any);
 
       // Check if notification is required (within 72 hours)
       if (breachIncident.severity === 'high' || breachIncident.severity === 'critical') {
@@ -698,7 +699,9 @@ class GDPRService {
   private async clearUserCache(userId: string): Promise<void> {
     const keys = await redis.keys(`*${userId}*`);
     if (keys.length > 0) {
-      await redis.del(...keys);
+      for (const key of keys) {
+        await redis.del(key);
+      }
     }
   }
 
@@ -740,7 +743,7 @@ class GDPRService {
   private async generateSecureDownloadUrl(filePath: string, requestId: string): Promise<string> {
     // Generate signed URL for secure download
     const token = crypto.randomBytes(32).toString('hex');
-    await redis.setex(`download:${token}`, 7 * 24 * 60 * 60, filePath); // 7 days expiry
+    await redis.setEx(`download:${token}`, 7 * 24 * 60 * 60, filePath); // 7 days expiry
     return `/api/gdpr/download/${requestId}?token=${token}`;
   }
 

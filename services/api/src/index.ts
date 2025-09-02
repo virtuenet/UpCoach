@@ -17,6 +17,7 @@ import { gracefulShutdown } from './utils/shutdown';
 import { apiLimiter, webhookLimiter } from './middleware/rateLimiter';
 // import { enhancedSecurityHeaders } from './middleware/securityNonce'; // Not currently used
 import { securityHeaders, ctMonitor, securityReportHandler } from './middleware/securityHeaders';
+import { configureCsrf } from './middleware/csrf';
 import { sentryService } from './services/monitoring/SentryService';
 import { dataDogService } from './services/monitoring/DataDogService';
 
@@ -179,6 +180,24 @@ app.use((req, res, next) => {
   req.id = Math.random().toString(36).substring(2, 15);
   res.setHeader('X-Request-ID', req.id);
   next();
+});
+
+// Configure CSRF protection (must be after body parsing middleware)
+configureCsrf(app);
+
+// CSRF token endpoint for clients
+app.get('/api/csrf-token', (req: any, res) => {
+  try {
+    if (req.csrfToken) {
+      const token = req.csrfToken();
+      res.json({ csrfToken: token });
+    } else {
+      res.status(500).json({ error: 'CSRF token generation not available' });
+    }
+  } catch (error) {
+    logger.error('CSRF token generation failed:', error);
+    res.status(500).json({ error: 'Failed to generate CSRF token' });
+  }
 });
 
 // Security report endpoints

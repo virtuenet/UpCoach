@@ -1,6 +1,5 @@
 import {
   Box,
-  Grid,
   Card,
   CardContent,
   Typography,
@@ -15,6 +14,7 @@ import {
   IconButton,
   Tooltip,
 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {
   TrendingUp,
   TrendingDown,
@@ -121,7 +121,7 @@ export default function DashboardPage() {
 
       <Grid container spacing={3}>
         {/* Stats Cards */}
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <StatsCard
             title="Total Users"
             value="2,134"
@@ -131,7 +131,7 @@ export default function DashboardPage() {
             color="primary"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <StatsCard
             title="Pending Moderation"
             value="23"
@@ -141,7 +141,7 @@ export default function DashboardPage() {
             color="warning"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <StatsCard
             title="Monthly Revenue"
             value="$48,250"
@@ -151,7 +151,7 @@ export default function DashboardPage() {
             color="success"
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <StatsCard
             title="Content Items"
             value="1,456"

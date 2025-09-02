@@ -215,12 +215,12 @@ export class AIAnalyticsController {
     }
   }
 
-  async getAIHealthStatus_(_req: Request, _res: Response): Promise<void> {
+  async getAIHealthStatus(req: Request, res: Response): Promise<void> {
     try {
       const health = await aiService.healthCheck();
       const metrics = aiService.getMetrics();
 
-      _res.json({
+      res.json({
         status: 'operational',
         services: health,
         performance: {
@@ -232,20 +232,20 @@ export class AIAnalyticsController {
       });
     } catch (error) {
       logger.error('Failed to get AI health status:', error);
-      _res.status(500).json({
+      res.status(500).json({
         status: 'degraded',
         error: 'Failed to fetch AI health status',
       });
     }
   }
 
-  async clearAICache_(_req: Request, _res: Response): Promise<void> {
+  async clearAICache(req: Request, res: Response): Promise<void> {
     try {
       await aiService.clearCache();
-      _res.json({ message: 'AI cache cleared successfully' });
+      res.json({ message: 'AI cache cleared successfully' });
     } catch (error) {
       logger.error('Failed to clear AI cache:', error);
-      _res.status(500).json({ error: 'Failed to clear AI cache' });
+      res.status(500).json({ error: 'Failed to clear AI cache' });
     }
   }
 }

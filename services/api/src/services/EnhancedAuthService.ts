@@ -290,7 +290,7 @@ export class EnhancedAuthService {
       lastRotated: new Date().toISOString(),
     };
 
-    await redis.setex(
+    await redis.setEx(
       key,
       24 * 60 * 60, // 24 hours TTL
       JSON.stringify(data)
@@ -328,7 +328,7 @@ export class EnhancedAuthService {
     data.chainLength += 1;
     data.lastRotated = new Date().toISOString();
 
-    await redis.setex(
+    await redis.setEx(
       key,
       24 * 60 * 60, // Reset TTL
       JSON.stringify(data)
@@ -395,7 +395,7 @@ export class EnhancedAuthService {
    */
   private static async revokeToken(jti: string): Promise<void> {
     const key = `${this.REVOKED_TOKENS_PREFIX}${jti}`;
-    await redis.setex(
+    await redis.setEx(
       key,
       24 * 60 * 60, // Keep for 24 hours
       '1'

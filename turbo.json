@@ -6,19 +6,38 @@
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**"]
+      "outputs": ["dist/**", ".next/**", "build/**", "*.tsbuildinfo"]
     },
     "verify:build": {
       "dependsOn": ["build"]
     },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
     "lint": {
       "outputs": []
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "outputs": ["coverage/**", "test-results/**"]
     },
     "test:unit": {
       "outputs": ["coverage/**"]
     },
     "test:e2e": {
-      "outputs": ["test-results/**"]
+      "dependsOn": ["build"],
+      "outputs": ["test-results/**", "playwright-report/**"]
+    },
+    "test:integration": {
+      "dependsOn": ["build"],
+      "outputs": ["coverage/**"]
+    },
+    "type-check": {
+      "dependsOn": ["^build"]
+    },
+    "format": {
+      "outputs": []
     }
   }
 }

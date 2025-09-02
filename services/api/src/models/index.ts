@@ -113,6 +113,14 @@ export { UserProfile } from './UserProfile';
 export { AIInteraction } from './AIInteraction';
 export { AIFeedback } from './AIFeedback';
 
+// Compliance models
+export { PHIAccessLog } from './compliance/PHIAccessLog';
+export { SOC2Control } from './compliance/SOC2Control';
+export { SOC2Incident } from './compliance/SOC2Incident';
+export { SOC2Assessment } from './compliance/SOC2Assessment';
+export { SOC2Audit } from './compliance/SOC2Audit';
+export { SystemMetrics } from './compliance/SystemMetrics';
+
 // Define associations
 export function defineAssociations() {
   // Import models for associations

@@ -139,7 +139,7 @@ const OWNERSHIP_RULES: Record<ResourceType, ResourceOwnershipRule> = {
       const org = await Organization.findByPk(resource.organizationId);
       if (!org) return false;
 
-      if (org.ownerId === userId) return true;
+      if (org.ownerId === Number(userId)) return true;
 
       // TODO: Implement OrganizationMember model and membership check
       // const membership = await OrganizationMember.findOne({
@@ -225,7 +225,7 @@ export const checkResourceAccess = async (
     const userRole = (req as any).user?.role;
 
     if (!userId) {
-      __res.status(401).json({ error: 'Unauthorized' });
+      res.status(401).json({ error: 'Unauthorized' });
       return;
     }
 
@@ -243,7 +243,7 @@ export const checkResourceAccess = async (
     const rule = OWNERSHIP_RULES[resourceType];
     if (!rule) {
       logger.warn('No ownership rule defined for resource type', { resourceType });
-      _res.status(403).json({ error: 'Access denied' });
+      res.status(403).json({ error: 'Access denied' });
       return;
     }
 
@@ -259,7 +259,7 @@ export const checkResourceAccess = async (
       resource = await rule.model.findByPk(resourceId);
 
       if (!resource) {
-        _res.status(404).json({ error: 'Resource not found' });
+        res.status(404).json({ error: 'Resource not found' });
         return;
       }
     }
@@ -294,7 +294,7 @@ export const checkResourceAccess = async (
         ip: req.ip,
       });
 
-      _res.status(403).json({ error: 'Access denied' });
+      res.status(403).json({ error: 'Access denied' });
       return;
     }
 
@@ -304,7 +304,7 @@ export const checkResourceAccess = async (
     next();
   } catch (error) {
     logger.error('Resource access check error', { error, path: req.path });
-    __res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -359,7 +359,7 @@ export const checkResourceAction = (allowedActions: string[]) => {
  * Batch check for multiple resources
  */
 export const checkBulkResourceAccess = async (
-  _userId: string,
+  userId: string,
   resourceIds: string[],
   resourceType: ResourceType
 ): Promise<Map<string, boolean>> => {

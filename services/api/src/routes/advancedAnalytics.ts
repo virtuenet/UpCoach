@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { advancedAnalyticsController } from '../controllers/AdvancedAnalyticsController';
-import { authenticateToken } from '../middleware/auth';
+import { authMiddleware as authenticateToken } from '../middleware/auth';
 import { requireRole } from '../middleware/roleAuth';
 
 const router = Router();

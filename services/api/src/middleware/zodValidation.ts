@@ -29,7 +29,7 @@ const validationCache = new LRUCache<
   updateAgeOnGet: true,
   updateAgeOnHas: false,
   dispose: (value, key, reason) => {
-    if (reason === 'evict' || reason === 'size') {
+    if (reason === 'evict' || reason === 'delete') {
       cacheStats.evictions++;
     }
   },
@@ -199,7 +199,7 @@ export function validate(
   // Generate schema identifier for metrics
   const schemaName = schema.description || `${source}_schema`;
 
-  return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const startTime = Date.now();
 
     try {
@@ -226,10 +226,7 @@ export function validate(
 
       // If not cached, perform validation
       if (!cacheHit) {
-        validatedData = await schema.parseAsync(data, {
-          abortEarly,
-          stripUnknown,
-        });
+        validatedData = await schema.parseAsync(data);
 
         // Cache successful validation (only for GET requests)
         if (req.method === 'GET' && source === 'query') {
@@ -310,7 +307,7 @@ export function validate(
           });
         }
 
-        __res.status(statusCode).json({
+        res.status(statusCode).json({
           success: false,
           error: message,
           errors,
@@ -321,7 +318,7 @@ export function validate(
 
       // Handle unexpected errors
       logger.error('Unexpected validation error', error);
-      __res.status(500).json({
+      res.status(500).json({
         success: false,
         error: 'Internal validation error',
       });
@@ -339,16 +336,13 @@ export function validateMultiple(
     options?: ValidationOptions;
   }>
 ) {
-  return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const allErrors: Array<{ source: ValidationSource; errors: Array<any> }> = [];
 
     for (const validation of validations) {
       try {
         const data = req[validation.source];
-        const validatedData = await validation.schema.parseAsync(data, {
-          abortEarly: validation.options?.abortEarly ?? false,
-          stripUnknown: validation.options?.stripUnknown ?? true,
-        });
+        const validatedData = await validation.schema.parseAsync(data);
 
         (req as any)[validation.source] = validatedData;
       } catch (error) {
@@ -370,7 +364,7 @@ export function validateMultiple(
         errors: allErrors,
       });
 
-      __res.status(statusCode).json({
+      res.status(statusCode).json({
         success: false,
         error: 'Validation failed',
         validationErrors: allErrors,
@@ -405,7 +399,7 @@ export function validateAsync<T>(
   schema: ZodSchema<T>,
   customValidator?: (data: T) => Promise<boolean | { error: string }>
 ) {
-  return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       // First, validate with Zod
       const validatedData = await schema.parseAsync(req.body);
@@ -415,7 +409,7 @@ export function validateAsync<T>(
         const customResult = await customValidator(validatedData);
 
         if (customResult === false) {
-          __res.status(400).json({
+          res.status(400).json({
             success: false,
             error: 'Custom validation failed',
           });
@@ -423,7 +417,7 @@ export function validateAsync<T>(
         }
 
         if (typeof customResult === 'object' && customResult.error) {
-          __res.status(400).json({
+          res.status(400).json({
             success: false,
             error: customResult.error,
           });
@@ -437,7 +431,7 @@ export function validateAsync<T>(
       if (error instanceof ZodError) {
         const errors = formatZodError(error);
 
-        __res.status(400).json({
+        res.status(400).json({
           success: false,
           error: 'Validation failed',
           errors,
@@ -446,7 +440,7 @@ export function validateAsync<T>(
       }
 
       logger.error('Validation error', error);
-      __res.status(500).json({
+      res.status(500).json({
         success: false,
         error: 'Internal validation error',
       });
@@ -463,7 +457,7 @@ export function validateConditional(
   source: ValidationSource = 'body',
   options?: ValidationOptions
 ) {
-  return (req: Request, _res: Response, next: NextFunction): void => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     if (condition(req)) {
       validate(schema, source, options)(req, res, next);
     } else {
@@ -491,7 +485,7 @@ export function createValidator<T extends ZodSchema>(schema: T) {
  * Uses DOMPurify for robust HTML sanitization
  */
 export function sanitizeAndValidate(schema: ZodSchema) {
-  return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       // Use DOMPurify-based sanitization for robust XSS prevention
       req.body = sanitizeObject(req.body, true);
@@ -504,7 +498,7 @@ export function sanitizeAndValidate(schema: ZodSchema) {
     } catch (error) {
       if (error instanceof ZodError) {
         const errors = formatZodError(error);
-        __res.status(400).json({
+        res.status(400).json({
           success: false,
           error: 'Validation failed',
           errors,
@@ -575,6 +569,6 @@ export const createPublicApiValidation = (schema: ZodSchema, source: ValidationS
 };
 
 // Export all schemas for easy access
-export * from './schemas/auth.schema';
-export * from './schemas/coach.schema';
-export * from './schemas/common.schema';
+export * from '../validation/schemas/auth.schema';
+export * from '../validation/schemas/coach.schema';
+export * from '../validation/schemas/common.schema';

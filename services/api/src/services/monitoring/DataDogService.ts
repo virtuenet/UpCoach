@@ -67,17 +67,14 @@ export class DataDogService {
         service: config.service || 'upcoach-backend',
         version: config.version || process.env.npm_package_version,
 
-        // Enable analytics
-        analytics: config.analyticsEnabled !== false,
+        // Enable runtime metrics (analytics replacement)
+        runtimeMetrics: config.runtimeMetrics !== false,
 
         // Log injection for correlating logs with traces
         logInjection: config.logInjection !== false,
 
         // Profiling
         profiling: config.profiling || false,
-
-        // Runtime metrics
-        runtimeMetrics: config.runtimeMetrics !== false,
 
         // Sampling rules
         samplingRules: [
@@ -92,7 +89,7 @@ export class DataDogService {
             service: config.service,
             name: 'express.request',
             sampleRate: 0.5,
-            maxPerSecond: 10,
+            // maxPerSecond: 10, // Property not available in current version
           },
         ],
 
@@ -458,9 +455,16 @@ export class DataDogService {
 
     try {
       // Flush any pending traces
-      await new Promise(resolve => {
-        tracer.flush(resolve);
-      });
+      // Note: flush method may not be available in current tracer version
+      try {
+        if (typeof (tracer as any).flush === 'function') {
+          await new Promise(resolve => {
+            (tracer as any).flush(resolve);
+          });
+        }
+      } catch (error) {
+        logger.warn('Tracer flush not available or failed:', error);
+      }
 
       // Close StatsD connection
       if (this.statsD) {

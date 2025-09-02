@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import path from 'path';
-import { authenticateToken, authorizeRoles } from '../middleware/auth';
+import { authMiddleware as authenticateToken, authorizeRoles } from '../middleware/auth';
 import CoachContentController from '../controllers/cms/CoachContentController';
 
 const router = Router();

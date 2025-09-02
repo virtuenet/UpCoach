@@ -3,6 +3,7 @@ import { Experiment } from '../../models/experiments/Experiment';
 import { ExperimentAssignment } from '../../models/experiments/ExperimentAssignment';
 import { ExperimentEvent } from '../../models/experiments/ExperimentEvent';
 import { User } from '../../models/User';
+import { logger } from '../../utils/logger';
 
 export interface VariantAssignment {
   experimentId: string;

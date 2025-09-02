@@ -138,8 +138,8 @@ export class UserProfilingService {
 
     // Update behavior patterns
     if (profile.behaviorPatterns) {
-      profile.behaviorPatterns?.completionRate = Math.round(completionRate * 100);
-      profile.behaviorPatterns?.avgSessionDuration = avgSessionDuration;
+      profile.behaviorPatterns.completionRate = Math.round(completionRate * 100);
+      profile.behaviorPatterns.avgSessionDuration = avgSessionDuration;
     }
 
     await profile.save();
@@ -164,9 +164,9 @@ export class UserProfilingService {
       const patterns = await this.analyzeMessagePatterns(recentMessages);
 
       if (profile.behaviorPatterns) {
-        profile.behaviorPatterns?.preferredTopics = patterns.topics;
-        profile.behaviorPatterns?.responseTime = patterns.avgResponseTime;
-        profile.behaviorPatterns?.engagementLevel = patterns.engagementLevel;
+        profile.behaviorPatterns.preferredTopics = patterns.topics;
+        profile.behaviorPatterns.responseTime = patterns.avgResponseTime;
+        profile.behaviorPatterns.engagementLevel = patterns.engagementLevel;
       }
     }
 
@@ -600,7 +600,7 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
 
     if (preferences.focusAreas) {
       if (profile.coachingPreferences) {
-        profile.coachingPreferences?.focusAreas = preferences.focusAreas;
+        profile.coachingPreferences.focusAreas = preferences.focusAreas;
       }
     }
 

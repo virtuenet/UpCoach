@@ -167,14 +167,12 @@ class WebAuthnService {
           credentialID: Buffer.from(credentialID).toString('base64'),
           credentialPublicKey: Buffer.from(credentialPublicKey).toString('base64'),
           counter,
-          credentialDeviceType: credentialDeviceType || 'unknown',
-          credentialBackedUp: credentialBackedUp || false,
           transports: response.response.transports,
           userId,
           name: credentialName || `Passkey ${new Date().toLocaleDateString()}`,
           createdAt: new Date(),
           backedUp: credentialBackedUp || false,
-          deviceType: credentialDeviceType,
+          deviceType: credentialDeviceType || 'unknown',
         };
 
         await this.storeCredential(credential);

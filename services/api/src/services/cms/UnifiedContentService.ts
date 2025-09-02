@@ -74,7 +74,7 @@ interface ContentAnalytics {
 export class UnifiedContentService {
   private static instance: UnifiedContentService;
   private cache = getCacheService();
-  private email = getEmailService();
+  private email = emailService;
   private scheduledTasks: Map<string, NodeJS.Timeout> = new Map();
 
   private constructor() {

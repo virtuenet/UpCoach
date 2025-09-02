@@ -22,21 +22,13 @@ export const validateRequest = (req: Request, res: Response, next: NextFunction)
       ip: req.ip,
     });
 
-    __res.status(400).json({
+    res.status(400).json({
       success: false,
       error: 'Validation failed',
-      errors: errors.array().map(err => {
-        const fieldError = err as FieldValidationError;
-        return {
-          field:
-            'path' in fieldError
-              ? fieldError.path
-              : 'param' in fieldError
-                ? fieldError.param
-                : 'unknown',
-          message: fieldError.msg,
-        };
-      }),
+      errors: errors.array().map(err => ({
+        field: (err as any).path || (err as any).param || 'unknown',
+        message: (err as any).msg || 'Validation error',
+      })),
     });
     return;
   }
@@ -248,7 +240,7 @@ export const sanitizeInput = (fields: string[]): ValidationChain[] => {
 /**
  * Validate request against SQL injection patterns
  */
-export const preventSQLInjection = (req: Request, _res: Response, next: NextFunction): void => {
+export const preventSQLInjection = (req: Request, res: Response, next: NextFunction): void => {
   const suspiciousPatterns = [
     /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|ALTER|CREATE|EXEC|EXECUTE)\b)/gi,
     /(--|\/\*|\*\/|xp_|sp_|0x)/gi,
@@ -273,7 +265,7 @@ export const preventSQLInjection = (req: Request, _res: Response, next: NextFunc
       method: req.method,
     });
 
-    __res.status(400).json({
+    res.status(400).json({
       success: false,
       error: 'Invalid input detected',
     });
@@ -290,7 +282,7 @@ export const validateFileUpload = (
   allowedTypes: string[] = ['image/jpeg', 'image/png', 'image/gif'],
   maxSize: number = 5 * 1024 * 1024 // 5MB default
 ) => {
-  return (req: Request, _res: Response, next: NextFunction): void => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.file) {
       next();
       return;
@@ -298,7 +290,7 @@ export const validateFileUpload = (
 
     // Check file type
     if (!allowedTypes.includes(req.file.mimetype)) {
-      __res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Invalid file type',
         allowedTypes,
@@ -308,7 +300,7 @@ export const validateFileUpload = (
 
     // Check file size
     if (req.file.size > maxSize) {
-      __res.status(400).json({
+      res.status(400).json({
         success: false,
         error: 'File too large',
         maxSize: `${maxSize / 1024 / 1024}MB`,

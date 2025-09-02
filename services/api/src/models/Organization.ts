@@ -6,6 +6,7 @@ export interface OrganizationAttributes {
   id?: number;
   name: string;
   slug: string;
+  ownerId?: number;
   logoUrl?: string;
   website?: string;
   industry?: string;
@@ -23,6 +24,7 @@ export class Organization extends Model<OrganizationAttributes> implements Organ
   declare id: number;
   public name!: string;
   public slug!: string;
+  public ownerId?: number;
   public logoUrl?: string;
   public website?: string;
   public industry?: string;
@@ -60,6 +62,17 @@ export class Organization extends Model<OrganizationAttributes> implements Organ
           type: DataTypes.STRING(255),
           allowNull: false,
           unique: true,
+        },
+        ownerId: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+          field: 'owner_id',
+          references: {
+            model: 'users',
+            key: 'id',
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'SET NULL',
         },
         logoUrl: {
           type: DataTypes.STRING(500),

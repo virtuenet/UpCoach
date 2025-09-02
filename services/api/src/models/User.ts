@@ -11,6 +11,7 @@ export interface UserAttributes {
   avatar?: string;
   bio?: string;
   googleId?: string;
+  organizationId?: string;
   isActive: boolean;
   emailVerified: boolean;
   onboardingCompleted?: boolean;
@@ -28,6 +29,7 @@ export interface UserCreationAttributes
     | 'avatar'
     | 'bio'
     | 'googleId'
+    | 'organizationId'
     | 'isActive'
     | 'emailVerified'
     | 'onboardingCompleted'
@@ -47,6 +49,7 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   public avatar?: string;
   public bio?: string;
   public googleId?: string;
+  public organizationId?: string;
   public isActive!: boolean;
   public emailVerified!: boolean;
   public onboardingCompleted?: boolean;
@@ -59,6 +62,9 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   // Association properties
   public readonly profile?: any;
   public readonly goals?: any[];
+  public readonly tasks?: any[];
+  public readonly moods?: any[];
+  public readonly chats?: any[];
 
   // Instance methods
   public async comparePassword(password: string): Promise<boolean> {

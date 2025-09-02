@@ -172,7 +172,7 @@ export class ResponseBuilder {
   static error(error: string | Error, code?: string): ErrorResponse {
     return {
       success: false,
-      error: (error as Error)?.message || "Unknown error",error,
+      error: (error as Error)?.message || error.toString(),
       code,
       timestamp: new Date().toISOString(),
     };

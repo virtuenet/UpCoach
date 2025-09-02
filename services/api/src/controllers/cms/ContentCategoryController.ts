@@ -221,7 +221,7 @@ export class ContentCategoryController {
   }
 
   // Get category content count
-  static async getContentCount_(req: Request, _res: Response) {
+  static async getContentCount(req: Request, res: Response) {
     try {
       const categories = await ContentCategory.findAll({
         attributes: [
@@ -241,10 +241,10 @@ export class ContentCategoryController {
         where: { isActive: true },
       });
 
-      _res.json(categories);
+      res.json(categories);
     } catch (error) {
       logger.error('Error fetching category content count:', error);
-      _res.status(500).json({ error: 'Failed to fetch category content count' });
+      res.status(500).json({ error: 'Failed to fetch category content count' });
     }
   }
 }

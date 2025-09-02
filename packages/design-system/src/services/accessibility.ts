@@ -394,15 +394,7 @@ export class AccessibilityChecker {
   }
 }
 
-// Export main utilities
-export {
-  ColorContrast,
-  KeyboardNavigation,
-  ARIAUtils,
-  FormAccessibility,
-  ScreenReaderUtils,
-  AccessibilityChecker,
-};
+// Export main utilities - removed duplicate exports due to const declarations
 
 // React hooks for accessibility
 export const useA11y = () => ({

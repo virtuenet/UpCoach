@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { Router } from 'express';
-import { authenticateToken } from '../middleware/auth';
+import { authMiddleware as authenticateToken } from '../middleware/auth';
 import { validateRequest } from '../middleware/validation';
 import { body, query } from 'express-validator';
 import { referralService } from '../services/referral/ReferralService';

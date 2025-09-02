@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { gamificationController } from '../controllers/GamificationController';
-import { authenticateToken } from '../middleware/auth';
+import { authMiddleware as authenticateToken } from '../middleware/auth';
 
 const router = Router();
 

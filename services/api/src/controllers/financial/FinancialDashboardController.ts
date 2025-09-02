@@ -19,19 +19,19 @@ export class FinancialDashboardController {
   /**
    * Get dashboard metrics
    */
-  async getDashboardMetrics_(req: Request, _res: Response): Promise<void> {
+  async getDashboardMetrics(req: Request, res: Response): Promise<void> {
     try {
       const metrics = await financialService.getDashboardMetrics();
-      _res.json(metrics);
+      res.json(metrics);
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get revenue metrics
    */
-  async getRevenueMetrics(req: Request, _res: Response): Promise<void> {
+  async getRevenueMetrics(req: Request, res: Response): Promise<void> {
     try {
       const { startDate, endDate } = req.query;
       const start = startDate ? new Date(startDate as string) : startOfMonth(new Date());
@@ -55,7 +55,7 @@ export class FinancialDashboardController {
       const mrr = await financialService.calculateMRR();
       const arr = await financialService.calculateARR();
 
-      _res.json({
+      res.json({
         gross: revenue || 0,
         refunds: refunds || 0,
         net: netRevenue,
@@ -63,14 +63,14 @@ export class FinancialDashboardController {
         arr,
       });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get subscription metrics
    */
-  async getSubscriptionMetrics_(req: Request, _res: Response): Promise<void> {
+  async getSubscriptionMetrics(req: Request, res: Response): Promise<void> {
     try {
       const active = await Subscription.count({
         where: { status: ['active', 'trialing'] },
@@ -93,7 +93,7 @@ export class FinancialDashboardController {
         new Date()
       );
 
-      _res.json({
+      res.json({
         active,
         new: new_subs,
         churned,
@@ -101,14 +101,14 @@ export class FinancialDashboardController {
         netNew: new_subs - churned,
       });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get cost metrics
    */
-  async getCostMetrics(req: Request, _res: Response): Promise<void> {
+  async getCostMetrics(req: Request, res: Response): Promise<void> {
     try {
       const { startDate, endDate } = req.query;
       const start = startDate ? new Date(startDate as string) : startOfMonth(new Date());
@@ -131,7 +131,7 @@ export class FinancialDashboardController {
         0
       );
 
-      _res.json({
+      res.json({
         total: totalCosts,
         byCategory: costs.reduce(
           (acc, cost) => {
@@ -142,14 +142,14 @@ export class FinancialDashboardController {
         ),
       });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get P&L statement
    */
-  async getProfitLossStatement(req: Request, _res: Response): Promise<void> {
+  async getProfitLossStatement(req: Request, res: Response): Promise<void> {
     try {
       const {
         /* period = 'monthly' */
@@ -168,16 +168,16 @@ export class FinancialDashboardController {
       }
 
       const pnl = await financialService.getProfitLossStatement(start, end);
-      _res.json(pnl);
+      res.json(pnl);
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get MRR metrics
    */
-  async getMRRMetrics_(req: Request, _res: Response): Promise<void> {
+  async getMRRMetrics(req: Request, res: Response): Promise<void> {
     try {
       const currentMRR = await financialService.calculateMRR();
       const lastMonthMRR = await financialService.calculateMRR(
@@ -192,7 +192,7 @@ export class FinancialDashboardController {
         endOfMonth(new Date())
       );
 
-      _res.json({
+      res.json({
         current: currentMRR,
         previous: lastMonthMRR,
         growth,
@@ -200,73 +200,73 @@ export class FinancialDashboardController {
         breakdown,
       });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get ARR metrics
    */
-  async getARRMetrics_(req: Request, _res: Response): Promise<void> {
+  async getARRMetrics(req: Request, res: Response): Promise<void> {
     try {
       const arr = await financialService.calculateARR();
-      _res.json({ arr });
+      res.json({ arr });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get revenue by plan
    */
-  async getRevenueByPlan(req: Request, _res: Response): Promise<void> {
+  async getRevenueByPlan(req: Request, res: Response): Promise<void> {
     try {
       const { startDate, endDate } = req.query;
       const start = startDate ? new Date(startDate as string) : startOfMonth(new Date());
       const end = endDate ? new Date(endDate as string) : endOfMonth(new Date());
 
       const revenueByPlan = await financialService.getRevenueByPlan(start, end);
-      _res.json(revenueByPlan);
+      res.json(revenueByPlan);
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get revenue by country
    */
-  async getRevenueByCountry_(req: Request, _res: Response): Promise<void> {
+  async getRevenueByCountry(req: Request, res: Response): Promise<void> {
     try {
       // TODO: Implement revenue by country logic
-      _res.json([]);
+      res.json([]);
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get revenue forecast
    */
-  async getRevenueForecast(req: Request, _res: Response): Promise<void> {
+  async getRevenueForecast(req: Request, res: Response): Promise<void> {
     try {
       const {
         /* months = 6 */
       } = req.query;
       // TODO: Implement revenue forecasting logic
-      _res.json({
+      res.json({
         forecast: [],
         accuracy: 0,
         confidence: 0,
       });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get subscriptions
    */
-  async getSubscriptions(req: Request, _res: Response): Promise<void> {
+  async getSubscriptions(req: Request, res: Response): Promise<void> {
     try {
       const { status, plan, page = 1, limit = 20 } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
@@ -282,21 +282,21 @@ export class FinancialDashboardController {
         order: [['createdAt', 'DESC']],
       });
 
-      _res.json({
+      res.json({
         subscriptions: rows,
         total: count,
         page: Number(page),
         totalPages: Math.ceil(count / Number(limit)),
       });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get active subscriptions
    */
-  async getActiveSubscriptions_(req: Request, _res: Response): Promise<void> {
+  async getActiveSubscriptions(req: Request, res: Response): Promise<void> {
     try {
       const subscriptions = await Subscription.findAll({
         where: {
@@ -305,16 +305,16 @@ export class FinancialDashboardController {
         order: [['createdAt', 'DESC']],
       });
 
-      _res.json(subscriptions);
+      res.json(subscriptions);
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get churn analytics
    */
-  async getChurnAnalytics(req: Request, _res: Response): Promise<void> {
+  async getChurnAnalytics(req: Request, res: Response): Promise<void> {
     try {
       const { months = 12 } = req.query;
       const churnData = [];
@@ -331,34 +331,34 @@ export class FinancialDashboardController {
         });
       }
 
-      _res.json(churnData);
+      res.json(churnData);
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get LTV analytics
    */
-  async getLTVAnalytics_(req: Request, _res: Response): Promise<void> {
+  async getLTVAnalytics(req: Request, res: Response): Promise<void> {
     try {
       const ltv = await financialService.calculateLTV();
       const arpu = await financialService.calculateARPU();
 
-      _res.json({
+      res.json({
         ltv,
         arpu,
         avgLifetimeMonths: 24, // This should be calculated from historical data
       });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get costs
    */
-  async getCosts(req: Request, _res: Response): Promise<void> {
+  async getCosts(req: Request, res: Response): Promise<void> {
     try {
       const { category, startDate, endDate, page = 1, limit = 20 } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
@@ -377,33 +377,33 @@ export class FinancialDashboardController {
         order: [['periodStart', 'DESC']],
       });
 
-      _res.json({
+      res.json({
         costs: rows,
         total: count,
         page: Number(page),
         totalPages: Math.ceil(count / Number(limit)),
       });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Create cost
    */
-  async createCost(req: Request, _res: Response): Promise<void> {
+  async createCost(req: Request, res: Response): Promise<void> {
     try {
       const cost = await CostTracking.create(req.body);
-      _res.status(201).json(cost);
+      res.status(201).json(cost);
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Update cost
    */
-  async updateCost(req: Request, _res: Response): Promise<void> {
+  async updateCost(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const cost = await CostTracking.findByPk(id);
@@ -413,16 +413,16 @@ export class FinancialDashboardController {
       }
 
       await cost.update(req.body);
-      _res.json(cost);
+      res.json(cost);
     } catch (error) {
-      _res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Delete cost
    */
-  async deleteCost(req: Request, _res: Response): Promise<void> {
+  async deleteCost(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const cost = await CostTracking.findByPk(id);
@@ -432,16 +432,16 @@ export class FinancialDashboardController {
       }
 
       await cost.destroy();
-      _res.status(204).send();
+      res.status(204).send();
     } catch (error) {
-      _res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get costs by category
    */
-  async getCostsByCategory(req: Request, _res: Response): Promise<void> {
+  async getCostsByCategory(req: Request, res: Response): Promise<void> {
     try {
       const { startDate, endDate } = req.query;
       const start = startDate ? new Date(startDate as string) : startOfMonth(new Date());
@@ -459,31 +459,31 @@ export class FinancialDashboardController {
         group: ['category'],
       });
 
-      _res.json(costs);
+      res.json(costs);
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get cost optimization suggestions
    */
-  async getCostOptimizationSuggestions_(req: Request, _res: Response): Promise<void> {
+  async getCostOptimizationSuggestions(req: Request, res: Response): Promise<void> {
     try {
       // TODO: Implement cost optimization logic
-      _res.json({
+      res.json({
         suggestions: [],
         potentialSavings: 0,
       });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get snapshots
    */
-  async getSnapshots(req: Request, _res: Response): Promise<void> {
+  async getSnapshots(req: Request, res: Response): Promise<void> {
     try {
       const { period, startDate, endDate } = req.query;
       const where: any = {};
@@ -498,31 +498,31 @@ export class FinancialDashboardController {
         order: [['date', 'DESC']],
       });
 
-      _res.json(snapshots);
+      res.json(snapshots);
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Generate snapshot
    */
-  async generateSnapshot(req: Request, _res: Response): Promise<void> {
+  async generateSnapshot(req: Request, res: Response): Promise<void> {
     try {
       const { date } = req.body;
       const snapshot = await financialService.generateDailySnapshot(
         date ? new Date(date) : new Date()
       );
-      _res.status(201).json(snapshot);
+      res.status(201).json(snapshot);
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get latest snapshot
    */
-  async getLatestSnapshot(req: Request, _res: Response): Promise<void> {
+  async getLatestSnapshot(req: Request, res: Response): Promise<void> {
     try {
       const { period = 'daily' } = req.query;
       const snapshot = await FinancialSnapshot.findOne({
@@ -530,16 +530,16 @@ export class FinancialDashboardController {
         order: [['date', 'DESC']],
       });
 
-      _res.json(snapshot);
+      res.json(snapshot);
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get reports
    */
-  async getReports(req: Request, _res: Response): Promise<void> {
+  async getReports(req: Request, res: Response): Promise<void> {
     try {
       const { type, status, page = 1, limit = 20 } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
@@ -555,33 +555,33 @@ export class FinancialDashboardController {
         order: [['createdAt', 'DESC']],
       });
 
-      _res.json({
+      res.json({
         reports: rows,
         total: count,
         page: Number(page),
         totalPages: Math.ceil(count / Number(limit)),
       });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Create report
    */
-  async createReport(req: Request, _res: Response): Promise<void> {
+  async createReport(req: Request, res: Response): Promise<void> {
     try {
       const report = await FinancialReport.create(req.body);
-      _res.status(201).json(report);
+      res.status(201).json(report);
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get report
    */
-  async getReport(req: Request, _res: Response): Promise<void> {
+  async getReport(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const report = await FinancialReport.findByPk(id);
@@ -590,16 +590,16 @@ export class FinancialDashboardController {
         throw new ApiError(404, 'Report not found');
       }
 
-      _res.json(report);
+      res.json(report);
     } catch (error) {
-      _res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Download report
    */
-  async downloadReport(req: Request, _res: Response): Promise<void> {
+  async downloadReport(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const report = await FinancialReport.findByPk(id);
@@ -609,16 +609,16 @@ export class FinancialDashboardController {
       }
 
       // TODO: Implement report download logic
-      _res.status(501).json({ error: 'Not implemented' });
+      res.status(501).json({ error: 'Not implemented' });
     } catch (error) {
-      _res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Send report
    */
-  async sendReport(req: Request, _res: Response): Promise<void> {
+  async sendReport(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const {
@@ -632,51 +632,51 @@ export class FinancialDashboardController {
       }
 
       // TODO: Implement report sending logic
-      _res.status(501).json({ error: 'Not implemented' });
+      res.status(501).json({ error: 'Not implemented' });
     } catch (error) {
-      _res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get cohort analysis
    */
-  async getCohortAnalysis(req: Request, _res: Response): Promise<void> {
+  async getCohortAnalysis(req: Request, res: Response): Promise<void> {
     try {
       const {
         /* months = 12 */
       } = req.query;
 
       // TODO: Implement cohort analysis logic
-      _res.json({
+      res.json({
         cohorts: [],
       });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get cohort details
    */
-  async getCohortDetails(req: Request, _res: Response): Promise<void> {
+  async getCohortDetails(req: Request, res: Response): Promise<void> {
     try {
       const { month } = req.params;
 
       // TODO: Implement cohort details logic
-      _res.json({
+      res.json({
         cohort: month,
         data: [],
       });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get unit economics
    */
-  async getUnitEconomics_(req: Request, _res: Response): Promise<void> {
+  async getUnitEconomics(req: Request, res: Response): Promise<void> {
     try {
       const ltv = await financialService.calculateLTV();
       const cac = await financialService.calculateCAC(
@@ -685,7 +685,7 @@ export class FinancialDashboardController {
       );
       const arpu = await financialService.calculateARPU();
 
-      _res.json({
+      res.json({
         ltv,
         cac,
         ltvToCacRatio: cac > 0 ? ltv / cac : 0,
@@ -693,14 +693,14 @@ export class FinancialDashboardController {
         paybackPeriod: cac > 0 ? cac / arpu : 0,
       });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get CAC
    */
-  async getCAC(req: Request, _res: Response): Promise<void> {
+  async getCAC(req: Request, res: Response): Promise<void> {
     try {
       const { startDate, endDate } = req.query;
       const start = startDate
@@ -709,16 +709,16 @@ export class FinancialDashboardController {
       const end = endDate ? new Date(endDate as string) : new Date();
 
       const cac = await financialService.calculateCAC(start, end);
-      _res.json({ cac });
+      res.json({ cac });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get LTV to CAC ratio
    */
-  async getLTVtoCACRatio_(req: Request, _res: Response): Promise<void> {
+  async getLTVtoCACRatio(req: Request, res: Response): Promise<void> {
     try {
       const ltv = await financialService.calculateLTV();
       const cac = await financialService.calculateCAC(
@@ -726,20 +726,20 @@ export class FinancialDashboardController {
         new Date()
       );
 
-      _res.json({
+      res.json({
         ltv,
         cac,
         ratio: cac > 0 ? ltv / cac : 0,
       });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get billing events
    */
-  async getBillingEvents(req: Request, _res: Response): Promise<void> {
+  async getBillingEvents(req: Request, res: Response): Promise<void> {
     try {
       const { eventType, userId, page = 1, limit = 20 } = req.query;
       const offset = (Number(page) - 1) * Number(limit);
@@ -755,21 +755,21 @@ export class FinancialDashboardController {
         order: [['createdAt', 'DESC']],
       });
 
-      _res.json({
+      res.json({
         events: rows,
         total: count,
         page: Number(page),
         totalPages: Math.ceil(count / Number(limit)),
       });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get billing event
    */
-  async getBillingEvent(req: Request, _res: Response): Promise<void> {
+  async getBillingEvent(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const event = await BillingEvent.findByPk(id);
@@ -778,16 +778,16 @@ export class FinancialDashboardController {
         throw new ApiError(404, 'Billing event not found');
       }
 
-      _res.json(event);
+      res.json(event);
     } catch (error) {
-      _res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get automation status
    */
-  async getAutomationStatus_(req: Request, _res: Response): Promise<void> {
+  async getAutomationStatus(req: Request, res: Response): Promise<void> {
     try {
       const jobs = SchedulerService.getJobStatus();
       const lastReports = await FinancialReport.findAll({
@@ -795,7 +795,7 @@ export class FinancialDashboardController {
         limit: 5,
       });
 
-      _res.json({
+      res.json({
         scheduledJobs: jobs,
         recentReports: lastReports,
         emailService: {
@@ -804,14 +804,14 @@ export class FinancialDashboardController {
         },
       });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Trigger automation manually
    */
-  async triggerAutomation(req: Request, _res: Response): Promise<void> {
+  async triggerAutomation(req: Request, res: Response): Promise<void> {
     try {
       const { type } = req.params;
 
@@ -829,19 +829,19 @@ export class FinancialDashboardController {
           throw new ApiError(400, 'Invalid automation type');
       }
 
-      _res.json({
+      res.json({
         success: true,
         message: `${type} automation triggered successfully`,
       });
     } catch (error) {
-      _res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Send test email
    */
-  async sendTestEmail(req: Request, _res: Response): Promise<void> {
+  async sendTestEmail(req: Request, res: Response): Promise<void> {
     try {
       const { email } = req.body;
 
@@ -855,57 +855,57 @@ export class FinancialDashboardController {
         text: 'This is a test email to verify email service is working correctly.',
       });
 
-      _res.json({
+      res.json({
         success: true,
         message: `Test email sent to ${email}`,
       });
     } catch (error) {
-      _res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Get scheduled jobs
    */
-  async getScheduledJobs_(req: Request, _res: Response): Promise<void> {
+  async getScheduledJobs(req: Request, res: Response): Promise<void> {
     try {
       const jobs = SchedulerService.getJobStatus();
-      _res.json(jobs);
+      res.json(jobs);
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Start a job
    */
-  async startJob(req: Request, _res: Response): Promise<void> {
+  async startJob(req: Request, res: Response): Promise<void> {
     try {
       const { name } = req.params;
       // Note: This would need to be implemented in SchedulerService
-      _res.json({
+      res.json({
         success: true,
         message: `Job ${name} start requested`,
       });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 
   /**
    * Stop a job
    */
-  async stopJob(req: Request, _res: Response): Promise<void> {
+  async stopJob(req: Request, res: Response): Promise<void> {
     try {
       const { name } = req.params;
       const stopped = SchedulerService.stopJob(name);
 
-      _res.json({
+      res.json({
         success: stopped,
         message: stopped ? `Job ${name} stopped` : `Job ${name} not found`,
       });
     } catch (error) {
-      _res.status(500).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
   }
 }

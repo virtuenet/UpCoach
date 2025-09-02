@@ -5,17 +5,17 @@ import { validationResult } from 'express-validator';
 
 export class ForumController {
   // Get all forum categories
-  async getCategories_(req: Request, _res: Response) {
+  async getCategories(req: Request, res: Response) {
     try {
       const categories = await forumService.getCategories();
 
-      _res.json({
+      res.json({
         success: true,
         data: categories,
       });
     } catch (error) {
       logger.error('Failed to get forum categories', { error });
-      _res.status(500).json({
+      res.status(500).json({
         success: false,
         error: 'Failed to get categories',
       });

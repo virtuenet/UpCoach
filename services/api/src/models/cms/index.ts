@@ -9,6 +9,7 @@ import { UnifiedCategory } from './UnifiedCategory';
 import { UnifiedTag } from './UnifiedTag';
 import { UnifiedMedia } from './UnifiedMedia';
 import { UnifiedInteraction } from './UnifiedInteraction';
+import { logger } from '../../utils/logger';
 
 // ==================== Backward Compatibility Aliases ====================
 

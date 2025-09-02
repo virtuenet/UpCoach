@@ -126,10 +126,10 @@ export function decrypt(encryptedText: string, key: string): string {
  * Rotates a secret by generating a new one
  * @returns Object with new and old secrets for gradual migration
  */
-export function rotateSecret(): { current: string; previous: string; rotatedAt: Date } {
+export function rotateSecret(currentSecret?: string): { current: string; previous: string; rotatedAt: Date } {
   return {
     current: generateSecret(),
-    previous: process.env.JWT_SECRET || generateSecret(),
+    previous: currentSecret || generateSecret(),
     rotatedAt: new Date(),
   };
 }

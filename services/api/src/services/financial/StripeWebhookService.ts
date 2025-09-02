@@ -142,7 +142,7 @@ export class StripeWebhookService {
       currency: paymentIntent.currency,
       paymentMethod: PaymentMethod.CARD,
       description: paymentIntent.description || 'Payment',
-      failureReason: paymentIntent.last_paymenterror?.message,
+      failureReason: paymentIntent.last_payment_error?.message,
     });
 
     // Create billing event
@@ -151,7 +151,7 @@ export class StripeWebhookService {
       source: BillingEventSource.STRIPE_WEBHOOK,
       userId: user.id,
       stripeEventId: paymentIntent.id,
-      description: `Payment failed: ${paymentIntent.last_paymenterror?.message}`,
+      description: `Payment failed: ${paymentIntent.last_payment_error?.message}`,
       amount: paymentIntent.amount / 100,
       currency: paymentIntent.currency,
       isProcessed: true,

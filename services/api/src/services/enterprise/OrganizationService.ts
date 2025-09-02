@@ -97,7 +97,7 @@ export class OrganizationService {
 
       // Update user's organization
       await User.update(
-        { organizationId: organization.id },
+        { organizationId: organization.id as unknown as string },
         { where: { id: data.ownerId }, transaction }
       );
 

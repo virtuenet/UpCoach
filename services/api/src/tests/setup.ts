@@ -1,16 +1,21 @@
 // Test environment setup
-import { jest } from '@jest/globals';
+import { jest, afterEach, afterAll } from '@jest/globals';
 
 // Set test environment
 process.env.NODE_ENV = 'test';
-process.env.JWT_SECRET = 'test-jwt-secret-that-is-long-enough-for-validation';
-process.env.JWT_REFRESH_SECRET = 'test-jwt-refresh-secret-that-is-long-enough-for-validation';
-process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/upcoach_test';
-process.env.OPENAI_API_KEY = 'test-openai-key';
-process.env.CLAUDE_API_KEY = 'test-claude-key';
-process.env.REDIS_HOST = 'localhost';
-process.env.REDIS_PORT = '6379';
-process.env.REDIS_URL = 'redis://localhost:6379';
+
+// Only set test secrets if we're in test environment
+if (process.env.NODE_ENV === 'test') {
+  process.env.JWT_SECRET = 'test-jwt-secret-that-is-long-enough-for-validation';
+  process.env.JWT_REFRESH_SECRET = 'test-jwt-refresh-secret-that-is-long-enough-for-validation';
+  process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/upcoach_test';
+  process.env.OPENAI_API_KEY = 'test-openai-key';
+  process.env.CLAUDE_API_KEY = 'test-claude-key';
+  process.env.REDIS_HOST = 'localhost';
+  process.env.REDIS_PORT = '6379';
+  process.env.REDIS_URL = 'redis://localhost:6379';
+  process.env.CSRF_SECRET = 'test-csrf-secret-that-is-long-enough-for-validation-and-more-than-64-chars';
+}
 
 // Mock console methods to reduce noise
 global.console = {

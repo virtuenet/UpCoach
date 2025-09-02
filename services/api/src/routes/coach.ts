@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { coachController } from '../controllers/CoachController';
-import { authenticateToken } from '../middleware/auth';
+import { authMiddleware as authenticateToken } from '../middleware/auth';
 import { requireRole } from '../middleware/roleAuth';
 
 const router = Router();

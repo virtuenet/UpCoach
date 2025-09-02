@@ -29,10 +29,10 @@ export function errorWrapper(
 ) {
   return async (req: Request, res: Response, _next: NextFunction) => {
     try {
-      await handler(req, res, next);
+      await handler(req, res, _next);
     } catch (error) {
       logger.error('Route handler error:', error);
-      next(error);
+      _next(error);
     }
   };
 }
@@ -53,7 +53,7 @@ export function attachResponseHelpers(req: Request, res: Response, next: NextFun
   res.error = function (error: string | Error, statusCode: number = 500) {
     return this.status(statusCode).json({
       success: false,
-      error: (error as Error)?.message || "Unknown error",error,
+      error: (error as Error)?.message || error.toString(),
       timestamp: new Date().toISOString(),
     });
   };

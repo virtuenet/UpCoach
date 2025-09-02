@@ -130,7 +130,7 @@ export const performanceMiddleware = (req: Request, _res: Response, next: NextFu
     }
 
     // Call original end
-    return originalEnd.apply(res, args as [any, BufferEncoding, (() => void)?]);
+    return originalEnd.apply(_res, args as [any, BufferEncoding, (() => void)?]);
   };
 
   next();
@@ -159,13 +159,13 @@ export const trackCacheMiss = (cacheType: string) => {
 };
 
 // Metrics endpoint handler
-export const metricsHandler = async (req: Request, _res: Response) => {
+export const metricsHandler = async (req: Request, res: Response) => {
   try {
-    _res.set('Content-Type', register.contentType);
+    res.set('Content-Type', register.contentType);
     const metrics = await register.metrics();
-    _res.send(metrics);
+    res.send(metrics);
   } catch (error) {
-    _res.status(500).send('Error generating metrics');
+    res.status(500).send('Error generating metrics');
   }
 };
 

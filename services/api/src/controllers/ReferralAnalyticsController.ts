@@ -6,11 +6,11 @@ import { logger } from '../utils/logger';
 import { referralService } from '../services/referral/ReferralService';
 
 export class ReferralAnalyticsController {
-  async getReferralStats_(req: Request, _res: Response): Promise<void> {
+  async getReferralStats(req: Request, res: Response): Promise<void> {
     try {
       const stats = await referralService.getOverallStats();
 
-      _res.json({
+      res.json({
         totalReferrals: stats.totalReferrals,
         activeReferrals: stats.activeReferrals,
         completedReferrals: stats.completedReferrals,
@@ -20,7 +20,7 @@ export class ReferralAnalyticsController {
       });
     } catch (error) {
       logger.error('Failed to get referral stats:', error);
-      _res.status(500).json({ error: 'Failed to fetch referral statistics' });
+      res.status(500).json({ error: 'Failed to fetch referral statistics' });
     }
   }
 
@@ -137,7 +137,7 @@ export class ReferralAnalyticsController {
     }
   }
 
-  async getReferralPrograms_(req: Request, _res: Response): Promise<void> {
+  async getReferralPrograms(req: Request, res: Response): Promise<void> {
     try {
       const programs = [
         {
@@ -166,10 +166,10 @@ export class ReferralAnalyticsController {
         },
       ];
 
-      _res.json(programs);
+      res.json(programs);
     } catch (error) {
       logger.error('Failed to get referral programs:', error);
-      _res.status(500).json({ error: 'Failed to fetch referral programs' });
+      res.status(500).json({ error: 'Failed to fetch referral programs' });
     }
   }
 }

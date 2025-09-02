@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { authenticateToken } from '../middleware/auth';
+import { authMiddleware as authenticateToken } from '../middleware/auth';
 import { validateRequest } from '../middleware/validation';
 import { body } from 'express-validator';
 import onboardingController from '../controllers/OnboardingController';
@@ -10,7 +10,7 @@ const router = Router();
 router.use(authenticateToken);
 
 // Get onboarding status
-router.get('/status', (req: Request, _res: Response) =>
+router.get('/status', (req: Request, res: Response) =>
   onboardingController.getOnboardingStatus(req, res)
 );
 
@@ -32,11 +32,11 @@ router.post(
     body('availability.commitmentLevel').notEmpty().isIn(['daily', 'regular', 'weekly']),
   ],
   validateRequest,
-  (req: Request, _res: Response) => onboardingController.completeOnboarding(req, res)
+  (req: Request, res: Response) => onboardingController.completeOnboarding(req, res)
 );
 
 // Skip onboarding
-router.post('/skip', (req: Request, _res: Response) =>
+router.post('/skip', (req: Request, res: Response) =>
   onboardingController.skipOnboarding(req, res)
 );
 

@@ -345,7 +345,7 @@ export class MediaController {
   }
 
   // Get media library stats
-  static async getStats_(req: Request, _res: Response) {
+  static async getStats(req: Request, res: Response) {
     try {
       const totalCount = await ContentMedia.count();
       const totalSize = await ContentMedia.sum('size');
@@ -371,7 +371,7 @@ export class MediaController {
         ],
       });
 
-      _res.json({
+      res.json({
         totalCount,
         totalSize,
         typeStats,
@@ -379,7 +379,7 @@ export class MediaController {
       });
     } catch (error) {
       logger.error('Error fetching media stats:', error);
-      _res.status(500).json({ error: 'Failed to fetch media stats' });
+      res.status(500).json({ error: 'Failed to fetch media stats' });
     }
   }
 }

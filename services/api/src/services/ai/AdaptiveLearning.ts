@@ -165,7 +165,7 @@ export class AdaptiveLearning {
     _performance: PerformanceMetrics[]
   ): LearningStyle {
     // Base learning style from profile
-    const baseStyle: Record<string, number> = {
+    const baseStyle: LearningStyle = {
       visual: 0.25,
       auditory: 0.25,
       kinesthetic: 0.25,
@@ -190,7 +190,7 @@ export class AdaptiveLearning {
 
     // Normalize to ensure sum equals 1
     const total = Object.values(baseStyle).reduce((sum, val) => sum + val, 0);
-    Object.keys(baseStyle).forEach(key => {
+    (Object.keys(baseStyle) as Array<keyof LearningStyle>).forEach(key => {
       baseStyle[key] = baseStyle[key] / total;
     });
 

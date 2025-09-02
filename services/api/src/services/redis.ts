@@ -232,9 +232,70 @@ class RedisService {
     }
   }
 
+  async keys(pattern: string): Promise<string[]> {
+    try {
+      await this.ensureConnected();
+      return await this.client.keys(pattern);
+    } catch (error) {
+      logger.error(`Redis KEYS error for pattern ${pattern}:`, error);
+      throw error;
+    }
+  }
+
   private async ensureConnected(): Promise<void> {
     if (!this.isConnected) {
       await this.connect();
+    }
+  }
+
+  // Set operations
+  async sadd(key: string, member: string): Promise<number> {
+    try {
+      await this.ensureConnected();
+      return await this.client.sAdd(key, member);
+    } catch (error) {
+      logger.error(`Redis SADD error for key ${key}:`, error);
+      throw error;
+    }
+  }
+
+  async srem(key: string, member: string): Promise<number> {
+    try {
+      await this.ensureConnected();
+      return await this.client.sRem(key, member);
+    } catch (error) {
+      logger.error(`Redis SREM error for key ${key}:`, error);
+      throw error;
+    }
+  }
+
+  async smembers(key: string): Promise<string[]> {
+    try {
+      await this.ensureConnected();
+      return await this.client.sMembers(key);
+    } catch (error) {
+      logger.error(`Redis SMEMBERS error for key ${key}:`, error);
+      throw error;
+    }
+  }
+
+  async expire(key: string, seconds: number): Promise<boolean> {
+    try {
+      await this.ensureConnected();
+      return await this.client.expire(key, seconds);
+    } catch (error) {
+      logger.error(`Redis EXPIRE error for key ${key}:`, error);
+      throw error;
+    }
+  }
+
+  async ttl(key: string): Promise<number> {
+    try {
+      await this.ensureConnected();
+      return await this.client.ttl(key);
+    } catch (error) {
+      logger.error(`Redis TTL error for key ${key}:`, error);
+      throw error;
     }
   }
 

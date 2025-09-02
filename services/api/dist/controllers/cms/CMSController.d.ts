@@ -1,0 +1,27 @@
+import { Request, Response } from 'express';
+export declare const getArticles: (req: Request, _res: Response) => Promise<void>;
+export declare const createArticle: (req: Request, _res: Response) => Promise<void>;
+export declare const getArticle: (req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const updateArticle: (req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const deleteArticle: (req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const publishArticle: (req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const unpublishArticle: (req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const getArticleVersions: (req: Request, _res: Response) => Promise<void>;
+export declare const revertArticleVersion: (req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const uploadMedia: (req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const getMedia: (req: Request, _res: Response) => Promise<void>;
+export declare const deleteMedia: (req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const getCategories: (_req: Request, _res: Response) => Promise<void>;
+export declare const createCategory: (req: Request, _res: Response) => Promise<void>;
+export declare const updateCategory: (req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const deleteCategory: (req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const getTemplates: (req: Request, _res: Response) => Promise<void>;
+export declare const createTemplate: (req: Request, _res: Response) => Promise<void>;
+export declare const updateTemplate: (req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const analyzeContent: (req: Request, _res: Response) => Promise<void>;
+export declare const previewContent: (req: Request, _res: Response) => Promise<void>;
+export declare const getContentAnalytics: (req: Request, _res: Response) => Promise<void>;
+export declare const getArticleAnalytics: (req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>;
+export declare const scheduleContent: (req: Request, _res: Response) => Promise<void>;
+export declare const getScheduledContent: (_req: Request, _res: Response) => Promise<void>;
+//# sourceMappingURL=CMSController.d.ts.map

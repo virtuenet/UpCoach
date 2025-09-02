@@ -86,7 +86,7 @@ export class VoiceAI {
   ): Promise<string> {
     try {
       // Create a File object from buffer for OpenAI API
-      const file = new File([audioBuffer], `audio.${format}`, { type: `audio/${format}` });
+      const file = new File([new Uint8Array(audioBuffer)], `audio.${format}`, { type: `audio/${format}` });
 
       const transcription = await this.openai.audio.transcriptions.create({
         file,
