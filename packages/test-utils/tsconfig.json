@@ -7,7 +7,7 @@
     "declaration": true,
     "declarationMap": true,
     "jsx": "react-jsx",
-    "types": ["jest", "@testing-library/jest-dom", "vitest"]
+    "types": ["jest", "@testing-library/jest-dom", "node"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

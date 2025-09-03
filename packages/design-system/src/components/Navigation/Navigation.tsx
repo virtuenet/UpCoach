@@ -59,7 +59,8 @@ export interface NavigationProps {
   notifications?: number;
   onNavigate?: (path: string) => void;
   onLogout?: () => void;
-  variant?: 'permanent' | 'temporary' | 'mini';
+  variant?: 'permanent' | 'temporary' | 'persistent';
+  mini?: boolean;
   position?: 'left' | 'top';
   currentPath?: string;
 }
@@ -76,12 +77,12 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 }));
 
 const StyledDrawer = styled(Drawer, {
-  shouldForwardProp: prop => prop !== 'variant',
-})<{ variant: string }>(({ theme, variant }) => ({
-  width: variant === 'mini' ? miniDrawerWidth : drawerWidth,
+  shouldForwardProp: prop => prop !== 'mini',
+})<{ mini?: boolean }>(({ theme, mini }) => ({
+  width: mini ? miniDrawerWidth : drawerWidth,
   flexShrink: 0,
   '& .MuiDrawer-paper': {
-    width: variant === 'mini' ? miniDrawerWidth : drawerWidth,
+    width: mini ? miniDrawerWidth : drawerWidth,
     boxSizing: 'border-box',
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
@@ -90,20 +91,10 @@ const StyledDrawer = styled(Drawer, {
   },
 }));
 
-const StyledAppBar = styled(AppBar, {
-  shouldForwardProp: prop => prop !== 'open',
-})<{ open?: boolean }>(({ theme, open }) => ({
+const StyledAppBar = styled(AppBar)(({ theme }) => ({
   transition: theme.transitions.create(['margin', 'width'], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
-  }),
-  ...(open && {
-    width: `calc(100% - ${drawerWidth}px)`,
-    marginLeft: `${drawerWidth}px`,
-    transition: theme.transitions.create(['margin', 'width'], {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
   }),
 }));
 
@@ -116,6 +107,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   onNavigate,
   onLogout,
   variant = 'permanent',
+  mini = false,
   position = 'left',
   currentPath = '',
 }) => {
@@ -205,7 +197,7 @@ export const Navigation: React.FC<NavigationProps> = ({
       <DrawerHeader>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {logo}
-          {variant !== 'mini' && (
+          {!mini && (
             <Typography variant="h6" noWrap>
               {title}
             </Typography>
@@ -223,7 +215,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   );
 
   const appBarContent = (
-    <AppBar position="fixed" open={position === 'left' && open}>
+    <AppBar position="fixed">
       <Toolbar>
         <IconButton
           color="inherit"
@@ -297,6 +289,7 @@ export const Navigation: React.FC<NavigationProps> = ({
       {appBarContent}
       <StyledDrawer
         variant={isMobile ? 'temporary' : variant}
+        mini={mini}
         open={open}
         onClose={handleDrawerToggle}
         ModalProps={{ keepMounted: true }}

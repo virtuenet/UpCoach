@@ -53,14 +53,7 @@ export declare class FinancialService {
     /**
      * Get detailed cost breakdown
      */
-    getCostBreakdown(startDate: Date, endDate: Date): Promise<{
-        category: any;
-        vendor: any;
-        total: number;
-        count: number;
-        average: number;
-        percentage: number;
-    }[]>;
+    getCostBreakdown(startDate: Date, endDate: Date): Promise<any>;
 }
 export declare const financialService: FinancialService;
 //# sourceMappingURL=FinancialService.d.ts.map

@@ -8,7 +8,7 @@ export declare function getValidationMetrics(): {
         hits: number;
         misses: number;
         evictions: number;
-        size: number;
+        size: any;
     };
     schemas: {
         avgDuration: number;

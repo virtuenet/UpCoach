@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-export interface CardProps extends Omit<MuiCardProps, 'title'> {
+export interface CardProps extends Omit<MuiCardProps, 'title' | 'variant'> {
   title?: React.ReactNode;
   subtitle?: string;
   headerAction?: React.ReactNode;

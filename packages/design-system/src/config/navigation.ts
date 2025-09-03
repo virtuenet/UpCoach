@@ -6,12 +6,6 @@
 import React from 'react';
 import type { NavigationItem } from '../components/Navigation/Navigation';
 
-// Icon type for type safety (would normally import from icon library)
-export interface IconType {
-  name: string;
-  component?: React.ComponentType<any>;
-}
-
 export interface NavigationConfig {
   [key: string]: {
     title: string;
@@ -26,13 +20,13 @@ export const cmsNavigation: NavigationItem[] = [
     id: 'dashboard',
     label: 'Dashboard',
     path: '/dashboard',
-    icon: { name: 'Home' },
+    icon: null, // Icon would be provided by the consuming app
   },
   {
     id: 'content',
     label: 'Content Management',
     path: '/content',
-    icon: { name: 'FileText' },
+    icon: null,
     children: [
       {
         id: 'content-list',
@@ -55,7 +49,7 @@ export const cmsNavigation: NavigationItem[] = [
     id: 'courses',
     label: 'Courses',
     path: '/courses',
-    icon: { name: 'BookOpen' },
+    icon: null,
     children: [
       {
         id: 'courses-list',
@@ -73,19 +67,19 @@ export const cmsNavigation: NavigationItem[] = [
     id: 'media',
     label: 'Media Library',
     path: '/media',
-    icon: { name: 'Image' },
+    icon: null,
   },
   {
     id: 'analytics',
     label: 'Analytics',
     path: '/analytics',
-    icon: { name: 'BarChart3' },
+    icon: null,
   },
   {
     id: 'settings',
     label: 'Settings',
     path: '/settings',
-    icon: { name: 'Settings' },
+    icon: null,
   },
 ];
 
@@ -95,13 +89,13 @@ export const adminNavigation: NavigationItem[] = [
     id: 'admin-dashboard',
     label: 'System Overview',
     path: '/dashboard',
-    icon: { name: 'BarChart' },
+    icon: null,
   },
   {
     id: 'user-management',
     label: 'User Management',
     path: '/users',
-    icon: { name: 'Users' },
+    icon: null,
     children: [
       {
         id: 'users-list',
@@ -124,7 +118,7 @@ export const adminNavigation: NavigationItem[] = [
     id: 'content-moderation',
     label: 'Content Moderation',
     path: '/moderation',
-    icon: { name: 'Shield' },
+    icon: null,
     children: [
       {
         id: 'moderation-pending',
@@ -148,7 +142,7 @@ export const adminNavigation: NavigationItem[] = [
     id: 'analytics-admin',
     label: 'Advanced Analytics',
     path: '/analytics',
-    icon: { name: 'TrendingUp' },
+    icon: null,
     children: [
       {
         id: 'analytics-users',
@@ -171,7 +165,7 @@ export const adminNavigation: NavigationItem[] = [
     id: 'financial',
     label: 'Financial Management',
     path: '/financial',
-    icon: { name: 'DollarSign' },
+    icon: null,
     children: [
       {
         id: 'financial-revenue',
@@ -194,7 +188,7 @@ export const adminNavigation: NavigationItem[] = [
     id: 'system-config',
     label: 'System Configuration',
     path: '/system',
-    icon: { name: 'Settings2' },
+    icon: null,
     children: [
       {
         id: 'system-general',

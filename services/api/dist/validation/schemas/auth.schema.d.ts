@@ -11,8 +11,8 @@ export declare const registerSchema: z.ZodEffects<z.ZodEffects<z.ZodObject<{
     marketingConsent: z.ZodOptional<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
     password?: string;
-    username?: string;
     email?: string;
+    username?: string;
     phone?: string;
     firstName?: string;
     lastName?: string;
@@ -21,8 +21,8 @@ export declare const registerSchema: z.ZodEffects<z.ZodEffects<z.ZodObject<{
     marketingConsent?: boolean;
 }, {
     password?: string;
-    username?: string;
     email?: string;
+    username?: string;
     phone?: string;
     firstName?: string;
     lastName?: string;
@@ -31,8 +31,8 @@ export declare const registerSchema: z.ZodEffects<z.ZodEffects<z.ZodObject<{
     marketingConsent?: boolean;
 }>, {
     password?: string;
-    username?: string;
     email?: string;
+    username?: string;
     phone?: string;
     firstName?: string;
     lastName?: string;
@@ -41,8 +41,8 @@ export declare const registerSchema: z.ZodEffects<z.ZodEffects<z.ZodObject<{
     marketingConsent?: boolean;
 }, {
     password?: string;
-    username?: string;
     email?: string;
+    username?: string;
     phone?: string;
     firstName?: string;
     lastName?: string;
@@ -51,8 +51,8 @@ export declare const registerSchema: z.ZodEffects<z.ZodEffects<z.ZodObject<{
     marketingConsent?: boolean;
 }>, {
     password?: string;
-    username?: string;
     email?: string;
+    username?: string;
     phone?: string;
     firstName?: string;
     lastName?: string;
@@ -61,8 +61,8 @@ export declare const registerSchema: z.ZodEffects<z.ZodEffects<z.ZodObject<{
     marketingConsent?: boolean;
 }, {
     password?: string;
-    username?: string;
     email?: string;
+    username?: string;
     phone?: string;
     firstName?: string;
     lastName?: string;
@@ -166,11 +166,11 @@ export declare const updateProfileSchema: z.ZodObject<{
         sms?: boolean;
     }>>;
 }, "strip", z.ZodTypeAny, {
-    username?: string;
     bio?: string;
     avatar?: string;
     language?: "en" | "es" | "fr" | "de" | "pt" | "zh" | "ja" | "ko";
     timezone?: string;
+    username?: string;
     phone?: string;
     firstName?: string;
     lastName?: string;
@@ -180,11 +180,11 @@ export declare const updateProfileSchema: z.ZodObject<{
         sms?: boolean;
     };
 }, {
-    username?: string;
     bio?: string;
     avatar?: string;
     language?: "en" | "es" | "fr" | "de" | "pt" | "zh" | "ja" | "ko";
     timezone?: string;
+    username?: string;
     phone?: string;
     firstName?: string;
     lastName?: string;
@@ -216,17 +216,17 @@ export declare const sessionSchema: z.ZodObject<{
     expiresAt: z.ZodDate;
     isActive: z.ZodBoolean;
 }, "strip", z.ZodTypeAny, {
-    role?: "admin" | "coach" | "user";
     email?: string;
     userId?: number;
     expiresAt?: Date;
+    role?: "admin" | "coach" | "user";
     isActive?: boolean;
     sessionId?: string;
 }, {
-    role?: "admin" | "coach" | "user";
     email?: string;
     userId?: number;
     expiresAt?: Date;
+    role?: "admin" | "coach" | "user";
     isActive?: boolean;
     sessionId?: string;
 }>;

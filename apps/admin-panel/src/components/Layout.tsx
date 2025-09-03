@@ -41,7 +41,9 @@ export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const { user, logout } = useAuthStore();
   
-  const [navigationVariant, setNavigationVariant] = useState<'permanent' | 'temporary' | 'mini'>('permanent');
+  const [navigationVariant, setNavigationVariant] = useState<NavigationVariant>('permanent');
+
+type NavigationVariant = 'permanent' | 'temporary' | 'persistent' | 'mini' | undefined;
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -102,7 +104,7 @@ export default function Layout({ children }: LayoutProps) {
           display: 'flex',
           flexDirection: 'column',
           minHeight: '100vh',
-          ml: { md: navigationVariant === 'mini' ? '72px' : '260px' },
+          ml: { md: navigationVariant === 'mini' ? '72px' : navigationVariant === 'permanent' ? '260px' : '0' },
           mt: '64px', // AppBar height
         }}
       >

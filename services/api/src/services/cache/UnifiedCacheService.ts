@@ -344,7 +344,7 @@ export class UnifiedCacheService {
 
     // Invalidate in memory cache
     const memoryKeys = Array.from(this.inMemoryCache.keys()).filter(k =>
-      k.match(new RegExp(fullPattern.replace(/\*/g, '.*')))
+      (k as string).match(new RegExp(fullPattern.replace(/\*/g, '.*')))
     );
     memoryKeys.forEach(key => this.inMemoryCache.delete(key));
     invalidatedCount += memoryKeys.length;

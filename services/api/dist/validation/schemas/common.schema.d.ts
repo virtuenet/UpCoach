@@ -328,14 +328,14 @@ export declare const apiKeySchema: z.ZodObject<{
     ipWhitelist: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
 }, "strip", z.ZodTypeAny, {
     name?: string;
-    description?: string;
     expiresAt?: string | Date;
+    description?: string;
     permissions?: string[];
     ipWhitelist?: string[];
 }, {
     name?: string;
-    description?: string;
     expiresAt?: string | Date;
+    description?: string;
     permissions?: string[];
     ipWhitelist?: string[];
 }>;
@@ -361,7 +361,7 @@ export declare const batchOperationSchema: z.ZodObject<{
         skipErrors?: boolean;
         validateOnly?: boolean;
     };
-    operation?: "delete" | "create" | "update";
+    operation?: "create" | "update" | "delete";
     items?: Record<string, unknown>[];
 }, {
     options?: {
@@ -369,7 +369,7 @@ export declare const batchOperationSchema: z.ZodObject<{
         skipErrors?: boolean;
         validateOnly?: boolean;
     };
-    operation?: "delete" | "create" | "update";
+    operation?: "create" | "update" | "delete";
     items?: Record<string, unknown>[];
 }>;
 export declare const exportRequestSchema: z.ZodObject<{
