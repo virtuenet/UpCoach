@@ -1,5 +1,5 @@
 import { Pact, Matchers } from '@pact-foundation/pact';
-import { UserResponseSchema, UserCreateSchema, LoginResponseSchema } from '../schemas/user.schema';
+import { UserSchema, CreateUserSchema, LoginResponseSchema } from '../schemas/user.schema';
 
 const { like, term, eachLike, iso8601DateTimeWithMillis } = Matchers;
 
@@ -189,7 +189,7 @@ export const userInteractions = {
 // Helper function to validate responses against schemas
 export function validateUserResponse(response: any): boolean {
   try {
-    UserResponseSchema.parse(response);
+    UserSchema.parse(response);
     return true;
   } catch (error) {
     console.error('User response validation failed:', error);

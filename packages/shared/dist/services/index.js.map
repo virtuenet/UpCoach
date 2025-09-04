@@ -1,1 +1,1 @@
-{"version":3,"sources":["../../src/services/index.ts"],"names":[],"mappings":";;;AAKO,IAAM,iBAAiB","file":"index.js","sourcesContent":["/**\n * Shared services index\n */\n\n// Placeholder for shared services\nexport const SharedServices = {};"]}
+{"version":3,"sources":["../../src/services/index.ts"],"names":["SharedServices"],"mappings":";;;AAKO,IAAMA,iBAAiB","file":"index.js","sourcesContent":["/**\n * Shared services index\n */\n\n// Placeholder for shared services\nexport const SharedServices = {};"]}

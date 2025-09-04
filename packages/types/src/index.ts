@@ -210,4 +210,4 @@ export interface PaginationParams {
 }
 
 // Export all API types from shared
-export * from '../../shared/types/api';
+export * from './api';

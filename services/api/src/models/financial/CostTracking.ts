@@ -41,7 +41,7 @@ export enum CostProvider {
   tableName: 'cost_tracking',
   timestamps: true,
 })
-export class CostTracking extends Model {
+export class CostTracking extends Model<CostTracking> {
   @Column({
     type: DataType.UUID,
     defaultValue: DataType.UUIDV4,

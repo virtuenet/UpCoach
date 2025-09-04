@@ -100,24 +100,27 @@ build_images() {
     # Build backend
     log_info "Building backend image..."
     docker build -t upcoach/backend:${DEPLOYMENT_VERSION} \
-        -f backend/Dockerfile.production \
+        -f services/api/Dockerfile \
+        --target production \
         --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
         --build-arg VCS_REF=$(git rev-parse --short HEAD) \
-        backend/
+        services/api/
     
     # Build admin panel
     log_info "Building admin panel image..."
     docker build -t upcoach/admin-panel:${DEPLOYMENT_VERSION} \
-        -f admin-panel/Dockerfile.production \
-        --build-arg REACT_APP_API_URL=${PRODUCTION_API_URL} \
-        admin-panel/
+        -f apps/admin-panel/Dockerfile \
+        --target production \
+        --build-arg VITE_API_URL=${PRODUCTION_API_URL} \
+        apps/admin-panel/
     
     # Build landing page
     log_info "Building landing page image..."
     docker build -t upcoach/landing-page:${DEPLOYMENT_VERSION} \
-        -f landing-page/Dockerfile.production \
+        -f apps/landing-page/Dockerfile \
+        --target production \
         --build-arg NEXT_PUBLIC_API_URL=${PRODUCTION_API_URL} \
-        landing-page/
+        apps/landing-page/
     
     log_success "Images built successfully"
 }

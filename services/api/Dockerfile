@@ -15,13 +15,13 @@ COPY package*.json ./
 COPY tsconfig.json ./
 
 # Install dependencies (production only for final stage)
-RUN npm ci --only=production && npm cache clean --force
+RUN npm install --only=production && npm cache clean --force
 
 # Development stage
 FROM base AS development
 
 # Install all dependencies (including dev)
-RUN npm ci
+RUN npm install
 
 # Copy source code
 COPY . .
@@ -43,7 +43,7 @@ CMD ["npm", "run", "dev"]
 FROM base AS build
 
 # Install all dependencies for building
-RUN npm ci
+RUN npm install
 
 # Copy source code
 COPY . .

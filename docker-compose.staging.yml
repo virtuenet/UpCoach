@@ -42,7 +42,7 @@ services:
   # Backend API
   backend:
     build:
-      context: ./backend
+      context: ./services/api
       dockerfile: Dockerfile
       target: production
     environment:
@@ -73,7 +73,7 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - ./backend/uploads:/app/uploads
+      - ./services/api/uploads:/app/uploads
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
@@ -86,7 +86,7 @@ services:
   # Admin Panel
   admin-panel:
     build:
-      context: ./admin-panel
+      context: ./apps/admin-panel
       dockerfile: Dockerfile
       target: production
       args:
@@ -107,7 +107,7 @@ services:
   # Landing Page
   landing-page:
     build:
-      context: ./landing-page
+      context: ./apps/landing-page
       dockerfile: Dockerfile
       target: production
     environment:

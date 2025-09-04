@@ -13,6 +13,9 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "moduleResolution": "node",
+    "paths": {
+      "@upcoach/shared/types/*": ["../../shared/types/*"]
+    },
     "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*"],

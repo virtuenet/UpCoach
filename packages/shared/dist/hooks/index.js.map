@@ -1,1 +1,1 @@
-{"version":3,"sources":["../../src/hooks/index.ts"],"names":[],"mappings":";;;AAKO,IAAM,cAAc","file":"index.js","sourcesContent":["/**\n * Shared hooks index\n */\n\n// Placeholder for shared hooks\nexport const SharedHooks = {};"]}
+{"version":3,"sources":["../../src/hooks/index.ts"],"names":["SharedHooks"],"mappings":";;;AAKO,IAAMA,cAAc","file":"index.js","sourcesContent":["/**\n * Shared hooks index\n */\n\n// Placeholder for shared hooks\nexport const SharedHooks = {};"]}

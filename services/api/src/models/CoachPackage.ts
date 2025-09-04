@@ -20,7 +20,7 @@ import * as sequelize from 'sequelize';
   tableName: 'coach_packages',
   timestamps: true,
 })
-export class CoachPackage extends Model {
+export class CoachPackage extends Model<CoachPackage> {
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,

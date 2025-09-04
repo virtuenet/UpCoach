@@ -414,16 +414,12 @@ export class DataDogService {
       this.gauge('process.cpu.system', cpuUsage.system);
 
       // Event loop metrics
-      // @ts-ignore
-      if (process._getActiveHandles) {
-        // @ts-ignore
-        this.gauge('process.handles.active', process._getActiveHandles().length);
+      if ((process as any)._getActiveHandles) {
+        this.gauge('process.handles.active', (process as any)._getActiveHandles().length);
       }
 
-      // @ts-ignore
-      if (process._getActiveRequests) {
-        // @ts-ignore
-        this.gauge('process.requests.active', process._getActiveRequests().length);
+      if ((process as any)._getActiveRequests) {
+        this.gauge('process.requests.active', (process as any)._getActiveRequests().length);
       }
     }, 10000); // Collect every 10 seconds
   }

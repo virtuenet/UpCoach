@@ -1,5 +1,15 @@
 import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
+// import { redirect } from 'next/navigation';
+
+// Temporary workaround for redirect issue
+const redirect = (url: string) => {
+  if (typeof window !== 'undefined') {
+    window.location.href = url;
+  } else {
+    // Server-side redirect fallback
+    return Response.redirect(url);
+  }
+};
 
 export default async function DashboardPage() {
   const { userId } = await auth();

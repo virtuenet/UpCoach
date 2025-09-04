@@ -18,7 +18,7 @@ export enum SnapshotPeriod {
     },
   ],
 })
-export class FinancialSnapshot extends Model {
+export class FinancialSnapshot extends Model<FinancialSnapshot> {
   @Column({
     type: DataType.UUID,
     defaultValue: DataType.UUIDV4,

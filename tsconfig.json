@@ -59,6 +59,7 @@
     { "path": "./packages/shared" },
     { "path": "./packages/ui" },
     { "path": "./packages/test-utils" },
+    { "path": "./packages/test-contracts" },
     { "path": "./apps/backend" },
     { "path": "./apps/admin-panel" },
     { "path": "./apps/cms-panel" },

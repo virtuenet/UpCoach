@@ -6,7 +6,6 @@ import { AppError } from '../../utils/errors';
 import crypto from 'crypto';
 // import jwt from 'jsonwebtoken';
 import { SAML } from '@node-saml/node-saml';
-// @ts-ignore - openid-client types may not be available
 import { Issuer, generators } from 'openid-client';
 import { sessionStore } from './SessionStore';
 
@@ -372,8 +371,7 @@ export class SSOService {
     // Return logout URL based on provider
     if (session.provider === 'saml') {
       const saml = await this.getSAMLProvider(session.sso_configuration_id);
-      // @ts-ignore - method name may vary
-      if (saml.getLogoutUrlAsync) {
+      if ((saml as any).getLogoutUrlAsync) {
         return await saml.getLogoutUrlAsync(session.idp_session_id, {} as any, {} as any);
       } else if ((saml as any).getLogoutUrl) {
         return await (saml as any).getLogoutUrl({ nameID: session.idp_session_id });
@@ -483,7 +481,6 @@ export class SSOService {
         callbackUrl: `${process.env.BASE_URL}/api/sso/saml/callback/${configId}`,
         entryPoint: config.saml_idp_url,
         issuer: `${process.env.BASE_URL}/saml/${config.organization_id}`,
-        // @ts-ignore - cert/idpCert compatibility
         cert: config.saml_idp_cert,
         idpCert: config.saml_idp_cert,
         privateKey: this.decrypt(config.saml_sp_key),

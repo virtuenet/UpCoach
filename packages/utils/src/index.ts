@@ -3,10 +3,46 @@
  * Shared utility functions
  */
 
-// Re-export all utilities from shared folder
-export * from '../../../shared/utils';
-
 // Additional utility functions
+
+/**
+ * Deep clone an object
+ */
+export function deepClone<T>(obj: T): T {
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (obj instanceof Date) return new Date(obj.getTime()) as any;
+  if (obj instanceof Array) return obj.map(item => deepClone(item)) as any;
+
+  const cloned = {} as T;
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      cloned[key] = deepClone(obj[key]);
+    }
+  }
+  return cloned;
+}
+
+/**
+ * Deep merge objects
+ */
+export function deepMerge<T extends Record<string, any>>(...objects: Partial<T>[]): T {
+  const result = {} as T;
+
+  for (const obj of objects) {
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        const val = obj[key];
+        if (val !== null && typeof val === 'object' && !Array.isArray(val)) {
+          result[key] = deepMerge(result[key] || {}, val);
+        } else {
+          result[key] = val as any;
+        }
+      }
+    }
+  }
+
+  return result;
+}
 
 /**
  * Sleep/delay function
