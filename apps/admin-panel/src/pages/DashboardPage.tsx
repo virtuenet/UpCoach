@@ -13,8 +13,10 @@ import {
   Divider,
   IconButton,
   Tooltip,
+  Skeleton,
 } from '@mui/material';
 import { Grid } from '@mui/material';
+import { lazy, Suspense, useMemo, useCallback } from 'react';
 import {
   TrendingUp,
   TrendingDown,
@@ -27,7 +29,89 @@ import {
   MoreVert,
   Refresh,
 } from '@mui/icons-material';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+// Lazy load heavy chart components for better performance
+const LazyBarChart = lazy(() => 
+  import('recharts').then(module => ({
+    default: ({ data, ...props }: any) => {
+      const { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } = module;
+      return (
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={data} {...props}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Bar dataKey="users" fill="#1976d2" />
+            <Bar dataKey="active" fill="#42a5f5" />
+          </BarChart>
+        </ResponsiveContainer>
+      );
+    }
+  }))
+);
+
+const LazyLineChart = lazy(() =>
+  import('recharts').then(module => ({
+    default: ({ data, ...props }: any) => {
+      const { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } = module;
+      return (
+        <ResponsiveContainer width="100%" height={200}>
+          <LineChart data={data} {...props}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Line type="monotone" dataKey="users" stroke="#1976d2" strokeWidth={2} />
+          </LineChart>
+        </ResponsiveContainer>
+      );
+    }
+  }))
+);
+
+const LazyPieChart = lazy(() =>
+  import('recharts').then(module => ({
+    default: ({ data, ...props }: any) => {
+      const { PieChart, Pie, Cell, ResponsiveContainer } = module;
+      return (
+        <ResponsiveContainer width="100%" height={200}>
+          <PieChart {...props}>
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              innerRadius={40}
+              outerRadius={80}
+              paddingAngle={5}
+              dataKey="value"
+            >
+              {data.map((entry: any, index: number) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
+      );
+    }
+  }))
+);
+
+// Skeleton components for better loading UX
+const ChartSkeleton = ({ height = 300 }: { height?: number }) => (
+  <Box sx={{ width: '100%', height }}>
+    <Skeleton variant="rectangular" width="100%" height="80%" />
+    <Skeleton variant="text" width="60%" sx={{ mt: 1 }} />
+    <Skeleton variant="text" width="40%" />
+  </Box>
+);
+
+const StatCardSkeleton = () => (
+  <Card>
+    <CardContent>
+      <Skeleton variant="text" width="60%" />
+      <Skeleton variant="text" width="40%" height={40} />
+      <Skeleton variant="text" width="80%" />
+    </CardContent>
+  </Card>
+);
 
 // Mock data for dashboard
 const userGrowthData = [
@@ -106,6 +190,17 @@ function StatsCard({ title, value, subtitle, trend, icon, color }: StatsCardProp
 }
 
 export default function DashboardPage() {
+  // Memoize heavy data processing
+  const memoizedUserGrowthData = useMemo(() => userGrowthData, []);
+  const memoizedContentModerationData = useMemo(() => contentModerationData, []);
+  const memoizedRecentActivities = useMemo(() => recentActivities, []);
+
+  // Memoize refresh handler to prevent unnecessary re-renders
+  const handleRefresh = useCallback(() => {
+    // TODO: Implement actual data refresh
+    console.log('Refreshing dashboard data...');
+  }, []);
+
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
@@ -113,15 +208,15 @@ export default function DashboardPage() {
           System Overview
         </Typography>
         <Tooltip title="Refresh data">
-          <IconButton>
+          <IconButton onClick={handleRefresh}>
             <Refresh />
           </IconButton>
         </Tooltip>
       </Box>
 
-      <Grid container spacing={3}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
         {/* Stats Cards */}
-        <Grid xs={12} sm={6} md={3}>
+        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 45%', md: '1 1 22%' } }}>
           <StatsCard
             title="Total Users"
             value="2,134"
@@ -130,8 +225,8 @@ export default function DashboardPage() {
             icon={<People />}
             color="primary"
           />
-        </Grid>
-        <Grid xs={12} sm={6} md={3}>
+        </Box>
+        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 45%', md: '1 1 22%' } }}>
           <StatsCard
             title="Pending Moderation"
             value="23"
@@ -140,8 +235,8 @@ export default function DashboardPage() {
             icon={<Security />}
             color="warning"
           />
-        </Grid>
-        <Grid xs={12} sm={6} md={3}>
+        </Box>
+        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 45%', md: '1 1 22%' } }}>
           <StatsCard
             title="Monthly Revenue"
             value="$48,250"
@@ -150,8 +245,8 @@ export default function DashboardPage() {
             icon={<AttachMoney />}
             color="success"
           />
-        </Grid>
-        <Grid xs={12} sm={6} md={3}>
+        </Box>
+        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 45%', md: '1 1 22%' } }}>
           <StatsCard
             title="Content Items"
             value="1,456"
@@ -160,53 +255,35 @@ export default function DashboardPage() {
             icon={<ContentCopy />}
             color="info"
           />
-        </Grid>
+        </Box>
 
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mt: 3 }}>
         {/* User Growth Chart */}
-        <Grid item xs={12} md={8}>
+        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 65%' } }}>
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2 }}>
                 User Growth & Activity
               </Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={userGrowthData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Bar dataKey="users" fill="#3b82f6" name="Total Users" />
-                  <Bar dataKey="active" fill="#10b981" name="Active Users" />
-                </BarChart>
-              </ResponsiveContainer>
+              <Suspense fallback={<ChartSkeleton height={300} />}>
+                <LazyBarChart data={memoizedUserGrowthData} />
+              </Suspense>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Content Moderation Status */}
-        <Grid item xs={12} md={4}>
+        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 30%' } }}>
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2 }}>
                 Content Moderation
               </Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={contentModerationData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    dataKey="value"
-                  >
-                    {contentModerationData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
+              <Suspense fallback={<ChartSkeleton height={300} />}>
+                <LazyPieChart data={memoizedContentModerationData} />
+              </Suspense>
               <Box sx={{ mt: 2 }}>
-                {contentModerationData.map((item, index) => (
+                {memoizedContentModerationData.map((item, index) => (
                   <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     <Box
                       sx={{
@@ -225,10 +302,12 @@ export default function DashboardPage() {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
+      </Box>
 
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mt: 3 }}>
         {/* System Health */}
-        <Grid item xs={12} md={6}>
+        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 45%' } }}>
           <Card>
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2 }}>
@@ -289,10 +368,10 @@ export default function DashboardPage() {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Recent Activity */}
-        <Grid item xs={12} md={6}>
+        <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 45%' } }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -304,7 +383,7 @@ export default function DashboardPage() {
                 </IconButton>
               </Box>
               <List sx={{ maxHeight: 300, overflow: 'auto' }}>
-                {recentActivities.map((activity, index) => (
+                {memoizedRecentActivities.map((activity, index) => (
                   <Box key={activity.id}>
                     <ListItem alignItems="flex-start" sx={{ px: 0 }}>
                       <ListItemAvatar>
@@ -339,8 +418,9 @@ export default function DashboardPage() {
               </List>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
+      </Box>
     </Box>
   );
 }

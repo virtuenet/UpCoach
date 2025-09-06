@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, ErrorInfo, ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Box } from '@mui/material';
+import { Box, Typography, Button, Paper } from '@mui/material';
 import { 
   Navigation, 
   adminNavigation,
@@ -32,6 +32,124 @@ const transformNavigationWithIcons = (items: NavigationItem[]): NavigationItem[]
   }));
 };
 
+// Type definitions must come before usage
+type NavigationVariant = 'permanent' | 'temporary' | 'persistent' | undefined;
+type ExtendedNavigationVariant = NavigationVariant | 'mini';
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error?: Error;
+  errorInfo?: ErrorInfo;
+}
+
+class ErrorBoundary extends React.Component<
+  { children: ReactNode; fallback?: ReactNode },
+  ErrorBoundaryState
+> {
+  constructor(props: { children: ReactNode; fallback?: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    this.setState({ errorInfo });
+    
+    // Enhanced error logging with context
+    console.error('Error Boundary caught error:', {
+      error: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+      timestamp: new Date().toISOString(),
+      url: window.location.href,
+      userAgent: navigator.userAgent,
+    });
+
+    // In production, send to monitoring service
+    if (process.env.NODE_ENV === 'production') {
+      // TODO: Send to Sentry or similar service
+      // Sentry.captureException(error, { contexts: { react: errorInfo } });
+    }
+  }
+
+  private handleRetry = () => {
+    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || (
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '100vh',
+          bgcolor: 'background.default'
+        }}>
+          <Paper 
+            elevation={3} 
+            sx={{ 
+              p: 4, 
+              textAlign: 'center', 
+              maxWidth: 600,
+              mx: 2
+            }}
+          >
+            <Typography variant="h4" color="error" gutterBottom>
+              Oops! Something went wrong
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              We're sorry, but something unexpected happened. Our team has been notified and is working to fix the issue.
+            </Typography>
+            
+            {process.env.NODE_ENV === 'development' && this.state.error && (
+              <Paper 
+                sx={{ 
+                  p: 2, 
+                  mt: 2, 
+                  bgcolor: 'grey.50', 
+                  textAlign: 'left',
+                  fontFamily: 'monospace',
+                  fontSize: '0.75rem'
+                }}
+              >
+                <Typography variant="subtitle2" color="error" gutterBottom>
+                  Error Details (Development Mode):
+                </Typography>
+                <Typography variant="body2" component="pre" sx={{ whiteSpace: 'pre-wrap' }}>
+                  {this.state.error.message}
+                  {'\n\n'}
+                  {this.state.error.stack}
+                </Typography>
+              </Paper>
+            )}
+            
+            <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'center' }}>
+              <Button 
+                variant="contained" 
+                color="primary" 
+                onClick={this.handleRetry}
+              >
+                Try Again
+              </Button>
+              <Button 
+                variant="outlined" 
+                onClick={() => window.location.reload()}
+              >
+                Refresh Page
+              </Button>
+            </Box>
+          </Paper>
+        </Box>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 interface LayoutProps {
   children: React.ReactNode;
 }
@@ -41,9 +159,7 @@ export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const { user, logout } = useAuthStore();
   
-  const [navigationVariant, setNavigationVariant] = useState<NavigationVariant>('permanent');
-
-type NavigationVariant = 'permanent' | 'temporary' | 'persistent' | 'mini' | undefined;
+  const [navigationVariant, setNavigationVariant] = useState<ExtendedNavigationVariant>('permanent');
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -80,7 +196,8 @@ type NavigationVariant = 'permanent' | 'temporary' | 'persistent' | 'mini' | und
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <ErrorBoundary>
+      <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       <Navigation
         items={navigationItems}
         logo={logoComponent}
@@ -92,7 +209,7 @@ type NavigationVariant = 'permanent' | 'temporary' | 'persistent' | 'mini' | und
         } : undefined}
         onNavigate={handleNavigate}
         onLogout={handleLogout}
-        variant={navigationVariant}
+        variant={navigationVariant === 'mini' ? 'permanent' : navigationVariant}
         currentPath={location.pathname}
         notifications={5} // Mock notification count
       />
@@ -120,6 +237,7 @@ type NavigationVariant = 'permanent' | 'temporary' | 'persistent' | 'mini' | und
           {children}
         </Box>
       </Box>
-    </Box>
+      </Box>
+    </ErrorBoundary>
   );
 }

@@ -1,12 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+
 import { config } from '../config/environment';
-import { logger } from '../utils/logger';
 import { redis } from '../services/redis';
 import { ApiError } from '../utils/apiError';
+import { logger } from '../utils/logger';
 
 // Extend Request interface to include user
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       user?: {
@@ -25,6 +28,31 @@ export interface AuthenticatedRequest extends Request {
     email: string;
     role: string;
   };
+}
+
+interface JWTPayload {
+  id: string;
+  email: string;
+  role: string;
+  fingerprint?: string;
+  iat?: number;
+  exp?: number;
+  iss?: string;
+  aud?: string;
+}
+
+/**
+ * Generate request fingerprint for token binding
+ */
+function generateUserFingerprint(req: Request): string {
+  const components = [
+    req.ip,
+    req.headers['user-agent'],
+    req.headers['accept-language'],
+    req.headers['accept-encoding'],
+  ].join('|');
+  
+  return crypto.createHash('sha256').update(components).digest('hex').substring(0, 32);
 }
 
 /**
@@ -56,7 +84,15 @@ export const authMiddleware = async (
       return;
     }
 
-    const decoded = jwt.verify(token, config.jwt.secret) as any;
+    // Enhanced JWT verification with algorithm specification and issuer validation
+    const decoded = jwt.verify(token, config.jwt.secret, {
+      algorithms: ['HS256'], // Prevent algorithm confusion attacks
+      issuer: 'upcoach-api',
+      audience: 'upcoach-client',
+      clockTolerance: 30, // 30 second tolerance for time skew
+      ignoreExpiration: false,
+      ignoreNotBefore: false,
+    }) as JWTPayload;
 
     // Validate token structure
     if (!decoded.id || !decoded.email || !decoded.role) {
@@ -65,6 +101,25 @@ export const authMiddleware = async (
         error: 'Invalid token structure',
       });
       return;
+    }
+
+    // Token binding validation - prevent token theft
+    if (decoded.fingerprint) {
+      const currentFingerprint = generateUserFingerprint(req);
+      if (decoded.fingerprint !== currentFingerprint) {
+        logger.warn('Token binding validation failed', { 
+          userId: decoded.id, 
+          expected: decoded.fingerprint,
+          actual: currentFingerprint,
+          ip: req.ip
+        });
+        _res.status(401).json({
+          success: false,
+          error: 'Token binding validation failed',
+          code: 'TOKEN_BINDING_MISMATCH',
+        });
+        return;
+      }
     }
 
     (req as any).user = {
@@ -131,7 +186,11 @@ export const optionalAuthMiddleware = async (
       // Check if token is blacklisted
       const isBlacklisted = await redis.get(`blacklist:${token}`);
       if (!isBlacklisted) {
-        const decoded = jwt.verify(token, config.jwt.secret) as any;
+        const decoded = jwt.verify(token, config.jwt.secret, {
+          algorithms: ['HS256'],
+          issuer: 'upcoach-api',
+          audience: 'upcoach-client',
+        }) as JWTPayload;
 
         // Validate token structure
         if (decoded.id && decoded.email && decoded.role) {
@@ -258,21 +317,47 @@ async function checkResourceOwnership(resourceId: string, userId: string): Promi
   }
 }
 
-export const generateTokens = (userId: string): { accessToken: string; refreshToken: string } => {
-  const accessToken = jwt.sign({ userId, type: 'access' }, config.jwt.secret, {
+export const generateTokens = (
+  userId: string, 
+  email: string, 
+  role: string, 
+  req?: Request
+): { accessToken: string; refreshToken: string } => {
+  const payload: JWTPayload = {
+    id: userId,
+    email,
+    role,
+    ...(req ? { fingerprint: generateUserFingerprint(req) } : {}),
+  };
+
+  const accessToken = jwt.sign(payload, config.jwt.secret, {
     expiresIn: config.jwt.expiresIn,
+    issuer: 'upcoach-api',
+    audience: 'upcoach-client',
+    algorithm: 'HS256',
   } as any);
 
-  const refreshToken = jwt.sign({ userId, type: 'refresh' }, config.jwt.refreshSecret, {
-    expiresIn: config.jwt.refreshExpiresIn,
-  } as any);
+  const refreshToken = jwt.sign(
+    { userId, type: 'refresh' }, 
+    config.jwt.refreshSecret, 
+    {
+      expiresIn: config.jwt.refreshExpiresIn,
+      issuer: 'upcoach-api',
+      audience: 'upcoach-client',
+      algorithm: 'HS256',
+    } as any
+  );
 
   return { accessToken, refreshToken };
 };
 
 export const verifyRefreshToken = (token: string): { userId: string } => {
   try {
-    const decoded = jwt.verify(token, config.jwt.refreshSecret) as any;
+    const decoded = jwt.verify(token, config.jwt.refreshSecret, {
+      algorithms: ['HS256'],
+      issuer: 'upcoach-api',
+      audience: 'upcoach-client',
+    }) as any;
 
     if (decoded.type !== 'refresh') {
       throw new Error('Invalid token type');
