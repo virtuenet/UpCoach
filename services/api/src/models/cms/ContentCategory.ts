@@ -1,4 +1,5 @@
 import { Model, DataTypes, Sequelize, Association, Optional } from 'sequelize';
+
 import { Content } from './Content';
 
 export interface ContentCategoryAttributes {

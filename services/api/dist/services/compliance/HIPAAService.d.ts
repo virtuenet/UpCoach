@@ -1,7 +1,3 @@
-/**
- * HIPAA Compliance Service
- * Implements HIPAA requirements for Protected Health Information (PHI)
- */
 export interface PHIAccessLog {
     id: string;
     userId: string;
@@ -81,85 +77,37 @@ declare class HIPAAService {
     private encryptionKey;
     private constructor();
     static getInstance(): HIPAAService;
-    /**
-     * Encrypt PHI data
-     */
     encryptPHI(data: string): {
         encrypted: string;
         encryption: PHIEncryption;
     };
-    /**
-     * Decrypt PHI data
-     */
     decryptPHI(encryptedData: string, encryption: PHIEncryption): string;
-    /**
-     * Log PHI access for audit trail
-     */
     logPHIAccess(accessLog: Omit<PHIAccessLog, 'id' | 'timestamp'>): Promise<PHIAccessLog>;
-    /**
-     * Validate HIPAA-compliant password
-     */
     validatePassword(password: string): {
         valid: boolean;
         errors: string[];
     };
-    /**
-     * Create secure session with automatic timeout
-     */
     createSecureSession(userId: string, ipAddress: string, userAgent: string): Promise<{
         sessionId: string;
         expiresAt: Date;
     }>;
-    /**
-     * Validate and refresh session
-     */
     validateSession(sessionId: string): Promise<{
         valid: boolean;
         userId?: string;
         renewed?: boolean;
     }>;
-    /**
-     * Terminate session
-     */
     terminateSession(sessionId: string): Promise<void>;
-    /**
-     * Record Business Associate Agreement
-     */
     recordBAA(agreement: Omit<BusinessAssociateAgreement, 'id' | 'signedAt' | 'status'>): Promise<BusinessAssociateAgreement>;
-    /**
-     * Record PHI disclosure
-     */
     recordDisclosure(disclosure: Omit<PHIDisclosure, 'id' | 'disclosedAt'>): Promise<PHIDisclosure>;
-    /**
-     * Get accounting of disclosures for a patient
-     */
     getDisclosureHistory(patientId: string, startDate?: Date, endDate?: Date): Promise<PHIDisclosure[]>;
-    /**
-     * Conduct security risk assessment
-     */
     conductRiskAssessment(conductedBy: string): Promise<SecurityRiskAssessment>;
-    /**
-     * Report PHI breach
-     */
     reportPHIBreach(breach: Omit<PHIBreachNotification, 'id' | 'discoveredAt' | 'reportedAt'>): Promise<PHIBreachNotification>;
-    /**
-     * Generate HIPAA compliance report
-     */
     generateComplianceReport(): Promise<any>;
-    /**
-     * Minimum necessary access check
-     */
     checkMinimumNecessary(userId: string, patientId: string, requestedData: string[]): Promise<{
         allowed: string[];
         denied: string[];
     }>;
-    /**
-     * De-identify PHI for research/analytics
-     */
     deidentifyPHI(data: any): any;
-    /**
-     * Helper methods
-     */
     private hashIP;
     private detectSuspiciousAccess;
     private identifyVulnerabilities;

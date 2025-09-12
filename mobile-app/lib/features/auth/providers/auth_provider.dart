@@ -1,10 +1,31 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../core/services/google_auth_service.dart';
+import '../../../core/services/token_manager.dart';
 import '../../../shared/models/user_model.dart';
+import '../../../shared/models/auth_response.dart';
 
 // Auth Service Provider
 final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService();
+});
+
+// Google Auth Service Provider
+final googleAuthServiceProvider = Provider<GoogleAuthService>((ref) {
+  return GoogleAuthService();
+});
+
+// Token Manager Provider
+final tokenManagerProvider = Provider<TokenManager>((ref) {
+  final tokenManager = TokenManager();
+  tokenManager.initialize();
+  
+  ref.onDispose(() {
+    tokenManager.dispose();
+  });
+  
+  return tokenManager;
 });
 
 // Auth State
@@ -47,15 +68,32 @@ class AuthState {
 // Auth Provider
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
+  final GoogleAuthService _googleAuthService;
+  final TokenManager _tokenManager;
 
-  AuthNotifier() : _authService = AuthService(), super(const AuthState()) {
+  AuthNotifier({
+    required AuthService authService,
+    required GoogleAuthService googleAuthService,
+    required TokenManager tokenManager,
+  }) : _authService = authService,
+       _googleAuthService = googleAuthService,
+       _tokenManager = tokenManager,
+       super(const AuthState()) {
     _checkAuthStatus();
+    _listenToTokenState();
   }
 
   Future<void> _checkAuthStatus() async {
     state = state.copyWith(isLoading: true);
     
     try {
+      // Check if we have valid tokens
+      final hasValidTokens = await _tokenManager.hasValidTokens();
+      if (!hasValidTokens) {
+        state = state.copyWith(isLoading: false, isAuthenticated: false);
+        return;
+      }
+      
       final user = await _authService.getCurrentUser();
       if (user != null) {
         state = state.copyWith(
@@ -72,6 +110,22 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isLoading: false,
       );
     }
+  }
+
+  void _listenToTokenState() {
+    _tokenManager.tokenStateStream.listen((tokenState) {
+      switch (tokenState) {
+        case TokenState.expired:
+        case TokenState.cleared:
+          state = state.copyWith(isAuthenticated: false, user: null);
+          break;
+        case TokenState.error:
+          state = state.copyWith(error: 'Session expired. Please sign in again.');
+          break;
+        default:
+          break;
+      }
+    });
   }
 
   Future<bool> login({
@@ -196,7 +250,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
     
     try {
-      final authResponse = await _authService.signInWithGoogle();
+      final authResponse = await _googleAuthService.signIn();
+      
+      // Store tokens in TokenManager
+      await _tokenManager.saveTokens(
+        accessToken: authResponse.accessToken,
+        refreshToken: authResponse.refreshToken,
+        expiresIn: authResponse.expiresIn,
+        additionalData: {
+          'google_signed_in': 'true',
+          'user_id': authResponse.user.id,
+        },
+      );
       
       state = state.copyWith(
         user: authResponse.user,
@@ -207,6 +272,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
       
       return true;
+    } on GoogleAuthException catch (e) {
+      if (e.code == GoogleAuthErrorCode.userCancelled) {
+        // User cancelled, just clear loading state
+        state = state.copyWith(isLoading: false);
+      } else {
+        state = state.copyWith(
+          error: e.message,
+          isLoading: false,
+        );
+      }
+      return false;
     } catch (e) {
       state = state.copyWith(
         error: e.toString(),
@@ -215,8 +291,58 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return false;
     }
   }
+
+  Future<bool> signInWithGoogleSilently() async {
+    try {
+      final authResponse = await _googleAuthService.signInSilently();
+      
+      if (authResponse != null) {
+        await _tokenManager.saveTokens(
+          accessToken: authResponse.accessToken,
+          refreshToken: authResponse.refreshToken,
+          expiresIn: authResponse.expiresIn,
+          additionalData: {
+            'google_signed_in': 'true',
+            'user_id': authResponse.user.id,
+          },
+        );
+        
+        state = state.copyWith(
+          user: authResponse.user,
+          isAuthenticated: true,
+          accessToken: authResponse.accessToken,
+          refreshToken: authResponse.refreshToken,
+        );
+        
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Silent sign in failed: $e');
+      return false;
+    }
+  }
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier();
+  final authService = ref.watch(authServiceProvider);
+  final googleAuthService = ref.watch(googleAuthServiceProvider);
+  final tokenManager = ref.watch(tokenManagerProvider);
+  
+  return AuthNotifier(
+    authService: authService,
+    googleAuthService: googleAuthService,
+    tokenManager: tokenManager,
+  );
+});
+
+// Additional providers for convenience
+final currentUserProvider = Provider<UserModel?>((ref) {
+  final authState = ref.watch(authProvider);
+  return authState.user;
+});
+
+final isAuthenticatedProvider = Provider<bool>((ref) {
+  final authState = ref.watch(authProvider);
+  return authState.isAuthenticated;
 }); 

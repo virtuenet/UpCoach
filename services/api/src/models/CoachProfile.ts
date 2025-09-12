@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import {
   Table,
   Column,
@@ -11,11 +12,12 @@ import {
   BeforeCreate,
   BeforeUpdate,
 } from 'sequelize-typescript';
-import { User } from './User';
-import { CoachSession } from './CoachSession';
-import { CoachReview } from './CoachReview';
+
 import { CoachPackage } from './CoachPackage';
-import { Op } from 'sequelize';
+import type { CoachReview } from './CoachReview';
+import type { CoachSession } from './CoachSession';
+import { User } from './User';
+import { IUser } from './interfaces';
 
 interface AvailabilitySchedule {
   monday?: { start: string; end: string }[];
@@ -55,7 +57,7 @@ export class CoachProfile extends Model {
   userId!: number;
 
   @BelongsTo(() => User as any)
-  user!: any;
+  user!: IUser;
 
   @Column({
     type: DataType.STRING(255),
@@ -247,13 +249,13 @@ export class CoachProfile extends Model {
   })
   metadata!: any;
 
-  @HasMany(() => CoachSession as any)
+  @HasMany(() => require('./CoachSession').CoachSession)
   sessions!: CoachSession[];
 
-  @HasMany(() => CoachReview as any)
+  @HasMany(() => require('./CoachReview').CoachReview)
   reviews!: CoachReview[];
 
-  @HasMany(() => CoachPackage as any)
+  @HasMany(() => CoachPackage)
   packages!: CoachPackage[];
 
   @CreatedAt
@@ -374,7 +376,7 @@ export class CoachProfile extends Model {
       where,
       include: [
         {
-          model: User,
+          model: User as any,
           attributes: ['id', 'name', 'email'],
         },
       ],

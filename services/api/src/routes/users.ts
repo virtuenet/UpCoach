@@ -1,9 +1,10 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
-import { asyncHandler } from '../middleware/errorHandler';
-import { ApiError } from '../utils/apiError';
-import { UserService } from '../services/userService';
+
 import { AuthenticatedRequest, requireRole, requireOwnership } from '../middleware/auth';
+import { asyncHandler } from '../middleware/errorHandler';
+import { UserService } from '../services/userService';
+import { ApiError } from '../utils/apiError';
 import { logger } from '../utils/logger';
 
 const router = Router();

@@ -1,8 +1,9 @@
 import { Transaction } from 'sequelize';
-import { Team, TeamAttributes } from '../../models/Team';
+
 import { sequelize } from '../../models';
-import { logger } from '../../utils/logger';
+import { Team, TeamAttributes } from '../../models/Team';
 import { AppError } from '../../utils/errors';
+import { logger } from '../../utils/logger';
 
 export interface CreateTeamData {
   organizationId: number;

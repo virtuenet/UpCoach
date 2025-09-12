@@ -44,12 +44,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var CoachReview_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CoachReview = void 0;
-const sequelize_typescript_1 = require("sequelize-typescript");
-const User_1 = require("./User");
-const CoachProfile_1 = require("./CoachProfile");
-const CoachSession_1 = require("./CoachSession");
 const sequelize_1 = require("sequelize");
 const sequelize = __importStar(require("sequelize"));
+const sequelize_typescript_1 = require("sequelize-typescript");
+const CoachProfile_1 = require("./CoachProfile");
+const CoachSession_1 = require("./CoachSession");
+const User_1 = require("./User");
 let CoachReview = CoachReview_1 = class CoachReview extends sequelize_typescript_1.Model {
     coachId;
     coach;
@@ -57,31 +57,24 @@ let CoachReview = CoachReview_1 = class CoachReview extends sequelize_typescript
     client;
     sessionId;
     session;
-    // Ratings
     rating;
     title;
     comment;
-    // Detailed Ratings
     communicationRating;
     knowledgeRating;
     helpfulnessRating;
-    // Status Flags
     isVerified;
     isFeatured;
     isVisible;
-    // Coach Response
     coachResponse;
     coachResponseAt;
-    // Engagement Metrics
     helpfulCount;
     unhelpfulCount;
-    // Hooks to update coach stats
     static async updateCoachRating(instance) {
         if (instance.changed('rating') || instance.changed('isVisible')) {
             await instance.updateCoachStats();
         }
     }
-    // Helper methods
     async updateCoachStats() {
         const stats = await CoachReview_1.findAll({
             where: {
@@ -105,12 +98,10 @@ let CoachReview = CoachReview_1 = class CoachReview extends sequelize_typescript
         }
     }
     async markAsHelpful(userId) {
-        // In production, track user votes to prevent duplicates
         this.helpfulCount += 1;
         await this.save();
     }
     async markAsUnhelpful(userId) {
-        // In production, track user votes to prevent duplicates
         this.unhelpfulCount += 1;
         await this.save();
     }
@@ -120,14 +111,12 @@ let CoachReview = CoachReview_1 = class CoachReview extends sequelize_typescript
         await this.save();
     }
     canBeEditedBy(userId) {
-        // Review can be edited by the client within 7 days
         if (this.clientId === userId) {
             const daysSinceCreation = (Date.now() - this.createdAt.getTime()) / (1000 * 60 * 60 * 24);
             return daysSinceCreation <= 7;
         }
         return false;
     }
-    // Static methods
     static async getCoachReviews(coachId, options = {}) {
         const where = {
             coachId,
@@ -196,14 +185,11 @@ let CoachReview = CoachReview_1 = class CoachReview extends sequelize_typescript
                 },
             };
         }
-        // Calculate average rating
         const averageRating = reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews;
-        // Calculate rating distribution
         const ratingDistribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
         reviews.forEach(r => {
             ratingDistribution[r.rating] = (ratingDistribution[r.rating] || 0) + 1;
         });
-        // Calculate detailed ratings
         const detailedRatings = {
             communication: this.calculateAverage(reviews.map(r => r.communicationRating).filter(Boolean)),
             knowledge: this.calculateAverage(reviews.map(r => r.knowledgeRating).filter(Boolean)),

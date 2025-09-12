@@ -1,13 +1,14 @@
-import { Transaction } from 'sequelize';
+import crypto from 'crypto';
+
+import { Transaction , Op } from 'sequelize';
+
+import { sequelize } from '../../models';
 import { Organization, OrganizationAttributes } from '../../models/Organization';
 import { Team } from '../../models/Team';
 import { User } from '../../models/User';
-import { sequelize } from '../../models';
-import { Op } from 'sequelize';
-import { logger } from '../../utils/logger';
 import { AppError } from '../../utils/errors';
+import { logger } from '../../utils/logger';
 import { generateSlug } from '../../utils/slug';
-import crypto from 'crypto';
 
 export interface CreateOrganizationData {
   name: string;

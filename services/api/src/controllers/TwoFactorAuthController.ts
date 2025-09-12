@@ -4,10 +4,12 @@
  */
 
 import { Request, Response } from 'express';
+
 import { twoFactorAuthService } from '../services/TwoFactorAuthService';
 import { webAuthnService } from '../services/WebAuthnService';
-import { logger } from '../utils/logger';
 import { AuthenticatedRequest } from '../types';
+import { logger } from '../utils/logger';
+import { User } from '../models/User';
 
 export class TwoFactorAuthController {
   /**
@@ -177,10 +179,18 @@ export class TwoFactorAuthController {
   async disable2FA(req: AuthenticatedRequest, _res: Response) {
     try {
       const userId = req.user!.id;
-      const { password: _password, token } = req.body;
+      const { password, token } = req.body;
 
       // Verify password first
-      // TODO: Verify user password
+      const user = await User.findByPk(userId);
+      if (!user) {
+        return _res.status(404).json({ error: 'User not found' });
+      }
+
+      const isPasswordValid = await user.comparePassword(password);
+      if (!isPasswordValid) {
+        return _res.status(400).json({ error: 'Invalid password' });
+      }
 
       // Verify current 2FA token
       const verified = await twoFactorAuthService.verifyTOTP(userId, token);
@@ -415,6 +425,138 @@ export class TwoFactorAuthController {
     } catch (error) {
       logger.error('Error renaming WebAuthn credential', error);
       _res.status(500).json({ error: 'Failed to rename credential' });
+    }
+  }
+
+  /**
+   * SMS 2FA - Send verification code
+   */
+  async sendSMSCode(req: AuthenticatedRequest, _res: Response) {
+    try {
+      const userId = req.user!.id;
+      const { phoneNumber } = req.body;
+
+      if (!phoneNumber) {
+        return _res.status(400).json({ error: 'Phone number is required' });
+      }
+
+      const result = await twoFactorAuthService.sendSMSCode(userId, phoneNumber);
+
+      _res.json(result);
+    } catch (error) {
+      logger.error('Error sending SMS code', error);
+      _res.status(500).json({ error: 'Failed to send SMS code' });
+    }
+  }
+
+  /**
+   * SMS 2FA - Enable with verification
+   */
+  async enableSMS2FA(req: AuthenticatedRequest, _res: Response) {
+    try {
+      const userId = req.user!.id;
+      const { phoneNumber, verificationCode } = req.body;
+
+      if (!phoneNumber || !verificationCode) {
+        return _res.status(400).json({ 
+          error: 'Phone number and verification code are required' 
+        });
+      }
+
+      const result = await twoFactorAuthService.enableSMS2FA(userId, phoneNumber, verificationCode);
+
+      if (result.success) {
+        _res.json({
+          success: true,
+          message: result.message,
+        });
+      } else {
+        _res.status(400).json({ error: result.message });
+      }
+    } catch (error) {
+      logger.error('Error enabling SMS 2FA', error);
+      _res.status(500).json({ error: 'Failed to enable SMS 2FA' });
+    }
+  }
+
+  /**
+   * Email 2FA - Send verification code
+   */
+  async sendEmailCode(req: AuthenticatedRequest, _res: Response) {
+    try {
+      const userId = req.user!.id;
+      const { email } = req.body;
+
+      if (!email) {
+        return _res.status(400).json({ error: 'Email address is required' });
+      }
+
+      const result = await twoFactorAuthService.sendEmailCode(userId, email);
+
+      _res.json(result);
+    } catch (error) {
+      logger.error('Error sending email code', error);
+      _res.status(500).json({ error: 'Failed to send email code' });
+    }
+  }
+
+  /**
+   * Email 2FA - Enable with verification
+   */
+  async enableEmail2FA(req: AuthenticatedRequest, _res: Response) {
+    try {
+      const userId = req.user!.id;
+      const { email, verificationCode } = req.body;
+
+      if (!email || !verificationCode) {
+        return _res.status(400).json({ 
+          error: 'Email address and verification code are required' 
+        });
+      }
+
+      const result = await twoFactorAuthService.enableEmail2FA(userId, email, verificationCode);
+
+      if (result.success) {
+        _res.json({
+          success: true,
+          message: result.message,
+        });
+      } else {
+        _res.status(400).json({ error: result.message });
+      }
+    } catch (error) {
+      logger.error('Error enabling email 2FA', error);
+      _res.status(500).json({ error: 'Failed to enable email 2FA' });
+    }
+  }
+
+  /**
+   * 2FA Verification (supports all methods)
+   */
+  async verify2FA(req: AuthenticatedRequest, _res: Response) {
+    try {
+      const userId = req.user!.id;
+      const { code } = req.body;
+
+      if (!code) {
+        return _res.status(400).json({ error: 'Verification code is required' });
+      }
+
+      const verified = await twoFactorAuthService.verify2FA(userId, code);
+
+      if (verified) {
+        _res.json({
+          success: true,
+          message: '2FA verification successful',
+        });
+      } else {
+        _res.status(400).json({ 
+          error: 'Invalid verification code' 
+        });
+      }
+    } catch (error) {
+      logger.error('Error verifying 2FA', error);
+      _res.status(500).json({ error: 'Failed to verify 2FA code' });
     }
   }
 }

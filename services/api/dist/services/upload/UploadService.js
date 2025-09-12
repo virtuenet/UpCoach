@@ -3,11 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const multer_1 = __importDefault(require("multer"));
-const path_1 = __importDefault(require("path"));
-const uuid_1 = require("uuid");
-const sharp_1 = __importDefault(require("sharp"));
 const promises_1 = __importDefault(require("fs/promises"));
+const path_1 = __importDefault(require("path"));
+const multer_1 = __importDefault(require("multer"));
+const sharp_1 = __importDefault(require("sharp"));
+const uuid_1 = require("uuid");
 const logger_1 = require("../../utils/logger");
 class UploadService {
     uploadDir;
@@ -43,7 +43,7 @@ class UploadService {
         return (0, multer_1.default)({
             storage: this.getStorage(),
             limits: {
-                fileSize: 50 * 1024 * 1024, // 50MB
+                fileSize: 50 * 1024 * 1024,
             },
             fileFilter: (_req, file, cb) => {
                 const allowedMimes = [
@@ -135,12 +135,10 @@ class UploadService {
             url,
             subdirectory,
         };
-        // Generate thumbnail if requested and file is an image
         if (options?.generateThumbnail && file.mimetype.startsWith('image/')) {
             const thumbnailPath = await this.createThumbnail(file.path);
             result.thumbnailUrl = this.getFileUrl(path_1.default.basename(thumbnailPath), subdirectory);
         }
-        // Get file dimensions if it's an image
         if (file.mimetype.startsWith('image/')) {
             const metadata = await (0, sharp_1.default)(file.path).metadata();
             result.dimensions = {

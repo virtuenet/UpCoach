@@ -1,9 +1,13 @@
-import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
-import { db } from './database';
-import { ApiError } from '../utils/apiError';
+import * as crypto from 'crypto';
+
+import * as bcrypt from 'bcryptjs';
+
+
 import { User, CreateUserDto, UpdateUserDto, UserResponseDto } from '../types/database';
+import { ApiError } from '../utils/apiError';
 import { logger } from '../utils/logger';
+
+import { db } from './database';
 import { redis } from './redis';
 
 export class UserService {
@@ -361,20 +365,25 @@ export class UserService {
     }
   }
 
-  static async verifyGoogleToken(_idToken: string): Promise<any> {
+  static async verifyGoogleToken(idToken: string): Promise<any> {
     try {
-      // In production, you would verify the token with Google
-      // For now, we'll throw an error to indicate it needs implementation
-      throw new ApiError(501, 'Google OAuth not yet implemented');
-
-      // Implementation would look like:
-      // const ticket = await googleClient.verifyIdToken({
-      //   idToken,
-      //   audience: process.env.GOOGLE_CLIENT_ID,
-      // });
-      // return ticket.getPayload();
+      const { googleAuthService } = await import('./auth/GoogleAuthService');
+      const googleUserInfo = await googleAuthService.verifyIdToken(idToken);
+      
+      return {
+        sub: googleUserInfo.sub,
+        email: googleUserInfo.email,
+        name: googleUserInfo.name,
+        given_name: googleUserInfo.given_name,
+        family_name: googleUserInfo.family_name,
+        picture: googleUserInfo.picture,
+        email_verified: googleUserInfo.email_verified,
+      };
     } catch (error) {
       logger.error('Error verifying Google token:', error);
+      if (error instanceof ApiError) {
+        throw error;
+      }
       throw new ApiError(401, 'Invalid Google token');
     }
   }

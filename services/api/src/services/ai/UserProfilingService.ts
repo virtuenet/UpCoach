@@ -1,12 +1,14 @@
-import { UserProfile } from '../../models/UserProfile';
-import { User } from '../../models/User';
-import { Goal } from '../../models/Goal';
-import { Task } from '../../models/Task';
-import { Mood } from '../../models/Mood';
-import { ChatMessage } from '../../models/ChatMessage';
-import { Chat } from '../../models/Chat';
 import { Op } from 'sequelize';
+
+import { Chat } from '../../models/Chat';
+import { ChatMessage } from '../../models/ChatMessage';
+import { Goal } from '../../models/Goal';
+import { Mood } from '../../models/Mood';
+import { Task } from '../../models/Task';
+import { User } from '../../models/User';
+import { UserProfile } from '../../models/UserProfile';
 import { logger } from '../../utils/logger';
+
 import { aiService } from './AIService';
 
 export interface ProfileInsight {
@@ -251,9 +253,14 @@ export class UserProfilingService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    let currentDate = new Date(today);
+    const currentDate = new Date(today);
+    let shouldContinue = true;
+    const maxIterations = 365; // Prevent infinite loops
+    let iterations = 0;
 
-    while (true) {
+    while (shouldContinue && iterations < maxIterations) {
+      iterations++;
+      
       const tasksOnDate = tasks.filter(t => {
         const taskDate = new Date(t.completedAt!);
         taskDate.setHours(0, 0, 0, 0);
@@ -266,6 +273,7 @@ export class UserProfilingService {
           currentDate.setDate(currentDate.getDate() - 1);
           continue;
         }
+        shouldContinue = false;
         break;
       }
 
@@ -327,7 +335,7 @@ export class UserProfilingService {
       .map(([topic]) => topic);
 
     // Calculate average response time
-    let responseTimes: number[] = [];
+    const responseTimes: number[] = [];
     for (let i = 1; i < messages.length; i++) {
       if (messages[i].role === 'user' && messages[i - 1].role === 'assistant') {
         const timeDiff =

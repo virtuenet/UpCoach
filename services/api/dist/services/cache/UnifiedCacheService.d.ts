@@ -1,7 +1,3 @@
-/**
- * Unified Cache Service - Consolidates all caching functionality
- * Combines features from cacheService.ts, ai/CacheService.ts, and cache/CacheService.ts
- */
 export interface CacheOptions {
     ttl?: number;
     tags?: string[];

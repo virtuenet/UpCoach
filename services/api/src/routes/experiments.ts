@@ -1,9 +1,10 @@
-import express from 'express';
+import { Router } from 'express';
 import { body, param, query } from 'express-validator';
+
 import ExperimentsController from '../controllers/experiments/ExperimentsController';
 import { authMiddleware as authenticateToken, requireRole } from '../middleware/auth';
 
-const router = express.Router();
+const router = Router();
 const experimentsController = new ExperimentsController();
 
 // Validation middleware

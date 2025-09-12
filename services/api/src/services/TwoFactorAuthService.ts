@@ -3,11 +3,17 @@
  * Implements TOTP (Time-based One-Time Password) and WebAuthn support
  */
 
-import speakeasy from 'speakeasy';
-import QRCode from 'qrcode';
 import crypto from 'crypto';
+
+import * as QRCode from 'qrcode';
+import * as speakeasy from 'speakeasy';
+
 import { logger } from '../utils/logger';
+import CryptoSecurity from '../utils/cryptoSecurity';
+
 import { redis } from './redis';
+import { NotificationService } from './NotificationService';
+import emailService from './email/UnifiedEmailService';
 
 export interface TOTPSecret {
   ascii: string;
@@ -67,6 +73,7 @@ class TwoFactorAuthService {
   private readonly backupCodeCount = 10;
   private readonly backupCodeLength = 8;
   private readonly totpWindow = 2; // Allow 2 time windows for clock drift
+  private notificationService = NotificationService.getInstance();
 
   private constructor() {}
 
@@ -102,17 +109,17 @@ class TwoFactorAuthService {
       // Generate backup codes
       const backupCodes = this.generateBackupCodes();
 
-      // Store temporarily in Redis (expires in 10 minutes)
+      // Store temporarily in Redis (expires in 10 minutes) - ENCRYPTED
       const tempKey = `2fa:setup:${userId}`;
-      await redis.setEx(
-        tempKey,
-        600, // 10 minutes
-        JSON.stringify({
-          secret: secret.base32,
-          backupCodes,
-          timestamp: Date.now(),
-        })
-      );
+      const tempData = {
+        secret: secret.base32,
+        backupCodes,
+        timestamp: Date.now(),
+      };
+      
+      // Encrypt sensitive temporary data
+      const encryptedTempData = CryptoSecurity.encryptSensitiveData(JSON.stringify(tempData));
+      await redis.setEx(tempKey, 600, encryptedTempData); // 10 minutes
 
       logger.info('Generated TOTP secret for user', { userId });
 
@@ -135,15 +142,17 @@ class TwoFactorAuthService {
     token: string
   ): Promise<{ success: boolean; backupCodes?: string[] }> {
     try {
-      // Get temporary secret from Redis
+      // Get temporary secret from Redis and decrypt
       const tempKey = `2fa:setup:${userId}`;
-      const tempData = await redis.get(tempKey);
+      const encryptedTempData = await redis.get(tempKey);
 
-      if (!tempData) {
+      if (!encryptedTempData) {
         throw new Error('2FA setup session expired. Please start again.');
       }
 
-      const { secret, backupCodes } = JSON.parse(tempData);
+      // Decrypt temporary data
+      const decryptedTempData = CryptoSecurity.decryptSensitiveData(encryptedTempData);
+      const { secret, backupCodes } = JSON.parse(decryptedTempData);
 
       // Verify token
       const verified = speakeasy.totp.verify({
@@ -157,21 +166,29 @@ class TwoFactorAuthService {
         return { success: false };
       }
 
-      // Store permanent 2FA configuration
+      // Store permanent 2FA configuration - ENCRYPTED
       const configKey = `2fa:config:${userId}`;
       const config: TwoFactorConfig = {
         userId,
         method: 'totp',
         enabled: true,
-        secret,
-        backupCodes,
+        secret, // This will be encrypted before storage
+        backupCodes, // These will be encrypted before storage
         verifiedAt: new Date(),
       };
 
-      await redis.set(configKey, JSON.stringify(config));
+      // Encrypt sensitive configuration data
+      const encryptedConfig = CryptoSecurity.encryptSensitiveData(JSON.stringify(config));
+      await redis.set(configKey, encryptedConfig);
 
       // Clean up temporary data
       await redis.del(tempKey);
+
+      // Send security notification
+      await this.notificationService.showSuccess(
+        userId.toString(),
+        'Two-Factor Authentication has been enabled on your account for enhanced security.'
+      );
 
       logger.info('2FA enabled for user', { userId });
 
@@ -186,43 +203,78 @@ class TwoFactorAuthService {
   }
 
   /**
-   * Verify TOTP token for authentication
+   * Verify 2FA token for authentication (supports TOTP, SMS, and Email)
    */
-  async verifyTOTP(userId: string, token: string): Promise<boolean> {
+  async verify2FA(userId: string, token: string): Promise<boolean> {
     try {
       // Get user's 2FA configuration
       const config = await this.get2FAConfig(userId);
 
-      if (!config || !config.enabled || config.method !== 'totp') {
+      if (!config || !config.enabled) {
         return false;
       }
 
-      // Check if it's a backup code
-      if (config.backupCodes?.includes(token)) {
-        return await this.useBackupCode(userId, token);
+      let verified = false;
+
+      switch (config.method) {
+        case 'totp':
+          verified = await this.verifyTOTPToken(userId, token, config);
+          break;
+        case 'sms':
+          verified = await this.verifySMSCode(userId, token);
+          break;
+        case 'email':
+          verified = await this.verifyEmailCode(userId, token);
+          break;
+        default:
+          logger.warn('Unknown 2FA method', { userId, method: config.method });
+          return false;
       }
 
-      // Verify TOTP token
-      const verified = speakeasy.totp.verify({
-        secret: config.secret!,
-        encoding: 'base32',
-        token,
-        window: this.totpWindow,
-      });
-
       if (verified) {
-        // Update last used timestamp
+        // Update last used timestamp and clear failed attempts
         config.lastUsedAt = new Date();
         await this.update2FAConfig(userId, config);
+        await this.clearFailedAttempts(userId);
 
-        logger.info('TOTP verification successful', { userId });
+        logger.info('2FA verification successful', { userId, method: config.method });
+      } else {
+        // Track failed attempts
+        await this.trackFailedAttempt(userId);
       }
 
       return verified;
     } catch (error) {
-      logger.error('Error verifying TOTP', error);
+      logger.error('Error verifying 2FA', error);
       return false;
     }
+  }
+
+  /**
+   * Legacy TOTP verification method (for backward compatibility)
+   */
+  async verifyTOTP(userId: string, token: string): Promise<boolean> {
+    return this.verify2FA(userId, token);
+  }
+
+  /**
+   * Verify TOTP token specifically
+   */
+  private async verifyTOTPToken(userId: string, token: string, config: TwoFactorConfig): Promise<boolean> {
+    // Check if it's a backup code
+    if (config.backupCodes?.includes(token)) {
+      return await this.useBackupCode(userId, token);
+    }
+
+    // Verify TOTP token
+    const verified = speakeasy.totp.verify({
+      secret: config.secret!,
+      encoding: 'base32',
+      token,
+      window: this.totpWindow,
+    });
+
+    return verified;
   }
 
   /**
@@ -237,6 +289,20 @@ class TwoFactorAuthService {
       const trustedDevicesKey = `2fa:trusted:${userId}`;
       await redis.del(trustedDevicesKey);
 
+      // Send security notification
+      await this.notificationService.showWarning(
+        userId.toString(),
+        'Two-Factor Authentication has been disabled on your account. Your account security may be reduced.',
+        [
+          {
+            label: 'Re-enable 2FA',
+            action: 'enable-2fa',
+            primary: true,
+            icon: 'shield',
+          },
+        ]
+      );
+
       logger.info('2FA disabled for user', { userId });
     } catch (error) {
       logger.error('Error disabling 2FA', error);
@@ -245,21 +311,11 @@ class TwoFactorAuthService {
   }
 
   /**
-   * Generate backup codes
+   * Generate backup codes - CRYPTOGRAPHICALLY SECURE
    */
   generateBackupCodes(count: number = this.backupCodeCount): string[] {
-    const codes: string[] = [];
-
-    for (let i = 0; i < count; i++) {
-      const code = crypto
-        .randomBytes(this.backupCodeLength)
-        .toString('hex')
-        .substring(0, this.backupCodeLength)
-        .toUpperCase();
-      codes.push(code);
-    }
-
-    return codes;
+    // Use the secure backup code generation from CryptoSecurity
+    return CryptoSecurity.generateSecureBackupCodes(count, this.backupCodeLength);
   }
 
   /**
@@ -313,7 +369,19 @@ class TwoFactorAuthService {
 
       // Notify user if running low on backup codes
       if (config.backupCodes.length <= 2) {
-        // TODO: Send notification to user
+        await this.notificationService.showWarning(
+          userId.toString(),
+          `You have ${config.backupCodes.length} backup codes remaining. Generate new backup codes to maintain account security.`,
+          [
+            {
+              label: 'Generate New Codes',
+              action: 'generate-backup-codes',
+              primary: true,
+              icon: 'refresh',
+            },
+          ]
+        );
+        
         logger.warn('User running low on backup codes', {
           userId,
           remaining: config.backupCodes.length,
@@ -340,14 +408,22 @@ class TwoFactorAuthService {
     }
   ): Promise<TrustedDevice> {
     try {
+      // Validate and sanitize device information - SECURITY ENHANCEMENT
+      const validation = CryptoSecurity.validateDeviceInfo(deviceInfo);
+      if (!validation.isValid) {
+        throw new Error(`Invalid device information: ${validation.errors?.join(', ')}`);
+      }
+      
+      const sanitizedDeviceInfo = validation.sanitized!;
+      
       const device: TrustedDevice = {
         id: crypto.randomBytes(16).toString('hex'),
-        name: deviceInfo.name,
-        fingerprint: deviceInfo.fingerprint,
+        name: sanitizedDeviceInfo.name,
+        fingerprint: sanitizedDeviceInfo.fingerprint,
         addedAt: new Date(),
         lastUsedAt: new Date(),
-        userAgent: deviceInfo.userAgent,
-        ipAddress: deviceInfo.ipAddress,
+        userAgent: sanitizedDeviceInfo.userAgent,
+        ipAddress: sanitizedDeviceInfo.ipAddress,
       };
 
       const trustedDevicesKey = `2fa:trusted:${userId}`;
@@ -427,18 +503,20 @@ class TwoFactorAuthService {
   }
 
   /**
-   * Get 2FA configuration
+   * Get 2FA configuration - DECRYPT
    */
   async get2FAConfig(userId: string): Promise<TwoFactorConfig | null> {
     try {
       const configKey = `2fa:config:${userId}`;
-      const data = await redis.get(configKey);
+      const encryptedData = await redis.get(configKey);
 
-      if (!data) {
+      if (!encryptedData) {
         return null;
       }
 
-      return JSON.parse(data);
+      // Decrypt configuration data
+      const decryptedData = CryptoSecurity.decryptSensitiveData(encryptedData);
+      return JSON.parse(decryptedData);
     } catch (error) {
       logger.error('Error getting 2FA config', error);
       return null;
@@ -446,11 +524,12 @@ class TwoFactorAuthService {
   }
 
   /**
-   * Update 2FA configuration
+   * Update 2FA configuration - ENCRYPTED
    */
   private async update2FAConfig(userId: string, config: TwoFactorConfig): Promise<void> {
     const configKey = `2fa:config:${userId}`;
-    await redis.set(configKey, JSON.stringify(config));
+    const encryptedConfig = CryptoSecurity.encryptSensitiveData(JSON.stringify(config));
+    await redis.set(configKey, encryptedConfig);
   }
 
   /**
@@ -470,33 +549,49 @@ class TwoFactorAuthService {
   }
 
   /**
-   * Generate device fingerprint
+   * Generate device fingerprint - CRYPTOGRAPHICALLY SECURE
    */
   generateDeviceFingerprint(userAgent: string, ipAddress: string, additionalData?: string): string {
-    const data = `${userAgent}:${ipAddress}:${additionalData || ''}`;
-    return crypto.createHash('sha256').update(data).digest('hex');
+    return CryptoSecurity.generateSecureDeviceFingerprint(userAgent, ipAddress, additionalData);
   }
 
   /**
-   * Rate limit 2FA attempts
+   * Rate limit 2FA attempts - ENHANCED PROGRESSIVE DELAYS
    */
-  async check2FARateLimit(userId: string): Promise<boolean> {
+  async check2FARateLimit(userId: string): Promise<{ allowed: boolean; delaySeconds?: number }> {
     const key = `2fa:ratelimit:${userId}`;
     const attempts = await redis.get(key);
 
     if (!attempts) {
       await redis.setEx(key, 300, '1'); // 5 minutes window
-      return true;
+      return { allowed: true };
     }
 
     const count = parseInt(attempts);
-    if (count >= 5) {
-      logger.warn('2FA rate limit exceeded', { userId });
-      return false;
+    
+    // Progressive delay implementation
+    let delaySeconds = 0;
+    let allowed = true;
+    
+    if (count >= 3 && count < 5) {
+      delaySeconds = Math.pow(2, count - 2) * 30; // 30s, 60s, 120s
+    } else if (count >= 5 && count < 10) {
+      delaySeconds = 300; // 5 minutes
+      allowed = false;
+    } else if (count >= 10) {
+      delaySeconds = 1800; // 30 minutes
+      allowed = false;
     }
 
-    await redis.incr(key);
-    return true;
+    if (allowed) {
+      await redis.incr(key);
+    }
+
+    if (!allowed) {
+      logger.warn('2FA rate limit exceeded', { userId, attempts: count, delaySeconds });
+    }
+
+    return { allowed, delaySeconds };
   }
 
   /**
@@ -506,7 +601,328 @@ class TwoFactorAuthService {
     const key = `2fa:ratelimit:${userId}`;
     await redis.del(key);
   }
+
+  /**
+   * Track failed 2FA attempts and send notifications
+   */
+  private async trackFailedAttempt(userId: string): Promise<void> {
+    const key = `2fa:failed:${userId}`;
+    const attempts = await redis.get(key);
+    
+    if (!attempts) {
+      await redis.setEx(key, 3600, '1'); // 1 hour window
+    } else {
+      const count = parseInt(attempts) + 1;
+      await redis.setEx(key, 3600, count.toString());
+      
+      // Send notification after multiple failed attempts
+      if (count >= 3) {
+        await this.notificationService.showWarning(
+          userId.toString(),
+          `There have been ${count} failed two-factor authentication attempts on your account in the last hour.`,
+          [
+            {
+              label: 'Review Account Security',
+              action: 'security-review',
+              primary: true,
+              icon: 'security',
+            },
+          ]
+        );
+
+        logger.warn('Multiple failed 2FA attempts detected', { userId, attempts: count });
+      }
+    }
+  }
+
+  /**
+   * Clear failed attempt counter
+   */
+  private async clearFailedAttempts(userId: string): Promise<void> {
+    const key = `2fa:failed:${userId}`;
+    await redis.del(key);
+  }
+
+  /**
+   * Send SMS verification code
+   */
+  async sendSMSCode(userId: string, phoneNumber: string): Promise<{ success: boolean; message: string }> {
+    try {
+      // Generate 6-digit code - CRYPTOGRAPHICALLY SECURE
+      const code = CryptoSecurity.generateSecureCode(6);
+      
+      // Store code in Redis with 5-minute expiry
+      const key = `2fa:sms:${userId}`;
+      await redis.setEx(key, 300, JSON.stringify({ code, phoneNumber, sentAt: new Date() }));
+
+      // TODO: Implement actual SMS sending service (Twilio, AWS SNS, etc.)
+      // SECURITY: Never log the actual code - removed security vulnerability
+
+      // Send SMS via SMS service (placeholder)
+      const smsResult = await this.sendSMS(phoneNumber, `Your UpCoach verification code is: ${code}. This code expires in 5 minutes.`);
+
+      if (smsResult.success) {
+        logger.info('SMS 2FA code sent', { userId, phoneNumber: this.maskPhoneNumber(phoneNumber) });
+        return { success: true, message: 'Verification code sent successfully' };
+      } else {
+        throw new Error('Failed to send SMS');
+      }
+    } catch (error) {
+      logger.error('Error sending SMS code', error);
+      return { success: false, message: 'Failed to send verification code' };
+    }
+  }
+
+  /**
+   * Verify SMS code
+   */
+  async verifySMSCode(userId: string, code: string): Promise<boolean> {
+    try {
+      const key = `2fa:sms:${userId}`;
+      const storedData = await redis.get(key);
+
+      if (!storedData) {
+        logger.warn('SMS verification failed: code expired or not found', { userId });
+        return false;
+      }
+
+      const { code: storedCode, phoneNumber, sentAt } = JSON.parse(storedData);
+
+      // Check if code matches - TIMING-SAFE COMPARISON
+      if (!CryptoSecurity.timingSafeStringCompare(code, storedCode)) {
+        await this.trackFailedAttempt(userId);
+        logger.warn('SMS verification failed: invalid code', { userId });
+        return false;
+      }
+
+      // Check if code is not too old (additional safety check)
+      const sentTime = new Date(sentAt);
+      const now = new Date();
+      const diffMinutes = (now.getTime() - sentTime.getTime()) / (1000 * 60);
+
+      if (diffMinutes > 5) {
+        logger.warn('SMS verification failed: code expired', { userId });
+        return false;
+      }
+
+      // Clear the used code
+      await redis.del(key);
+      await this.clearFailedAttempts(userId);
+
+      logger.info('SMS verification successful', { userId, phoneNumber: this.maskPhoneNumber(phoneNumber) });
+      return true;
+    } catch (error) {
+      logger.error('Error verifying SMS code', error);
+      return false;
+    }
+  }
+
+  /**
+   * Enable SMS 2FA
+   */
+  async enableSMS2FA(userId: string, phoneNumber: string, verificationCode: string): Promise<{ success: boolean; message: string }> {
+    try {
+      // Verify the SMS code first
+      const isCodeValid = await this.verifySMSCode(userId, verificationCode);
+      if (!isCodeValid) {
+        return { success: false, message: 'Invalid verification code' };
+      }
+
+      // Store SMS 2FA configuration
+      const configKey = `2fa:config:${userId}`;
+      const config: TwoFactorConfig = {
+        userId,
+        method: 'sms',
+        enabled: true,
+        verifiedAt: new Date(),
+        lastUsedAt: new Date(),
+        trustedDevices: [],
+      };
+
+      // Store phone number securely - ENCRYPTED
+      const phoneKey = `2fa:phone:${userId}`;
+      const encryptedPhoneNumber = CryptoSecurity.encryptSensitiveData(phoneNumber);
+      await redis.set(phoneKey, encryptedPhoneNumber);
+      
+      // Store encrypted configuration
+      const encryptedConfig = CryptoSecurity.encryptSensitiveData(JSON.stringify(config));
+      await redis.set(configKey, encryptedConfig);
+
+      // Send security notification
+      await this.notificationService.showSuccess(
+        userId.toString(),
+        'SMS Two-Factor Authentication has been enabled on your account for enhanced security.'
+      );
+
+      logger.info('SMS 2FA enabled for user', { userId, phoneNumber: this.maskPhoneNumber(phoneNumber) });
+
+      return { success: true, message: 'SMS 2FA enabled successfully' };
+    } catch (error) {
+      logger.error('Error enabling SMS 2FA', error);
+      return { success: false, message: 'Failed to enable SMS 2FA' };
+    }
+  }
+
+  /**
+   * Send email verification code
+   */
+  async sendEmailCode(userId: string, email: string): Promise<{ success: boolean; message: string }> {
+    try {
+      // Generate 6-digit code - CRYPTOGRAPHICALLY SECURE
+      const code = CryptoSecurity.generateSecureCode(6);
+      
+      // Store code in Redis with 5-minute expiry
+      const key = `2fa:email:${userId}`;
+      await redis.setEx(key, 300, JSON.stringify({ code, email, sentAt: new Date() }));
+
+      // Send email via email service
+      const emailResult = await emailService.send({
+        to: email,
+        subject: 'Your UpCoach Verification Code',
+        template: 'two-factor-auth-email',
+        data: {
+          code,
+          expiresIn: '5 minutes',
+          userEmail: email,
+        },
+      });
+
+      if (emailResult) {
+        logger.info('Email 2FA code sent', { userId, email: this.maskEmail(email) });
+        return { success: true, message: 'Verification code sent successfully' };
+      } else {
+        throw new Error('Failed to send email');
+      }
+    } catch (error) {
+      logger.error('Error sending email code', error);
+      return { success: false, message: 'Failed to send verification code' };
+    }
+  }
+
+  /**
+   * Verify email code
+   */
+  async verifyEmailCode(userId: string, code: string): Promise<boolean> {
+    try {
+      const key = `2fa:email:${userId}`;
+      const storedData = await redis.get(key);
+
+      if (!storedData) {
+        logger.warn('Email verification failed: code expired or not found', { userId });
+        return false;
+      }
+
+      const { code: storedCode, email, sentAt } = JSON.parse(storedData);
+
+      // Check if code matches - TIMING-SAFE COMPARISON
+      if (!CryptoSecurity.timingSafeStringCompare(code, storedCode)) {
+        await this.trackFailedAttempt(userId);
+        logger.warn('Email verification failed: invalid code', { userId });
+        return false;
+      }
+
+      // Check if code is not too old (additional safety check)
+      const sentTime = new Date(sentAt);
+      const now = new Date();
+      const diffMinutes = (now.getTime() - sentTime.getTime()) / (1000 * 60);
+
+      if (diffMinutes > 5) {
+        logger.warn('Email verification failed: code expired', { userId });
+        return false;
+      }
+
+      // Clear the used code
+      await redis.del(key);
+      await this.clearFailedAttempts(userId);
+
+      logger.info('Email verification successful', { userId, email: this.maskEmail(email) });
+      return true;
+    } catch (error) {
+      logger.error('Error verifying email code', error);
+      return false;
+    }
+  }
+
+  /**
+   * Enable email 2FA
+   */
+  async enableEmail2FA(userId: string, email: string, verificationCode: string): Promise<{ success: boolean; message: string }> {
+    try {
+      // Verify the email code first
+      const isCodeValid = await this.verifyEmailCode(userId, verificationCode);
+      if (!isCodeValid) {
+        return { success: false, message: 'Invalid verification code' };
+      }
+
+      // Store email 2FA configuration
+      const configKey = `2fa:config:${userId}`;
+      const config: TwoFactorConfig = {
+        userId,
+        method: 'email',
+        enabled: true,
+        verifiedAt: new Date(),
+        lastUsedAt: new Date(),
+        trustedDevices: [],
+      };
+
+      // Store email securely - ENCRYPTED
+      const emailKey = `2fa:email-addr:${userId}`;
+      const encryptedEmail = CryptoSecurity.encryptSensitiveData(email);
+      await redis.set(emailKey, encryptedEmail);
+      
+      // Store encrypted configuration
+      const encryptedConfig = CryptoSecurity.encryptSensitiveData(JSON.stringify(config));
+      await redis.set(configKey, encryptedConfig);
+
+      // Send security notification
+      await this.notificationService.showSuccess(
+        userId.toString(),
+        'Email Two-Factor Authentication has been enabled on your account for enhanced security.'
+      );
+
+      logger.info('Email 2FA enabled for user', { userId, email: this.maskEmail(email) });
+
+      return { success: true, message: 'Email 2FA enabled successfully' };
+    } catch (error) {
+      logger.error('Error enabling email 2FA', error);
+      return { success: false, message: 'Failed to enable email 2FA' };
+    }
+  }
+
+  /**
+   * Placeholder SMS sending service (should be replaced with actual SMS provider)
+   */
+  private async sendSMS(phoneNumber: string, message: string): Promise<{ success: boolean; message?: string }> {
+    // TODO: Implement actual SMS service (Twilio, AWS SNS, etc.)
+    // For now, return success in development, fail in production without configuration
+    if (process.env.NODE_ENV === 'production' && !process.env.SMS_API_KEY) {
+      return { success: false, message: 'SMS service not configured' };
+    }
+
+    // Simulate SMS sending delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    return { success: true };
+  }
+
+  /**
+   * Mask phone number for logging
+   */
+  private maskPhoneNumber(phoneNumber: string): string {
+    if (phoneNumber.length <= 4) return phoneNumber;
+    return phoneNumber.slice(0, 3) + '*'.repeat(phoneNumber.length - 6) + phoneNumber.slice(-3);
+  }
+
+  /**
+   * Mask email for logging
+   */
+  private maskEmail(email: string): string {
+    const [local, domain] = email.split('@');
+    if (local.length <= 2) return email;
+    return local.slice(0, 2) + '*'.repeat(local.length - 4) + local.slice(-2) + '@' + domain;
+  }
 }
 
-// Export singleton instance
+// Export class and singleton instance
+export { TwoFactorAuthService };
 export const twoFactorAuthService = TwoFactorAuthService.getInstance();

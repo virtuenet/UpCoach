@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
+import { body, query, param, validationResult } from 'express-validator';
+
+import { SessionType } from '../models/CoachSession';
 import { coachService } from '../services/coach/CoachService';
 import { logger } from '../utils/logger';
-import { body, query, param, validationResult } from 'express-validator';
-import { SessionType } from '../models/CoachSession';
 
 export class CoachController {
   // Search coaches

@@ -3,13 +3,17 @@
  * Implements HIPAA requirements for Protected Health Information (PHI)
  */
 
+import crypto from 'crypto';
+
+import { addMinutes, differenceInMinutes } from 'date-fns';
+import { Op } from 'sequelize';
+
+import { sequelize } from '../../config/database';
 import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
 import { redis } from '../redis';
-import { sequelize } from '../../config/database';
-import { Op } from 'sequelize';
-import crypto from 'crypto';
-import { addMinutes, differenceInMinutes } from 'date-fns';
+
+
 
 export interface PHIAccessLog {
   id: string;

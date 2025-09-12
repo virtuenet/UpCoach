@@ -1,5 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect } from '@jest/globals';
 // Simple test to verify Jest configuration is working
 describe('AIService Simple Test', () => {
   it('should pass a basic test', () => {

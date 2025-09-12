@@ -1,6 +1,7 @@
+import * as bcrypt from 'bcryptjs';
 import { Model, DataTypes, Optional } from 'sequelize';
+
 import { sequelize } from '../config/sequelize';
-import bcrypt from 'bcryptjs';
 
 export interface UserAttributes {
   id: string;
@@ -20,6 +21,7 @@ export interface UserAttributes {
   lastLoginAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
+  deletedAt?: Date;
 }
 
 export interface UserCreationAttributes
@@ -38,6 +40,7 @@ export interface UserCreationAttributes
     | 'createdAt'
     | 'updatedAt'
     | 'lastLoginAt'
+    | 'deletedAt'
   > {}
 
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
@@ -58,6 +61,7 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   public lastLoginAt?: Date;
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
+  declare readonly deletedAt?: Date;
 
   // Association properties
   public readonly profile?: any;

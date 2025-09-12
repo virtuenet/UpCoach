@@ -1,21 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
+import { MulterError } from 'multer';
+import { ZodError } from 'zod';
+
+import { ApiErrorResponse, ErrorDetails, SequelizeError } from '../types';
 import { ApiError } from '../utils/apiError';
 import { logger } from '../utils/logger';
-import { ZodError } from 'zod';
-import { ApiErrorResponse, ErrorDetails, SequelizeError } from '../types';
-import multer from 'multer';
 
-type MulterError = multer.MulterError;
-
-// Extend Request interface to include id
-declare global {
-  namespace Express {
-    interface Request {
-      id?: string;
-      rawBody?: Buffer;
-    }
-  }
-}
+// Express types are extended in ../types/express.d.ts
 
 export const asyncHandler = (fn: Function) => {
   return (req: Request, res: Response, next: NextFunction) => {

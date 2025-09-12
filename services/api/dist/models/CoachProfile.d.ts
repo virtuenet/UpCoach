@@ -90,7 +90,7 @@ export declare class CoachProfile extends Model {
         language?: string;
         isAvailable?: boolean;
         search?: string;
-    }): Promise<any>;
+    }): Promise<CoachProfile[]>;
 }
 export {};
 //# sourceMappingURL=CoachProfile.d.ts.map

@@ -205,3 +205,6 @@ export const trackModalView = (modalName: string, trigger: string) => {
     modal_trigger: trigger,
   });
 };
+
+// Generic event tracking function - alias for 'event'
+export const trackEvent = event;

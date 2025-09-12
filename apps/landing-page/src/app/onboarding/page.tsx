@@ -14,13 +14,13 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
+import { Button } from '@upcoach/ui/src/components/Button';
+import { Card } from '@upcoach/ui/src/components/Card';
+import { Input } from '@upcoach/ui/src/components/Input';
+import { Textarea } from '@upcoach/ui/src/components/Textarea';
+import { RadioGroup, RadioGroupItem } from '@upcoach/ui/src/components/RadioGroup';
+import { Label } from '@upcoach/ui/src/components/Label';
+import { Progress } from '@upcoach/ui/src/components/Progress';
 import { trackEvent } from '@/services/analytics';
 import { api } from '@/services/api';
 

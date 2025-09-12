@@ -1,9 +1,4 @@
 import { Model, Optional } from 'sequelize';
-/**
- * Coach Memory Model
- * Tracks coaching interactions, user insights, and conversation context
- * for personalized and intelligent coaching experiences
- */
 export interface CoachMemoryAttributes {
     id: string;
     userId: string;
@@ -75,21 +70,12 @@ export declare class CoachMemory extends Model<CoachMemoryAttributes, CoachMemor
     insightsGenerated: string[];
     readonly createdAt: Date;
     readonly updatedAt: Date;
-    /**
-     * Check if this memory is still relevant based on time and access patterns
-     */
     isRelevant(): boolean;
-    /**
-     * Update relevance score based on current context
-     */
     updateRelevanceScore(currentContext: {
         topics: string[];
         mood: string;
         recentGoals: string[];
     }): void;
-    /**
-     * Increment access count and update last referenced date
-     */
     recordAccess(): void;
 }
 export default CoachMemory;

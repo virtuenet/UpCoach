@@ -1,5 +1,7 @@
+import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
 import { Request, Response } from 'express';
-import { financialService } from '../../services/financial/FinancialService';
+import { Op } from 'sequelize';
+
 import {
   Transaction,
   Subscription,
@@ -8,12 +10,11 @@ import {
   FinancialReport,
   BillingEvent,
 } from '../../models';
-import { Op } from 'sequelize';
-import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
-import { ApiError } from '../../utils/apiError';
-import { reportingService } from '../../services/financial/ReportingService';
 import emailService from '../../services/email/UnifiedEmailService';
+import { financialService } from '../../services/financial/FinancialService';
+import { reportingService } from '../../services/financial/ReportingService';
 import { SchedulerService } from '../../services/SchedulerService';
+import { ApiError } from '../../utils/apiError';
 
 export class FinancialDashboardController {
   /**
@@ -127,7 +128,7 @@ export class FinancialDashboardController {
       });
 
       const totalCosts = costs.reduce(
-        (sum, cost) => sum + parseFloat(cost.getDataValue('total')),
+        (sum, cost) => sum + parseFloat(cost.get('total') as string || '0'),
         0
       );
 
@@ -135,7 +136,7 @@ export class FinancialDashboardController {
         total: totalCosts,
         byCategory: costs.reduce(
           (acc, cost) => {
-            acc[cost.category] = parseFloat(cost.getDataValue('total'));
+            acc[cost.category] = parseFloat(cost.get('total') as string || '0');
             return acc;
           },
           {} as Record<string, number>
@@ -526,7 +527,7 @@ export class FinancialDashboardController {
     try {
       const { period = 'daily' } = req.query;
       const snapshot = await FinancialSnapshot.findOne({
-        where: { period },
+        where: { period: period as string },
         order: [['date', 'DESC']],
       });
 

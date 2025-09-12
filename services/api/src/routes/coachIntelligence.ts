@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import CoachIntelligenceController, {
   coachIntelligenceValidation,
 } from '../controllers/CoachIntelligenceController';

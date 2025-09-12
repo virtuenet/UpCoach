@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
+
 import { forumService } from '../../services/community/ForumService';
 import { logger } from '../../utils/logger';
-import { validationResult } from 'express-validator';
 
 export class ForumController {
   // Get all forum categories

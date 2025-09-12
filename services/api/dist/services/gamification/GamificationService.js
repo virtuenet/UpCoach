@@ -4,14 +4,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.gamificationService = exports.GamificationService = void 0;
+const date_fns_1 = require("date-fns");
 const sequelize_1 = require("sequelize");
 const models_1 = require("../../models");
 const logger_1 = require("../../utils/logger");
-const UnifiedEmailService_1 = __importDefault(require("../email/UnifiedEmailService"));
 const AnalyticsService_1 = require("../analytics/AnalyticsService");
-const date_fns_1 = require("date-fns");
+const UnifiedEmailService_1 = __importDefault(require("../email/UnifiedEmailService"));
 class GamificationService {
-    // Initialize user gamification data
     async initializeUser(userId, transaction) {
         try {
             await models_1.sequelize.query(`INSERT INTO user_levels (user_id) VALUES (:userId) ON CONFLICT (user_id) DO NOTHING`, {
@@ -19,7 +18,6 @@ class GamificationService {
                 type: sequelize_1.QueryTypes.INSERT,
                 transaction,
             });
-            // Initialize common streaks
             const streakTypes = ['daily_login', 'weekly_goal', 'mood_tracking'];
             for (const streakType of streakTypes) {
                 await models_1.sequelize.query(`INSERT INTO user_streaks (user_id, streak_type) 
@@ -35,10 +33,8 @@ class GamificationService {
             logger_1.logger.error('Failed to initialize user gamification', { error, userId });
         }
     }
-    // Award points to user
     async awardPoints(userId, points, reason, transaction) {
         try {
-            // Update user points
             await models_1.sequelize.query(`UPDATE user_levels 
          SET total_points = total_points + :points,
              current_points = current_points + :points,
@@ -48,9 +44,7 @@ class GamificationService {
                 type: sequelize_1.QueryTypes.UPDATE,
                 transaction,
             });
-            // Check for level up
             await this.checkLevelUp(userId, transaction);
-            // Track analytics
             await AnalyticsService_1.analyticsService.trackUserAction(userId, 'Points Earned', {
                 points,
                 reason,
@@ -62,7 +56,6 @@ class GamificationService {
             throw error;
         }
     }
-    // Check and process level up
     async checkLevelUp(userId, transaction) {
         const result = await models_1.sequelize.query(`WITH user_data AS (
          SELECT ul.*, lc.required_points as next_level_points
@@ -86,16 +79,13 @@ class GamificationService {
             await this.onLevelUp(userId, newLevel);
         }
     }
-    // Handle level up event
     async onLevelUp(userId, newLevel) {
-        // Get level details
         const levelInfo = await models_1.sequelize.query(`SELECT * FROM level_config WHERE level = :level`, {
             replacements: { level: newLevel },
             type: sequelize_1.QueryTypes.SELECT,
         });
         if (levelInfo[0]) {
             const level = levelInfo[0];
-            // Send notification
             await UnifiedEmailService_1.default.send({
                 to: await this.getUserEmail(userId),
                 subject: 'Congratulations! You leveled up! 🎉',
@@ -106,16 +96,13 @@ class GamificationService {
                     perks: level.perks,
                 },
             });
-            // Award achievement for reaching certain levels
             if ([5, 10, 15, 20, 25].includes(newLevel)) {
                 await this.checkAchievement(userId, 'level_milestone', newLevel);
             }
         }
     }
-    // Track achievement progress
     async trackProgress(userId, category, value = 1, metadata) {
         try {
-            // Get relevant achievements
             const achievements = await models_1.sequelize.query(`SELECT a.*, ua.current_progress, ua.unlocked_at
          FROM achievements a
          LEFT JOIN user_achievements ua ON a.id = ua.achievement_id AND ua.user_id = :userId
@@ -133,7 +120,6 @@ class GamificationService {
             logger_1.logger.error('Failed to track progress', { error, userId, category });
         }
     }
-    // Update achievement progress
     async updateAchievementProgress(userId, achievement, value, metadata) {
         const currentProgress = achievement.current_progress || 0;
         let newProgress = currentProgress;
@@ -142,7 +128,6 @@ class GamificationService {
                 newProgress = currentProgress + value;
                 break;
             case 'unique':
-                // Handle unique counting (e.g., unique days)
                 const progressData = achievement.progress_data || {};
                 const key = metadata?.key || (0, date_fns_1.format)(new Date(), 'yyyy-MM-dd');
                 if (!progressData[key]) {
@@ -151,10 +136,8 @@ class GamificationService {
                 }
                 break;
             case 'streak':
-                // Streaks are handled separately
                 return;
         }
-        // Update progress
         await models_1.sequelize.query(`INSERT INTO user_achievements (user_id, achievement_id, current_progress, progress_data)
        VALUES (:userId, :achievementId, :progress, :progressData)
        ON CONFLICT (user_id, achievement_id)
@@ -170,33 +153,27 @@ class GamificationService {
             },
             type: sequelize_1.QueryTypes.INSERT,
         });
-        // Check if achievement is unlocked
         if (newProgress >= achievement.criteria_target && !achievement.unlocked_at) {
             await this.unlockAchievement(userId, achievement.id);
         }
     }
-    // Unlock achievement
     async unlockAchievement(userId, achievementId) {
         try {
-            // Mark as unlocked
             await models_1.sequelize.query(`UPDATE user_achievements 
          SET unlocked_at = CURRENT_TIMESTAMP
          WHERE user_id = :userId AND achievement_id = :achievementId`, {
                 replacements: { userId, achievementId },
                 type: sequelize_1.QueryTypes.UPDATE,
             });
-            // Get achievement details
             const achievement = await models_1.sequelize.query(`SELECT * FROM achievements WHERE id = :achievementId`, {
                 replacements: { achievementId },
                 type: sequelize_1.QueryTypes.SELECT,
             });
             if (achievement[0]) {
                 const ach = achievement[0];
-                // Award points
                 if (ach.points > 0) {
                     await this.awardPoints(userId, ach.points, `Achievement: ${ach.name}`);
                 }
-                // Update user stats
                 await models_1.sequelize.query(`UPDATE user_levels 
            SET achievements_unlocked = achievements_unlocked + 1,
                badges_earned = badges_earned + CASE WHEN :badgeTier IS NOT NULL THEN 1 ELSE 0 END
@@ -204,7 +181,6 @@ class GamificationService {
                     replacements: { userId, badgeTier: ach.badge_tier },
                     type: sequelize_1.QueryTypes.UPDATE,
                 });
-                // Send notification
                 await this.notifyAchievementUnlock(userId, ach);
             }
         }
@@ -212,11 +188,9 @@ class GamificationService {
             logger_1.logger.error('Failed to unlock achievement', { error, userId, achievementId });
         }
     }
-    // Update streak
     async updateStreak(userId, streakType, activityDate = new Date()) {
         try {
             const today = (0, date_fns_1.startOfDay)(activityDate);
-            // Get current streak
             const streakData = await models_1.sequelize.query(`SELECT * FROM user_streaks 
          WHERE user_id = :userId AND streak_type = :streakType`, {
                 replacements: { userId, streakType },
@@ -228,23 +202,19 @@ class GamificationService {
                 let newStreak = streak.current_streak;
                 let shouldUpdate = false;
                 if (!lastActivity) {
-                    // First activity
                     newStreak = 1;
                     shouldUpdate = true;
                 }
                 else {
                     const daysSinceLastActivity = (0, date_fns_1.differenceInDays)(today, lastActivity);
                     if (daysSinceLastActivity === 1) {
-                        // Consecutive day
                         newStreak = streak.current_streak + 1;
                         shouldUpdate = true;
                     }
                     else if (daysSinceLastActivity === 0) {
-                        // Same day, no update needed
                         shouldUpdate = false;
                     }
                     else if (daysSinceLastActivity === 2 && streak.freeze_remaining > 0) {
-                        // Use freeze
                         await models_1.sequelize.query(`UPDATE user_streaks 
                SET freeze_remaining = freeze_remaining - 1,
                    last_freeze_used = :today
@@ -255,7 +225,6 @@ class GamificationService {
                         shouldUpdate = true;
                     }
                     else {
-                        // Streak broken
                         newStreak = 1;
                         shouldUpdate = true;
                     }
@@ -270,7 +239,6 @@ class GamificationService {
                         replacements: { userId, streakType, newStreak, longestStreak, today },
                         type: sequelize_1.QueryTypes.UPDATE,
                     });
-                    // Check streak achievements
                     await this.checkStreakAchievements(userId, streakType, newStreak);
                 }
             }
@@ -279,7 +247,6 @@ class GamificationService {
             logger_1.logger.error('Failed to update streak', { error, userId, streakType });
         }
     }
-    // Check streak achievements
     async checkStreakAchievements(userId, streakType, streakLength) {
         const achievements = await models_1.sequelize.query(`SELECT a.*, ua.unlocked_at
        FROM achievements a
@@ -296,7 +263,6 @@ class GamificationService {
             await this.unlockAchievement(userId, achievement.id);
         }
     }
-    // Get user stats
     async getUserStats(userId) {
         try {
             const stats = await models_1.sequelize.query(`SELECT 
@@ -322,7 +288,6 @@ class GamificationService {
             const levelProgress = userStats.next_level_points
                 ? (userStats.level_progress / userStats.next_level_points) * 100
                 : 100;
-            // Get current streak
             const streaks = await models_1.sequelize.query(`SELECT MAX(current_streak) as max_streak
          FROM user_streaks
          WHERE user_id = :userId`, {
@@ -345,7 +310,6 @@ class GamificationService {
             throw error;
         }
     }
-    // Get user achievements
     async getUserAchievements(userId, category) {
         try {
             let categoryFilter = '';
@@ -381,7 +345,6 @@ class GamificationService {
             throw error;
         }
     }
-    // Create challenge
     async createChallenge(challengeData) {
         try {
             const result = (await models_1.sequelize.query(`INSERT INTO challenges 
@@ -401,7 +364,6 @@ class GamificationService {
             throw error;
         }
     }
-    // Join challenge
     async joinChallenge(userId, challengeId) {
         try {
             await models_1.sequelize.query(`INSERT INTO user_challenges (user_id, challenge_id, progress)
@@ -423,10 +385,8 @@ class GamificationService {
             throw error;
         }
     }
-    // Update challenge progress
     async updateChallengeProgress(userId, challengeId, requirementIndex, progress) {
         try {
-            // Get current progress
             const current = await models_1.sequelize.query(`SELECT progress, c.requirements
          FROM user_challenges uc
          JOIN challenges c ON uc.challenge_id = c.id
@@ -438,7 +398,6 @@ class GamificationService {
                 const progressData = current[0].progress || {};
                 const requirements = current[0].requirements;
                 progressData[requirementIndex] = progress;
-                // Calculate completion percentage
                 let totalProgress = 0;
                 requirements.forEach((req, index) => {
                     const reqProgress = progressData[index] || 0;
@@ -471,20 +430,16 @@ class GamificationService {
             logger_1.logger.error('Failed to update challenge progress', { error });
         }
     }
-    // Handle challenge completion
     async onChallengeComplete(userId, challengeId) {
         const challenge = await models_1.sequelize.query(`SELECT * FROM challenges WHERE id = :challengeId`, {
             replacements: { challengeId },
             type: sequelize_1.QueryTypes.SELECT,
         });
         if (challenge[0]) {
-            // Award points
             await this.awardPoints(userId, challenge[0].reward_points, `Challenge completed: ${challenge[0].name}`);
-            // Track achievement progress
             await this.trackProgress(userId, 'social', 1);
         }
     }
-    // Get leaderboard
     async getLeaderboard(type, period = 'all_time', limit = 10) {
         try {
             let query = '';
@@ -557,7 +512,6 @@ class GamificationService {
                 replacements,
                 type: sequelize_1.QueryTypes.SELECT,
             });
-            // Cache leaderboard snapshot
             if (period !== 'all_time') {
                 await models_1.sequelize.query(`INSERT INTO leaderboards (type, period, snapshot_date, rankings)
            VALUES (:type, :period, CURRENT_DATE, :rankings)
@@ -578,13 +532,10 @@ class GamificationService {
             throw error;
         }
     }
-    // Purchase reward
     async purchaseReward(userId, rewardItemId) {
         try {
-            // Start transaction
             const t = await models_1.sequelize.transaction();
             try {
-                // Get reward item and user points
                 const [rewardItem, userLevel] = await Promise.all([
                     models_1.sequelize.query(`SELECT * FROM reward_items WHERE id = :rewardItemId AND is_active = true`, {
                         replacements: { rewardItemId },
@@ -605,14 +556,12 @@ class GamificationService {
                 }
                 const item = rewardItem[0];
                 const user = userLevel[0];
-                // Check requirements
                 if (user.current_points < item.point_cost) {
                     throw new Error('Insufficient points');
                 }
                 if (user.current_level < item.min_level_required) {
                     throw new Error(`Requires level ${item.min_level_required}`);
                 }
-                // Check purchase limit
                 const purchaseCount = await models_1.sequelize.query(`SELECT COUNT(*) as count
            FROM user_rewards
            WHERE user_id = :userId AND reward_item_id = :rewardItemId`, {
@@ -623,7 +572,6 @@ class GamificationService {
                 if (purchaseCount[0].count >= item.purchase_limit_per_user) {
                     throw new Error('Purchase limit reached');
                 }
-                // Deduct points
                 await models_1.sequelize.query(`UPDATE user_levels
            SET current_points = current_points - :pointCost,
                points_spent = points_spent + :pointCost
@@ -632,7 +580,6 @@ class GamificationService {
                     type: sequelize_1.QueryTypes.UPDATE,
                     transaction: t,
                 });
-                // Record purchase
                 await models_1.sequelize.query(`INSERT INTO user_rewards (user_id, reward_item_id, points_spent)
            VALUES (:userId, :rewardItemId, :pointsSpent)`, {
                     replacements: {
@@ -643,7 +590,6 @@ class GamificationService {
                     type: sequelize_1.QueryTypes.INSERT,
                     transaction: t,
                 });
-                // Update stock if limited
                 if (item.stock_quantity !== null) {
                     await models_1.sequelize.query(`UPDATE reward_items
              SET stock_quantity = stock_quantity - 1
@@ -654,7 +600,6 @@ class GamificationService {
                     });
                 }
                 await t.commit();
-                // Send confirmation
                 await UnifiedEmailService_1.default.send({
                     to: await this.getUserEmail(userId),
                     subject: 'Reward Purchased! 🎁',
@@ -676,7 +621,6 @@ class GamificationService {
             throw error;
         }
     }
-    // Helper methods
     async getUserEmail(userId) {
         const user = await models_1.sequelize.query(`SELECT email FROM users WHERE id = :userId`, {
             replacements: { userId },
@@ -685,7 +629,6 @@ class GamificationService {
         return user[0]?.email || '';
     }
     async notifyAchievementUnlock(userId, achievement) {
-        // Send email notification
         await UnifiedEmailService_1.default.send({
             to: await this.getUserEmail(userId),
             subject: 'Achievement Unlocked! 🏆',
@@ -697,7 +640,6 @@ class GamificationService {
                 badgeTier: achievement.badge_tier,
             },
         });
-        // Mark as notified
         await models_1.sequelize.query(`UPDATE user_achievements
        SET is_notified = true, notified_at = CURRENT_TIMESTAMP
        WHERE user_id = :userId AND achievement_id = :achievementId`, {
@@ -705,7 +647,6 @@ class GamificationService {
             type: sequelize_1.QueryTypes.UPDATE,
         });
     }
-    // Check specific achievement
     async checkAchievement(userId, achievementType, value) {
         const achievements = await models_1.sequelize.query(`SELECT a.*, ua.unlocked_at
        FROM achievements a

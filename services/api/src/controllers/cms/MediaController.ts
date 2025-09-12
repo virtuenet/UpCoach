@@ -1,17 +1,19 @@
+import crypto from 'crypto';
+import fs from 'fs/promises';
+import path from 'path';
+
 import { Request, Response } from 'express';
+import multer, { diskStorage, memoryStorage, MulterError } from 'multer';
+import { Op } from 'sequelize';
+import sharp from 'sharp';
+
+import { Content } from '../../models/cms/Content';
 import { ContentMedia } from '../../models/cms/ContentMedia';
 import { User } from '../../models/User';
-import { Content } from '../../models/cms/Content';
-import { Op } from 'sequelize';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs/promises';
-import sharp from 'sharp';
-import crypto from 'crypto';
 import { logger } from '../../utils/logger';
 
 // Configure multer for file uploads
-const storage = multer.diskStorage({
+const storage = diskStorage({
   destination: async (_req, _file, cb) => {
     const uploadDir = path.join(process.cwd(), 'uploads', 'media');
     await fs.mkdir(uploadDir, { recursive: true });

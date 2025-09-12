@@ -1,3 +1,2 @@
 // Re-export from shared components
-export { default } from '../../../shared/components/ui/LoadingSpinner';
-export type { default as LoadingSpinnerProps } from '../../../shared/components/ui/LoadingSpinner';
+export { LoadingSpinner as default, type LoadingSpinnerProps } from '@upcoach/shared/components';

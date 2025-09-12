@@ -1,14 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 
-// Extend Express Request type to include nonce
-declare global {
-  namespace Express {
-    interface Request {
-      nonce?: string;
-    }
-  }
-}
+import { Request, Response, NextFunction } from 'express';
+
+// Express types are extended in ../types/express.d.ts
 
 /**
  * Generate a nonce for CSP

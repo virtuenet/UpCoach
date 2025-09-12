@@ -1,6 +1,7 @@
-import { redis } from '../redis';
 import crypto from 'crypto';
+
 import { logger } from '../../utils/logger';
+import { redis } from '../redis';
 
 export interface OIDCSession {
   state: string;

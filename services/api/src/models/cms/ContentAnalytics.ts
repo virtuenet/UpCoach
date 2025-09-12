@@ -1,4 +1,5 @@
 import { DataTypes, Model, Optional, Op, QueryTypes } from 'sequelize';
+
 import { sequelize } from '../../config/sequelize';
 
 // ContentAnalytics interface

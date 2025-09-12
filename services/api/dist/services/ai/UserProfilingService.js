@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userProfilingService = exports.UserProfilingService = void 0;
-const UserProfile_1 = require("../../models/UserProfile");
-const User_1 = require("../../models/User");
-const Goal_1 = require("../../models/Goal");
-const Task_1 = require("../../models/Task");
-const Mood_1 = require("../../models/Mood");
-const ChatMessage_1 = require("../../models/ChatMessage");
-const Chat_1 = require("../../models/Chat");
 const sequelize_1 = require("sequelize");
+const Chat_1 = require("../../models/Chat");
+const ChatMessage_1 = require("../../models/ChatMessage");
+const Goal_1 = require("../../models/Goal");
+const Mood_1 = require("../../models/Mood");
+const Task_1 = require("../../models/Task");
+const User_1 = require("../../models/User");
+const UserProfile_1 = require("../../models/UserProfile");
 const logger_1 = require("../../utils/logger");
 const AIService_1 = require("./AIService");
 class UserProfilingService {
@@ -16,7 +16,6 @@ class UserProfilingService {
         try {
             let profile = await UserProfile_1.UserProfile.findOne({ where: { userId } });
             if (!profile) {
-                // Create new profile
                 profile = await UserProfile_1.UserProfile.create({
                     userId,
                     learningStyle: 'balanced',
@@ -51,7 +50,6 @@ class UserProfilingService {
                     obstacles: [],
                 });
             }
-            // Update profile with latest data
             await this.updateProfileMetrics(profile);
             await this.analyzeUserBehavior(profile);
             await this.identifyPatternsAndInsights(profile);
@@ -66,26 +64,21 @@ class UserProfilingService {
         const user = await User_1.User.findByPk(profile.userId);
         if (!user)
             return;
-        // Calculate account age
         const accountAge = Math.floor((Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24));
-        // Get goals metrics
         const goals = await Goal_1.Goal.findAll({ where: { userId: profile.userId } });
         const completedGoals = goals.filter(g => g.status === 'completed');
-        // Get task metrics
         const tasks = await Task_1.Task.findAll({
             where: {
                 userId: profile.userId,
                 updatedAt: {
-                    [sequelize_1.Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
+                    [sequelize_1.Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
                 },
             },
         });
         const completedTasks = tasks.filter(t => t.status === 'completed');
         const completionRate = tasks.length > 0 ? completedTasks.length / tasks.length : 0;
-        // Calculate streaks
         const currentStreak = await this.calculateCurrentStreak(profile.userId);
         const longestStreak = Math.max(currentStreak, profile.progressMetrics?.longestStreak || 0);
-        // Get session metrics
         const sessions = await Chat_1.Chat.findAll({
             where: { userId: profile.userId },
             include: [
@@ -97,7 +90,6 @@ class UserProfilingService {
         });
         const totalSessions = sessions.length;
         const avgSessionDuration = this.calculateAvgSessionDuration(sessions);
-        // Update progress metrics
         profile.progressMetrics = {
             totalGoalsSet: goals.length,
             goalsCompleted: completedGoals.length,
@@ -107,7 +99,6 @@ class UserProfilingService {
             accountAge,
             lastActiveDate: new Date(),
         };
-        // Update behavior patterns
         if (profile.behaviorPatterns) {
             profile.behaviorPatterns.completionRate = Math.round(completionRate * 100);
             profile.behaviorPatterns.avgSessionDuration = avgSessionDuration;
@@ -115,7 +106,6 @@ class UserProfilingService {
         await profile.save();
     }
     async analyzeUserBehavior(profile) {
-        // Analyze chat messages for communication patterns
         const recentMessages = await ChatMessage_1.ChatMessage.findAll({
             include: [
                 {
@@ -128,7 +118,6 @@ class UserProfilingService {
             limit: 100,
         });
         if (recentMessages.length > 0) {
-            // Analyze message patterns
             const patterns = await this.analyzeMessagePatterns(recentMessages);
             if (profile.behaviorPatterns) {
                 profile.behaviorPatterns.preferredTopics = patterns.topics;
@@ -136,7 +125,6 @@ class UserProfilingService {
                 profile.behaviorPatterns.engagementLevel = patterns.engagementLevel;
             }
         }
-        // Analyze mood patterns
         const recentMoods = await Mood_1.Mood.findAll({
             where: {
                 userId: profile.userId,
@@ -156,14 +144,12 @@ class UserProfilingService {
         await profile.save();
     }
     async identifyPatternsAndInsights(profile) {
-        // Use AI to analyze user data and generate insights
         const userContext = {
             progressMetrics: profile.progressMetrics,
             behaviorPatterns: profile.behaviorPatterns,
             metadata: profile.metadata,
         };
         const insights = await this.generateAIInsights(userContext);
-        // Update profile based on insights
         if (insights.learningStyle && insights.learningStyle !== profile.learningStyle) {
             profile.learningStyle = insights.learningStyle;
         }
@@ -201,7 +187,7 @@ class UserProfilingService {
         let streak = 0;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        let currentDate = new Date(today);
+        const currentDate = new Date(today);
         while (true) {
             const tasksOnDate = tasks.filter(t => {
                 const taskDate = new Date(t.completedAt);
@@ -209,7 +195,6 @@ class UserProfilingService {
                 return taskDate.getTime() === currentDate.getTime();
             });
             if (tasksOnDate.length === 0) {
-                // Check if it's today (no tasks today doesn't break streak)
                 if (currentDate.getTime() === today.getTime() && streak > 0) {
                     currentDate.setDate(currentDate.getDate() - 1);
                     continue;
@@ -230,16 +215,15 @@ class UserProfilingService {
             const firstMessage = session.messages[session.messages.length - 1];
             const lastMessage = session.messages[0];
             return ((new Date(lastMessage.createdAt).getTime() - new Date(firstMessage.createdAt).getTime()) /
-                (1000 * 60)); // minutes
+                (1000 * 60));
         });
-        const validDurations = durations.filter(d => d > 0 && d < 120); // Filter out outliers
+        const validDurations = durations.filter(d => d > 0 && d < 120);
         if (validDurations.length === 0)
             return 0;
         return Math.round(validDurations.reduce((sum, d) => sum + d, 0) / validDurations.length);
     }
     async analyzeMessagePatterns(messages) {
         const userMessages = messages.filter((m) => m.role === 'user');
-        // Topic extraction
         const topicKeywords = {
             goals: ['goal', 'objective', 'target', 'achieve', 'plan'],
             habits: ['habit', 'routine', 'daily', 'practice', 'consistency'],
@@ -261,15 +245,13 @@ class UserProfilingService {
             .sort(([, a], [, b]) => b - a)
             .slice(0, 3)
             .map(([topic]) => topic);
-        // Calculate average response time
-        let responseTimes = [];
+        const responseTimes = [];
         for (let i = 1; i < messages.length; i++) {
             if (messages[i].role === 'user' && messages[i - 1].role === 'assistant') {
                 const timeDiff = (new Date(messages[i].createdAt).getTime() -
                     new Date(messages[i - 1].createdAt).getTime()) /
                     (1000 * 60);
                 if (timeDiff > 0 && timeDiff < 60) {
-                    // Within an hour
                     responseTimes.push(timeDiff);
                 }
             }
@@ -277,13 +259,11 @@ class UserProfilingService {
         const avgResponseTime = responseTimes.length > 0
             ? Math.round(responseTimes.reduce((sum, t) => sum + t, 0) / responseTimes.length)
             : 10;
-        // Calculate engagement level (0-100)
         const messagesPerSession = messages.length / Math.max(1, messages.filter((m) => m.isFirstInSession).length);
         const avgMessageLength = userMessages.reduce((sum, m) => sum + m.content.length, 0) / Math.max(1, userMessages.length);
-        const engagementLevel = Math.min(100, Math.round(messagesPerSession * 2 + // Weight: 2x
-            Math.min(avgMessageLength / 10, 10) * 3 + // Weight: 3x, cap at 10
-            preferredTopics.length * 10 // Weight: 10 per topic
-        ));
+        const engagementLevel = Math.min(100, Math.round(messagesPerSession * 2 +
+            Math.min(avgMessageLength / 10, 10) * 3 +
+            preferredTopics.length * 10));
         return {
             topics: preferredTopics,
             avgResponseTime,
@@ -299,7 +279,6 @@ class UserProfilingService {
         });
         const dominantMood = Object.entries(moodCounts).sort(([, a], [, b]) => b - a)[0]?.[0] || 'neutral';
         const avgEnergy = Math.round(totalEnergy / moods.length);
-        // Analyze mood trends
         const recentMoods = moods.slice(0, 7);
         const olderMoods = moods.slice(7, 14);
         const recentAvgEnergy = recentMoods.reduce((sum, m) => sum + (m.energy || 5), 0) / Math.max(1, recentMoods.length);
@@ -358,7 +337,6 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
         }
         catch (error) {
             logger_1.logger.error('Error generating AI insights:', error);
-            // Return default insights
             return {
                 learningStyle: 'balanced',
                 communicationPreference: 'supportive',
@@ -374,7 +352,6 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
     async getProfileInsights(userId) {
         const profile = await this.createOrUpdateProfile(userId);
         const insights = [];
-        // Learning style insight
         if (profile.learningStyle !== 'balanced') {
             insights.push({
                 category: 'Learning Style',
@@ -383,7 +360,6 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
                 evidence: ['Based on your interaction patterns', 'Derived from content preferences'],
             });
         }
-        // Consistency insight
         if (profile.behaviorPatterns?.consistencyScore &&
             profile.behaviorPatterns?.consistencyScore > 70) {
             insights.push({
@@ -408,7 +384,6 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
                 ],
             });
         }
-        // Engagement insight
         if (profile.behaviorPatterns?.engagementLevel &&
             profile.behaviorPatterns?.engagementLevel > 70) {
             insights.push({
@@ -421,7 +396,6 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
                 ],
             });
         }
-        // Topic preferences
         if (profile.behaviorPatterns?.preferredTopics &&
             profile.behaviorPatterns?.preferredTopics.length > 0) {
             insights.push({
@@ -431,7 +405,6 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
                 evidence: ['Derived from conversation history', 'Based on goal categories'],
             });
         }
-        // Strengths
         if (profile.strengths && profile.strengths.length > 0) {
             insights.push({
                 category: 'Strengths',
@@ -443,7 +416,6 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
                 ],
             });
         }
-        // Growth opportunities
         if (profile.growthAreas && profile.growthAreas.length > 0) {
             insights.push({
                 category: 'Growth Opportunities',
@@ -489,29 +461,24 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
     async getPersonalizedRecommendations(userId) {
         const profile = await this.createOrUpdateProfile(userId);
         const recommendations = [];
-        // Based on completion rate
         if (profile.behaviorPatterns?.completionRate && profile.behaviorPatterns?.completionRate < 50) {
             recommendations.push('Break down your goals into smaller, more manageable tasks');
             recommendations.push('Start with just one small habit to build momentum');
         }
-        // Based on consistency
         if (profile.behaviorPatterns?.consistencyScore &&
             profile.behaviorPatterns?.consistencyScore < 40) {
             recommendations.push('Set a specific time each day for your coaching check-in');
             recommendations.push('Use reminders to maintain your momentum');
         }
-        // Based on engagement
         if (profile.behaviorPatterns?.engagementLevel &&
             profile.behaviorPatterns?.engagementLevel < 30) {
             recommendations.push('Try voice journaling for a more natural interaction');
             recommendations.push('Explore different coaching methods to find what resonates');
         }
-        // Based on streak
         if (profile.progressMetrics?.currentStreak && profile.progressMetrics?.currentStreak > 7) {
             recommendations.push('Your streak is impressive! Consider increasing your goal difficulty');
             recommendations.push('Share your success to inspire others and reinforce your commitment');
         }
-        // Based on preferred topics
         profile.behaviorPatterns?.preferredTopics?.forEach(topic => {
             switch (topic) {
                 case 'productivity':
@@ -528,28 +495,20 @@ Consider completion rates, consistency, engagement patterns, and mood data in yo
                     break;
             }
         });
-        // Limit to top 5 recommendations
         return recommendations.slice(0, 5);
     }
     async assessReadinessLevel(userId) {
         const profile = await this.createOrUpdateProfile(userId);
-        // Calculate readiness score
         let score = 0;
-        // Account age (max 20 points)
         score += Math.min((profile.progressMetrics?.accountAge || 0) / 5, 20);
-        // Consistency (max 30 points)
         score += ((profile.behaviorPatterns?.consistencyScore || 0) / 100) * 30;
-        // Completion rate (max 25 points)
         score += ((profile.behaviorPatterns?.completionRate || 0) / 100) * 25;
-        // Engagement (max 15 points)
         score += ((profile.behaviorPatterns?.engagementLevel || 0) / 100) * 15;
-        // Goals completed (max 10 points)
         const goalCompletionRate = (profile.progressMetrics?.totalGoalsSet || 0) > 0
             ? (profile.progressMetrics?.goalsCompleted || 0) /
                 (profile.progressMetrics?.totalGoalsSet || 1)
             : 0;
         score += goalCompletionRate * 10;
-        // Determine level
         let level;
         let reasoning;
         let nextSteps = [];

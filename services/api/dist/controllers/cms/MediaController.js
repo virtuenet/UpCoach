@@ -4,17 +4,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MediaController = void 0;
+const crypto_1 = __importDefault(require("crypto"));
+const promises_1 = __importDefault(require("fs/promises"));
+const path_1 = __importDefault(require("path"));
+const multer_1 = __importDefault(require("multer"));
+const sequelize_1 = require("sequelize");
+const sharp_1 = __importDefault(require("sharp"));
+const Content_1 = require("../../models/cms/Content");
 const ContentMedia_1 = require("../../models/cms/ContentMedia");
 const User_1 = require("../../models/User");
-const Content_1 = require("../../models/cms/Content");
-const sequelize_1 = require("sequelize");
-const multer_1 = __importDefault(require("multer"));
-const path_1 = __importDefault(require("path"));
-const promises_1 = __importDefault(require("fs/promises"));
-const sharp_1 = __importDefault(require("sharp"));
-const crypto_1 = __importDefault(require("crypto"));
 const logger_1 = require("../../utils/logger");
-// Configure multer for file uploads
 const storage = multer_1.default.diskStorage({
     destination: async (_req, _file, cb) => {
         const uploadDir = path_1.default.join(process.cwd(), 'uploads', 'media');
@@ -32,7 +31,7 @@ const storage = multer_1.default.diskStorage({
 const upload = (0, multer_1.default)({
     storage,
     limits: {
-        fileSize: 50 * 1024 * 1024, // 50MB max file size
+        fileSize: 50 * 1024 * 1024,
     },
     fileFilter: (_req, file, cb) => {
         const allowedMimes = [
@@ -59,11 +58,8 @@ const upload = (0, multer_1.default)({
     },
 });
 class MediaController {
-    // Upload single file
     static uploadSingle = upload.single('file');
-    // Upload multiple files
     static uploadMultiple = upload.array('files', 10);
-    // Process uploaded file
     static async processUpload(req, _res) {
         try {
             if (!req.file) {
@@ -71,7 +67,6 @@ class MediaController {
             }
             const file = req.file;
             const { contentId, alt, caption, credit } = req.body;
-            // Determine media type
             let mediaType = 'other';
             if (file.mimetype.startsWith('image/'))
                 mediaType = 'image';
@@ -81,14 +76,12 @@ class MediaController {
                 mediaType = 'audio';
             else if (file.mimetype.includes('pdf') || file.mimetype.includes('document'))
                 mediaType = 'document';
-            // Process image files
             let width, height, thumbnailUrl;
             if (mediaType === 'image') {
                 try {
                     const metadata = await (0, sharp_1.default)(file.path).metadata();
                     width = metadata.width;
                     height = metadata.height;
-                    // Generate thumbnail
                     const thumbnailPath = file.path.replace(/(\.[^.]+)$/, '-thumb$1');
                     await (0, sharp_1.default)(file.path)
                         .resize(300, 300, { fit: 'cover' })
@@ -100,7 +93,6 @@ class MediaController {
                     logger_1.logger.error('Error processing image:', error);
                 }
             }
-            // Create media record
             const media = await ContentMedia_1.ContentMedia.create({
                 contentId,
                 type: mediaType,
@@ -127,7 +119,6 @@ class MediaController {
             _res.status(500).json({ error: 'Failed to process upload' });
         }
     }
-    // Process multiple uploads
     static async processMultipleUploads(req, _res) {
         try {
             if (!req.files || !Array.isArray(req.files)) {
@@ -185,7 +176,6 @@ class MediaController {
             _res.status(500).json({ error: 'Failed to process uploads' });
         }
     }
-    // Get all media with filters
     static async getAll(req, _res) {
         try {
             const { page = 1, limit = 20, type, contentId, uploadedBy, search, sortBy = 'createdAt', sortOrder = 'DESC', } = req.query;
@@ -233,7 +223,6 @@ class MediaController {
             _res.status(500).json({ error: 'Failed to fetch media' });
         }
     }
-    // Get single media item
     static async getOne(req, _res) {
         try {
             const { id } = req.params;
@@ -261,7 +250,6 @@ class MediaController {
             _res.status(500).json({ error: 'Failed to fetch media' });
         }
     }
-    // Update media metadata
     static async update(req, _res) {
         try {
             const { id } = req.params;
@@ -270,7 +258,6 @@ class MediaController {
             if (!media) {
                 return _res.status(404).json({ error: 'Media not found' });
             }
-            // Check permissions
             if (media.uploadedBy !== req.user.id && req.user.role !== 'admin') {
                 return _res.status(403).json({ error: 'Unauthorized to update this media' });
             }
@@ -285,7 +272,6 @@ class MediaController {
             _res.status(500).json({ error: 'Failed to update media' });
         }
     }
-    // Delete media
     static async delete(req, _res) {
         try {
             const { id } = req.params;
@@ -293,11 +279,9 @@ class MediaController {
             if (!media) {
                 return _res.status(404).json({ error: 'Media not found' });
             }
-            // Check permissions
             if (media.uploadedBy !== req.user.id && req.user.role !== 'admin') {
                 return _res.status(403).json({ error: 'Unauthorized to delete this media' });
             }
-            // Delete files from disk
             try {
                 await promises_1.default.unlink(path_1.default.join(process.cwd(), media.url));
                 if (media.thumbnailUrl) {
@@ -315,7 +299,6 @@ class MediaController {
             _res.status(500).json({ error: 'Failed to delete media' });
         }
     }
-    // Get media library stats
     static async getStats(req, res) {
         try {
             const totalCount = await ContentMedia_1.ContentMedia.count();

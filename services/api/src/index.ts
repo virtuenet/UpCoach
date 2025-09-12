@@ -1,28 +1,30 @@
-import express from 'express';
+import compression from 'compression';
 import cors from 'cors';
+import { config as dotenvConfig } from 'dotenv';
+import express, { json, urlencoded } from 'express';
 // import helmet from 'helmet'; // Imported below where used
 import morgan from 'morgan';
-import compression from 'compression';
-import dotenv from 'dotenv';
+
 // import rateLimit from 'express-rate-limit'; // Imported via rateLimiter middleware
-import { config } from './config/environment';
 import { initializeDatabase } from './config/database';
-import { redis } from './services/redis';
-import { setupRoutes } from './routes';
+import { config } from './config/environment';
+import { configureCsrf } from './middleware/csrf';
 import { errorMiddleware } from './middleware/errorHandler';
 import { notFoundHandler } from './middleware/notFoundHandler';
-import { logger } from './utils/logger';
-import { SchedulerService } from './services/SchedulerService';
-import { gracefulShutdown } from './utils/shutdown';
 import { apiLimiter, webhookLimiter } from './middleware/rateLimiter';
-// import { enhancedSecurityHeaders } from './middleware/securityNonce'; // Not currently used
 import { securityHeaders, ctMonitor, securityReportHandler } from './middleware/securityHeaders';
-import { configureCsrf } from './middleware/csrf';
-import { sentryService } from './services/monitoring/SentryService';
+import { setupRoutes } from './routes';
 import { dataDogService } from './services/monitoring/DataDogService';
+import { sentryService } from './services/monitoring/SentryService';
+import { redis } from './services/redis';
+import { SchedulerService } from './services/SchedulerService';
+import { logger } from './utils/logger';
+import { gracefulShutdown } from './utils/shutdown';
+// import { enhancedSecurityHeaders } from './middleware/securityNonce'; // Not currently used
 
-// Extend Express Request interface
+// Extend Express Request interface - using module declaration for better TypeScript support
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       id?: string;
@@ -32,7 +34,7 @@ declare global {
 }
 
 // Load environment variables
-dotenv.config();
+dotenvConfig();
 
 // Initialize monitoring services (before creating Express app)
 if (config.monitoring?.sentry?.enabled) {
@@ -154,7 +156,7 @@ app.use(
 
 // Body parsing middleware
 app.use(
-  express.json({
+  json({
     limit: '10mb',
     verify: (req: any, _res, buf) => {
       // Store raw body for webhook verification if needed
@@ -162,7 +164,7 @@ app.use(
     },
   })
 );
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(urlencoded({ extended: true, limit: '10mb' }));
 
 // Logging middleware
 if (config.env !== 'test') {

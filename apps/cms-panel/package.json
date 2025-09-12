@@ -30,6 +30,7 @@
     "@tiptap/react": "^2.1.13",
     "@tiptap/starter-kit": "^2.1.13",
     "@types/dompurify": "^3.0.5",
+    "@types/react-router-dom": "^5.3.3",
     "@upcoach/design-system": "file:../../packages/design-system",
     "axios": "^1.6.2",
     "clsx": "^2.1.1",

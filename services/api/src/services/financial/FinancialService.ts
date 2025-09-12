@@ -1,6 +1,7 @@
+import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
 import { Op, QueryTypes } from 'sequelize';
-import { sequelize } from '../../models';
-import {
+
+import { sequelize ,
   Transaction,
   Subscription,
   CostTracking,
@@ -9,7 +10,6 @@ import {
   TransactionStatus,
   SnapshotPeriod,
 } from '../../models';
-import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
 
 export class FinancialService {
   /**

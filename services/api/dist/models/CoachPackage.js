@@ -43,37 +43,32 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ClientCoachPackage = exports.CoachPackage = void 0;
+const sequelize_1 = require("sequelize");
+const sequelize = __importStar(require("sequelize"));
 const sequelize_typescript_1 = require("sequelize-typescript");
 const CoachProfile_1 = require("./CoachProfile");
 const User_1 = require("./User");
-const sequelize_1 = require("sequelize");
-const sequelize = __importStar(require("sequelize"));
 let CoachPackage = class CoachPackage extends sequelize_typescript_1.Model {
     coachId;
     coach;
     name;
     description;
-    // Package Details
     sessionCount;
     validityDays;
     price;
     currency;
-    // Savings
     originalPrice;
     discountPercentage;
-    // Limits
     maxPurchasesPerClient;
     totalAvailable;
     totalSold;
     isActive;
     clientPackages;
-    // Hooks
     static calculateDiscounts(instance) {
         if (instance.originalPrice && instance.price < instance.originalPrice) {
             instance.discountPercentage = Number((((instance.originalPrice - instance.price) / instance.originalPrice) * 100).toFixed(2));
         }
     }
-    // Helper methods
     isAvailable() {
         if (!this.isActive)
             return false;
@@ -98,7 +93,6 @@ let CoachPackage = class CoachPackage extends sequelize_typescript_1.Model {
         this.totalSold += 1;
         await this.save();
     }
-    // Static methods
     static async getActivePackages(coachId) {
         return this.findAll({
             where: {
@@ -117,7 +111,6 @@ let CoachPackage = class CoachPackage extends sequelize_typescript_1.Model {
         if (!coach || !coach.hourlyRate)
             return null;
         const regularPrice = coach.calculateSessionPrice(sessionCount * 60);
-        // Find best package for the session count
         const packages = await this.findAll({
             where: {
                 coachId,
@@ -270,7 +263,6 @@ exports.CoachPackage = CoachPackage = __decorate([
         timestamps: true,
     })
 ], CoachPackage);
-// Client Package Purchases Model
 let ClientCoachPackage = class ClientCoachPackage extends sequelize_typescript_1.Model {
     packageId;
     package;
@@ -283,7 +275,6 @@ let ClientCoachPackage = class ClientCoachPackage extends sequelize_typescript_1
     paymentId;
     amountPaid;
     status;
-    // Helper methods
     isValid() {
         return this.status === 'active' && this.expiryDate > new Date() && this.sessionsRemaining > 0;
     }
@@ -311,7 +302,6 @@ let ClientCoachPackage = class ClientCoachPackage extends sequelize_typescript_1
         const days = Math.floor((this.expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
         return Math.max(0, days);
     }
-    // Static methods
     static async getActivePackagesForClient(clientId) {
         return this.findAll({
             where: {

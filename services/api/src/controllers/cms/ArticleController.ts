@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
-import { Article, Category, ContentAnalytics } from '../../models';
 import { validationResult } from 'express-validator';
 import { Op } from 'sequelize';
+
+import { Article, Category, ContentAnalytics } from '../../models';
 import { logger } from '../../utils/logger';
 
 /**

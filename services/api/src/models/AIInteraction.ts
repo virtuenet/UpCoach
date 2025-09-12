@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import {
   Table,
   Column,
@@ -9,9 +10,9 @@ import {
   CreatedAt,
   UpdatedAt,
 } from 'sequelize-typescript';
-import { Op } from 'sequelize';
+
+import type { AIFeedback } from './AIFeedback';
 import { UserModel as User } from './ModelCompatibility';
-import { AIFeedback } from './AIFeedback';
 
 @Table({
   tableName: 'ai_interactions',
@@ -83,7 +84,7 @@ export class AIInteraction extends Model {
   })
   metadata?: any;
 
-  @HasMany(() => AIFeedback as any)
+  @HasMany(() => require('./AIFeedback').AIFeedback)
   feedback?: AIFeedback[];
 
   @CreatedAt
@@ -117,7 +118,7 @@ export class AIInteraction extends Model {
           attributes: ['id', 'name', 'email'],
         },
         {
-          model: AIFeedback,
+          model: require('./AIFeedback').AIFeedback,
           attributes: ['sentiment', 'rating'],
         },
       ],

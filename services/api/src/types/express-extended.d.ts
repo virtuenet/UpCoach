@@ -3,6 +3,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
+
 import { BaseUser, SessionData, UploadedFile } from './common';
 
 // Extend Express Request interface

@@ -21,6 +21,15 @@ class VoiceJournalEntry with _$VoiceJournalEntry {
     @Default(false) bool isTranscribed,
     @Default(false) bool isAnalyzed,
     @Default(false) bool isFavorite,
+    Map<String, dynamic>? analysisResults,
+    @Default('') String cloudUrl,
+    @Default(false) bool isSyncedToCloud,
+    DateTime? lastSyncedAt,
+    @Default('') String waveformData,
+    @Default('') String thumbnailPath,
+    @Default(0.0) double playbackSpeed,
+    @Default([]) List<String> bookmarks,
+    Map<String, dynamic>? metadata,
   }) = _VoiceJournalEntry;
 
   factory VoiceJournalEntry.fromJson(Map<String, dynamic> json) =>

@@ -5,11 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getFileTypeCategory = exports.validateFileSizes = exports.handleUploadError = exports.uploadFields = exports.uploadMultiple = exports.uploadSingle = exports.uploadMiddleware = void 0;
 const multer_1 = __importDefault(require("multer"));
-// Configure storage
 const storage = multer_1.default.memoryStorage();
-// File filter function
 const fileFilter = (req, file, callback) => {
-    // Define allowed file types
     const allowedTypes = {
         images: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
         videos: ['video/mp4', 'video/mpeg', 'video/quicktime', 'video/webm', 'video/x-msvideo'],
@@ -39,64 +36,53 @@ const fileFilter = (req, file, callback) => {
         callback(new Error(`File type ${file.mimetype} is not allowed`));
     }
 };
-// Size limits based on file type
 const getFileSizeLimit = (mimetype) => {
     if (mimetype.startsWith('image/')) {
-        return 10 * 1024 * 1024; // 10MB for images
+        return 10 * 1024 * 1024;
     }
     else if (mimetype.startsWith('video/')) {
-        return 100 * 1024 * 1024; // 100MB for videos
+        return 100 * 1024 * 1024;
     }
     else if (mimetype.startsWith('audio/')) {
-        return 50 * 1024 * 1024; // 50MB for audio
+        return 50 * 1024 * 1024;
     }
     else {
-        return 25 * 1024 * 1024; // 25MB for documents
+        return 25 * 1024 * 1024;
     }
 };
-// Custom file size validation
 const customFileSizeLimit = (req, file, callback) => {
     const _maxSize = getFileSizeLimit(file.mimetype);
-    // Note: This is called before the file is fully uploaded, so we can't check actual size here
-    // We'll handle size validation in the controller after upload
     callback(null, true);
 };
-// Configure multer
 exports.uploadMiddleware = (0, multer_1.default)({
     storage,
     fileFilter: (req, file, callback) => {
-        // First check file type
         fileFilter(req, file, (error) => {
             if (error) {
                 callback(error);
                 return;
             }
-            // Then check custom size limit
             customFileSizeLimit(req, file, callback);
         });
     },
     limits: {
-        fileSize: 100 * 1024 * 1024, // 100MB max (will be validated per type in controller)
-        files: 10, // Maximum 10 files per upload
-        fields: 10, // Maximum 10 form fields
+        fileSize: 100 * 1024 * 1024,
+        files: 10,
+        fields: 10,
     },
 });
-// Middleware for single file upload
 const uploadSingle = (fieldName = 'file') => {
     return exports.uploadMiddleware.single(fieldName);
 };
 exports.uploadSingle = uploadSingle;
-// Middleware for multiple file upload
 const uploadMultiple = (fieldName = 'files', maxCount = 10) => {
     return exports.uploadMiddleware.array(fieldName, maxCount);
 };
 exports.uploadMultiple = uploadMultiple;
-// Middleware for mixed form with files
 const uploadFields = (fields) => {
     return exports.uploadMiddleware.fields(fields);
 };
 exports.uploadFields = uploadFields;
-// Error handler for multer errors
 const handleUploadError = (error, req, res, next) => {
     if (error instanceof multer_1.default.MulterError) {
         switch (error.code) {
@@ -142,7 +128,6 @@ const handleUploadError = (error, req, res, next) => {
     next(error);
 };
 exports.handleUploadError = handleUploadError;
-// Validate file sizes after upload
 const validateFileSizes = (req, res, next) => {
     const files = req.files;
     if (files && Array.isArray(files)) {
@@ -170,7 +155,6 @@ const validateFileSizes = (req, res, next) => {
     next();
 };
 exports.validateFileSizes = validateFileSizes;
-// Get file type category
 const getFileTypeCategory = (mimetype) => {
     if (mimetype.startsWith('image/'))
         return 'image';

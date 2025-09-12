@@ -4,8 +4,9 @@
  */
 
 import tracer from 'dd-trace';
-import { StatsD } from 'node-dogstatsd';
 import { Request, Response, NextFunction } from 'express';
+import { StatsD } from 'node-dogstatsd';
+
 import { logger } from '../../utils/logger';
 
 export interface DataDogConfig {
@@ -236,27 +237,51 @@ export class DataDogService {
   /**
    * Increment a counter metric
    */
-  incrementMetric(metric: string, tags?: { [key: string]: string }, value: number = 1): void {
+  incrementMetric(metric: string, tags?: { [key: string]: string }): void;
+  incrementMetric(metric: string, value: number, tags?: { [key: string]: string }): void;
+  incrementMetric(metric: string, valueOrTags?: number | { [key: string]: string }, tags?: { [key: string]: string }): void {
     if (!this.statsD) return;
 
-    const tagArray = this.formatTags(tags);
+    let value = 1;
+    let finalTags: { [key: string]: string } | undefined;
+
+    if (typeof valueOrTags === 'number') {
+      value = valueOrTags;
+      finalTags = tags;
+    } else {
+      finalTags = valueOrTags;
+    }
+
+    const tagArray = this.formatTags(finalTags);
     this.statsD.increment(metric, value, tagArray);
   }
 
   /**
    * Decrement a counter metric
    */
-  decrementMetric(metric: string, tags?: { [key: string]: string }, value: number = 1): void {
+  decrementMetric(metric: string, tags?: { [key: string]: string }): void;
+  decrementMetric(metric: string, value: number, tags?: { [key: string]: string }): void;
+  decrementMetric(metric: string, valueOrTags?: number | { [key: string]: string }, tags?: { [key: string]: string }): void {
     if (!this.statsD) return;
 
-    const tagArray = this.formatTags(tags);
+    let value = 1;
+    let finalTags: { [key: string]: string } | undefined;
+
+    if (typeof valueOrTags === 'number') {
+      value = valueOrTags;
+      finalTags = tags;
+    } else {
+      finalTags = valueOrTags;
+    }
+
+    const tagArray = this.formatTags(finalTags);
     this.statsD.decrement(metric, value, tagArray);
   }
 
   /**
    * Record a gauge metric
    */
-  gauge(metric: string, value: number, tags?: { [key: string]: string }): void {
+  gauge(metric: string, value: number, tags?: { [key: string]: string } | undefined): void {
     if (!this.statsD) return;
 
     const tagArray = this.formatTags(tags);
@@ -266,7 +291,7 @@ export class DataDogService {
   /**
    * Record a histogram metric
    */
-  histogram(metric: string, value: number, tags?: { [key: string]: string }): void {
+  histogram(metric: string, value: number, tags?: { [key: string]: string } | undefined): void {
     if (!this.statsD) return;
 
     const tagArray = this.formatTags(tags);
@@ -276,7 +301,7 @@ export class DataDogService {
   /**
    * Record a timing metric
    */
-  timing(metric: string, duration: number, tags?: { [key: string]: string }): void {
+  timing(metric: string, duration: number, tags?: { [key: string]: string } | undefined): void {
     if (!this.statsD) return;
 
     const tagArray = this.formatTags(tags);

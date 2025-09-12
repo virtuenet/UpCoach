@@ -27,27 +27,25 @@ exports.validateConditional = validateConditional;
 exports.createValidator = createValidator;
 exports.sanitizeAndValidate = sanitizeAndValidate;
 exports.createValidatedEndpoint = createValidatedEndpoint;
-const zod_1 = require("zod");
-const lru_cache_1 = require("lru-cache");
 const crypto_1 = __importDefault(require("crypto"));
 const async_mutex_1 = require("async-mutex");
+const lru_cache_1 = require("lru-cache");
+const zod_1 = require("zod");
 const logger_1 = require("../utils/logger");
 const sanitization_1 = require("../utils/sanitization");
 const rateLimiter_1 = require("./rateLimiter");
-// Validation result cache configuration with memory limits
 const validationCache = new lru_cache_1.LRUCache({
-    max: 1000, // Maximum number of cached validations
-    maxSize: 50 * 1024 * 1024, // 50MB memory limit
+    max: 1000,
+    maxSize: 50 * 1024 * 1024,
     sizeCalculation: value => {
-        // Estimate memory size of cached object
         try {
             return JSON.stringify(value).length;
         }
         catch {
-            return 1024; // Default 1KB if stringify fails
+            return 1024;
         }
     },
-    ttl: 1000 * 60 * 5, // 5 minute TTL
+    ttl: 1000 * 60 * 5,
     updateAgeOnGet: true,
     updateAgeOnHas: false,
     dispose: (value, key, reason) => {
@@ -56,31 +54,26 @@ const validationCache = new lru_cache_1.LRUCache({
         }
     },
 });
-// Cache statistics
 const cacheStats = {
     hits: 0,
     misses: 0,
     evictions: 0,
 };
-// Mutex for thread-safe metrics updates
 const metricsMutex = new async_mutex_1.Mutex();
-// Performance metrics tracking
 const validationMetrics = {
     totalValidations: 0,
     successfulValidations: 0,
     failedValidations: 0,
     totalDuration: 0,
-    slowValidations: 0, // Validations taking > 100ms
+    slowValidations: 0,
     cacheHits: 0,
     cacheMisses: 0,
     schemaMetrics: new Map(),
 };
-// Helper to generate cache key
 function generateCacheKey(schema, data, schemaName) {
     const dataHash = crypto_1.default.createHash('sha256').update(JSON.stringify(data)).digest('hex');
     return `${schemaName}_${dataHash}`;
 }
-// Export metrics for monitoring
 function getValidationMetrics() {
     const schemas = Array.from(validationMetrics.schemaMetrics.entries()).map(([name, metrics]) => ({
         schema: name,
@@ -107,7 +100,6 @@ function getValidationMetrics() {
         schemas,
     };
 }
-// Reset metrics (useful for testing)
 function resetValidationMetrics() {
     validationMetrics.totalValidations = 0;
     validationMetrics.successfulValidations = 0;
@@ -122,9 +114,6 @@ function resetValidationMetrics() {
     cacheStats.misses = 0;
     cacheStats.evictions = 0;
 }
-/**
- * Format Zod errors for API response
- */
 function formatZodError(error) {
     return error.errors.map(err => {
         const field = err.path.join('.');
@@ -135,19 +124,13 @@ function formatZodError(error) {
         };
     });
 }
-/**
- * Create validation middleware for a specific source
- */
 function validate(schema, source = 'body', options = {}) {
     const { stripUnknown = true, abortEarly = false, message = 'Validation failed', statusCode = 400, logErrors = true, } = options;
-    // Generate schema identifier for metrics
     const schemaName = schema.description || `${source}_schema`;
     return async (req, res, next) => {
         const startTime = Date.now();
         try {
-            // Get data from the specified source
             const data = req[source];
-            // Check cache for validation result (only for GET requests with query params)
             let validatedData;
             let cacheHit = false;
             const cacheKey = generateCacheKey(schema, data, schemaName);
@@ -164,10 +147,8 @@ function validate(schema, source = 'body', options = {}) {
                     cacheStats.misses++;
                 }
             }
-            // If not cached, perform validation
             if (!cacheHit) {
                 validatedData = await schema.parseAsync(data);
-                // Cache successful validation (only for GET requests)
                 if (req.method === 'GET' && source === 'query') {
                     validationCache.set(cacheKey, {
                         result: validatedData,
@@ -175,9 +156,7 @@ function validate(schema, source = 'body', options = {}) {
                     });
                 }
             }
-            // Replace the original data with validated data
             req[source] = validatedData;
-            // Track successful validation metrics with mutex for thread safety
             const duration = Date.now() - startTime;
             await metricsMutex.runExclusive(async () => {
                 validationMetrics.totalValidations++;
@@ -186,7 +165,6 @@ function validate(schema, source = 'body', options = {}) {
                 if (duration > 100) {
                     validationMetrics.slowValidations++;
                 }
-                // Update schema-specific metrics
                 const schemaMetric = validationMetrics.schemaMetrics.get(schemaName) || {
                     count: 0,
                     totalDuration: 0,
@@ -207,12 +185,10 @@ function validate(schema, source = 'body', options = {}) {
         }
         catch (error) {
             const duration = Date.now() - startTime;
-            // Track failed validation metrics with mutex for thread safety
             await metricsMutex.runExclusive(async () => {
                 validationMetrics.totalValidations++;
                 validationMetrics.failedValidations++;
                 validationMetrics.totalDuration += duration;
-                // Update schema-specific metrics
                 const schemaMetric = validationMetrics.schemaMetrics.get(schemaName) || {
                     count: 0,
                     totalDuration: 0,
@@ -243,7 +219,6 @@ function validate(schema, source = 'body', options = {}) {
                 });
                 return;
             }
-            // Handle unexpected errors
             logger_1.logger.error('Unexpected validation error', error);
             res.status(500).json({
                 success: false,
@@ -252,9 +227,6 @@ function validate(schema, source = 'body', options = {}) {
         }
     };
 }
-/**
- * Validate multiple sources at once
- */
 function validateMultiple(validations) {
     return async (req, res, next) => {
         const allErrors = [];
@@ -291,9 +263,6 @@ function validateMultiple(validations) {
         next();
     };
 }
-/**
- * Shorthand validators for common sources
- */
 const validateBody = (schema, options) => validate(schema, 'body', options);
 exports.validateBody = validateBody;
 const validateQuery = (schema, options) => validate(schema, 'query', options);
@@ -302,15 +271,10 @@ const validateParams = (schema, options) => validate(schema, 'params', options);
 exports.validateParams = validateParams;
 const validateHeaders = (schema, options) => validate(schema, 'headers', options);
 exports.validateHeaders = validateHeaders;
-/**
- * Async validation with custom logic
- */
 function validateAsync(schema, customValidator) {
     return async (req, res, next) => {
         try {
-            // First, validate with Zod
             const validatedData = await schema.parseAsync(req.body);
-            // Then, run custom validation if provided
             if (customValidator) {
                 const customResult = await customValidator(validatedData);
                 if (customResult === false) {
@@ -349,9 +313,6 @@ function validateAsync(schema, customValidator) {
         }
     };
 }
-/**
- * Conditional validation based on request context
- */
 function validateConditional(condition, schema, source = 'body', options) {
     return (req, res, next) => {
         if (condition(req)) {
@@ -362,9 +323,6 @@ function validateConditional(condition, schema, source = 'body', options) {
         }
     };
 }
-/**
- * Create a validation schema that can be reused
- */
 function createValidator(schema) {
     return {
         body: (options) => (0, exports.validateBody)(schema, options),
@@ -374,16 +332,10 @@ function createValidator(schema) {
         validate: (source, options) => validate(schema, source, options),
     };
 }
-/**
- * Sanitize and validate input to prevent XSS
- * Uses DOMPurify for robust HTML sanitization
- */
 function sanitizeAndValidate(schema) {
     return async (req, res, next) => {
         try {
-            // Use DOMPurify-based sanitization for robust XSS prevention
             req.body = (0, sanitization_1.sanitizeObject)(req.body, true);
-            // Validate with Zod
             const validatedData = await schema.parseAsync(req.body);
             req.body = validatedData;
             next();
@@ -402,54 +354,41 @@ function sanitizeAndValidate(schema) {
         }
     };
 }
-/**
- * Create validated and rate-limited endpoint
- * Returns array of middleware to apply in order
- */
 function createValidatedEndpoint(schema, source = 'body', options = {}) {
     const middlewares = [];
-    // Add rate limiting if configured
     if (options.rateLimit) {
         const rateLimiter = (0, rateLimiter_1.createRateLimiter)({
-            windowMs: options.rateLimit.windowMs || 15 * 60 * 1000, // 15 minutes default
+            windowMs: options.rateLimit.windowMs || 15 * 60 * 1000,
             max: options.rateLimit.max || 100,
             message: 'Too many validation attempts, please try again later.',
             skipSuccessfulRequests: false,
         });
         middlewares.push(rateLimiter);
     }
-    // Add validation
     middlewares.push(validate(schema, source, options));
     return middlewares;
 }
-/**
- * Pre-configured validation with rate limiting for auth endpoints
- */
 const createAuthValidation = (schema) => {
     return createValidatedEndpoint(schema, 'body', {
         rateLimit: {
-            windowMs: 15 * 60 * 1000, // 15 minutes
-            max: 5, // 5 attempts
+            windowMs: 15 * 60 * 1000,
+            max: 5,
         },
         logErrors: true,
         message: 'Invalid authentication data',
     });
 };
 exports.createAuthValidation = createAuthValidation;
-/**
- * Pre-configured validation with rate limiting for public API endpoints
- */
 const createPublicApiValidation = (schema, source = 'body') => {
     return createValidatedEndpoint(schema, source, {
         rateLimit: {
-            windowMs: 60 * 1000, // 1 minute
-            max: 30, // 30 requests
+            windowMs: 60 * 1000,
+            max: 30,
         },
         logErrors: true,
     });
 };
 exports.createPublicApiValidation = createPublicApiValidation;
-// Export all schemas for easy access
 __exportStar(require("../validation/schemas/auth.schema"), exports);
 __exportStar(require("../validation/schemas/coach.schema"), exports);
 __exportStar(require("../validation/schemas/common.schema"), exports);

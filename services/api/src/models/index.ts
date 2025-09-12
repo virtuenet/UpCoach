@@ -1,9 +1,6 @@
-import { logger } from '../utils/logger';
 import { sequelize } from '../config/sequelize';
-import { User } from './User';
-import { Goal } from './Goal';
-import { Task } from './Task';
-import { Mood } from './Mood';
+import { logger } from '../utils/logger';
+
 import { Chat } from './Chat';
 import { ChatMessage } from './ChatMessage';
 // import { PersonalityProfile } from './personality/PersonalityProfile';
@@ -26,28 +23,32 @@ import { ChatMessage } from './ChatMessage';
 // import { Experiment } from './experiments/Experiment';
 // import { ExperimentAssignment } from './experiments/ExperimentAssignment';
 // import { ExperimentEvent } from './experiments/ExperimentEvent';
-import {
-  Transaction,
-  TransactionStatus,
-  TransactionType,
-  PaymentMethod,
-} from './financial/Transaction';
-import {
-  Subscription,
-  SubscriptionStatus,
-  SubscriptionPlan,
-  BillingInterval,
-} from './financial/Subscription';
-import { CostTracking } from './financial/CostTracking';
-import { FinancialSnapshot, SnapshotPeriod } from './financial/FinancialSnapshot';
 import { BillingEvent, BillingEventType, BillingEventSource } from './financial/BillingEvent';
+import { CostTracking } from './financial/CostTracking';
 import {
   FinancialReport,
   ReportType,
   ReportStatus,
   ReportFormat,
 } from './financial/FinancialReport';
+import { FinancialSnapshot, SnapshotPeriod } from './financial/FinancialSnapshot';
 import { RevenueAnalytics } from './financial/RevenueAnalytics';
+import {
+  Subscription,
+  SubscriptionStatus,
+  SubscriptionPlan,
+  BillingInterval,
+} from './financial/Subscription';
+import {
+  Transaction,
+  TransactionStatus,
+  TransactionType,
+  PaymentMethod,
+} from './financial/Transaction';
+import { Goal } from './Goal';
+import { Mood } from './Mood';
+import { Task } from './Task';
+import { User } from './User';
 // import { UserProfile } from './UserProfile';
 // import { AIInteraction } from './AIInteraction';
 // import { AIFeedback } from './AIFeedback';
@@ -87,7 +88,7 @@ export {
   RevenueAnalytics,
 };
 export { Experiment } from './experiments/Experiment';
-export { ExperimentAssignment } from './experiments/ExperimentAssignment';
+// export { ExperimentAssignment } from './experiments/ExperimentAssignment';
 export { ExperimentEvent } from './experiments/ExperimentEvent';
 export { PersonalityProfile } from './personality/PersonalityProfile';
 export { Avatar } from './personality/Avatar';

@@ -1,5 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
 import path from 'path';
+
+import { Request, Response, NextFunction } from 'express';
+
 import { config } from '../config/environment';
 
 interface CDNConfig {

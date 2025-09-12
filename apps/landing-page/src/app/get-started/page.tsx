@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Check, Zap, Shield, Award, Users } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Button } from '@upcoach/ui/src/components/Button';
+import { Card } from '@upcoach/ui/src/components/Card';
 import { trackEvent } from '@/services/analytics';
 
 interface Step {

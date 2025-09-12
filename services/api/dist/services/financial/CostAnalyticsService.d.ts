@@ -1,19 +1,9 @@
-/**
- * CostAnalyticsService
- * Advanced cost analysis and optimization service
- */
 export declare class CostAnalyticsService {
-    /**
-     * Calculate cost per user for a period
-     */
     static calculateCostPerUser(startDate: Date, endDate: Date): Promise<{
         totalCostPerUser: number;
         costPerActiveUser: number;
         costsByCategory: Record<string, number>;
     }>;
-    /**
-     * Analyze infrastructure costs and usage
-     */
     static analyzeInfrastructureCosts(startDate: Date, endDate: Date): Promise<{
         totalInfrastructureCost: number;
         costBreakdown: {
@@ -28,9 +18,6 @@ export declare class CostAnalyticsService {
             recommendations: string[];
         };
     }>;
-    /**
-     * Analyze API service costs
-     */
     static analyzeApiServiceCosts(startDate: Date, endDate: Date): Promise<{
         totalApiCosts: number;
         costsByProvider: Record<string, number>;
@@ -44,9 +31,6 @@ export declare class CostAnalyticsService {
             recommendations: string[];
         };
     }>;
-    /**
-     * Generate cost forecasting
-     */
     static generateCostForecast(months?: number): Promise<{
         forecastPeriods: {
             month: string;
@@ -57,9 +41,6 @@ export declare class CostAnalyticsService {
         totalForecastedCost: number;
         methodology: string;
     }>;
-    /**
-     * Analyze budget variance
-     */
     static analyzeBudgetVariance(startDate: Date, endDate: Date): Promise<{
         totalBudget: number;
         totalActual: number;
@@ -73,9 +54,6 @@ export declare class CostAnalyticsService {
             status: 'under' | 'over' | 'on_track';
         }[];
     }>;
-    /**
-     * Generate cost optimization recommendations
-     */
     static generateOptimizationRecommendations(): Promise<{
         recommendations: {
             category: string;
@@ -87,9 +65,6 @@ export declare class CostAnalyticsService {
         }[];
         totalPotentialSavings: number;
     }>;
-    /**
-     * Calculate cost trends
-     */
     static calculateCostTrends(months?: number): Promise<{
         trends: {
             month: string;
@@ -100,9 +75,6 @@ export declare class CostAnalyticsService {
         averageGrowthRate: number;
         seasonalityFactors: number[];
     }>;
-    /**
-     * Helper method to calculate growth trend
-     */
     private static calculateGrowthTrend;
 }
 export default CostAnalyticsService;

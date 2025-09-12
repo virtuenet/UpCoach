@@ -1,12 +1,12 @@
-import { Request, Response } from 'express';
-import { Router } from 'express';
+import { Request, Response , Router } from 'express';
+import { body, query } from 'express-validator';
+
 import { authMiddleware as authenticateToken } from '../middleware/auth';
 import { validateRequest } from '../middleware/validation';
-import { body, query } from 'express-validator';
-import { referralService } from '../services/referral/ReferralService';
-import { analyticsService } from '../services/analytics/AnalyticsService';
-import { logger } from '../utils/logger';
 import { Referral } from '../models/Referral';
+import { analyticsService } from '../services/analytics/AnalyticsService';
+import { referralService } from '../services/referral/ReferralService';
+import { logger } from '../utils/logger';
 
 const router = Router();
 

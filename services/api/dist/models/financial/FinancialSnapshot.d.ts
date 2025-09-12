@@ -6,7 +6,7 @@ export declare enum SnapshotPeriod {
     QUARTERLY = "quarterly",
     YEARLY = "yearly"
 }
-export declare class FinancialSnapshot extends Model {
+export declare class FinancialSnapshot extends Model<FinancialSnapshot> {
     id: string;
     date: Date;
     period: SnapshotPeriod;

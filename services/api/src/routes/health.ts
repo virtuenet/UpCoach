@@ -1,9 +1,11 @@
+import fs from 'fs';
+import os from 'os';
+import { promisify } from 'util';
+
 import { Router, Request, Response } from 'express';
+
 import { sequelize } from '../models';
 import { redis } from '../services/redis';
-import os from 'os';
-import fs from 'fs';
-import { promisify } from 'util';
 
 const router = Router();
 const fsPromises = {

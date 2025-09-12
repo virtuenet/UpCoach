@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import { AIService } from '../../../services/ai/AIService';
-import { RecommendationEngine } from '../../../services/ai/RecommendationEngine';
-import { PredictiveAnalytics } from '../../../services/ai/PredictiveAnalytics';
-import { ConversationalAI } from '../../../services/ai/ConversationalAI';
-import { VoiceAI } from '../../../services/ai/VoiceAI';
-import { UserProfilingService } from '../../../services/ai/UserProfilingService';
-import { InsightGenerator } from '../../../services/ai/InsightGenerator';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+
 import { AdaptiveLearning } from '../../../services/ai/AdaptiveLearning';
+import { AIService } from '../../../services/ai/AIService';
+import { ConversationalAI } from '../../../services/ai/ConversationalAI';
+import { InsightGenerator } from '../../../services/ai/InsightGenerator';
+import { PredictiveAnalytics } from '../../../services/ai/PredictiveAnalytics';
+import { RecommendationEngine } from '../../../services/ai/RecommendationEngine';
+import { UserProfilingService } from '../../../services/ai/UserProfilingService';
+import { VoiceAI } from '../../../services/ai/VoiceAI';
 
 // Mock OpenAI and Anthropic
 jest.mock('openai');

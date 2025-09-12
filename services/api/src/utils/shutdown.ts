@@ -3,11 +3,14 @@
  * Ensures all services properly clean up resources before exit
  */
 
-import { logger } from './logger';
-import { notificationService } from '../services/NotificationService';
-import { emailService } from '../services/email/UnifiedEmailService';
-import { getCacheService } from '../services/cache/UnifiedCacheService';
 import { Server } from 'http';
+
+import { getCacheService } from '../services/cache/UnifiedCacheService';
+import { emailService } from '../services/email/UnifiedEmailService';
+import { notificationService } from '../services/NotificationService';
+
+import { logger } from './logger';
+
 
 interface ShutdownHandler {
   name: string;

@@ -1,5 +1,5 @@
-import { Factory } from 'fishery';
-import { faker } from '@faker-js/faker';
+const { Factory } = require('fishery') as any;
+import { faker } from '../faker-fix';
 
 export interface FinancialSnapshot {
   id: string;
@@ -44,32 +44,32 @@ export interface Subscription {
   updatedAt: Date;
 }
 
-export const FinancialSnapshotFactory = Factory.define<FinancialSnapshot>(({ params }) => {
+export const FinancialSnapshotFactory = Factory.define(({ params }: { params: Partial<FinancialSnapshot> }) => {
   const revenue =
-    params.revenue || faker.number.float({ min: 10000, max: 100000, precision: 0.01 });
+    params.revenue || faker.number.float({ min: 10000, max: 100000, fractionDigits: 2 });
   const costs =
-    params.costs || revenue * faker.number.float({ min: 0.3, max: 0.7, precision: 0.01 });
+    params.costs || revenue * faker.number.float({ min: 0.3, max: 0.7, fractionDigits: 2 });
 
   return {
     id: params.id || faker.string.uuid(),
     date: params.date || faker.date.recent({ days: 30 }),
-    mrr: params.mrr || faker.number.float({ min: 5000, max: 50000, precision: 0.01 }),
+    mrr: params.mrr || faker.number.float({ min: 5000, max: 50000, fractionDigits: 2 }),
     arr: params.arr || (params.mrr || 25000) * 12,
     revenue,
     costs,
     profit: revenue - costs,
     activeSubscriptions: params.activeSubscriptions || faker.number.int({ min: 100, max: 1000 }),
-    churnRate: params.churnRate || faker.number.float({ min: 0.01, max: 0.1, precision: 0.001 }),
-    ltv: params.ltv || faker.number.float({ min: 100, max: 1000, precision: 0.01 }),
-    cac: params.cac || faker.number.float({ min: 20, max: 200, precision: 0.01 }),
+    churnRate: params.churnRate || faker.number.float({ min: 0.01, max: 0.1, fractionDigits: 3 }),
+    ltv: params.ltv || faker.number.float({ min: 100, max: 1000, fractionDigits: 2 }),
+    cac: params.cac || faker.number.float({ min: 20, max: 200, fractionDigits: 2 }),
     createdAt: params.createdAt || faker.date.recent(),
   };
 });
 
-export const TransactionFactory = Factory.define<Transaction>(({ params }) => ({
+export const TransactionFactory = Factory.define(({ params }: { params: Partial<Transaction> }) => ({
   id: params.id || faker.string.uuid(),
   userId: params.userId || faker.string.uuid(),
-  amount: params.amount || faker.number.float({ min: 9.99, max: 299.99, precision: 0.01 }),
+  amount: params.amount || faker.number.float({ min: 9.99, max: 299.99, fractionDigits: 2 }),
   currency: params.currency || 'USD',
   type:
     params.type || faker.helpers.arrayElement(['payment', 'refund', 'subscription', 'one-time']),
@@ -83,7 +83,7 @@ export const TransactionFactory = Factory.define<Transaction>(({ params }) => ({
   createdAt: params.createdAt || faker.date.recent(),
 }));
 
-export const SubscriptionFactory = Factory.define<Subscription>(({ params }) => {
+export const SubscriptionFactory = Factory.define(({ params }: { params: Partial<Subscription> }) => {
   const createdAt = params.createdAt || faker.date.past();
   const currentPeriodStart = params.currentPeriodStart || faker.date.recent({ days: 30 });
   const currentPeriodEnd =

@@ -1,6 +1,3 @@
-/**
- * Retry mechanism for AI service calls with exponential backoff
- */
 export interface RetryOptions {
     maxRetries?: number;
     initialDelay?: number;
@@ -14,9 +11,6 @@ export declare class RetryMechanism {
     private isRetryableError;
     private calculateDelay;
     private sleep;
-    /**
-     * Create a retryable version of an async function
-     */
     wrap<T extends (...args: any[]) => Promise<any>>(fn: T, options?: RetryOptions): T;
 }
 export declare const retry: RetryMechanism;

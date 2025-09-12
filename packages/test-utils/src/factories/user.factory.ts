@@ -1,5 +1,5 @@
-import { Factory } from 'fishery';
-import { faker } from '@faker-js/faker';
+const { Factory } = require('fishery') as any;
+import { faker } from '../faker-fix';
 
 export interface User {
   id: string;
@@ -14,7 +14,7 @@ export interface User {
   updatedAt: Date;
 }
 
-export const UserFactory = Factory.define<User>(({ sequence, params }) => ({
+export const UserFactory = Factory.define(({ sequence, params }: { sequence: number; params: Partial<User> }) => ({
   id: params.id || faker.string.uuid(),
   email: params.email || faker.internet.email(),
   firstName: params.firstName || faker.person.firstName(),

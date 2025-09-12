@@ -5,6 +5,7 @@
 import { expect } from 'vitest';
 
 // Custom matchers for better assertions
+// @ts-expect-error - Vitest expect.extend types not perfectly aligned
 expect.extend({
   toBeWithinRange(received: number, floor: number, ceiling: number) {
     const pass = received >= floor && received <= ceiling;

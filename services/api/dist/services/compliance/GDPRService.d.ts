@@ -1,7 +1,3 @@
-/**
- * GDPR Compliance Service
- * Implements GDPR requirements for data protection and privacy
- */
 export interface ConsentRecord {
     userId: string;
     purpose: ConsentPurpose;
@@ -63,65 +59,20 @@ declare class GDPRService {
     private readonly deletionGracePeriod;
     private constructor();
     static getInstance(): GDPRService;
-    /**
-     * Record user consent
-     */
     recordConsent(userId: string, purpose: ConsentPurpose, granted: boolean, ipAddress: string, userAgent: string): Promise<ConsentRecord>;
-    /**
-     * Get user's consent status
-     */
     getConsentStatus(userId: string): Promise<Record<ConsentPurpose, boolean>>;
-    /**
-     * Request data portability (Right to Data Portability)
-     */
     requestDataPortability(userId: string, format?: 'json' | 'csv' | 'xml'): Promise<DataPortabilityRequest>;
-    /**
-     * Process data export
-     */
     private queueDataExport;
-    /**
-     * Export user data
-     */
     private processDataExport;
-    /**
-     * Collect all user data for export
-     */
     private collectUserData;
-    /**
-     * Create export file in requested format
-     */
     private createExportFile;
-    /**
-     * Request account deletion (Right to Erasure)
-     */
     requestDeletion(userId: string, reason?: string, immediate?: boolean): Promise<DeletionRequest>;
-    /**
-     * Cancel deletion request
-     */
     cancelDeletion(userId: string, requestId: string): Promise<boolean>;
-    /**
-     * Process account deletion
-     */
     private processDeletion;
-    /**
-     * Report data breach
-     */
     reportDataBreach(incident: Omit<DataBreachIncident, 'id' | 'detectedAt'>): Promise<DataBreachIncident>;
-    /**
-     * Get data retention policy
-     */
     getDataRetentionPolicy(): Promise<any>;
-    /**
-     * Automated data retention cleanup
-     */
     runDataRetentionCleanup(): Promise<void>;
-    /**
-     * Generate privacy policy data
-     */
     generatePrivacyPolicyData(): Promise<any>;
-    /**
-     * Helper methods
-     */
     private hashIP;
     private onConsentGranted;
     private onConsentRevoked;

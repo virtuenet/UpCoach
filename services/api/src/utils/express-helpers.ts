@@ -3,7 +3,9 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
+
 import { AsyncRequestHandler } from '../types/express-extended';
+
 import { logger } from './logger';
 
 /**

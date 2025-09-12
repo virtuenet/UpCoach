@@ -1,19 +1,19 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
-import { asyncHandler } from '../middleware/errorHandler';
-import { ApiError } from '../utils/apiError';
-import { UserService } from '../services/userService';
+
 import {
   generateTokens,
   verifyRefreshToken,
   blacklistToken,
   authMiddleware,
-} from '../middleware/auth';
-import { redis } from '../services/redis';
-import { logger } from '../utils/logger';
-import { AuthenticatedRequest } from '../middleware/auth';
-import { emailService } from '../services/email/UnifiedEmailService';
+ AuthenticatedRequest } from '../middleware/auth';
+import { asyncHandler } from '../middleware/errorHandler';
 import { authLimiter, passwordResetLimiter } from '../middleware/rateLimiter';
+import { emailService } from '../services/email/UnifiedEmailService';
+import { redis } from '../services/redis';
+import { UserService } from '../services/userService';
+import { ApiError } from '../utils/apiError';
+import { logger } from '../utils/logger';
 
 const router = Router();
 
@@ -72,7 +72,7 @@ router.post(
     });
 
     // Generate tokens
-    const tokens = generateTokens(user.id);
+    const tokens = generateTokens(user.id, user.email, user.role, req);
 
     // Store refresh token in Redis
     await redis.setEx(`refresh_token:${user.id}`, 30 * 24 * 60 * 60, tokens.refreshToken);
@@ -111,7 +111,7 @@ router.post(
     }
 
     // Generate tokens
-    const tokens = generateTokens(user.id);
+    const tokens = generateTokens(user.id, user.email, user.role, req);
 
     // Store refresh token in Redis with 30-day expiry
     await redis.setEx(`refresh_token:${user.id}`, 30 * 24 * 60 * 60, tokens.refreshToken);
@@ -154,7 +154,7 @@ router.post(
     }
 
     // Generate new tokens
-    const newTokens = generateTokens(userId);
+    const newTokens = generateTokens(userId, user.email, user.role, req);
 
     // Update refresh token in Redis
     await redis.setEx(`refresh_token:${userId}`, 30 * 24 * 60 * 60, newTokens.refreshToken);
@@ -391,7 +391,7 @@ router.post(
     }
 
     // Generate tokens
-    const tokens = generateTokens(user.id);
+    const tokens = generateTokens(user.id, user.email, user.role, req);
 
     // Store refresh token in Redis
     await redis.setEx(`refresh_token:${user.id}`, 30 * 24 * 60 * 60, tokens.refreshToken);

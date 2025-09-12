@@ -1,5 +1,6 @@
 import { Sequelize } from 'sequelize';
 import { logger } from '../src/utils/logger';
+import { jest, beforeAll, afterEach, afterAll } from '@jest/globals';
 
 // Configure test environment
 process.env.NODE_ENV = 'test';

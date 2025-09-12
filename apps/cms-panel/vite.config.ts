@@ -11,7 +11,7 @@ export default defineConfig({
     },
   },
   server: {
-    port: 7002,
+    port: 1007,
     host: true,
     headers: {
       // Security headers - using centralized configuration
@@ -23,7 +23,7 @@ export default defineConfig({
     },
   },
   preview: {
-    port: 7002,
+    port: 1007,
     host: true,
   },
 });

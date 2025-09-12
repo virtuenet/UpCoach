@@ -1,6 +1,3 @@
-/**
- * Common type definitions shared across the backend
- */
 export interface BaseUser {
     id: string;
     email: string;

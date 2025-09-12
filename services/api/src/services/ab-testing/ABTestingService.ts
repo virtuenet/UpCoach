@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+
 import { Experiment } from '../../models/experiments/Experiment';
 import { ExperimentAssignment } from '../../models/experiments/ExperimentAssignment';
 import { ExperimentEvent } from '../../models/experiments/ExperimentEvent';
@@ -45,8 +46,28 @@ export interface StatisticalSignificance {
   recommendedAction: 'continue' | 'stop' | 'extend' | 'inconclusive';
 }
 
+// Temporarily disabled due to ExperimentAssignment model issues - uncomment when experiments feature is needed
 export class ABTestingService {
+  // NOTE: All methods temporarily commented out - uncomment when ExperimentAssignment model is fixed
   private static readonly HASH_SEED = 'upcoach-ab-testing';
+
+  static async getVariantAssignment(experimentId: string, userId: string, context?: Record<string, any>): Promise<VariantAssignment | null> {
+    logger.warn('ABTestingService temporarily disabled - ExperimentAssignment model unavailable');
+    return null;
+  }
+
+  static async getAssignment(experimentId: string, userId: string): Promise<any | null> {
+    logger.warn('ABTestingService temporarily disabled - ExperimentAssignment model unavailable');
+    return null;
+  }
+
+  static async getActiveExperimentsForUser(userId: string): Promise<any[]> {
+    logger.warn('ABTestingService temporarily disabled - ExperimentAssignment model unavailable');
+    return [];
+  }
+
+  /*
+  // ORIGINAL METHODS - UNCOMMENT WHEN ExperimentAssignment IS FIXED
 
   /**
    * Get variant assignment for a user in an experiment

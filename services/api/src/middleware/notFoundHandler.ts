@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+
 import { logger } from '../utils/logger';
 
 export const notFoundHandler = (req: Request, _res: Response): void => {

@@ -1,12 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true, // Enable SWC minification for better performance
-  output: 'export',
+  swcMinify: false, // Disable SWC minification to resolve CSS parsing conflicts
+  output: 'export', // Enable static export to avoid dynamic CSS processing
   trailingSlash: true,
-  experimental: {
-    optimizeCss: true, // Enable CSS optimization
-  },
+  // Remove experimental CSS optimization entirely
+  // experimental: {},
   images: {
     domains: ['images.unsplash.com', 'via.placeholder.com', 'upcoach.ai'],
     formats: ['image/webp', 'image/avif'],

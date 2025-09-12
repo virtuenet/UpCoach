@@ -1,12 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.conversationalAI = exports.ConversationalAI = void 0;
+const ChatMessage_1 = require("../../models/ChatMessage");
+const logger_1 = require("../../utils/logger");
 const AIService_1 = require("./AIService");
 const ContextManager_1 = require("./ContextManager");
 const PersonalityEngine_1 = require("./PersonalityEngine");
-// import { recommendationEngine } from './RecommendationEngine';
-const logger_1 = require("../../utils/logger");
-const ChatMessage_1 = require("../../models/ChatMessage");
 class ConversationalAI {
     conversationStates;
     intentPatterns = new Map();
@@ -76,21 +75,13 @@ class ConversationalAI {
     }
     async processConversation(userId, message, conversationId, context) {
         try {
-            // Detect intent
             const intent = await this.detectIntent(message, context);
-            // Get or create conversation state
             const state = this.getOrCreateState(conversationId, intent);
-            // Get conversation history
             const history = await this.getConversationHistory(conversationId);
-            // Analyze conversation flow
             const flowAnalysis = await this.analyzeConversationFlow(history, message);
-            // Generate contextual response
             const response = await this.generateContextualResponse(userId, message, intent, state, flowAnalysis, context);
-            // Update conversation state
             this.updateConversationState(conversationId, state, flowAnalysis);
-            // Generate follow-up suggestions
             const suggestions = await this.generateFollowUpSuggestions(intent, state);
-            // Extract action items if any
             const actions = await this.extractActionItems(response.content, intent);
             return {
                 response: response.content,
@@ -107,7 +98,6 @@ class ConversationalAI {
     }
     async detectIntent(message, _context) {
         const detectedIntents = [];
-        // Pattern matching
         for (const [intent, patterns] of this.intentPatterns.entries()) {
             let score = 0;
             for (const pattern of patterns) {
@@ -119,14 +109,11 @@ class ConversationalAI {
                 detectedIntents.push({ intent, score: score / patterns.length });
             }
         }
-        // Sort by score
         detectedIntents.sort((a, b) => b.score - a.score);
-        // Use AI for more nuanced intent detection
         const aiIntentAnalysis = await this.analyzeIntentWithAI(message, detectedIntents);
         const primary = aiIntentAnalysis.primary || detectedIntents[0]?.intent || 'general';
         const secondary = aiIntentAnalysis.secondary || detectedIntents.slice(1, 3).map(d => d.intent);
         const confidence = aiIntentAnalysis.confidence || detectedIntents[0]?.score || 0.5;
-        // Generate suggested response type
         const suggestedResponse = this.getSuggestedResponseType(primary);
         return {
             primary,
@@ -206,7 +193,6 @@ Provide a JSON response with:
         }
     }
     async analyzeConversationFlow(history, _currentMessage) {
-        // Analyze conversation patterns
         const analysis = {
             messageCount: history.length,
             avgMessageLength: 0,
@@ -217,14 +203,11 @@ Provide a JSON response with:
         };
         if (history.length === 0)
             return analysis;
-        // Calculate metrics
         const userMessages = history.filter((m) => m.role === 'user');
         const totalLength = userMessages.reduce((sum, m) => sum + m.content.length, 0);
         analysis.avgMessageLength = totalLength / userMessages.length;
-        // Question ratio
         const questions = userMessages.filter((m) => m.content.includes('?'));
         analysis.questionRatio = questions.length / userMessages.length;
-        // Engagement trend
         if (history.length > 3) {
             const recentLength = history.slice(-3).reduce((sum, m) => sum + m.content.length, 0) / 3;
             const earlierLength = history.slice(0, 3).reduce((sum, m) => sum + m.content.length, 0) / 3;
@@ -238,11 +221,8 @@ Provide a JSON response with:
         return analysis;
     }
     async generateContextualResponse(userId, message, intent, state, flowAnalysis, _context) {
-        // Get user context
         const userContext = await ContextManager_1.contextManager.getUserContext(userId);
-        // Select optimal personality
         const personality = PersonalityEngine_1.personalityEngine.selectOptimalPersonality(userContext);
-        // Build conversation context
         const conversationContext = {
             intent: intent.primary,
             conversationDepth: state.depth,
@@ -251,11 +231,8 @@ Provide a JSON response with:
             userProfile: userContext,
             keyPoints: state.keyPoints,
         };
-        // Generate prompts based on intent
         const systemPrompt = this.buildSystemPrompt(intent, personality, conversationContext);
-        // Add conversation management instructions
         const managementInstructions = this.getConversationManagementInstructions(intent, state, flowAnalysis);
-        // Generate response
         const response = await AIService_1.aiService.generateResponse([
             {
                 role: 'system',
@@ -295,21 +272,18 @@ Current context:
     }
     getConversationManagementInstructions(intent, state, flowAnalysis) {
         const instructions = [];
-        // Depth management
         if (state.depth > 10) {
             instructions.push('Consider summarizing key points and suggesting next steps.');
         }
         else if (state.depth < 3) {
             instructions.push('Build rapport and understand the full context before diving into solutions.');
         }
-        // Engagement management
         if (flowAnalysis.engagementTrend === 'decreasing') {
             instructions.push('Re-engage by asking about their immediate concerns or switching approach.');
         }
         else if (flowAnalysis.engagementTrend === 'increasing') {
             instructions.push('Maintain momentum by going deeper into the topic.');
         }
-        // Intent-specific instructions
         switch (intent.primary) {
             case 'goal_setting':
                 if (state.depth > 5) {
@@ -325,14 +299,12 @@ Current context:
                 }
                 break;
         }
-        // Question management
         if (flowAnalysis.questionRatio > 0.7) {
             instructions.push('They have many questions. Provide some concrete guidance alongside your questions.');
         }
         return instructions.join('\n');
     }
     getOptimalTemperature(intent, state) {
-        // Lower temperature for factual/planning, higher for creative/emotional
         const temperatureMap = {
             goal_setting: 0.7,
             habit_formation: 0.6,
@@ -344,28 +316,23 @@ Current context:
             general: 0.7,
         };
         let temperature = temperatureMap[intent.primary] || 0.7;
-        // Adjust based on conversation depth
         if (state.depth > 10) {
-            temperature -= 0.1; // More focused as conversation progresses
+            temperature -= 0.1;
         }
         return Math.max(0.3, Math.min(1.0, temperature));
     }
     updateConversationState(conversationId, state, flowAnalysis) {
-        // Update depth
         state.depth += 1;
-        // Update engagement based on analysis
         if (flowAnalysis.engagementTrend === 'increasing') {
             state.userEngagement = Math.min(10, state.userEngagement + 1);
         }
         else if (flowAnalysis.engagementTrend === 'decreasing') {
             state.userEngagement = Math.max(1, state.userEngagement - 1);
         }
-        // Store updated state
         this.conversationStates.set(conversationId, state);
     }
     async generateFollowUpSuggestions(intent, state) {
         const suggestions = [];
-        // Intent-based suggestions
         const intentSuggestions = {
             goal_setting: [
                 'What would achieving this goal mean to you?',
@@ -404,7 +371,6 @@ Current context:
             ],
         };
         const baseSuggestions = intentSuggestions[intent.primary] || [];
-        // Select based on conversation depth
         if (state.depth < 3) {
             suggestions.push(...baseSuggestions.slice(0, 2));
         }
@@ -418,7 +384,6 @@ Current context:
     }
     async extractActionItems(response, intent) {
         const actions = [];
-        // Simple pattern matching for action items
         const actionPatterns = [
             /(?:you could|you might|try to|consider|I suggest|I recommend)\s+(.+?)(?:\.|,|;|$)/gi,
             /(?:first|next|then|finally)\s*,?\s*(.+?)(?:\.|,|;|$)/gi,
@@ -436,7 +401,6 @@ Current context:
                 }
             }
         }
-        // Deduplicate and limit
         const uniqueActions = Array.from(new Map(actions.map(a => [a.action.toLowerCase(), a])).values()).slice(0, 5);
         return uniqueActions;
     }

@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+
+import { Goal } from '../../../models/Goal';
+import { Mood } from '../../../models/Mood';
+import { Task } from '../../../models/Task';
+import { AIService } from '../../../services/ai/AIService';
 import { RecommendationEngine } from '../../../services/ai/RecommendationEngine';
 import { UserProfilingService } from '../../../services/ai/UserProfilingService';
-import { AIService } from '../../../services/ai/AIService';
-import { Goal } from '../../../models/Goal';
-import { Task } from '../../../models/Task';
-import { Mood } from '../../../models/Mood';
 
 // Mock dependencies
 jest.mock('../../../services/ai/UserProfilingService');
@@ -43,7 +43,7 @@ describe('RecommendationEngine', () => {
     };
 
     beforeEach(() => {
-      mockUserProfilingService.getUserProfile.mockResolvedValue(mockProfile as any);
+      mockUserProfilingService.createOrUpdateProfile.mockResolvedValue(mockProfile as any);
     });
 
     it('should generate habit recommendations', async () => {
@@ -52,7 +52,7 @@ describe('RecommendationEngine', () => {
       (Goal.findAll as jest.Mock).mockResolvedValue(mockGoals);
       (Task.findAll as jest.Mock).mockResolvedValue([]);
 
-      mockAIService.generateStructuredResponse.mockResolvedValue({
+      mockAIService.generateResponse.mockResolvedValue({
         recommendations: [
           {
             title: 'Morning Meditation',
@@ -77,7 +77,7 @@ describe('RecommendationEngine', () => {
         { id: 'goal1', title: 'Exercise daily', progress: 80 },
       ]);
 
-      mockAIService.generateStructuredResponse.mockResolvedValue({
+      mockAIService.generateResponse.mockResolvedValue({
         recommendations: [
           {
             title: 'Set a nutrition goal',
@@ -103,7 +103,7 @@ describe('RecommendationEngine', () => {
         { id: 'task1', title: 'Team meeting', dueDate: tomorrow },
       ]);
 
-      mockAIService.generateStructuredResponse.mockResolvedValue({
+      mockAIService.generateResponse.mockResolvedValue({
         recommendations: [
           {
             title: 'Prepare meeting agenda',
@@ -127,7 +127,7 @@ describe('RecommendationEngine', () => {
         { moodValue: 3, createdAt: new Date() },
       ]);
 
-      mockAIService.generateStructuredResponse.mockResolvedValue({
+      mockAIService.generateResponse.mockResolvedValue({
         recommendations: [
           {
             title: 'Take a nature walk',
@@ -150,7 +150,7 @@ describe('RecommendationEngine', () => {
       (Task.findAll as jest.Mock).mockResolvedValue([]);
       (Mood.findAll as jest.Mock).mockResolvedValue([]);
 
-      mockAIService.generateStructuredResponse
+      mockAIService.generateResponse
         .mockResolvedValueOnce({ recommendations: [{ title: 'Habit 1' }] })
         .mockResolvedValueOnce({ recommendations: [{ title: 'Goal 1' }] });
 
@@ -178,7 +178,7 @@ describe('RecommendationEngine', () => {
         },
       };
 
-      mockUserProfilingService.getUserProfile.mockResolvedValue(mockProfile as any);
+      mockUserProfilingService.createOrUpdateProfile.mockResolvedValue(mockProfile as any);
 
       const timing = await recommendationEngine.getOptimalTiming('user123', 'exercise');
 
@@ -195,7 +195,7 @@ describe('RecommendationEngine', () => {
         },
       };
 
-      mockUserProfilingService.getUserProfile.mockResolvedValue(mockProfile as any);
+      mockUserProfilingService.createOrUpdateProfile.mockResolvedValue(mockProfile as any);
 
       const timing = await recommendationEngine.getOptimalTiming('user123', 'study');
 
@@ -226,11 +226,11 @@ describe('RecommendationEngine', () => {
         { id: 'task1', title: 'Project work', priority: 'high', estimatedDuration: 120 },
       ];
 
-      mockUserProfilingService.getUserProfile.mockResolvedValue(mockProfile as any);
+      mockUserProfilingService.createOrUpdateProfile.mockResolvedValue(mockProfile as any);
       (Goal.findAll as jest.Mock).mockResolvedValue(mockGoals);
       (Task.findAll as jest.Mock).mockResolvedValue(mockTasks);
 
-      mockAIService.generateStructuredResponse.mockResolvedValue({
+      mockAIService.generateResponse.mockResolvedValue({
         schedule: [
           {
             time: '08:00',
@@ -265,13 +265,13 @@ describe('RecommendationEngine', () => {
         },
       };
 
-      mockUserProfilingService.getUserProfile.mockResolvedValue(mockProfile as any);
+      mockUserProfilingService.createOrUpdateProfile.mockResolvedValue(mockProfile as any);
       (Goal.findAll as jest.Mock).mockResolvedValue([]);
       (Task.findAll as jest.Mock).mockResolvedValue([
         { title: 'Long task', estimatedDuration: 180 },
       ]);
 
-      mockAIService.generateStructuredResponse.mockResolvedValue({
+      mockAIService.generateResponse.mockResolvedValue({
         schedule: [
           { time: '09:00', activity: 'Long task - Part 1', duration: 90 },
           { time: '10:30', activity: 'Break', duration: 15, type: 'break' },
@@ -294,12 +294,12 @@ describe('RecommendationEngine', () => {
         },
       };
 
-      mockUserProfilingService.getUserProfile.mockResolvedValue(mockProfile as any);
+      mockUserProfilingService.createOrUpdateProfile.mockResolvedValue(mockProfile as any);
 
       // Low recent mood
       (Mood.findAll as jest.Mock).mockResolvedValue([{ moodValue: 3, createdAt: new Date() }]);
 
-      mockAIService.generateStructuredResponse.mockResolvedValue({
+      mockAIService.generateResponse.mockResolvedValue({
         recommendations: [
           {
             title: 'Gentle yoga session',
@@ -322,7 +322,7 @@ describe('RecommendationEngine', () => {
       upcomingDeadline.setDate(upcomingDeadline.getDate() + 2);
 
       const mockProfile = { behaviorPatterns: {} };
-      mockUserProfilingService.getUserProfile.mockResolvedValue(mockProfile as any);
+      mockUserProfilingService.createOrUpdateProfile.mockResolvedValue(mockProfile as any);
 
       (Goal.findAll as jest.Mock).mockResolvedValue([
         {
@@ -333,7 +333,7 @@ describe('RecommendationEngine', () => {
         },
       ]);
 
-      mockAIService.generateStructuredResponse.mockResolvedValue({
+      mockAIService.generateResponse.mockResolvedValue({
         recommendations: [
           {
             title: 'Focus on project completion',

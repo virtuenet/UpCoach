@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import { coachController } from '../controllers/CoachController';
 import { authMiddleware as authenticateToken } from '../middleware/auth';
 import { requireRole } from '../middleware/roleAuth';

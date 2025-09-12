@@ -35,6 +35,16 @@ mixin _$VoiceJournalEntry {
   bool get isTranscribed => throw _privateConstructorUsedError;
   bool get isAnalyzed => throw _privateConstructorUsedError;
   bool get isFavorite => throw _privateConstructorUsedError;
+  Map<String, dynamic>? get analysisResults =>
+      throw _privateConstructorUsedError;
+  String get cloudUrl => throw _privateConstructorUsedError;
+  bool get isSyncedToCloud => throw _privateConstructorUsedError;
+  DateTime? get lastSyncedAt => throw _privateConstructorUsedError;
+  String get waveformData => throw _privateConstructorUsedError;
+  String get thumbnailPath => throw _privateConstructorUsedError;
+  double get playbackSpeed => throw _privateConstructorUsedError;
+  List<String> get bookmarks => throw _privateConstructorUsedError;
+  Map<String, dynamic>? get metadata => throw _privateConstructorUsedError;
 
   /// Serializes this VoiceJournalEntry to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -67,7 +77,16 @@ abstract class $VoiceJournalEntryCopyWith<$Res> {
       int fileSizeBytes,
       bool isTranscribed,
       bool isAnalyzed,
-      bool isFavorite});
+      bool isFavorite,
+      Map<String, dynamic>? analysisResults,
+      String cloudUrl,
+      bool isSyncedToCloud,
+      DateTime? lastSyncedAt,
+      String waveformData,
+      String thumbnailPath,
+      double playbackSpeed,
+      List<String> bookmarks,
+      Map<String, dynamic>? metadata});
 }
 
 /// @nodoc
@@ -100,6 +119,15 @@ class _$VoiceJournalEntryCopyWithImpl<$Res, $Val extends VoiceJournalEntry>
     Object? isTranscribed = null,
     Object? isAnalyzed = null,
     Object? isFavorite = null,
+    Object? analysisResults = freezed,
+    Object? cloudUrl = null,
+    Object? isSyncedToCloud = null,
+    Object? lastSyncedAt = freezed,
+    Object? waveformData = null,
+    Object? thumbnailPath = null,
+    Object? playbackSpeed = null,
+    Object? bookmarks = null,
+    Object? metadata = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -162,6 +190,42 @@ class _$VoiceJournalEntryCopyWithImpl<$Res, $Val extends VoiceJournalEntry>
           ? _value.isFavorite
           : isFavorite // ignore: cast_nullable_to_non_nullable
               as bool,
+      analysisResults: freezed == analysisResults
+          ? _value.analysisResults
+          : analysisResults // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
+      cloudUrl: null == cloudUrl
+          ? _value.cloudUrl
+          : cloudUrl // ignore: cast_nullable_to_non_nullable
+              as String,
+      isSyncedToCloud: null == isSyncedToCloud
+          ? _value.isSyncedToCloud
+          : isSyncedToCloud // ignore: cast_nullable_to_non_nullable
+              as bool,
+      lastSyncedAt: freezed == lastSyncedAt
+          ? _value.lastSyncedAt
+          : lastSyncedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      waveformData: null == waveformData
+          ? _value.waveformData
+          : waveformData // ignore: cast_nullable_to_non_nullable
+              as String,
+      thumbnailPath: null == thumbnailPath
+          ? _value.thumbnailPath
+          : thumbnailPath // ignore: cast_nullable_to_non_nullable
+              as String,
+      playbackSpeed: null == playbackSpeed
+          ? _value.playbackSpeed
+          : playbackSpeed // ignore: cast_nullable_to_non_nullable
+              as double,
+      bookmarks: null == bookmarks
+          ? _value.bookmarks
+          : bookmarks // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      metadata: freezed == metadata
+          ? _value.metadata
+          : metadata // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
     ) as $Val);
   }
 }
@@ -189,7 +253,16 @@ abstract class _$$VoiceJournalEntryImplCopyWith<$Res>
       int fileSizeBytes,
       bool isTranscribed,
       bool isAnalyzed,
-      bool isFavorite});
+      bool isFavorite,
+      Map<String, dynamic>? analysisResults,
+      String cloudUrl,
+      bool isSyncedToCloud,
+      DateTime? lastSyncedAt,
+      String waveformData,
+      String thumbnailPath,
+      double playbackSpeed,
+      List<String> bookmarks,
+      Map<String, dynamic>? metadata});
 }
 
 /// @nodoc
@@ -220,6 +293,15 @@ class __$$VoiceJournalEntryImplCopyWithImpl<$Res>
     Object? isTranscribed = null,
     Object? isAnalyzed = null,
     Object? isFavorite = null,
+    Object? analysisResults = freezed,
+    Object? cloudUrl = null,
+    Object? isSyncedToCloud = null,
+    Object? lastSyncedAt = freezed,
+    Object? waveformData = null,
+    Object? thumbnailPath = null,
+    Object? playbackSpeed = null,
+    Object? bookmarks = null,
+    Object? metadata = freezed,
   }) {
     return _then(_$VoiceJournalEntryImpl(
       id: null == id
@@ -282,6 +364,42 @@ class __$$VoiceJournalEntryImplCopyWithImpl<$Res>
           ? _value.isFavorite
           : isFavorite // ignore: cast_nullable_to_non_nullable
               as bool,
+      analysisResults: freezed == analysisResults
+          ? _value._analysisResults
+          : analysisResults // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
+      cloudUrl: null == cloudUrl
+          ? _value.cloudUrl
+          : cloudUrl // ignore: cast_nullable_to_non_nullable
+              as String,
+      isSyncedToCloud: null == isSyncedToCloud
+          ? _value.isSyncedToCloud
+          : isSyncedToCloud // ignore: cast_nullable_to_non_nullable
+              as bool,
+      lastSyncedAt: freezed == lastSyncedAt
+          ? _value.lastSyncedAt
+          : lastSyncedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      waveformData: null == waveformData
+          ? _value.waveformData
+          : waveformData // ignore: cast_nullable_to_non_nullable
+              as String,
+      thumbnailPath: null == thumbnailPath
+          ? _value.thumbnailPath
+          : thumbnailPath // ignore: cast_nullable_to_non_nullable
+              as String,
+      playbackSpeed: null == playbackSpeed
+          ? _value.playbackSpeed
+          : playbackSpeed // ignore: cast_nullable_to_non_nullable
+              as double,
+      bookmarks: null == bookmarks
+          ? _value._bookmarks
+          : bookmarks // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      metadata: freezed == metadata
+          ? _value._metadata
+          : metadata // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
     ));
   }
 }
@@ -304,8 +422,20 @@ class _$VoiceJournalEntryImpl implements _VoiceJournalEntry {
       this.fileSizeBytes = 0,
       this.isTranscribed = false,
       this.isAnalyzed = false,
-      this.isFavorite = false})
-      : _tags = tags;
+      this.isFavorite = false,
+      final Map<String, dynamic>? analysisResults,
+      this.cloudUrl = '',
+      this.isSyncedToCloud = false,
+      this.lastSyncedAt,
+      this.waveformData = '',
+      this.thumbnailPath = '',
+      this.playbackSpeed = 0.0,
+      final List<String> bookmarks = const [],
+      final Map<String, dynamic>? metadata})
+      : _tags = tags,
+        _analysisResults = analysisResults,
+        _bookmarks = bookmarks,
+        _metadata = metadata;
 
   factory _$VoiceJournalEntryImpl.fromJson(Map<String, dynamic> json) =>
       _$$VoiceJournalEntryImplFromJson(json);
@@ -355,10 +485,55 @@ class _$VoiceJournalEntryImpl implements _VoiceJournalEntry {
   @override
   @JsonKey()
   final bool isFavorite;
+  final Map<String, dynamic>? _analysisResults;
+  @override
+  Map<String, dynamic>? get analysisResults {
+    final value = _analysisResults;
+    if (value == null) return null;
+    if (_analysisResults is EqualUnmodifiableMapView) return _analysisResults;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(value);
+  }
+
+  @override
+  @JsonKey()
+  final String cloudUrl;
+  @override
+  @JsonKey()
+  final bool isSyncedToCloud;
+  @override
+  final DateTime? lastSyncedAt;
+  @override
+  @JsonKey()
+  final String waveformData;
+  @override
+  @JsonKey()
+  final String thumbnailPath;
+  @override
+  @JsonKey()
+  final double playbackSpeed;
+  final List<String> _bookmarks;
+  @override
+  @JsonKey()
+  List<String> get bookmarks {
+    if (_bookmarks is EqualUnmodifiableListView) return _bookmarks;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_bookmarks);
+  }
+
+  final Map<String, dynamic>? _metadata;
+  @override
+  Map<String, dynamic>? get metadata {
+    final value = _metadata;
+    if (value == null) return null;
+    if (_metadata is EqualUnmodifiableMapView) return _metadata;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(value);
+  }
 
   @override
   String toString() {
-    return 'VoiceJournalEntry(id: $id, title: $title, audioFilePath: $audioFilePath, transcriptionText: $transcriptionText, confidence: $confidence, emotionalTone: $emotionalTone, tags: $tags, summary: $summary, createdAt: $createdAt, updatedAt: $updatedAt, durationSeconds: $durationSeconds, fileSizeBytes: $fileSizeBytes, isTranscribed: $isTranscribed, isAnalyzed: $isAnalyzed, isFavorite: $isFavorite)';
+    return 'VoiceJournalEntry(id: $id, title: $title, audioFilePath: $audioFilePath, transcriptionText: $transcriptionText, confidence: $confidence, emotionalTone: $emotionalTone, tags: $tags, summary: $summary, createdAt: $createdAt, updatedAt: $updatedAt, durationSeconds: $durationSeconds, fileSizeBytes: $fileSizeBytes, isTranscribed: $isTranscribed, isAnalyzed: $isAnalyzed, isFavorite: $isFavorite, analysisResults: $analysisResults, cloudUrl: $cloudUrl, isSyncedToCloud: $isSyncedToCloud, lastSyncedAt: $lastSyncedAt, waveformData: $waveformData, thumbnailPath: $thumbnailPath, playbackSpeed: $playbackSpeed, bookmarks: $bookmarks, metadata: $metadata)';
   }
 
   @override
@@ -391,28 +566,55 @@ class _$VoiceJournalEntryImpl implements _VoiceJournalEntry {
             (identical(other.isAnalyzed, isAnalyzed) ||
                 other.isAnalyzed == isAnalyzed) &&
             (identical(other.isFavorite, isFavorite) ||
-                other.isFavorite == isFavorite));
+                other.isFavorite == isFavorite) &&
+            const DeepCollectionEquality()
+                .equals(other._analysisResults, _analysisResults) &&
+            (identical(other.cloudUrl, cloudUrl) ||
+                other.cloudUrl == cloudUrl) &&
+            (identical(other.isSyncedToCloud, isSyncedToCloud) ||
+                other.isSyncedToCloud == isSyncedToCloud) &&
+            (identical(other.lastSyncedAt, lastSyncedAt) ||
+                other.lastSyncedAt == lastSyncedAt) &&
+            (identical(other.waveformData, waveformData) ||
+                other.waveformData == waveformData) &&
+            (identical(other.thumbnailPath, thumbnailPath) ||
+                other.thumbnailPath == thumbnailPath) &&
+            (identical(other.playbackSpeed, playbackSpeed) ||
+                other.playbackSpeed == playbackSpeed) &&
+            const DeepCollectionEquality()
+                .equals(other._bookmarks, _bookmarks) &&
+            const DeepCollectionEquality().equals(other._metadata, _metadata));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      title,
-      audioFilePath,
-      transcriptionText,
-      confidence,
-      emotionalTone,
-      const DeepCollectionEquality().hash(_tags),
-      summary,
-      createdAt,
-      updatedAt,
-      durationSeconds,
-      fileSizeBytes,
-      isTranscribed,
-      isAnalyzed,
-      isFavorite);
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        id,
+        title,
+        audioFilePath,
+        transcriptionText,
+        confidence,
+        emotionalTone,
+        const DeepCollectionEquality().hash(_tags),
+        summary,
+        createdAt,
+        updatedAt,
+        durationSeconds,
+        fileSizeBytes,
+        isTranscribed,
+        isAnalyzed,
+        isFavorite,
+        const DeepCollectionEquality().hash(_analysisResults),
+        cloudUrl,
+        isSyncedToCloud,
+        lastSyncedAt,
+        waveformData,
+        thumbnailPath,
+        playbackSpeed,
+        const DeepCollectionEquality().hash(_bookmarks),
+        const DeepCollectionEquality().hash(_metadata)
+      ]);
 
   /// Create a copy of VoiceJournalEntry
   /// with the given fields replaced by the non-null parameter values.
@@ -447,7 +649,16 @@ abstract class _VoiceJournalEntry implements VoiceJournalEntry {
       final int fileSizeBytes,
       final bool isTranscribed,
       final bool isAnalyzed,
-      final bool isFavorite}) = _$VoiceJournalEntryImpl;
+      final bool isFavorite,
+      final Map<String, dynamic>? analysisResults,
+      final String cloudUrl,
+      final bool isSyncedToCloud,
+      final DateTime? lastSyncedAt,
+      final String waveformData,
+      final String thumbnailPath,
+      final double playbackSpeed,
+      final List<String> bookmarks,
+      final Map<String, dynamic>? metadata}) = _$VoiceJournalEntryImpl;
 
   factory _VoiceJournalEntry.fromJson(Map<String, dynamic> json) =
       _$VoiceJournalEntryImpl.fromJson;
@@ -482,6 +693,24 @@ abstract class _VoiceJournalEntry implements VoiceJournalEntry {
   bool get isAnalyzed;
   @override
   bool get isFavorite;
+  @override
+  Map<String, dynamic>? get analysisResults;
+  @override
+  String get cloudUrl;
+  @override
+  bool get isSyncedToCloud;
+  @override
+  DateTime? get lastSyncedAt;
+  @override
+  String get waveformData;
+  @override
+  String get thumbnailPath;
+  @override
+  double get playbackSpeed;
+  @override
+  List<String> get bookmarks;
+  @override
+  Map<String, dynamic>? get metadata;
 
   /// Create a copy of VoiceJournalEntry
   /// with the given fields replaced by the non-null parameter values.

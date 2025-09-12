@@ -11,6 +11,14 @@ declare global {
       };
       organization?: any;
       organizationRole?: string;
+      id?: string;
+      rawBody?: Buffer;
+      startTime?: number;
+      nonce?: string;
+      metrics?: {
+        route?: string;
+        statusCode?: number;
+      };
     }
 
     interface Response {

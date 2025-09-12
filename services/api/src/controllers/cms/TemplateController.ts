@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
-import { Template } from '../../models';
-import { Op } from 'sequelize';
 import { validationResult } from 'express-validator';
+import { Op } from 'sequelize';
+
+import { Template } from '../../models';
 import { logger } from '../../utils/logger';
 
 /**

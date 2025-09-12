@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:io';
 import '../../../core/theme/app_theme.dart';
 import '../providers/profile_provider.dart';
+import '../../../shared/widgets/loading_overlay.dart';
+import '../../../core/utils/image_utils.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -15,7 +20,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late TextEditingController _nameController;
   late TextEditingController _emailController;
   late TextEditingController _bioController;
+  late TextEditingController _phoneController;
+  late TextEditingController _websiteController;
+  late TextEditingController _locationController;
+  
   bool _isLoading = false;
+  bool _isUploading = false;
+  File? _selectedImage;
+  DateTime? _selectedBirthDate;
+  String? _selectedGender;
+  
+  final ImagePicker _imagePicker = ImagePicker();
+  
+  final List<String> _genderOptions = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
 
   @override
   void initState() {
@@ -24,6 +41,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _nameController = TextEditingController(text: user?.name ?? '');
     _emailController = TextEditingController(text: user?.email ?? '');
     _bioController = TextEditingController(text: user?.bio ?? '');
+    _phoneController = TextEditingController(text: user?.phone ?? '');
+    _websiteController = TextEditingController(text: user?.website ?? '');
+    _locationController = TextEditingController(text: user?.location ?? '');
+    
+    // Initialize other fields
+    _selectedBirthDate = user?.dateOfBirth;
+    _selectedGender = user?.gender;
   }
 
   @override
@@ -31,6 +55,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _bioController.dispose();
+    _phoneController.dispose();
+    _websiteController.dispose();
+    _locationController.dispose();
     super.dispose();
   }
 
@@ -42,14 +69,41 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     });
 
     try {
+      String? avatarUrl;
+      
+      // Upload new image if selected
+      if (_selectedImage != null) {
+        setState(() {
+          _isUploading = true;
+        });
+        
+        // TODO: In a real app, upload image to cloud storage and get URL
+        // For now, simulate upload delay and use local file path
+        await Future.delayed(const Duration(seconds: 2));
+        avatarUrl = _selectedImage!.path; // This would be a real URL in production
+        
+        setState(() {
+          _isUploading = false;
+        });
+      }
+
+      // Update profile with all fields
       await ref.read(profileProvider.notifier).updateProfile(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         bio: _bioController.text.trim(),
+        avatarUrl: avatarUrl,
+        preferences: {
+          'phone': _phoneController.text.trim(),
+          'website': _websiteController.text.trim(),
+          'location': _locationController.text.trim(),
+          'gender': _selectedGender,
+          'dateOfBirth': _selectedBirthDate?.toIso8601String(),
+        },
       );
 
       if (mounted) {
-        context.pop();
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Profile updated successfully'),
@@ -70,6 +124,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+          _isUploading = false;
         });
       }
     }
@@ -105,53 +160,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           children: [
             // Profile Picture
             Center(
-              child: Stack(
-                children: [
-                  CircleAvatar(
-                    radius: 60,
-                    backgroundImage: user.avatarUrl != null
-                        ? NetworkImage(user.avatarUrl!)
-                        : null,
-                    backgroundColor: AppTheme.primaryColor,
-                    child: user.avatarUrl == null
-                        ? Text(
-                            user.name.isNotEmpty
-                                ? user.name[0].toUpperCase()
-                                : user.email[0].toUpperCase(),
-                            style: const TextStyle(
-                              fontSize: 40,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          )
-                        : null,
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Theme.of(context).scaffoldBackgroundColor,
-                          width: 3,
-                        ),
-                      ),
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.camera_alt,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                        onPressed: () {
-                          _showImageOptions();
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              child: _buildProfilePhoto(),
             ),
             
             const SizedBox(height: UIConstants.spacingXL),
@@ -211,6 +220,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               textCapitalization: TextCapitalization.sentences,
             ),
             
+            const SizedBox(height: UIConstants.spacingMD),
+            
+            // Extended form fields
+            _buildExtendedForm(),
+            
             const SizedBox(height: UIConstants.spacingXL),
             
             // Save Button
@@ -246,19 +260,19 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               leading: const Icon(Icons.camera_alt),
               title: const Text('Take Photo'),
               onTap: () {
-                context.pop();
-                // TODO: Implement camera functionality
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
               },
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
               title: const Text('Choose from Gallery'),
               onTap: () {
-                context.pop();
-                // TODO: Implement gallery functionality
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
               },
             ),
-            if (ref.read(profileProvider).user?.avatarUrl != null)
+            if (ref.read(profileProvider).user?.avatarUrl != null || _selectedImage != null)
               ListTile(
                 leading: const Icon(Icons.delete, color: AppTheme.errorColor),
                 title: const Text(
@@ -266,13 +280,271 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   style: TextStyle(color: AppTheme.errorColor),
                 ),
                 onTap: () {
-                  context.pop();
-                  // TODO: Implement remove photo functionality
+                  Navigator.pop(context);
+                  _removePhoto();
                 },
               ),
           ],
         ),
       ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      // Check and request permissions
+      PermissionStatus permission;
+      if (source == ImageSource.camera) {
+        permission = await Permission.camera.request();
+      } else {
+        permission = await Permission.photos.request();
+      }
+
+      if (permission != PermissionStatus.granted) {
+        _showPermissionDialog(source);
+        return;
+      }
+
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to pick image: $e'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+    }
+  }
+
+  void _removePhoto() {
+    setState(() {
+      _selectedImage = null;
+    });
+    
+    // Also remove from profile if saving
+    ref.read(profileProvider.notifier).updateProfile(
+      avatarUrl: null,
+    );
+  }
+
+  void _showPermissionDialog(ImageSource source) {
+    final String permissionType = source == ImageSource.camera ? 'camera' : 'photo library';
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('$permissionType Permission Required'),
+          content: Text('Please grant access to your $permissionType in Settings to update your profile photo.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                openAppSettings();
+              },
+              child: const Text('Settings'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _selectBirthDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedBirthDate ?? DateTime(1990),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      helpText: 'Select Birth Date',
+    );
+    
+    if (picked != null && picked != _selectedBirthDate) {
+      setState(() {
+        _selectedBirthDate = picked;
+      });
+    }
+  }
+
+  Widget _buildProfilePhoto() {
+    ImageProvider? imageProvider;
+    
+    if (_selectedImage != null) {
+      imageProvider = FileImage(_selectedImage!);
+    } else if (ref.read(profileProvider).user?.avatarUrl != null) {
+      imageProvider = NetworkImage(ref.read(profileProvider).user!.avatarUrl!);
+    }
+    
+    return Stack(
+      children: [
+        CircleAvatar(
+          radius: 60,
+          backgroundImage: imageProvider,
+          backgroundColor: AppTheme.primaryColor,
+          child: imageProvider == null
+              ? Text(
+                  ref.read(profileProvider).user?.name.isNotEmpty == true
+                      ? ref.read(profileProvider).user!.name[0].toUpperCase()
+                      : ref.read(profileProvider).user?.email[0].toUpperCase() ?? 'U',
+                  style: const TextStyle(
+                    fontSize: 40,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                )
+              : null,
+        ),
+        if (_isUploading)
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                width: 3,
+              ),
+            ),
+            child: IconButton(
+              icon: const Icon(
+                Icons.camera_alt,
+                color: Colors.white,
+                size: 20,
+              ),
+              onPressed: _isUploading ? null : _showImageOptions,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExtendedForm() {
+    return Column(
+      children: [
+        // Phone Field
+        TextFormField(
+          controller: _phoneController,
+          decoration: const InputDecoration(
+            labelText: 'Phone',
+            hintText: 'Enter your phone number',
+            prefixIcon: Icon(Icons.phone_outlined),
+          ),
+          keyboardType: TextInputType.phone,
+          validator: (value) {
+            if (value != null && value.isNotEmpty && !RegExp(r'^\+?[\d\s\-\(\)]+$').hasMatch(value)) {
+              return 'Please enter a valid phone number';
+            }
+            return null;
+          },
+        ),
+        
+        const SizedBox(height: UIConstants.spacingMD),
+        
+        // Birth Date Field
+        InkWell(
+          onTap: _selectBirthDate,
+          child: InputDecorator(
+            decoration: const InputDecoration(
+              labelText: 'Birth Date',
+              hintText: 'Select your birth date',
+              prefixIcon: Icon(Icons.cake_outlined),
+            ),
+            child: Text(
+              _selectedBirthDate != null
+                  ? '${_selectedBirthDate!.day}/${_selectedBirthDate!.month}/${_selectedBirthDate!.year}'
+                  : '',
+              style: TextStyle(
+                color: _selectedBirthDate != null ? null : Theme.of(context).hintColor,
+              ),
+            ),
+          ),
+        ),
+        
+        const SizedBox(height: UIConstants.spacingMD),
+        
+        // Gender Field
+        DropdownButtonFormField<String>(
+          value: _selectedGender,
+          decoration: const InputDecoration(
+            labelText: 'Gender',
+            prefixIcon: Icon(Icons.person_outlined),
+          ),
+          items: _genderOptions.map((String gender) {
+            return DropdownMenuItem<String>(
+              value: gender,
+              child: Text(gender),
+            );
+          }).toList(),
+          onChanged: (String? newValue) {
+            setState(() {
+              _selectedGender = newValue;
+            });
+          },
+        ),
+        
+        const SizedBox(height: UIConstants.spacingMD),
+        
+        // Website Field
+        TextFormField(
+          controller: _websiteController,
+          decoration: const InputDecoration(
+            labelText: 'Website',
+            hintText: 'Enter your website URL',
+            prefixIcon: Icon(Icons.language_outlined),
+          ),
+          keyboardType: TextInputType.url,
+          validator: (value) {
+            if (value != null && value.isNotEmpty && !Uri.tryParse(value)?.hasAbsolutePath == true) {
+              return 'Please enter a valid URL';
+            }
+            return null;
+          },
+        ),
+        
+        const SizedBox(height: UIConstants.spacingMD),
+        
+        // Location Field
+        TextFormField(
+          controller: _locationController,
+          decoration: const InputDecoration(
+            labelText: 'Location',
+            hintText: 'Enter your location',
+            prefixIcon: Icon(Icons.location_on_outlined),
+          ),
+          textCapitalization: TextCapitalization.words,
+        ),
+      ],
     );
   }
 } 

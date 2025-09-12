@@ -6,12 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.authenticateToken = exports.authorize = exports.authenticate = exports.blacklistToken = exports.verifyRefreshToken = exports.generateTokens = exports.requireOwnership = exports.authorizeRoles = exports.requireRole = exports.optionalAuthMiddleware = exports.adminMiddleware = exports.authMiddleware = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const environment_1 = require("../config/environment");
-const logger_1 = require("../utils/logger");
 const redis_1 = require("../services/redis");
 const apiError_1 = require("../utils/apiError");
-/**
- * Authentication middleware
- */
+const logger_1 = require("../utils/logger");
 const authMiddleware = async (req, _res, next) => {
     try {
         const token = req.headers.authorization?.replace('Bearer ', '');
@@ -22,7 +19,6 @@ const authMiddleware = async (req, _res, next) => {
             });
             return;
         }
-        // Check if token is blacklisted
         const isBlacklisted = await redis_1.redis.get(`blacklist:${token}`);
         if (isBlacklisted) {
             _res.status(401).json({
@@ -32,7 +28,6 @@ const authMiddleware = async (req, _res, next) => {
             return;
         }
         const decoded = jsonwebtoken_1.default.verify(token, environment_1.config.jwt.secret);
-        // Validate token structure
         if (!decoded.id || !decoded.email || !decoded.role) {
             _res.status(401).json({
                 success: false,
@@ -72,9 +67,6 @@ const authMiddleware = async (req, _res, next) => {
     }
 };
 exports.authMiddleware = authMiddleware;
-/**
- * Admin authorization middleware
- */
 const adminMiddleware = (req, _res, next) => {
     if (!req.user || req.user.role !== 'admin') {
         _res.status(403).json({
@@ -86,18 +78,13 @@ const adminMiddleware = (req, _res, next) => {
     next();
 };
 exports.adminMiddleware = adminMiddleware;
-/**
- * Optional auth middleware
- */
 const optionalAuthMiddleware = async (req, _res, next) => {
     try {
         const token = req.headers.authorization?.replace('Bearer ', '');
         if (token) {
-            // Check if token is blacklisted
             const isBlacklisted = await redis_1.redis.get(`blacklist:${token}`);
             if (!isBlacklisted) {
                 const decoded = jsonwebtoken_1.default.verify(token, environment_1.config.jwt.secret);
-                // Validate token structure
                 if (decoded.id && decoded.email && decoded.role) {
                     req.user = {
                         id: decoded.id,
@@ -110,7 +97,6 @@ const optionalAuthMiddleware = async (req, _res, next) => {
         next();
     }
     catch (error) {
-        // Continue without auth if token is invalid
         logger_1.logger.debug('Optional auth: Invalid token provided', error);
         next();
     }
@@ -138,7 +124,6 @@ const requireRole = (roles) => {
     };
 };
 exports.requireRole = requireRole;
-// Alias for requireRole
 exports.authorizeRoles = exports.requireRole;
 const requireOwnership = (resourceIdParam = 'id') => {
     return async (req, _res, next) => {
@@ -152,13 +137,9 @@ const requireOwnership = (resourceIdParam = 'id') => {
             }
             const resourceId = req.params[resourceIdParam];
             const userId = req.user.id;
-            // Admin users can access any resource
             if (req.user.role === 'admin') {
                 return next();
             }
-            // Check if the resource belongs to the user
-            // This would need to be customized based on the specific resource
-            // For now, we'll assume the resource has a userId field
             const ownership = await checkResourceOwnership(resourceId, userId);
             if (!ownership) {
                 _res.status(403).json({
@@ -179,27 +160,11 @@ const requireOwnership = (resourceIdParam = 'id') => {
     };
 };
 exports.requireOwnership = requireOwnership;
-// Helper function to check resource ownership
 async function checkResourceOwnership(resourceId, userId) {
     try {
-        // We'll need to implement proper resource checking based on the actual resource type
-        // This would typically involve database queries specific to each resource
-        // Check if the resource belongs to the user
-        // This assumes resources have a userId field or similar ownership indicator
-        // You'll need to customize this based on your actual resource types
-        // Example implementation for user-owned resources:
-        // For user-specific resources, check if the resourceId matches userId
         if (resourceId === userId) {
             return true;
         }
-        // For other resources, you might need to query the database
-        // This is a generic check that should be customized per resource type
-        // For example:
-        // - For goals: SELECT * FROM goals WHERE id = resourceId AND user_id = userId
-        // - For sessions: SELECT * FROM sessions WHERE id = resourceId AND coach_id = userId
-        // Since we don't know the resource type from just the ID,
-        // this needs to be implemented based on your routing patterns
-        // For now, return false to be secure by default
         logger_1.logger.warn(`Resource ownership check not fully implemented for resource: ${resourceId}, user: ${userId}`);
         return false;
     }
@@ -237,7 +202,7 @@ const blacklistToken = async (token) => {
         if (!decoded || !decoded.exp) {
             return;
         }
-        const expiryTime = decoded.exp * 1000; // Convert to milliseconds
+        const expiryTime = decoded.exp * 1000;
         const currentTime = Date.now();
         const ttl = Math.max(0, Math.floor((expiryTime - currentTime) / 1000));
         if (ttl > 0) {
@@ -249,7 +214,6 @@ const blacklistToken = async (token) => {
     }
 };
 exports.blacklistToken = blacklistToken;
-// Export aliases for common middleware names
 exports.authenticate = exports.authMiddleware;
 exports.authorize = exports.adminMiddleware;
 exports.authenticateToken = exports.authMiddleware;

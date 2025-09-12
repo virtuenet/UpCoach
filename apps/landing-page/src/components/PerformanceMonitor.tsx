@@ -23,8 +23,11 @@ export default function PerformanceMonitor() {
       // First Input Delay
       const fidObserver = new PerformanceObserver(list => {
         for (const entry of list.getEntries()) {
-          const delay = entry.processingStart - entry.startTime;
-          console.log('FID:', delay);
+          const fidEntry = entry as any; // Cast to handle missing processingStart property
+          if (fidEntry.processingStart) {
+            const delay = fidEntry.processingStart - entry.startTime;
+            console.log('FID:', delay);
+          }
         }
       });
       fidObserver.observe({ entryTypes: ['first-input'] });
@@ -33,8 +36,9 @@ export default function PerformanceMonitor() {
       let clsValue = 0;
       const clsObserver = new PerformanceObserver(list => {
         for (const entry of list.getEntries()) {
-          if (!entry.hadRecentInput) {
-            clsValue += entry.value;
+          const clsEntry = entry as any; // Cast to handle layout-shift specific properties
+          if (!clsEntry.hadRecentInput && clsEntry.value !== undefined) {
+            clsValue += clsEntry.value;
             console.log('CLS:', clsValue);
           }
         }

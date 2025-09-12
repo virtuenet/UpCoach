@@ -1,9 +1,10 @@
 import { Router } from 'express';
+import { body, param, query } from 'express-validator';
+
 import { EnterpriseController } from '../controllers/EnterpriseController';
 import { authenticate } from '../middleware/auth';
 import { authorize } from '../middleware/authorize';
 import { validateRequest } from '../middleware/validation';
-import { body, param, query } from 'express-validator';
 
 const router = Router();
 const enterpriseController = new EnterpriseController();

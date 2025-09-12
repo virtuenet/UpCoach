@@ -2,25 +2,10 @@ import { sequelize } from './sequelize';
 export { sequelize };
 export declare function initializeDatabase(): Promise<void>;
 export declare function closeDatabase(): Promise<void>;
-/**
- * Execute a query with the database pool
- */
 export declare function query(text: string, params?: any[]): Promise<any>;
-/**
- * Execute queries within a transaction
- */
 export declare function transaction<T>(callback: (transaction: any) => Promise<T>): Promise<T>;
-/**
- * Get a database client from the pool (for advanced usage)
- */
 export declare function getClient(): Promise<any>;
-/**
- * Check database health
- */
 export declare function healthCheck(): Promise<boolean>;
-/**
- * Get database pool stats
- */
 export declare function getPoolStats(): {
     dialect: string;
     database: string;

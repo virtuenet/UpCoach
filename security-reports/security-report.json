@@ -1,0 +1,105 @@
+{
+  "metadata": {
+    "generatedAt": "2025-09-10T08:49:14.757Z",
+    "version": "1.0.0",
+    "platform": "UpCoach Security Test Suite",
+    "runId": "local-run"
+  },
+  "summary": {
+    "overallScore": 0,
+    "securityRating": "C",
+    "totalTests": 0,
+    "passedTests": 0,
+    "failedTests": 0,
+    "criticalVulnerabilities": 0,
+    "highVulnerabilities": 0,
+    "mediumVulnerabilities": 0,
+    "lowVulnerabilities": 0
+  },
+  "categories": {
+    "mobileEncryption": {
+      "score": 0,
+      "status": "NOT_RUN",
+      "details": {}
+    },
+    "apiSecurity": {
+      "score": 0,
+      "status": "NOT_RUN",
+      "details": {}
+    },
+    "authentication": {
+      "score": 0,
+      "status": "NOT_RUN",
+      "details": {}
+    },
+    "gdprCompliance": {
+      "score": 0,
+      "status": "NOT_RUN",
+      "details": {}
+    },
+    "crossPlatform": {
+      "score": 0,
+      "status": "NOT_RUN",
+      "details": {}
+    }
+  },
+  "vulnerabilities": [],
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "category": "Mobile Encryption",
+      "title": "Improve Mobile Encryption Security",
+      "description": "Current score: 0/100. Security improvements needed to reach A+ rating.",
+      "action": "Implement AES-256 encryption for all sensitive data and improve key management practices."
+    },
+    {
+      "priority": "HIGH",
+      "category": "Api Security",
+      "title": "Improve Api Security Security",
+      "description": "Current score: 0/100. Security improvements needed to reach A+ rating.",
+      "action": "Enhance input validation, fix SQL injection vulnerabilities, and strengthen authorization checks."
+    },
+    {
+      "priority": "HIGH",
+      "category": "Authentication",
+      "title": "Improve Authentication Security",
+      "description": "Current score: 0/100. Security improvements needed to reach A+ rating.",
+      "action": "Improve device fingerprinting accuracy and implement stronger session security measures."
+    },
+    {
+      "priority": "HIGH",
+      "category": "Gdpr Compliance",
+      "title": "Improve Gdpr Compliance Security",
+      "description": "Current score: 0/100. Security improvements needed to reach A+ rating.",
+      "action": "Complete implementation of all data subject rights and automate compliance monitoring."
+    },
+    {
+      "priority": "HIGH",
+      "category": "Cross Platform",
+      "title": "Improve Cross Platform Security",
+      "description": "Current score: 0/100. Security improvements needed to reach A+ rating.",
+      "action": "Ensure security consistency across all platforms and improve integration security."
+    },
+    {
+      "priority": "HIGH",
+      "category": "Compliance",
+      "title": "Achieve Full GDPR Compliance",
+      "description": "Current GDPR compliance: 0%. Full compliance required.",
+      "action": "Review and implement missing GDPR requirements, particularly data subject rights and consent management."
+    }
+  ],
+  "compliance": {
+    "gdpr": {
+      "score": 0,
+      "requirements": []
+    },
+    "ccpa": {
+      "score": 0,
+      "requirements": []
+    },
+    "soc2": {
+      "score": 0,
+      "requirements": []
+    }
+  }
+}

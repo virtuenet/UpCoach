@@ -1,8 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import { describe, it, expect, jest, beforeAll } from '@jest/globals';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { describe, it, expect, jest, beforeAll, beforeEach, afterEach } from '@jest/globals';
+import { hash, compare } from 'bcryptjs';
+import { sign, verify, decode, TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken';
+
 import { validateSecret, generateSecret } from '../utils/secrets';
 import { sanitizeIdentifier, validateQueryParams } from '../utils/sqlSecurity';
 
@@ -49,10 +48,10 @@ describe('Security Implementation Tests', () => {
       const password = 'TestPassword123!';
       const rounds = parseInt(process.env.BCRYPT_ROUNDS || '14', 10);
 
-      const hash = await bcrypt.hash(password, rounds);
+      const hashedPassword = await hash(password, rounds);
 
       // Extract rounds from hash
-      const hashRounds = parseInt(hash.split('$')[2], 10);
+      const hashRounds = parseInt(hashedPassword.split('$')[2], 10);
       expect(hashRounds).toBe(14);
     });
 
@@ -60,15 +59,15 @@ describe('Security Implementation Tests', () => {
       const password = 'SecurePassword123!@#';
       const rounds = 14;
 
-      const hash1 = await bcrypt.hash(password, rounds);
-      const hash2 = await bcrypt.hash(password, rounds);
+      const hash1 = await hash(password, rounds);
+      const hash2 = await hash(password, rounds);
 
       // Same password should produce different hashes (salt)
       expect(hash1).not.toBe(hash2);
 
       // Both should verify correctly
-      expect(await bcrypt.compare(password, hash1)).toBe(true);
-      expect(await bcrypt.compare(password, hash2)).toBe(true);
+      expect(await compare(password, hash1)).toBe(true);
+      expect(await compare(password, hash2)).toBe(true);
     });
   });
 

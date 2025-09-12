@@ -50,7 +50,7 @@ class _VoiceJournalScreenState extends ConsumerState<VoiceJournalScreen>
                 style: const TextStyle(color: Colors.white),
                 autofocus: true,
                 onChanged: (value) {
-                  // TODO: Implement search functionality
+                  ref.read(voiceJournalProvider.notifier).performSearch(value);
                 },
               )
             : const Text('Voice Journal'),
@@ -169,7 +169,7 @@ class _VoiceJournalScreenState extends ConsumerState<VoiceJournalScreen>
                       IconButton(
                         icon: const Icon(Icons.close),
                         onPressed: () {
-                          // TODO: Clear error
+                          ref.read(voiceJournalProvider.notifier).clearError();
                         },
                       ),
                     ],
@@ -243,15 +243,59 @@ class _VoiceJournalScreenState extends ConsumerState<VoiceJournalScreen>
     );
   }
 
-  void _exportJournals() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Export feature coming soon!')),
-    );
+  void _exportJournals() async {
+    try {
+      final success = await ref.read(voiceJournalProvider.notifier).exportJournals();
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Journals exported successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Export failed - no journals to export'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Export failed: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
-  void _importJournals() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Import feature coming soon!')),
-    );
+  void _importJournals() async {
+    try {
+      final success = await ref.read(voiceJournalProvider.notifier).importJournals();
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Journals imported successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Import cancelled or failed'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Import failed: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 } 

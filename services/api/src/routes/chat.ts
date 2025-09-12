@@ -1,13 +1,14 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
+
 import { asyncHandler } from '../middleware/errorHandler';
-import { ApiError } from '../utils/apiError';
-import { db } from '../services/database';
-import { logger } from '../utils/logger';
 // import { config } from '../config/environment';
 import { aiService } from '../services/ai/AIService';
 import { userProfilingService } from '../services/ai/UserProfilingService';
+import { db } from '../services/database';
 import { AuthenticatedRequest } from '../types/auth';
+import { ApiError } from '../utils/apiError';
+import { logger } from '../utils/logger';
 
 const router = Router();
 

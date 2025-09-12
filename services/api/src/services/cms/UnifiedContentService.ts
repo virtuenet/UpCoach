@@ -3,7 +3,10 @@
  * Consolidates all CMS-related services into a single, efficient service
  */
 
+import * as cron from 'node-cron';
 import { Op, Transaction, WhereOptions } from 'sequelize';
+
+import { sequelize } from '../../models';
 import {
   UnifiedContent,
   UnifiedCategory,
@@ -17,8 +20,6 @@ import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
 import { getCacheService } from '../cache/UnifiedCacheService';
 import emailService from '../email/UnifiedEmailService';
-import cron from 'node-cron';
-import { sequelize } from '../../models';
 
 // ==================== Interfaces ====================
 

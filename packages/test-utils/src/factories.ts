@@ -2,11 +2,11 @@
  * Test data factories
  */
 
-import { faker } from '@faker-js/faker';
+import { faker } from './faker-fix';
 
 // User factory
-export const createUser = (overrides = {}) => ({
-  id: faker.datatype.uuid(),
+export const createUser = (overrides: any = {}) => ({
+  id: faker.string.uuid(),
   email: faker.internet.email(),
   name: faker.person.fullName(),
   role: 'user',
@@ -18,32 +18,32 @@ export const createUser = (overrides = {}) => ({
 });
 
 // Admin factory
-export const createAdmin = (overrides = {}) => createUser({ role: 'admin', ...overrides });
+export const createAdmin = (overrides: any = {}) => createUser({ role: 'admin', ...overrides });
 
 // Coach factory
-export const createCoach = (overrides = {}) =>
+export const createCoach = (overrides: any = {}) =>
   createUser({
     role: 'coach',
     profile: {
       specializations: ['fitness', 'nutrition'],
       hourlyRate: faker.number.int({ min: 50, max: 200 }),
-      rating: faker.number.float({ min: 3.5, max: 5, precision: 0.1 }),
-      ...overrides.profile,
+      rating: faker.number.float({ min: 3.5, max: 5, fractionDigits: 1 }),
+      ...(overrides.profile || {}),
     },
     ...overrides,
   });
 
 // Content factory
-export const createContent = (overrides = {}) => ({
-  id: faker.datatype.uuid(),
+export const createContent = (overrides: any = {}) => ({
+  id: faker.string.uuid(),
   type: faker.helpers.arrayElement(['article', 'guide', 'course', 'template']),
   title: faker.lorem.sentence(),
   slug: faker.lorem.slug(),
   content: faker.lorem.paragraphs(5),
   excerpt: faker.lorem.paragraph(),
   status: 'published',
-  authorId: faker.datatype.uuid(),
-  categoryId: faker.datatype.uuid(),
+  authorId: faker.string.uuid(),
+  categoryId: faker.string.uuid(),
   viewCount: faker.number.int({ min: 0, max: 10000 }),
   likeCount: faker.number.int({ min: 0, max: 1000 }),
   publishedAt: faker.date.past(),
@@ -53,9 +53,9 @@ export const createContent = (overrides = {}) => ({
 });
 
 // Subscription factory
-export const createSubscription = (overrides = {}) => ({
-  id: faker.datatype.uuid(),
-  userId: faker.datatype.uuid(),
+export const createSubscription = (overrides: any = {}) => ({
+  id: faker.string.uuid(),
+  userId: faker.string.uuid(),
   planId: faker.helpers.arrayElement(['basic', 'pro', 'enterprise']),
   status: 'active',
   stripeSubscriptionId: `sub_${faker.string.alphanumeric(14)}`,
@@ -67,11 +67,11 @@ export const createSubscription = (overrides = {}) => ({
 });
 
 // Transaction factory
-export const createTransaction = (overrides = {}) => ({
-  id: faker.datatype.uuid(),
-  userId: faker.datatype.uuid(),
-  subscriptionId: faker.datatype.uuid(),
-  amount: faker.number.float({ min: 10, max: 1000, precision: 0.01 }),
+export const createTransaction = (overrides: any = {}) => ({
+  id: faker.string.uuid(),
+  userId: faker.string.uuid(),
+  subscriptionId: faker.string.uuid(),
+  amount: faker.number.float({ min: 10, max: 1000, fractionDigits: 2 }),
   currency: 'USD',
   status: 'succeeded',
   type: faker.helpers.arrayElement(['payment', 'refund', 'adjustment']),
@@ -81,9 +81,9 @@ export const createTransaction = (overrides = {}) => ({
 });
 
 // Goal factory
-export const createGoal = (overrides = {}) => ({
-  id: faker.datatype.uuid(),
-  userId: faker.datatype.uuid(),
+export const createGoal = (overrides: any = {}) => ({
+  id: faker.string.uuid(),
+  userId: faker.string.uuid(),
   title: faker.lorem.sentence(),
   description: faker.lorem.paragraph(),
   targetDate: faker.date.future(),
@@ -97,10 +97,10 @@ export const createGoal = (overrides = {}) => ({
 });
 
 // Task factory
-export const createTask = (overrides = {}) => ({
-  id: faker.datatype.uuid(),
-  userId: faker.datatype.uuid(),
-  goalId: faker.datatype.uuid(),
+export const createTask = (overrides: any = {}) => ({
+  id: faker.string.uuid(),
+  userId: faker.string.uuid(),
+  goalId: faker.string.uuid(),
   title: faker.lorem.sentence(),
   description: faker.lorem.paragraph(),
   dueDate: faker.date.future(),
@@ -113,10 +113,10 @@ export const createTask = (overrides = {}) => ({
 });
 
 // Chat message factory
-export const createChatMessage = (overrides = {}) => ({
-  id: faker.datatype.uuid(),
-  conversationId: faker.datatype.uuid(),
-  userId: faker.datatype.uuid(),
+export const createChatMessage = (overrides: any = {}) => ({
+  id: faker.string.uuid(),
+  conversationId: faker.string.uuid(),
+  userId: faker.string.uuid(),
   content: faker.lorem.paragraph(),
   role: faker.helpers.arrayElement(['user', 'assistant']),
   metadata: {},
@@ -125,9 +125,9 @@ export const createChatMessage = (overrides = {}) => ({
 });
 
 // Analytics event factory
-export const createAnalyticsEvent = (overrides = {}) => ({
-  id: faker.datatype.uuid(),
-  userId: faker.datatype.uuid(),
+export const createAnalyticsEvent = (overrides: any = {}) => ({
+  id: faker.string.uuid(),
+  userId: faker.string.uuid(),
   eventName: faker.helpers.arrayElement(['page_view', 'button_click', 'form_submit']),
   eventProperties: {},
   timestamp: faker.date.recent(),

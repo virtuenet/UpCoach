@@ -28,6 +28,20 @@ _$VoiceJournalEntryImpl _$$VoiceJournalEntryImplFromJson(
       isTranscribed: json['isTranscribed'] as bool? ?? false,
       isAnalyzed: json['isAnalyzed'] as bool? ?? false,
       isFavorite: json['isFavorite'] as bool? ?? false,
+      analysisResults: json['analysisResults'] as Map<String, dynamic>?,
+      cloudUrl: json['cloudUrl'] as String? ?? '',
+      isSyncedToCloud: json['isSyncedToCloud'] as bool? ?? false,
+      lastSyncedAt: json['lastSyncedAt'] == null
+          ? null
+          : DateTime.parse(json['lastSyncedAt'] as String),
+      waveformData: json['waveformData'] as String? ?? '',
+      thumbnailPath: json['thumbnailPath'] as String? ?? '',
+      playbackSpeed: (json['playbackSpeed'] as num?)?.toDouble() ?? 0.0,
+      bookmarks: (json['bookmarks'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      metadata: json['metadata'] as Map<String, dynamic>?,
     );
 
 Map<String, dynamic> _$$VoiceJournalEntryImplToJson(
@@ -48,4 +62,13 @@ Map<String, dynamic> _$$VoiceJournalEntryImplToJson(
       'isTranscribed': instance.isTranscribed,
       'isAnalyzed': instance.isAnalyzed,
       'isFavorite': instance.isFavorite,
+      'analysisResults': instance.analysisResults,
+      'cloudUrl': instance.cloudUrl,
+      'isSyncedToCloud': instance.isSyncedToCloud,
+      'lastSyncedAt': instance.lastSyncedAt?.toIso8601String(),
+      'waveformData': instance.waveformData,
+      'thumbnailPath': instance.thumbnailPath,
+      'playbackSpeed': instance.playbackSpeed,
+      'bookmarks': instance.bookmarks,
+      'metadata': instance.metadata,
     };

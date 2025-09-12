@@ -1,13 +1,15 @@
-import { Router } from 'express';
-import multer from 'multer';
 import path from 'path';
-import { authMiddleware as authenticateToken, authorizeRoles } from '../middleware/auth';
+
+import { Router } from 'express';
+import multer, { MulterError, diskStorage } from 'multer';
+
 import CoachContentController from '../controllers/cms/CoachContentController';
+import { authMiddleware as authenticateToken, authorizeRoles } from '../middleware/auth';
 
 const router = Router();
 
 // Configure multer for media uploads
-const storage = multer.diskStorage({
+const storage = diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/content/');
   },

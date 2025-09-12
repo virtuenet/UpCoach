@@ -1,11 +1,12 @@
-import request from 'supertest';
 import { describe, it, expect, beforeAll, afterAll, beforeEach, jest } from '@jest/globals';
-import app from '../index';
+import bcrypt from 'bcryptjs';
+import { sign, verify, decode, TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken';
+import request from 'supertest';
+
 import { sequelize } from '../config/database';
-import { User } from '../models/User';
+import app from '../index';
 import { Organization } from '../models/Organization';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import { User } from '../models/User';
 
 describe('User Management API', () => {
   let adminUser: any;
@@ -20,8 +21,9 @@ describe('User Management API', () => {
     // Create test organization
     testOrg = await Organization.create({
       name: 'Test Organization',
-      type: 'enterprise',
-      status: 'active',
+      slug: 'test-organization',
+      size: 'enterprise',
+      subscriptionTier: 'enterprise',
       settings: {},
     });
 
@@ -50,13 +52,13 @@ describe('User Management API', () => {
     });
 
     // Generate tokens
-    adminToken = jwt.sign(
+    adminToken = sign(
       { userId: adminUser.id, email: adminUser.email, role: 'admin' },
       process.env.JWT_SECRET!,
       { expiresIn: '1h' }
     );
 
-    userToken = jwt.sign(
+    userToken = sign(
       { userId: regularUser.id, email: regularUser.email, role: 'user' },
       process.env.JWT_SECRET!,
       { expiresIn: '1h' }

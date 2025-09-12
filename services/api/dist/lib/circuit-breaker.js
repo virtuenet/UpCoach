@@ -1,20 +1,13 @@
 "use strict";
-/**
- * Circuit Breaker implementation using opossum
- * Replaces custom CircuitBreaker implementation
- */
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CircuitBreaker = exports.CircuitBreakerFactory = exports.CircuitBreakerWrapper = void 0;
 exports.createCircuitBreaker = createCircuitBreaker;
-const opossum_1 = __importDefault(require("opossum"));
 const events_1 = require("events");
+const opossum_1 = __importDefault(require("opossum"));
 const logger_1 = require("../utils/logger");
-/**
- * Create a circuit breaker for a function
- */
 function createCircuitBreaker(fn, options = {}) {
     const breakerOptions = {
         timeout: options.timeout || 3000,
@@ -29,7 +22,6 @@ function createCircuitBreaker(fn, options = {}) {
         volumeThreshold: options.volumeThreshold || 10,
     };
     const breaker = new opossum_1.default(fn, breakerOptions);
-    // Add event listeners for monitoring
     breaker.on('open', () => {
         logger_1.logger.warn(`Circuit breaker opened: ${breakerOptions.name}`);
     });
@@ -44,30 +36,21 @@ function createCircuitBreaker(fn, options = {}) {
     });
     return breaker;
 }
-/**
- * Circuit Breaker class for backward compatibility
- */
 class CircuitBreakerWrapper extends events_1.EventEmitter {
     breaker;
-    // private _state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED';
     constructor(options = {}) {
         super();
-        // Create a dummy function that will be replaced
         const dummyFn = async (..._args) => {
             throw new Error('Function not set. Use execute() method.');
         };
         this.breaker = createCircuitBreaker(dummyFn, options);
-        // Mirror events
         this.breaker.on('open', () => {
-            // this._state = 'OPEN';
             this.emit('open');
         });
         this.breaker.on('halfOpen', () => {
-            // this._state = 'HALF_OPEN';
             this.emit('halfOpen');
         });
         this.breaker.on('close', () => {
-            // this._state = 'CLOSED';
             this.emit('close');
         });
         this.breaker.on('reject', () => {
@@ -86,11 +69,7 @@ class CircuitBreakerWrapper extends events_1.EventEmitter {
             this.emit('fallback', result);
         });
     }
-    /**
-     * Execute a function with circuit breaker protection
-     */
     async execute(fn) {
-        // Create a new circuit breaker for this specific function
         const functionBreaker = createCircuitBreaker(fn, {
             timeout: 3000,
             errorThresholdPercentage: 50,
@@ -100,13 +79,8 @@ class CircuitBreakerWrapper extends events_1.EventEmitter {
             return await functionBreaker.fire();
         }
         finally {
-            // Clean up the temporary breaker
-            // functionBreaker.shutdown(); // shutdown may not exist
         }
     }
-    /**
-     * Get current state
-     */
     getState() {
         if (this.breaker.opened)
             return 'OPEN';
@@ -114,33 +88,17 @@ class CircuitBreakerWrapper extends events_1.EventEmitter {
             return 'HALF_OPEN';
         return 'CLOSED';
     }
-    /**
-     * Get circuit breaker stats
-     */
     getStats() {
         return this.breaker.stats;
     }
-    /**
-     * Manually open the circuit
-     */
     open() {
         this.breaker.open();
     }
-    /**
-     * Manually close the circuit
-     */
     close() {
         this.breaker.close();
     }
-    /**
-     * Shutdown the circuit breaker
-     */
     shutdown() {
-        // this.breaker.shutdown(); // shutdown may not exist
     }
-    /**
-     * Set fallback function
-     */
     fallback(fn) {
         this.breaker.fallback(async () => await Promise.resolve(fn()));
         return this;
@@ -148,18 +106,12 @@ class CircuitBreakerWrapper extends events_1.EventEmitter {
 }
 exports.CircuitBreakerWrapper = CircuitBreakerWrapper;
 exports.CircuitBreaker = CircuitBreakerWrapper;
-/**
- * Create a circuit breaker factory for multiple endpoints
- */
 class CircuitBreakerFactory {
     breakers = new Map();
     defaultOptions;
     constructor(defaultOptions = {}) {
         this.defaultOptions = defaultOptions;
     }
-    /**
-     * Get or create a circuit breaker for a key
-     */
     getBreaker(key, fn, options) {
         if (!this.breakers.has(key)) {
             const breaker = createCircuitBreaker(fn, {
@@ -171,9 +123,6 @@ class CircuitBreakerFactory {
         }
         return this.breakers.get(key);
     }
-    /**
-     * Get all breaker stats
-     */
     getAllStats() {
         const stats = {};
         this.breakers.forEach((breaker, key) => {
@@ -181,11 +130,7 @@ class CircuitBreakerFactory {
         });
         return stats;
     }
-    /**
-     * Shutdown all breakers
-     */
     shutdownAll() {
-        // this.breakers.forEach(breaker => breaker.shutdown());
         this.breakers.clear();
     }
 }

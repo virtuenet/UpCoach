@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
-import { Content } from '../../models/cms/Content';
-import { ContentCategory } from '../../models/cms/ContentCategory';
-import { ContentTag } from '../../models/cms/ContentTag';
-import { ContentMedia } from '../../models/cms/ContentMedia';
-import { User } from '../../models';
 import { Op } from 'sequelize';
 import slugify from 'slugify';
+
+import { User } from '../../models';
+import { Content } from '../../models/cms/Content';
+import { ContentCategory } from '../../models/cms/ContentCategory';
+import { ContentMedia } from '../../models/cms/ContentMedia';
+import { ContentTag } from '../../models/cms/ContentTag';
 import { logger } from '../../utils/logger';
 
 export class ContentController {

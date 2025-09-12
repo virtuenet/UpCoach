@@ -9,7 +9,6 @@ const ExperimentsController_1 = __importDefault(require("../controllers/experime
 const auth_1 = require("../middleware/auth");
 const router = express_1.default.Router();
 const experimentsController = new ExperimentsController_1.default();
-// Validation middleware
 const experimentValidation = [
     (0, express_validator_1.body)('name')
         .notEmpty()
@@ -67,7 +66,6 @@ const conversionValidation = [
     (0, express_validator_1.body)('eventValue').optional().isNumeric().withMessage('Event value must be a number'),
     (0, express_validator_1.body)('properties').optional().isObject().withMessage('Properties must be an object'),
 ];
-// Admin routes (require admin role)
 router.post('/', auth_1.authMiddleware, (0, auth_1.requireRole)(['admin', 'manager']), experimentValidation, experimentsController.createExperiment.bind(experimentsController));
 router.get('/', auth_1.authMiddleware, (0, auth_1.requireRole)(['admin', 'manager']), [
     (0, express_validator_1.query)('status').optional().isIn(['draft', 'active', 'paused', 'completed', 'archived']),
@@ -82,10 +80,8 @@ router.post('/:id/start', auth_1.authMiddleware, (0, auth_1.requireRole)(['admin
 router.post('/:id/stop', auth_1.authMiddleware, (0, auth_1.requireRole)(['admin', 'manager']), [(0, express_validator_1.param)('id').isUUID().withMessage('Invalid experiment ID')], experimentsController.stopExperiment.bind(experimentsController));
 router.get('/:id/analytics', auth_1.authMiddleware, (0, auth_1.requireRole)(['admin', 'manager']), [(0, express_validator_1.param)('id').isUUID().withMessage('Invalid experiment ID')], experimentsController.getAnalytics.bind(experimentsController));
 router.delete('/:id', auth_1.authMiddleware, (0, auth_1.requireRole)(['admin']), [(0, express_validator_1.param)('id').isUUID().withMessage('Invalid experiment ID')], experimentsController.deleteExperiment.bind(experimentsController));
-// User-facing routes (for getting variants and tracking conversions)
 router.get('/:experimentId/variant', auth_1.authMiddleware, [(0, express_validator_1.param)('experimentId').isUUID().withMessage('Invalid experiment ID')], experimentsController.getVariant.bind(experimentsController));
 router.post('/:experimentId/track', auth_1.authMiddleware, [(0, express_validator_1.param)('experimentId').isUUID().withMessage('Invalid experiment ID')], conversionValidation, experimentsController.trackConversion.bind(experimentsController));
-// Health check endpoint
 router.get('/health', (req, res) => {
     res.json({
         success: true,

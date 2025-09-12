@@ -1,6 +1,3 @@
-/**
- * Model compatibility layer to bridge sequelize and sequelize-typescript models
- */
 import { Model as SequelizeModel } from 'sequelize';
 export type CompatibleModel<T extends SequelizeModel> = T & {
     new (...args: any[]): T;

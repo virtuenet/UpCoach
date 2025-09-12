@@ -1,7 +1,8 @@
-import { UserProfile } from '../../models/UserProfile';
 import { Goal } from '../../models/Goal';
+import { UserProfile } from '../../models/UserProfile';
 // import { Task } from '../../models/Task';
 import { logger } from '../../utils/logger';
+
 import { aiService } from './AIService';
 // import { predictiveAnalytics } from './PredictiveAnalytics';
 // import { recommendationEngine } from './RecommendationEngine';
@@ -753,7 +754,7 @@ Ensure progressive difficulty and logical skill building.`;
     const history = this.performanceHistory.get(userId) || [];
 
     // Get or create current metrics
-    let currentMetrics = history[history.length - 1] || {
+    const currentMetrics = history[history.length - 1] || {
       completionRate: 0,
       averageScore: 0,
       timeSpent: 0,

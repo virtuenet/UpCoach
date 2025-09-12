@@ -1,10 +1,12 @@
+import { Op } from 'sequelize';
+
 import { Goal } from '../../models/Goal';
-import { Task } from '../../models/Task';
 import { Mood } from '../../models/Mood';
+import { Task } from '../../models/Task';
 import { UserProfile } from '../../models/UserProfile';
 // // import { ChatMessage } from '../../models/ChatMessage';
-import { Op } from 'sequelize';
 import { logger } from '../../utils/logger';
+
 // // import { aiService } from './AIService';
 import { userProfilingService } from './UserProfilingService';
 

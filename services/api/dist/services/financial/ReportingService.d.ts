@@ -1,44 +1,14 @@
 import { FinancialSnapshot } from '../../models';
 export declare class ReportingService {
-    /**
-     * Generate daily financial snapshot
-     */
     generateDailySnapshot(): Promise<FinancialSnapshot>;
-    /**
-     * Generate scheduled reports
-     */
     generateScheduledReports(): Promise<void>;
-    /**
-     * Generate daily summary report
-     */
     private generateDailyReport;
-    /**
-     * Generate weekly business review
-     */
     private generateWeeklyReport;
-    /**
-     * Generate monthly P&L report
-     */
     private generateMonthlyReport;
-    /**
-     * Generate quarterly investor report
-     */
     private generateQuarterlyReport;
-    /**
-     * Check for financial alerts
-     */
     private checkFinancialAlerts;
-    /**
-     * Send alerts to stakeholders
-     */
     private sendAlerts;
-    /**
-     * Send report to stakeholders
-     */
     private sendReportToStakeholders;
-    /**
-     * Get report recipients based on type
-     */
     private getReportRecipients;
     private shouldGenerateDailyReport;
     private shouldGenerateWeeklyReport;

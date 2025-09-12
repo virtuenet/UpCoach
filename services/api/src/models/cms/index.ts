@@ -4,12 +4,14 @@
  */
 
 // Import unified models
-import { UnifiedContent } from './UnifiedContent';
-import { UnifiedCategory } from './UnifiedCategory';
-import { UnifiedTag } from './UnifiedTag';
-import { UnifiedMedia } from './UnifiedMedia';
-import { UnifiedInteraction } from './UnifiedInteraction';
 import { logger } from '../../utils/logger';
+
+import { UnifiedCategory } from './UnifiedCategory';
+import { UnifiedContent } from './UnifiedContent';
+import { UnifiedInteraction } from './UnifiedInteraction';
+import { UnifiedMedia } from './UnifiedMedia';
+import { UnifiedTag } from './UnifiedTag';
+
 
 // ==================== Backward Compatibility Aliases ====================
 

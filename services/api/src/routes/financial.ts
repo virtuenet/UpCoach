@@ -1,10 +1,12 @@
 import { Router, Request, Response, raw } from 'express';
-import { authMiddleware } from '../middleware/auth';
+import Stripe from 'stripe';
+
+import { config } from '../config/environment';
 import { FinancialDashboardController } from '../controllers/financial/FinancialDashboardController';
+import { authMiddleware } from '../middleware/auth';
 import { stripeWebhookService } from '../services/financial/StripeWebhookService';
 import { logger } from '../utils/logger';
-import { config } from '../config/environment';
-import Stripe from 'stripe';
+
 
 const router = Router();
 const financialController = new FinancialDashboardController();

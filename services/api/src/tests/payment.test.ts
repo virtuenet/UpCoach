@@ -1,10 +1,12 @@
-import request from 'supertest';
 import { describe, it, expect, beforeAll, afterAll, beforeEach, jest } from '@jest/globals';
-import app from '../index';
-import { sequelize } from '../config/database';
-import { User } from '../models/User';
+import * as jwt from 'jsonwebtoken';
 import Stripe from 'stripe';
-import jwt from 'jsonwebtoken';
+import request from 'supertest';
+
+import { sequelize } from '../config/database';
+import app from '../index';
+import { User } from '../models/User';
+
 
 // Mock Stripe
 jest.mock('stripe');

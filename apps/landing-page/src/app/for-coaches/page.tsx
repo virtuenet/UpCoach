@@ -16,9 +16,9 @@ import {
   Award,
 } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@upcoach/ui/src/components/Button';
+import { Card } from '@upcoach/ui/src/components/Card';
+import { Badge } from '@upcoach/ui/src/components/Badge';
 import { trackEvent } from '@/services/analytics';
 
 const features = [

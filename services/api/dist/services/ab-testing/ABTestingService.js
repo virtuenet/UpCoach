@@ -12,12 +12,8 @@ const User_1 = require("../../models/User");
 const logger_1 = require("../../utils/logger");
 class ABTestingService {
     static HASH_SEED = 'upcoach-ab-testing';
-    /**
-     * Get variant assignment for a user in an experiment
-     */
     async getVariant(userId, experimentId, context) {
         try {
-            // Check if user already has an assignment
             const existingAssignment = await ExperimentAssignment_1.ExperimentAssignment.getAssignment(experimentId, userId);
             if (existingAssignment && !existingAssignment.isExcluded) {
                 const experiment = await Experiment_1.Experiment.findByPk(experimentId);
@@ -36,12 +32,10 @@ class ABTestingService {
                     assignedAt: existingAssignment.assignedAt,
                 };
             }
-            // Get experiment details
             const experiment = await Experiment_1.Experiment.findByPk(experimentId);
             if (!experiment || !experiment.isActive()) {
                 return null;
             }
-            // Check if user meets segmentation criteria
             const user = await User_1.User.findByPk(userId);
             if (!user)
                 return null;
@@ -49,23 +43,19 @@ class ABTestingService {
                 await ExperimentAssignment_1.ExperimentAssignment.excludeUser(experimentId, userId, 'segmentation_criteria');
                 return null;
             }
-            // Check traffic allocation
             const userHash = this.generateUserHash(userId, experimentId);
             const trafficHash = userHash % 100;
             if (trafficHash >= experiment.trafficAllocation) {
                 await ExperimentAssignment_1.ExperimentAssignment.excludeUser(experimentId, userId, 'traffic_allocation');
                 return null;
             }
-            // Assign variant based on hash
             const variantHash = userHash % 100;
             const variant = experiment.getVariantByAllocation(variantHash);
             if (!variant) {
                 await ExperimentAssignment_1.ExperimentAssignment.excludeUser(experimentId, userId, 'allocationerror');
                 return null;
             }
-            // Create assignment record
             await ExperimentAssignment_1.ExperimentAssignment.createAssignment(experimentId, userId, variant.id, context);
-            // Track assignment event
             await ExperimentEvent_1.ExperimentEvent.trackEvent(experimentId, userId, variant.id, 'experiment_assignment', undefined, { context });
             return {
                 experimentId,
@@ -82,9 +72,6 @@ class ABTestingService {
             return null;
         }
     }
-    /**
-     * Track conversion event for experiment
-     */
     async trackConversion(userId, experimentId, eventType, eventValue, properties) {
         try {
             const assignment = await ExperimentAssignment_1.ExperimentAssignment.getAssignment(experimentId, userId);
@@ -99,9 +86,6 @@ class ABTestingService {
             return false;
         }
     }
-    /**
-     * Get experiment analytics
-     */
     async getExperimentAnalytics(experimentId) {
         try {
             const experiment = await Experiment_1.Experiment.findByPk(experimentId);
@@ -117,7 +101,6 @@ class ABTestingService {
                     },
                 });
                 const totalUsers = assignments.length;
-                // Get conversion metrics for primary metric
                 const conversionMetrics = await ExperimentEvent_1.ExperimentEvent.getConversionRate(experimentId, variant.id, experiment.successCriteria.primaryMetric, experiment.startDate, experiment.endDate);
                 variantAnalytics.push({
                     variantId: variant.id,
@@ -132,9 +115,7 @@ class ABTestingService {
                     },
                 });
             }
-            // Calculate statistical significance
             const statisticalSignificance = await this.calculateStatisticalSignificance(experiment, variantAnalytics);
-            // Generate recommendations
             const recommendations = this.generateRecommendations(experiment, variantAnalytics, statisticalSignificance);
             return {
                 experimentId,
@@ -152,27 +133,19 @@ class ABTestingService {
             return null;
         }
     }
-    /**
-     * Generate user hash for consistent assignment
-     */
     generateUserHash(userId, experimentId) {
         const input = `${userId}-${experimentId}-${ABTestingService.HASH_SEED}`;
         const hash = crypto_1.default.createHash('sha256').update(input).digest('hex');
         return parseInt(hash.substring(0, 8), 16);
     }
-    /**
-     * Check if user meets segmentation criteria
-     */
     meetsSegmentationCriteria(user, segmentation) {
         if (!segmentation)
             return true;
-        // Check include rules
         if (segmentation.includeRules && segmentation.includeRules.length > 0) {
             const meetsIncludeRules = segmentation.includeRules.every((rule) => this.evaluateSegmentRule(user, rule));
             if (!meetsIncludeRules)
                 return false;
         }
-        // Check exclude rules
         if (segmentation.excludeRules && segmentation.excludeRules.length > 0) {
             const meetsExcludeRules = segmentation.excludeRules.some((rule) => this.evaluateSegmentRule(user, rule));
             if (meetsExcludeRules)
@@ -180,9 +153,6 @@ class ABTestingService {
         }
         return true;
     }
-    /**
-     * Evaluate a single segmentation rule
-     */
     evaluateSegmentRule(user, rule) {
         const userValue = this.getNestedProperty(user, rule.field);
         switch (rule.operator) {
@@ -204,15 +174,9 @@ class ABTestingService {
                 return false;
         }
     }
-    /**
-     * Get nested property from object
-     */
     getNestedProperty(obj, path) {
         return path.split('.').reduce((current, key) => current?.[key], obj);
     }
-    /**
-     * Calculate statistical significance using z-test for proportions
-     */
     async calculateStatisticalSignificance(experiment, variants) {
         const controlVariant = variants.find(v => v.isControl);
         const testVariants = variants.filter(v => !v.isControl);
@@ -225,9 +189,7 @@ class ABTestingService {
                 recommendedAction: 'inconclusive',
             };
         }
-        // Use the best performing test variant for comparison
         const bestTestVariant = testVariants.reduce((best, current) => current.conversionRate > best.conversionRate ? current : best);
-        // Calculate z-score for two-proportion test
         const p1 = controlVariant.conversionRate;
         const n1 = controlVariant.totalUsers;
         const p2 = bestTestVariant.conversionRate;
@@ -245,12 +207,11 @@ class ABTestingService {
         const pooledP = (p1 * n1 + p2 * n2) / (n1 + n2);
         const se = Math.sqrt(pooledP * (1 - pooledP) * (1 / n1 + 1 / n2));
         const zScore = (p2 - p1) / se;
-        // Calculate p-value (two-tailed test)
         const pValue = 2 * (1 - this.normalCDF(Math.abs(zScore)));
         const confidenceLevel = experiment.successCriteria.confidenceLevel;
         const alpha = (100 - confidenceLevel) / 100;
         const isSignificant = pValue < alpha;
-        const effect = ((p2 - p1) / p1) * 100; // Percentage change
+        const effect = ((p2 - p1) / p1) * 100;
         const meetsMinimumEffect = Math.abs(effect) >= experiment.successCriteria.minimumDetectableEffect;
         let recommendedAction = 'continue';
         if (isSignificant && meetsMinimumEffect) {
@@ -270,15 +231,9 @@ class ABTestingService {
             recommendedAction,
         };
     }
-    /**
-     * Cumulative distribution function for standard normal distribution
-     */
     normalCDF(x) {
         return 0.5 * (1 + this.erf(x / Math.sqrt(2)));
     }
-    /**
-     * Error function approximation
-     */
     erf(x) {
         const a1 = 0.254829592;
         const a2 = -0.284496736;
@@ -292,9 +247,6 @@ class ABTestingService {
         const y = 1.0 - ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
         return sign * y;
     }
-    /**
-     * Generate recommendations based on experiment results
-     */
     generateRecommendations(experiment, variants, significance) {
         const recommendations = [];
         if (significance.recommendedAction === 'stop') {
@@ -317,7 +269,6 @@ class ABTestingService {
         else {
             recommendations.push('Results are inconclusive. Consider redesigning the experiment.');
         }
-        // Sample size recommendations
         const minSampleSize = experiment.successCriteria.minimumSampleSize;
         const maxUsers = Math.max(...variants.map(v => v.totalUsers));
         if (maxUsers < minSampleSize) {

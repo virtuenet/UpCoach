@@ -1,4 +1,5 @@
 import { DataTypes, Model, Optional } from 'sequelize';
+
 import { sequelize } from '../../config/sequelize';
 
 export interface SystemMetricsAttributes {

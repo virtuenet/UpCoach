@@ -1,23 +1,19 @@
 "use strict";
-/**
- * GDPR Compliance Service
- * Implements GDPR requirements for data protection and privacy
- */
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.gdprService = exports.ConsentPurpose = void 0;
+const crypto_1 = __importDefault(require("crypto"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+const archiver_1 = __importDefault(require("archiver"));
+const date_fns_1 = require("date-fns");
+const sequelize_1 = require("sequelize");
+const database_1 = require("../../config/database");
 const User_1 = require("../../models/User");
 const logger_1 = require("../../utils/logger");
 const redis_1 = require("../redis");
-const database_1 = require("../../config/database");
-const sequelize_1 = require("sequelize");
-const crypto_1 = __importDefault(require("crypto"));
-const archiver_1 = __importDefault(require("archiver"));
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
-const date_fns_1 = require("date-fns");
 var ConsentPurpose;
 (function (ConsentPurpose) {
     ConsentPurpose["MARKETING"] = "marketing";
@@ -34,8 +30,8 @@ var ConsentPurpose;
 class GDPRService {
     static instance;
     consentVersion = '2.0';
-    dataRetentionDays = 365 * 3; // 3 years default
-    deletionGracePeriod = 30; // 30 days before actual deletion
+    dataRetentionDays = 365 * 3;
+    deletionGracePeriod = 30;
     constructor() { }
     static getInstance() {
         if (!GDPRService.instance) {
@@ -43,9 +39,6 @@ class GDPRService {
         }
         return GDPRService.instance;
     }
-    /**
-     * Record user consent
-     */
     async recordConsent(userId, purpose, granted, ipAddress, userAgent) {
         try {
             const consent = {
@@ -53,12 +46,11 @@ class GDPRService {
                 purpose,
                 granted,
                 timestamp: new Date(),
-                ipAddress: this.hashIP(ipAddress), // Hash IP for privacy
+                ipAddress: this.hashIP(ipAddress),
                 userAgent,
                 version: this.consentVersion,
-                expiresAt: granted ? (0, date_fns_1.addDays)(new Date(), 365) : undefined, // Consent expires after 1 year
+                expiresAt: granted ? (0, date_fns_1.addDays)(new Date(), 365) : undefined,
             };
-            // Store in database
             await database_1.sequelize.models.ConsentLog.create({
                 userId,
                 purpose,
@@ -69,11 +61,9 @@ class GDPRService {
                 version: consent.version,
                 expiresAt: consent.expiresAt,
             });
-            // Update user's current consent status in Redis for quick access
             const key = `consent:${userId}:${purpose}`;
             await redis_1.redis.set(key, JSON.stringify(consent));
             logger_1.logger.info('Consent recorded', { userId, purpose, granted });
-            // Trigger consent-based actions
             if (granted) {
                 await this.onConsentGranted(userId, purpose);
             }
@@ -87,9 +77,6 @@ class GDPRService {
             throw new Error('Failed to record consent');
         }
     }
-    /**
-     * Get user's consent status
-     */
     async getConsentStatus(userId) {
         try {
             const purposes = Object.values(ConsentPurpose);
@@ -99,7 +86,6 @@ class GDPRService {
                 const data = await redis_1.redis.get(key);
                 if (data) {
                     const consent = JSON.parse(data);
-                    // Check if consent is still valid
                     if (consent.expiresAt && new Date(consent.expiresAt) < new Date()) {
                         status[purpose] = false;
                     }
@@ -108,8 +94,7 @@ class GDPRService {
                     }
                 }
                 else {
-                    // No consent record means not granted (opt-in approach)
-                    status[purpose] = purpose === ConsentPurpose.NECESSARY; // Only necessary is true by default
+                    status[purpose] = purpose === ConsentPurpose.NECESSARY;
                 }
             }
             return status;
@@ -119,9 +104,6 @@ class GDPRService {
             throw new Error('Failed to get consent status');
         }
     }
-    /**
-     * Request data portability (Right to Data Portability)
-     */
     async requestDataPortability(userId, format = 'json') {
         try {
             const requestId = crypto_1.default.randomUUID();
@@ -131,11 +113,9 @@ class GDPRService {
                 requestedAt: new Date(),
                 status: 'pending',
                 format,
-                expiresAt: (0, date_fns_1.addDays)(new Date(), 7), // Download expires in 7 days
+                expiresAt: (0, date_fns_1.addDays)(new Date(), 7),
             };
-            // Store request
             await redis_1.redis.set(`data-export:${requestId}`, JSON.stringify(request));
-            // Queue for processing
             await this.queueDataExport(request);
             logger_1.logger.info('Data portability requested', { userId, requestId });
             return request;
@@ -145,11 +125,7 @@ class GDPRService {
             throw new Error('Failed to request data export');
         }
     }
-    /**
-     * Process data export
-     */
     async queueDataExport(request) {
-        // In production, this would be a background job
         setTimeout(async () => {
             try {
                 await this.processDataExport(request);
@@ -159,25 +135,17 @@ class GDPRService {
             }
         }, 1000);
     }
-    /**
-     * Export user data
-     */
     async processDataExport(request) {
         try {
             request.status = 'processing';
             await redis_1.redis.set(`data-export:${request.id}`, JSON.stringify(request));
-            // Collect all user data
             const userData = await this.collectUserData(request.userId);
-            // Create export file
             const filePath = await this.createExportFile(userData, request.format, request.userId);
-            // Generate secure download URL
             const downloadUrl = await this.generateSecureDownloadUrl(filePath, request.id);
-            // Update request
             request.status = 'completed';
             request.completedAt = new Date();
             request.downloadUrl = downloadUrl;
             await redis_1.redis.set(`data-export:${request.id}`, JSON.stringify(request));
-            // Notify user
             await this.notifyDataExportReady(request.userId, downloadUrl);
             logger_1.logger.info('Data export completed', { userId: request.userId, requestId: request.id });
         }
@@ -188,22 +156,17 @@ class GDPRService {
             throw error;
         }
     }
-    /**
-     * Collect all user data for export
-     */
     async collectUserData(userId) {
         const userData = {
             exportDate: new Date().toISOString(),
             gdprExportVersion: '1.0',
         };
-        // User profile
         const user = await User_1.User.findByPk(userId, {
             include: ['profile', 'goals', 'tasks', 'moods', 'chats'],
         });
         if (!user) {
             throw new Error('User not found');
         }
-        // Basic user data
         userData.profile = {
             id: user.id,
             email: user.email,
@@ -213,7 +176,6 @@ class GDPRService {
             lastLoginAt: user.lastLoginAt,
             emailVerified: user.emailVerified,
         };
-        // Related data
         userData.goals = user.goals || [];
         userData.tasks = user.tasks || [];
         userData.moods = user.moods || [];
@@ -224,12 +186,10 @@ class GDPRService {
                 response: chat.response,
                 createdAt: chat.createdAt,
             })) || [];
-        // Consent history
         userData.consentHistory = await database_1.sequelize.models.ConsentLog.findAll({
             where: { userId },
             order: [['timestamp', 'DESC']],
         });
-        // Activity logs (last 90 days)
         userData.activityLogs = await database_1.sequelize.models.ActivityLog.findAll({
             where: {
                 userId,
@@ -241,9 +201,6 @@ class GDPRService {
         });
         return userData;
     }
-    /**
-     * Create export file in requested format
-     */
     async createExportFile(data, format, userId) {
         const exportDir = path_1.default.join(process.cwd(), 'exports');
         if (!fs_1.default.existsSync(exportDir)) {
@@ -258,7 +215,6 @@ class GDPRService {
                 fs_1.default.writeFileSync(filePath, JSON.stringify(data, null, 2));
                 break;
             case 'csv':
-                // For CSV, we need to flatten the data structure
                 filePath = path_1.default.join(exportDir, `${baseFileName}.zip`);
                 await this.createCSVExport(data, filePath);
                 break;
@@ -270,15 +226,10 @@ class GDPRService {
             default:
                 throw new Error('Unsupported export format');
         }
-        // Encrypt the file
         const encryptedPath = await this.encryptFile(filePath);
-        // Delete unencrypted file
         fs_1.default.unlinkSync(filePath);
         return encryptedPath;
     }
-    /**
-     * Request account deletion (Right to Erasure)
-     */
     async requestDeletion(userId, reason, immediate = false) {
         try {
             const requestId = crypto_1.default.randomUUID();
@@ -290,16 +241,12 @@ class GDPRService {
                 status: immediate ? 'processing' : 'scheduled',
                 reason,
             };
-            // Check for data that must be retained for legal reasons
             request.retainData = await this.checkLegalRetentionRequirements(userId);
-            // Store request
             await database_1.sequelize.models.DeletionRequest?.create(request);
-            // If immediate, process now
             if (immediate) {
                 await this.processDeletion(request);
             }
             else {
-                // Send confirmation email with cancellation link
                 await this.sendDeletionConfirmation(userId, request);
             }
             logger_1.logger.info('Deletion requested', { userId, requestId, immediate });
@@ -310,9 +257,6 @@ class GDPRService {
             throw new Error('Failed to request account deletion');
         }
     }
-    /**
-     * Cancel deletion request
-     */
     async cancelDeletion(userId, requestId) {
         try {
             const request = await database_1.sequelize.models.DeletionRequest?.findOne({
@@ -331,18 +275,13 @@ class GDPRService {
             throw new Error('Failed to cancel deletion');
         }
     }
-    /**
-     * Process account deletion
-     */
     async processDeletion(request) {
         const transaction = await database_1.sequelize.transaction();
         try {
             request.status = 'processing';
             await database_1.sequelize.models.DeletionRequest.update({ status: request.status }, { where: { id: request.id }, transaction });
             const userId = request.userId;
-            // Anonymize user data instead of hard delete
             const anonymizedId = `deleted_${crypto_1.default.randomBytes(16).toString('hex')}`;
-            // Update user record
             await User_1.User.update({
                 email: `${anonymizedId}@deleted.local`,
                 name: 'Deleted User',
@@ -355,11 +294,8 @@ class GDPRService {
                 where: { id: userId },
                 transaction,
             });
-            // Delete or anonymize related data
             await this.anonymizeUserContent(userId, transaction);
-            // Clear all cache and session data
             await this.clearUserCache(userId);
-            // Update request
             request.status = 'completed';
             request.completedAt = new Date();
             await database_1.sequelize.models.DeletionRequest.update({
@@ -370,7 +306,6 @@ class GDPRService {
                 transaction,
             });
             await transaction.commit();
-            // Log for audit
             await this.logDeletion(userId, request);
             logger_1.logger.info('Account deleted', { userId, requestId: request.id });
         }
@@ -380,9 +315,6 @@ class GDPRService {
             throw error;
         }
     }
-    /**
-     * Report data breach
-     */
     async reportDataBreach(incident) {
         try {
             const breachIncident = {
@@ -390,12 +322,9 @@ class GDPRService {
                 detectedAt: new Date(),
                 ...incident,
             };
-            // Store incident
             await database_1.sequelize.models.DataBreachIncident?.create(breachIncident);
-            // Check if notification is required (within 72 hours)
             if (breachIncident.severity === 'high' || breachIncident.severity === 'critical') {
                 await this.notifyDataProtectionAuthority(breachIncident);
-                // Notify affected users
                 if (!breachIncident.notificationsSent) {
                     await this.notifyAffectedUsers(breachIncident);
                     breachIncident.notificationsSent = true;
@@ -409,9 +338,6 @@ class GDPRService {
             throw new Error('Failed to report data breach');
         }
     }
-    /**
-     * Get data retention policy
-     */
     async getDataRetentionPolicy() {
         return {
             version: '1.0',
@@ -445,9 +371,6 @@ class GDPRService {
             ],
         };
     }
-    /**
-     * Automated data retention cleanup
-     */
     async runDataRetentionCleanup() {
         try {
             const policy = await this.getDataRetentionPolicy();
@@ -461,9 +384,6 @@ class GDPRService {
             throw error;
         }
     }
-    /**
-     * Generate privacy policy data
-     */
     async generatePrivacyPolicyData() {
         return {
             version: '2.0',
@@ -510,33 +430,23 @@ class GDPRService {
             contactDPO: 'dpo@upcoach.ai',
         };
     }
-    /**
-     * Helper methods
-     */
     hashIP(ip) {
-        // Hash IP for privacy while maintaining uniqueness for fraud detection
         return crypto_1.default
             .createHash('sha256')
             .update(ip + process.env.IP_SALT)
             .digest('hex');
     }
     async onConsentGranted(userId, purpose) {
-        // Trigger consent-based features
         logger_1.logger.info('Consent granted', { userId, purpose });
     }
     async onConsentRevoked(userId, purpose) {
-        // Disable consent-based features
         logger_1.logger.info('Consent revoked', { userId, purpose });
     }
     async checkLegalRetentionRequirements(userId) {
         const retainData = [];
-        // Check for ongoing legal cases
-        // Check for financial records (7 year requirement)
-        // Check for regulatory requirements
         return retainData;
     }
     async anonymizeUserContent(userId, transaction) {
-        // Anonymize but don't delete for data integrity
         await database_1.sequelize.models.Chat.update({ userId: null, message: '[DELETED]' }, { where: { userId }, transaction });
         await database_1.sequelize.models.Goal.destroy({
             where: { userId },
@@ -568,46 +478,36 @@ class GDPRService {
         });
     }
     async notifyDataProtectionAuthority(incident) {
-        // In production, this would send notification to DPA
         logger_1.logger.info('DPA notification required', { incidentId: incident.id });
     }
     async notifyAffectedUsers(incident) {
-        // Send notification emails to affected users
         for (const userId of incident.affectedUsers) {
             logger_1.logger.info('User breach notification sent', { userId, incidentId: incident.id });
         }
     }
     async sendDeletionConfirmation(userId, request) {
-        // Send email with cancellation link
         logger_1.logger.info('Deletion confirmation sent', { userId, requestId: request.id });
     }
     async notifyDataExportReady(userId, downloadUrl) {
-        // Send email with download link
         logger_1.logger.info('Data export notification sent', { userId });
     }
     async generateSecureDownloadUrl(filePath, requestId) {
-        // Generate signed URL for secure download
         const token = crypto_1.default.randomBytes(32).toString('hex');
-        await redis_1.redis.setEx(`download:${token}`, 7 * 24 * 60 * 60, filePath); // 7 days expiry
+        await redis_1.redis.setEx(`download:${token}`, 7 * 24 * 60 * 60, filePath);
         return `/api/gdpr/download/${requestId}?token=${token}`;
     }
     async encryptFile(filePath) {
-        // In production, implement proper file encryption
         const encryptedPath = filePath + '.encrypted';
         fs_1.default.copyFileSync(filePath, encryptedPath);
         return encryptedPath;
     }
     async createCSVExport(data, zipPath) {
-        // Create ZIP with multiple CSV files
         const output = fs_1.default.createWriteStream(zipPath);
         const archive = (0, archiver_1.default)('zip', { zlib: { level: 9 } });
         archive.pipe(output);
-        // Add different data types as separate CSV files
-        // Implementation would convert each data type to CSV format
         await archive.finalize();
     }
     jsonToXML(obj) {
-        // Simple JSON to XML conversion
         let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<gdpr-export>\n';
         function convertToXML(data, indent = '  ') {
             let result = '';
@@ -626,10 +526,8 @@ class GDPRService {
         return xml;
     }
     async cleanupCategoryData(category) {
-        // Implement cleanup based on retention policy
         logger_1.logger.info('Cleaning up category data', { type: category.type });
     }
 }
-// Export singleton instance
 exports.gdprService = GDPRService.getInstance();
 //# sourceMappingURL=GDPRService.js.map

@@ -1,6 +1,3 @@
-/**
- * Email service interfaces and types
- */
 export interface EmailOptions {
     to: string | string[];
     subject: string;
@@ -51,9 +48,6 @@ export interface EmailCampaign {
     status?: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed';
     metrics?: Partial<EmailMetrics>;
 }
-/**
- * Email template type definitions
- */
 export type EmailTemplateMap = {
     welcome: {
         name: string;
@@ -143,79 +137,31 @@ export type EmailTemplateMap = {
         achievements: string[];
     };
 };
-/**
- * Main email service interface
- */
 export interface IEmailService {
-    /**
-     * Send an email immediately
-     */
     send<T extends keyof EmailTemplateMap = never>(options: T extends never ? EmailOptions : EmailOptions & {
         template: T;
         data: EmailTemplateMap[T];
     }): Promise<boolean>;
-    /**
-     * Send an email with progress tracking
-     */
     sendWithProgress<T extends keyof EmailTemplateMap = never>(options: T extends never ? EmailOptions : EmailOptions & {
         template: T;
         data: EmailTemplateMap[T];
     }): Promise<EmailProgress>;
-    /**
-     * Queue an email for later sending
-     */
     queue<T extends keyof EmailTemplateMap = never>(options: T extends never ? EmailOptions : EmailOptions & {
         template: T;
         data: EmailTemplateMap[T];
     }): Promise<void>;
-    /**
-     * Queue multiple emails
-     */
     queueBulk(emails: EmailOptions[]): Promise<void>;
-    /**
-     * Get email service metrics
-     */
     getMetrics(): EmailMetrics;
-    /**
-     * Create and schedule an email campaign
-     */
     createCampaign(campaign: EmailCampaign): Promise<string>;
-    /**
-     * Cancel a scheduled campaign
-     */
     cancelCampaign(campaignId: string): Promise<boolean>;
-    /**
-     * Get campaign status
-     */
     getCampaignStatus(campaignId: string): Promise<EmailCampaign | null>;
-    /**
-     * Verify email configuration
-     */
     verifyConfiguration(): Promise<boolean>;
-    /**
-     * Send a test email
-     */
     sendTest(to: string): Promise<boolean>;
-    /**
-     * Process queued emails
-     */
     processQueue(): Promise<void>;
-    /**
-     * Retry failed emails
-     */
     retryFailed(): Promise<number>;
-    /**
-     * Clear the email queue
-     */
     clearQueue(): Promise<void>;
-    /**
-     * Gracefully shutdown the service
-     */
     gracefulShutdown(): Promise<void>;
 }
-/**
- * Email service events
- */
 export interface IEmailServiceEvents {
     'email:sent': (options: EmailOptions) => void;
     'email:failed': (options: EmailOptions, error: Error) => void;
@@ -226,26 +172,14 @@ export interface IEmailServiceEvents {
     'campaign:failed': (campaign: EmailCampaign, error: Error) => void;
     'metrics:updated': (metrics: EmailMetrics) => void;
 }
-/**
- * Email retry strategy
- */
 export interface IEmailRetryStrategy {
     maxRetries: number;
     retryDelay: number;
     backoffMultiplier?: number;
     maxDelay?: number;
-    /**
-     * Calculate delay for next retry
-     */
     getDelay(attempt: number): number;
-    /**
-     * Determine if should retry based on error
-     */
     shouldRetry(error: Error, attempt: number): boolean;
 }
-/**
- * Default retry strategy implementation
- */
 export declare class ExponentialBackoffRetryStrategy implements IEmailRetryStrategy {
     maxRetries: number;
     retryDelay: number;

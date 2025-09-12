@@ -4,65 +4,49 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setupRoutes = void 0;
-const auth_1 = __importDefault(require("./auth"));
-const users_1 = __importDefault(require("./users"));
-const tasks_1 = __importDefault(require("./tasks"));
-const goals_1 = __importDefault(require("./goals"));
-const mood_1 = __importDefault(require("./mood"));
-const chat_1 = __importDefault(require("./chat"));
-const cms_1 = __importDefault(require("./cms"));
-const financial_1 = __importDefault(require("./financial"));
+const auth_1 = require("../middleware/auth");
+const advancedAnalytics_1 = __importDefault(require("./advancedAnalytics"));
 const ai_1 = __importDefault(require("./ai"));
+const financial_1 = __importDefault(require("./financial"));
 const coachContent_1 = __importDefault(require("./coachContent"));
 const referral_1 = __importDefault(require("./referral"));
 const onboarding_1 = __importDefault(require("./onboarding"));
 const forum_1 = __importDefault(require("./forum"));
 const aiAnalytics_1 = __importDefault(require("./aiAnalytics"));
+const auth_2 = __importDefault(require("./auth"));
+const chat_1 = __importDefault(require("./chat"));
+const cms_1 = __importDefault(require("./cms"));
 const coach_1 = __importDefault(require("./coach"));
-const advancedAnalytics_1 = __importDefault(require("./advancedAnalytics"));
-const gamification_1 = __importDefault(require("./gamification"));
-const enterprise_1 = __importDefault(require("./enterprise"));
 const csrf_1 = __importDefault(require("./csrf"));
+const enterprise_1 = __importDefault(require("./enterprise"));
+const gamification_1 = __importDefault(require("./gamification"));
+const goals_1 = __importDefault(require("./goals"));
+const mood_1 = __importDefault(require("./mood"));
+const tasks_1 = __importDefault(require("./tasks"));
 const twoFactorAuth_1 = __importDefault(require("./twoFactorAuth"));
-const auth_2 = require("../middleware/auth");
+const users_1 = __importDefault(require("./users"));
 const setupRoutes = (app) => {
     const apiPrefix = '/api';
-    // Public routes (no authentication required)
-    app.use(`${apiPrefix}/auth`, auth_1.default);
-    app.use(`${apiPrefix}`, csrf_1.default); // CSRF token endpoint
-    // Two-Factor Authentication routes (mixed public and protected)
+    app.use(`${apiPrefix}/auth`, auth_2.default);
+    app.use(`${apiPrefix}`, csrf_1.default);
     app.use(`${apiPrefix}/2fa`, twoFactorAuth_1.default);
-    // Protected routes (authentication required)
-    app.use(`${apiPrefix}/users`, auth_2.authMiddleware, users_1.default);
-    app.use(`${apiPrefix}/tasks`, auth_2.authMiddleware, tasks_1.default);
-    app.use(`${apiPrefix}/goals`, auth_2.authMiddleware, goals_1.default);
-    app.use(`${apiPrefix}/mood`, auth_2.authMiddleware, mood_1.default);
-    app.use(`${apiPrefix}/chat`, auth_2.authMiddleware, chat_1.default);
-    // CMS routes (mixed public and protected)
+    app.use(`${apiPrefix}/users`, auth_1.authMiddleware, users_1.default);
+    app.use(`${apiPrefix}/tasks`, auth_1.authMiddleware, tasks_1.default);
+    app.use(`${apiPrefix}/goals`, auth_1.authMiddleware, goals_1.default);
+    app.use(`${apiPrefix}/mood`, auth_1.authMiddleware, mood_1.default);
+    app.use(`${apiPrefix}/chat`, auth_1.authMiddleware, chat_1.default);
     app.use(`${apiPrefix}/cms`, cms_1.default);
-    // Coach content routes (protected)
-    app.use(`${apiPrefix}/coach-content`, auth_2.authMiddleware, coachContent_1.default);
-    // Financial routes (protected)
-    app.use(`${apiPrefix}/financial`, auth_2.authMiddleware, financial_1.default);
-    // AI routes (protected)
-    app.use(`${apiPrefix}/ai`, auth_2.authMiddleware, ai_1.default);
-    // Referral routes (mixed public and protected)
+    app.use(`${apiPrefix}/coach-content`, auth_1.authMiddleware, coachContent_1.default);
+    app.use(`${apiPrefix}/financial`, auth_1.authMiddleware, financial_1.default);
+    app.use(`${apiPrefix}/ai`, auth_1.authMiddleware, ai_1.default);
     app.use(`${apiPrefix}/referrals`, referral_1.default);
-    // Onboarding routes (protected)
-    app.use(`${apiPrefix}/onboarding`, auth_2.authMiddleware, onboarding_1.default);
-    // Forum routes (mixed public and protected)
+    app.use(`${apiPrefix}/onboarding`, auth_1.authMiddleware, onboarding_1.default);
     app.use(`${apiPrefix}/forum`, forum_1.default);
-    // AI Analytics routes (admin only)
-    app.use(`${apiPrefix}/analytics`, auth_2.authMiddleware, aiAnalytics_1.default);
-    // Coach marketplace routes (mixed public and protected)
+    app.use(`${apiPrefix}/analytics`, auth_1.authMiddleware, aiAnalytics_1.default);
     app.use(`${apiPrefix}`, coach_1.default);
-    // Advanced analytics routes (protected)
     app.use(`${apiPrefix}/advanced-analytics`, advancedAnalytics_1.default);
-    // Gamification routes (protected)
     app.use(`${apiPrefix}/gamification`, gamification_1.default);
-    // Enterprise routes (mixed public and protected)
     app.use(`${apiPrefix}/enterprise`, enterprise_1.default);
-    // API info endpoint
     app.get(`${apiPrefix}`, (_req, res) => {
         res.json({
             name: 'UpCoach Backend API',

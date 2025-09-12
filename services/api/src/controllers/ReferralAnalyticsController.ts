@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import { Op } from 'sequelize';
+
 import { Referral } from '../models/Referral';
 import { User } from '../models/User';
-import { logger } from '../utils/logger';
 import { referralService } from '../services/referral/ReferralService';
+import { logger } from '../utils/logger';
 
 export class ReferralAnalyticsController {
   async getReferralStats(req: Request, res: Response): Promise<void> {

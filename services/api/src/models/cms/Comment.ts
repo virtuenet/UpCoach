@@ -1,4 +1,5 @@
 import { DataTypes, Model, Optional, Op } from 'sequelize';
+
 import { sequelize } from '../../config/sequelize';
 
 export interface CommentAttributes {

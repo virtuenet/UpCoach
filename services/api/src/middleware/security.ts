@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
+
 import { logger } from '../utils/logger';
+
 import { nonceMiddleware, enhancedSecurityHeaders } from './securityNonce';
 
 /**
@@ -225,10 +227,230 @@ export function requestId() {
 }
 
 /**
- * Security monitoring middleware
+ * Advanced SQL injection pattern detection with OWASP coverage
+ */
+interface ThreatDetectionResult {
+  isSuspicious: boolean;
+  threatType?: 'sqli' | 'xss' | 'path_traversal' | 'null_byte';
+  confidence: number; // 0-1 scale
+  pattern?: string;
+}
+
+class AdvancedThreatDetector {
+  private static readonly SQL_INJECTION_PATTERNS = [
+    // UNION-based SQL injection patterns (Critical - CVSS 7.5+)
+    {
+      pattern: /\b(union|union\s+all)\s+(select|distinct)\b/gi,
+      type: 'sqli' as const,
+      confidence: 0.95,
+      name: 'UNION_SELECT'
+    },
+    {
+      pattern: /\bunion\s*(?:\/\*.*?\*\/)?\s*select\b/gi,
+      type: 'sqli' as const,
+      confidence: 0.90,
+      name: 'UNION_SELECT_OBFUSCATED'
+    },
+    {
+      pattern: /\b(?:select|insert|update|delete|drop|create|alter|exec|execute)\s+.*\s+union\b/gi,
+      type: 'sqli' as const,
+      confidence: 0.85,
+      name: 'NESTED_UNION'
+    },
+
+    // Boolean-based blind SQL injection
+    {
+      pattern: /\b(and|or)\s+(\d+\s*=\s*\d+|'[^']*'\s*=\s*'[^']*')(\s*(--|\#|;)|$)/gi,
+      type: 'sqli' as const,
+      confidence: 0.80,
+      name: 'BOOLEAN_BLIND'
+    },
+    {
+      pattern: /\b(and|or)\s+\d+\s*(>|<|>=|<=|=|<>)\s*\d+/gi,
+      type: 'sqli' as const,
+      confidence: 0.75,
+      name: 'BOOLEAN_COMPARISON'
+    },
+
+    // Time-based blind SQL injection
+    {
+      pattern: /\b(sleep|pg_sleep|waitfor\s+delay|benchmark)\s*\(/gi,
+      type: 'sqli' as const,
+      confidence: 0.90,
+      name: 'TIME_BASED_BLIND'
+    },
+    {
+      pattern: /\bif\s*\(.+,\s*(sleep|benchmark|pg_sleep)\s*\(/gi,
+      type: 'sqli' as const,
+      confidence: 0.85,
+      name: 'CONDITIONAL_TIME_BASED'
+    },
+
+    // Error-based SQL injection
+    {
+      pattern: /\b(extractvalue|updatexml|xpath|exp|pow|floor|rand|count)\s*\(/gi,
+      type: 'sqli' as const,
+      confidence: 0.70,
+      name: 'ERROR_BASED_MYSQL'
+    },
+    {
+      pattern: /\b(cast|convert|try_cast)\s*\(.+\s+as\s+(int|numeric|decimal)\s*\)/gi,
+      type: 'sqli' as const,
+      confidence: 0.75,
+      name: 'ERROR_BASED_CAST'
+    },
+
+    // Advanced SQL injection techniques
+    {
+      pattern: /\b(load_file|into\s+outfile|into\s+dumpfile)\s*\(/gi,
+      type: 'sqli' as const,
+      confidence: 0.95,
+      name: 'FILE_OPERATIONS'
+    },
+    {
+      pattern: /\b(exec|execute|sp_executesql|xp_cmdshell)\s*\(/gi,
+      type: 'sqli' as const,
+      confidence: 0.90,
+      name: 'COMMAND_EXECUTION'
+    },
+
+    // SQL injection with encoding/obfuscation
+    {
+      pattern: /(\%[0-9a-fA-F]{2}){4,}/g,
+      type: 'sqli' as const,
+      confidence: 0.60,
+      name: 'URL_ENCODED_PAYLOAD'
+    },
+    {
+      pattern: /\b(select|union|insert|update|delete|drop|create|alter)\s*\/\*.*?\*\/\s*(select|from|where|union|password)/gi,
+      type: 'sqli' as const,
+      confidence: 0.80,
+      name: 'COMMENT_OBFUSCATED'
+    },
+
+    // Subquery and nested injection patterns
+    {
+      pattern: /\b(select|insert|update|delete)\s+.+\s+from\s*\(.+\s+(select|union)\s+.+\)/gi,
+      type: 'sqli' as const,
+      confidence: 0.85,
+      name: 'SUBQUERY_INJECTION'
+    },
+    {
+      pattern: /\bexists\s*\(\s*select\b/gi,
+      type: 'sqli' as const,
+      confidence: 0.80,
+      name: 'EXISTS_SUBQUERY'
+    },
+
+    // Multi-statement injection
+    {
+      pattern: /;\s*(select|insert|update|delete|drop|create|alter)\s+/gi,
+      type: 'sqli' as const,
+      confidence: 0.90,
+      name: 'MULTI_STATEMENT'
+    },
+
+    // Traditional patterns (enhanced)
+    {
+      pattern: /(select.*from|insert.*into|delete.*from|update.*set)\s+/gi,
+      type: 'sqli' as const,
+      confidence: 0.65,
+      name: 'BASIC_SQL_KEYWORDS'
+    },
+
+    // XSS patterns
+    {
+      pattern: /(<script|javascript:|onerror=|onload=|onclick=|onmouseover=)/gi,
+      type: 'xss' as const,
+      confidence: 0.85,
+      name: 'XSS_PATTERNS'
+    },
+
+    // Path traversal
+    {
+      pattern: /(\.\.[\/\\]){2,}/g,
+      type: 'path_traversal' as const,
+      confidence: 0.90,
+      name: 'PATH_TRAVERSAL'
+    },
+
+    // Null byte injection
+    {
+      pattern: /%00|%0d|%0a|\x00/gi,
+      type: 'null_byte' as const,
+      confidence: 0.85,
+      name: 'NULL_BYTE_INJECTION'
+    }
+  ];
+
+  static detectThreats(value: string): ThreatDetectionResult[] {
+    const startTime = process.hrtime.bigint();
+    const results: ThreatDetectionResult[] = [];
+    const decodedValue = this.decodeValue(value);
+    
+    for (const { pattern, type, confidence, name } of this.SQL_INJECTION_PATTERNS) {
+      // Test both original and decoded values
+      const testValues = [value, decodedValue].filter((v, i, arr) => arr.indexOf(v) === i);
+      
+      for (const testValue of testValues) {
+        const matches = testValue.match(pattern);
+        if (matches) {
+          results.push({
+            isSuspicious: true,
+            threatType: type,
+            confidence,
+            pattern: name
+          });
+          
+          // High-confidence patterns trigger immediate response
+          if (confidence >= 0.85) {
+            break;
+          }
+        }
+      }
+    }
+    
+    // Performance monitoring - ensure <5ms processing time
+    const endTime = process.hrtime.bigint();
+    const processingTime = Number(endTime - startTime) / 1000000; // Convert to ms
+    
+    if (processingTime > 5) {
+      logger.warn('SQL injection detection exceeded performance threshold', {
+        processingTime: `${processingTime.toFixed(2)}ms`,
+        valueLength: value.length,
+        resultCount: results.length
+      });
+    }
+    
+    return results;
+  }
+
+  private static decodeValue(value: string): string {
+    try {
+      // URL decode
+      let decoded = decodeURIComponent(value);
+      // HTML entity decode (basic)
+      decoded = decoded
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"')
+        .replace(/&#x27;/g, "'")
+        .replace(/&#x2F;/g, '/');
+      return decoded;
+    } catch {
+      return value;
+    }
+  }
+}
+
+/**
+ * Enhanced security monitoring middleware with advanced threat detection
  */
 export function securityMonitoring() {
   return (req: Request, _res: Response, next: NextFunction) => {
+    const startTime = process.hrtime.bigint();
+    
     // Log security-relevant events
     const securityEvents = [
       '/api/auth/login',
@@ -236,6 +458,7 @@ export function securityMonitoring() {
       '/api/auth/reset-password',
       '/api/admin',
       '/api/financial',
+      '/api/v2/auth/google', // OAuth endpoints
     ];
 
     if (securityEvents.some(path => req.path.startsWith(path))) {
@@ -250,29 +473,72 @@ export function securityMonitoring() {
       });
     }
 
-    // Detect potential security threats
-    const suspiciousPatterns = [
-      /(<script|javascript:|onerror=|onload=)/i,
-      /(union.*select|select.*from|insert.*into|delete.*from)/i,
-      /(\.\.\/?){2,}/,
-      /%00|%0d|%0a/i,
+    // Enhanced threat detection
+    const valuesToCheck = [
+      req.url,
+      JSON.stringify(req.body || {}),
+      JSON.stringify(req.query || {}),
+      req.headers['user-agent'] || '',
+      req.headers['referer'] || '',
     ];
 
-    const checkSuspicious = (value: string): boolean => {
-      return suspiciousPatterns.some(pattern => pattern.test(value));
-    };
+    let highestThreat: ThreatDetectionResult | null = null;
+    const allThreats: ThreatDetectionResult[] = [];
 
-    const url = req.url;
-    const body = JSON.stringify(req.body || {});
+    for (const value of valuesToCheck) {
+      const threats = AdvancedThreatDetector.detectThreats(value);
+      allThreats.push(...threats);
+      
+      // Track highest confidence threat
+      for (const threat of threats) {
+        if (!highestThreat || threat.confidence > highestThreat.confidence) {
+          highestThreat = threat;
+        }
+      }
+    }
 
-    if (checkSuspicious(url) || checkSuspicious(body)) {
-      logger.warn('Suspicious request detected', {
-        event: 'suspicious_request',
+    // Handle high-confidence threats (potential attack)
+    if (highestThreat && highestThreat.confidence >= 0.85) {
+      const endTime = process.hrtime.bigint();
+      const processingTime = Number(endTime - startTime) / 1000000;
+      
+      logger.error('High-confidence security threat detected', {
+        event: 'security_threat_critical',
         path: req.path,
         method: req.method,
         ip: req.ip,
         userAgent: req.headers['user-agent'],
         requestId: req.id,
+        userId: (req as any).user?.id,
+        threatType: highestThreat.threatType,
+        confidence: highestThreat.confidence,
+        pattern: highestThreat.pattern,
+        processingTime: `${processingTime.toFixed(2)}ms`,
+        threatCount: allThreats.length,
+        // Don't log actual payload values for security
+        payloadIndicators: {
+          urlLength: req.url.length,
+          bodySize: JSON.stringify(req.body || {}).length,
+          hasQueryParams: Object.keys(req.query || {}).length > 0
+        }
+      });
+      
+      // For production: Consider blocking the request
+      // For now: Log and monitor
+    }
+    
+    // Log medium-confidence threats for monitoring
+    else if (highestThreat && highestThreat.confidence >= 0.70) {
+      logger.warn('Potential security threat detected', {
+        event: 'security_threat_medium',
+        path: req.path,
+        method: req.method,
+        ip: req.ip,
+        requestId: req.id,
+        threatType: highestThreat.threatType,
+        confidence: highestThreat.confidence,
+        pattern: highestThreat.pattern,
+        threatCount: allThreats.length
       });
     }
 

@@ -53,12 +53,18 @@ COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/apps ./apps
 
 # Prune dev dependencies
-RUN npm prune --production
+RUN npm prune --production \
+    && npm cache clean --force \
+    && find /app -type d -name 'node_modules' -exec chmod 555 {} +
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 USER nodejs
 
-EXPOSE 8080
+EXPOSE 8080 8005 8006 8007
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s \
+    CMD wget -q -O /dev/null http://localhost:8080/health || exit 1
 CMD ["npm", "start"]

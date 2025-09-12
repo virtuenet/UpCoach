@@ -1,5 +1,6 @@
-import { logger } from '../utils/logger';
 import { QueryInterface, DataTypes } from 'sequelize';
+
+import { logger } from '../utils/logger';
 
 export async function up(queryInterface: QueryInterface): Promise<void> {
   // Create categories table

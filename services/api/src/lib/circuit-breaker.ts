@@ -3,8 +3,10 @@
  * Replaces custom CircuitBreaker implementation
  */
 
-import CircuitBreaker from 'opossum';
 import { EventEmitter } from 'events';
+
+import CircuitBreaker from 'opossum';
+
 import { logger } from '../utils/logger';
 
 export interface CircuitBreakerOptions {
@@ -48,11 +50,17 @@ export function createCircuitBreaker<T extends (...args: any[]) => Promise<any>>
   });
 
   breaker.on('halfOpen', () => {
-    console.info(`Circuit breaker half-open: ${breakerOptions.name}`);
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.info(`Circuit breaker half-open: ${breakerOptions.name}`);
+    }
   });
 
   breaker.on('close', () => {
-    console.info(`Circuit breaker closed: ${breakerOptions.name}`);
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.info(`Circuit breaker closed: ${breakerOptions.name}`);
+    }
   });
 
   breaker.on('reject', () => {

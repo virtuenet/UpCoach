@@ -12,7 +12,7 @@ export declare class AIController {
     getLearningPaths(req: Request, _res: Response, next: NextFunction): Promise<void>;
     trackLearningProgress(req: Request, _res: Response, next: NextFunction): Promise<void>;
     getNextModule(req: Request, _res: Response, next: NextFunction): Promise<void>;
-    analyzeVoice(req: Request, _res: Response, next: NextFunction): Promise<Response<any, Record<string, any>>>;
+    analyzeVoice(req: Request, _res: Response, next: NextFunction): Promise<Response<any, Record<string, any>> | undefined>;
     getVoiceCoaching(req: Request, _res: Response, next: NextFunction): Promise<void>;
     getVoiceInsights(req: Request, _res: Response, next: NextFunction): Promise<void>;
     compareVoiceSessions(req: Request, _res: Response, next: NextFunction): Promise<void>;

@@ -3,16 +3,18 @@
  * Implements GDPR requirements for data protection and privacy
  */
 
+import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
+
+import archiver from 'archiver';
+import { addDays, differenceInDays } from 'date-fns';
+import { Op } from 'sequelize';
+
+import { sequelize } from '../../config/database';
 import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
 import { redis } from '../redis';
-import { sequelize } from '../../config/database';
-import { Op } from 'sequelize';
-import crypto from 'crypto';
-import archiver from 'archiver';
-import fs from 'fs';
-import path from 'path';
-import { addDays, differenceInDays } from 'date-fns';
 
 export interface ConsentRecord {
   userId: string;
@@ -349,11 +351,12 @@ class GDPRService {
         await this.createCSVExport(data, filePath);
         break;
 
-      case 'xml':
+      case 'xml': {
         filePath = path.join(exportDir, `${baseFileName}.xml`);
         const xml = this.jsonToXML(data);
         fs.writeFileSync(filePath, xml);
         break;
+      }
 
       default:
         throw new Error('Unsupported export format');

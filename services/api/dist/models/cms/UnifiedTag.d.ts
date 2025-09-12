@@ -1,7 +1,3 @@
-/**
- * Unified Tag Model
- * Consolidates ContentTag and other tag models
- */
 import { Model, Sequelize, Optional } from 'sequelize';
 export interface UnifiedTagAttributes {
     id: string;

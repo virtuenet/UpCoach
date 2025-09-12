@@ -1,7 +1,8 @@
 import { Router } from 'express';
-import { authenticate } from '../middleware/auth';
-import forumController from '../controllers/community/ForumController';
 import { body, query } from 'express-validator';
+
+import forumController from '../controllers/community/ForumController';
+import { authenticate } from '../middleware/auth';
 
 const router = Router();
 

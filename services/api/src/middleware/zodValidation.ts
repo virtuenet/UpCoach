@@ -1,10 +1,13 @@
-import { Request, Response, NextFunction } from 'express';
-import { z, ZodError, ZodSchema } from 'zod';
-import { LRUCache } from 'lru-cache';
 import crypto from 'crypto';
+
 import { Mutex } from 'async-mutex';
+import { Request, Response, NextFunction } from 'express';
+import { LRUCache } from 'lru-cache';
+import { z, ZodError, ZodSchema } from 'zod';
+
 import { logger } from '../utils/logger';
 import { sanitizeObject } from '../utils/sanitization';
+
 import { createRateLimiter } from './rateLimiter';
 
 // Validation result cache configuration with memory limits
@@ -17,7 +20,7 @@ const validationCache = new LRUCache<
 >({
   max: 1000, // Maximum number of cached validations
   maxSize: 50 * 1024 * 1024, // 50MB memory limit
-  sizeCalculation: value => {
+  sizeCalculation: (value: { result: any; timestamp: number }) => {
     // Estimate memory size of cached object
     try {
       return JSON.stringify(value).length;
@@ -28,7 +31,7 @@ const validationCache = new LRUCache<
   ttl: 1000 * 60 * 5, // 5 minute TTL
   updateAgeOnGet: true,
   updateAgeOnHas: false,
-  dispose: (value, key, reason) => {
+  dispose: (value: { result: any; timestamp: number }, key: string, reason: string) => {
     if (reason === 'evict' || reason === 'delete') {
       cacheStats.evictions++;
     }

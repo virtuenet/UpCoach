@@ -1,5 +1,7 @@
 import { QueryTypes } from 'sequelize';
+
 import { sequelize } from '../config/database';
+
 import { logger } from './logger';
 
 // Whitelist of allowed table names to prevent SQL injection

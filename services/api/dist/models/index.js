@@ -4,67 +4,47 @@ exports.SOC2Control = exports.PHIAccessLog = exports.AIFeedback = exports.AIInte
 exports.SystemMetrics = exports.SOC2Audit = exports.SOC2Assessment = exports.SOC2Incident = void 0;
 exports.defineAssociations = defineAssociations;
 exports.initializeDatabase = initializeDatabase;
-const logger_1 = require("../utils/logger");
 const sequelize_1 = require("../config/sequelize");
 Object.defineProperty(exports, "sequelize", { enumerable: true, get: function () { return sequelize_1.sequelize; } });
-const User_1 = require("./User");
-Object.defineProperty(exports, "User", { enumerable: true, get: function () { return User_1.User; } });
-const Goal_1 = require("./Goal");
-Object.defineProperty(exports, "Goal", { enumerable: true, get: function () { return Goal_1.Goal; } });
-const Task_1 = require("./Task");
-Object.defineProperty(exports, "Task", { enumerable: true, get: function () { return Task_1.Task; } });
-const Mood_1 = require("./Mood");
-Object.defineProperty(exports, "Mood", { enumerable: true, get: function () { return Mood_1.Mood; } });
+const logger_1 = require("../utils/logger");
 const Chat_1 = require("./Chat");
 Object.defineProperty(exports, "Chat", { enumerable: true, get: function () { return Chat_1.Chat; } });
 const ChatMessage_1 = require("./ChatMessage");
 Object.defineProperty(exports, "ChatMessage", { enumerable: true, get: function () { return ChatMessage_1.ChatMessage; } });
-// import { PersonalityProfile } from './personality/PersonalityProfile';
-// import { Avatar } from './personality/Avatar';
-// import { UserAvatarPreference } from './personality/UserAvatarPreference';
-// import { KpiTracker } from './analytics/KpiTracker';
-// import { UserAnalytics } from './analytics/UserAnalytics';
-// import { CoachMemory } from './coaching/CoachMemory';
-// import { Article } from './cms/Article';
-// import { Category } from './cms/Category';
-// import { Comment } from './cms/Comment';
-// import { ContentAnalytics } from './cms/ContentAnalytics';
-// import { Course } from './cms/Course';
-// import { Media } from './cms/Media';
-// import { Template } from './cms/Template';
-// import { Content } from './cms/Content';
-// import { ContentCategory } from './cms/ContentCategory';
-// import { ContentTag } from './cms/ContentTag';
-// import { ContentMedia } from './cms/ContentMedia';
-// import { Experiment } from './experiments/Experiment';
-// import { ExperimentAssignment } from './experiments/ExperimentAssignment';
-// import { ExperimentEvent } from './experiments/ExperimentEvent';
-const Transaction_1 = require("./financial/Transaction");
-Object.defineProperty(exports, "Transaction", { enumerable: true, get: function () { return Transaction_1.Transaction; } });
-Object.defineProperty(exports, "TransactionStatus", { enumerable: true, get: function () { return Transaction_1.TransactionStatus; } });
-Object.defineProperty(exports, "TransactionType", { enumerable: true, get: function () { return Transaction_1.TransactionType; } });
-Object.defineProperty(exports, "PaymentMethod", { enumerable: true, get: function () { return Transaction_1.PaymentMethod; } });
-const Subscription_1 = require("./financial/Subscription");
-Object.defineProperty(exports, "Subscription", { enumerable: true, get: function () { return Subscription_1.Subscription; } });
-Object.defineProperty(exports, "SubscriptionStatus", { enumerable: true, get: function () { return Subscription_1.SubscriptionStatus; } });
-Object.defineProperty(exports, "SubscriptionPlan", { enumerable: true, get: function () { return Subscription_1.SubscriptionPlan; } });
-Object.defineProperty(exports, "BillingInterval", { enumerable: true, get: function () { return Subscription_1.BillingInterval; } });
-const CostTracking_1 = require("./financial/CostTracking");
-Object.defineProperty(exports, "CostTracking", { enumerable: true, get: function () { return CostTracking_1.CostTracking; } });
-const FinancialSnapshot_1 = require("./financial/FinancialSnapshot");
-Object.defineProperty(exports, "FinancialSnapshot", { enumerable: true, get: function () { return FinancialSnapshot_1.FinancialSnapshot; } });
-Object.defineProperty(exports, "SnapshotPeriod", { enumerable: true, get: function () { return FinancialSnapshot_1.SnapshotPeriod; } });
 const BillingEvent_1 = require("./financial/BillingEvent");
 Object.defineProperty(exports, "BillingEvent", { enumerable: true, get: function () { return BillingEvent_1.BillingEvent; } });
 Object.defineProperty(exports, "BillingEventType", { enumerable: true, get: function () { return BillingEvent_1.BillingEventType; } });
 Object.defineProperty(exports, "BillingEventSource", { enumerable: true, get: function () { return BillingEvent_1.BillingEventSource; } });
+const CostTracking_1 = require("./financial/CostTracking");
+Object.defineProperty(exports, "CostTracking", { enumerable: true, get: function () { return CostTracking_1.CostTracking; } });
 const FinancialReport_1 = require("./financial/FinancialReport");
 Object.defineProperty(exports, "FinancialReport", { enumerable: true, get: function () { return FinancialReport_1.FinancialReport; } });
 Object.defineProperty(exports, "ReportType", { enumerable: true, get: function () { return FinancialReport_1.ReportType; } });
 Object.defineProperty(exports, "ReportStatus", { enumerable: true, get: function () { return FinancialReport_1.ReportStatus; } });
 Object.defineProperty(exports, "ReportFormat", { enumerable: true, get: function () { return FinancialReport_1.ReportFormat; } });
+const FinancialSnapshot_1 = require("./financial/FinancialSnapshot");
+Object.defineProperty(exports, "FinancialSnapshot", { enumerable: true, get: function () { return FinancialSnapshot_1.FinancialSnapshot; } });
+Object.defineProperty(exports, "SnapshotPeriod", { enumerable: true, get: function () { return FinancialSnapshot_1.SnapshotPeriod; } });
 const RevenueAnalytics_1 = require("./financial/RevenueAnalytics");
 Object.defineProperty(exports, "RevenueAnalytics", { enumerable: true, get: function () { return RevenueAnalytics_1.RevenueAnalytics; } });
+const Subscription_1 = require("./financial/Subscription");
+Object.defineProperty(exports, "Subscription", { enumerable: true, get: function () { return Subscription_1.Subscription; } });
+Object.defineProperty(exports, "SubscriptionStatus", { enumerable: true, get: function () { return Subscription_1.SubscriptionStatus; } });
+Object.defineProperty(exports, "SubscriptionPlan", { enumerable: true, get: function () { return Subscription_1.SubscriptionPlan; } });
+Object.defineProperty(exports, "BillingInterval", { enumerable: true, get: function () { return Subscription_1.BillingInterval; } });
+const Transaction_1 = require("./financial/Transaction");
+Object.defineProperty(exports, "Transaction", { enumerable: true, get: function () { return Transaction_1.Transaction; } });
+Object.defineProperty(exports, "TransactionStatus", { enumerable: true, get: function () { return Transaction_1.TransactionStatus; } });
+Object.defineProperty(exports, "TransactionType", { enumerable: true, get: function () { return Transaction_1.TransactionType; } });
+Object.defineProperty(exports, "PaymentMethod", { enumerable: true, get: function () { return Transaction_1.PaymentMethod; } });
+const Goal_1 = require("./Goal");
+Object.defineProperty(exports, "Goal", { enumerable: true, get: function () { return Goal_1.Goal; } });
+const Mood_1 = require("./Mood");
+Object.defineProperty(exports, "Mood", { enumerable: true, get: function () { return Mood_1.Mood; } });
+const Task_1 = require("./Task");
+Object.defineProperty(exports, "Task", { enumerable: true, get: function () { return Task_1.Task; } });
+const User_1 = require("./User");
+Object.defineProperty(exports, "User", { enumerable: true, get: function () { return User_1.User; } });
 var Experiment_1 = require("./experiments/Experiment");
 Object.defineProperty(exports, "Experiment", { enumerable: true, get: function () { return Experiment_1.Experiment; } });
 var ExperimentAssignment_1 = require("./experiments/ExperimentAssignment");
@@ -83,7 +63,6 @@ var UserAnalytics_1 = require("./analytics/UserAnalytics");
 Object.defineProperty(exports, "UserAnalytics", { enumerable: true, get: function () { return UserAnalytics_1.UserAnalytics; } });
 var KpiTracker_1 = require("./analytics/KpiTracker");
 Object.defineProperty(exports, "KpiTracker", { enumerable: true, get: function () { return KpiTracker_1.KpiTracker; } });
-// CMS models
 var Article_1 = require("./cms/Article");
 Object.defineProperty(exports, "Article", { enumerable: true, get: function () { return Article_1.Article; } });
 var Course_1 = require("./cms/Course");
@@ -104,14 +83,12 @@ var ContentMedia_1 = require("./cms/ContentMedia");
 Object.defineProperty(exports, "ContentMedia", { enumerable: true, get: function () { return ContentMedia_1.ContentMedia; } });
 var Template_1 = require("./cms/Template");
 Object.defineProperty(exports, "Template", { enumerable: true, get: function () { return Template_1.Template; } });
-// AI models
 var UserProfile_1 = require("./UserProfile");
 Object.defineProperty(exports, "UserProfile", { enumerable: true, get: function () { return UserProfile_1.UserProfile; } });
 var AIInteraction_1 = require("./AIInteraction");
 Object.defineProperty(exports, "AIInteraction", { enumerable: true, get: function () { return AIInteraction_1.AIInteraction; } });
 var AIFeedback_1 = require("./AIFeedback");
 Object.defineProperty(exports, "AIFeedback", { enumerable: true, get: function () { return AIFeedback_1.AIFeedback; } });
-// Compliance models
 var PHIAccessLog_1 = require("./compliance/PHIAccessLog");
 Object.defineProperty(exports, "PHIAccessLog", { enumerable: true, get: function () { return PHIAccessLog_1.PHIAccessLog; } });
 var SOC2Control_1 = require("./compliance/SOC2Control");
@@ -124,11 +101,8 @@ var SOC2Audit_1 = require("./compliance/SOC2Audit");
 Object.defineProperty(exports, "SOC2Audit", { enumerable: true, get: function () { return SOC2Audit_1.SOC2Audit; } });
 var SystemMetrics_1 = require("./compliance/SystemMetrics");
 Object.defineProperty(exports, "SystemMetrics", { enumerable: true, get: function () { return SystemMetrics_1.SystemMetrics; } });
-// Define associations
 function defineAssociations() {
-    // Import models for associations
     const { Transaction, Subscription, BillingEvent, Article, Course, Category, ContentAnalytics } = sequelize_1.sequelize.models;
-    // Financial associations
     if (Transaction && Subscription) {
         Transaction.belongsTo(Subscription, { foreignKey: 'subscriptionId', as: 'subscription' });
         Subscription.hasMany(Transaction, { foreignKey: 'subscriptionId', as: 'transactions' });
@@ -137,7 +111,6 @@ function defineAssociations() {
         BillingEvent.belongsTo(Transaction, { foreignKey: 'transactionId', as: 'transaction' });
         BillingEvent.belongsTo(Subscription, { foreignKey: 'subscriptionId', as: 'subscription' });
     }
-    // CMS associations
     if (Article && Category) {
         Article.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });
         Category.hasMany(Article, { foreignKey: 'categoryId', as: 'articles' });
@@ -151,21 +124,13 @@ function defineAssociations() {
         Category.hasMany(Category, { foreignKey: 'parentId', as: 'children' });
     }
     if (ContentAnalytics && Article && Course) {
-        // ContentAnalytics polymorphic associations would be handled in queries
     }
 }
-// Initialize database
 async function initializeDatabase() {
     try {
         await sequelize_1.sequelize.authenticate();
         logger_1.logger.info('Database connection established successfully.');
-        // Define associations
         defineAssociations();
-        // Sync models with database - temporarily disabled for debugging
-        // if (process.env.NODE_ENV !== 'production') {
-        //   await sequelize.sync({ alter: true });
-        //   logger.info('Database models synchronized.');
-        // }
         logger_1.logger.info('Database sync disabled for debugging.');
     }
     catch (error) {

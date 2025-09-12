@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import { recommendationEngine } from '../../services/ai/RecommendationEngine';
-import { conversationalAI } from '../../services/ai/ConversationalAI';
-import { predictiveAnalytics } from '../../services/ai/PredictiveAnalytics';
+
 import { adaptiveLearning } from '../../services/ai/AdaptiveLearning';
-import { voiceAI } from '../../services/ai/VoiceAI';
+import { conversationalAI } from '../../services/ai/ConversationalAI';
 import { insightGenerator } from '../../services/ai/InsightGenerator';
+import { predictiveAnalytics } from '../../services/ai/PredictiveAnalytics';
+import { recommendationEngine } from '../../services/ai/RecommendationEngine';
+import { voiceAI } from '../../services/ai/VoiceAI';
 import { logger } from '../../utils/logger';
 
 export class AIController {

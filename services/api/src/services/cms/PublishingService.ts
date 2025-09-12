@@ -1,13 +1,14 @@
+import * as cron from 'node-cron';
 import { Op } from 'sequelize';
+
 import { ContentArticle } from '../../models/cms/ContentArticle';
 import { ContentCategory } from '../../models/cms/ContentCategory';
 import ContentSchedule from '../../models/cms/ContentSchedule';
 import ContentVersion from '../../models/cms/ContentVersion';
 import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
-import emailService from '../email/UnifiedEmailService';
 import { getCacheService } from '../cache/UnifiedCacheService';
-import cron from 'node-cron';
+import emailService from '../email/UnifiedEmailService';
 
 interface PublishingOptions {
   notifyAuthor?: boolean;

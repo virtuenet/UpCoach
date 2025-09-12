@@ -3,5 +3,11 @@
  * Shared components, hooks, utilities, and services
  */
 
-// Placeholder exports - to be properly implemented
-export const placeholderExport = {};
+// Export all shared utilities and components
+export * from './components';
+export * from './hooks';  
+export * from './utils';
+export * from './services';
+
+// Direct exports for commonly used components
+export { SessionWarningModal, useSessionWarning } from './components/SessionWarningModal';

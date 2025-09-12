@@ -2,5 +2,8 @@
  * Shared utilities index
  */
 
-// Placeholder for shared utilities
+// Performance monitoring utilities
+export * from './performance';
+
+// Placeholder for additional shared utilities
 export const SharedUtils = {};

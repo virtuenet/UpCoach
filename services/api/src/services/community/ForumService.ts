@@ -1,8 +1,9 @@
 import { Op } from 'sequelize';
+
 import { sequelize } from '../../config/database';
 import forumCategoryFactory from '../../models/community/ForumCategory';
-import forumThreadFactory from '../../models/community/ForumThread';
 import forumPostFactory from '../../models/community/ForumPost';
+import forumThreadFactory from '../../models/community/ForumThread';
 import forumVoteFactory from '../../models/community/ForumVote';
 import { User } from '../../models/User';
 import { logger } from '../../utils/logger';

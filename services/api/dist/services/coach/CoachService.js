@@ -4,23 +4,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.coachService = exports.CoachService = void 0;
-const CoachProfile_1 = require("../../models/CoachProfile");
-const CoachSession_1 = require("../../models/CoachSession");
-const CoachReview_1 = require("../../models/CoachReview");
-const CoachPackage_1 = require("../../models/CoachPackage");
-const User_1 = require("../../models/User");
 const sequelize_1 = require("sequelize");
 const models_1 = require("../../models");
+const CoachPackage_1 = require("../../models/CoachPackage");
+const CoachProfile_1 = require("../../models/CoachProfile");
+const CoachReview_1 = require("../../models/CoachReview");
+const CoachSession_1 = require("../../models/CoachSession");
+const User_1 = require("../../models/User");
 const logger_1 = require("../../utils/logger");
-const UnifiedEmailService_1 = __importDefault(require("../email/UnifiedEmailService"));
-// import { stripeService } from '../payment/StripeService'; // TODO: Create StripeService
 const AnalyticsService_1 = require("../analytics/AnalyticsService");
 const UnifiedCacheService_1 = require("../cache/UnifiedCacheService");
+const UnifiedEmailService_1 = __importDefault(require("../email/UnifiedEmailService"));
 class CoachService {
-    // Search and Discovery
     async searchCoaches(filters, page = 1, limit = 20) {
         try {
-            // Build where clause
             const where = {
                 isActive: true,
             };
@@ -67,7 +64,6 @@ class CoachService {
                     { tags: { [sequelize_1.Op.contains]: [filters.search.toLowerCase()] } },
                 ];
             }
-            // Build order clause
             let order = [];
             switch (filters.sortBy) {
                 case 'rating':
@@ -103,9 +99,8 @@ class CoachService {
                 offset,
                 distinct: true,
             });
-            // Cache popular searches
             const cacheKey = `coach-search:${JSON.stringify(filters)}:${page}:${limit}`;
-            await (0, UnifiedCacheService_1.getCacheService)().set(cacheKey, { coaches: rows, total: count }, { ttl: 300 }); // 5 min cache
+            await (0, UnifiedCacheService_1.getCacheService)().set(cacheKey, { coaches: rows, total: count }, { ttl: 300 });
             return {
                 coaches: rows,
                 total: count,
@@ -117,7 +112,6 @@ class CoachService {
             throw error;
         }
     }
-    // Get coach details with full information
     async getCoachDetails(coachId) {
         try {
             const coach = await CoachProfile_1.CoachProfile.findByPk(coachId, {
@@ -136,14 +130,11 @@ class CoachService {
             if (!coach) {
                 return null;
             }
-            // Get recent reviews
             const recentReviews = await CoachReview_1.CoachReview.getCoachReviews(coachId, {
                 limit: 5,
                 sortBy: 'recent',
             });
-            // Get stats
             const stats = await CoachReview_1.CoachReview.getReviewStats(coachId);
-            // Attach additional data
             coach.recentReviews = recentReviews.reviews;
             coach.reviewStats = stats;
             return coach;
@@ -153,7 +144,6 @@ class CoachService {
             throw error;
         }
     }
-    // Check coach availability
     async getCoachAvailability(coachId, startDate, endDate) {
         try {
             const coach = await CoachProfile_1.CoachProfile.findByPk(coachId);
@@ -172,13 +162,10 @@ class CoachService {
                     const [startHour, startMinute] = slot.start.split(':').map(Number);
                     const [_endHour, _endMinute] = slot.end.split(':').map(Number);
                     slotDate.setHours(startHour, startMinute, 0, 0);
-                    // Check if slot is in the future and respects booking buffer
                     const bufferTime = new Date();
                     bufferTime.setHours(bufferTime.getHours() + coach.bookingBufferHours);
                     if (slotDate > bufferTime) {
-                        // Check for conflicts
-                        const hasConflict = await CoachSession_1.CoachSession.checkConflicts(coachId, slotDate, 60 // Default 1 hour slots
-                        );
+                        const hasConflict = await CoachSession_1.CoachSession.checkConflicts(coachId, slotDate, 60);
                         slots.push({
                             date: new Date(slotDate),
                             startTime: slot.start,
@@ -196,25 +183,20 @@ class CoachService {
             throw error;
         }
     }
-    // Book a session
     async bookSession(booking, transaction) {
         try {
-            // Validate coach exists and is available
             const coach = await CoachProfile_1.CoachProfile.findByPk(booking.coachId);
             if (!coach || !coach.isAvailable) {
                 throw new Error('Coach is not available for booking');
             }
-            // Check availability
             const isAvailable = coach.isAvailableAt(booking.scheduledAt);
             if (!isAvailable) {
                 throw new Error('Coach is not available at the requested time');
             }
-            // Check for conflicts
             const hasConflict = await CoachSession_1.CoachSession.checkConflicts(booking.coachId, booking.scheduledAt, booking.durationMinutes);
             if (hasConflict) {
                 throw new Error('Time slot is already booked');
             }
-            // Check if using package
             let clientPackage = null;
             if (booking.packageId) {
                 clientPackage = await CoachPackage_1.ClientCoachPackage.findOne({
@@ -232,11 +214,9 @@ class CoachService {
                     throw new Error('Package is not valid for this coach');
                 }
             }
-            // Calculate pricing
             const hourlyRate = coach.hourlyRate || 0;
             const hours = booking.durationMinutes / 60;
-            const totalAmount = clientPackage ? 0 : hourlyRate * hours; // Free if using package
-            // Create session
+            const totalAmount = clientPackage ? 0 : hourlyRate * hours;
             const session = await CoachSession_1.CoachSession.create({
                 coachId: booking.coachId,
                 clientId: booking.clientId,
@@ -252,15 +232,12 @@ class CoachService {
                 currency: coach.currency,
                 paymentStatus: clientPackage ? 'paid' : 'pending',
             }, { transaction });
-            // Use package session if applicable
             if (clientPackage) {
                 await clientPackage.useSession();
                 session.metadata = { packageId: booking.packageId };
                 await session.save({ transaction });
             }
-            // Send confirmation emails
             await this.sendBookingConfirmationEmails(session, coach);
-            // Track analytics
             await AnalyticsService_1.analyticsService.trackConversion(booking.clientId, 'session_booked', totalAmount, coach.currency, {
                 coachId: booking.coachId,
                 sessionType: booking.sessionType,
@@ -278,7 +255,6 @@ class CoachService {
             throw error;
         }
     }
-    // Process session payment
     async processSessionPayment(sessionId, paymentMethodId) {
         try {
             const session = await CoachSession_1.CoachSession.findByPk(sessionId, {
@@ -290,26 +266,11 @@ class CoachService {
             if (session.paymentStatus === 'paid') {
                 throw new Error('Session already paid');
             }
-            // Process payment through Stripe
-            // TODO: Implement stripeService
-            const payment = { id: `pi_${Date.now()}` }; /* await stripeService.createPaymentIntent({
-              amount: Math.round(session.totalAmount * 100), // Convert to cents
-              currency: session.currency.toLowerCase(),
-              customer: await this.getOrCreateStripeCustomer(session.clientId),
-              payment_method: paymentMethodId,
-              metadata: {
-                sessionId: session.id.toString(),
-                coachId: session.coachId.toString(),
-                clientId: session.clientId.toString(),
-              },
-              confirm: true,
-            }); */
-            // Update session payment status
+            const payment = { id: `pi_${Date.now()}` };
             session.paymentStatus = CoachSession_1.PaymentStatus.PAID;
             session.paymentId = payment.id;
             session.status = CoachSession_1.SessionStatus.CONFIRMED;
             await session.save();
-            // Send payment confirmation
             await this.sendPaymentConfirmationEmails(session);
             logger_1.logger.info('Session payment processed', {
                 sessionId,
@@ -321,7 +282,6 @@ class CoachService {
             throw error;
         }
     }
-    // Submit a review
     async submitReview(sessionId, clientId, reviewData) {
         try {
             const session = await CoachSession_1.CoachSession.findByPk(sessionId);
@@ -334,7 +294,6 @@ class CoachService {
             if (session.status !== CoachSession_1.SessionStatus.COMPLETED) {
                 throw new Error('Can only review completed sessions');
             }
-            // Check if already reviewed
             const existingReview = await CoachReview_1.CoachReview.findOne({
                 where: {
                     sessionId,
@@ -344,15 +303,13 @@ class CoachService {
             if (existingReview) {
                 throw new Error('Session already reviewed');
             }
-            // Create review
             const review = await CoachReview_1.CoachReview.create({
                 coachId: session.coachId,
                 clientId,
                 sessionId,
                 ...reviewData,
-                isVerified: true, // Verified because they completed a session
+                isVerified: true,
             });
-            // Update session with rating
             session.clientRating = reviewData.rating;
             session.clientFeedback = reviewData.comment;
             await session.save();
@@ -368,7 +325,6 @@ class CoachService {
             throw error;
         }
     }
-    // Purchase a package
     async purchasePackage(packageId, clientId, paymentMethodId) {
         try {
             const pkg = await CoachPackage_1.CoachPackage.findByPk(packageId, {
@@ -377,28 +333,13 @@ class CoachService {
             if (!pkg || !pkg.isAvailable()) {
                 throw new Error('Package not available');
             }
-            // Check purchase limit
             const canPurchase = await pkg.canBePurchasedBy(clientId);
             if (!canPurchase) {
                 throw new Error('Purchase limit reached for this package');
             }
-            // Process payment
-            // TODO: Implement stripeService
-            const payment = { id: `pi_${Date.now()}` }; /* await stripeService.createPaymentIntent({
-              amount: Math.round(pkg.price * 100),
-              currency: pkg.currency.toLowerCase(),
-              customer: await this.getOrCreateStripeCustomer(clientId),
-              payment_method: paymentMethodId,
-              metadata: {
-                packageId: packageId.toString(),
-                clientId: clientId.toString(),
-              },
-              confirm: true,
-            }); */
-            // Calculate expiry date
+            const payment = { id: `pi_${Date.now()}` };
             const expiryDate = new Date();
             expiryDate.setDate(expiryDate.getDate() + pkg.validityDays);
-            // Create client package
             const clientPackage = await CoachPackage_1.ClientCoachPackage.create({
                 packageId,
                 clientId,
@@ -408,11 +349,8 @@ class CoachService {
                 amountPaid: pkg.price,
                 status: 'active',
             });
-            // Update package sold count
             await pkg.recordPurchase();
-            // Send confirmation email
             await this.sendPackagePurchaseEmail(clientPackage, pkg);
-            // Track analytics
             await AnalyticsService_1.analyticsService.trackRevenue(clientId, pkg.price, pkg.currency, 'package_purchase', {
                 packageId,
                 coachId: pkg.coachId,
@@ -430,7 +368,6 @@ class CoachService {
             throw error;
         }
     }
-    // Get coach packages
     async getCoachPackages(coachId) {
         try {
             return await CoachPackage_1.CoachPackage.getActivePackages(coachId);
@@ -440,7 +377,6 @@ class CoachService {
             throw error;
         }
     }
-    // Get client sessions
     async getClientSessions(clientId, status, page = 1, limit = 10) {
         try {
             const where = { clientId };
@@ -471,7 +407,6 @@ class CoachService {
             throw error;
         }
     }
-    // Cancel session
     async cancelSession(sessionId, userId, userRole, reason) {
         try {
             const session = await CoachSession_1.CoachSession.findByPk(sessionId, {
@@ -480,7 +415,6 @@ class CoachService {
             if (!session) {
                 throw new Error('Session not found');
             }
-            // Determine who is cancelling
             let cancelledBy;
             if (userRole === 'admin') {
                 cancelledBy = 'system';
@@ -495,7 +429,6 @@ class CoachService {
                 throw new Error('Unauthorized to cancel this session');
             }
             await session.cancel(cancelledBy, reason);
-            // Send cancellation emails
             await this.sendCancellationEmails(session, cancelledBy, reason);
             logger_1.logger.info('Session cancelled', {
                 sessionId,
@@ -508,14 +441,12 @@ class CoachService {
             throw error;
         }
     }
-    // Get marketplace stats for admin
     async getMarketplaceStats() {
         try {
             const now = new Date();
             const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
             const startOfWeek = new Date(now);
             startOfWeek.setDate(now.getDate() - now.getDay());
-            // Get basic counts
             const [totalCoaches, verifiedCoaches, totalSessions, upcomingSessions] = await Promise.all([
                 CoachProfile_1.CoachProfile.count({ where: { isActive: true } }),
                 CoachProfile_1.CoachProfile.count({ where: { isActive: true, isVerified: true } }),
@@ -527,7 +458,6 @@ class CoachService {
                     },
                 }),
             ]);
-            // Get revenue stats
             const revenueStats = await CoachSession_1.CoachSession.findAll({
                 where: {
                     paymentStatus: 'paid',
@@ -541,7 +471,6 @@ class CoachService {
                 ],
                 raw: true,
             });
-            // Get average rating
             const ratingStats = await CoachProfile_1.CoachProfile.findAll({
                 where: {
                     ratingCount: { [sequelize_1.Op.gt]: 0 },
@@ -552,9 +481,7 @@ class CoachService {
                 ],
                 raw: true,
             });
-            // Get sessions over time (last 30 days)
             const sessionsOverTime = await this.getSessionsOverTime(30);
-            // Get revenue by coach (top 10)
             const revenueByCoach = await CoachSession_1.CoachSession.findAll({
                 where: {
                     paymentStatus: 'paid',
@@ -572,13 +499,11 @@ class CoachService {
                 raw: true,
                 nest: true,
             });
-            // Get session types distribution
             const sessionTypes = await CoachSession_1.CoachSession.findAll({
                 attributes: ['sessionType', [sequelize_1.Sequelize.fn('COUNT', '*'), 'value']],
                 group: ['sessionType'],
                 raw: true,
             });
-            // Get top specializations
             const topSpecializations = await models_1.sequelize.query(`
         SELECT 
           unnest(specializations) as specialization,
@@ -639,7 +564,6 @@ class CoachService {
         }
         return data;
     }
-    // Get coach dashboard stats
     async getCoachDashboard(coachId) {
         try {
             const [profile, upcomingSessions, earnings, recentReviews, activePackages] = await Promise.all([
@@ -672,7 +596,6 @@ class CoachService {
             throw error;
         }
     }
-    // Private helper methods
     async calculateCoachEarnings(coachId) {
         const sessions = await CoachSession_1.CoachSession.findAll({
             where: { coachId },
@@ -702,16 +625,7 @@ class CoachService {
         if (user.stripeCustomerId) {
             return user.stripeCustomerId;
         }
-        // Create Stripe customer
-        // TODO: Implement stripe service integration
-        const customer = { id: `cus_${Date.now()}` }; /* await stripeService.createCustomer({
-          email: user.email,
-          name: user.name,
-          metadata: {
-            userId: userId.toString(),
-          },
-        }); */
-        // Save customer ID
+        const customer = { id: `cus_${Date.now()}` };
         user.stripeCustomerId = customer.id;
         await user.save();
         return customer.id;
@@ -794,7 +708,6 @@ class CoachService {
             CoachProfile_1.CoachProfile.findByPk(session.coachId, { include: [User_1.User] }),
         ]);
         const coachUser = coach?.user;
-        // Send to client
         if (client && cancelledBy !== 'client') {
             await UnifiedEmailService_1.default.send({
                 to: client.email,
@@ -812,7 +725,6 @@ class CoachService {
                 },
             });
         }
-        // Send to coach
         if (coachUser && cancelledBy !== 'coach') {
             await UnifiedEmailService_1.default.send({
                 to: coachUser.email,

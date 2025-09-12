@@ -5,7 +5,6 @@ const sequelize_1 = require("sequelize");
 const database_1 = require("../config/database");
 const User_1 = require("./User");
 class Referral extends sequelize_1.Model {
-    // Instance methods
     isExpired() {
         return new Date() > this.expiresAt;
     }
@@ -15,7 +14,6 @@ class Referral extends sequelize_1.Model {
     canBeUsed(userId) {
         return this.isActive() && this.referrerId !== userId && this.refereeId === null;
     }
-    // Class methods
     static async findByCode(code) {
         return Referral.findOne({
             where: { code },
@@ -30,7 +28,7 @@ class Referral extends sequelize_1.Model {
             where: {
                 referrerId: userId,
                 status: 'pending',
-                expiresAt: { [sequelize_2.Op.gt]: new Date() },
+                expiresAt: { [sequelize_1.Op.gt]: new Date() },
             },
         });
     }
@@ -56,17 +54,17 @@ class Referral extends sequelize_1.Model {
             case 'week':
                 const weekAgo = new Date(now);
                 weekAgo.setDate(weekAgo.getDate() - 7);
-                dateFilter = { completedAt: { [sequelize_2.Op.gte]: weekAgo } };
+                dateFilter = { completedAt: { [sequelize_1.Op.gte]: weekAgo } };
                 break;
             case 'month':
                 const monthAgo = new Date(now);
                 monthAgo.setMonth(monthAgo.getMonth() - 1);
-                dateFilter = { completedAt: { [sequelize_2.Op.gte]: monthAgo } };
+                dateFilter = { completedAt: { [sequelize_1.Op.gte]: monthAgo } };
                 break;
             case 'year':
                 const yearAgo = new Date(now);
                 yearAgo.setFullYear(yearAgo.getFullYear() - 1);
-                dateFilter = { completedAt: { [sequelize_2.Op.gte]: yearAgo } };
+                dateFilter = { completedAt: { [sequelize_1.Op.gte]: yearAgo } };
                 break;
         }
         const result = await database_1.sequelize.query(`
@@ -84,16 +82,15 @@ class Referral extends sequelize_1.Model {
       LIMIT :limit
     `, {
             replacements: {
-                startDate: dateFilter.completedAt?.[sequelize_2.Op.gte] || new Date(0),
+                startDate: dateFilter.completedAt?.[sequelize_1.Op.gte] || new Date(0),
                 limit,
             },
-            type: sequelize_2.QueryTypes.SELECT,
+            type: sequelize_1.QueryTypes.SELECT,
         });
         return result;
     }
 }
 exports.Referral = Referral;
-// Initialize the model
 Referral.init({
     id: {
         type: sequelize_1.DataTypes.INTEGER,
@@ -189,7 +186,6 @@ Referral.init({
         },
     ],
 });
-// Define associations
 Referral.belongsTo(User_1.User, {
     foreignKey: 'referrerId',
     as: 'referrer',
@@ -198,7 +194,6 @@ Referral.belongsTo(User_1.User, {
     foreignKey: 'refereeId',
     as: 'referee',
 });
-// Add to User model associations
 User_1.User.hasMany(Referral, {
     foreignKey: 'referrerId',
     as: 'sentReferrals',
@@ -207,6 +202,5 @@ User_1.User.hasOne(Referral, {
     foreignKey: 'refereeId',
     as: 'receivedReferral',
 });
-const sequelize_2 = require("sequelize");
 exports.default = Referral;
 //# sourceMappingURL=Referral.js.map

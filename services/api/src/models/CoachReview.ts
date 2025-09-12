@@ -1,3 +1,5 @@
+import { Op } from 'sequelize';
+import * as sequelize from 'sequelize';
 import {
   Table,
   Column,
@@ -10,11 +12,10 @@ import {
   AfterCreate,
   AfterUpdate,
 } from 'sequelize-typescript';
+
+import type { CoachProfile } from './CoachProfile';
+import type { CoachSession } from './CoachSession';
 import { User } from './User';
-import { CoachProfile } from './CoachProfile';
-import { CoachSession } from './CoachSession';
-import { Op } from 'sequelize';
-import * as sequelize from 'sequelize';
 
 @Table({
   tableName: 'coach_reviews',
@@ -34,14 +35,14 @@ export class CoachReview extends Model {
   })
   declare id: number;
 
-  @ForeignKey(() => CoachProfile)
+  @ForeignKey(() => require('./CoachProfile').CoachProfile)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
   coachId!: number;
 
-  @BelongsTo(() => CoachProfile)
+  @BelongsTo(() => require('./CoachProfile').CoachProfile)
   coach!: CoachProfile;
 
   @ForeignKey(() => User as any)
@@ -54,13 +55,13 @@ export class CoachReview extends Model {
   @BelongsTo(() => User as any)
   client!: any;
 
-  @ForeignKey(() => CoachSession)
+  @ForeignKey(() => require('./CoachSession').CoachSession)
   @Column({
     type: DataType.INTEGER,
   })
   sessionId?: number;
 
-  @BelongsTo(() => CoachSession)
+  @BelongsTo(() => require('./CoachSession').CoachSession)
   session?: CoachSession;
 
   // Ratings
@@ -187,7 +188,8 @@ export class CoachReview extends Model {
 
     if (stats.length > 0) {
       const { avgRating, count } = stats[0] as any;
-      await CoachProfile.update(
+      const { CoachProfile: CoachProfileModel } = require('./CoachProfile');
+      await CoachProfileModel.update(
         {
           averageRating: Number(avgRating).toFixed(2),
           ratingCount: count,
@@ -272,7 +274,7 @@ export class CoachReview extends Model {
           attributes: ['id', 'name', 'profileImageUrl'],
         },
         {
-          model: CoachSession,
+          model: require('./CoachSession').CoachSession,
           attributes: ['id', 'title', 'scheduledAt'],
         },
       ],

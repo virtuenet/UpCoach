@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
+import { body, query, param, validationResult } from 'express-validator';
+
 import { advancedAnalyticsService } from '../services/analytics/AdvancedAnalyticsService';
 import { logger } from '../utils/logger';
-import { body, query, param, validationResult } from 'express-validator';
 
 export class AdvancedAnalyticsController {
   // Create a new cohort

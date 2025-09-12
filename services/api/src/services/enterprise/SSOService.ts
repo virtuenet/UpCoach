@@ -1,12 +1,16 @@
 // // import { Request, Response } from 'express';
+import crypto from 'crypto';
+
+import { SAML } from '@node-saml/node-saml';
+const openidClient = require('openid-client');
+const { Issuer } = openidClient;
+
 import { sequelize } from '../../models';
 import { User } from '../../models/User';
-import { logger } from '../../utils/logger';
 import { AppError } from '../../utils/errors';
-import crypto from 'crypto';
-// import jwt from 'jsonwebtoken';
-import { SAML } from '@node-saml/node-saml';
-import { Issuer, generators } from 'openid-client';
+import { logger } from '../../utils/logger';
+// import { sign, verify, decode, TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken';
+
 import { sessionStore } from './SessionStore';
 
 export interface SSOConfiguration {
@@ -218,8 +222,8 @@ export class SSOService {
   async initiateOIDCLogin(configId: number): Promise<string> {
     const client = await this.getOIDCClient(configId);
 
-    const codeVerifier = generators.codeVerifier();
-    const codeChallenge = generators.codeChallenge(codeVerifier);
+    const codeVerifier = crypto.randomBytes(32).toString('base64url');
+    const codeChallenge = crypto.createHash('sha256').update(codeVerifier).digest('base64url');
 
     // Get redirect URI from config
     const [configs] = await sequelize.query(
@@ -481,7 +485,6 @@ export class SSOService {
         callbackUrl: `${process.env.BASE_URL}/api/sso/saml/callback/${configId}`,
         entryPoint: config.saml_idp_url,
         issuer: `${process.env.BASE_URL}/saml/${config.organization_id}`,
-        cert: config.saml_idp_cert,
         idpCert: config.saml_idp_cert,
         privateKey: this.decrypt(config.saml_sp_key),
         signatureAlgorithm: 'sha256',

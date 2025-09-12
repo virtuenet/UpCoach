@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import { body, query, param, validationResult } from 'express-validator';
-import CoachIntelligenceService from '../services/coaching/CoachIntelligenceService';
-import CoachMemory from '../models/coaching/CoachMemory';
-import UserAnalytics from '../models/analytics/UserAnalytics';
+
 import KpiTracker from '../models/analytics/KpiTracker';
+import UserAnalytics from '../models/analytics/UserAnalytics';
+import CoachMemory from '../models/coaching/CoachMemory';
+import CoachIntelligenceService from '../services/coaching/CoachIntelligenceService';
 import { logger } from '../utils/logger';
 
 /**
@@ -559,7 +560,7 @@ export class CoachIntelligenceController {
     try {
       const { cohortId, periodType = 'weekly' } = req.query;
 
-      let whereClause: any = {};
+      const whereClause: any = {};
 
       if (cohortId) {
         whereClause['$UserAnalytics.benchmarkData.cohortId$'] = cohortId;

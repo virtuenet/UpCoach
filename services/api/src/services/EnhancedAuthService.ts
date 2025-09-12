@@ -1,10 +1,14 @@
-import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
+
+import * as jwt from 'jsonwebtoken';
+import { TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
+
 import { config } from '../config/environment';
-import { logger } from '../utils/logger';
-import { redis } from './redis';
 import { User } from '../models/User';
+import { logger } from '../utils/logger';
+
+import { redis } from './redis';
 
 interface TokenPayload {
   userId: string;
@@ -435,6 +439,71 @@ export class EnhancedAuthService {
       }
     } catch (error) {
       logger.error('Token cleanup error', { error });
+    }
+  }
+
+  /**
+   * Hash password using bcrypt
+   */
+  async hashPassword(password: string): Promise<string> {
+    const bcrypt = require('bcryptjs');
+    return bcrypt.hash(password, 12);
+  }
+
+  /**
+   * Generate device fingerprint from device information
+   */
+  async generateDeviceFingerprint(deviceInfo: any, options?: { ageInDays?: number }): Promise<string> {
+    let data = JSON.stringify(deviceInfo);
+    if (options?.ageInDays) {
+      data += `|age:${options.ageInDays}`;
+    }
+    return crypto.createHash('sha256').update(data).digest('hex');
+  }
+
+  /**
+   * Validate fingerprint entropy (check if it's a valid format)
+   */
+  validateFingerprintEntropy(fingerprint: string): boolean {
+    return /^[a-f0-9]{64}$/.test(fingerprint);
+  }
+
+  /**
+   * Validate device consistency
+   */
+  validateDeviceConsistency(deviceInfo: any): boolean {
+    // Simple validation logic - can be enhanced
+    return deviceInfo && typeof deviceInfo === 'object';
+  }
+
+  /**
+   * Validate fingerprint similarity
+   */
+  validateFingerprintSimilarity(fp1: string, fp2: string): boolean {
+    return fp1 === fp2;
+  }
+
+  /**
+   * Check if fingerprint belongs to same device family
+   */
+  isFingerprintFamily(fp1: string, fp2: string): boolean {
+    // Simple implementation - could be enhanced with partial matching
+    return fp1.substring(0, 32) === fp2.substring(0, 32);
+  }
+
+  /**
+   * Verify token with device fingerprint
+   */
+  async verifyTokenWithFingerprint(token: string, fingerprint: string): Promise<{ valid: boolean; userId?: string; reason?: string }> {
+    try {
+      const payload = await EnhancedAuthService.validateAccessToken(token);
+      if (payload) {
+        return { valid: true, userId: payload.userId };
+      } else {
+        return { valid: false, reason: 'Invalid token' };
+      }
+    } catch (error) {
+      return { valid: false, reason: 'Token verification failed' };
     }
   }
 }

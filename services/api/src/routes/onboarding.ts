@@ -1,8 +1,9 @@
 import { Router, Request, Response } from 'express';
+import { body } from 'express-validator';
+
+import onboardingController from '../controllers/OnboardingController';
 import { authMiddleware as authenticateToken } from '../middleware/auth';
 import { validateRequest } from '../middleware/validation';
-import { body } from 'express-validator';
-import onboardingController from '../controllers/OnboardingController';
 
 const router = Router();
 

@@ -17,17 +17,8 @@ export interface AuthenticatedRequest extends Request {
         role: string;
     };
 }
-/**
- * Authentication middleware
- */
 export declare const authMiddleware: (req: Request, _res: Response, next: NextFunction) => Promise<void>;
-/**
- * Admin authorization middleware
- */
 export declare const adminMiddleware: (req: Request, _res: Response, next: NextFunction) => void;
-/**
- * Optional auth middleware
- */
 export declare const optionalAuthMiddleware: (req: Request, _res: Response, next: NextFunction) => Promise<void>;
 export declare const requireRole: (roles: string | string[]) => (req: Request, _res: Response, next: NextFunction) => void;
 export declare const authorizeRoles: (roles: string | string[]) => (req: Request, _res: Response, next: NextFunction) => void;

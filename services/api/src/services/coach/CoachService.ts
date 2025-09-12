@@ -1,15 +1,16 @@
-import { CoachProfile } from '../../models/CoachProfile';
-import { CoachSession, SessionStatus, SessionType, PaymentStatus } from '../../models/CoachSession';
-import { CoachReview } from '../../models/CoachReview';
-import { CoachPackage, ClientCoachPackage } from '../../models/CoachPackage';
-import { User } from '../../models/User';
 import { Transaction, Op, Sequelize, QueryTypes } from 'sequelize';
+
 import { sequelize } from '../../models';
+import { CoachPackage, ClientCoachPackage } from '../../models/CoachPackage';
+import { CoachProfile } from '../../models/CoachProfile';
+import { CoachReview } from '../../models/CoachReview';
+import { CoachSession, SessionStatus, SessionType, PaymentStatus } from '../../models/CoachSession';
+import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
-import emailService from '../email/UnifiedEmailService';
-// import { stripeService } from '../payment/StripeService'; // TODO: Create StripeService
 import { analyticsService } from '../analytics/AnalyticsService';
 import { getCacheService } from '../cache/UnifiedCacheService';
+import emailService from '../email/UnifiedEmailService';
+import { stripeService } from '../payment/StripeService';
 
 interface CoachSearchFilters {
   specialization?: string;
@@ -389,11 +390,10 @@ export class CoachService {
       }
 
       // Process payment through Stripe
-      // TODO: Implement stripeService
-      const payment = { id: `pi_${Date.now()}` }; /* await stripeService.createPaymentIntent({
+      const payment = await stripeService.createPaymentIntent({
         amount: Math.round(session.totalAmount * 100), // Convert to cents
         currency: session.currency.toLowerCase(),
-        customer: await this.getOrCreateStripeCustomer(session.clientId),
+        customer: await stripeService.getOrCreateCustomer(session.clientId),
         payment_method: paymentMethodId,
         metadata: {
           sessionId: session.id.toString(),
@@ -401,7 +401,7 @@ export class CoachService {
           clientId: session.clientId.toString(),
         },
         confirm: true,
-      }); */
+      });
 
       // Update session payment status
       session.paymentStatus = PaymentStatus.PAID;
@@ -510,18 +510,17 @@ export class CoachService {
       }
 
       // Process payment
-      // TODO: Implement stripeService
-      const payment = { id: `pi_${Date.now()}` }; /* await stripeService.createPaymentIntent({
+      const payment = await stripeService.createPaymentIntent({
         amount: Math.round(pkg.price * 100),
         currency: pkg.currency.toLowerCase(),
-        customer: await this.getOrCreateStripeCustomer(clientId),
+        customer: await stripeService.getOrCreateCustomer(clientId),
         payment_method: paymentMethodId,
         metadata: {
           packageId: packageId.toString(),
           clientId: clientId.toString(),
         },
         confirm: true,
-      }); */
+      });
 
       // Calculate expiry date
       const expiryDate = new Date();
@@ -896,32 +895,6 @@ export class CoachService {
     };
   }
 
-  private async getOrCreateStripeCustomer(userId: number): Promise<string> {
-    const user = await User.findByPk(userId);
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    if ((user as any).stripeCustomerId) {
-      return (user as any).stripeCustomerId;
-    }
-
-    // Create Stripe customer
-    // TODO: Implement stripe service integration
-    const customer = { id: `cus_${Date.now()}` }; /* await stripeService.createCustomer({
-      email: user.email,
-      name: user.name,
-      metadata: {
-        userId: userId.toString(),
-      },
-    }); */
-
-    // Save customer ID
-    (user as any).stripeCustomerId = customer.id;
-    await user.save();
-
-    return customer.id;
-  }
 
   private async sendBookingConfirmationEmails(
     session: CoachSession,

@@ -4,16 +4,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SSOService = void 0;
-// // import { Request, Response } from 'express';
+const crypto_1 = __importDefault(require("crypto"));
+const node_saml_1 = require("@node-saml/node-saml");
+const openid_client_1 = require("openid-client");
 const models_1 = require("../../models");
 const User_1 = require("../../models/User");
-const logger_1 = require("../../utils/logger");
 const errors_1 = require("../../utils/errors");
-const crypto_1 = __importDefault(require("crypto"));
-// import jwt from 'jsonwebtoken';
-const node_saml_1 = require("@node-saml/node-saml");
-// @ts-ignore - openid-client types may not be available
-const openid_client_1 = require("openid-client");
+const logger_1 = require("../../utils/logger");
 const SessionStore_1 = require("./SessionStore");
 class SSOService {
     samlProviders = new Map();
@@ -21,9 +18,7 @@ class SSOService {
     async createSSOConfiguration(organizationId, config) {
         const transaction = await models_1.sequelize.transaction();
         try {
-            // Validate configuration based on provider
             this.validateSSOConfig(config);
-            // Encrypt sensitive data
             const encryptedConfig = {
                 ...config,
                 saml_sp_key: config.samlSpKey ? this.encrypt(config.samlSpKey) : null,
@@ -62,7 +57,6 @@ class SSOService {
             });
             await transaction.commit();
             const configId = result[0].id;
-            // Initialize provider
             await this.initializeProvider(configId);
             logger_1.logger.info('SSO configuration created', {
                 organizationId,
@@ -91,19 +85,15 @@ class SSOService {
             if (!profile) {
                 throw new errors_1.AppError('Invalid SAML response', 400);
             }
-            // Get SSO config
             const [configs] = await models_1.sequelize.query(`SELECT * FROM sso_configurations WHERE id = :configId`, { replacements: { configId } });
             const config = configs[0];
-            // Extract user attributes
             const attributes = this.extractSAMLAttributes(profile, config.attribute_mapping);
-            // Check allowed domains
             if (config.allowed_domains && config.allowed_domains.length > 0) {
                 const emailDomain = attributes.email.split('@')[1];
                 if (!config.allowed_domains.includes(emailDomain)) {
                     throw new errors_1.AppError('Email domain not allowed', 403);
                 }
             }
-            // Find or create user
             let user = await User_1.User.findOne({ where: { email: attributes.email } });
             if (!user && config.auto_provision_users) {
                 user = await this.provisionUser(config.organization_id, attributes, config.default_role, transaction);
@@ -111,10 +101,9 @@ class SSOService {
             else if (!user) {
                 throw new errors_1.AppError('User not found and auto-provisioning is disabled', 404);
             }
-            // Create SSO session
             const sessionId = crypto_1.default.randomUUID();
             const expiresAt = new Date();
-            expiresAt.setHours(expiresAt.getHours() + 8); // 8 hour session
+            expiresAt.setHours(expiresAt.getHours() + 8);
             await models_1.sequelize.query(`INSERT INTO sso_sessions 
          (user_id, organization_id, sso_configuration_id, session_id, 
           idp_session_id, attributes, expires_at)
@@ -149,16 +138,13 @@ class SSOService {
         const client = await this.getOIDCClient(configId);
         const codeVerifier = openid_client_1.generators.codeVerifier();
         const codeChallenge = openid_client_1.generators.codeChallenge(codeVerifier);
-        // Get redirect URI from config
         const [configs] = await models_1.sequelize.query(`SELECT oidc_redirect_uri FROM sso_configurations WHERE id = :configId`, { replacements: { configId } });
         const redirectUri = configs[0].oidc_redirect_uri;
-        // Create session with code verifier
         const state = await SessionStore_1.sessionStore.createSession(configId, redirectUri);
-        // Store code verifier in session
         const session = await SessionStore_1.sessionStore.getSession(state);
         if (session) {
             session.codeVerifier = codeVerifier;
-            await SessionStore_1.sessionStore.createSession(configId, redirectUri); // Re-save with verifier
+            await SessionStore_1.sessionStore.createSession(configId, redirectUri);
         }
         const authUrl = client.authorizationUrl({
             scope: 'openid email profile',
@@ -174,28 +160,22 @@ class SSOService {
         const transaction = await models_1.sequelize.transaction();
         try {
             const client = await this.getOIDCClient(configId);
-            // Exchange code for tokens
             const tokenSet = await client.callback(undefined, { code }, { code_verifier: codeVerifier });
-            // Get user info
             const userinfo = await client.userinfo(tokenSet.access_token);
-            // Get SSO config
             const [configs] = await models_1.sequelize.query(`SELECT * FROM sso_configurations WHERE id = :configId`, { replacements: { configId } });
             const config = configs[0];
-            // Extract user attributes
             const attributes = {
                 email: userinfo.email,
                 firstName: userinfo.given_name,
                 lastName: userinfo.family_name,
                 fullName: userinfo.name,
             };
-            // Check allowed domains
             if (config.allowed_domains && config.allowed_domains.length > 0) {
                 const emailDomain = attributes.email.split('@')[1];
                 if (!config.allowed_domains.includes(emailDomain)) {
                     throw new errors_1.AppError('Email domain not allowed', 403);
                 }
             }
-            // Find or create user
             let user = await User_1.User.findOne({ where: { email: attributes.email } });
             if (!user && config.auto_provision_users) {
                 user = await this.provisionUser(config.organization_id, attributes, config.default_role, transaction);
@@ -203,7 +183,6 @@ class SSOService {
             else if (!user) {
                 throw new errors_1.AppError('User not found and auto-provisioning is disabled', 404);
             }
-            // Create SSO session
             const sessionId = crypto_1.default.randomUUID();
             const expiresAt = new Date();
             expiresAt.setHours(expiresAt.getHours() + 8);
@@ -246,12 +225,9 @@ class SSOService {
             return null;
         }
         const session = sessions[0];
-        // Mark session as expired
         await models_1.sequelize.query(`UPDATE sso_sessions SET expires_at = NOW() WHERE session_id = :sessionId`, { replacements: { sessionId } });
-        // Return logout URL based on provider
         if (session.provider === 'saml') {
             const saml = await this.getSAMLProvider(session.sso_configuration_id);
-            // @ts-ignore - method name may vary
             if (saml.getLogoutUrlAsync) {
                 return await saml.getLogoutUrlAsync(session.idp_session_id, {}, {});
             }
@@ -260,7 +236,6 @@ class SSOService {
             }
             return null;
         }
-        // For OIDC, return end session endpoint
         if (session.provider === 'oidc') {
             const client = await this.getOIDCClient(session.sso_configuration_id);
             if (client.endSessionUrl) {
@@ -273,16 +248,13 @@ class SSOService {
         return null;
     }
     async provisionUser(organizationId, attributes, defaultRole, transaction) {
-        // Create user
         const user = await User_1.User.create({
             email: attributes.email,
             name: attributes.fullName ||
                 `${attributes.firstName} ${attributes.lastName}` ||
                 attributes.email,
-            role: defaultRole || 'user', // Add role field
-            // SSO users are pre-verified
+            role: defaultRole || 'user',
         }, { transaction });
-        // Add to organization
         await models_1.sequelize.query(`INSERT INTO organization_members 
        (organization_id, user_id, role, employee_id, department)
        VALUES (:organizationId, :userId, :role, :employeeId, :department)`, {
@@ -295,7 +267,6 @@ class SSOService {
             },
             transaction,
         });
-        // Add to default team
         const [teams] = await models_1.sequelize.query(`SELECT id FROM teams 
        WHERE organization_id = :organizationId 
        AND settings->>'isDefault' = 'true'`, {
@@ -330,7 +301,6 @@ class SSOService {
                 callbackUrl: `${process.env.BASE_URL}/api/sso/saml/callback/${configId}`,
                 entryPoint: config.saml_idp_url,
                 issuer: `${process.env.BASE_URL}/saml/${config.organization_id}`,
-                // @ts-ignore - cert/idpCert compatibility
                 cert: config.saml_idp_cert,
                 idpCert: config.saml_idp_cert,
                 privateKey: this.decrypt(config.saml_sp_key),
@@ -401,7 +371,6 @@ class SSOService {
         for (const [key, samlKey] of Object.entries(actualMapping)) {
             attributes[key] = profile[samlKey];
         }
-        // Ensure email is present
         if (!attributes.email) {
             throw new errors_1.AppError('Email attribute not found in SAML response', 400);
         }
@@ -449,11 +418,9 @@ class SSOService {
     async updateSSOConfiguration(configId, updates) {
         const transaction = await models_1.sequelize.transaction();
         try {
-            // Validate updates
             if (updates.provider) {
                 throw new errors_1.AppError('Cannot change SSO provider type', 400);
             }
-            // Encrypt sensitive data if provided
             const encryptedUpdates = { ...updates };
             if (updates.samlSpKey) {
                 encryptedUpdates.saml_sp_key = this.encrypt(updates.samlSpKey);
@@ -463,7 +430,6 @@ class SSOService {
                 encryptedUpdates.oidc_client_secret = this.encrypt(updates.oidcClientSecret);
                 delete encryptedUpdates.oidcClientSecret;
             }
-            // Build update query
             const updateFields = Object.keys(encryptedUpdates)
                 .map(key => `${this.camelToSnake(key)} = :${key}`)
                 .join(', ');
@@ -474,7 +440,6 @@ class SSOService {
                 transaction,
             });
             await transaction.commit();
-            // Clear cached provider
             this.samlProviders.delete(configId);
             this.oidcClients.delete(configId);
             logger_1.logger.info('SSO configuration updated', { configId });

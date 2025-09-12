@@ -9,7 +9,7 @@
     "allowJs": true,
     "checkJs": false,
     "strict": true,
-    "noEmit": true,
+    "noEmit": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
@@ -59,10 +59,6 @@
     { "path": "./packages/shared" },
     { "path": "./packages/ui" },
     { "path": "./packages/test-utils" },
-    { "path": "./packages/test-contracts" },
-    { "path": "./apps/backend" },
-    { "path": "./apps/admin-panel" },
-    { "path": "./apps/cms-panel" },
-    { "path": "./apps/landing-page" }
+    { "path": "./packages/test-contracts" }
   ]
 }

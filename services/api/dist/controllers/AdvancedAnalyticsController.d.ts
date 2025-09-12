@@ -1,15 +1,15 @@
 import { Request, Response } from 'express';
 export declare class AdvancedAnalyticsController {
-    createCohort: (import("express-validator").ValidationChain | ((req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>))[];
-    getCohortRetention: (import("express-validator").ValidationChain | ((req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>))[];
-    compareCohorts: (import("express-validator").ValidationChain | ((req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>))[];
-    createFunnel: (import("express-validator").ValidationChain | ((req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>))[];
-    getFunnelAnalytics: (import("express-validator").ValidationChain | ((req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>))[];
-    trackActivity: (import("express-validator").ValidationChain | ((req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>))[];
-    trackFunnelStep: (import("express-validator").ValidationChain | ((req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>))[];
-    getFeatureAdoption: (import("express-validator").ValidationChain | ((req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>))[];
+    createCohort: (import("express-validator").ValidationChain | ((req: Request, _res: Response) => Promise<Response<any, Record<string, any>> | undefined>))[];
+    getCohortRetention: (import("express-validator").ValidationChain | ((req: Request, _res: Response) => Promise<Response<any, Record<string, any>> | undefined>))[];
+    compareCohorts: (import("express-validator").ValidationChain | ((req: Request, _res: Response) => Promise<Response<any, Record<string, any>> | undefined>))[];
+    createFunnel: (import("express-validator").ValidationChain | ((req: Request, _res: Response) => Promise<Response<any, Record<string, any>> | undefined>))[];
+    getFunnelAnalytics: (import("express-validator").ValidationChain | ((req: Request, _res: Response) => Promise<Response<any, Record<string, any>> | undefined>))[];
+    trackActivity: (import("express-validator").ValidationChain | ((req: Request, _res: Response) => Promise<Response<any, Record<string, any>> | undefined>))[];
+    trackFunnelStep: (import("express-validator").ValidationChain | ((req: Request, _res: Response) => Promise<Response<any, Record<string, any>> | undefined>))[];
+    getFeatureAdoption: (import("express-validator").ValidationChain | ((req: Request, _res: Response) => Promise<Response<any, Record<string, any>> | undefined>))[];
     getUserLifecycleStage: (req: Request, _res: Response) => Promise<void>;
-    getRevenueAnalytics: (import("express-validator").ValidationChain | ((req: Request, _res: Response) => Promise<Response<any, Record<string, any>>>))[];
+    getRevenueAnalytics: (import("express-validator").ValidationChain | ((req: Request, _res: Response) => Promise<Response<any, Record<string, any>> | undefined>))[];
     getCohorts: (_req: Request, _res: Response) => Promise<void>;
     getFunnels: (_req: Request, _res: Response) => Promise<void>;
 }

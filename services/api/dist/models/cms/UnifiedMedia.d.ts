@@ -1,7 +1,3 @@
-/**
- * Unified Media Model
- * Consolidates Media, ContentMedia, and attachment models
- */
 import { Model, Sequelize, Optional } from 'sequelize';
 export interface UnifiedMediaAttributes {
     id: string;

@@ -1,5 +1,6 @@
 // import { Op } from 'sequelize';
 import { /* startOfDay, endOfDay, */ startOfMonth, endOfMonth, format } from 'date-fns';
+
 import {
   FinancialReport,
   FinancialSnapshot,
@@ -7,9 +8,11 @@ import {
   ReportStatus,
   ReportFormat,
 } from '../../models';
-import { financialService } from './FinancialService';
-import { emailService } from '../email/UnifiedEmailService';
 import { logger } from '../../utils/logger';
+import { emailService } from '../email/UnifiedEmailService';
+
+import { financialService } from './FinancialService';
+
 
 export class ReportingService {
   /**

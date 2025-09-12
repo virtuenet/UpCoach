@@ -1,15 +1,17 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+
+import * as jwt from 'jsonwebtoken';
 import request from 'supertest';
-import { app } from '../../index';
-import { AIService } from '../../services/ai/AIService';
-import { UserProfilingService } from '../../services/ai/UserProfilingService';
-import { RecommendationEngine } from '../../services/ai/RecommendationEngine';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+
 import { sequelize } from '../../config/database';
+import app from '../../index';
+import { Goal } from '../../models/Goal';
 import { User } from '../../models/User';
 import { UserProfile } from '../../models/UserProfile';
-import { Goal } from '../../models/Goal';
-import jwt from 'jsonwebtoken';
+import { AIService } from '../../services/ai/AIService';
+import { RecommendationEngine } from '../../services/ai/RecommendationEngine';
+import { UserProfilingService } from '../../services/ai/UserProfilingService';
+
 
 // Mock external API calls
 jest.mock('openai');
@@ -111,12 +113,14 @@ describe('AI Services Integration Tests', () => {
         learningStyle: 'visual',
         communicationPreference: 'supportive',
         preferences: {},
-        profileMetrics: {},
         behaviorPatterns: {
-          mostActiveTimeOfDay: 'morning',
-          preferredCategories: ['health', 'productivity'],
+          avgSessionDuration: 25,
+          completionRate: 0.8,
+          engagementLevel: 0.7,
+          preferredTopics: ['health', 'productivity'],
+          responseTime: 5,
+          consistencyScore: 0.75,
         },
-        insights: [],
       });
 
       // Create some goals
@@ -126,21 +130,26 @@ describe('AI Services Integration Tests', () => {
         description: 'Get fit',
         category: 'health',
         targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        status: 'active',
+        status: 'in_progress',
         progress: 30,
       });
     });
 
     test('GET /api/ai/recommendations - should get personalized recommendations', async () => {
       // Mock AI response
-      jest.spyOn(AIService.prototype, 'generateStructuredResponse').mockResolvedValue({
-        recommendations: [
-          {
-            title: 'Morning Meditation',
-            description: 'Start with 5 minutes of meditation',
-            reason: 'Helps with your health goals',
-          },
-        ],
+      jest.spyOn(AIService.prototype, 'generateResponse').mockResolvedValue({
+        content: JSON.stringify({
+          recommendations: [
+            {
+              title: 'Morning Meditation',
+              description: 'Start with 5 minutes of meditation',
+              reason: 'Helps with your health goals',
+            },
+          ],
+        }),
+        usage: { total_tokens: 100, input_tokens: 80, output_tokens: 20 },
+        model: 'gpt-4',
+        provider: 'openai',
       });
 
       const response = await request(app)
@@ -166,15 +175,20 @@ describe('AI Services Integration Tests', () => {
     });
 
     test('GET /api/ai/recommendations/schedule - should generate adaptive schedule', async () => {
-      jest.spyOn(AIService.prototype, 'generateStructuredResponse').mockResolvedValue({
-        schedule: [
-          {
-            time: '08:00',
-            activity: 'Morning exercise',
-            duration: 30,
-            type: 'habit',
-          },
-        ],
+      jest.spyOn(AIService.prototype, 'generateResponse').mockResolvedValue({
+        content: JSON.stringify({
+          schedule: [
+            {
+              time: '08:00',
+              activity: 'Morning exercise',
+              duration: 30,
+              type: 'habit',
+            },
+          ],
+        }),
+        usage: { total_tokens: 100, input_tokens: 80, output_tokens: 20 },
+        model: 'gpt-4',
+        provider: 'openai',
       });
 
       const response = await request(app)
@@ -194,7 +208,7 @@ describe('AI Services Integration Tests', () => {
         content: 'I can help you with that goal!',
         provider: 'openai',
         model: 'gpt-4',
-        usage: { totalTokens: 100 },
+        usage: { total_tokens: 100, input_tokens: 80, output_tokens: 20 },
       });
 
       const response = await request(app)
@@ -216,7 +230,7 @@ describe('AI Services Integration Tests', () => {
         content: 'Based on your morning routine...',
         provider: 'openai',
         model: 'gpt-4',
-        usage: { totalTokens: 100 },
+        usage: { total_tokens: 100, input_tokens: 80, output_tokens: 20 },
       });
 
       const response = await request(app)
@@ -241,16 +255,18 @@ describe('AI Services Integration Tests', () => {
       // Create profile with insights
       await UserProfile.update(
         {
-          insights: [
-            {
-              id: 'insight-1',
-              type: 'pattern',
-              title: 'Morning Productivity',
-              description: 'You are most productive in the morning',
-              impact: 'high',
-              category: 'productivity',
-            },
-          ],
+          metadata: {
+            insights: [
+              {
+                id: 'insight-1',
+                type: 'pattern',
+                title: 'Morning Productivity',
+                description: 'You are most productive in the morning',
+                impact: 'high',
+                category: 'productivity',
+              },
+            ],
+          },
         },
         { where: { userId: testUser.id } }
       );

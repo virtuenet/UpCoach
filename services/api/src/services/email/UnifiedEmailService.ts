@@ -3,14 +3,17 @@
  * Merges EmailService.ts, email/EmailService.ts, and EmailAutomationService.ts
  */
 
-import nodemailer, { Transporter } from 'nodemailer';
+import * as crypto from 'crypto';
 import { promises as fs } from 'fs';
 import path from 'path';
+
 import handlebars from 'handlebars';
-import * as crypto from 'crypto';
-import { logger } from '../../utils/logger';
-import { User } from '../../models/User';
+import { createTransport, Transporter } from 'nodemailer';
+
+
 import { FinancialReport } from '../../models';
+import { User } from '../../models/User';
+import { logger } from '../../utils/logger';
 import { UnifiedCacheService, getCacheService } from '../cache/UnifiedCacheService';
 
 export interface EmailOptions {
@@ -78,7 +81,7 @@ export class UnifiedEmailService {
       },
     };
 
-    this.transporter = nodemailer.createTransport(config);
+    this.transporter = createTransport(config);
 
     // Verify connection
     this.transporter.verify(error => {

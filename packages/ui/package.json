@@ -44,12 +44,16 @@
     "react-dom": "^18.0.0"
   },
   "devDependencies": {
+    "@storybook/addon-a11y": "^7.6.3",
+    "@storybook/addon-controls": "^7.6.3",
+    "@storybook/addon-docs": "^7.6.3",
     "@storybook/addon-essentials": "^7.6.3",
     "@storybook/addon-interactions": "^7.6.3",
     "@storybook/addon-links": "^7.6.3",
     "@storybook/blocks": "^7.6.3",
     "@storybook/react": "^7.6.3",
     "@storybook/react-vite": "^7.6.3",
+    "@storybook/test": "^7.6.3",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "react": "^18.2.0",

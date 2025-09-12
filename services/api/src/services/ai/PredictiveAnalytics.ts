@@ -1,11 +1,13 @@
-import { Goal } from '../../models/Goal';
-import { Task } from '../../models/Task';
-import { Mood } from '../../models/Mood';
-import { UserProfile } from '../../models/UserProfile';
-import { ChatMessage } from '../../models/ChatMessage';
-import { Chat } from '../../models/Chat';
 import { Op } from 'sequelize';
+
+import { Chat } from '../../models/Chat';
+import { ChatMessage } from '../../models/ChatMessage';
+import { Goal } from '../../models/Goal';
+import { Mood } from '../../models/Mood';
+import { Task } from '../../models/Task';
+import { UserProfile } from '../../models/UserProfile';
 import { logger } from '../../utils/logger';
+
 import { aiService } from './AIService';
 // import { sequelize } from '../../config/database';
 

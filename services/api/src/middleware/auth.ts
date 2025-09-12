@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
+import { sign, verify, decode, TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken';
+import * as crypto from 'crypto';
 
 import { config } from '../config/environment';
 import { redis } from '../services/redis';
@@ -85,7 +85,7 @@ export const authMiddleware = async (
     }
 
     // Enhanced JWT verification with algorithm specification and issuer validation
-    const decoded = jwt.verify(token, config.jwt.secret, {
+    const decoded = verify(token, config.jwt.secret, {
       algorithms: ['HS256'], // Prevent algorithm confusion attacks
       issuer: 'upcoach-api',
       audience: 'upcoach-client',
@@ -130,7 +130,7 @@ export const authMiddleware = async (
 
     next();
   } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
+    if (error instanceof TokenExpiredError) {
       _res.status(401).json({
         success: false,
         error: 'Token has expired',
@@ -139,7 +139,7 @@ export const authMiddleware = async (
       return;
     }
 
-    if (error instanceof jwt.JsonWebTokenError) {
+    if (error instanceof JsonWebTokenError) {
       _res.status(401).json({
         success: false,
         error: 'Invalid token',
@@ -186,7 +186,7 @@ export const optionalAuthMiddleware = async (
       // Check if token is blacklisted
       const isBlacklisted = await redis.get(`blacklist:${token}`);
       if (!isBlacklisted) {
-        const decoded = jwt.verify(token, config.jwt.secret, {
+        const decoded = verify(token, config.jwt.secret, {
           algorithms: ['HS256'],
           issuer: 'upcoach-api',
           audience: 'upcoach-client',
@@ -330,14 +330,14 @@ export const generateTokens = (
     ...(req ? { fingerprint: generateUserFingerprint(req) } : {}),
   };
 
-  const accessToken = jwt.sign(payload, config.jwt.secret, {
+  const accessToken = sign(payload, config.jwt.secret, {
     expiresIn: config.jwt.expiresIn,
     issuer: 'upcoach-api',
     audience: 'upcoach-client',
     algorithm: 'HS256',
   } as any);
 
-  const refreshToken = jwt.sign(
+  const refreshToken = sign(
     { userId, type: 'refresh' }, 
     config.jwt.refreshSecret, 
     {
@@ -353,7 +353,7 @@ export const generateTokens = (
 
 export const verifyRefreshToken = (token: string): { userId: string } => {
   try {
-    const decoded = jwt.verify(token, config.jwt.refreshSecret, {
+    const decoded = verify(token, config.jwt.refreshSecret, {
       algorithms: ['HS256'],
       issuer: 'upcoach-api',
       audience: 'upcoach-client',
@@ -371,7 +371,7 @@ export const verifyRefreshToken = (token: string): { userId: string } => {
 
 export const blacklistToken = async (token: string): Promise<void> => {
   try {
-    const decoded = jwt.decode(token) as any;
+    const decoded = decode(token) as any;
     if (!decoded || !decoded.exp) {
       return;
     }

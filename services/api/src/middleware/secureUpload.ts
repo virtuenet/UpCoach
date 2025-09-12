@@ -1,9 +1,11 @@
-import multer from 'multer';
+import crypto from 'crypto';
+import fs from 'fs/promises';
+import path from 'path';
+
 import { Request, Response, NextFunction } from 'express';
 import { fileTypeFromBuffer } from 'file-type';
-import crypto from 'crypto';
-import path from 'path';
-import fs from 'fs/promises';
+import multer, { diskStorage, memoryStorage, MulterError } from 'multer';
+
 import { logger } from '../utils/logger';
 
 // Define allowed MIME types with their magic bytes
@@ -269,7 +271,7 @@ export class SecureUploadMiddleware {
     maxFileSize?: number;
     maxFiles?: number;
   }) {
-    const storage = multer.memoryStorage();
+    const storage = memoryStorage();
 
     return multer({
       storage,
@@ -280,7 +282,7 @@ export class SecureUploadMiddleware {
       fileFilter: async (
         req: Request,
         file: Express.Multer.File,
-        callback: multer.FileFilterCallback
+        callback: (error: Error | null, acceptFile?: boolean) => void
       ) => {
         try {
           // Basic MIME type check (will be validated more thoroughly later)

@@ -1,8 +1,4 @@
 "use strict";
-/**
- * Unified Email Service - Combines all email functionality
- * Merges EmailService.ts, email/EmailService.ts, and EmailAutomationService.ts
- */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -41,13 +37,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.emailService = exports.UnifiedEmailService = void 0;
-const nodemailer_1 = __importDefault(require("nodemailer"));
+const crypto = __importStar(require("crypto"));
 const fs_1 = require("fs");
 const path_1 = __importDefault(require("path"));
 const handlebars_1 = __importDefault(require("handlebars"));
-const crypto = __importStar(require("crypto"));
-const logger_1 = require("../../utils/logger");
+const nodemailer_1 = __importDefault(require("nodemailer"));
 const User_1 = require("../../models/User");
+const logger_1 = require("../../utils/logger");
 const UnifiedCacheService_1 = require("../cache/UnifiedCacheService");
 class UnifiedEmailService {
     transporter;
@@ -80,7 +76,6 @@ class UnifiedEmailService {
             },
         };
         this.transporter = nodemailer_1.default.createTransport(config);
-        // Verify connection
         this.transporter.verify(error => {
             if (error) {
                 logger_1.logger.error('Email service initialization failed:', error);
@@ -91,7 +86,6 @@ class UnifiedEmailService {
         });
     }
     registerHelpers() {
-        // Date formatting
         handlebars_1.default.registerHelper('formatDate', (date) => {
             return new Date(date).toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -99,18 +93,15 @@ class UnifiedEmailService {
                 day: 'numeric',
             });
         });
-        // Currency formatting
         handlebars_1.default.registerHelper('formatCurrency', (amount) => {
             return new Intl.NumberFormat('en-US', {
                 style: 'currency',
                 currency: 'USD',
             }).format(amount);
         });
-        // Percentage formatting
         handlebars_1.default.registerHelper('formatPercent', (value) => {
             return `${(value * 100).toFixed(2)}%`;
         });
-        // Conditional helpers
         handlebars_1.default.registerHelper('ifEquals', function (arg1, arg2, options) {
             return arg1 === arg2 ? options.fn(this) : options.inverse(this);
         });
@@ -118,11 +109,7 @@ class UnifiedEmailService {
             return arg1 > arg2 ? options.fn(this) : options.inverse(this);
         });
     }
-    /**
-     * Load and compile email template
-     */
     async loadTemplate(templateName) {
-        // Check cache
         if (this.templateCache.has(templateName)) {
             return this.templateCache.get(templateName);
         }
@@ -130,7 +117,6 @@ class UnifiedEmailService {
             const templatePath = path_1.default.join(__dirname, '../../templates/emails', `${templateName}.hbs`);
             const templateContent = await fs_1.promises.readFile(templatePath, 'utf-8');
             const compiled = handlebars_1.default.compile(templateContent);
-            // Cache compiled template
             this.templateCache.set(templateName, compiled);
             return compiled;
         }
@@ -139,23 +125,17 @@ class UnifiedEmailService {
             throw new Error(`Email template ${templateName} not found`);
         }
     }
-    /**
-     * Send an email
-     */
     async send(options) {
         try {
             let html = options.html;
             let text = options.text;
-            // If template is provided, compile it
             if (options.template && options.data) {
                 const template = await this.loadTemplate(options.template);
                 html = template(options.data);
-                // Generate text version from HTML if not provided
                 if (!text) {
                     text = this.htmlToText(html);
                 }
             }
-            // Add tracking pixel for open tracking
             if (html && process.env.EMAIL_TRACKING_ENABLED === 'true') {
                 const trackingId = this.generateTrackingId(options.to);
                 html += `<img src="${process.env.API_URL}/api/email/track/${trackingId}" width="1" height="1" />`;
@@ -184,26 +164,18 @@ class UnifiedEmailService {
         catch (error) {
             this.metrics.failed++;
             logger_1.logger.error('Failed to send email:', error);
-            // Add to retry queue if it's a temporary failure
             if (this.isTemporaryFailure(error)) {
                 this.queuedEmails.push(options);
             }
             return false;
         }
     }
-    /**
-     * Send email to queue for batch processing
-     */
     async queue(options) {
         this.queuedEmails.push(options);
-        // Start processing if not already running
         if (!this.isProcessing) {
             this.processQueue();
         }
     }
-    /**
-     * Process queued emails
-     */
     async processQueue() {
         if (this.isProcessing || this.queuedEmails.length === 0) {
             return;
@@ -213,7 +185,6 @@ class UnifiedEmailService {
             const email = this.queuedEmails.shift();
             try {
                 await this.send(email);
-                // Rate limiting - wait between emails
                 await new Promise(resolve => setTimeout(resolve, 100));
             }
             catch (error) {
@@ -222,19 +193,13 @@ class UnifiedEmailService {
         }
         this.isProcessing = false;
     }
-    /**
-     * Start queue processor interval
-     */
     startQueueProcessor() {
         this.queueProcessInterval = setInterval(() => {
             if (this.queuedEmails.length > 0) {
                 this.processQueue();
             }
-        }, 30000); // Process every 30 seconds
+        }, 30000);
     }
-    /**
-     * Send welcome email
-     */
     async sendWelcomeEmail(user) {
         return this.send({
             to: user.email,
@@ -247,9 +212,6 @@ class UnifiedEmailService {
             },
         });
     }
-    /**
-     * Send password reset email
-     */
     async sendPasswordResetEmail(user, resetToken) {
         return this.send({
             to: user.email,
@@ -263,9 +225,6 @@ class UnifiedEmailService {
             priority: 'high',
         });
     }
-    /**
-     * Send financial alert email
-     */
     async sendFinancialAlert(alert) {
         const priorityColors = {
             low: '#4CAF50',
@@ -285,9 +244,6 @@ class UnifiedEmailService {
             priority: alert.priority,
         });
     }
-    /**
-     * Send financial report email
-     */
     async sendFinancialReport(report) {
         return this.send({
             to: report.to,
@@ -303,16 +259,11 @@ class UnifiedEmailService {
             })),
         });
     }
-    /**
-     * Send campaign email to multiple recipients
-     */
     async sendCampaign(campaign) {
         let successful = 0;
         let failed = 0;
-        // Cache campaign data for performance
         const cacheKey = `campaign:${campaign.name}`;
         await this.cache.set(cacheKey, campaign, { ttl: 3600 });
-        // Process in batches
         const batchSize = 50;
         for (let i = 0; i < campaign.recipients.length; i += batchSize) {
             const batch = campaign.recipients.slice(i, i + batchSize);
@@ -335,7 +286,6 @@ class UnifiedEmailService {
                     failed++;
                 }
             });
-            // Rate limiting between batches
             await new Promise(resolve => setTimeout(resolve, 1000));
         }
         logger_1.logger.info(`Campaign ${campaign.name} completed:`, {
@@ -345,11 +295,7 @@ class UnifiedEmailService {
         });
         return { successful, failed };
     }
-    /**
-     * Send automated email based on trigger
-     */
     async sendAutomatedEmail(trigger, userId, data) {
-        // Map triggers to templates
         const triggerTemplates = {
             goal_completed: 'goal-completion',
             streak_milestone: 'streak-achievement',
@@ -362,7 +308,6 @@ class UnifiedEmailService {
             logger_1.logger.warn(`No template found for trigger: ${trigger}`);
             return false;
         }
-        // Get user data
         const user = await User_1.User.findByPk(userId);
         if (!user) {
             logger_1.logger.error(`User not found: ${userId}`);
@@ -378,9 +323,6 @@ class UnifiedEmailService {
             },
         });
     }
-    /**
-     * Get automated email subject based on trigger
-     */
     getAutomatedSubject(trigger, data) {
         const subjects = {
             goal_completed: `🎉 Congratulations! You've completed your goal`,
@@ -391,56 +333,40 @@ class UnifiedEmailService {
         };
         return subjects[trigger] || 'Update from UpCoach';
     }
-    /**
-     * Convert HTML to plain text
-     */
     htmlToText(html) {
         return html
-            .replace(/<[^>]*>/g, '') // Remove HTML tags
-            .replace(/&nbsp;/g, ' ') // Replace nbsp
-            .replace(/&amp;/g, '&') // Replace amp
-            .replace(/&lt;/g, '<') // Replace lt
-            .replace(/&gt;/g, '>') // Replace gt
-            .replace(/&quot;/g, '"') // Replace quot
-            .replace(/&#39;/g, "'") // Replace apostrophe
-            .replace(/\s+/g, ' ') // Normalize whitespace
+            .replace(/<[^>]*>/g, '')
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/\s+/g, ' ')
             .trim();
     }
-    /**
-     * Generate secure tracking ID for email
-     */
     generateTrackingId(recipient) {
         const recipientStr = Array.isArray(recipient) ? recipient[0] : recipient;
         const timestamp = Date.now();
         const secret = process.env.EMAIL_TRACKING_SECRET || crypto.randomBytes(32).toString('hex');
-        // Create a cryptographically secure hash
         const hash = crypto
             .createHmac('sha256', secret)
             .update(`${recipientStr}:${timestamp}`)
             .digest('hex');
-        // Store the mapping in cache for reverse lookup
         const trackingData = { email: recipientStr, timestamp, hash };
-        this.cache.set(`email:tracking:${hash}`, trackingData, { ttl: 86400 }); // 24 hours TTL
+        this.cache.set(`email:tracking:${hash}`, trackingData, { ttl: 86400 });
         return hash;
     }
-    /**
-     * Check if error is temporary
-     */
     isTemporaryFailure(error) {
         const temporaryErrors = ['ETIMEDOUT', 'ECONNRESET', 'ENOTFOUND', 'ENETUNREACH', 'EHOSTUNREACH'];
         return temporaryErrors.includes(error.code);
     }
-    /**
-     * Track email open securely
-     */
     async trackOpen(trackingId) {
         try {
-            // Validate tracking ID format (should be a hex string)
             if (!/^[a-f0-9]{64}$/i.test(trackingId)) {
                 logger_1.logger.warn('Invalid tracking ID format');
                 return;
             }
-            // Retrieve tracking data from cache
             const trackingData = await this.cache.get(`email:tracking:${trackingId}`);
             if (!trackingData) {
                 logger_1.logger.warn('Tracking ID not found or expired');
@@ -456,17 +382,12 @@ class UnifiedEmailService {
             logger_1.logger.error('Failed to track email open:', error);
         }
     }
-    /**
-     * Track email click securely
-     */
     async trackClick(trackingId, url) {
         try {
-            // Validate tracking ID format
             if (!/^[a-f0-9]{64}$/i.test(trackingId)) {
                 logger_1.logger.warn('Invalid tracking ID format');
                 return;
             }
-            // Validate URL to prevent open redirect vulnerabilities
             try {
                 const urlObj = new URL(url);
                 const allowedDomains = (process.env.ALLOWED_REDIRECT_DOMAINS || 'localhost,upcoach.ai')
@@ -481,7 +402,6 @@ class UnifiedEmailService {
                 logger_1.logger.warn('Invalid URL provided:', url);
                 return;
             }
-            // Retrieve tracking data from cache
             const trackingData = await this.cache.get(`email:tracking:${trackingId}`);
             if (!trackingData) {
                 logger_1.logger.warn('Tracking ID not found or expired');
@@ -498,21 +418,12 @@ class UnifiedEmailService {
             logger_1.logger.error('Failed to track email click:', error);
         }
     }
-    /**
-     * Get email metrics
-     */
     getMetrics() {
         return { ...this.metrics };
     }
-    /**
-     * Clear template cache
-     */
     clearTemplateCache() {
         this.templateCache.clear();
     }
-    /**
-     * Test email configuration
-     */
     async testConnection() {
         try {
             await this.transporter.verify();
@@ -523,17 +434,12 @@ class UnifiedEmailService {
             return false;
         }
     }
-    /**
-     * Gracefully shutdown the service
-     */
     async shutdown() {
         logger_1.logger.info('Shutting down UnifiedEmailService...');
-        // Stop queue processor
         if (this.queueProcessInterval) {
             clearInterval(this.queueProcessInterval);
             this.queueProcessInterval = undefined;
         }
-        // Process remaining queued emails with timeout
         if (this.queuedEmails.length > 0) {
             logger_1.logger.info(`Processing ${this.queuedEmails.length} remaining emails...`);
             const timeout = setTimeout(() => {
@@ -546,7 +452,6 @@ class UnifiedEmailService {
                 clearTimeout(timeout);
             }
         }
-        // Close transporter connection
         if (this.transporter) {
             try {
                 this.transporter.close();
@@ -555,14 +460,11 @@ class UnifiedEmailService {
                 logger_1.logger.error('Error closing email transporter:', error);
             }
         }
-        // Clear template cache
         this.templateCache.clear();
         logger_1.logger.info('UnifiedEmailService shutdown complete');
     }
 }
 exports.UnifiedEmailService = UnifiedEmailService;
-// Export singleton instance
 exports.emailService = new UnifiedEmailService();
-// Export for backward compatibility
 exports.default = exports.emailService;
 //# sourceMappingURL=UnifiedEmailService.js.map

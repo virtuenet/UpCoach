@@ -1,9 +1,4 @@
 import { Model, Optional } from 'sequelize';
-/**
- * User Analytics Model
- * Tracks user progress, coaching effectiveness, and behavioral patterns
- * for data-driven coaching insights and reporting
- */
 export interface UserAnalyticsAttributes {
     id: string;
     userId: string;
@@ -161,21 +156,9 @@ export declare class UserAnalytics extends Model<UserAnalyticsAttributes, UserAn
     dataQualityScore: number;
     readonly createdAt: Date;
     readonly updatedAt: Date;
-    /**
-     * Calculate overall health score for the user
-     */
     getOverallHealthScore(): number;
-    /**
-     * Get trending direction for key metrics
-     */
     getTrendingDirection(): 'up' | 'down' | 'stable';
-    /**
-     * Check if user is at risk of churning
-     */
     isAtRisk(): boolean;
-    /**
-     * Get personalized recommendations based on analytics
-     */
     getPersonalizedRecommendations(): string[];
 }
 export default UserAnalytics;

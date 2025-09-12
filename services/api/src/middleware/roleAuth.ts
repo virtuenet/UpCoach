@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+
 import { UnauthorizedError, ForbiddenError } from '../utils/errors';
 
 export function requireRole(...allowedRoles: string[]) {

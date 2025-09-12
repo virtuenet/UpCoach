@@ -1,6 +1,12 @@
 // Test environment setup
 import { jest, afterEach, afterAll } from '@jest/globals';
 
+// Make jest available globally for tests
+(global as any).jest = {
+  ...jest,
+  genMockFromModule: jest.fn(),
+};
+
 // Set test environment
 process.env.NODE_ENV = 'test';
 
@@ -41,6 +47,9 @@ jest.mock('../models/Mood');
 jest.mock('../models/Chat');
 jest.mock('../models/ChatMessage');
 jest.mock('../models/UserProfile');
+jest.mock('../models/experiments/Experiment');
+jest.mock('../models/experiments/ExperimentAssignment');
+jest.mock('../models/experiments/ExperimentEvent');
 jest.mock('../services/redis', () => ({
   redis: {
     get: jest.fn(),
@@ -52,6 +61,38 @@ jest.mock('../services/redis', () => ({
     mget: jest.fn(),
     mset: jest.fn(),
   },
+}));
+
+// Mock Sequelize configuration first - this is critical for model initialization
+jest.mock('../config/sequelize', () => ({
+  sequelize: {
+    authenticate: jest.fn(),
+    sync: jest.fn(),
+    getDialect: jest.fn(() => 'postgres'),
+    getDatabaseName: jest.fn(() => 'test_db'),
+    query: jest.fn(),
+    transaction: jest.fn(),
+    close: jest.fn(),
+    define: jest.fn(),
+  },
+}));
+
+// Mock database config
+jest.mock('../config/database', () => ({
+  sequelize: {
+    authenticate: jest.fn(),
+    sync: jest.fn(),
+    getDialect: jest.fn(() => 'postgres'),
+    getDatabaseName: jest.fn(() => 'test_db'),
+    query: jest.fn(),
+    transaction: jest.fn(),
+    close: jest.fn(),
+    define: jest.fn(),
+  },
+  initializeDatabase: jest.fn(),
+  closeDatabase: jest.fn(),
+  query: jest.fn(),
+  transaction: jest.fn(),
 }));
 
 // Mock database models

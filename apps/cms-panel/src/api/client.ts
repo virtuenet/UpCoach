@@ -1,4 +1,4 @@
-import { createApiClient } from '../../../shared/services/apiClient';
+import { createApiClient } from '@upcoach/shared/services';
 import { useAuthStore } from '../stores/authStore';
 import { csrfManager } from '../services/csrfManager';
 import { logger } from '../utils/logger';

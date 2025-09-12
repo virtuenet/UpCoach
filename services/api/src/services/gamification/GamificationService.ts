@@ -1,9 +1,10 @@
+import { format, differenceInDays, startOfDay } from 'date-fns';
 import { QueryTypes, Transaction } from 'sequelize';
+
 import { sequelize } from '../../models';
 import { logger } from '../../utils/logger';
-import emailService from '../email/UnifiedEmailService';
 import { analyticsService } from '../analytics/AnalyticsService';
-import { format, differenceInDays, startOfDay } from 'date-fns';
+import emailService from '../email/UnifiedEmailService';
 
 interface AchievementProgress {
   achievementId: number;
@@ -200,7 +201,7 @@ export class GamificationService {
       case 'count':
         newProgress = currentProgress + value;
         break;
-      case 'unique':
+      case 'unique': {
         // Handle unique counting (e.g., unique days)
         const progressData = achievement.progress_data || {};
         const key = metadata?.key || format(new Date(), 'yyyy-MM-dd');
@@ -209,6 +210,7 @@ export class GamificationService {
           newProgress = Object.keys(progressData).length;
         }
         break;
+      }
       case 'streak':
         // Streaks are handled separately
         return;

@@ -1,6 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
 import { performance } from 'perf_hooks';
+
+import { Request, Response, NextFunction } from 'express';
 import { Counter, Histogram, Gauge, register } from 'prom-client';
+
 import { logger } from '../utils/logger';
 
 // Initialize Prometheus metrics
@@ -65,18 +67,7 @@ register.registerMetric(databaseQueryDuration);
 register.registerMetric(cacheHits);
 register.registerMetric(cacheMisses);
 
-// Extend Request interface
-declare global {
-  namespace Express {
-    interface Request {
-      startTime?: number;
-      metrics?: {
-        route?: string;
-        statusCode?: number;
-      };
-    }
-  }
-}
+// Express types are extended in ../types/express.d.ts
 
 // Performance monitoring middleware
 export const performanceMiddleware = (req: Request, _res: Response, next: NextFunction) => {

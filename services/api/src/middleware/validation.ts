@@ -7,6 +7,7 @@ import {
   ValidationChain,
   FieldValidationError,
 } from 'express-validator';
+
 import { logger } from '../utils/logger';
 
 /**
@@ -111,7 +112,7 @@ export const validators = {
     .withMessage('Password must contain at least one lowercase letter')
     .matches(/\d/)
     .withMessage('Password must contain at least one number')
-    .matches(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/)
+    .matches(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/)
     .withMessage('Password must contain at least one special character')
     .custom(value => {
       // Check for repeated characters (3+ in a row)
@@ -152,7 +153,7 @@ export const validators = {
     .withMessage('Strong passwords must contain at least two lowercase letters')
     .matches(/\d.*\d/)
     .withMessage('Strong passwords must contain at least two numbers')
-    .matches(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?].*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/)
+    .matches(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?].*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/)
     .withMessage('Strong passwords must contain at least two special characters')
     .custom(value => {
       // All checks from regular password validator

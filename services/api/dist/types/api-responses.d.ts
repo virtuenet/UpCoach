@@ -1,6 +1,3 @@
-/**
- * API Response type definitions
- */
 import { BaseUser, TimestampedModel, IdentifiableModel } from './common';
 export interface SuccessResponse<T = any> {
     success: true;

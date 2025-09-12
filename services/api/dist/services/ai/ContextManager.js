@@ -1,34 +1,31 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.contextManager = exports.ContextManager = void 0;
+const sequelize_1 = require("sequelize");
+const ChatMessage_1 = require("../../models/ChatMessage");
 const Goal_1 = require("../../models/Goal");
-const User_1 = require("../../models/User");
 const Mood_1 = require("../../models/Mood");
 const Task_1 = require("../../models/Task");
-const ChatMessage_1 = require("../../models/ChatMessage");
-const sequelize_1 = require("sequelize");
+const User_1 = require("../../models/User");
 const logger_1 = require("../../utils/logger");
 class ContextManager {
     contextCache;
-    CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+    CACHE_TTL = 5 * 60 * 1000;
     constructor() {
         this.contextCache = new Map();
     }
     async getUserContext(userId) {
-        // Check cache first
         const cached = this.contextCache.get(userId);
         if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
             return cached.context;
         }
         try {
-            // Fetch user data
             const user = await User_1.User.findByPk(userId, {
                 attributes: ['id', 'name', 'email', 'preferences', 'createdAt'],
             });
             if (!user) {
                 throw new Error('User not found');
             }
-            // Fetch current goals
             const goals = await Goal_1.Goal.findAll({
                 where: {
                     userId,
@@ -40,29 +37,26 @@ class ContextManager {
                 ],
                 limit: 5,
             });
-            // Fetch recent moods
             const recentMoods = await Mood_1.Mood.findAll({
                 where: {
                     userId,
                     createdAt: {
-                        [sequelize_1.Op.gte]: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
+                        [sequelize_1.Op.gte]: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
                     },
                 },
                 order: [['createdAt', 'DESC']],
                 limit: 7,
             });
-            // Fetch recent tasks
             const recentTasks = await Task_1.Task.findAll({
                 where: {
                     userId,
                     updatedAt: {
-                        [sequelize_1.Op.gte]: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
+                        [sequelize_1.Op.gte]: new Date(Date.now() - 24 * 60 * 60 * 1000),
                     },
                 },
                 order: [['updatedAt', 'DESC']],
                 limit: 10,
             });
-            // Fetch recent conversations
             const recentMessages = await ChatMessage_1.ChatMessage.findAll({
                 where: {
                     chatId: {
@@ -72,9 +66,7 @@ class ContextManager {
                 order: [['createdAt', 'DESC']],
                 limit: 20,
             });
-            // Build context
             const context = await this.buildUserContext(user, goals, recentMoods, recentTasks, recentMessages);
-            // Cache the context
             this.contextCache.set(userId, {
                 context,
                 timestamp: Date.now(),
@@ -88,20 +80,15 @@ class ContextManager {
     }
     async buildUserContext(user, goals, moods, tasks, messages) {
         const preferences = user.preferences || {};
-        // Calculate current mood and energy
         const currentMood = moods.length > 0 ? moods[0].mood : 'neutral';
         const avgEnergy = moods.length > 0 ? moods.reduce((sum, m) => sum + (m.energy || 5), 0) / moods.length : 5;
-        // Calculate streak days
         const streakDays = this.calculateStreakDays(tasks);
-        // Extract recent progress
         const completedTasks = tasks.filter(t => t.status === 'completed');
         const recentProgress = completedTasks.length > 0
             ? `Completed ${completedTasks.length} tasks recently`
             : 'No recent task completions';
-        // Determine progress stage
         const accountAge = Date.now() - new Date(user.createdAt).getTime();
         const progressStage = this.determineProgressStage(accountAge, goals.length, streakDays);
-        // Extract patterns from conversations
         const patterns = await this.extractConversationPatterns(messages);
         return {
             userId: user.id,
@@ -152,7 +139,7 @@ class ContextManager {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         let streak = 0;
-        let currentDate = new Date(today);
+        const currentDate = new Date(today);
         while (true) {
             const tasksOnDate = tasks.filter(t => {
                 const taskDate = new Date(t.completedAt || t.updatedAt);
@@ -167,7 +154,7 @@ class ContextManager {
             }
             currentDate.setDate(currentDate.getDate() - 1);
             if (currentDate < new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) {
-                break; // Don't look back more than 30 days
+                break;
             }
         }
         return streak;
@@ -185,7 +172,6 @@ class ContextManager {
         return 'exploring';
     }
     extractTargetHabit(goals, tasks) {
-        // Look for habit-related goals
         const habitGoal = goals.find(g => g.title.toLowerCase().includes('habit') || g.category === 'habit');
         if (habitGoal) {
             return {
@@ -194,7 +180,6 @@ class ContextManager {
                 progress: habitGoal.progress,
             };
         }
-        // Infer from repeated tasks
         const taskTitles = tasks.map((t) => t.title.toLowerCase());
         const frequencies = taskTitles.reduce((acc, title) => {
             acc[title] = (acc[title] || 0) + 1;
@@ -229,14 +214,13 @@ class ContextManager {
         if (tasks.length === 0)
             return 0;
         const daysWithTasks = new Set(tasks.map((t) => new Date(t.createdAt).toDateString())).size;
-        const dayRange = 7; // Look at last 7 days
+        const dayRange = 7;
         return Math.round((daysWithTasks / dayRange) * 100);
     }
     calculateEngagementLevel(messages) {
         if (messages.length === 0)
             return 0;
         const recentMessages = messages.filter((m) => new Date(m.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
-        // Simple engagement score based on message frequency
         const score = Math.min(recentMessages.length / 20, 1) * 100;
         return Math.round(score);
     }
@@ -253,16 +237,13 @@ class ContextManager {
         return todayTasks.map((t) => t.title).join(', ');
     }
     extractChallenges(messages) {
-        // Look for challenge-related keywords in recent messages
         const challengeKeywords = ['struggle', 'difficult', 'hard', 'challenge', 'problem', 'stuck'];
         const challengeMessages = messages.filter((m) => challengeKeywords.some(keyword => m.content.toLowerCase().includes(keyword)));
         if (challengeMessages.length === 0)
             return 'No specific challenges mentioned';
-        // Extract the most recent challenge mention
         return 'Recent challenges discussed in conversations';
     }
     identifyCurrentChallenge(goals, tasks, messages) {
-        // Look for stalled goals
         const stalledGoal = goals.find(g => g.progress < 50 && new Date(g.updatedAt) < new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
         if (stalledGoal) {
             return {
@@ -281,7 +262,6 @@ class ContextManager {
         return resources.join(', ');
     }
     summarizeRecentConversations(messages) {
-        // Group messages by conversation
         const conversations = {};
         messages.forEach(msg => {
             if (!conversations[msg.chatId]) {
@@ -296,7 +276,6 @@ class ContextManager {
         }));
     }
     extractTopics(messages) {
-        // Simple topic extraction based on keywords
         const topicKeywords = {
             goals: ['goal', 'objective', 'target', 'aim'],
             habits: ['habit', 'routine', 'daily', 'practice'],
@@ -365,8 +344,6 @@ class ContextManager {
         };
     }
     async getUserAchievements(userId) {
-        // This would connect to an achievements system
-        // For now, return placeholder achievements based on context
         return [
             { type: 'streak', value: 7, name: 'Week Warrior' },
             { type: 'goals_completed', value: 5, name: 'Goal Getter' },
@@ -388,10 +365,8 @@ class ContextManager {
         };
     }
     async enrichMessages(messages, context) {
-        // Add contextual information to messages without modifying original content
         return messages.map((msg, index) => {
             if (msg.role === 'user' && index === messages.length - 1) {
-                // Only enrich the last user message
                 return {
                     ...msg,
                     _context: context,
@@ -410,7 +385,6 @@ class ContextManager {
     }
 }
 exports.ContextManager = ContextManager;
-// Import sequelize instance
 const database_1 = require("../../config/database");
 exports.contextManager = new ContextManager();
 //# sourceMappingURL=ContextManager.js.map

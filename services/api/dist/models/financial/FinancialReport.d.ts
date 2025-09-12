@@ -53,17 +53,8 @@ export declare class FinancialReport extends Model<FinancialReportAttributes, Fi
     fileUrl?: string;
     readonly createdAt: Date;
     readonly updatedAt: Date;
-    /**
-     * Helper method to check if report is ready
-     */
     isReady(): boolean;
-    /**
-     * Helper method to check if report failed
-     */
     hasFailed(): boolean;
-    /**
-     * Get formatted report data
-     */
     getFormattedData(): any;
 }
 export default FinancialReport;

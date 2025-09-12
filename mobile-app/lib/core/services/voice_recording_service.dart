@@ -1,240 +1,497 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:record/record.dart';
-import 'package:audioplayers/audioplayers.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
+import 'package:permission_handler/permission_handler.dart';
+import 'package:record/record.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:audio_waveforms/audio_waveforms.dart';
 
 enum RecordingState {
   idle,
   recording,
   paused,
   stopped,
+  playing,
+}
+
+enum AudioQuality {
+  low,    // 16kHz, 16bit
+  medium, // 44.1kHz, 16bit  
+  high,   // 48kHz, 24bit
 }
 
 class VoiceRecordingService {
-  AudioRecorder? _recorder;
-  AudioPlayer? _player;
+  final AudioRecorder _recorder = AudioRecorder();
+  final AudioPlayer _player = AudioPlayer();
+  final PlayerController _waveformPlayer = PlayerController();
+  final RecorderController _waveformRecorder = RecorderController();
   
   RecordingState _state = RecordingState.idle;
-  String? _currentRecordingPath;
+  StreamController<RecordingState>? _stateController;
+  StreamController<Duration>? _durationController;
+  StreamController<double>? _amplitudeController;
+  
+  Timer? _durationTimer;
+  Timer? _amplitudeTimer;
   Duration _recordingDuration = Duration.zero;
-  Timer? _timer;
+  String? _currentRecordingPath;
+  DateTime? _recordingStartTime;
   
-  final StreamController<RecordingState> _stateController = StreamController<RecordingState>.broadcast();
-  final StreamController<Duration> _durationController = StreamController<Duration>.broadcast();
-  final StreamController<double> _amplitudeController = StreamController<double>.broadcast();
+  // Audio settings
+  AudioQuality _audioQuality = AudioQuality.medium;
+  bool _noiseReduction = true;
+  bool _echoCancellation = true;
   
-  // Getters
   RecordingState get state => _state;
-  String? get currentRecordingPath => _currentRecordingPath;
   Duration get recordingDuration => _recordingDuration;
+  Stream<RecordingState> get stateStream => _stateController?.stream ?? const Stream.empty();
+  Stream<Duration> get durationStream => _durationController?.stream ?? const Stream.empty();
+  Stream<double> get amplitudeStream => _amplitudeController?.stream ?? const Stream.empty();
   
-  // Streams
-  Stream<RecordingState> get stateStream => _stateController.stream;
-  Stream<Duration> get durationStream => _durationController.stream;
-  Stream<double> get amplitudeStream => _amplitudeController.stream;
-  
-  // Initialize the service
   Future<void> initialize() async {
-    _recorder = AudioRecorder();
-    _player = AudioPlayer();
-  }
-  
-  // Request microphone permission
-  Future<bool> requestPermission() async {
-    final permission = await Permission.microphone.request();
-    return permission == PermissionStatus.granted;
-  }
-  
-  // Check if microphone permission is granted
-  Future<bool> hasPermission() async {
-    final permission = await Permission.microphone.status;
-    return permission == PermissionStatus.granted;
-  }
-  
-  // Start recording
-  Future<bool> startRecording() async {
-    if (_state != RecordingState.idle) return false;
+    _stateController = StreamController<RecordingState>.broadcast();
+    _durationController = StreamController<Duration>.broadcast();
+    _amplitudeController = StreamController<double>.broadcast();
     
-    if (!await hasPermission()) {
-      if (!await requestPermission()) {
+    // Initialize waveform controllers
+    await _waveformRecorder.checkPermission();
+    _waveformPlayer.addListener(() {
+      if (_waveformPlayer.playerState == PlayerState.stopped) {
+        _setState(RecordingState.idle);
+      }
+    });
+  }
+  
+  Future<void> dispose() async {
+    await stopRecording();
+    await stopPlayback();
+    await _stateController?.close();
+    await _durationController?.close();
+    await _amplitudeController?.close();
+    _durationTimer?.cancel();
+    _amplitudeTimer?.cancel();
+    await _recorder.dispose();
+    await _player.dispose();
+    _waveformPlayer.dispose();
+    _waveformRecorder.dispose();
+  }
+  
+  Future<bool> checkPermissions() async {
+    final status = await Permission.microphone.status;
+    if (status.isDenied || status.isPermanentlyDenied) {
+      final result = await Permission.microphone.request();
+      return result.isGranted;
+    }
+    return status.isGranted;
+  }
+  
+  Future<bool> startRecording({
+    AudioQuality quality = AudioQuality.medium,
+    bool noiseReduction = true,
+    bool echoCancellation = true,
+  }) async {
+    try {
+      // Check permissions
+      final hasPermission = await checkPermissions();
+      if (!hasPermission) {
+        debugPrint('Microphone permission denied');
         return false;
       }
-    }
-    
-    try {
+      
+      // Check if recording is supported
+      if (!await _recorder.hasPermission()) {
+        debugPrint('Recording not supported on this device');
+        return false;
+      }
+      
+      _audioQuality = quality;
+      _noiseReduction = noiseReduction;
+      _echoCancellation = echoCancellation;
+      
       // Generate unique filename
-      final appDir = await getApplicationDocumentsDirectory();
+      final directory = await _getRecordingDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      _currentRecordingPath = '${appDir.path}/voice_journal_$timestamp.aac';
+      final fileName = 'voice_journal_$timestamp.m4a';
+      _currentRecordingPath = path.join(directory.path, fileName);
       
-      await _recorder!.start(
-        RecordConfig(
-          encoder: AudioEncoder.aacLc,
-          bitRate: 128000,
-          sampleRate: 44100,
-        ),
-        path: _currentRecordingPath!,
-      );
+      // Configure recording settings based on quality
+      RecordConfig config;
+      switch (quality) {
+        case AudioQuality.low:
+          config = const RecordConfig(
+            encoder: AudioEncoder.aacLc,
+            bitRate: 64000,
+            sampleRate: 16000,
+            numChannels: 1,
+            autoGain: true,
+            echoCancel: true,
+            noiseSuppress: true,
+          );
+          break;
+        case AudioQuality.medium:
+          config = const RecordConfig(
+            encoder: AudioEncoder.aacLc,
+            bitRate: 128000,
+            sampleRate: 44100,
+            numChannels: 1,
+            autoGain: true,
+            echoCancel: true,
+            noiseSuppress: true,
+          );
+          break;
+        case AudioQuality.high:
+          config = const RecordConfig(
+            encoder: AudioEncoder.aacLc,
+            bitRate: 256000,
+            sampleRate: 48000,
+            numChannels: 2,
+            autoGain: false,
+            echoCancel: true,
+            noiseSuppress: true,
+          );
+          break;
+      }
       
+      // Start recording with waveform capture
+      await _recorder.start(config, path: _currentRecordingPath!);
+      await _waveformRecorder.record(path: _currentRecordingPath);
+      
+      _recordingStartTime = DateTime.now();
+      _recordingDuration = Duration.zero;
       _setState(RecordingState.recording);
-      _startTimer();
-      _startAmplitudeMonitoring();
+      
+      // Start duration timer
+      _durationTimer?.cancel();
+      _durationTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (_state == RecordingState.recording) {
+          _recordingDuration = DateTime.now().difference(_recordingStartTime!);
+          _durationController?.add(_recordingDuration);
+        }
+      });
+      
+      // Start amplitude monitoring
+      _amplitudeTimer?.cancel();
+      _amplitudeTimer = Timer.periodic(const Duration(milliseconds: 100), (_) async {
+        if (_state == RecordingState.recording) {
+          final amplitude = await _recorder.getAmplitude();
+          _amplitudeController?.add(amplitude.current);
+        }
+      });
       
       return true;
     } catch (e) {
-      print('Error starting recording: $e');
+      debugPrint('Failed to start recording: $e');
+      _setState(RecordingState.idle);
       return false;
     }
   }
   
-  // Pause recording
-  Future<void> pauseRecording() async {
-    if (_state == RecordingState.recording) {
-      await _recorder!.pause();
-      _setState(RecordingState.paused);
-      _stopTimer();
-    }
-  }
-  
-  // Resume recording
-  Future<void> resumeRecording() async {
-    if (_state == RecordingState.paused) {
-      await _recorder!.resume();
-      _setState(RecordingState.recording);
-      _startTimer();
-    }
-  }
-  
-  // Stop recording
   Future<String?> stopRecording() async {
-    if (_state == RecordingState.recording || _state == RecordingState.paused) {
-      final recordedPath = await _recorder!.stop();
-      _setState(RecordingState.stopped);
-      _stopTimer();
-      
-      final path = recordedPath ?? _currentRecordingPath;
-      _currentRecordingPath = null;
-      _recordingDuration = Duration.zero;
-      
-      return path;
+    if (_state != RecordingState.recording && _state != RecordingState.paused) {
+      return null;
     }
-    return null;
+    
+    try {
+      final recordingPath = await _recorder.stop();
+      await _waveformRecorder.stop();
+      
+      _durationTimer?.cancel();
+      _amplitudeTimer?.cancel();
+      _setState(RecordingState.stopped);
+      
+      // Generate waveform data
+      if (recordingPath != null) {
+        await _generateWaveformData(recordingPath);
+      }
+      
+      return recordingPath;
+    } catch (e) {
+      debugPrint('Failed to stop recording: $e');
+      return null;
+    }
   }
   
-  // Cancel recording
-  Future<void> cancelRecording() async {
-    if (_state == RecordingState.recording || _state == RecordingState.paused) {
-      await _recorder!.stop();
+  Future<void> pauseRecording() async {
+    if (_state != RecordingState.recording) return;
+    
+    try {
+      await _recorder.pause();
+      await _waveformRecorder.pause();
+      _durationTimer?.cancel();
+      _amplitudeTimer?.cancel();
+      _setState(RecordingState.paused);
+    } catch (e) {
+      debugPrint('Failed to pause recording: $e');
+    }
+  }
+  
+  Future<void> resumeRecording() async {
+    if (_state != RecordingState.paused) return;
+    
+    try {
+      await _recorder.resume();
+      await _waveformRecorder.record();
+      _setState(RecordingState.recording);
       
-      // Delete the file
-      if (_currentRecordingPath != null) {
-        final file = File(_currentRecordingPath!);
+      // Resume timers
+      _durationTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (_state == RecordingState.recording) {
+          _recordingDuration = DateTime.now().difference(_recordingStartTime!);
+          _durationController?.add(_recordingDuration);
+        }
+      });
+      
+      _amplitudeTimer = Timer.periodic(const Duration(milliseconds: 100), (_) async {
+        if (_state == RecordingState.recording) {
+          final amplitude = await _recorder.getAmplitude();
+          _amplitudeController?.add(amplitude.current);
+        }
+      });
+    } catch (e) {
+      debugPrint('Failed to resume recording: $e');
+    }
+  }
+  
+  Future<void> cancelRecording() async {
+    if (_state != RecordingState.recording && _state != RecordingState.paused) {
+      return;
+    }
+    
+    try {
+      final recordingPath = await _recorder.stop();
+      await _waveformRecorder.stop();
+      
+      // Delete the cancelled recording file
+      if (recordingPath != null) {
+        final file = File(recordingPath);
         if (await file.exists()) {
           await file.delete();
         }
       }
       
-      _setState(RecordingState.idle);
-      _stopTimer();
-      _currentRecordingPath = null;
+      _durationTimer?.cancel();
+      _amplitudeTimer?.cancel();
       _recordingDuration = Duration.zero;
-    }
-  }
-  
-  // Play recorded audio
-  Future<void> playRecording(String filePath) async {
-    try {
-      await _player!.play(DeviceFileSource(filePath));
+      _currentRecordingPath = null;
+      _setState(RecordingState.idle);
     } catch (e) {
-      print('Error playing recording: $e');
+      debugPrint('Failed to cancel recording: $e');
     }
   }
   
-  // Stop playback
-  Future<void> stopPlayback() async {
-    await _player!.stop();
-  }
-  
-  // Get recording file size
-  Future<int> getRecordingSize(String filePath) async {
-    final file = File(filePath);
-    if (await file.exists()) {
-      return await file.length();
-    }
-    return 0;
-  }
-  
-  // Get recording duration from file
-  Future<Duration> getRecordingDuration(String filePath) async {
-    // This would require additional audio processing libraries
-    // For now, return the recorded duration
-    return _recordingDuration;
-  }
-  
-  // Delete recording file
-  Future<bool> deleteRecording(String filePath) async {
+  Future<void> playRecording(String audioPath, {double speed = 1.0}) async {
     try {
-      final file = File(filePath);
+      await stopPlayback(); // Stop any existing playback
+      
+      final file = File(audioPath);
+      if (!await file.exists()) {
+        debugPrint('Audio file not found: $audioPath');
+        return;
+      }
+      
+      await _player.setFilePath(audioPath);
+      await _player.setSpeed(speed);
+      _setState(RecordingState.playing);
+      
+      // Listen for playback completion
+      _player.playerStateStream.listen((state) {
+        if (state.processingState == ProcessingState.completed) {
+          _setState(RecordingState.idle);
+        }
+      });
+      
+      await _player.play();
+    } catch (e) {
+      debugPrint('Failed to play recording: $e');
+      _setState(RecordingState.idle);
+    }
+  }
+  
+  Future<void> playWithWaveform(String audioPath, {double speed = 1.0}) async {
+    try {
+      await _waveformPlayer.preparePlayer(
+        path: audioPath,
+        shouldExtractWaveform: true,
+        noOfSamples: 100,
+        volume: 1.0,
+      );
+      
+      _waveformPlayer.setRate(speed);
+      await _waveformPlayer.startPlayer();
+      _setState(RecordingState.playing);
+    } catch (e) {
+      debugPrint('Failed to play with waveform: $e');
+    }
+  }
+  
+  Future<void> stopPlayback() async {
+    try {
+      if (_player.playing) {
+        await _player.stop();
+      }
+      if (_waveformPlayer.playerState == PlayerState.playing) {
+        await _waveformPlayer.stopPlayer();
+      }
+      _setState(RecordingState.idle);
+    } catch (e) {
+      debugPrint('Failed to stop playback: $e');
+    }
+  }
+  
+  Future<void> pausePlayback() async {
+    try {
+      if (_player.playing) {
+        await _player.pause();
+      }
+      if (_waveformPlayer.playerState == PlayerState.playing) {
+        await _waveformPlayer.pausePlayer();
+      }
+      _setState(RecordingState.paused);
+    } catch (e) {
+      debugPrint('Failed to pause playback: $e');
+    }
+  }
+  
+  Future<void> seekTo(Duration position) async {
+    try {
+      await _player.seek(position);
+    } catch (e) {
+      debugPrint('Failed to seek: $e');
+    }
+  }
+  
+  Future<void> setPlaybackSpeed(double speed) async {
+    try {
+      await _player.setSpeed(speed);
+      _waveformPlayer.setRate(speed);
+    } catch (e) {
+      debugPrint('Failed to set playback speed: $e');
+    }
+  }
+  
+  Future<bool> deleteRecording(String audioPath) async {
+    try {
+      final file = File(audioPath);
       if (await file.exists()) {
         await file.delete();
         return true;
       }
       return false;
     } catch (e) {
-      print('Error deleting recording: $e');
+      debugPrint('Failed to delete recording: $e');
       return false;
     }
   }
   
-  // Private methods
-  void _setState(RecordingState newState) {
-    _state = newState;
-    _stateController.add(_state);
-  }
-  
-  void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _recordingDuration = Duration(seconds: timer.tick);
-      _durationController.add(_recordingDuration);
-    });
-  }
-  
-  void _stopTimer() {
-    _timer?.cancel();
-    _timer = null;
-  }
-  
-  void _startAmplitudeMonitoring() {
-    Timer.periodic(const Duration(milliseconds: 100), (timer) {
-      if (_state != RecordingState.recording) {
-        timer.cancel();
-        return;
+  Future<Map<String, dynamic>> getAudioInfo(String audioPath) async {
+    try {
+      final file = File(audioPath);
+      if (!await file.exists()) {
+        return {};
       }
       
-      // Get amplitude from recorder
-      // This is a simplified implementation
-      final amplitude = 0.5; // Placeholder
-      _amplitudeController.add(amplitude);
-    });
+      final fileSize = await file.length();
+      final duration = await _player.setFilePath(audioPath);
+      
+      return {
+        'path': audioPath,
+        'sizeBytes': fileSize,
+        'sizeMB': (fileSize / (1024 * 1024)).toStringAsFixed(2),
+        'durationSeconds': duration?.inSeconds ?? 0,
+        'durationFormatted': _formatDuration(duration ?? Duration.zero),
+      };
+    } catch (e) {
+      debugPrint('Failed to get audio info: $e');
+      return {};
+    }
   }
   
-  // Clean up resources
-  Future<void> dispose() async {
-    await _recorder?.dispose();
-    await _player?.dispose();
-    await _stateController.close();
-    await _durationController.close();
-    await _amplitudeController.close();
-    _timer?.cancel();
+  Future<List<double>> _generateWaveformData(String audioPath) async {
+    try {
+      final waveform = <double>[];
+      await _waveformPlayer.preparePlayer(
+        path: audioPath,
+        shouldExtractWaveform: true,
+        noOfSamples: 100,
+      );
+      
+      final extractedData = _waveformPlayer.waveformData;
+      waveform.addAll(extractedData);
+      
+      return waveform;
+    } catch (e) {
+      debugPrint('Failed to generate waveform: $e');
+      return [];
+    }
+  }
+  
+  Future<Directory> _getRecordingDirectory() async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final recordingDir = Directory(path.join(appDir.path, 'voice_journals'));
+    
+    if (!await recordingDir.exists()) {
+      await recordingDir.create(recursive: true);
+    }
+    
+    return recordingDir;
+  }
+  
+  String _formatDuration(Duration duration) {
+    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    if (duration.inHours > 0) {
+      final hours = duration.inHours.toString().padLeft(2, '0');
+      return '$hours:$minutes:$seconds';
+    }
+    return '$minutes:$seconds';
+  }
+  
+  void _setState(RecordingState newState) {
+    _state = newState;
+    _stateController?.add(newState);
+  }
+  
+  // Advanced audio processing methods
+  
+  Future<void> trimAudio(String audioPath, Duration start, Duration end) async {
+    // Implementation would use ffmpeg or similar library
+    // For now, this is a placeholder
+    debugPrint('Trimming audio from $start to $end');
+  }
+  
+  Future<void> mergeAudioFiles(List<String> audioPaths, String outputPath) async {
+    // Implementation would use ffmpeg or similar library
+    debugPrint('Merging ${audioPaths.length} audio files');
+  }
+  
+  Future<void> applyNoiseReduction(String audioPath) async {
+    // Implementation would use audio processing library
+    debugPrint('Applying noise reduction to $audioPath');
+  }
+  
+  Future<void> normalizeVolume(String audioPath) async {
+    // Implementation would use audio processing library
+    debugPrint('Normalizing volume for $audioPath');
+  }
+  
+  Future<String?> exportAsFormat(String audioPath, String format) async {
+    // Implementation would convert audio to different formats (mp3, wav, etc.)
+    debugPrint('Exporting audio as $format');
+    return null;
   }
 }
 
-// Provider for VoiceRecordingService
+// Provider
 final voiceRecordingServiceProvider = Provider<VoiceRecordingService>((ref) {
   final service = VoiceRecordingService();
-  ref.onDispose(() => service.dispose());
+  service.initialize();
+  
+  ref.onDispose(() {
+    service.dispose();
+  });
+  
   return service;
-}); 
+});

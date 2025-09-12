@@ -1,11 +1,13 @@
 import { Model, DataTypes, Optional, BelongsToGetAssociationMixin, Op } from 'sequelize';
+import slugify from 'slugify';
+
 import { sequelize } from '../../config/database';
 import { User } from '../User';
+
 import { ContentCategory } from './ContentCategory';
-import ContentVersion from './ContentVersion';
 import ContentComment from './ContentComment';
 import ContentInteraction from './ContentInteraction';
-import slugify from 'slugify';
+import ContentVersion from './ContentVersion';
 
 export interface ArticleContent {
   format: 'markdown' | 'html' | 'structured';

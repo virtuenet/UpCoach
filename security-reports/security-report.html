@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UpCoach Security Report</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #f8fafc; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; }
+        .score-circle { width: 120px; height: 120px; border: 8px solid rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border-top: 8px solid white; }
+        .score-text { font-size: 28px; font-weight: bold; }
+        .rating { font-size: 24px; font-weight: 300; text-align: center; }
+        .content { padding: 30px; }
+        .category { margin: 20px 0; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; }
+        .category-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .category-title { font-size: 18px; font-weight: 600; }
+        .category-score { font-size: 16px; font-weight: bold; padding: 5px 15px; border-radius: 20px; }
+        .pass { background: #dcfce7; color: #166534; }
+        .fail { background: #fef2f2; color: #dc2626; }
+        .vulnerability { margin: 10px 0; padding: 15px; border-left: 4px solid; }
+        .critical { border-color: #dc2626; background: #fef2f2; }
+        .high { border-color: #ea580c; background: #fff7ed; }
+        .medium { border-color: #d97706; background: #fffbeb; }
+        .low { border-color: #65a30d; background: #f7fee7; }
+        .recommendations { margin-top: 30px; }
+        .recommendation { margin: 15px 0; padding: 20px; border-radius: 8px; border-left: 4px solid; }
+        .rec-critical { border-color: #dc2626; background: #fef2f2; }
+        .rec-high { border-color: #ea580c; background: #fff7ed; }
+        .rec-medium { border-color: #d97706; background: #fffbeb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="score-circle" style="border-top-color: #ef4444">
+                <div class="score-text">0</div>
+            </div>
+            <div class="rating">Security Rating: C</div>
+            <p style="text-align: center; margin-top: 20px; opacity: 0.9;">
+                Generated on 9/10/2025, 3:49:14 PM
+            </p>
+        </div>
+        
+        <div class="content">
+            <h2>Security Test Categories</h2>
+            
+                <div class="category">
+                    <div class="category-header">
+                        <div class="category-title">Mobile Encryption</div>
+                        <div class="category-score fail">
+                            0/100 - NOT_RUN
+                        </div>
+                    </div>
+                    <div class="category-details">
+                        
+                    </div>
+                </div>
+            
+                <div class="category">
+                    <div class="category-header">
+                        <div class="category-title">Api Security</div>
+                        <div class="category-score fail">
+                            0/100 - NOT_RUN
+                        </div>
+                    </div>
+                    <div class="category-details">
+                        
+                    </div>
+                </div>
+            
+                <div class="category">
+                    <div class="category-header">
+                        <div class="category-title">Authentication</div>
+                        <div class="category-score fail">
+                            0/100 - NOT_RUN
+                        </div>
+                    </div>
+                    <div class="category-details">
+                        
+                    </div>
+                </div>
+            
+                <div class="category">
+                    <div class="category-header">
+                        <div class="category-title">Gdpr Compliance</div>
+                        <div class="category-score fail">
+                            0/100 - NOT_RUN
+                        </div>
+                    </div>
+                    <div class="category-details">
+                        
+                    </div>
+                </div>
+            
+                <div class="category">
+                    <div class="category-header">
+                        <div class="category-title">Cross Platform</div>
+                        <div class="category-score fail">
+                            0/100 - NOT_RUN
+                        </div>
+                    </div>
+                    <div class="category-details">
+                        
+                    </div>
+                </div>
+            
+
+            <p style="color: #22c55e;">✅ No security vulnerabilities detected!</p>
+
+            
+                <div class="recommendations">
+                    <h2>Security Recommendations</h2>
+                    
+                        <div class="recommendation rec-high">
+                            <strong>Improve Mobile Encryption Security</strong> (HIGH Priority)
+                            <p>Current score: 0/100. Security improvements needed to reach A+ rating.</p>
+                            <p><strong>Action:</strong> Implement AES-256 encryption for all sensitive data and improve key management practices.</p>
+                        </div>
+                    
+                        <div class="recommendation rec-high">
+                            <strong>Improve Api Security Security</strong> (HIGH Priority)
+                            <p>Current score: 0/100. Security improvements needed to reach A+ rating.</p>
+                            <p><strong>Action:</strong> Enhance input validation, fix SQL injection vulnerabilities, and strengthen authorization checks.</p>
+                        </div>
+                    
+                        <div class="recommendation rec-high">
+                            <strong>Improve Authentication Security</strong> (HIGH Priority)
+                            <p>Current score: 0/100. Security improvements needed to reach A+ rating.</p>
+                            <p><strong>Action:</strong> Improve device fingerprinting accuracy and implement stronger session security measures.</p>
+                        </div>
+                    
+                        <div class="recommendation rec-high">
+                            <strong>Improve Gdpr Compliance Security</strong> (HIGH Priority)
+                            <p>Current score: 0/100. Security improvements needed to reach A+ rating.</p>
+                            <p><strong>Action:</strong> Complete implementation of all data subject rights and automate compliance monitoring.</p>
+                        </div>
+                    
+                        <div class="recommendation rec-high">
+                            <strong>Improve Cross Platform Security</strong> (HIGH Priority)
+                            <p>Current score: 0/100. Security improvements needed to reach A+ rating.</p>
+                            <p><strong>Action:</strong> Ensure security consistency across all platforms and improve integration security.</p>
+                        </div>
+                    
+                        <div class="recommendation rec-high">
+                            <strong>Achieve Full GDPR Compliance</strong> (HIGH Priority)
+                            <p>Current GDPR compliance: 0%. Full compliance required.</p>
+                            <p><strong>Action:</strong> Review and implement missing GDPR requirements, particularly data subject rights and consent management.</p>
+                        </div>
+                    
+                </div>
+            
+        </div>
+    </div>
+</body>
+</html>

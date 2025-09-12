@@ -1,4 +1,5 @@
 import { Op, QueryTypes } from 'sequelize';
+
 import { sequelize, CostTracking } from '../../models';
 
 /**
@@ -19,19 +20,19 @@ export class CostAnalyticsService {
   }> {
     // Get total costs
     const totalCosts =
-      (await CostTracking.sum('totalAmount', {
+      (await CostTracking.sum('amount', {
         where: {
-          billingStartDate: { [Op.between]: [startDate, endDate] },
-          status: ['approved', 'paid'],
+          periodStart: { [Op.between]: [startDate, endDate] },
+          isApproved: true,
         },
       })) || 0;
 
     // Get costs by category
     const categoryCosts = await CostTracking.findAll({
-      attributes: ['category', [sequelize.fn('SUM', sequelize.col('totalAmount')), 'total']],
+      attributes: ['category', [sequelize.fn('SUM', sequelize.col('amount')), 'total']],
       where: {
-        billingStartDate: { [Op.between]: [startDate, endDate] },
-        status: ['approved', 'paid'],
+        periodStart: { [Op.between]: [startDate, endDate] },
+        isApproved: true,
       },
       group: ['category'],
     });
@@ -75,13 +76,13 @@ export class CostAnalyticsService {
     const infrastructureCosts = await CostTracking.findAll({
       where: {
         category: 'infrastructure',
-        billingStartDate: { [Op.between]: [startDate, endDate] },
-        status: ['approved', 'paid'],
+        periodStart: { [Op.between]: [startDate, endDate] },
+        isApproved: true,
       },
     });
 
     const totalCost = infrastructureCosts.reduce(
-      (sum: number, cost: any) => sum + cost.totalAmount,
+      (sum: number, cost: any) => sum + cost.amount,
       0
     );
 
@@ -176,8 +177,8 @@ export class CostAnalyticsService {
     const apiCosts = await CostTracking.findAll({
       where: {
         category: 'api_services',
-        billingStartDate: { [Op.between]: [startDate, endDate] },
-        status: ['approved', 'paid'],
+        periodStart: { [Op.between]: [startDate, endDate] },
+        isApproved: true,
       },
     });
 
@@ -332,8 +333,8 @@ export class CostAnalyticsService {
   }> {
     const costs = await CostTracking.findAll({
       where: {
-        billingStartDate: { [Op.between]: [startDate, endDate] },
-        status: ['approved', 'paid'],
+        periodStart: { [Op.between]: [startDate, endDate] },
+        isApproved: true,
       },
     });
 

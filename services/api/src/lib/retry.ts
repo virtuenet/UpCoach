@@ -4,7 +4,8 @@
  */
 
 import axios, { AxiosInstance } from 'axios';
-import axiosRetry, { IAxiosRetryConfig } from 'axios-retry';
+import axiosRetry, { IAxiosRetryConfig, isNetworkOrIdempotentRequestError } from 'axios-retry';
+
 import { logger } from '../utils/logger';
 
 export interface RetryOptions extends IAxiosRetryConfig {
@@ -42,7 +43,7 @@ export function setupRetry(client: AxiosInstance, options: RetryOptions = {}): v
 
       // Default conditions
       return (
-        axiosRetry.isNetworkOrIdempotentRequestError(error) ||
+        isNetworkOrIdempotentRequestError(error) ||
         error.response?.status === 429 || // Rate limit
         error.response?.status === 503 || // Service unavailable
         error.response?.status === 504 // Gateway timeout

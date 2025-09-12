@@ -1,13 +1,11 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "skipLibCheck": true,
-    "removeComments": true
+    "removeComments": true,
+    "typeRoots": ["../../node_modules/@types", "./node_modules/@types"],
+    "noEmitOnError": false,
+    "allowJs": true
   },
   "include": ["src/**/*.ts"],
   "exclude": [

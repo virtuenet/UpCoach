@@ -1,13 +1,16 @@
-import { OpenAI } from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
+import { OpenAI } from 'openai';
+
 import { config } from '../../config/environment';
 import { logger } from '../../utils/logger';
-import { PromptEngineering } from './PromptEngineering';
+import { getCacheService } from '../cache/UnifiedCacheService';
+
+import { CircuitBreaker } from './CircuitBreaker';
 import { ContextManager } from './ContextManager';
 import { PersonalityEngine } from './PersonalityEngine';
-import { CircuitBreaker } from './CircuitBreaker';
+import { PromptEngineering } from './PromptEngineering';
 import { RetryMechanism } from './RetryMechanism';
-import { getCacheService } from '../cache/UnifiedCacheService';
+
 
 export interface AIMessage {
   role: 'system' | 'user' | 'assistant';

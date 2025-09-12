@@ -1,9 +1,11 @@
 import { OpenAI } from 'openai';
+
 import { config } from '../../config/environment';
+import { Mood } from '../../models/Mood';
 import { logger } from '../../utils/logger';
+
 import { aiService } from './AIService';
 import { userProfilingService } from './UserProfilingService';
-import { Mood } from '../../models/Mood';
 
 export interface VoiceAnalysis {
   transcript: string;

@@ -1,7 +1,3 @@
-/**
- * Circuit Breaker pattern implementation for AI services
- * Prevents cascading failures and provides graceful degradation
- */
 export declare enum CircuitState {
     CLOSED = "CLOSED",
     OPEN = "OPEN",
@@ -32,7 +28,7 @@ export declare class CircuitBreaker {
         state: CircuitState;
         failureCount: number;
         successCount: number;
-        lastFailureTime: number;
+        lastFailureTime: number | null;
     };
 }
 //# sourceMappingURL=CircuitBreaker.d.ts.map

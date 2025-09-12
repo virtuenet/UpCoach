@@ -1,4 +1,5 @@
-import jwt from 'jsonwebtoken';
+import { sign, verify, decode, TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken';
+
 import { ApiError } from './apiError';
 
 const JWT_SECRET = (() => {
@@ -33,14 +34,14 @@ export interface JwtPayload {
 }
 
 export function generateAccessToken(payload: JwtPayload): string {
-  return jwt.sign(payload, JWT_SECRET, {
+  return sign(payload, JWT_SECRET, {
     expiresIn: JWT_EXPIRES_IN,
     issuer: 'upcoach-api',
   } as any);
 }
 
 export function generateRefreshToken(payload: JwtPayload): string {
-  return jwt.sign(payload, JWT_REFRESH_SECRET, {
+  return sign(payload, JWT_REFRESH_SECRET, {
     expiresIn: JWT_REFRESH_EXPIRES_IN,
     issuer: 'upcoach-api',
   } as any);
@@ -48,16 +49,16 @@ export function generateRefreshToken(payload: JwtPayload): string {
 
 export function verifyToken(token: string): JwtPayload {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET, {
+    const decoded = verify(token, JWT_SECRET, {
       issuer: 'upcoach-api',
     }) as JwtPayload;
 
     return decoded;
   } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
+    if (error instanceof TokenExpiredError) {
       throw new ApiError(401, 'Token has expired');
     }
-    if (error instanceof jwt.JsonWebTokenError) {
+    if (error instanceof JsonWebTokenError) {
       throw new ApiError(401, 'Invalid token');
     }
     throw new ApiError(401, 'Token verification failed');
@@ -66,16 +67,16 @@ export function verifyToken(token: string): JwtPayload {
 
 export function verifyRefreshToken(token: string): JwtPayload {
   try {
-    const decoded = jwt.verify(token, JWT_REFRESH_SECRET, {
+    const decoded = verify(token, JWT_REFRESH_SECRET, {
       issuer: 'upcoach-api',
     }) as JwtPayload;
 
     return decoded;
   } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
+    if (error instanceof TokenExpiredError) {
       throw new ApiError(401, 'Refresh token has expired');
     }
-    if (error instanceof jwt.JsonWebTokenError) {
+    if (error instanceof JsonWebTokenError) {
       throw new ApiError(401, 'Invalid refresh token');
     }
     throw new ApiError(401, 'Refresh token verification failed');

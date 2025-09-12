@@ -6,6 +6,7 @@
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { Express, Request, Response, NextFunction } from 'express';
+
 import { logger } from '../../utils/logger';
 
 export interface SentryConfig {

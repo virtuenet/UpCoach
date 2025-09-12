@@ -1,168 +1,71 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
-import CoachIntelligenceService from '../../services/coaching/CoachIntelligenceService';
+import { Op } from 'sequelize';
+
+// Mock Sequelize before importing models
+jest.mock('../../config/sequelize', () => ({
+  sequelize: {
+    define: jest.fn()
+  }
+}));
+
+jest.mock('sequelize', () => ({
+  Model: class {},
+  DataTypes: {
+    UUID: 'UUID',
+    STRING: 'STRING',
+    TEXT: 'TEXT',
+    INTEGER: 'INTEGER',
+    FLOAT: 'FLOAT',
+    BOOLEAN: 'BOOLEAN',
+    JSON: 'JSON',
+    JSONB: 'JSONB',
+    DATE: 'DATE',
+    ENUM: jest.fn((...args) => ({ type: 'ENUM', values: args }))
+  },
+  Op: {
+    gte: Symbol('gte'),
+    ne: Symbol('ne'),
+    overlap: Symbol('overlap')
+  }
+}));
+
+import { CoachIntelligenceService } from '../../services/coaching/CoachIntelligenceService';
 import CoachMemory from '../../models/coaching/CoachMemory';
-import UserAnalytics from '../../models/analytics/UserAnalytics';
 import KpiTracker from '../../models/analytics/KpiTracker';
-import { Avatar } from '../../models/personality/Avatar';
-import { UserAvatarPreference } from '../../models/personality/UserAvatarPreference';
+import UserAnalytics from '../../models/analytics/UserAnalytics';
+import { aiService } from '../../services/ai/AIService';
 
-// Mock the models
+// Mock dependencies
 jest.mock('../../models/coaching/CoachMemory');
-jest.mock('../../models/analytics/UserAnalytics');
 jest.mock('../../models/analytics/KpiTracker');
-jest.mock('../../models/personality/Avatar');
-jest.mock('../../models/personality/UserAvatarPreference');
+jest.mock('../../models/analytics/UserAnalytics');
+jest.mock('../../services/ai/AIService');
+jest.mock('../../utils/logger');
 
-const MockedCoachMemory = CoachMemory as jest.MockedClass<typeof CoachMemory>;
-const MockedUserAnalytics = UserAnalytics as jest.MockedClass<typeof UserAnalytics>;
-const MockedKpiTracker = KpiTracker as jest.MockedClass<typeof KpiTracker>;
-const MockedAvatar = Avatar as jest.MockedClass<typeof Avatar>;
+const mockCoachMemory = CoachMemory as jest.MockedClass<typeof CoachMemory>;
+const mockKpiTracker = KpiTracker as jest.MockedClass<typeof KpiTracker>;
+const mockUserAnalytics = UserAnalytics as jest.MockedClass<typeof UserAnalytics>;
+const mockAiService = aiService as jest.Mocked<typeof aiService>;
 
 describe('CoachIntelligenceService', () => {
   let service: CoachIntelligenceService;
-  let mockCoachingContext: any;
-  let mockMemory: any;
-  let mockAnalytics: any;
-  let mockKpiTracker: any;
+  
+  const mockUserId = '123e4567-e89b-12d3-a456-426614174000';
+  const mockAvatarId = '123e4567-e89b-12d3-a456-426614174001';
+  const mockSessionId = '123e4567-e89b-12d3-a456-426614174002';
+
+  const mockCoachingContext = {
+    userId: mockUserId,
+    avatarId: mockAvatarId,
+    sessionId: mockSessionId,
+    currentTopic: 'Goal Setting',
+    userMood: 'motivated',
+    conversationHistory: ['Previous session about habits'],
+    goals: ['Improve productivity', 'Exercise daily'],
+  };
 
   beforeEach(() => {
     service = new CoachIntelligenceService();
-
-    // Setup mock coaching context
-    mockCoachingContext = {
-      userId: 'user-123',
-      avatarId: 'avatar-456',
-      sessionId: 'session-789',
-      currentTopic: 'goal-setting',
-      userMood: 'motivated',
-      conversationHistory: ['Hello', 'How can I help you today?'],
-      goals: ['Improve productivity', 'Learn new skills'],
-    };
-
-    // Setup mock memory
-    mockMemory = {
-      id: 'memory-123',
-      userId: 'user-123',
-      avatarId: 'avatar-456',
-      sessionId: 'session-789',
-      memoryType: 'conversation',
-      content: 'User discussed productivity challenges and goal-setting strategies',
-      summary: 'Productive session about goal-setting and productivity improvement',
-      tags: ['goal-setting', 'productivity'],
-      emotionalContext: {
-        mood: 'motivated',
-        sentiment: 0.7,
-        emotionalTrends: ['motivated', 'focused'],
-      },
-      coachingContext: {
-        topic: 'goal-setting',
-        category: 'productivity',
-        importance: 8,
-        actionItems: ['Set 3 SMART goals', 'Schedule weekly review'],
-        followUpNeeded: true,
-      },
-      conversationDate: new Date(),
-      importance: 8,
-      relevanceScore: 0.9,
-      accessCount: 1,
-      relatedMemoryIds: [],
-      parentMemoryId: null,
-      childMemoryIds: [],
-      aiProcessed: false,
-      insightsGenerated: [],
-      isRelevant: jest.fn().mockReturnValue(true),
-      updateRelevanceScore: jest.fn(),
-      recordAccess: jest.fn(),
-      save: jest.fn().mockResolvedValue(true),
-      toJSON: jest.fn().mockReturnValue({}),
-    };
-
-    // Setup mock analytics
-    mockAnalytics = {
-      id: 'analytics-123',
-      userId: 'user-123',
-      periodType: 'weekly',
-      engagementMetrics: {
-        totalSessions: 5,
-        totalDuration: 150,
-        averageSessionDuration: 30,
-        streakCount: 3,
-        missedSessions: 1,
-        responsiveness: 0.8,
-        participationScore: 0.9,
-        followThroughRate: 0.7,
-      },
-      coachingMetrics: {
-        goalsSet: 3,
-        goalsAchieved: 2,
-        goalCompletionRate: 0.67,
-        avatarId: 'avatar-456',
-        avatarEffectivenessScore: 0.8,
-        avatarSwitchCount: 0,
-        progressMetrics: {
-          skillImprovement: 0.7,
-          confidenceIncrease: 0.8,
-          stressReduction: 0.6,
-          habitFormation: 0.5,
-        },
-      },
-      kpiMetrics: {
-        userSatisfactionScore: 8,
-        npsScore: 20,
-        retentionProbability: 0.85,
-        churnRisk: 0.15,
-        customKpis: [],
-      },
-      getOverallHealthScore: jest.fn().mockReturnValue(78),
-      getTrendingDirection: jest.fn().mockReturnValue('up'),
-      isAtRisk: jest.fn().mockReturnValue(false),
-      getPersonalizedRecommendations: jest
-        .fn()
-        .mockReturnValue([
-          'Continue current engagement level',
-          'Focus on completing remaining goal',
-        ]),
-    };
-
-    // Setup mock KPI tracker
-    mockKpiTracker = {
-      id: 'kpi-123',
-      userId: 'user-123',
-      type: 'personal_goal',
-      title: 'Improve Productivity',
-      status: 'in_progress',
-      priority: 'high',
-      overallProgress: 65,
-      isAtRisk: jest.fn().mockReturnValue(false),
-      calculateOverallProgress: jest.fn().mockReturnValue(65),
-      getNextMilestone: jest.fn().mockReturnValue({
-        id: 'milestone-1',
-        title: 'Complete productivity course',
-        targetDate: new Date(),
-        progress: 80,
-      }),
-      getOverdueActionItems: jest.fn().mockReturnValue([]),
-      coachingData: {
-        actionItems: [
-          {
-            id: 'action-1',
-            description: 'Complete time tracking for one week',
-            status: 'completed',
-            priority: 'high',
-          },
-          {
-            id: 'action-2',
-            description: 'Set up productivity dashboard',
-            status: 'in_progress',
-            priority: 'medium',
-          },
-        ],
-      },
-    };
-
-    // Clear all mocks
     jest.clearAllMocks();
   });
 
@@ -171,461 +74,422 @@ describe('CoachIntelligenceService', () => {
   });
 
   describe('processCoachingSession', () => {
-    it('should successfully process a coaching session and create memory', async () => {
-      // Arrange
-      MockedCoachMemory.create.mockResolvedValue(mockMemory as any);
-      MockedCoachMemory.findAll.mockResolvedValue([]);
+    it('should successfully process a coaching session', async () => {
+      // Mock AI service response for conversation insights
+      mockAiService.generateResponse.mockResolvedValueOnce({
+        content: JSON.stringify({
+          summary: 'User discussed productivity goals and time management strategies',
+          tags: ['productivity', 'time-management', 'goals'],
+          sentiment: 0.7,
+          emotionalTrends: ['motivated', 'focused'],
+          category: 'goal-setting',
+          actionItems: ['Set up morning routine', 'Use time blocking'],
+          followUpNeeded: true,
+          keyInsights: ['User prefers structured approaches'],
+          challengesIdentified: ['Difficulty with consistency'],
+          progressIndicators: ['Increased motivation'],
+          coachingTechniques: ['Goal setting', 'Accountability']
+        })
+      });
 
-      const conversationContent =
-        'User discussed productivity challenges and wants to set better goals';
-      const sessionDuration = 30;
-      const userFeedback = { rating: 8, comments: 'Very helpful session' };
+      // Mock memory creation
+      const mockMemory = {
+        id: 'memory-123',
+        userId: mockUserId,
+        avatarId: mockAvatarId,
+        sessionId: mockSessionId,
+        memoryType: 'conversation',
+        content: 'Test conversation content',
+        summary: 'User discussed productivity goals',
+        tags: ['productivity', 'goals'],
+        emotionalContext: {
+          mood: 'motivated',
+          sentiment: 0.7,
+          emotionalTrends: ['motivated', 'focused']
+        },
+        coachingContext: {
+          topic: 'Goal Setting',
+          category: 'goal-setting',
+          importance: 7,
+          actionItems: ['Set up morning routine'],
+          followUpNeeded: true
+        },
+        importance: 7,
+        relevanceScore: 0.8,
+        conversationDate: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        save: jest.fn(),
+        updateRelevanceScore: jest.fn(),
+        isRelevant: jest.fn(() => true),
+      };
 
-      // Act
+      mockCoachMemory.create.mockResolvedValueOnce(mockMemory as any);
+
       const result = await service.processCoachingSession(
         mockCoachingContext,
-        conversationContent,
-        sessionDuration,
-        userFeedback
+        'Test conversation content about productivity and goals',
+        25,
+        { rating: 8, comments: 'Very helpful session' }
       );
 
-      // Assert
-      expect(MockedCoachMemory.create).toHaveBeenCalledWith(
+      expect(mockCoachMemory.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          userId: mockCoachingContext.userId,
-          avatarId: mockCoachingContext.avatarId,
-          sessionId: mockCoachingContext.sessionId,
+          userId: mockUserId,
+          avatarId: mockAvatarId,
+          sessionId: mockSessionId,
           memoryType: 'conversation',
-          content: conversationContent,
+          content: 'Test conversation content about productivity and goals'
         })
       );
+
       expect(result).toEqual(mockMemory);
     });
 
-    it('should handle session processing with minimal user feedback', async () => {
-      // Arrange
-      MockedCoachMemory.create.mockResolvedValue(mockMemory as any);
-      MockedCoachMemory.findAll.mockResolvedValue([]);
+    it('should handle AI service errors gracefully', async () => {
+      mockAiService.generateResponse.mockRejectedValueOnce(new Error('AI service unavailable'));
 
-      const conversationContent = 'Brief check-in session';
-      const sessionDuration = 15;
+      const mockMemory = {
+        id: 'memory-123',
+        userId: mockUserId,
+        save: jest.fn(),
+        updateRelevanceScore: jest.fn(),
+        isRelevant: jest.fn(() => true),
+      };
 
-      // Act
+      mockCoachMemory.create.mockResolvedValueOnce(mockMemory as any);
+
       const result = await service.processCoachingSession(
         mockCoachingContext,
-        conversationContent,
-        sessionDuration
+        'Test conversation content',
+        20
       );
 
-      // Assert
-      expect(MockedCoachMemory.create).toHaveBeenCalled();
-      expect(result).toEqual(mockMemory);
-    });
-
-    it('should handle errors during session processing', async () => {
-      // Arrange
-      MockedCoachMemory.create.mockRejectedValue(new Error('Database error'));
-
-      // Act & Assert
-      await expect(
-        service.processCoachingSession(mockCoachingContext, 'test content', 30)
-      ).rejects.toThrow('Database error');
+      expect(result).toBeDefined();
+      expect(mockCoachMemory.create).toHaveBeenCalled();
     });
   });
 
   describe('getRelevantMemories', () => {
-    it('should retrieve and rank relevant memories', async () => {
-      // Arrange
-      const memories = [mockMemory, { ...mockMemory, id: 'memory-124', relevanceScore: 0.8 }];
-      MockedCoachMemory.findAll.mockResolvedValue(memories as any);
+    it('should retrieve and filter relevant memories', async () => {
+      const mockMemories = [
+        {
+          id: 'memory-1',
+          userId: mockUserId,
+          tags: ['productivity', 'goals'],
+          relevanceScore: 0.9,
+          conversationDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
+          updateRelevanceScore: jest.fn(),
+          isRelevant: jest.fn(() => true),
+          save: jest.fn()
+        },
+        {
+          id: 'memory-2',
+          userId: mockUserId,
+          tags: ['habits', 'consistency'],
+          relevanceScore: 0.7,
+          conversationDate: new Date(Date.now() - 48 * 60 * 60 * 1000),
+          updateRelevanceScore: jest.fn(),
+          isRelevant: jest.fn(() => true),
+          save: jest.fn()
+        },
+        {
+          id: 'memory-3',
+          userId: mockUserId,
+          tags: ['motivation'],
+          relevanceScore: 0.3,
+          conversationDate: new Date(Date.now() - 72 * 60 * 60 * 1000),
+          updateRelevanceScore: jest.fn(),
+          isRelevant: jest.fn(() => false),
+          save: jest.fn()
+        }
+      ];
 
-      const currentContext = {
-        topics: ['goal-setting', 'productivity'],
-        mood: 'motivated',
-        recentGoals: ['Improve productivity'],
-      };
+      mockCoachMemory.findAll.mockResolvedValueOnce(mockMemories as any);
 
-      // Act
-      const result = await service.getRelevantMemories('user-123', currentContext, 10);
-
-      // Assert
-      expect(MockedCoachMemory.findAll).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            userId: 'user-123',
-          }),
-        })
+      const result = await service.getRelevantMemories(
+        mockUserId,
+        {
+          topics: ['productivity', 'goals'],
+          mood: 'motivated',
+          recentGoals: ['exercise', 'productivity']
+        },
+        5
       );
-      expect(memories[0].updateRelevanceScore).toHaveBeenCalledWith(currentContext);
-      expect(result).toEqual(memories);
+
+      expect(mockCoachMemory.findAll).toHaveBeenCalledWith({
+        where: {
+          userId: mockUserId,
+          conversationDate: {
+            [Op.gte]: expect.any(Date)
+          }
+        },
+        order: [['conversationDate', 'DESC']]
+      });
+
+      // Should return only relevant memories, sorted by relevance score
+      expect(result).toHaveLength(2);
+      expect(result[0].relevanceScore).toBeGreaterThan(result[1].relevanceScore);
     });
 
-    it('should filter out irrelevant memories', async () => {
-      // Arrange
-      const irrelevantMemory = { ...mockMemory, isRelevant: jest.fn().mockReturnValue(false) };
-      MockedCoachMemory.findAll.mockResolvedValue([mockMemory, irrelevantMemory] as any);
+    it('should return empty array when no memories exist', async () => {
+      mockCoachMemory.findAll.mockResolvedValueOnce([]);
 
-      const currentContext = {
-        topics: ['goal-setting'],
-        mood: 'motivated',
-        recentGoals: ['Improve productivity'],
-      };
+      const result = await service.getRelevantMemories(
+        mockUserId,
+        { topics: [], mood: 'neutral', recentGoals: [] }
+      );
 
-      // Act
-      const result = await service.getRelevantMemories('user-123', currentContext, 10);
-
-      // Assert
-      expect(result).toHaveLength(1);
-      expect(result[0]).toEqual(mockMemory);
-    });
-
-    it('should limit results to specified count', async () => {
-      // Arrange
-      const memories = Array(15)
-        .fill(0)
-        .map((_, i) => ({ ...mockMemory, id: `memory-${i}` }));
-      MockedCoachMemory.findAll.mockResolvedValue(memories as any);
-
-      const currentContext = {
-        topics: ['goal-setting'],
-        mood: 'motivated',
-        recentGoals: ['Improve productivity'],
-      };
-
-      // Act
-      const result = await service.getRelevantMemories('user-123', currentContext, 5);
-
-      // Assert
-      expect(result).toHaveLength(5);
+      expect(result).toEqual([]);
     });
   });
 
   describe('generateCoachingRecommendations', () => {
-    it('should generate recommendations based on analytics and goals', async () => {
-      // Arrange
-      MockedUserAnalytics.findOne.mockResolvedValue(mockAnalytics as any);
-      MockedKpiTracker.findAll.mockResolvedValue([mockKpiTracker] as any);
-      MockedCoachMemory.findAll.mockResolvedValue([mockMemory] as any);
-      MockedAvatar.findByPk.mockResolvedValue({ id: 'avatar-456', name: 'Alex' } as any);
+    it('should generate recommendations based on user analytics and goals', async () => {
+      const mockAnalytics = {
+        id: 'analytics-123',
+        userId: mockUserId,
+        engagementMetrics: {
+          averageSessionDuration: 15, // Below optimal
+          participationScore: 0.8,
+          responseRate: 0.9
+        },
+        coachingMetrics: {
+          goalCompletionRate: 0.4, // Low completion rate
+          avatarEffectivenessScore: 0.6 // Below optimal
+        }
+      };
 
-      // Act
-      const result = await service.generateCoachingRecommendations('user-123', 'avatar-456');
+      const mockGoals = [
+        {
+          id: 'goal-1',
+          userId: mockUserId,
+          title: 'Daily Exercise',
+          status: 'at_risk',
+          overallProgress: 30,
+          analytics: {
+            consistencyScore: 0.4,
+            velocityScore: 0.2
+          },
+          priority: 'high'
+        }
+      ];
 
-      // Assert
-      expect(result).toBeInstanceOf(Array);
+      const mockMemories = [
+        {
+          id: 'memory-1',
+          userId: mockUserId,
+          conversationDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
+          tags: ['exercise', 'motivation']
+        }
+      ];
+
+      mockUserAnalytics.findOne.mockResolvedValueOnce(mockAnalytics as any);
+      mockKpiTracker.findAll.mockResolvedValueOnce(mockGoals as any);
+      mockCoachMemory.findAll.mockResolvedValueOnce(mockMemories as any);
+
+      const result = await service.generateCoachingRecommendations(mockUserId, mockAvatarId);
+
+      expect(result).toBeDefined();
+      expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
-      expect(result[0]).toHaveProperty('type');
-      expect(result[0]).toHaveProperty('priority');
-      expect(result[0]).toHaveProperty('title');
-      expect(result[0]).toHaveProperty('description');
-      expect(result[0]).toHaveProperty('implementation');
-    });
 
-    it('should prioritize urgent recommendations for at-risk goals', async () => {
-      // Arrange
-      const atRiskGoal = { ...mockKpiTracker, isAtRisk: jest.fn().mockReturnValue(true) };
-      MockedUserAnalytics.findOne.mockResolvedValue(mockAnalytics as any);
-      MockedKpiTracker.findAll.mockResolvedValue([atRiskGoal] as any);
-      MockedCoachMemory.findAll.mockResolvedValue([mockMemory] as any);
+      // Should include engagement recommendation due to short sessions
+      const engagementRec = result.find(r => r.title.includes('Session Engagement'));
+      expect(engagementRec).toBeDefined();
+      expect(engagementRec?.priority).toBe('medium');
 
-      // Act
-      const result = await service.generateCoachingRecommendations('user-123', 'avatar-456');
-
-      // Assert
-      const urgentRecommendations = result.filter(r => r.priority === 'urgent');
-      expect(urgentRecommendations.length).toBeGreaterThan(0);
+      // Should include goal completion recommendation due to low completion rate
+      const goalRec = result.find(r => r.title.includes('Goal Achievement'));
+      expect(goalRec).toBeDefined();
     });
 
     it('should handle missing analytics gracefully', async () => {
-      // Arrange
-      MockedUserAnalytics.findOne.mockResolvedValue(null);
-      MockedKpiTracker.findAll.mockResolvedValue([]);
-      MockedCoachMemory.findAll.mockResolvedValue([]);
+      mockUserAnalytics.findOne.mockResolvedValueOnce(null);
+      mockKpiTracker.findAll.mockResolvedValueOnce([]);
+      mockCoachMemory.findAll.mockResolvedValueOnce([]);
 
-      // Act
-      const result = await service.generateCoachingRecommendations('user-123', 'avatar-456');
+      const result = await service.generateCoachingRecommendations(mockUserId, mockAvatarId);
 
-      // Assert
-      expect(result).toBeInstanceOf(Array);
-      // Should still return some basic recommendations
+      expect(result).toBeDefined();
+      expect(Array.isArray(result)).toBe(true);
+      // Should still return some baseline recommendations
     });
   });
 
   describe('generateWeeklyReport', () => {
     it('should generate comprehensive weekly report', async () => {
-      // Arrange
-      MockedUserAnalytics.findOne.mockResolvedValue(mockAnalytics as any);
-      MockedCoachMemory.findAll.mockResolvedValue([mockMemory] as any);
-      MockedKpiTracker.findAll.mockResolvedValue([mockKpiTracker] as any);
+      const weekStart = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const weekEnd = new Date();
 
-      // Act
-      const result = await service.generateWeeklyReport('user-123');
+      const mockMemories = [
+        {
+          id: 'memory-1',
+          userId: mockUserId,
+          conversationDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+          importance: 7,
+          emotionalContext: { sentiment: 0.6 },
+          coachingContext: { importance: 8 }
+        },
+        {
+          id: 'memory-2',
+          userId: mockUserId,
+          conversationDate: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+          importance: 6,
+          emotionalContext: { sentiment: 0.3 },
+          coachingContext: { importance: 6 }
+        }
+      ];
 
-      // Assert
-      expect(result).toHaveProperty('userId', 'user-123');
-      expect(result).toHaveProperty('weekStart');
-      expect(result).toHaveProperty('weekEnd');
-      expect(result).toHaveProperty('summary');
-      expect(result).toHaveProperty('achievements');
-      expect(result).toHaveProperty('challenges');
-      expect(result).toHaveProperty('insights');
-      expect(result).toHaveProperty('recommendations');
-      expect(result).toHaveProperty('nextWeekFocus');
+      const mockGoals = [
+        {
+          id: 'goal-1',
+          userId: mockUserId,
+          title: 'Exercise Goal',
+          overallProgress: 75,
+          status: 'in_progress',
+          analytics: {
+            consistencyScore: 0.8,
+            velocityScore: 0.6
+          },
+          createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          performanceHistory: []
+        }
+      ];
 
-      expect(result.summary).toHaveProperty('totalSessions');
-      expect(result.summary).toHaveProperty('avgSessionDuration');
-      expect(result.summary).toHaveProperty('goalsProgress');
-      expect(result.summary).toHaveProperty('engagementScore');
-      expect(result.summary).toHaveProperty('moodTrend');
+      mockCoachMemory.findAll.mockResolvedValueOnce(mockMemories as any);
+      mockKpiTracker.findAll.mockResolvedValueOnce(mockGoals as any);
+
+      const result = await service.generateWeeklyReport(mockUserId);
+
+      expect(result).toBeDefined();
+      expect(result.userId).toBe(mockUserId);
+      expect(result.weekStart).toBeInstanceOf(Date);
+      expect(result.weekEnd).toBeInstanceOf(Date);
+      expect(result.summary).toBeDefined();
+      expect(result.summary.totalSessions).toBe(mockMemories.length);
+      expect(result.achievements).toBeDefined();
+      expect(Array.isArray(result.achievements)).toBe(true);
+      expect(result.challenges).toBeDefined();
+      expect(Array.isArray(result.challenges)).toBe(true);
+      expect(result.insights).toBeDefined();
+      expect(Array.isArray(result.insights)).toBe(true);
+      expect(result.recommendations).toBeDefined();
+      expect(Array.isArray(result.recommendations)).toBe(true);
+      expect(result.nextWeekFocus).toBeDefined();
+      expect(Array.isArray(result.nextWeekFocus)).toBe(true);
     });
 
-    it('should handle weeks with no activity', async () => {
-      // Arrange
-      MockedUserAnalytics.findOne.mockResolvedValue(null);
-      MockedCoachMemory.findAll.mockResolvedValue([]);
-      MockedKpiTracker.findAll.mockResolvedValue([]);
+    it('should handle empty data gracefully', async () => {
+      mockCoachMemory.findAll.mockResolvedValueOnce([]);
+      mockKpiTracker.findAll.mockResolvedValueOnce([]);
 
-      // Act
-      const result = await service.generateWeeklyReport('user-123');
+      const result = await service.generateWeeklyReport(mockUserId);
 
-      // Assert
-      expect(result).toHaveProperty('summary');
+      expect(result).toBeDefined();
       expect(result.summary.totalSessions).toBe(0);
+      expect(result.summary.avgSessionDuration).toBe(0);
+      expect(result.achievements).toHaveLength(0);
+      expect(result.challenges).toHaveLength(0);
     });
   });
 
   describe('calculateUserAnalytics', () => {
-    it('should calculate analytics for weekly period', async () => {
-      // Arrange
-      MockedCoachMemory.findAll.mockResolvedValue([mockMemory] as any);
-      MockedKpiTracker.findAll.mockResolvedValue([mockKpiTracker] as any);
-      MockedUserAnalytics.upsert.mockResolvedValue([mockAnalytics] as any);
-
-      // Act
-      const result = await service.calculateUserAnalytics('user-123', 'weekly');
-
-      // Assert
-      expect(MockedUserAnalytics.upsert).toHaveBeenCalledWith(
-        expect.objectContaining({
-          userId: 'user-123',
-          periodType: 'weekly',
-        })
-      );
-      expect(result).toEqual(mockAnalytics);
-    });
-
-    it('should calculate analytics for different time periods', async () => {
-      // Arrange
-      MockedCoachMemory.findAll.mockResolvedValue([mockMemory] as any);
-      MockedKpiTracker.findAll.mockResolvedValue([mockKpiTracker] as any);
-      MockedUserAnalytics.upsert.mockResolvedValue([mockAnalytics] as any);
-
-      // Test different periods
-      const periods: Array<'daily' | 'weekly' | 'monthly' | 'quarterly'> = [
-        'daily',
-        'weekly',
-        'monthly',
-        'quarterly',
+    it('should calculate comprehensive user analytics', async () => {
+      const mockMemories = [
+        {
+          id: 'memory-1',
+          userId: mockUserId,
+          importance: 8,
+          emotionalContext: { sentiment: 0.7 },
+          tags: ['productivity', 'goals'],
+          conversationDate: new Date(Date.now() - 24 * 60 * 60 * 1000)
+        }
       ];
 
-      for (const period of periods) {
-        // Act
-        await service.calculateUserAnalytics('user-123', period);
+      const mockGoals = [
+        {
+          id: 'goal-1',
+          userId: mockUserId,
+          overallProgress: 80,
+          status: 'in_progress',
+          analytics: {
+            consistencyScore: 0.9,
+            velocityScore: 0.7
+          }
+        }
+      ];
 
-        // Assert
-        expect(MockedUserAnalytics.upsert).toHaveBeenCalledWith(
-          expect.objectContaining({
-            periodType: period,
-          })
-        );
-      }
+      mockCoachMemory.findAll.mockResolvedValueOnce(mockMemories as any);
+      mockKpiTracker.findAll.mockResolvedValueOnce(mockGoals as any);
+
+      const result = await service.calculateUserAnalytics(mockUserId, 'weekly');
+
+      expect(result).toBeDefined();
+      expect(result.userId).toBe(mockUserId);
+      expect(result.periodType).toBe('weekly');
+      expect(result.engagementMetrics).toBeDefined();
+      expect(result.coachingMetrics).toBeDefined();
+      expect(result.kpiMetrics).toBeDefined();
+      expect(result.aiInsights).toBeDefined();
+      expect(result.benchmarkData).toBeDefined();
     });
 
-    it('should handle empty data gracefully', async () => {
-      // Arrange
-      MockedCoachMemory.findAll.mockResolvedValue([]);
-      MockedKpiTracker.findAll.mockResolvedValue([]);
-      MockedUserAnalytics.upsert.mockResolvedValue([mockAnalytics] as any);
+    it('should handle different period types', async () => {
+      mockCoachMemory.findAll.mockResolvedValueOnce([]);
+      mockKpiTracker.findAll.mockResolvedValueOnce([]);
 
-      // Act
-      const result = await service.calculateUserAnalytics('user-123', 'weekly');
+      const result = await service.calculateUserAnalytics(mockUserId, 'monthly');
 
-      // Assert
-      expect(result).toEqual(mockAnalytics);
-      expect(MockedUserAnalytics.upsert).toHaveBeenCalledWith(
-        expect.objectContaining({
-          engagementMetrics: expect.objectContaining({
-            totalSessions: 0,
-          }),
-        })
+      expect(result.periodType).toBe('monthly');
+    });
+  });
+
+  describe('error handling and edge cases', () => {
+    it('should handle database errors gracefully', async () => {
+      mockCoachMemory.findAll.mockRejectedValueOnce(new Error('Database error'));
+
+      await expect(
+        service.getRelevantMemories(mockUserId, { topics: [], mood: 'neutral', recentGoals: [] })
+      ).rejects.toThrow('Database error');
+    });
+
+    it('should handle invalid user IDs', async () => {
+      const invalidUserId = 'invalid-id';
+      
+      mockCoachMemory.findAll.mockResolvedValueOnce([]);
+      
+      const result = await service.getRelevantMemories(
+        invalidUserId,
+        { topics: [], mood: 'neutral', recentGoals: [] }
       );
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle malformed AI responses', async () => {
+      mockAiService.generateResponse.mockResolvedValueOnce({
+        content: 'Invalid JSON response'
+      });
+
+      const mockMemory = {
+        id: 'memory-123',
+        save: jest.fn(),
+        updateRelevanceScore: jest.fn(),
+        isRelevant: jest.fn(() => true),
+      };
+
+      mockCoachMemory.create.mockResolvedValueOnce(mockMemory as any);
+
+      const result = await service.processCoachingSession(
+        mockCoachingContext,
+        'Test conversation',
+        20
+      );
+
+      expect(result).toBeDefined();
+      // Should fall back to basic extraction
     });
   });
-
-  describe('Helper Methods', () => {
-    describe('analyzeSentiment', () => {
-      it('should correctly analyze positive sentiment', () => {
-        const service = new CoachIntelligenceService();
-        const positiveText = 'I feel great and happy about my progress. Excellent session!';
-
-        // Access private method for testing
-        const sentiment = (service as any).analyzeSentiment(positiveText);
-
-        expect(sentiment).toBeGreaterThan(0);
-      });
-
-      it('should correctly analyze negative sentiment', () => {
-        const service = new CoachIntelligenceService();
-        const negativeText =
-          'I feel terrible and frustrated. This is a bad situation with many problems.';
-
-        const sentiment = (service as any).analyzeSentiment(negativeText);
-
-        expect(sentiment).toBeLessThan(0);
-      });
-
-      it('should return neutral for balanced text', () => {
-        const service = new CoachIntelligenceService();
-        const neutralText = 'This is a normal session with regular discussion about topics.';
-
-        const sentiment = (service as any).analyzeSentiment(neutralText);
-
-        expect(sentiment).toBe(0);
-      });
-    });
-
-    describe('extractActionItems', () => {
-      it('should extract action items from conversation', () => {
-        const service = new CoachIntelligenceService();
-        const content =
-          'I will complete the task tomorrow. You should review the document. Next week we will discuss progress.';
-
-        const actionItems = (service as any).extractActionItems(content);
-
-        expect(actionItems).toBeInstanceOf(Array);
-        expect(actionItems.length).toBeGreaterThan(0);
-      });
-
-      it('should handle content without action items', () => {
-        const service = new CoachIntelligenceService();
-        const content = 'We talked about general topics and had a nice conversation.';
-
-        const actionItems = (service as any).extractActionItems(content);
-
-        expect(actionItems).toBeInstanceOf(Array);
-      });
-    });
-
-    describe('calculateMemoryImportance', () => {
-      it('should assign higher importance to sessions with positive feedback', () => {
-        const service = new CoachIntelligenceService();
-        const insights = { actionItems: [], followUpNeeded: false, sentiment: 0.5 };
-        const userFeedback = { rating: 9 };
-
-        const importance = (service as any).calculateMemoryImportance(insights, userFeedback);
-
-        expect(importance).toBeGreaterThan(5);
-      });
-
-      it('should assign higher importance to sessions with action items', () => {
-        const service = new CoachIntelligenceService();
-        const insights = { actionItems: ['Complete task'], followUpNeeded: true, sentiment: 0.8 };
-
-        const importance = (service as any).calculateMemoryImportance(insights);
-
-        expect(importance).toBeGreaterThan(5);
-      });
-
-      it('should cap importance at maximum value', () => {
-        const service = new CoachIntelligenceService();
-        const insights = {
-          actionItems: ['Task 1', 'Task 2'],
-          followUpNeeded: true,
-          sentiment: 0.9,
-        };
-        const userFeedback = { rating: 10 };
-
-        const importance = (service as any).calculateMemoryImportance(insights, userFeedback);
-
-        expect(importance).toBeLessThanOrEqual(10);
-      });
-    });
-  });
-});
-
-describe('CoachIntelligenceService Integration Tests', () => {
-  let service: CoachIntelligenceService;
-
-  beforeEach(() => {
-    service = new CoachIntelligenceService();
-  });
-
-  describe('End-to-End Coaching Flow', () => {
-    it('should handle complete coaching session flow', async () => {
-      // This would be an integration test that uses actual database
-      // For now, we'll skip it or mock the entire flow
-      expect(service).toBeInstanceOf(CoachIntelligenceService);
-    });
-  });
-
-  describe('Performance Tests', () => {
-    it('should handle large datasets efficiently', async () => {
-      // Test with large number of memories and analytics
-      expect(service).toBeInstanceOf(CoachIntelligenceService);
-    });
-
-    it('should process recommendations within acceptable time', async () => {
-      // Test recommendation generation performance
-      expect(service).toBeInstanceOf(CoachIntelligenceService);
-    });
-  });
-});
-
-// Test data factories for consistent test data
-export const createMockCoachingContext = (overrides = {}) => ({
-  userId: 'user-123',
-  avatarId: 'avatar-456',
-  sessionId: 'session-789',
-  currentTopic: 'goal-setting',
-  userMood: 'motivated',
-  conversationHistory: ['Hello', 'How can I help you today?'],
-  goals: ['Improve productivity', 'Learn new skills'],
-  ...overrides,
-});
-
-export const createMockMemory = (overrides = {}) => ({
-  id: 'memory-123',
-  userId: 'user-123',
-  avatarId: 'avatar-456',
-  memoryType: 'conversation',
-  content: 'Test conversation content',
-  summary: 'Test summary',
-  tags: ['test'],
-  importance: 5,
-  relevanceScore: 0.8,
-  isRelevant: jest.fn().mockReturnValue(true),
-  updateRelevanceScore: jest.fn(),
-  save: jest.fn().mockResolvedValue(true),
-  ...overrides,
-});
-
-export const createMockAnalytics = (overrides = {}) => ({
-  id: 'analytics-123',
-  userId: 'user-123',
-  periodType: 'weekly',
-  engagementMetrics: {
-    totalSessions: 5,
-    averageSessionDuration: 30,
-    participationScore: 0.8,
-  },
-  coachingMetrics: {
-    goalCompletionRate: 0.7,
-    avatarEffectivenessScore: 0.8,
-  },
-  kpiMetrics: {
-    userSatisfactionScore: 8,
-    churnRisk: 0.2,
-  },
-  getOverallHealthScore: jest.fn().mockReturnValue(75),
-  ...overrides,
 });

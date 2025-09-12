@@ -1,15 +1,15 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: {
-    index: 'src/index.ts',
-    'components/index': 'src/components/index.ts',
-    'hooks/index': 'src/hooks/index.ts',
-    'utils/index': 'src/utils/index.ts',
-    'services/index': 'src/services/index.ts',
-  },
+  entry: [
+    'src/index.ts',
+    'src/components/index.ts',
+    'src/hooks/index.ts',
+    'src/utils/index.ts',
+    'src/services/index.ts',
+  ],
   format: ['cjs', 'esm'],
-  dts: true,
+  dts: true, // Re-enable TypeScript declarations for proper imports
   splitting: false,
   sourcemap: true,
   clean: true,

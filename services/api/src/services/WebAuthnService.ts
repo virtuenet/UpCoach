@@ -18,7 +18,9 @@ import type {
   AuthenticationResponseJSON,
   AuthenticatorTransportFuture,
 } from '@simplewebauthn/types';
+
 import { logger } from '../utils/logger';
+
 import { redis } from './redis';
 
 export interface WebAuthnConfig {
@@ -528,5 +530,6 @@ class WebAuthnService {
   }
 }
 
-// Export singleton instance
+// Export class and singleton instance
+export { WebAuthnService };
 export const webAuthnService = WebAuthnService.getInstance();

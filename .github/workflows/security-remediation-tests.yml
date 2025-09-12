@@ -1,0 +1,853 @@
+name: Security Remediation Test Suite
+
+on:
+  push:
+    branches: [ main, develop, security/* ]
+  pull_request:
+    branches: [ main, develop ]
+    types: [ opened, synchronize, reopened ]
+  schedule:
+    # Run security tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_scope:
+        description: 'Test scope to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - mobile-encryption
+        - api-security
+        - auth-security
+        - gdpr-compliance
+        - cross-platform
+
+env:
+  NODE_VERSION: '18'
+  FLUTTER_VERSION: '3.16.0'
+  JAVA_VERSION: '17'
+
+jobs:
+  security-test-matrix:
+    name: Security Test Matrix Setup
+    runs-on: ubuntu-latest
+    outputs:
+      test-matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Set Test Matrix
+        id: set-matrix
+        run: |
+          if [ "${{ github.event.inputs.test_scope }}" == "mobile-encryption" ]; then
+            echo "matrix={\"include\":[{\"test-suite\":\"mobile-encryption\",\"os\":\"ubuntu-latest\"}]}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.inputs.test_scope }}" == "api-security" ]; then
+            echo "matrix={\"include\":[{\"test-suite\":\"api-security\",\"os\":\"ubuntu-latest\"}]}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.inputs.test_scope }}" == "auth-security" ]; then
+            echo "matrix={\"include\":[{\"test-suite\":\"auth-security\",\"os\":\"ubuntu-latest\"}]}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.inputs.test_scope }}" == "gdpr-compliance" ]; then
+            echo "matrix={\"include\":[{\"test-suite\":\"gdpr-compliance\",\"os\":\"ubuntu-latest\"}]}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.inputs.test_scope }}" == "cross-platform" ]; then
+            echo "matrix={\"include\":[{\"test-suite\":\"cross-platform\",\"os\":\"ubuntu-latest\"}]}" >> $GITHUB_OUTPUT
+          else
+            echo "matrix={\"include\":[{\"test-suite\":\"mobile-encryption\",\"os\":\"ubuntu-latest\"},{\"test-suite\":\"api-security\",\"os\":\"ubuntu-latest\"},{\"test-suite\":\"auth-security\",\"os\":\"ubuntu-latest\"},{\"test-suite\":\"gdpr-compliance\",\"os\":\"ubuntu-latest\"},{\"test-suite\":\"cross-platform\",\"os\":\"ubuntu-latest\"}]}" >> $GITHUB_OUTPUT
+          fi
+
+  mobile-encryption-tests:
+    name: Mobile Data Encryption Security Tests
+    runs-on: ubuntu-latest
+    needs: security-test-matrix
+    if: contains(fromJson(needs.security-test-matrix.outputs.test-matrix).include.*.test-suite, 'mobile-encryption') || github.event.inputs.test_scope == 'all' || github.event.inputs.test_scope == ''
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Flutter Doctor
+        run: flutter doctor -v
+
+      - name: Get Flutter Dependencies
+        working-directory: mobile-app
+        run: flutter pub get
+
+      - name: Verify Flutter Dependencies
+        working-directory: mobile-app
+        run: flutter pub deps
+
+      - name: Run Mobile Encryption Security Tests
+        working-directory: mobile-app
+        run: |
+          flutter test test/security/mobile_encryption_test.dart \
+            --coverage \
+            --test-randomize-ordering-seed=42 \
+            --reporter=expanded
+        env:
+          FLUTTER_TEST_ENCRYPTION_KEY: ${{ secrets.TEST_ENCRYPTION_KEY }}
+          TEST_SECURE_STORAGE_KEY: ${{ secrets.TEST_SECURE_STORAGE_KEY }}
+
+      - name: Run Mobile Integration Security Tests
+        working-directory: mobile-app
+        run: |
+          flutter test integration_test/security/ \
+            --coverage \
+            --reporter=expanded
+        continue-on-error: false
+
+      - name: Upload Mobile Test Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: mobile-app/coverage/lcov.info
+          flags: mobile-encryption
+          name: mobile-encryption-coverage
+          fail_ci_if_error: true
+
+      - name: Archive Mobile Test Results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: mobile-encryption-test-results
+          path: |
+            mobile-app/test/reports/
+            mobile-app/coverage/
+          retention-days: 30
+
+  api-security-tests:
+    name: Financial API Security Tests
+    runs-on: ubuntu-latest
+    needs: security-test-matrix
+    if: contains(fromJson(needs.security-test-matrix.outputs.test-matrix).include.*.test-suite, 'api-security') || github.event.inputs.test_scope == 'all' || github.event.inputs.test_scope == ''
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_DB: upcoach_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install API Dependencies
+        working-directory: services/api
+        run: npm ci --no-audit
+
+      - name: Setup Test Database
+        working-directory: services/api
+        run: |
+          npm run db:test:setup
+          npm run db:migrate:test
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/upcoach_test
+          REDIS_URL: redis://localhost:6379
+
+      - name: Run API Security Tests
+        working-directory: services/api
+        run: |
+          npm run test:security -- \
+            --coverage \
+            --coverageReporters=lcov \
+            --coverageReporters=text \
+            --coverageDirectory=coverage/security \
+            --testTimeout=30000 \
+            --maxWorkers=2
+        env:
+          NODE_ENV: test
+          JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/upcoach_test
+          REDIS_URL: redis://localhost:6379
+          ENCRYPTION_KEY: ${{ secrets.TEST_ENCRYPTION_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.TEST_STRIPE_SECRET }}
+
+      - name: Run SQL Injection Prevention Tests
+        working-directory: services/api
+        run: |
+          npm run test -- src/__tests__/security/sql_injection.test.ts \
+            --coverage=false \
+            --verbose
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/upcoach_test
+
+      - name: Run Input Validation Tests
+        working-directory: services/api
+        run: |
+          npm run test -- src/__tests__/security/input_validation.test.ts \
+            --coverage=false \
+            --verbose
+        env:
+          NODE_ENV: test
+
+      - name: Upload API Security Test Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: services/api/coverage/security/lcov.info
+          flags: api-security
+          name: api-security-coverage
+          fail_ci_if_error: true
+
+      - name: Archive API Security Test Results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: api-security-test-results
+          path: |
+            services/api/coverage/security/
+            services/api/test-results/
+          retention-days: 30
+
+  authentication-security-tests:
+    name: Authentication Token Security Tests
+    runs-on: ubuntu-latest
+    needs: security-test-matrix
+    if: contains(fromJson(needs.security-test-matrix.outputs.test-matrix).include.*.test-suite, 'auth-security') || github.event.inputs.test_scope == 'all' || github.event.inputs.test_scope == ''
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_DB: upcoach_auth_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        working-directory: services/api
+        run: npm ci --no-audit
+
+      - name: Setup Test Database
+        working-directory: services/api
+        run: |
+          npm run db:test:setup
+          npm run db:migrate:test
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/upcoach_auth_test
+
+      - name: Run Authentication Security Tests
+        working-directory: services/api
+        run: |
+          npm run test -- src/__tests__/security/authentication_security.test.ts \
+            --coverage \
+            --coverageDirectory=coverage/auth \
+            --testTimeout=30000 \
+            --verbose
+        env:
+          NODE_ENV: test
+          JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/upcoach_auth_test
+          REDIS_URL: redis://localhost:6379
+          TWO_FACTOR_SECRET: ${{ secrets.TEST_2FA_SECRET }}
+          WEBAUTHN_RP_ID: localhost
+          WEBAUTHN_ORIGIN: http://localhost:3000
+
+      - name: Run Device Fingerprinting Tests
+        working-directory: services/api
+        run: |
+          npm run test -- src/__tests__/security/device_fingerprinting.test.ts \
+            --coverage=false \
+            --verbose
+        env:
+          NODE_ENV: test
+          DEVICE_FINGERPRINT_SECRET: ${{ secrets.TEST_FINGERPRINT_SECRET }}
+
+      - name: Run Session Security Tests
+        working-directory: services/api
+        run: |
+          npm run test -- src/__tests__/security/session_security.test.ts \
+            --coverage=false \
+            --verbose
+        env:
+          NODE_ENV: test
+          SESSION_SECRET: ${{ secrets.TEST_SESSION_SECRET }}
+          REDIS_URL: redis://localhost:6379
+
+      - name: Upload Auth Test Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: services/api/coverage/auth/lcov.info
+          flags: authentication-security
+          name: authentication-security-coverage
+          fail_ci_if_error: true
+
+      - name: Archive Authentication Test Results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: authentication-security-test-results
+          path: |
+            services/api/coverage/auth/
+            services/api/test-results/auth/
+          retention-days: 30
+
+  gdpr-compliance-tests:
+    name: GDPR Compliance Validation Tests
+    runs-on: ubuntu-latest
+    needs: security-test-matrix
+    if: contains(fromJson(needs.security-test-matrix.outputs.test-matrix).include.*.test-suite, 'gdpr-compliance') || github.event.inputs.test_scope == 'all' || github.event.inputs.test_scope == ''
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_DB: upcoach_gdpr_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        working-directory: services/api
+        run: npm ci --no-audit
+
+      - name: Setup GDPR Test Database
+        working-directory: services/api
+        run: |
+          npm run db:test:setup
+          npm run db:migrate:test
+          npm run db:seed:gdpr-test
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/upcoach_gdpr_test
+
+      - name: Run GDPR Compliance Tests
+        working-directory: services/api
+        run: |
+          npm run test -- src/__tests__/security/gdpr_compliance.test.ts \
+            --coverage \
+            --coverageDirectory=coverage/gdpr \
+            --testTimeout=45000 \
+            --verbose
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/upcoach_gdpr_test
+          GDPR_ENCRYPTION_KEY: ${{ secrets.TEST_GDPR_ENCRYPTION_KEY }}
+          DATA_RETENTION_KEY: ${{ secrets.TEST_DATA_RETENTION_KEY }}
+
+      - name: Run Data Subject Rights Tests
+        working-directory: services/api
+        run: |
+          npm run test -- src/__tests__/compliance/data_subject_rights.test.ts \
+            --coverage=false \
+            --verbose
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/upcoach_gdpr_test
+
+      - name: Run Consent Management Tests
+        working-directory: services/api
+        run: |
+          npm run test -- src/__tests__/compliance/consent_management.test.ts \
+            --coverage=false \
+            --verbose
+        env:
+          NODE_ENV: test
+
+      - name: Generate GDPR Compliance Report
+        working-directory: services/api
+        run: |
+          npm run generate:gdpr-compliance-report
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/upcoach_gdpr_test
+
+      - name: Upload GDPR Test Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: services/api/coverage/gdpr/lcov.info
+          flags: gdpr-compliance
+          name: gdpr-compliance-coverage
+          fail_ci_if_error: true
+
+      - name: Archive GDPR Compliance Results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: gdpr-compliance-test-results
+          path: |
+            services/api/coverage/gdpr/
+            services/api/reports/gdpr-compliance/
+            services/api/test-results/gdpr/
+          retention-days: 30
+
+  cross-platform-security-tests:
+    name: Cross-Platform Integration Security Tests
+    runs-on: ubuntu-latest
+    needs: security-test-matrix
+    if: contains(fromJson(needs.security-test-matrix.outputs.test-matrix).include.*.test-suite, 'cross-platform') || github.event.inputs.test_scope == 'all' || github.event.inputs.test_scope == ''
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_DB: upcoach_integration_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Root Dependencies
+        run: npm ci --no-audit
+
+      - name: Install API Dependencies
+        working-directory: services/api
+        run: npm ci --no-audit
+
+      - name: Setup Test Services
+        working-directory: services/api
+        run: |
+          npm run db:test:setup
+          npm run db:migrate:test
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/upcoach_integration_test
+          REDIS_URL: redis://localhost:6379
+
+      - name: Start Test API Server
+        working-directory: services/api
+        run: |
+          npm run start:test &
+          sleep 10
+        env:
+          NODE_ENV: test
+          PORT: 8080
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/upcoach_integration_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Cross-Platform Security Tests
+        run: |
+          npx playwright test tests/integration/cross_platform_security.spec.ts \
+            --config=playwright.config.ts \
+            --reporter=html \
+            --workers=2
+        env:
+          API_BASE_URL: http://localhost:8080
+          JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+          TEST_ENCRYPTION_KEY: ${{ secrets.TEST_ENCRYPTION_KEY }}
+
+      - name: Upload Playwright Test Results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: cross-platform-security-test-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 30
+
+      - name: Archive Security Screenshots
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: security-test-screenshots
+          path: test-results/*/screenshot*.png
+          retention-days: 7
+
+  owasp-zap-security-scan:
+    name: OWASP ZAP Security Scanning
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.test_scope == 'all' || github.event.inputs.test_scope == ''
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_DB: upcoach_zap_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        working-directory: services/api
+        run: npm ci --no-audit
+
+      - name: Start Test Application
+        working-directory: services/api
+        run: |
+          npm run start:test &
+          sleep 15
+        env:
+          NODE_ENV: test
+          PORT: 8080
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/upcoach_zap_test
+
+      - name: Run OWASP ZAP Baseline Scan
+        run: |
+          docker run -t owasp/zap2docker-stable zap-baseline.py \
+            -t http://localhost:8080 \
+            -J zap-baseline-report.json \
+            -r zap-baseline-report.html \
+            -x zap-baseline-report.xml \
+            -I
+
+      - name: Run OWASP ZAP API Scan
+        run: |
+          docker run -t owasp/zap2docker-stable zap-api-scan.py \
+            -t http://localhost:8080/api \
+            -J zap-api-report.json \
+            -r zap-api-report.html \
+            -x zap-api-report.xml
+
+      - name: Upload ZAP Reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: zap-security-reports
+          path: |
+            zap-*-report.*
+          retention-days: 30
+
+  security-performance-tests:
+    name: Security Performance Impact Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.test_scope == 'all' || github.event.inputs.test_scope == ''
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Performance Test Dependencies
+        run: npm ci --no-audit
+
+      - name: Install Artillery
+        run: npm install -g artillery@latest
+
+      - name: Run Security Performance Tests
+        run: |
+          artillery run performance/security-performance.yml \
+            --output security-performance-report.json
+        env:
+          TARGET_URL: http://localhost:8080
+          TEST_DURATION: 60s
+          ARRIVAL_RATE: 10
+
+      - name: Generate Performance Report
+        run: |
+          artillery report security-performance-report.json \
+            --output security-performance-report.html
+
+      - name: Upload Performance Test Results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-performance-test-results
+          path: |
+            security-performance-report.*
+          retention-days: 30
+
+  security-compliance-report:
+    name: Generate Security Compliance Report
+    runs-on: ubuntu-latest
+    needs: [mobile-encryption-tests, api-security-tests, authentication-security-tests, gdpr-compliance-tests, cross-platform-security-tests]
+    if: always()
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci --no-audit
+
+      - name: Download All Test Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: test-artifacts/
+
+      - name: Generate Comprehensive Security Report
+        run: |
+          node scripts/generate-security-report.js \
+            --input-dir=test-artifacts/ \
+            --output-dir=security-reports/
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+
+      - name: Calculate Security Score
+        id: security-score
+        run: |
+          SCORE=$(node scripts/calculate-security-score.js --artifacts=test-artifacts/)
+          echo "score=$SCORE" >> $GITHUB_OUTPUT
+          echo "Security Score: $SCORE"
+
+      - name: Upload Security Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: comprehensive-security-report
+          path: |
+            security-reports/
+          retention-days: 90
+
+      - name: Comment Security Score on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const score = ${{ steps.security-score.outputs.score }};
+            const comment = `## 🛡️ Security Test Results
+            
+            **Security Score: ${score}/100**
+            
+            ### Test Results:
+            - ✅ Mobile Data Encryption: ${{ needs.mobile-encryption-tests.result }}
+            - ✅ Financial API Security: ${{ needs.api-security-tests.result }}
+            - ✅ Authentication Security: ${{ needs.authentication-security-tests.result }}
+            - ✅ GDPR Compliance: ${{ needs.gdpr-compliance-tests.result }}
+            - ✅ Cross-Platform Integration: ${{ needs.cross-platform-security-tests.result }}
+            
+            ${score >= 95 ? '🎉 **A+ Security Rating Achieved!**' : 
+              score >= 90 ? '⚠️ **Security improvements needed to reach A+ rating**' : 
+              '❌ **Critical security issues must be addressed**'}
+            
+            [View Detailed Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Fail if Security Score Below Threshold
+        if: steps.security-score.outputs.score < 90
+        run: |
+          echo "❌ Security score ${{ steps.security-score.outputs.score }} is below required threshold of 90"
+          exit 1
+
+  security-notification:
+    name: Security Test Notifications
+    runs-on: ubuntu-latest
+    needs: [security-compliance-report]
+    if: always() && (failure() || cancelled())
+    
+    steps:
+      - name: Notify Security Team on Failure
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: |
+            🚨 **Security Test Suite Failed**
+            
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            
+            **Failed Jobs:**
+            ${{ join(needs.*.result, ', ') }}
+            
+            [View Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SECURITY_SLACK_WEBHOOK }}
+        if: env.SLACK_WEBHOOK_URL != null
+
+      - name: Create Security Issue on Critical Failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const title = `🚨 Security Test Suite Failure - ${new Date().toISOString().split('T')[0]}`;
+            const body = `## Security Test Suite Failed
+            
+            **Run Details:**
+            - Branch: \`${{ github.ref_name }}\`
+            - Commit: \`${{ github.sha }}\`
+            - Run ID: \`${{ github.run_id }}\`
+            - Triggered by: \`${{ github.event_name }}\`
+            
+            **Failed Components:**
+            - Mobile Encryption Tests: ${{ needs.mobile-encryption-tests.result }}
+            - API Security Tests: ${{ needs.api-security-tests.result }}
+            - Authentication Security Tests: ${{ needs.authentication-security-tests.result }}
+            - GDPR Compliance Tests: ${{ needs.gdpr-compliance-tests.result }}
+            - Cross-Platform Security Tests: ${{ needs.cross-platform-security-tests.result }}
+            
+            **Action Required:**
+            1. Review failed test details
+            2. Address security vulnerabilities
+            3. Re-run security tests
+            4. Update security documentation
+            
+            **Links:**
+            - [Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            - [Security Documentation](/docs/SECURITY_TESTING.md)
+            `;
+            
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['security', 'critical', 'bug']
+            });
+
+  security-status-badge:
+    name: Update Security Status Badge
+    runs-on: ubuntu-latest
+    needs: [security-compliance-report]
+    if: always() && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Calculate Overall Security Status
+        id: security-status
+        run: |
+          if [[ "${{ needs.security-compliance-report.result }}" == "success" ]]; then
+            echo "status=passing" >> $GITHUB_OUTPUT
+            echo "color=brightgreen" >> $GITHUB_OUTPUT
+            echo "message=A+ Security Rating" >> $GITHUB_OUTPUT
+          else
+            echo "status=failing" >> $GITHUB_OUTPUT
+            echo "color=red" >> $GITHUB_OUTPUT
+            echo "message=Security Issues Detected" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update Security Badge
+        run: |
+          curl -X POST "https://img.shields.io/badge/Security%20Tests-${{ steps.security-status.outputs.message }}-${{ steps.security-status.outputs.color }}" \
+            -o badges/security-status.svg
+
+      - name: Commit Updated Badge
+        if: steps.security-status.outputs.status == 'passing'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add badges/security-status.svg
+          git diff --staged --quiet || git commit -m "🛡️ Update security status badge [skip ci]"
+          git push

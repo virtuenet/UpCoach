@@ -1,6 +1,6 @@
 import { Model } from 'sequelize-typescript';
 import { CoachProfile } from './CoachProfile';
-export declare class CoachPackage extends Model {
+export declare class CoachPackage extends Model<CoachPackage> {
     id: number;
     coachId: number;
     coach: CoachProfile;

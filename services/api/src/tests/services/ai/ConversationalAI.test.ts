@@ -1,5 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 // Mock all external dependencies first
 jest.mock('sequelize');
 jest.mock('../../../config/environment', () => ({
@@ -63,11 +62,11 @@ jest.mock('../../../models/Chat', () => ({
 jest.mock('openai');
 
 // Now import the main class
-import { ConversationalAI } from '../../../services/ai/ConversationalAI';
+import { ChatMessage } from '../../../models/ChatMessage';
 import { aiService } from '../../../services/ai/AIService';
 import { contextManager } from '../../../services/ai/ContextManager';
+import { ConversationalAI } from '../../../services/ai/ConversationalAI';
 import { personalityEngine } from '../../../services/ai/PersonalityEngine';
-import { ChatMessage } from '../../../models/ChatMessage';
 
 describe('ConversationalAI', () => {
   let conversationalAI: ConversationalAI;

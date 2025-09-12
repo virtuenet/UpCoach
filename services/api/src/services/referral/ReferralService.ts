@@ -1,10 +1,11 @@
-import { User } from '../../models/User';
 import { Transaction } from 'sequelize';
-import { logger } from '../../utils/logger';
-import emailService from '../email/UnifiedEmailService';
-import { analyticsService } from '../analytics/AnalyticsService';
+
+import { User } from '../../models/User';
 import { generateCode } from '../../utils/generators';
+import { logger } from '../../utils/logger';
+import { analyticsService } from '../analytics/AnalyticsService';
 import { getCacheService } from '../cache/UnifiedCacheService';
+import emailService from '../email/UnifiedEmailService';
 
 interface ReferralProgram {
   id: string;
@@ -576,14 +577,16 @@ export class ReferralService {
   private getLeaderboardStartDate(period: string): Date | null {
     const now = new Date();
     switch (period) {
-      case 'week':
+      case 'week': {
         const weekAgo = new Date(now);
         weekAgo.setDate(weekAgo.getDate() - 7);
         return weekAgo;
-      case 'month':
+      }
+      case 'month': {
         const monthAgo = new Date(now);
         monthAgo.setMonth(monthAgo.getMonth() - 1);
         return monthAgo;
+      }
       default:
         return null;
     }

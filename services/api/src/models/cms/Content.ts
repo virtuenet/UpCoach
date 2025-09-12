@@ -1,8 +1,10 @@
 import { Model, DataTypes, Sequelize, Association, Optional } from 'sequelize';
+
 import { User } from '../User';
+
 import { ContentCategory } from './ContentCategory';
-import { ContentTag } from './ContentTag';
 import { ContentMedia } from './ContentMedia';
+import { ContentTag } from './ContentTag';
 
 export interface ContentAttributes {
   id: string;

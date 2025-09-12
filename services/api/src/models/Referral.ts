@@ -6,8 +6,10 @@ import {
   CreationOptional,
   ForeignKey,
   NonAttribute,
-} from 'sequelize';
+ Op, QueryTypes } from 'sequelize';
+
 import { sequelize } from '../config/database';
+
 import { User } from './User';
 
 export class Referral extends Model<InferAttributes<Referral>, InferCreationAttributes<Referral>> {
@@ -101,21 +103,24 @@ export class Referral extends Model<InferAttributes<Referral>, InferCreationAttr
     const now = new Date();
 
     switch (period) {
-      case 'week':
+      case 'week': {
         const weekAgo = new Date(now);
         weekAgo.setDate(weekAgo.getDate() - 7);
         dateFilter = { completedAt: { [Op.gte]: weekAgo } };
         break;
-      case 'month':
+      }
+      case 'month': {
         const monthAgo = new Date(now);
         monthAgo.setMonth(monthAgo.getMonth() - 1);
         dateFilter = { completedAt: { [Op.gte]: monthAgo } };
         break;
-      case 'year':
+      }
+      case 'year': {
         const yearAgo = new Date(now);
         yearAgo.setFullYear(yearAgo.getFullYear() - 1);
         dateFilter = { completedAt: { [Op.gte]: yearAgo } };
         break;
+      }
     }
 
     const result = await sequelize.query(
@@ -273,6 +278,5 @@ User.hasOne(Referral, {
   as: 'receivedReferral',
 });
 
-import { Op, QueryTypes } from 'sequelize';
 
 export default Referral;

@@ -1,8 +1,11 @@
-import multer from 'multer';
-import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
-import sharp from 'sharp';
 import fs from 'fs/promises';
+import path from 'path';
+
+import multer, { MulterError, diskStorage } from 'multer';
+import sharp from 'sharp';
+import { v4 as uuidv4 } from 'uuid';
+
+
 import { logger } from '../../utils/logger';
 
 export interface UploadedFile {
@@ -32,7 +35,7 @@ class UploadService {
   }
 
   private getStorage() {
-    return multer.diskStorage({
+    return diskStorage({
       destination: async (_req, file, cb) => {
         const dir = path.join(this.uploadDir, this.getSubdirectory(file.mimetype));
         await fs.mkdir(dir, { recursive: true });

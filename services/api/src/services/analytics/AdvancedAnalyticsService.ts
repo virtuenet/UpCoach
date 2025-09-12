@@ -1,11 +1,12 @@
+import { format, subDays } from 'date-fns';
 import { QueryTypes } from 'sequelize';
+
 import { sequelize } from '../../models';
 // import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
 // import { analyticsService } from './AnalyticsService';
-import { getCacheService } from '../cache/UnifiedCacheService';
-import { format, subDays } from 'date-fns';
 import { executeSecureQuery, validateQueryParams } from '../../utils/sqlSecurity';
+import { getCacheService } from '../cache/UnifiedCacheService';
 
 interface CohortDefinition {
   name: string;
@@ -156,7 +157,7 @@ export class AdvancedAnalyticsService {
   // Build custom cohort query based on filters
   private buildCustomCohortQuery(filters: any): string {
     // This is a simplified version - in production, you'd want more robust query building
-    let conditions = [];
+    const conditions = [];
 
     if (filters.minSessions) {
       conditions.push(`

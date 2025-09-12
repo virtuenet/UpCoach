@@ -1,6 +1,7 @@
+import axios from 'axios';
+
 import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
-import axios from 'axios';
 
 interface MarketingEvent {
   userId: string;

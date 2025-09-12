@@ -1,3 +1,4 @@
+import { Op, Sequelize } from 'sequelize';
 import {
   Table,
   Column,
@@ -7,9 +8,9 @@ import {
   BelongsTo,
   CreatedAt,
 } from 'sequelize-typescript';
-import { Op, Sequelize } from 'sequelize';
-import { User } from './User';
+
 import { AIInteraction } from './AIInteraction';
+import { User } from './User';
 
 @Table({
   tableName: 'ai_feedback',

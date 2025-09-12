@@ -1,9 +1,10 @@
+import { Op } from 'sequelize';
+
+import { ChatMessage } from '../../models/ChatMessage';
 import { Goal } from '../../models/Goal';
-import { User } from '../../models/User';
 import { Mood } from '../../models/Mood';
 import { Task } from '../../models/Task';
-import { ChatMessage } from '../../models/ChatMessage';
-import { Op } from 'sequelize';
+import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
 
 export interface UserContext {
@@ -210,9 +211,11 @@ export class ContextManager {
     today.setHours(0, 0, 0, 0);
 
     let streak = 0;
-    let currentDate = new Date(today);
+    const currentDate = new Date(today);
+    const maxLookbackDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    let shouldContinue = true;
 
-    while (true) {
+    while (shouldContinue) {
       const tasksOnDate = tasks.filter(t => {
         const taskDate = new Date(t.completedAt || t.updatedAt);
         taskDate.setHours(0, 0, 0, 0);
@@ -220,6 +223,7 @@ export class ContextManager {
       });
 
       if (tasksOnDate.length === 0 && streak > 0) {
+        shouldContinue = false;
         break;
       }
 
@@ -229,8 +233,8 @@ export class ContextManager {
 
       currentDate.setDate(currentDate.getDate() - 1);
 
-      if (currentDate < new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) {
-        break; // Don't look back more than 30 days
+      if (currentDate < maxLookbackDate) {
+        shouldContinue = false; // Don't look back more than 30 days
       }
     }
 

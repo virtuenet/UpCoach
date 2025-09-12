@@ -1,8 +1,3 @@
-/**
- * Unified Content Model
- * Consolidates Article, Content, ContentArticle, Course, Template, and other CMS models
- * into a single flexible content system with discriminated types
- */
 import { Model, Sequelize, Association, Optional } from 'sequelize';
 import { User } from '../User';
 export type ContentType = 'article' | 'guide' | 'exercise' | 'lesson' | 'tip' | 'course' | 'template' | 'page' | 'faq' | 'announcement';
@@ -168,41 +163,14 @@ export declare class UnifiedContent extends Model<UnifiedContentAttributes, Unif
         parent: Association<UnifiedContent, UnifiedContent>;
         children: Association<UnifiedContent, UnifiedContent>;
     };
-    /**
-     * Generate unique slug
-     */
     generateSlug(): Promise<string>;
-    /**
-     * Calculate reading time
-     */
     calculateReadingTime(): number;
-    /**
-     * Publish content
-     */
     publish(): Promise<void>;
-    /**
-     * Archive content
-     */
     archive(): Promise<void>;
-    /**
-     * Increment view count
-     */
     incrementViewCount(): Promise<void>;
-    /**
-     * Create new version
-     */
     createVersion(changedBy: string, changes: string): Promise<void>;
-    /**
-     * Get published content
-     */
     static getPublished(type?: ContentType): Promise<UnifiedContent[]>;
-    /**
-     * Get featured content
-     */
     static getFeatured(limit?: number): Promise<UnifiedContent[]>;
-    /**
-     * Search content
-     */
     static search(query: string, filters?: {
         type?: ContentType;
         status?: ContentStatus;
@@ -211,25 +179,10 @@ export declare class UnifiedContent extends Model<UnifiedContentAttributes, Unif
         tags?: string[];
         isPremium?: boolean;
     }): Promise<UnifiedContent[]>;
-    /**
-     * Get popular content
-     */
     static getPopular(limit?: number, type?: ContentType): Promise<UnifiedContent[]>;
-    /**
-     * Get scheduled content ready for publishing
-     */
     static getScheduledForPublishing(): Promise<UnifiedContent[]>;
-    /**
-     * Get expired content
-     */
     static getExpired(): Promise<UnifiedContent[]>;
-    /**
-     * Initialize the model
-     */
     static initialize(sequelize: Sequelize): void;
-    /**
-     * Set up associations
-     */
     static associate(): void;
 }
 export default UnifiedContent;

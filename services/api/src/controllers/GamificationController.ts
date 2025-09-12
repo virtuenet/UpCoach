@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
+import { body, query, param, validationResult } from 'express-validator';
+
 import { gamificationService } from '../services/gamification/GamificationService';
 import { logger } from '../utils/logger';
-import { body, query, param, validationResult } from 'express-validator';
 
 export class GamificationController {
   // Get user stats

@@ -24,7 +24,7 @@ export declare enum CostProvider {
     SENDGRID = "sendgrid",
     OTHER = "other"
 }
-export declare class CostTracking extends Model {
+export declare class CostTracking extends Model<CostTracking> {
     id: string;
     category: CostCategory;
     type: CostType;

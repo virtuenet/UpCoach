@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
+
 import { Experiment } from '../../models/experiments/Experiment';
 import { ABTestingService } from '../../services/ab-testing/ABTestingService';
-import { validationResult } from 'express-validator';
 import { logger } from '../../utils/logger';
 
 export class ExperimentsController {

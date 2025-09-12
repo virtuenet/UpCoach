@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import { UserProfilingService } from '../../../services/ai/UserProfilingService';
-import { UserProfile } from '../../../models/UserProfile';
-import { User } from '../../../models/User';
-import { Mood } from '../../../models/Mood';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+
 import { Goal } from '../../../models/Goal';
+import { Mood } from '../../../models/Mood';
 import { Task } from '../../../models/Task';
+import { User } from '../../../models/User';
+import { UserProfile } from '../../../models/UserProfile';
+import { UserProfilingService } from '../../../services/ai/UserProfilingService';
 // ChatMessage import removed - not used in tests
 
 // Mock models
@@ -212,7 +212,7 @@ describe('UserProfilingService', () => {
     });
   });
 
-  describe('getUserProfile', () => {
+  describe('createOrUpdateProfile', () => {
     it('should return existing profile', async () => {
       const mockProfile = {
         id: 'profile123',
@@ -222,7 +222,7 @@ describe('UserProfilingService', () => {
 
       (UserProfile.findOne as jest.Mock).mockResolvedValue(mockProfile);
 
-      const result = await userProfilingService.getUserProfile('user123');
+      const result = await userProfilingService.createOrUpdateProfile('user123');
 
       expect(result).toEqual({ id: 'profile123', userId: 'user123' });
     });
@@ -230,13 +230,13 @@ describe('UserProfilingService', () => {
     it('should return null if profile does not exist', async () => {
       (UserProfile.findOne as jest.Mock).mockResolvedValue(null);
 
-      const result = await userProfilingService.getUserProfile('user123');
+      const result = await userProfilingService.createOrUpdateProfile('user123');
 
       expect(result).toBeNull();
     });
   });
 
-  describe('updatePreferences', () => {
+  describe('updateUserPreferences', () => {
     it('should update user preferences', async () => {
       const mockProfile = {
         id: 'profile123',
@@ -254,7 +254,7 @@ describe('UserProfilingService', () => {
         emailDigest: 'weekly',
       };
 
-      const result = await userProfilingService.updatePreferences('user123', newPreferences);
+      const result = await userProfilingService.updateUserPreferences('user123', newPreferences);
 
       expect(mockProfile.preferences).toEqual({
         notifications: false,
@@ -266,13 +266,13 @@ describe('UserProfilingService', () => {
     it('should throw error if profile not found', async () => {
       (UserProfile.findOne as jest.Mock).mockResolvedValue(null);
 
-      await expect(userProfilingService.updatePreferences('user123', {})).rejects.toThrow(
+      await expect(userProfilingService.updateUserPreferences('user123', {})).rejects.toThrow(
         'User profile not found'
       );
     });
   });
 
-  describe('getInsights', () => {
+  describe('getProfileInsights', () => {
     it('should return fresh insights if recent', async () => {
       const recentDate = new Date();
       recentDate.setHours(recentDate.getHours() - 12); // 12 hours ago
@@ -286,7 +286,7 @@ describe('UserProfilingService', () => {
 
       (UserProfile.findOne as jest.Mock).mockResolvedValue(mockProfile);
 
-      const result = await userProfilingService.getInsights('user123');
+      const result = await userProfilingService.getProfileInsights('user123');
 
       expect(result).toEqual(mockProfile.insights);
     });
@@ -311,13 +311,13 @@ describe('UserProfilingService', () => {
         insights: [{ type: 'new', message: 'New insight' }],
       } as any);
 
-      const result = await userProfilingService.getInsights('user123');
+      const result = await userProfilingService.getProfileInsights('user123');
 
       expect(userProfilingService.createOrUpdateProfile).toHaveBeenCalledWith('user123');
     });
   });
 
-  describe('assessReadiness', () => {
+  describe('assessReadinessLevel', () => {
     it('should assess user readiness for challenges', async () => {
       const mockProfile = {
         id: 'profile123',
@@ -336,7 +336,7 @@ describe('UserProfilingService', () => {
 
       (UserProfile.findOne as jest.Mock).mockResolvedValue(mockProfile);
 
-      const assessment = await userProfilingService.assessReadiness('user123');
+      const assessment = await userProfilingService.assessReadinessLevel('user123');
 
       expect(assessment.overallReadiness).toBeGreaterThan(80);
       expect(assessment.strengths).toContain('consistency');
@@ -361,7 +361,7 @@ describe('UserProfilingService', () => {
 
       (UserProfile.findOne as jest.Mock).mockResolvedValue(mockProfile);
 
-      const assessment = await userProfilingService.assessReadiness('user123');
+      const assessment = await userProfilingService.assessReadinessLevel('user123');
 
       expect(assessment.overallReadiness).toBeLessThan(50);
       expect(assessment.areasForImprovement.length).toBeGreaterThan(0);

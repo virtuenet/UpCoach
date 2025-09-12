@@ -5,38 +5,36 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.referralService = exports.ReferralService = void 0;
 const User_1 = require("../../models/User");
-const logger_1 = require("../../utils/logger");
-const UnifiedEmailService_1 = __importDefault(require("../email/UnifiedEmailService"));
-const AnalyticsService_1 = require("../analytics/AnalyticsService");
 const generators_1 = require("../../utils/generators");
+const logger_1 = require("../../utils/logger");
+const AnalyticsService_1 = require("../analytics/AnalyticsService");
 const UnifiedCacheService_1 = require("../cache/UnifiedCacheService");
+const UnifiedEmailService_1 = __importDefault(require("../email/UnifiedEmailService"));
 class ReferralService {
     programs = new Map();
-    referrals = new Map(); // code -> referral
+    referrals = new Map();
     constructor() {
         this.initializePrograms();
     }
     initializePrograms() {
-        // Standard referral program
         this.programs.set('standard', {
             id: 'standard',
             name: 'Standard Referral Program',
             rewardType: 'percentage',
-            referrerReward: 20, // 20% commission
-            refereeReward: 20, // 20% discount
+            referrerReward: 20,
+            refereeReward: 20,
             maxRewards: 10,
             validityDays: 90,
             conditions: {
                 requiresPaidPlan: false,
             },
         });
-        // Premium referral program
         this.programs.set('premium', {
             id: 'premium',
             name: 'Premium Referral Program',
             rewardType: 'fixed',
-            referrerReward: 50, // $50 credit
-            refereeReward: 30, // $30 discount
+            referrerReward: 50,
+            refereeReward: 30,
             validityDays: 180,
             conditions: {
                 minSubscriptionTier: 'pro',
@@ -44,13 +42,12 @@ class ReferralService {
                 minAccountAge: 30,
             },
         });
-        // Coach referral program
         this.programs.set('coach', {
             id: 'coach',
             name: 'Coach Partner Program',
             rewardType: 'percentage',
-            referrerReward: 30, // 30% recurring commission
-            refereeReward: 25, // 25% discount first 3 months
+            referrerReward: 30,
+            refereeReward: 25,
             validityDays: 365,
             conditions: {
                 minSubscriptionTier: 'coach',
@@ -58,7 +55,6 @@ class ReferralService {
             },
         });
     }
-    // Create a referral code for a user
     async createReferralCode(userId, programId = 'standard') {
         const user = await User_1.User.findByPk(userId);
         if (!user) {
@@ -68,12 +64,10 @@ class ReferralService {
         if (!program) {
             throw new Error('Invalid referral program');
         }
-        // Check if user is eligible
         const isEligible = await this.checkEligibility(user, program);
         if (!isEligible.eligible) {
             throw new Error(`Not eligible for referral program: ${isEligible.reason}`);
         }
-        // Generate unique code
         let code;
         let attempts = 0;
         do {
@@ -83,11 +77,10 @@ class ReferralService {
         if (attempts >= 10) {
             throw new Error('Failed to generate unique referral code');
         }
-        // Create referral
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + program.validityDays);
         const referral = {
-            id: Date.now(), // In production, use proper ID generation
+            id: Date.now(),
             referrerId: userId,
             code,
             status: 'pending',
@@ -100,10 +93,8 @@ class ReferralService {
                 programName: program.name,
             },
         };
-        // Store referral
         this.referrals.set(code, referral);
         await this.saveReferralToDatabase(referral);
-        // Track event
         await AnalyticsService_1.analyticsService.trackUserAction(userId, 'Referral Code Created', {
             programId,
             code,
@@ -112,14 +103,12 @@ class ReferralService {
         logger_1.logger.info('Referral code created', { userId, code, programId });
         return referral;
     }
-    // Apply a referral code
     async applyReferralCode(refereeId, code, transaction) {
         try {
             const referral = await this.getReferralByCode(code);
             if (!referral) {
                 return { success: false, message: 'Invalid referral code' };
             }
-            // Check if code is valid
             const validation = await this.validateReferralCode(referral, refereeId);
             if (!validation.valid) {
                 return { success: false, message: validation.reason || 'Invalid code' };
@@ -128,19 +117,14 @@ class ReferralService {
             if (!program) {
                 return { success: false, message: 'Invalid referral program' };
             }
-            // Update referral
             referral.refereeId = refereeId;
             referral.status = 'completed';
             referral.completedAt = new Date();
             referral.refereeReward = program.refereeReward;
             await this.updateReferralInDatabase(referral, transaction);
-            // Apply discount/benefit to referee
             const discount = await this.applyRefereeReward(refereeId, program, referral, transaction);
-            // Schedule referrer reward (after referee pays)
             await this.scheduleReferrerReward(referral);
-            // Send notifications
             await this.sendReferralNotifications(referral);
-            // Track conversion
             await AnalyticsService_1.analyticsService.trackConversion(refereeId, 'referral_applied', discount, 'USD', {
                 referralCode: code,
                 programId: program.id,
@@ -165,7 +149,6 @@ class ReferralService {
             };
         }
     }
-    // Get user's referral stats
     async getUserReferralStats(userId) {
         const userReferrals = await this.getUserReferrals(userId);
         const stats = {
@@ -182,10 +165,8 @@ class ReferralService {
         };
         return stats;
     }
-    // Process referrer rewards (called after payment)
     async processReferrerReward(refereeId, paymentAmount) {
         try {
-            // Find referral by referee
             const referral = await this.getReferralByReferee(refereeId);
             if (!referral || referral.rewardStatus !== 'pending') {
                 return;
@@ -194,7 +175,6 @@ class ReferralService {
             if (!program) {
                 return;
             }
-            // Calculate reward
             let rewardAmount = 0;
             if (program.rewardType === 'percentage') {
                 rewardAmount = (paymentAmount * program.referrerReward) / 100;
@@ -202,15 +182,11 @@ class ReferralService {
             else if (program.rewardType === 'fixed') {
                 rewardAmount = program.referrerReward;
             }
-            // Apply reward to referrer
             await this.applyReferrerReward(referral.referrerId, rewardAmount, referral);
-            // Update referral
             referral.referrerReward = rewardAmount;
             referral.rewardStatus = 'paid';
             await this.updateReferralInDatabase(referral);
-            // Send notification
             await this.sendRewardNotification(referral, rewardAmount);
-            // Track reward
             await AnalyticsService_1.analyticsService.trackRevenue(referral.referrerId, rewardAmount, 'USD', 'referral_reward', {
                 referralId: referral.id,
                 refereeId,
@@ -225,7 +201,6 @@ class ReferralService {
             logger_1.logger.error('Failed to process referrer reward', { error, refereeId });
         }
     }
-    // Get overall referral stats
     async getOverallStats() {
         const allReferrals = Array.from(this.referrals.values());
         const stats = {
@@ -245,10 +220,8 @@ class ReferralService {
         };
         return stats;
     }
-    // Get referral leaderboard
     async getReferralLeaderboard(period = 'month') {
         const startDate = this.getLeaderboardStartDate(period);
-        // In production, this would be a database query
         const leaderboard = new Map();
         for (const referral of this.referrals.values()) {
             if (referral.status === 'completed' && (!startDate || referral.completedAt >= startDate)) {
@@ -262,9 +235,7 @@ class ReferralService {
                 leaderboard.set(referral.referrerId, existing);
             }
         }
-        // Sort and add user details
         const sorted = Array.from(leaderboard.values()).sort((a, b) => b.totalEarnings - a.totalEarnings);
-        // Add user names and ranks
         const results = await Promise.all(sorted.slice(0, 10).map(async (entry, index) => {
             const user = await User_1.User.findByPk(entry.userId);
             return {
@@ -275,10 +246,8 @@ class ReferralService {
         }));
         return results;
     }
-    // Private helper methods
     async checkEligibility(user, program) {
         const conditions = program.conditions;
-        // Check subscription tier
         if (conditions.minSubscriptionTier) {
             const tierHierarchy = ['free', 'basic', 'pro', 'premium', 'coach'];
             const userTierIndex = tierHierarchy.indexOf(user.role || 'free');
@@ -290,14 +259,12 @@ class ReferralService {
                 };
             }
         }
-        // Check paid plan requirement
         if (conditions.requiresPaidPlan && !user.role) {
             return {
                 eligible: false,
                 reason: 'Requires an active paid subscription',
             };
         }
-        // Check account age
         if (conditions.minAccountAge) {
             const accountAgeDays = Math.floor((Date.now() - user.createdAt.getTime()) / (1000 * 60 * 60 * 24));
             if (accountAgeDays < conditions.minAccountAge) {
@@ -307,7 +274,6 @@ class ReferralService {
                 };
             }
         }
-        // Check existing rewards limit
         if (program.maxRewards) {
             const existingRewards = await this.countUserRewards(Number(user.id), program.id);
             if (existingRewards >= program.maxRewards) {
@@ -320,7 +286,6 @@ class ReferralService {
         return { eligible: true };
     }
     async generateUniqueCode(user) {
-        // Generate code based on user name and random string
         const namePart = user.name
             .split(' ')[0]
             .toUpperCase()
@@ -330,19 +295,15 @@ class ReferralService {
         return `${namePart}${randomPart}`;
     }
     async validateReferralCode(referral, refereeId) {
-        // Check if expired
         if (new Date() > referral.expiresAt) {
             return { valid: false, reason: 'Referral code has expired' };
         }
-        // Check if already used
         if (referral.status !== 'pending') {
             return { valid: false, reason: 'Referral code has already been used' };
         }
-        // Check self-referral
         if (referral.referrerId === refereeId) {
             return { valid: false, reason: 'Cannot use your own referral code' };
         }
-        // Check if referee already has an account
         const existingReferral = await this.getReferralByReferee(refereeId);
         if (existingReferral) {
             return { valid: false, reason: 'You have already used a referral code' };
@@ -352,31 +313,22 @@ class ReferralService {
     async applyRefereeReward(_refereeId, program, _referral, _transaction) {
         let discountAmount = 0;
         if (program.rewardType === 'percentage') {
-            // Apply percentage discount to first payment
-            discountAmount = program.refereeReward; // This will be applied as percentage
+            discountAmount = program.refereeReward;
         }
         else if (program.rewardType === 'fixed') {
-            // Apply fixed credit
             discountAmount = program.refereeReward;
-            // In production, add credit to user account
         }
         else if (program.rewardType === 'subscription') {
-            // Apply free subscription period
-            // In production, extend subscription
         }
         return discountAmount;
     }
     async applyReferrerReward(referrerId, amount, _referral) {
-        // In production, this would add credit to user account or process payout
         const user = await User_1.User.findByPk(referrerId);
         if (user) {
-            // Add to user balance or credits
             logger_1.logger.info('Referrer reward applied', { referrerId, amount });
         }
     }
     async scheduleReferrerReward(_referral) {
-        // In production, this would create a scheduled job
-        // to process reward after referee's first payment
     }
     async sendReferralNotifications(referral) {
         const [referrer, referee] = await Promise.all([
@@ -435,7 +387,6 @@ class ReferralService {
                 return null;
         }
     }
-    // Database operations (in production, these would use actual database)
     async saveReferralToDatabase(referral) {
         await (0, UnifiedCacheService_1.getCacheService)().set(`referral:${referral.code}`, referral);
     }
@@ -446,7 +397,6 @@ class ReferralService {
         return this.referrals.get(code) || (await (0, UnifiedCacheService_1.getCacheService)().get(`referral:${code}`));
     }
     async getReferralByReferee(refereeId) {
-        // In production, query database
         for (const referral of this.referrals.values()) {
             if (referral.refereeId === refereeId) {
                 return referral;

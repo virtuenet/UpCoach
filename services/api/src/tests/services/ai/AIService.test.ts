@@ -1,11 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import { AIService } from '../../../services/ai/AIService';
-import { PersonalityEngine } from '../../../services/ai/PersonalityEngine';
-import { ContextManager } from '../../../services/ai/ContextManager';
-import { PromptEngineering } from '../../../services/ai/PromptEngineering';
-import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+
+import { AIService } from '../../../services/ai/AIService';
+import { ContextManager } from '../../../services/ai/ContextManager';
+import { PersonalityEngine } from '../../../services/ai/PersonalityEngine';
+import { PromptEngineering } from '../../../services/ai/PromptEngineering';
+
 
 // Mock external dependencies
 jest.mock('openai');

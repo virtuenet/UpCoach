@@ -1,7 +1,8 @@
-import { Request } from 'express';
 import axios from 'axios';
-import { logger } from '../../utils/logger';
+import { Request } from 'express';
+
 import { User } from '../../models/User';
+import { logger } from '../../utils/logger';
 import { getCacheService } from '../cache/UnifiedCacheService';
 
 interface TrackingEvent {

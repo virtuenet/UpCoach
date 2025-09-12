@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
-import { ContentCategory } from '../../models/cms/ContentCategory';
-import { Content } from '../../models/cms/Content';
 import { Op } from 'sequelize';
 import slugify from 'slugify';
+
+import { Content } from '../../models/cms/Content';
+import { ContentCategory } from '../../models/cms/ContentCategory';
 import { logger } from '../../utils/logger';
 
 export class ContentCategoryController {

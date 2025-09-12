@@ -156,6 +156,82 @@ class ProgressPhotosNotifier extends StateNotifier<ProgressPhotosState> {
       'thisMonthPhotos': thisMonthPhotos,
     };
   }
+
+  Future<void> exportPhotosAsPDF() async {
+    state = state.copyWith(isLoading: true, error: null);
+    
+    try {
+      await _progressPhotosService.exportAsPDF(state.photos);
+      state = state.copyWith(isLoading: false);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> exportPhotosAsZip() async {
+    state = state.copyWith(isLoading: true, error: null);
+    
+    try {
+      await _progressPhotosService.exportAsZip(state.photos);
+      state = state.copyWith(isLoading: false);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> sharePhotos() async {
+    state = state.copyWith(isLoading: true, error: null);
+    
+    try {
+      await _progressPhotosService.sharePhotos(state.photos);
+      state = state.copyWith(isLoading: false);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+      rethrow;
+    }
+  }
+
+  List<ProgressPhoto> getTimelinePhotos({int? limit}) {
+    final sortedPhotos = List<ProgressPhoto>.from(state.photos);
+    sortedPhotos.sort((a, b) => b.takenAt.compareTo(a.takenAt));
+    
+    if (limit != null && limit > 0) {
+      return sortedPhotos.take(limit).toList();
+    }
+    
+    return sortedPhotos;
+  }
+
+  List<ProgressPhoto> getPhotosForDateRange(DateTime startDate, DateTime endDate) {
+    return state.photos.where((photo) {
+      return photo.takenAt.isAfter(startDate) && 
+             photo.takenAt.isBefore(endDate.add(const Duration(days: 1)));
+    }).toList();
+  }
+
+  Map<String, List<ProgressPhoto>> getPhotosByCategory() {
+    final Map<String, List<ProgressPhoto>> categorizedPhotos = {};
+    
+    for (final photo in state.photos) {
+      if (categorizedPhotos[photo.category] == null) {
+        categorizedPhotos[photo.category] = [];
+      }
+      categorizedPhotos[photo.category]!.add(photo);
+    }
+    
+    return categorizedPhotos;
+  }
 }
 
 // Provider

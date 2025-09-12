@@ -1,8 +1,10 @@
 // Performance Monitoring Service
-import { performance } from 'perf_hooks';
 import { EventEmitter } from 'events';
-import { logger } from '../utils/logger';
 import * as os from 'os';
+import { performance } from 'perf_hooks';
+
+import { logger } from '../utils/logger';
+
 
 interface PerformanceMetric {
   name: string;

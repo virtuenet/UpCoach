@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import { gamificationController } from '../controllers/GamificationController';
 import { authMiddleware as authenticateToken } from '../middleware/auth';
 

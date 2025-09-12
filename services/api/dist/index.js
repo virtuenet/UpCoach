@@ -36,31 +36,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const cors_1 = __importDefault(require("cors"));
-// import helmet from 'helmet'; // Imported below where used
-const morgan_1 = __importDefault(require("morgan"));
 const compression_1 = __importDefault(require("compression"));
+const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
-// import rateLimit from 'express-rate-limit'; // Imported via rateLimiter middleware
-const environment_1 = require("./config/environment");
+const express_1 = __importDefault(require("express"));
+const morgan_1 = __importDefault(require("morgan"));
 const database_1 = require("./config/database");
-const redis_1 = require("./services/redis");
-const routes_1 = require("./routes");
+const environment_1 = require("./config/environment");
+const csrf_1 = require("./middleware/csrf");
 const errorHandler_1 = require("./middleware/errorHandler");
 const notFoundHandler_1 = require("./middleware/notFoundHandler");
-const logger_1 = require("./utils/logger");
-const SchedulerService_1 = require("./services/SchedulerService");
-const shutdown_1 = require("./utils/shutdown");
 const rateLimiter_1 = require("./middleware/rateLimiter");
-// import { enhancedSecurityHeaders } from './middleware/securityNonce'; // Not currently used
 const securityHeaders_1 = require("./middleware/securityHeaders");
-const csrf_1 = require("./middleware/csrf");
-const SentryService_1 = require("./services/monitoring/SentryService");
+const routes_1 = require("./routes");
 const DataDogService_1 = require("./services/monitoring/DataDogService");
-// Load environment variables
+const SentryService_1 = require("./services/monitoring/SentryService");
+const redis_1 = require("./services/redis");
+const SchedulerService_1 = require("./services/SchedulerService");
+const logger_1 = require("./utils/logger");
+const shutdown_1 = require("./utils/shutdown");
 dotenv_1.default.config();
-// Initialize monitoring services (before creating Express app)
 if (environment_1.config.monitoring?.sentry?.enabled) {
     SentryService_1.sentryService.initialize({
         dsn: environment_1.config.monitoring.sentry.dsn,
@@ -89,17 +84,13 @@ if (environment_1.config.monitoring?.datadog?.enabled) {
 }
 const app = (0, express_1.default)();
 const PORT = environment_1.config.port;
-// Set up Sentry request handlers (must be first middleware)
 if (environment_1.config.monitoring?.sentry?.enabled) {
     SentryService_1.sentryService.setupExpressMiddleware(app);
 }
-// Trust proxy (important for rate limiting behind reverse proxy)
 app.set('trust proxy', 1);
-// DataDog request tracing middleware
 if (environment_1.config.monitoring?.datadog?.enabled) {
     app.use(DataDogService_1.dataDogService.requestTracing());
 }
-// Enhanced security headers with HSTS, CSP, and Certificate Transparency
 const isDevelopment = process.env.NODE_ENV === 'development';
 app.use((0, securityHeaders_1.securityHeaders)({
     enableHSTS: !isDevelopment,
@@ -126,22 +117,14 @@ app.use((0, securityHeaders_1.securityHeaders)({
         'upgrade-insecure-requests': isDevelopment ? [] : [''],
     },
 }));
-// Certificate Transparency monitoring middleware
 app.use(securityHeaders_1.ctMonitor.middleware());
-// Apply general rate limiting to all API routes
 app.use('/api/', rateLimiter_1.apiLimiter);
-// Apply specific rate limiting to webhook endpoints
 app.use('/webhook/', rateLimiter_1.webhookLimiter);
 app.use((0, compression_1.default)());
-// Rate limiting is already applied above via apiLimiter and webhookLimiter
-// Removed duplicate rate limiter to avoid conflicts
-// CORS configuration
 app.use((0, cors_1.default)({
     origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin)
             return callback(null, true);
-        // Check if origin is in allowed list
         if (environment_1.config.corsOrigins.some(allowedOrigin => {
             if (allowedOrigin.includes('*')) {
                 const pattern = allowedOrigin.replace(/\*/g, '.*');
@@ -158,16 +141,13 @@ app.use((0, cors_1.default)({
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     exposedHeaders: ['X-Total-Count'],
 }));
-// Body parsing middleware
 app.use(express_1.default.json({
     limit: '10mb',
     verify: (req, _res, buf) => {
-        // Store raw body for webhook verification if needed
         req.rawBody = buf;
     },
 }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '10mb' }));
-// Logging middleware
 if (environment_1.config.env !== 'test') {
     app.use((0, morgan_1.default)('combined', {
         stream: {
@@ -175,15 +155,12 @@ if (environment_1.config.env !== 'test') {
         },
     }));
 }
-// Request ID middleware for tracking
 app.use((req, res, next) => {
     req.id = Math.random().toString(36).substring(2, 15);
     res.setHeader('X-Request-ID', req.id);
     next();
 });
-// Configure CSRF protection (must be after body parsing middleware)
 (0, csrf_1.configureCsrf)(app);
-// CSRF token endpoint for clients
 app.get('/api/csrf-token', (req, res) => {
     try {
         if (req.csrfToken) {
@@ -199,16 +176,12 @@ app.get('/api/csrf-token', (req, res) => {
         res.status(500).json({ error: 'Failed to generate CSRF token' });
     }
 });
-// Security report endpoints
 app.post('/api/security/report/csp', (0, securityHeaders_1.securityReportHandler)());
 app.post('/api/security/report/ct', (0, securityHeaders_1.securityReportHandler)());
 app.post('/api/security/report/expect-ct', (0, securityHeaders_1.securityReportHandler)());
-// Health check endpoint
 app.get('/health', async (_req, res) => {
     try {
-        // Test database connection
         const dbHealth = await testDatabaseConnection();
-        // Test Redis connection
         const redisHealth = await testRedisConnection();
         const health = {
             status: 'OK',
@@ -237,7 +210,6 @@ app.get('/health', async (_req, res) => {
         });
     }
 });
-// API Documentation endpoint
 app.get('/api', (_req, res) => {
     res.json({
         name: 'UpCoach Backend API',
@@ -259,33 +231,24 @@ app.get('/api', (_req, res) => {
         features: environment_1.config.features,
     });
 });
-// Setup all API routes
 (0, routes_1.setupRoutes)(app);
-// 404 handler for undefined routes
 app.use(notFoundHandler_1.notFoundHandler);
-// Global error handler (must be last)
 app.use(errorHandler_1.errorMiddleware);
-// Helper functions
 async function testDatabaseConnection() {
-    const timeoutMs = 5000; // 5 second timeout
+    const timeoutMs = 5000;
     try {
-        // Create a timeout promise
         const timeoutPromise = new Promise((_, reject) => {
             setTimeout(() => reject(new Error('Database health check timeout')), timeoutMs);
         });
-        // Create the actual health check promise
         const healthCheckPromise = (async () => {
             const { sequelize } = await Promise.resolve().then(() => __importStar(require('./config/database')));
-            // Test authentication
             await sequelize.authenticate();
-            // Test a simple query
             const result = await sequelize.query('SELECT 1+1 as result', {
                 raw: true,
                 type: sequelize.QueryTypes?.SELECT || 'SELECT',
             });
             return result && result[0] && result[0].result === 2;
         })();
-        // Race between timeout and health check
         const isHealthy = await Promise.race([healthCheckPromise, timeoutPromise]);
         if (isHealthy) {
             logger_1.logger.info('Database health check passed');
@@ -307,12 +270,9 @@ async function testRedisConnection() {
         return false;
     }
 }
-// Initialize services
 async function initializeServices() {
     try {
-        // Initialize database
         await (0, database_1.initializeDatabase)();
-        // Initialize scheduler service
         SchedulerService_1.SchedulerService.initialize();
         logger_1.logger.info('All services initialized successfully');
     }
@@ -321,18 +281,13 @@ async function initializeServices() {
         process.exit(1);
     }
 }
-// Start server
 const server = app.listen(PORT, async () => {
     logger_1.logger.info(`Server is running on port ${PORT}`);
-    // Initialize services after server starts
     await initializeServices();
-    // Initialize graceful shutdown
     shutdown_1.gracefulShutdown.setServer(server);
     shutdown_1.gracefulShutdown.initialize();
-    // Register additional cleanup if needed
     shutdown_1.gracefulShutdown.onShutdown('SchedulerService', async () => {
         logger_1.logger.info('Shutting down SchedulerService...');
-        // Add scheduler shutdown logic here if needed
     }, 25);
 });
 exports.default = app;

@@ -1,5 +1,5 @@
-import * as winston from 'winston';
 import * as dotenv from 'dotenv';
+import * as winston from 'winston';
 
 // Load environment variables directly to avoid circular dependency
 dotenv.config();

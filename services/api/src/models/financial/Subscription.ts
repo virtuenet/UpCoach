@@ -1,6 +1,8 @@
 import { Model, DataTypes, Optional, Association } from 'sequelize';
+
 import { sequelize } from '../../config/sequelize';
 import { User } from '../User';
+
 import { Transaction } from './Transaction';
 
 export enum SubscriptionStatus {

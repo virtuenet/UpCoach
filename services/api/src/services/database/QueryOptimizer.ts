@@ -1,8 +1,10 @@
-import { Sequelize, QueryTypes, Transaction } from 'sequelize';
 import { performance } from 'perf_hooks';
+
+import { Sequelize, QueryTypes, Transaction } from 'sequelize';
+
+import { trackDatabaseQuery } from '../../middleware/performance';
 import { logger } from '../../utils/logger';
 import { getCacheService } from '../cache/UnifiedCacheService';
-import { trackDatabaseQuery } from '../../middleware/performance';
 
 interface QueryPlan {
   query: string;

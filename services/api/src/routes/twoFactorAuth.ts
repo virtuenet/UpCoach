@@ -3,10 +3,11 @@
  */
 
 import { Router } from 'express';
+import { body, param } from 'express-validator';
+
 import TwoFactorAuthController from '../controllers/TwoFactorAuthController';
 import { authenticate } from '../middleware/auth';
 import { validateRequest } from '../middleware/validation';
-import { body, param } from 'express-validator';
 
 const router = Router();
 

@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
+
+import { sequelize } from '../config/database';
+import { Goal } from '../models/Goal';
 import { User } from '../models/User';
 import { UserProfile } from '../models/UserProfile';
-import { Goal } from '../models/Goal';
-import { logger } from '../utils/logger';
-import { analyticsService } from '../services/analytics/AnalyticsService';
-// import emailService from '../services/email/UnifiedEmailService';
 import { aiService } from '../services/ai/AIService';
-import { sequelize } from '../config/database';
+import { analyticsService } from '../services/analytics/AnalyticsService';
+import { logger } from '../utils/logger';
+// import emailService from '../services/email/UnifiedEmailService';
 
 interface OnboardingData {
   profile: {

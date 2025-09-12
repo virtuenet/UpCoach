@@ -2,5 +2,12 @@
  * Shared services index
  */
 
-// Placeholder for shared services
-export const SharedServices = {};
+// Export API client utilities
+export { 
+  createApiClient, 
+  handleApiError, 
+  withRetry, 
+  transformers,
+  type ApiClient,
+  type ApiClientConfig 
+} from './apiClient';

@@ -3,12 +3,12 @@
  * Implements SOC2 Trust Service Criteria monitoring and reporting
  */
 
-import { logger } from '../../utils/logger';
-import { redis } from '../redis';
-import { sequelize } from '../../config/database';
-import { Op } from 'sequelize';
 import crypto from 'crypto';
+
 import { differenceInDays, addDays } from 'date-fns';
+import { Op } from 'sequelize';
+
+import { sequelize } from '../../config/database';
 import { 
   SOC2Control, 
   SOC2Incident, 
@@ -16,6 +16,8 @@ import {
   SOC2Audit, 
   SystemMetrics 
 } from '../../models/compliance';
+import { logger } from '../../utils/logger';
+import { redis } from '../redis';
 
 export enum TrustServiceCriteria {
   SECURITY = 'security',

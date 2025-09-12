@@ -1,8 +1,10 @@
 import { EventEmitter } from 'events';
-import { logger } from '../utils/logger';
+
 import { UserFriendlyError } from '../utils/errorHandler';
-import emailService from './email/UnifiedEmailService';
+import { logger } from '../utils/logger';
+
 import { getCacheService } from './cache/UnifiedCacheService';
+import emailService from './email/UnifiedEmailService';
 
 export interface NotificationOptions {
   userId: string;

@@ -5,11 +5,13 @@
  * Migrates data from old models to UnifiedContent model
  */
 
-import { logger } from '../utils/logger';
 
-import { Sequelize } from 'sequelize';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { Sequelize } from 'sequelize';
+
+import { logger } from '../utils/logger';
 
 const migrateModels = async () => {
   logger.info('🔄 Starting CMS model consolidation...\n');

@@ -3,12 +3,14 @@
  * Combines features from cacheService.ts, ai/CacheService.ts, and cache/CacheService.ts
  */
 
-import Redis from 'ioredis';
 import { createHash } from 'crypto';
-import { logger } from '../../utils/logger';
-import * as zlib from 'zlib';
 import { promisify } from 'util';
+import * as zlib from 'zlib';
+
+import Redis from 'ioredis';
 import { LRUCache } from 'lru-cache';
+
+import { logger } from '../../utils/logger';
 
 const gzip = promisify(zlib.gzip);
 const gunzip = promisify(zlib.gunzip);
@@ -189,12 +191,14 @@ export class UnifiedCacheService {
   private cleanupMemoryCache(): void {
     // LRU cache handles its own cleanup and eviction
     // This method now just prunes expired entries
-    this.inMemoryCache.purgeStale();
+    if (typeof this.inMemoryCache.purgeStale === 'function') {
+      this.inMemoryCache.purgeStale();
+    }
 
     // Log cache statistics
     const stats = {
       size: this.inMemoryCache.size,
-      calculatedSize: this.inMemoryCache.calculatedSize,
+      calculatedSize: (this.inMemoryCache as any).calculatedSize || this.inMemoryCache.size,
       hitRate:
         this.stats.hits > 0
           ? this.stats.memoryHits / (this.stats.memoryHits + this.stats.memoryMisses)
@@ -321,7 +325,9 @@ export class UnifiedCacheService {
     }
 
     // Delete from memory cache
-    this.inMemoryCache.delete(cacheKey);
+    if (this.inMemoryCache.has(cacheKey)) {
+      this.inMemoryCache.delete(cacheKey);
+    }
   }
 
   async invalidate(pattern: string, namespace?: string): Promise<number> {
@@ -346,7 +352,11 @@ export class UnifiedCacheService {
     const memoryKeys = Array.from(this.inMemoryCache.keys()).filter(k =>
       (k as string).match(new RegExp(fullPattern.replace(/\*/g, '.*')))
     );
-    memoryKeys.forEach(key => this.inMemoryCache.delete(key));
+    memoryKeys.forEach(key => {
+      if (this.inMemoryCache.has(key)) {
+        this.inMemoryCache.delete(key);
+      }
+    });
     invalidatedCount += memoryKeys.length;
 
     logger.info(`Invalidated ${invalidatedCount} cache keys matching pattern: ${pattern}`);

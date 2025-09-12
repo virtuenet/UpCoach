@@ -9,13 +9,13 @@ export declare const coachProfileSchema: z.ZodObject<{
         institution: z.ZodString;
         year: z.ZodNumber;
     }, "strip", z.ZodTypeAny, {
-        year?: number;
-        degree?: string;
-        institution?: string;
+        year: number;
+        degree: string;
+        institution: string;
     }, {
-        year?: number;
-        degree?: string;
-        institution?: string;
+        year: number;
+        degree: string;
+        institution: string;
     }>, "many">>;
     certifications: z.ZodOptional<z.ZodArray<z.ZodObject<{
         name: z.ZodString;
@@ -23,15 +23,15 @@ export declare const coachProfileSchema: z.ZodObject<{
         year: z.ZodNumber;
         verificationUrl: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
-        name?: string;
-        year?: number;
-        issuer?: string;
-        verificationUrl?: string;
+        name: string;
+        year: number;
+        issuer: string;
+        verificationUrl?: string | undefined;
     }, {
-        name?: string;
-        year?: number;
-        issuer?: string;
-        verificationUrl?: string;
+        name: string;
+        year: number;
+        issuer: string;
+        verificationUrl?: string | undefined;
     }>, "many">>;
     languages: z.ZodArray<z.ZodString, "many">;
     hourlyRate: z.ZodNumber;
@@ -42,130 +42,130 @@ export declare const coachProfileSchema: z.ZodObject<{
             start: z.ZodString;
             end: z.ZodString;
         }, "strip", z.ZodTypeAny, {
-            end?: string;
-            start?: string;
+            end: string;
+            start: string;
         }, {
-            end?: string;
-            start?: string;
+            end: string;
+            start: string;
         }>, "many">>;
         tuesday: z.ZodOptional<z.ZodArray<z.ZodObject<{
             start: z.ZodString;
             end: z.ZodString;
         }, "strip", z.ZodTypeAny, {
-            end?: string;
-            start?: string;
+            end: string;
+            start: string;
         }, {
-            end?: string;
-            start?: string;
+            end: string;
+            start: string;
         }>, "many">>;
         wednesday: z.ZodOptional<z.ZodArray<z.ZodObject<{
             start: z.ZodString;
             end: z.ZodString;
         }, "strip", z.ZodTypeAny, {
-            end?: string;
-            start?: string;
+            end: string;
+            start: string;
         }, {
-            end?: string;
-            start?: string;
+            end: string;
+            start: string;
         }>, "many">>;
         thursday: z.ZodOptional<z.ZodArray<z.ZodObject<{
             start: z.ZodString;
             end: z.ZodString;
         }, "strip", z.ZodTypeAny, {
-            end?: string;
-            start?: string;
+            end: string;
+            start: string;
         }, {
-            end?: string;
-            start?: string;
+            end: string;
+            start: string;
         }>, "many">>;
         friday: z.ZodOptional<z.ZodArray<z.ZodObject<{
             start: z.ZodString;
             end: z.ZodString;
         }, "strip", z.ZodTypeAny, {
-            end?: string;
-            start?: string;
+            end: string;
+            start: string;
         }, {
-            end?: string;
-            start?: string;
+            end: string;
+            start: string;
         }>, "many">>;
         saturday: z.ZodOptional<z.ZodArray<z.ZodObject<{
             start: z.ZodString;
             end: z.ZodString;
         }, "strip", z.ZodTypeAny, {
-            end?: string;
-            start?: string;
+            end: string;
+            start: string;
         }, {
-            end?: string;
-            start?: string;
+            end: string;
+            start: string;
         }>, "many">>;
         sunday: z.ZodOptional<z.ZodArray<z.ZodObject<{
             start: z.ZodString;
             end: z.ZodString;
         }, "strip", z.ZodTypeAny, {
-            end?: string;
-            start?: string;
+            end: string;
+            start: string;
         }, {
-            end?: string;
-            start?: string;
+            end: string;
+            start: string;
         }>, "many">>;
     }, "strip", z.ZodTypeAny, {
         sunday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         monday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         tuesday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         wednesday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         thursday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         friday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         saturday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
     }, {
         sunday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         monday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         tuesday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         wednesday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         thursday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         friday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         saturday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
     }>;
     videoEnabled: z.ZodBoolean;
     audioEnabled: z.ZodBoolean;
@@ -173,115 +173,115 @@ export declare const coachProfileSchema: z.ZodObject<{
     inPersonEnabled: z.ZodBoolean;
     inPersonLocation: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    education?: {
-        year?: number;
-        degree?: string;
-        institution?: string;
-    }[];
-    bio?: string;
-    currency?: "USD" | "EUR" | "GBP" | "CAD" | "AUD";
-    timezone?: string;
-    availability?: {
+    bio: string;
+    currency: "USD" | "EUR" | "GBP" | "CAD" | "AUD";
+    timezone: string;
+    availability: {
         sunday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         monday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         tuesday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         wednesday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         thursday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         friday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         saturday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
     };
-    displayName?: string;
-    experience?: number;
-    hourlyRate?: number;
-    specializations?: ("life_coaching" | "career_coaching" | "business_coaching" | "health_wellness" | "relationship_coaching" | "financial_coaching" | "executive_coaching" | "performance_coaching" | "mindfulness_meditation" | "leadership_development" | "personal_development" | "nutrition_fitness")[];
+    displayName: string;
+    specializations: ("life_coaching" | "career_coaching" | "business_coaching" | "health_wellness" | "relationship_coaching" | "financial_coaching" | "executive_coaching" | "performance_coaching" | "mindfulness_meditation" | "leadership_development" | "personal_development" | "nutrition_fitness")[];
+    languages: string[];
+    hourlyRate: number;
+    experience: number;
+    videoEnabled: boolean;
+    audioEnabled: boolean;
+    chatEnabled: boolean;
+    inPersonEnabled: boolean;
+    education?: {
+        year: number;
+        degree: string;
+        institution: string;
+    }[] | undefined;
     certifications?: {
-        name?: string;
-        year?: number;
-        issuer?: string;
-        verificationUrl?: string;
-    }[];
-    languages?: string[];
-    videoEnabled?: boolean;
-    audioEnabled?: boolean;
-    chatEnabled?: boolean;
-    inPersonEnabled?: boolean;
-    inPersonLocation?: string;
+        name: string;
+        year: number;
+        issuer: string;
+        verificationUrl?: string | undefined;
+    }[] | undefined;
+    inPersonLocation?: string | undefined;
 }, {
-    education?: {
-        year?: number;
-        degree?: string;
-        institution?: string;
-    }[];
-    bio?: string;
-    currency?: "USD" | "EUR" | "GBP" | "CAD" | "AUD";
-    timezone?: string;
-    availability?: {
+    bio: string;
+    timezone: string;
+    availability: {
         sunday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         monday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         tuesday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         wednesday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         thursday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         friday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
         saturday?: {
-            end?: string;
-            start?: string;
-        }[];
+            end: string;
+            start: string;
+        }[] | undefined;
     };
-    displayName?: string;
-    experience?: number;
-    hourlyRate?: number;
-    specializations?: ("life_coaching" | "career_coaching" | "business_coaching" | "health_wellness" | "relationship_coaching" | "financial_coaching" | "executive_coaching" | "performance_coaching" | "mindfulness_meditation" | "leadership_development" | "personal_development" | "nutrition_fitness")[];
+    displayName: string;
+    specializations: ("life_coaching" | "career_coaching" | "business_coaching" | "health_wellness" | "relationship_coaching" | "financial_coaching" | "executive_coaching" | "performance_coaching" | "mindfulness_meditation" | "leadership_development" | "personal_development" | "nutrition_fitness")[];
+    languages: string[];
+    hourlyRate: number;
+    experience: number;
+    videoEnabled: boolean;
+    audioEnabled: boolean;
+    chatEnabled: boolean;
+    inPersonEnabled: boolean;
+    education?: {
+        year: number;
+        degree: string;
+        institution: string;
+    }[] | undefined;
+    currency?: "USD" | "EUR" | "GBP" | "CAD" | "AUD" | undefined;
     certifications?: {
-        name?: string;
-        year?: number;
-        issuer?: string;
-        verificationUrl?: string;
-    }[];
-    languages?: string[];
-    videoEnabled?: boolean;
-    audioEnabled?: boolean;
-    chatEnabled?: boolean;
-    inPersonEnabled?: boolean;
-    inPersonLocation?: string;
+        name: string;
+        year: number;
+        issuer: string;
+        verificationUrl?: string | undefined;
+    }[] | undefined;
+    inPersonLocation?: string | undefined;
 }>;
 export declare const coachSearchSchema: z.ZodEffects<z.ZodObject<{
     specialization: z.ZodOptional<z.ZodEnum<["life_coaching", "career_coaching", "business_coaching", "health_wellness", "relationship_coaching", "financial_coaching", "executive_coaching", "performance_coaching", "mindfulness_meditation", "leadership_development", "personal_development", "nutrition_fitness"]>>;
@@ -298,61 +298,61 @@ export declare const coachSearchSchema: z.ZodEffects<z.ZodObject<{
     page: z.ZodDefault<z.ZodNumber>;
     limit: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
-    limit?: number;
-    search?: string;
-    order?: "ASC" | "DESC";
-    language?: string;
-    timezone?: string;
-    page?: number;
-    sortBy?: "price" | "rating" | "experience" | "sessions";
-    specialization?: "life_coaching" | "career_coaching" | "business_coaching" | "health_wellness" | "relationship_coaching" | "financial_coaching" | "executive_coaching" | "performance_coaching" | "mindfulness_meditation" | "leadership_development" | "personal_development" | "nutrition_fitness";
-    minRating?: number;
-    minPrice?: number;
-    maxPrice?: number;
-    isAvailable?: boolean;
-    hasVideo?: boolean;
+    limit: number;
+    page: number;
+    search?: string | undefined;
+    order?: "ASC" | "DESC" | undefined;
+    language?: string | undefined;
+    timezone?: string | undefined;
+    sortBy?: "price" | "rating" | "sessions" | "experience" | undefined;
+    isAvailable?: boolean | undefined;
+    specialization?: "life_coaching" | "career_coaching" | "business_coaching" | "health_wellness" | "relationship_coaching" | "financial_coaching" | "executive_coaching" | "performance_coaching" | "mindfulness_meditation" | "leadership_development" | "personal_development" | "nutrition_fitness" | undefined;
+    minRating?: number | undefined;
+    minPrice?: number | undefined;
+    maxPrice?: number | undefined;
+    hasVideo?: boolean | undefined;
 }, {
-    limit?: number;
-    search?: string;
-    order?: "ASC" | "DESC";
-    language?: string;
-    timezone?: string;
-    page?: number;
-    sortBy?: "price" | "rating" | "experience" | "sessions";
-    specialization?: "life_coaching" | "career_coaching" | "business_coaching" | "health_wellness" | "relationship_coaching" | "financial_coaching" | "executive_coaching" | "performance_coaching" | "mindfulness_meditation" | "leadership_development" | "personal_development" | "nutrition_fitness";
-    minRating?: number;
-    minPrice?: number;
-    maxPrice?: number;
-    isAvailable?: boolean;
-    hasVideo?: boolean;
+    search?: string | undefined;
+    limit?: number | undefined;
+    order?: "ASC" | "DESC" | undefined;
+    language?: string | undefined;
+    timezone?: string | undefined;
+    page?: number | undefined;
+    sortBy?: "price" | "rating" | "sessions" | "experience" | undefined;
+    isAvailable?: boolean | undefined;
+    specialization?: "life_coaching" | "career_coaching" | "business_coaching" | "health_wellness" | "relationship_coaching" | "financial_coaching" | "executive_coaching" | "performance_coaching" | "mindfulness_meditation" | "leadership_development" | "personal_development" | "nutrition_fitness" | undefined;
+    minRating?: number | undefined;
+    minPrice?: number | undefined;
+    maxPrice?: number | undefined;
+    hasVideo?: boolean | undefined;
 }>, {
-    limit?: number;
-    search?: string;
-    order?: "ASC" | "DESC";
-    language?: string;
-    timezone?: string;
-    page?: number;
-    sortBy?: "price" | "rating" | "experience" | "sessions";
-    specialization?: "life_coaching" | "career_coaching" | "business_coaching" | "health_wellness" | "relationship_coaching" | "financial_coaching" | "executive_coaching" | "performance_coaching" | "mindfulness_meditation" | "leadership_development" | "personal_development" | "nutrition_fitness";
-    minRating?: number;
-    minPrice?: number;
-    maxPrice?: number;
-    isAvailable?: boolean;
-    hasVideo?: boolean;
+    limit: number;
+    page: number;
+    search?: string | undefined;
+    order?: "ASC" | "DESC" | undefined;
+    language?: string | undefined;
+    timezone?: string | undefined;
+    sortBy?: "price" | "rating" | "sessions" | "experience" | undefined;
+    isAvailable?: boolean | undefined;
+    specialization?: "life_coaching" | "career_coaching" | "business_coaching" | "health_wellness" | "relationship_coaching" | "financial_coaching" | "executive_coaching" | "performance_coaching" | "mindfulness_meditation" | "leadership_development" | "personal_development" | "nutrition_fitness" | undefined;
+    minRating?: number | undefined;
+    minPrice?: number | undefined;
+    maxPrice?: number | undefined;
+    hasVideo?: boolean | undefined;
 }, {
-    limit?: number;
-    search?: string;
-    order?: "ASC" | "DESC";
-    language?: string;
-    timezone?: string;
-    page?: number;
-    sortBy?: "price" | "rating" | "experience" | "sessions";
-    specialization?: "life_coaching" | "career_coaching" | "business_coaching" | "health_wellness" | "relationship_coaching" | "financial_coaching" | "executive_coaching" | "performance_coaching" | "mindfulness_meditation" | "leadership_development" | "personal_development" | "nutrition_fitness";
-    minRating?: number;
-    minPrice?: number;
-    maxPrice?: number;
-    isAvailable?: boolean;
-    hasVideo?: boolean;
+    search?: string | undefined;
+    limit?: number | undefined;
+    order?: "ASC" | "DESC" | undefined;
+    language?: string | undefined;
+    timezone?: string | undefined;
+    page?: number | undefined;
+    sortBy?: "price" | "rating" | "sessions" | "experience" | undefined;
+    isAvailable?: boolean | undefined;
+    specialization?: "life_coaching" | "career_coaching" | "business_coaching" | "health_wellness" | "relationship_coaching" | "financial_coaching" | "executive_coaching" | "performance_coaching" | "mindfulness_meditation" | "leadership_development" | "personal_development" | "nutrition_fitness" | undefined;
+    minRating?: number | undefined;
+    minPrice?: number | undefined;
+    maxPrice?: number | undefined;
+    hasVideo?: boolean | undefined;
 }>;
 export declare const bookSessionSchema: z.ZodEffects<z.ZodObject<{
     coachId: z.ZodNumber;
@@ -364,41 +364,41 @@ export declare const bookSessionSchema: z.ZodEffects<z.ZodObject<{
     timezone: z.ZodString;
     packageId: z.ZodOptional<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
-    description?: string;
-    title?: string;
-    timezone?: string;
-    scheduledAt?: Date;
-    sessionType?: "video" | "audio" | "chat" | "in-person";
-    coachId?: number;
-    packageId?: number;
-    durationMinutes?: number;
+    title: string;
+    timezone: string;
+    scheduledAt: Date;
+    sessionType: "video" | "audio" | "chat" | "in-person";
+    coachId: number;
+    durationMinutes: number;
+    description?: string | undefined;
+    packageId?: number | undefined;
 }, {
-    description?: string;
-    title?: string;
-    timezone?: string;
-    scheduledAt?: string | Date;
-    sessionType?: "video" | "audio" | "chat" | "in-person";
-    coachId?: number;
-    packageId?: number;
-    durationMinutes?: number;
+    title: string;
+    timezone: string;
+    scheduledAt: string | Date;
+    sessionType: "video" | "audio" | "chat" | "in-person";
+    coachId: number;
+    durationMinutes: number;
+    description?: string | undefined;
+    packageId?: number | undefined;
 }>, {
-    description?: string;
-    title?: string;
-    timezone?: string;
-    scheduledAt?: Date;
-    sessionType?: "video" | "audio" | "chat" | "in-person";
-    coachId?: number;
-    packageId?: number;
-    durationMinutes?: number;
+    title: string;
+    timezone: string;
+    scheduledAt: Date;
+    sessionType: "video" | "audio" | "chat" | "in-person";
+    coachId: number;
+    durationMinutes: number;
+    description?: string | undefined;
+    packageId?: number | undefined;
 }, {
-    description?: string;
-    title?: string;
-    timezone?: string;
-    scheduledAt?: string | Date;
-    sessionType?: "video" | "audio" | "chat" | "in-person";
-    coachId?: number;
-    packageId?: number;
-    durationMinutes?: number;
+    title: string;
+    timezone: string;
+    scheduledAt: string | Date;
+    sessionType: "video" | "audio" | "chat" | "in-person";
+    coachId: number;
+    durationMinutes: number;
+    description?: string | undefined;
+    packageId?: number | undefined;
 }>;
 export declare const updateSessionSchema: z.ZodEffects<z.ZodObject<{
     scheduledAt: z.ZodOptional<z.ZodEffects<z.ZodUnion<[z.ZodString, z.ZodDate]>, Date, string | Date>>;
@@ -407,39 +407,39 @@ export declare const updateSessionSchema: z.ZodEffects<z.ZodObject<{
     status: z.ZodOptional<z.ZodEnum<["scheduled", "in-progress", "completed", "cancelled", "no-show"]>>;
     notes: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    status?: "scheduled" | "in-progress" | "completed" | "cancelled" | "no-show";
-    description?: string;
-    title?: string;
-    notes?: string;
-    scheduledAt?: Date;
+    status?: "scheduled" | "in-progress" | "completed" | "cancelled" | "no-show" | undefined;
+    description?: string | undefined;
+    title?: string | undefined;
+    notes?: string | undefined;
+    scheduledAt?: Date | undefined;
 }, {
-    status?: "scheduled" | "in-progress" | "completed" | "cancelled" | "no-show";
-    description?: string;
-    title?: string;
-    notes?: string;
-    scheduledAt?: string | Date;
+    status?: "scheduled" | "in-progress" | "completed" | "cancelled" | "no-show" | undefined;
+    description?: string | undefined;
+    title?: string | undefined;
+    notes?: string | undefined;
+    scheduledAt?: string | Date | undefined;
 }>, {
-    status?: "scheduled" | "in-progress" | "completed" | "cancelled" | "no-show";
-    description?: string;
-    title?: string;
-    notes?: string;
-    scheduledAt?: Date;
+    status?: "scheduled" | "in-progress" | "completed" | "cancelled" | "no-show" | undefined;
+    description?: string | undefined;
+    title?: string | undefined;
+    notes?: string | undefined;
+    scheduledAt?: Date | undefined;
 }, {
-    status?: "scheduled" | "in-progress" | "completed" | "cancelled" | "no-show";
-    description?: string;
-    title?: string;
-    notes?: string;
-    scheduledAt?: string | Date;
+    status?: "scheduled" | "in-progress" | "completed" | "cancelled" | "no-show" | undefined;
+    description?: string | undefined;
+    title?: string | undefined;
+    notes?: string | undefined;
+    scheduledAt?: string | Date | undefined;
 }>;
 export declare const cancelSessionSchema: z.ZodObject<{
     reason: z.ZodString;
     requestRefund: z.ZodOptional<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
-    reason?: string;
-    requestRefund?: boolean;
+    reason: string;
+    requestRefund?: boolean | undefined;
 }, {
-    reason?: string;
-    requestRefund?: boolean;
+    reason: string;
+    requestRefund?: boolean | undefined;
 }>;
 export declare const sessionReviewSchema: z.ZodObject<{
     sessionId: z.ZodNumber;
@@ -451,23 +451,23 @@ export declare const sessionReviewSchema: z.ZodObject<{
     wouldRecommend: z.ZodOptional<z.ZodBoolean>;
     isAnonymous: z.ZodOptional<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
-    sessionId?: number;
-    comment?: string;
-    rating?: number;
-    communicationRating?: number;
-    knowledgeRating?: number;
-    helpfulnessRating?: number;
-    wouldRecommend?: boolean;
-    isAnonymous?: boolean;
+    comment: string;
+    sessionId: number;
+    rating: number;
+    communicationRating?: number | undefined;
+    knowledgeRating?: number | undefined;
+    helpfulnessRating?: number | undefined;
+    wouldRecommend?: boolean | undefined;
+    isAnonymous?: boolean | undefined;
 }, {
-    sessionId?: number;
-    comment?: string;
-    rating?: number;
-    communicationRating?: number;
-    knowledgeRating?: number;
-    helpfulnessRating?: number;
-    wouldRecommend?: boolean;
-    isAnonymous?: boolean;
+    comment: string;
+    sessionId: number;
+    rating: number;
+    communicationRating?: number | undefined;
+    knowledgeRating?: number | undefined;
+    helpfulnessRating?: number | undefined;
+    wouldRecommend?: boolean | undefined;
+    isAnonymous?: boolean | undefined;
 }>;
 export declare const coachPackageSchema: z.ZodObject<{
     name: z.ZodString;
@@ -481,40 +481,40 @@ export declare const coachPackageSchema: z.ZodObject<{
     durationMinutes: z.ZodEffects<z.ZodNumber, number, number>;
     maxBookingsPerWeek: z.ZodOptional<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
-    name?: string;
-    description?: string;
-    price?: number;
-    sessionType?: "video" | "audio" | "chat" | "in-person";
-    discount?: number;
-    sessionCount?: number;
-    durationMinutes?: number;
-    features?: string[];
-    validityDays?: number;
-    maxBookingsPerWeek?: number;
+    name: string;
+    description: string;
+    price: number;
+    sessionType: "video" | "audio" | "chat" | "in-person";
+    durationMinutes: number;
+    sessionCount: number;
+    validityDays: number;
+    features: string[];
+    discount?: number | undefined;
+    maxBookingsPerWeek?: number | undefined;
 }, {
-    name?: string;
-    description?: string;
-    price?: number;
-    sessionType?: "video" | "audio" | "chat" | "in-person";
-    discount?: number;
-    sessionCount?: number;
-    durationMinutes?: number;
-    features?: string[];
-    validityDays?: number;
-    maxBookingsPerWeek?: number;
+    name: string;
+    description: string;
+    price: number;
+    sessionType: "video" | "audio" | "chat" | "in-person";
+    durationMinutes: number;
+    sessionCount: number;
+    validityDays: number;
+    features: string[];
+    discount?: number | undefined;
+    maxBookingsPerWeek?: number | undefined;
 }>;
 export declare const purchasePackageSchema: z.ZodObject<{
     packageId: z.ZodNumber;
     paymentMethodId: z.ZodString;
     couponCode: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    packageId?: number;
-    paymentMethodId?: string;
-    couponCode?: string;
+    packageId: number;
+    paymentMethodId: string;
+    couponCode?: string | undefined;
 }, {
-    packageId?: number;
-    paymentMethodId?: string;
-    couponCode?: string;
+    packageId: number;
+    paymentMethodId: string;
+    couponCode?: string | undefined;
 }>;
 export declare const updateAvailabilitySchema: z.ZodObject<{
     date: z.ZodUnion<[z.ZodString, z.ZodDate]>;
@@ -523,27 +523,27 @@ export declare const updateAvailabilitySchema: z.ZodObject<{
         end: z.ZodString;
         isAvailable: z.ZodBoolean;
     }, "strip", z.ZodTypeAny, {
-        end?: string;
-        isAvailable?: boolean;
-        start?: string;
+        end: string;
+        start: string;
+        isAvailable: boolean;
     }, {
-        end?: string;
-        isAvailable?: boolean;
-        start?: string;
+        end: string;
+        start: string;
+        isAvailable: boolean;
     }>, "many">;
 }, "strip", z.ZodTypeAny, {
-    date?: string | Date;
-    slots?: {
-        end?: string;
-        isAvailable?: boolean;
-        start?: string;
+    date: string | Date;
+    slots: {
+        end: string;
+        start: string;
+        isAvailable: boolean;
     }[];
 }, {
-    date?: string | Date;
-    slots?: {
-        end?: string;
-        isAvailable?: boolean;
-        start?: string;
+    date: string | Date;
+    slots: {
+        end: string;
+        start: string;
+        isAvailable: boolean;
     }[];
 }>;
 export declare const coachStatsQuerySchema: z.ZodEffects<z.ZodObject<{
@@ -551,21 +551,21 @@ export declare const coachStatsQuerySchema: z.ZodEffects<z.ZodObject<{
     endDate: z.ZodOptional<z.ZodUnion<[z.ZodString, z.ZodDate]>>;
     metric: z.ZodOptional<z.ZodEnum<["sessions", "revenue", "ratings", "clients"]>>;
 }, "strip", z.ZodTypeAny, {
-    endDate?: string | Date;
-    startDate?: string | Date;
-    metric?: "sessions" | "revenue" | "ratings" | "clients";
+    endDate?: string | Date | undefined;
+    startDate?: string | Date | undefined;
+    metric?: "revenue" | "sessions" | "ratings" | "clients" | undefined;
 }, {
-    endDate?: string | Date;
-    startDate?: string | Date;
-    metric?: "sessions" | "revenue" | "ratings" | "clients";
+    endDate?: string | Date | undefined;
+    startDate?: string | Date | undefined;
+    metric?: "revenue" | "sessions" | "ratings" | "clients" | undefined;
 }>, {
-    endDate?: string | Date;
-    startDate?: string | Date;
-    metric?: "sessions" | "revenue" | "ratings" | "clients";
+    endDate?: string | Date | undefined;
+    startDate?: string | Date | undefined;
+    metric?: "revenue" | "sessions" | "ratings" | "clients" | undefined;
 }, {
-    endDate?: string | Date;
-    startDate?: string | Date;
-    metric?: "sessions" | "revenue" | "ratings" | "clients";
+    endDate?: string | Date | undefined;
+    startDate?: string | Date | undefined;
+    metric?: "revenue" | "sessions" | "ratings" | "clients" | undefined;
 }>;
 export type CoachProfileInput = z.infer<typeof coachProfileSchema>;
 export type CoachSearchInput = z.infer<typeof coachSearchSchema>;

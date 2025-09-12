@@ -4,11 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const crypto_1 = __importDefault(require("crypto"));
-const database_1 = require("./database");
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const apiError_1 = require("../utils/apiError");
 const logger_1 = require("../utils/logger");
+const database_1 = require("./database");
 const redis_1 = require("./redis");
 class UserService {
     static async findById(id) {
@@ -31,14 +31,11 @@ class UserService {
     }
     static async create(userData) {
         try {
-            // Check if user already exists
             const existingUser = await this.findByEmail(userData.email);
             if (existingUser) {
                 throw new apiError_1.ApiError(409, 'User with this email already exists');
             }
-            // Hash password
             const passwordHash = await bcryptjs_1.default.hash(userData.password, 12);
-            // Create user
             const user = await database_1.db.insert('users', {
                 email: userData.email.toLowerCase(),
                 password_hash: passwordHash,
@@ -87,12 +84,10 @@ class UserService {
             if (!user) {
                 throw new apiError_1.ApiError(404, 'User not found');
             }
-            // Verify current password
             const isCurrentPasswordValid = await bcryptjs_1.default.compare(currentPassword, user.passwordHash);
             if (!isCurrentPasswordValid) {
                 throw new apiError_1.ApiError(400, 'Current password is incorrect');
             }
-            // Hash new password
             const newPasswordHash = await bcryptjs_1.default.hash(newPassword, 12);
             await database_1.db.update('users', { password_hash: newPasswordHash }, { id });
             logger_1.logger.info('User password updated successfully:', { userId: id });
@@ -111,7 +106,6 @@ class UserService {
         }
         catch (error) {
             logger_1.logger.error('Error updating last login:', error);
-            // Don't throw error as this is not critical
         }
     }
     static async verifyPassword(email, password) {
@@ -154,7 +148,6 @@ class UserService {
             if (!user) {
                 throw new apiError_1.ApiError(404, 'User not found');
             }
-            // Instead of hard delete, we deactivate the user
             await this.deactivate(id);
             logger_1.logger.info('User deleted successfully:', { userId: id });
         }
@@ -185,7 +178,6 @@ class UserService {
             if (!user) {
                 throw new apiError_1.ApiError(404, 'User not found');
             }
-            // Get various statistics
             const [tasksResult, goalsResult, moodEntriesResult] = await Promise.all([
                 database_1.db.query(`
           SELECT 
@@ -262,10 +254,8 @@ class UserService {
         try {
             const token = crypto_1.default.randomBytes(32).toString('hex');
             const expiresAt = new Date();
-            expiresAt.setHours(expiresAt.getHours() + 1); // 1 hour expiry
-            // Store token in database or Redis
-            await redis_1.redis.setEx(`password_reset:${token}`, 3600, // 1 hour in seconds
-            JSON.stringify({ userId, expiresAt }));
+            expiresAt.setHours(expiresAt.getHours() + 1);
+            await redis_1.redis.setEx(`password_reset:${token}`, 3600, JSON.stringify({ userId, expiresAt }));
             return token;
         }
         catch (error) {
@@ -275,26 +265,21 @@ class UserService {
     }
     static async resetPasswordWithToken(token, newPassword) {
         try {
-            // Get token data from Redis
             const tokenData = await redis_1.redis.get(`password_reset:${token}`);
             if (!tokenData) {
                 throw new apiError_1.ApiError(400, 'Invalid or expired reset token');
             }
             const { userId, expiresAt } = JSON.parse(tokenData);
-            // Check if token is expired
             if (new Date() > new Date(expiresAt)) {
                 await redis_1.redis.del(`password_reset:${token}`);
                 throw new apiError_1.ApiError(400, 'Reset token has expired');
             }
-            // Hash new password with secure bcrypt rounds
             const rounds = parseInt(process.env.BCRYPT_ROUNDS || '14', 10);
             const passwordHash = await bcryptjs_1.default.hash(newPassword, rounds);
-            // Update password
             const result = await database_1.db.query('UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2 RETURNING id', [passwordHash, userId]);
             if (result.rowCount === 0) {
                 throw new apiError_1.ApiError(404, 'User not found');
             }
-            // Delete used token
             await redis_1.redis.del(`password_reset:${token}`);
             logger_1.logger.info('Password reset successfully for user:', userId);
             return userId;
@@ -308,15 +293,7 @@ class UserService {
     }
     static async verifyGoogleToken(_idToken) {
         try {
-            // In production, you would verify the token with Google
-            // For now, we'll throw an error to indicate it needs implementation
             throw new apiError_1.ApiError(501, 'Google OAuth not yet implemented');
-            // Implementation would look like:
-            // const ticket = await googleClient.verifyIdToken({
-            //   idToken,
-            //   audience: process.env.GOOGLE_CLIENT_ID,
-            // });
-            // return ticket.getPayload();
         }
         catch (error) {
             logger_1.logger.error('Error verifying Google token:', error);
@@ -343,7 +320,7 @@ class UserService {
             return {
                 id: user.id,
                 email: user.email,
-                passwordHash: '', // Google users don't have passwords
+                passwordHash: '',
                 name: user.name,
                 role: user.role,
                 avatar: user.avatar_url,

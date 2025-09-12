@@ -1,3 +1,5 @@
+import { Op } from 'sequelize';
+import * as sequelize from 'sequelize';
 import {
   Table,
   Column,
@@ -11,10 +13,9 @@ import {
   BeforeCreate,
   BeforeUpdate,
 } from 'sequelize-typescript';
-import { CoachProfile } from './CoachProfile';
+
+import type { CoachProfile } from './CoachProfile';
 import { User } from './User';
-import { Op } from 'sequelize';
-import * as sequelize from 'sequelize';
 
 @Table({
   tableName: 'coach_packages',
@@ -28,14 +29,14 @@ export class CoachPackage extends Model<CoachPackage> {
   })
   declare id: number;
 
-  @ForeignKey(() => CoachProfile)
+  @ForeignKey(() => require('./CoachProfile').CoachProfile)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
   coachId!: number;
 
-  @BelongsTo(() => CoachProfile)
+  @BelongsTo(() => require('./CoachProfile').CoachProfile)
   coach!: CoachProfile;
 
   @Column({
@@ -174,7 +175,8 @@ export class CoachPackage extends Model<CoachPackage> {
     coachId: number,
     sessionCount: number
   ): Promise<{ regularPrice: number; packagePrice: number; savings: number } | null> {
-    const coach = await CoachProfile.findByPk(coachId);
+    const { CoachProfile: CoachProfileModel } = require('./CoachProfile');
+    const coach = await CoachProfileModel.findByPk(coachId);
     if (!coach || !coach.hourlyRate) return null;
 
     const regularPrice = coach.calculateSessionPrice(sessionCount * 60);
@@ -341,7 +343,7 @@ export class ClientCoachPackage extends Model {
           model: CoachPackage,
           include: [
             {
-              model: CoachProfile,
+              model: require('./CoachProfile').CoachProfile,
               include: [{ model: User, attributes: ['id', 'name', 'email'] }],
             },
           ],

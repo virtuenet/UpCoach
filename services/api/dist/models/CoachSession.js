@@ -10,10 +10,10 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CoachSession = exports.PaymentStatus = exports.SessionStatus = exports.SessionType = void 0;
-const sequelize_typescript_1 = require("sequelize-typescript");
-const User_1 = require("./User");
-const CoachProfile_1 = require("./CoachProfile");
 const sequelize_1 = require("sequelize");
+const sequelize_typescript_1 = require("sequelize-typescript");
+const CoachProfile_1 = require("./CoachProfile");
+const User_1 = require("./User");
 var SessionType;
 (function (SessionType) {
     SessionType["VIDEO"] = "video";
@@ -41,60 +41,49 @@ let CoachSession = class CoachSession extends sequelize_typescript_1.Model {
     coach;
     clientId;
     client;
-    // Session Details
     title;
     description;
     sessionType;
     status;
-    // Timing
     scheduledAt;
     durationMinutes;
     actualStartTime;
     actualEndTime;
     timezone;
-    // Meeting Details
     meetingUrl;
     meetingPassword;
     locationAddress;
-    // Pricing
     hourlyRate;
     totalAmount;
     currency;
     paymentStatus;
     paymentId;
-    // Notes & Resources
     coachNotes;
     clientNotes;
     sharedResources;
-    // Feedback
     clientRating;
     clientFeedback;
     coachRating;
     coachFeedback;
-    // Metadata
     cancellationReason;
     cancelledBy;
     cancelledAt;
     metadata;
-    // Hooks
     static calculateTotalAmount(instance) {
         const hours = instance.durationMinutes / 60;
         instance.totalAmount = Number((instance.hourlyRate * hours).toFixed(2));
     }
     static async updateCoachStats(instance) {
         if (instance.changed('status') && instance.status === SessionStatus.COMPLETED) {
-            // This would trigger the database trigger, but we can also handle it here
             await CoachProfile_1.CoachProfile.increment('totalSessions', {
                 where: { id: instance.coachId },
             });
         }
     }
-    // Helper methods
     canBeCancelled() {
         if (this.status === SessionStatus.COMPLETED || this.status === SessionStatus.CANCELLED) {
             return false;
         }
-        // Can cancel up to 24 hours before session
         const hoursUntilSession = (this.scheduledAt.getTime() - Date.now()) / (1000 * 60 * 60);
         return hoursUntilSession >= 24;
     }
@@ -102,7 +91,6 @@ let CoachSession = class CoachSession extends sequelize_typescript_1.Model {
         if (this.status !== SessionStatus.PENDING && this.status !== SessionStatus.CONFIRMED) {
             return false;
         }
-        // Can reschedule up to 48 hours before session
         const hoursUntilSession = (this.scheduledAt.getTime() - Date.now()) / (1000 * 60 * 60);
         return hoursUntilSession >= 48;
     }
@@ -114,9 +102,7 @@ let CoachSession = class CoachSession extends sequelize_typescript_1.Model {
         this.cancelledBy = cancelledBy;
         this.cancelledAt = new Date();
         this.cancellationReason = reason;
-        // Handle refund if payment was made
         if (this.paymentStatus === PaymentStatus.PAID) {
-            // In production, process refund through payment gateway
             this.paymentStatus = PaymentStatus.REFUNDED;
         }
         await this.save();
@@ -137,7 +123,6 @@ let CoachSession = class CoachSession extends sequelize_typescript_1.Model {
         this.actualEndTime = new Date();
         await this.save();
     }
-    // Static methods
     static async getUpcomingSessions(userId, role) {
         const where = {
             status: {
@@ -184,17 +169,14 @@ let CoachSession = class CoachSession extends sequelize_typescript_1.Model {
                 [sequelize_1.Op.and]: [
                     {
                         [sequelize_1.Op.or]: [
-                            // Session overlaps start
                             {
                                 scheduledAt: { [sequelize_1.Op.lte]: scheduledAt },
                                 endTime: { [sequelize_1.Op.gt]: scheduledAt },
                             },
-                            // Session overlaps end
                             {
                                 scheduledAt: { [sequelize_1.Op.lt]: sessionEnd },
                                 endTime: { [sequelize_1.Op.gte]: sessionEnd },
                             },
-                            // Session is contained within
                             {
                                 scheduledAt: { [sequelize_1.Op.gte]: scheduledAt },
                                 endTime: { [sequelize_1.Op.lte]: sessionEnd },

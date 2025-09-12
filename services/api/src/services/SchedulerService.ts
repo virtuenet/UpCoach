@@ -1,7 +1,9 @@
 import * as cron from 'node-cron';
-import { reportingService } from './financial/ReportingService';
-import { financialService } from './financial/FinancialService';
+
 import { logger } from '../utils/logger';
+
+import { financialService } from './financial/FinancialService';
+import { reportingService } from './financial/ReportingService';
 
 export class SchedulerService {
   private static jobs: Map<string, cron.ScheduledTask> = new Map();

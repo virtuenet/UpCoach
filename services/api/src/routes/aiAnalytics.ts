@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import { aiAnalyticsController } from '../controllers/AIAnalyticsController';
 import { referralAnalyticsController } from '../controllers/ReferralAnalyticsController';
 import { authMiddleware as authenticateToken } from '../middleware/auth';

@@ -10,12 +10,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CoachProfile = void 0;
-const sequelize_typescript_1 = require("sequelize-typescript");
-const User_1 = require("./User");
-const CoachSession_1 = require("./CoachSession");
-const CoachReview_1 = require("./CoachReview");
-const CoachPackage_1 = require("./CoachPackage");
 const sequelize_1 = require("sequelize");
+const sequelize_typescript_1 = require("sequelize-typescript");
+const CoachPackage_1 = require("./CoachPackage");
+const CoachReview_1 = require("./CoachReview");
+const CoachSession_1 = require("./CoachSession");
+const User_1 = require("./User");
 let CoachProfile = class CoachProfile extends sequelize_typescript_1.Model {
     userId;
     user;
@@ -27,7 +27,6 @@ let CoachProfile = class CoachProfile extends sequelize_typescript_1.Model {
     experienceYears;
     languages;
     timezone;
-    // Availability & Booking
     isAvailable;
     hourlyRate;
     currency;
@@ -35,42 +34,35 @@ let CoachProfile = class CoachProfile extends sequelize_typescript_1.Model {
     maxBookingHours;
     availabilitySchedule;
     bookingBufferHours;
-    // Profile Media
     profileImageUrl;
     coverImageUrl;
     introVideoUrl;
     galleryImages;
-    // Stats & Rating
     totalSessions;
     totalClients;
     averageRating;
     ratingCount;
     responseTimeHours;
-    // Settings
     isVerified;
     isFeatured;
     isActive;
     acceptsInsurance;
     acceptedPaymentMethods;
-    // Metadata
     tags;
     seoSlug;
     metadata;
     sessions;
     reviews;
     packages;
-    // Hooks
     static generateSeoSlug(instance) {
         if (!instance.seoSlug && instance.displayName) {
             instance.seoSlug = instance.displayName
                 .toLowerCase()
                 .replace(/[^a-z0-9]+/g, '-')
                 .replace(/^-+|-+$/g, '');
-            // Add random suffix to ensure uniqueness
             instance.seoSlug += '-' + Math.random().toString(36).substr(2, 5);
         }
     }
-    // Helper methods
     isAvailableAt(date) {
         const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const dayOfWeek = days[date.getDay()];
@@ -78,7 +70,7 @@ let CoachProfile = class CoachProfile extends sequelize_typescript_1.Model {
         if (!timeSlots || timeSlots.length === 0) {
             return false;
         }
-        const time = date.toTimeString().slice(0, 5); // HH:MM format
+        const time = date.toTimeString().slice(0, 5);
         return timeSlots.some(slot => {
             return time >= slot.start && time <= slot.end;
         });
@@ -86,7 +78,6 @@ let CoachProfile = class CoachProfile extends sequelize_typescript_1.Model {
     getNextAvailableSlot(duration = 60) {
         const now = new Date();
         const bufferTime = new Date(now.getTime() + this.bookingBufferHours * 60 * 60 * 1000);
-        // Check next 30 days
         for (let i = 0; i < 30; i++) {
             const checkDate = new Date(bufferTime);
             checkDate.setDate(checkDate.getDate() + i);
@@ -112,7 +103,6 @@ let CoachProfile = class CoachProfile extends sequelize_typescript_1.Model {
         const hours = durationMinutes / 60;
         return Number((this.hourlyRate * hours).toFixed(2));
     }
-    // Static methods for search
     static async searchCoaches(filters) {
         const where = {
             isActive: true,

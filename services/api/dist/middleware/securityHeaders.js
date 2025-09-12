@@ -1,8 +1,4 @@
 "use strict";
-/**
- * Enhanced Security Headers Middleware
- * Implements comprehensive security headers including HSTS, CSP, and more
- */
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -15,7 +11,7 @@ const crypto_1 = __importDefault(require("crypto"));
 const logger_1 = require("../utils/logger");
 const defaultConfig = {
     enableHSTS: true,
-    hstsMaxAge: 31536000, // 1 year
+    hstsMaxAge: 31536000,
     hstsIncludeSubDomains: true,
     hstsPreload: true,
     enableCSP: true,
@@ -51,21 +47,15 @@ const defaultConfig = {
         usb: ["'none'"],
     },
     enableExpectCT: true,
-    expectCTMaxAge: 86400, // 24 hours
+    expectCTMaxAge: 86400,
     expectCTEnforce: false,
     expectCTReportUri: undefined,
     enableCertificateTransparency: true,
     certificateTransparencyMaxAge: 86400,
 };
-/**
- * Generate CSP nonce for inline scripts
- */
 function generateCSPNonce() {
     return crypto_1.default.randomBytes(16).toString('base64');
 }
-/**
- * Build CSP header string from directives
- */
 function buildCSPHeader(directives, nonce) {
     const cspParts = [];
     for (const [directive, values] of Object.entries(directives)) {
@@ -73,8 +63,7 @@ function buildCSPHeader(directives, nonce) {
             cspParts.push(directive);
         }
         else {
-            let directiveValues = [...values];
-            // Add nonce to script-src and style-src if provided
+            const directiveValues = [...values];
             if (nonce && (directive === 'script-src' || directive === 'style-src')) {
                 directiveValues.push(`'nonce-${nonce}'`);
             }
@@ -83,9 +72,6 @@ function buildCSPHeader(directives, nonce) {
     }
     return cspParts.join('; ');
 }
-/**
- * Build Permissions-Policy header
- */
 function buildPermissionsPolicy(policies) {
     const policyParts = [];
     for (const [feature, allowlist] of Object.entries(policies)) {
@@ -98,19 +84,14 @@ function buildPermissionsPolicy(policies) {
     }
     return policyParts.join(', ');
 }
-/**
- * Security Headers Middleware
- */
 function securityHeaders(customConfig) {
     const config = { ...defaultConfig, ...customConfig };
     return (req, _res, next) => {
         try {
-            // Generate nonce for this request
             const nonce = config.enableCSP ? generateCSPNonce() : undefined;
             if (nonce) {
                 _res.locals.cspNonce = nonce;
             }
-            // HSTS - HTTP Strict Transport Security
             if (config.enableHSTS) {
                 let hstsValue = `max-age=${config.hstsMaxAge}`;
                 if (config.hstsIncludeSubDomains) {
@@ -121,33 +102,26 @@ function securityHeaders(customConfig) {
                 }
                 _res.setHeader('Strict-Transport-Security', hstsValue);
             }
-            // CSP - Content Security Policy
             if (config.enableCSP && config.cspDirectives) {
                 const cspHeader = buildCSPHeader(config.cspDirectives, nonce);
                 _res.setHeader('Content-Security-Policy', cspHeader);
-                // Report-only mode for monitoring
                 if (process.env.CSP_REPORT_ONLY === 'true') {
                     _res.setHeader('Content-Security-Policy-Report-Only', cspHeader);
                 }
             }
-            // X-Frame-Options
             if (config.enableXFrameOptions) {
                 _res.setHeader('X-Frame-Options', config.xFrameOptions || 'DENY');
             }
-            // X-Content-Type-Options
             if (config.enableXContentTypeOptions) {
                 _res.setHeader('X-Content-Type-Options', 'nosniff');
             }
-            // Referrer-Policy
             if (config.enableReferrerPolicy) {
                 _res.setHeader('Referrer-Policy', config.referrerPolicy || 'strict-origin-when-cross-origin');
             }
-            // Permissions-Policy (formerly Feature-Policy)
             if (config.enablePermissionsPolicy && config.permissionsPolicy) {
                 const permissionsHeader = buildPermissionsPolicy(config.permissionsPolicy);
                 _res.setHeader('Permissions-Policy', permissionsHeader);
             }
-            // Expect-CT - Certificate Transparency
             if (config.enableExpectCT) {
                 let expectCTValue = `max-age=${config.expectCTMaxAge}`;
                 if (config.expectCTEnforce) {
@@ -158,26 +132,19 @@ function securityHeaders(customConfig) {
                 }
                 _res.setHeader('Expect-CT', expectCTValue);
             }
-            // X-DNS-Prefetch-Control
             _res.setHeader('X-DNS-Prefetch-Control', 'off');
-            // X-Download-Options (IE specific)
             _res.setHeader('X-Download-Options', 'noopen');
-            // X-Permitted-Cross-Domain-Policies
             _res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
-            // Remove potentially dangerous headers
             _res.removeHeader('X-Powered-By');
             _res.removeHeader('Server');
             next();
         }
         catch (error) {
             logger_1.logger.error('Error setting security headers:', error);
-            next(); // Continue even if security headers fail
+            next();
         }
     };
 }
-/**
- * Certificate Transparency Monitoring
- */
 class CertificateTransparencyMonitor {
     static instance;
     reportEndpoint;
@@ -188,20 +155,13 @@ class CertificateTransparencyMonitor {
         }
         return CertificateTransparencyMonitor.instance;
     }
-    /**
-     * Configure CT monitoring
-     */
     configure(reportEndpoint) {
         this.reportEndpoint = reportEndpoint;
         logger_1.logger.info('Certificate Transparency monitoring configured', { reportEndpoint });
     }
-    /**
-     * Process CT violation report
-     */
     async processReport(report) {
         try {
             logger_1.logger.warn('Certificate Transparency violation detected', report);
-            // Send alert to monitoring service
             if (this.reportEndpoint) {
                 const response = await fetch(this.reportEndpoint, {
                     method: 'POST',
@@ -218,24 +178,15 @@ class CertificateTransparencyMonitor {
                     logger_1.logger.error('Failed to send CT violation report', { status: response.status });
                 }
             }
-            // Store violation for audit
             await this.storeViolation(report);
         }
         catch (error) {
             logger_1.logger.error('Error processing CT violation report', error);
         }
     }
-    /**
-     * Store CT violation for audit trail
-     */
     async storeViolation(report) {
-        // Store in database or file system
-        // This would integrate with your audit logging system
         logger_1.logger.info('CT violation stored for audit', { reportId: report.id });
     }
-    /**
-     * Middleware to handle CT violation reports
-     */
     middleware() {
         return async (req, _res, next) => {
             if (req.path === '/api/security/ct-report' && req.method === 'POST') {
@@ -248,16 +199,12 @@ class CertificateTransparencyMonitor {
     }
 }
 exports.CertificateTransparencyMonitor = CertificateTransparencyMonitor;
-/**
- * Security Report URI Handler
- */
 function securityReportHandler() {
     return async (req, _res) => {
         try {
             const reportType = req.path.split('/').pop();
             const report = req.body;
             logger_1.logger.warn(`Security violation report received: ${reportType}`, report);
-            // Process different report types
             switch (reportType) {
                 case 'csp':
                     await processCSPReport(report);
@@ -279,9 +226,6 @@ function securityReportHandler() {
         }
     };
 }
-/**
- * Process CSP violation report
- */
 async function processCSPReport(report) {
     logger_1.logger.warn('CSP violation detected', {
         documentUri: report['document-uri'],
@@ -290,12 +234,7 @@ async function processCSPReport(report) {
         sourceFile: report['source-file'],
         lineNumber: report['line-number'],
     });
-    // TODO: Send to monitoring service
-    // TODO: Store for analysis
 }
-/**
- * Process Expect-CT report
- */
 async function processExpectCTReport(report) {
     logger_1.logger.warn('Expect-CT violation detected', {
         hostname: report.hostname,
@@ -304,9 +243,6 @@ async function processExpectCTReport(report) {
         failureMode: report['failure-mode'],
         servedCertificateChain: report['served-certificate-chain'],
     });
-    // TODO: Alert security team
-    // TODO: Store for compliance
 }
-// Export singleton instance
 exports.ctMonitor = CertificateTransparencyMonitor.getInstance();
 //# sourceMappingURL=securityHeaders.js.map

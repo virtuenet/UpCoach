@@ -1,19 +1,20 @@
 import { Request, Response } from 'express';
-import { Op } from 'sequelize';
-import sequelize from 'sequelize';
+import sequelize, { Op } from 'sequelize';
+import slugify from 'slugify';
+
 import { ContentArticle } from '../../models/cms/ContentArticle';
 import { ContentCategory } from '../../models/cms/ContentCategory';
+import ContentComment from '../../models/cms/ContentComment';
+import ContentInteraction from '../../models/cms/ContentInteraction';
 import { ContentMedia } from '../../models/cms/ContentMedia';
+import ContentSchedule from '../../models/cms/ContentSchedule';
 import ContentTemplate from '../../models/cms/ContentTemplate';
 import ContentVersion from '../../models/cms/ContentVersion';
-import ContentInteraction from '../../models/cms/ContentInteraction';
-import ContentSchedule from '../../models/cms/ContentSchedule';
-import ContentComment from '../../models/cms/ContentComment';
 import { User } from '../../models/User';
 import { getCacheService } from '../../services/cache/UnifiedCacheService';
 import uploadService from '../../services/upload/UploadService';
 import { logger } from '../../utils/logger';
-import slugify from 'slugify';
+
 
 // Article Controllers
 export const getArticles = async (req: Request, _res: Response) => {

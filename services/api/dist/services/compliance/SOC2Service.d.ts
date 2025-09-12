@@ -1,7 +1,3 @@
-/**
- * SOC2 Compliance Service
- * Implements SOC2 Trust Service Criteria monitoring and reporting
- */
 import { SOC2Control } from '../../models/compliance';
 export declare enum TrustServiceCriteria {
     SECURITY = "security",
@@ -117,61 +113,22 @@ declare class SOC2Service {
     private readonly slaTarget;
     private constructor();
     static getInstance(): SOC2Service;
-    /**
-     * Initialize SOC2 controls
-     */
     initializeControls(): Promise<void>;
-    /**
-     * Create or update a control
-     */
     createOrUpdateControl(control: Partial<SOC2Control>): Promise<SOC2Control>;
-    /**
-     * Test a control
-     */
     testControl(controlId: string, testedBy: string, result: 'pass' | 'fail' | 'partial', findings?: string, evidence?: string[]): Promise<SOC2Control>;
-    /**
-     * Record system availability metrics
-     */
     recordAvailability(service: string, month: string, year: number, metrics: {
         uptime: number;
         downtime: number;
         incidents: number;
     }): Promise<SystemAvailability>;
-    /**
-     * Track change management
-     */
     recordChange(change: Omit<ChangeManagement, 'id' | 'changeId'>): Promise<ChangeManagement>;
-    /**
-     * Track vulnerability management
-     */
     recordVulnerability(vulnerability: Omit<VulnerabilityManagement, 'id' | 'vulnerabilityId'>): Promise<VulnerabilityManagement>;
-    /**
-     * Conduct access review
-     */
     conductAccessReview(reviewedBy: string, scope: string): Promise<AccessReview>;
-    /**
-     * Record incident
-     */
     recordIncident(incident: Omit<IncidentManagement, 'id' | 'incidentId' | 'reportedAt'>): Promise<IncidentManagement>;
-    /**
-     * Classify data
-     */
     classifyData(classification: Omit<DataClassification, 'id' | 'lastReviewDate' | 'nextReviewDate'>): Promise<DataClassification>;
-    /**
-     * Manage vendor
-     */
     recordVendor(vendor: Omit<VendorManagement, 'id'>): Promise<VendorManagement>;
-    /**
-     * Generate SOC2 compliance dashboard data
-     */
     generateDashboard(): Promise<any>;
-    /**
-     * Generate SOC2 Type 2 report data
-     */
     generateType2Report(startDate: Date, endDate: Date): Promise<any>;
-    /**
-     * Helper methods
-     */
     private getDefaultControls;
     private getControlsStatus;
     private getAvailabilityMetrics;

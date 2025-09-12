@@ -1,7 +1,3 @@
-/**
- * Unified Interaction Model
- * Consolidates ContentInteraction, Comment, ContentComment, and analytics models
- */
 import { Model, Sequelize, Optional } from 'sequelize';
 export interface UnifiedInteractionAttributes {
     id: string;

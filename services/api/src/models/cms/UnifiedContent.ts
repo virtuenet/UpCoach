@@ -5,6 +5,7 @@
  */
 
 import { Model, DataTypes, Sequelize, Association, Optional, Op } from 'sequelize';
+
 import { User } from '../User';
 
 // ==================== Type Definitions ====================

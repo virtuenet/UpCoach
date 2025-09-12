@@ -324,9 +324,118 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
   }
 
   void _exportPhotos() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Export feature coming soon!')),
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.picture_as_pdf),
+              title: const Text('Export as PDF'),
+              subtitle: const Text('Create a PDF with photos and timeline'),
+              onTap: () {
+                context.pop();
+                _exportAsPDF();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.folder_zip),
+              title: const Text('Export as ZIP'),
+              subtitle: const Text('Download all photos in a ZIP file'),
+              onTap: () {
+                context.pop();
+                _exportAsZip();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.share),
+              title: const Text('Share Gallery'),
+              subtitle: const Text('Share photos with others'),
+              onTap: () {
+                context.pop();
+                _shareGallery();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.cancel),
+              title: const Text('Cancel'),
+              onTap: () => context.pop(),
+            ),
+          ],
+        ),
+      ),
     );
+  }
+
+  Future<void> _exportAsPDF() async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Creating PDF report...')),
+      );
+      
+      await ref.read(progressPhotosProvider.notifier).exportPhotosAsPDF();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('PDF report created successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error creating PDF: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _exportAsZip() async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Creating ZIP file...')),
+      );
+      
+      await ref.read(progressPhotosProvider.notifier).exportPhotosAsZip();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ZIP file created successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error creating ZIP: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _shareGallery() async {
+    try {
+      await ref.read(progressPhotosProvider.notifier).sharePhotos();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error sharing photos: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }
 

@@ -1,15 +1,15 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import request from 'supertest';
 import express from 'express';
+import request from 'supertest';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+
 import { aiController } from '../../../controllers/ai/AIController';
 import { authenticate } from '../../../middleware/auth';
 import aiRouter from '../../../routes/ai';
 
 // Mock dependencies
 jest.mock('../../../middleware/auth', () => ({
-  authenticate: jest.fn((req, res, next) => {
-    (req as any).user = { id: 'test-user-123' };
+  authenticate: jest.fn((req: any, res: any, next: any) => {
+    req.user = { id: 'test-user-123' };
     next();
   }),
 }));
@@ -233,13 +233,13 @@ describe('AI Controller Integration Tests', () => {
 
   describe('Error Handling', () => {
     it('should return 401 for unauthenticated requests', async () => {
-      (authenticate as jest.Mock).mockImplementationOnce((req, res, next) => {
+      (authenticate as jest.Mock).mockImplementationOnce((req: any, res: any, next: any) => {
         res.status(401).json({ error: 'Unauthorized' });
       });
 
       const response = await request(app).get('/api/ai/recommendations').expect(401);
 
-      expect(response.body).toHaveProperty('error', 'Unauthorized');
+      expect((response as any).body).toHaveProperty('error', 'Unauthorized');
     });
 
     it('should handle invalid activity types', async () => {

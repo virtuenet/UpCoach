@@ -11,14 +11,10 @@ exports.securityMonitoring = securityMonitoring;
 exports.applySecurityMiddleware = applySecurityMiddleware;
 const helmet_1 = __importDefault(require("helmet"));
 const logger_1 = require("../utils/logger");
-/**
- * Content Security Policy configuration
- */
 const cspConfig = {
     defaultSrc: ["'self'"],
     scriptSrc: [
         "'self'",
-        // "'unsafe-inline'" removed for security - using nonces instead
         'https://cdn.jsdelivr.net',
         'https://unpkg.com',
         'https://www.google-analytics.com',
@@ -26,7 +22,6 @@ const cspConfig = {
     ],
     styleSrc: [
         "'self'",
-        // "'unsafe-inline'" removed for security - using nonces instead
         'https://fonts.googleapis.com',
         'https://cdn.jsdelivr.net',
     ],
@@ -36,7 +31,7 @@ const cspConfig = {
         "'self'",
         'https://api.openai.com',
         'https://api.stripe.com',
-        'wss:', // WebSocket connections
+        'wss:',
         process.env.FRONTEND_URL || 'http://localhost:3000',
         process.env.ADMIN_URL || 'http://localhost:8006',
     ],
@@ -51,53 +46,36 @@ const cspConfig = {
     manifestSrc: ["'self'"],
     upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : undefined,
 };
-/**
- * Security headers middleware
- */
 function securityHeaders() {
     return (0, helmet_1.default)({
-        // Content Security Policy
         contentSecurityPolicy: {
             directives: cspConfig,
         },
-        // Strict Transport Security
         hsts: {
-            maxAge: 31536000, // 1 year
+            maxAge: 31536000,
             includeSubDomains: true,
             preload: true,
         },
-        // X-Frame-Options
         frameguard: {
             action: 'deny',
         },
-        // X-Content-Type-Options
         noSniff: true,
-        // X-XSS-Protection (legacy but still useful)
         xssFilter: true,
-        // Referrer Policy
         referrerPolicy: {
             policy: 'strict-origin-when-cross-origin',
         },
-        // X-Permitted-Cross-Domain-Policies
         permittedCrossDomainPolicies: {
             permittedPolicies: 'none',
         },
-        // DNS Prefetch Control
         dnsPrefetchControl: {
             allow: false,
         },
-        // IE No Open
         ieNoOpen: true,
-        // Hide Powered By
         hidePoweredBy: true,
     });
 }
-/**
- * Additional custom security headers
- */
 function customSecurityHeaders() {
     return (req, _res, next) => {
-        // Permissions Policy (formerly Feature Policy)
         _res.setHeader('Permissions-Policy', [
             'accelerometer=()',
             'ambient-light-sensor=()',
@@ -127,38 +105,29 @@ function customSecurityHeaders() {
             'web-share=()',
             'xr-spatial-tracking=()',
         ].join(', '));
-        // Clear Site Data (for logout)
         if (req.path === '/api/auth/logout') {
             _res.setHeader('Clear-Site-Data', '"cache", "cookies", "storage"');
         }
-        // Cache Control for sensitive data
         if (req.path.includes('/api/') && !req.path.includes('/public')) {
             _res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
             _res.setHeader('Pragma', 'no-cache');
             _res.setHeader('Expires', '0');
             _res.setHeader('Surrogate-Control', 'no-store');
         }
-        // X-Download-Options
         _res.setHeader('X-Download-Options', 'noopen');
-        // X-DNS-Prefetch-Control
         _res.setHeader('X-DNS-Prefetch-Control', 'off');
-        // Expect-CT (Certificate Transparency)
         if (process.env.NODE_ENV === 'production') {
             _res.setHeader('Expect-CT', 'max-age=86400, enforce');
         }
         next();
     };
 }
-/**
- * CORS configuration with security in mind
- */
 function secureCors() {
     const allowedOrigins = (process.env.CORS_ORIGINS || '')
         .split(',')
         .map(origin => origin.trim())
         .filter(origin => origin);
     if (allowedOrigins.length === 0) {
-        // Default allowed origins
         allowedOrigins.push(process.env.FRONTEND_URL || 'http://localhost:3000', process.env.ADMIN_URL || 'http://localhost:8006', process.env.CMS_URL || 'http://localhost:8007');
     }
     return (req, _res, next) => {
@@ -168,11 +137,9 @@ function secureCors() {
             _res.setHeader('Access-Control-Allow-Credentials', 'true');
             _res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
             _res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-CSRF-Token');
-            _res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
-            // Expose certain headers to the client
+            _res.setHeader('Access-Control-Max-Age', '86400');
             _res.setHeader('Access-Control-Expose-Headers', 'X-CSRF-Token, X-Request-Id');
         }
-        // Handle preflight requests
         if (req.method === 'OPTIONS') {
             _res.sendStatus(204);
             return;
@@ -180,9 +147,6 @@ function secureCors() {
         next();
     };
 }
-/**
- * Request ID middleware for tracking
- */
 function requestId() {
     return (req, _res, next) => {
         const id = req.headers['x-request-id'] ||
@@ -193,12 +157,8 @@ function requestId() {
         next();
     };
 }
-/**
- * Security monitoring middleware
- */
 function securityMonitoring() {
     return (req, _res, next) => {
-        // Log security-relevant events
         const securityEvents = [
             '/api/auth/login',
             '/api/auth/register',
@@ -217,7 +177,6 @@ function securityMonitoring() {
                 userId: req.user?.id,
             });
         }
-        // Detect potential security threats
         const suspiciousPatterns = [
             /(<script|javascript:|onerror=|onload=)/i,
             /(union.*select|select.*from|insert.*into|delete.*from)/i,
@@ -242,18 +201,11 @@ function securityMonitoring() {
         next();
     };
 }
-/**
- * Apply all security middleware
- */
 function applySecurityMiddleware(app) {
-    // Request ID (should be first)
     app.use(requestId());
-    // Security headers
     app.use(securityHeaders());
     app.use(customSecurityHeaders());
-    // CORS
     app.use(secureCors());
-    // Security monitoring
     app.use(securityMonitoring());
     logger_1.logger.info('Security middleware applied successfully');
 }

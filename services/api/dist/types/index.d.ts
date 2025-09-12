@@ -1,7 +1,3 @@
-/**
- * Core TypeScript type definitions for the UpCoach backend
- * This file consolidates all common types to replace 'any' usage
- */
 import { Request } from 'express';
 import { Model } from 'sequelize';
 export type UserRole = 'admin' | 'coach' | 'user';

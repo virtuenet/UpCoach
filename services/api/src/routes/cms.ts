@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import { authenticate, requireRole } from '../middleware/auth';
-import { ContentController } from '../controllers/cms/ContentController';
+
 import { ContentCategoryController } from '../controllers/cms/ContentCategoryController';
+import { ContentController } from '../controllers/cms/ContentController';
 import { ContentTagController } from '../controllers/cms/ContentTagController';
 import { MediaController } from '../controllers/cms/MediaController';
+import { authenticate, requireRole } from '../middleware/auth';
 
 const router = Router();
 

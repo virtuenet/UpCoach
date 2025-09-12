@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 export declare class OnboardingController {
-    completeOnboarding(req: Request, _res: Response): Promise<Response<any, Record<string, any>>>;
-    getOnboardingStatus(req: Request, _res: Response): Promise<Response<any, Record<string, any>>>;
-    skipOnboarding(req: Request, _res: Response): Promise<Response<any, Record<string, any>>>;
+    completeOnboarding(req: Request, _res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    getOnboardingStatus(req: Request, _res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    skipOnboarding(req: Request, _res: Response): Promise<Response<any, Record<string, any>> | undefined>;
     private calculateTargetDate;
     private generateAIPersonality;
     private triggerPostOnboardingActions;

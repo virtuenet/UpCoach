@@ -5,19 +5,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CoachIntelligenceService = void 0;
 const sequelize_1 = require("sequelize");
-const CoachMemory_1 = __importDefault(require("../../models/coaching/CoachMemory"));
-const UserAnalytics_1 = __importDefault(require("../../models/analytics/UserAnalytics"));
 const KpiTracker_1 = __importDefault(require("../../models/analytics/KpiTracker"));
+const UserAnalytics_1 = __importDefault(require("../../models/analytics/UserAnalytics"));
+const CoachMemory_1 = __importDefault(require("../../models/coaching/CoachMemory"));
+const logger_1 = require("../../utils/logger");
+const AIService_1 = require("../ai/AIService");
 class CoachIntelligenceService {
-    /**
-     * Process and store a coaching conversation in memory
-     */
     async processCoachingSession(context, conversationContent, sessionDuration, userFeedback) {
-        // Extract insights from conversation
         const insights = await this.extractConversationInsights(conversationContent, context);
-        // Determine memory importance
         const importance = this.calculateMemoryImportance(insights, userFeedback);
-        // Create memory record
         const memory = await CoachMemory_1.default.create({
             userId: context.userId,
             avatarId: context.avatarId,
@@ -40,52 +36,38 @@ class CoachIntelligenceService {
             },
             conversationDate: new Date(),
             importance,
-            relevanceScore: 1.0, // New memories start with high relevance
+            relevanceScore: 1.0,
         });
-        // Update related memories
         await this.updateRelatedMemories(memory, context);
-        // Process with AI for deeper insights
         await this.processMemoryWithAI(memory);
-        // Update user analytics
         await this.updateUserAnalytics(context.userId, memory, sessionDuration, userFeedback);
         return memory;
     }
-    /**
-     * Retrieve relevant memories for current coaching context
-     */
     async getRelevantMemories(userId, currentContext, limit = 10) {
-        // Get all memories for user
         const allMemories = await CoachMemory_1.default.findAll({
             where: {
                 userId,
                 conversationDate: {
-                    [sequelize_1.Op.gte]: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // Last 90 days
+                    [sequelize_1.Op.gte]: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
                 },
             },
             order: [['conversationDate', 'DESC']],
         });
-        // Update relevance scores
         for (const memory of allMemories) {
             memory.updateRelevanceScore(currentContext);
             await memory.save();
         }
-        // Return most relevant memories
         return allMemories
             .filter(memory => memory.isRelevant())
             .sort((a, b) => b.relevanceScore - a.relevanceScore)
             .slice(0, limit);
     }
-    /**
-     * Generate intelligent coaching recommendations
-     */
     async generateCoachingRecommendations(userId, _avatarId) {
         const recommendations = [];
-        // Get user analytics
         const analytics = await UserAnalytics_1.default.findOne({
             where: { userId },
             order: [['calculatedAt', 'DESC']],
         });
-        // Get KPI/Goal data
         const activeGoals = await KpiTracker_1.default.findAll({
             where: {
                 userId,
@@ -93,21 +75,17 @@ class CoachIntelligenceService {
             },
             order: [['priority', 'DESC']],
         });
-        // Get recent memories
         const recentMemories = await CoachMemory_1.default.findAll({
             where: {
                 userId,
                 conversationDate: {
-                    [sequelize_1.Op.gte]: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // Last 2 weeks
+                    [sequelize_1.Op.gte]: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
                 },
             },
             order: [['conversationDate', 'DESC']],
             limit: 20,
         });
-        // Get avatar information
-        // const avatar = await Avatar.findByPk(avatarId);
         if (analytics) {
-            // Engagement recommendations
             if (analytics.engagementMetrics.averageSessionDuration < 20) {
                 recommendations.push({
                     type: 'approach',
@@ -124,7 +102,6 @@ class CoachIntelligenceService {
                     ],
                 });
             }
-            // Goal progress recommendations
             if (analytics.coachingMetrics.goalCompletionRate < 0.6) {
                 recommendations.push({
                     type: 'goal',
@@ -141,7 +118,6 @@ class CoachIntelligenceService {
                     ],
                 });
             }
-            // Avatar effectiveness recommendations
             if (analytics.coachingMetrics.avatarEffectivenessScore < 0.7) {
                 recommendations.push({
                     type: 'approach',
@@ -159,7 +135,6 @@ class CoachIntelligenceService {
                 });
             }
         }
-        // Analyze goal-specific recommendations
         for (const goal of activeGoals) {
             if (goal.isAtRisk()) {
                 recommendations.push({
@@ -195,7 +170,6 @@ class CoachIntelligenceService {
                 });
             }
         }
-        // Memory pattern analysis
         const emotionalPatterns = this.analyzeEmotionalPatterns(recentMemories);
         if (emotionalPatterns.concerningTrends.length > 0) {
             recommendations.push({
@@ -218,13 +192,9 @@ class CoachIntelligenceService {
             return priorityOrder[b.priority] - priorityOrder[a.priority];
         });
     }
-    /**
-     * Generate comprehensive weekly report
-     */
     async generateWeeklyReport(userId) {
         const weekEnd = new Date();
         const weekStart = new Date(weekEnd.getTime() - 7 * 24 * 60 * 60 * 1000);
-        // Get weekly analytics
         const analytics = await UserAnalytics_1.default.findOne({
             where: {
                 userId,
@@ -234,7 +204,6 @@ class CoachIntelligenceService {
                 },
             },
         });
-        // Get weekly memories
         const weeklyMemories = await CoachMemory_1.default.findAll({
             where: {
                 userId,
@@ -244,7 +213,6 @@ class CoachIntelligenceService {
             },
             order: [['conversationDate', 'ASC']],
         });
-        // Get goal progress
         const goals = await KpiTracker_1.default.findAll({
             where: { userId },
         });
@@ -267,17 +235,14 @@ class CoachIntelligenceService {
             achievements,
             challenges,
             insights,
-            recommendations: recommendations.slice(0, 5), // Top 5 recommendations
+            recommendations: recommendations.slice(0, 5),
             nextWeekFocus: this.generateNextWeekFocus(insights, recommendations),
         };
     }
-    /**
-     * Calculate analytics for a user across different time periods
-     */
     async calculateUserAnalytics(userId, periodType) {
         const now = new Date();
         let periodStart;
-        let periodEnd = now;
+        const periodEnd = now;
         switch (periodType) {
             case 'daily':
                 periodStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -292,7 +257,6 @@ class CoachIntelligenceService {
                 periodStart = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
                 break;
         }
-        // Get data for the period
         const memories = await CoachMemory_1.default.findAll({
             where: {
                 userId,
@@ -312,20 +276,18 @@ class CoachIntelligenceService {
                 },
             },
         });
-        // Calculate engagement metrics
         const engagementMetrics = {
             totalSessions: memories.length,
-            totalDuration: memories.reduce((sum, m) => sum + m.coachingContext.importance * 5, 0), // Estimate duration
+            totalDuration: memories.reduce((sum, m) => sum + m.coachingContext.importance * 5, 0),
             averageSessionDuration: memories.length > 0
                 ? memories.reduce((sum, m) => sum + m.coachingContext.importance * 5, 0) / memories.length
                 : 0,
             streakCount: this.calculateStreakCount(memories),
-            missedSessions: 0, // TODO: Calculate based on scheduled vs actual
+            missedSessions: 0,
             responsiveness: this.calculateResponsiveness(memories),
             participationScore: this.calculateParticipationScore(memories),
             followThroughRate: this.calculateFollowThroughRate(goals),
         };
-        // Calculate coaching metrics
         const completedGoals = goals.filter(g => g.status === 'completed');
         const coachingMetrics = {
             goalsSet: goals.length,
@@ -341,7 +303,6 @@ class CoachIntelligenceService {
                 habitFormation: this.calculateHabitFormation(goals),
             },
         };
-        // Calculate behavioral data
         const behavioralData = {
             preferredSessionTime: this.calculatePreferredTime(memories),
             preferredDuration: engagementMetrics.averageSessionDuration,
@@ -351,15 +312,13 @@ class CoachIntelligenceService {
             moodTrends: this.calculateMoodTrends(memories),
             learningPreferences: this.analyzeLearningPreferences(memories),
         };
-        // Calculate KPI metrics
         const kpiMetrics = {
             userSatisfactionScore: this.calculateSatisfactionScore(memories),
-            npsScore: 0, // TODO: Implement NPS tracking
+            npsScore: 0,
             retentionProbability: this.calculateRetentionProbability(memories, goals),
             churnRisk: this.calculateChurnRisk(memories, goals),
-            customKpis: [], // TODO: Implement custom KPIs
+            customKpis: [],
         };
-        // Generate AI insights
         const aiInsights = {
             strengthAreas: this.identifyStrengthAreas(memories, goals),
             improvementAreas: this.identifyImprovementAreas(memories, goals),
@@ -367,7 +326,6 @@ class CoachIntelligenceService {
             predictedOutcomes: this.predictOutcomes(memories, goals),
             riskFactors: this.identifyRiskFactors(memories, goals),
         };
-        // Create or update analytics record
         const [analytics] = await UserAnalytics_1.default.upsert({
             userId,
             periodType,
@@ -378,7 +336,7 @@ class CoachIntelligenceService {
             behavioralData,
             kpiMetrics,
             benchmarkData: {
-                userPercentile: 50, // TODO: Calculate against other users
+                userPercentile: 50,
                 industryBenchmark: 0.6,
                 personalBest: Math.max(coachingMetrics.goalCompletionRate, 0.5),
             },
@@ -389,21 +347,81 @@ class CoachIntelligenceService {
         });
         return analytics;
     }
-    // Helper methods for calculations
     async extractConversationInsights(content, context) {
-        // TODO: Implement AI-powered insight extraction
-        return {
-            summary: content.substring(0, 200) + '...',
-            tags: context.currentTopic ? [context.currentTopic] : [],
-            sentiment: this.analyzeSentiment(content),
-            emotionalTrends: [context.userMood],
-            category: 'general',
-            actionItems: this.extractActionItems(content),
-            followUpNeeded: content.toLowerCase().includes('follow up') || content.toLowerCase().includes('next time'),
-        };
+        try {
+            const messages = [
+                {
+                    role: 'system',
+                    content: `You are an expert coaching conversation analyzer. Extract comprehensive insights from coaching conversations and return them as valid JSON.
+          
+Always include:
+          - summary: A concise 2-3 sentence summary
+          - tags: Array of relevant topic tags (5-10 tags max)
+          - sentiment: Numerical score between -1 (very negative) and 1 (very positive)
+          - emotionalTrends: Array of emotional states detected
+          - category: Primary conversation category (goal-setting, problem-solving, motivation, reflection, skill-building, feedback)
+          - actionItems: Array of specific action items mentioned
+          - followUpNeeded: Boolean indicating if follow-up is required
+          - keyInsights: Array of important insights or breakthroughs
+          - challengesIdentified: Array of challenges or obstacles mentioned
+          - progressIndicators: Array of signs of progress or improvement
+          - coachingTechniques: Array of coaching techniques that would be most effective`
+                },
+                {
+                    role: 'user',
+                    content: `Context:
+- User: ${context.userId}
+- Avatar: ${context.avatarId}
+- Current Topic: ${context.currentTopic}
+- User Mood: ${context.userMood}
+- Goals: ${context.goals.join(', ')}
+
+Conversation Content:
+${content}
+
+Extract insights and return as JSON:`
+                }
+            ];
+            const response = await AIService_1.aiService.generateResponse(messages, {
+                temperature: 0.3,
+                maxTokens: 1500,
+                provider: 'openai'
+            });
+            const insights = JSON.parse(response.content);
+            return {
+                summary: insights.summary || content.substring(0, 200) + '...',
+                tags: Array.isArray(insights.tags) ? insights.tags : [context.currentTopic].filter(Boolean),
+                sentiment: typeof insights.sentiment === 'number' ? insights.sentiment : await this.analyzeSentiment(content),
+                emotionalTrends: Array.isArray(insights.emotionalTrends) ? insights.emotionalTrends : [context.userMood],
+                category: insights.category || 'general',
+                actionItems: Array.isArray(insights.actionItems) ? insights.actionItems : this.extractActionItemsFallback(content),
+                followUpNeeded: typeof insights.followUpNeeded === 'boolean' ? insights.followUpNeeded :
+                    content.toLowerCase().includes('follow up') || content.toLowerCase().includes('next time'),
+                keyInsights: Array.isArray(insights.keyInsights) ? insights.keyInsights : [],
+                challengesIdentified: Array.isArray(insights.challengesIdentified) ? insights.challengesIdentified : [],
+                progressIndicators: Array.isArray(insights.progressIndicators) ? insights.progressIndicators : [],
+                coachingTechniques: Array.isArray(insights.coachingTechniques) ? insights.coachingTechniques : []
+            };
+        }
+        catch (error) {
+            logger_1.logger.error('AI insight extraction failed, using fallback:', error);
+            return {
+                summary: content.substring(0, 200) + '...',
+                tags: context.currentTopic ? [context.currentTopic] : [],
+                sentiment: this.analyzeSentimentFallback(content),
+                emotionalTrends: [context.userMood],
+                category: 'general',
+                actionItems: this.extractActionItemsFallback(content),
+                followUpNeeded: content.toLowerCase().includes('follow up') || content.toLowerCase().includes('next time'),
+                keyInsights: [],
+                challengesIdentified: [],
+                progressIndicators: [],
+                coachingTechniques: []
+            };
+        }
     }
     calculateMemoryImportance(insights, userFeedback) {
-        let importance = 5; // Base importance
+        let importance = 5;
         if (userFeedback?.rating >= 8)
             importance += 2;
         if (insights.actionItems.length > 0)
@@ -415,7 +433,6 @@ class CoachIntelligenceService {
         return Math.min(10, importance);
     }
     async updateRelatedMemories(memory, context) {
-        // Find related memories based on tags and topics
         const relatedMemories = await CoachMemory_1.default.findAll({
             where: {
                 userId: context.userId,
@@ -428,24 +445,129 @@ class CoachIntelligenceService {
         await memory.save();
     }
     async processMemoryWithAI(memory) {
-        // TODO: Implement AI processing for deeper insights
-        memory.aiProcessed = true;
-        memory.insightsGenerated = [
-            'Memory processed and categorized',
-            'Emotional context analyzed',
-            'Related patterns identified',
-        ];
-        await memory.save();
+        try {
+            const messages = [
+                {
+                    role: 'system',
+                    content: `You are an advanced coaching memory analyst. Process this coaching session memory to extract deeper insights and patterns.
+          
+          Analyze and return JSON with:
+          - deepInsights: Array of profound insights about the user's journey
+          - behavioralPatterns: Array of behavioral patterns observed
+          - growthIndicators: Array of signs indicating personal growth
+          - potentialBlockers: Array of potential obstacles or limiting beliefs
+          - coachingOpportunities: Array of opportunities for better coaching
+          - connectionPoints: Array of topics/themes that connect to other sessions
+          - emergingThemes: Array of new themes emerging in the user's development
+          - personalityInsights: Observations about the user's personality and preferences
+          - motivationalProfile: Assessment of what motivates this user
+          - learningStyle: Observed learning preferences and styles`
+                },
+                {
+                    role: 'user',
+                    content: `Memory Content:
+${memory.content}
+
+Session Summary:
+${memory.summary}
+
+Emotional Context:
+- Mood: ${memory.emotionalContext.mood}
+- Sentiment: ${memory.emotionalContext.sentiment}
+
+Coaching Context:
+- Topic: ${memory.coachingContext.topic}
+- Category: ${memory.coachingContext.category}
+- Importance: ${memory.coachingContext.importance}
+- Action Items: ${memory.coachingContext.actionItems?.join(', ') || 'None'}
+
+Tags: ${memory.tags?.join(', ') || 'None'}
+
+Provide deep AI analysis as JSON:`
+                }
+            ];
+            const response = await AIService_1.aiService.generateResponse(messages, {
+                temperature: 0.4,
+                maxTokens: 2000,
+                provider: 'openai'
+            });
+            const aiAnalysis = JSON.parse(response.content);
+            const insights = [
+                ...(Array.isArray(aiAnalysis.deepInsights) ? aiAnalysis.deepInsights : []),
+                ...(Array.isArray(aiAnalysis.behavioralPatterns) ? aiAnalysis.behavioralPatterns.map(p => `Pattern: ${p}`) : []),
+                ...(Array.isArray(aiAnalysis.growthIndicators) ? aiAnalysis.growthIndicators.map(g => `Growth: ${g}`) : []),
+                ...(Array.isArray(aiAnalysis.coachingOpportunities) ? aiAnalysis.coachingOpportunities.map(o => `Opportunity: ${o}`) : [])
+            ];
+            memory.aiProcessed = true;
+            memory.insightsGenerated = insights.slice(0, 15);
+            const updatedCoachingContext = {
+                ...memory.coachingContext,
+                aiAnalysis: {
+                    potentialBlockers: aiAnalysis.potentialBlockers || [],
+                    connectionPoints: aiAnalysis.connectionPoints || [],
+                    emergingThemes: aiAnalysis.emergingThemes || [],
+                    personalityInsights: aiAnalysis.personalityInsights || [],
+                    motivationalProfile: aiAnalysis.motivationalProfile || [],
+                    learningStyle: aiAnalysis.learningStyle || 'adaptive',
+                    analysisDate: new Date()
+                }
+            };
+            memory.coachingContext = updatedCoachingContext;
+            await memory.save();
+            logger_1.logger.info(`AI processing completed for memory ${memory.id}: ${insights.length} insights generated`);
+        }
+        catch (error) {
+            logger_1.logger.error('AI memory processing failed, using basic processing:', error);
+            memory.aiProcessed = true;
+            memory.insightsGenerated = [
+                'Memory processed and categorized',
+                'Emotional context analyzed',
+                'Related patterns identified',
+                `Session importance: ${memory.importance}/10`,
+                `Emotional tone: ${memory.emotionalContext.mood}`,
+                `Topic focus: ${memory.coachingContext.topic}`
+            ];
+            await memory.save();
+        }
     }
     async updateUserAnalytics(userId, _memory, _sessionDuration, _userFeedback) {
-        // This will trigger recalculation of analytics
         await this.calculateUserAnalytics(userId, 'daily');
         await this.calculateUserAnalytics(userId, 'weekly');
     }
-    analyzeSentiment(text) {
-        // Simple sentiment analysis - replace with proper AI
-        const positiveWords = ['good', 'great', 'excellent', 'happy', 'satisfied', 'progress'];
-        const negativeWords = ['bad', 'terrible', 'frustrated', 'stuck', 'difficult', 'problem'];
+    async analyzeSentiment(text) {
+        try {
+            const messages = [
+                {
+                    role: 'system',
+                    content: `You are an expert emotional intelligence analyst specializing in coaching conversations. 
+          Analyze the emotional sentiment and return a JSON response with:
+          - overall_sentiment: A number between -1 (very negative) and 1 (very positive)
+          - confidence: A number between 0 and 1 indicating confidence in the analysis
+          - emotional_indicators: Array of specific emotional cues detected
+          - intensity: Number between 0 and 1 indicating emotional intensity
+          - dominant_emotions: Array of primary emotions (max 3)`
+                },
+                {
+                    role: 'user',
+                    content: `Analyze the sentiment of this coaching conversation text:\n\n"${text}"\n\nReturn analysis as JSON:`
+                }
+            ];
+            const response = await AIService_1.aiService.generateResponse(messages, {
+                temperature: 0.2,
+                maxTokens: 800,
+                provider: 'openai'
+            });
+            const analysis = JSON.parse(response.content);
+            return typeof analysis.overall_sentiment === 'number' ? analysis.overall_sentiment : 0;
+        }
+        catch (error) {
+            logger_1.logger.error('AI sentiment analysis failed, using fallback:', error);
+            return this.analyzeSentimentFallback(text);
+        }
+    }
+    analyzeSentimentFallback(text) {
+        const positiveWords = ['good', 'great', 'excellent', 'happy', 'satisfied', 'progress', 'excited', 'confident', 'accomplished', 'successful'];
+        const negativeWords = ['bad', 'terrible', 'frustrated', 'stuck', 'difficult', 'problem', 'worried', 'anxious', 'overwhelmed', 'disappointed'];
         const words = text.toLowerCase().split(/\s+/);
         const positive = words.filter(word => positiveWords.some(pw => word.includes(pw))).length;
         const negative = words.filter(word => negativeWords.some(nw => word.includes(nw))).length;
@@ -453,29 +575,182 @@ class CoachIntelligenceService {
             return 0;
         return (positive - negative) / (positive + negative);
     }
-    extractActionItems(content) {
-        // Simple extraction - replace with proper NLP
+    extractActionItemsFallback(content) {
         const sentences = content.split(/[.!?]/);
         return sentences
             .filter(sentence => sentence.toLowerCase().includes('will') ||
             sentence.toLowerCase().includes('should') ||
             sentence.toLowerCase().includes('action') ||
-            sentence.toLowerCase().includes('next'))
+            sentence.toLowerCase().includes('next') ||
+            sentence.toLowerCase().includes('plan to') ||
+            sentence.toLowerCase().includes('going to') ||
+            sentence.toLowerCase().includes('commit to') ||
+            sentence.toLowerCase().includes('by tomorrow') ||
+            sentence.toLowerCase().includes('by next week'))
             .map(sentence => sentence.trim())
             .filter(sentence => sentence.length > 10);
     }
-    // Additional helper methods would be implemented here...
-    calculateStreakCount(_memories) {
-        // TODO: Implement streak calculation
-        return 0;
+    calculateStreakCount(memories) {
+        if (memories.length === 0)
+            return 0;
+        const sortedMemories = memories.sort((a, b) => new Date(b.conversationDate).getTime() - new Date(a.conversationDate).getTime());
+        let currentStreak = 0;
+        let lastDate = null;
+        for (const memory of sortedMemories) {
+            const memoryDate = new Date(memory.conversationDate);
+            memoryDate.setHours(0, 0, 0, 0);
+            if (lastDate === null) {
+                currentStreak = 1;
+                lastDate = memoryDate;
+            }
+            else {
+                const daysDiff = Math.floor((lastDate.getTime() - memoryDate.getTime()) / (1000 * 60 * 60 * 24));
+                if (daysDiff === 1) {
+                    currentStreak++;
+                    lastDate = memoryDate;
+                }
+                else if (daysDiff === 0) {
+                    continue;
+                }
+                else {
+                    break;
+                }
+            }
+        }
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        const mostRecentDate = new Date(sortedMemories[0].conversationDate);
+        mostRecentDate.setHours(0, 0, 0, 0);
+        if (mostRecentDate.getTime() < yesterday.getTime()) {
+            return 0;
+        }
+        return currentStreak;
     }
-    calculateResponsiveness(_memories) {
-        // TODO: Implement responsiveness calculation
-        return 0.7;
+    calculateResponsiveness(memories) {
+        if (memories.length === 0)
+            return 0.5;
+        let totalResponseScore = 0;
+        let validMemories = 0;
+        for (const memory of memories) {
+            let responseScore = 0.5;
+            const actionItems = memory.coachingContext.actionItems || [];
+            if (actionItems.length > 0) {
+                if (memory.coachingContext.followUpNeeded) {
+                    responseScore += 0.2;
+                }
+                responseScore += Math.min(0.2, actionItems.length * 0.05);
+            }
+            const importanceNormalized = memory.importance / 10;
+            responseScore += importanceNormalized * 0.3;
+            const sentiment = Math.abs(memory.emotionalContext.sentiment || 0);
+            responseScore += sentiment * 0.2;
+            const contentLength = memory.content?.length || 0;
+            const insightsCount = memory.insightsGenerated?.length || 0;
+            if (contentLength > 500)
+                responseScore += 0.05;
+            if (insightsCount > 3)
+                responseScore += 0.05;
+            responseScore = Math.min(1.0, responseScore);
+            totalResponseScore += responseScore;
+            validMemories++;
+        }
+        const averageResponsiveness = validMemories > 0 ? totalResponseScore / validMemories : 0.5;
+        const sortedMemories = memories.sort((a, b) => new Date(b.conversationDate).getTime() - new Date(a.conversationDate).getTime());
+        let weightedScore = 0;
+        let totalWeight = 0;
+        for (let i = 0; i < Math.min(sortedMemories.length, 10); i++) {
+            const weight = Math.pow(0.9, i);
+            const memoryScore = Math.min(1.0, sortedMemories[i].importance / 10 + 0.3);
+            weightedScore += memoryScore * weight;
+            totalWeight += weight;
+        }
+        const recentResponsiveness = totalWeight > 0 ? weightedScore / totalWeight : averageResponsiveness;
+        return Math.round((recentResponsiveness * 0.7 + averageResponsiveness * 0.3) * 100) / 100;
     }
-    calculateParticipationScore(_memories) {
-        // TODO: Implement participation scoring
-        return 0.8;
+    calculateParticipationScore(memories) {
+        if (memories.length === 0)
+            return 0.0;
+        let totalParticipationScore = 0;
+        let validMemories = 0;
+        for (const memory of memories) {
+            let participationScore = 0;
+            const daysSinceSession = Math.floor((Date.now() - new Date(memory.conversationDate).getTime()) / (1000 * 60 * 60 * 24));
+            if (daysSinceSession <= 7) {
+                participationScore += 0.25;
+            }
+            else if (daysSinceSession <= 14) {
+                participationScore += 0.15;
+            }
+            else if (daysSinceSession <= 30) {
+                participationScore += 0.05;
+            }
+            const contentLength = memory.content?.length || 0;
+            if (contentLength > 1000) {
+                participationScore += 0.35;
+            }
+            else if (contentLength > 500) {
+                participationScore += 0.25;
+            }
+            else if (contentLength > 200) {
+                participationScore += 0.15;
+            }
+            else {
+                participationScore += 0.05;
+            }
+            const actionItems = memory.coachingContext.actionItems || [];
+            if (actionItems.length > 0) {
+                participationScore += 0.15;
+                if (memory.coachingContext.followUpNeeded) {
+                    participationScore += 0.10;
+                }
+            }
+            const sentimentStrength = Math.abs(memory.emotionalContext.sentiment || 0);
+            participationScore += sentimentStrength * 0.15;
+            if (memory.importance >= 8) {
+                participationScore += 0.05;
+            }
+            const insightsCount = memory.insightsGenerated?.length || 0;
+            if (insightsCount >= 5) {
+                participationScore += 0.03;
+            }
+            participationScore = Math.min(1.0, participationScore);
+            totalParticipationScore += participationScore;
+            validMemories++;
+        }
+        const baseScore = validMemories > 0 ? totalParticipationScore / validMemories : 0;
+        const now = Date.now();
+        const thirtyDaysAgo = now - (30 * 24 * 60 * 60 * 1000);
+        const recentSessions = memories.filter(m => new Date(m.conversationDate).getTime() >= thirtyDaysAgo).length;
+        let consistencyMultiplier = 1.0;
+        if (recentSessions >= 12) {
+            consistencyMultiplier = 1.15;
+        }
+        else if (recentSessions >= 8) {
+            consistencyMultiplier = 1.10;
+        }
+        else if (recentSessions >= 4) {
+            consistencyMultiplier = 1.05;
+        }
+        else if (recentSessions >= 2) {
+            consistencyMultiplier = 1.0;
+        }
+        else if (recentSessions >= 1) {
+            consistencyMultiplier = 0.9;
+        }
+        else {
+            consistencyMultiplier = 0.7;
+        }
+        const streakCount = this.calculateStreakCount(memories);
+        let streakBonus = 0;
+        if (streakCount >= 7) {
+            streakBonus = 0.1;
+        }
+        else if (streakCount >= 3) {
+            streakBonus = 0.05;
+        }
+        const finalScore = Math.min(1.0, (baseScore * consistencyMultiplier) + streakBonus);
+        return Math.round(finalScore * 100) / 100;
     }
     calculateFollowThroughRate(goals) {
         if (goals.length === 0)
@@ -485,39 +760,30 @@ class CoachIntelligenceService {
         return totalActions > 0 ? completedActions / totalActions : 0.5;
     }
     calculateAvatarEffectiveness(_memories) {
-        // TODO: Implement avatar effectiveness calculation
         return 0.7;
     }
     calculateSkillImprovement(_memories) {
-        // TODO: Implement skill improvement tracking
         return 0.6;
     }
     calculateConfidenceIncrease(_memories) {
-        // TODO: Implement confidence tracking
         return 0.7;
     }
     calculateStressReduction(_memories) {
-        // TODO: Implement stress level tracking
         return 0.5;
     }
     calculateHabitFormation(_goals) {
-        // TODO: Implement habit formation tracking
         return 0.6;
     }
     calculatePreferredTime(_memories) {
-        // TODO: Analyze session times
         return 'morning';
     }
     analyzeCommunicationStyle(_memories) {
-        // TODO: Analyze communication patterns
         return 'supportive';
     }
     extractTopicsOfInterest(_memories) {
-        // TODO: Extract and rank topics
         return ['goal-setting', 'productivity', 'wellness'];
     }
     extractChallengeAreas(_memories) {
-        // TODO: Identify challenge patterns
         return ['time-management', 'consistency'];
     }
     calculateMoodTrends(memories) {
@@ -528,7 +794,6 @@ class CoachIntelligenceService {
         }));
     }
     analyzeLearningPreferences(_memories) {
-        // TODO: Analyze learning style preferences
         return {
             visualLearner: 0.4,
             auditoryLearner: 0.4,
@@ -536,62 +801,48 @@ class CoachIntelligenceService {
         };
     }
     calculateSatisfactionScore(_memories) {
-        // TODO: Calculate satisfaction from feedback
         return 7.5;
     }
     calculateRetentionProbability(_memories, _goals) {
-        // TODO: Implement retention probability model
         return 0.8;
     }
     calculateChurnRisk(_memories, _goals) {
-        // TODO: Implement churn risk calculation
         return 0.2;
     }
     identifyStrengthAreas(_memories, _goals) {
-        // TODO: Identify user strengths
         return ['goal-setting', 'communication'];
     }
     identifyImprovementAreas(_memories, _goals) {
-        // TODO: Identify improvement areas
         return ['consistency', 'follow-through'];
     }
     predictOutcomes(_memories, _goals) {
-        // TODO: Predict likely outcomes
         return ['Likely to achieve primary goal', 'May need additional support for consistency'];
     }
     identifyRiskFactors(_memories, _goals) {
-        // TODO: Identify risk factors
         return ['Low engagement', 'Overambitious goals'];
     }
     calculateDataQualityScore(_memories, _goals) {
-        // TODO: Calculate data quality
         return 0.8;
     }
     analyzeEmotionalPatterns(_memories) {
-        // TODO: Analyze emotional patterns
         return {
             concerningTrends: [],
             positiveTrends: ['increased confidence'],
         };
     }
     calculateWeeklyGoalProgress(_goals, _weekStart, _weekEnd) {
-        // TODO: Calculate weekly progress
         return 0.7;
     }
     calculateMoodTrend(_memories) {
-        // TODO: Calculate mood trend
         return 'improving';
     }
     extractAchievements(_memories, _goals) {
-        // TODO: Extract achievements
         return ['Completed daily meditation goal', 'Improved time management'];
     }
     extractChallenges(_memories, _goals) {
-        // TODO: Extract challenges
         return ['Maintaining consistency', 'Balancing multiple priorities'];
     }
     async generateWeeklyInsights(_memories, _analytics) {
-        // TODO: Generate insights
         return [
             {
                 type: 'improvement',
@@ -604,7 +855,6 @@ class CoachIntelligenceService {
         ];
     }
     generateNextWeekFocus(_insights, _recommendations) {
-        // TODO: Generate focus areas
         return [
             'Maintain current progress',
             'Address consistency challenges',

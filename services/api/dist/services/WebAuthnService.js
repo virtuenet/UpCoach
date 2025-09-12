@@ -1,8 +1,4 @@
 "use strict";
-/**
- * WebAuthn Service
- * Implements WebAuthn/Passkeys for passwordless authentication
- */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.webAuthnService = void 0;
 const server_1 = require("@simplewebauthn/server");
@@ -11,13 +7,13 @@ const redis_1 = require("./redis");
 class WebAuthnService {
     static instance;
     config;
-    challengeExpiry = 300000; // 5 minutes
+    challengeExpiry = 300000;
     constructor() {
         this.config = {
             rpName: process.env.WEBAUTHN_RP_NAME || 'UpCoach',
             rpID: process.env.WEBAUTHN_RP_ID || 'localhost',
             origin: process.env.WEBAUTHN_ORIGIN || 'http://localhost:3000',
-            timeout: 60000, // 1 minute
+            timeout: 60000,
             userVerification: 'preferred',
             attestationType: 'none',
         };
@@ -28,26 +24,18 @@ class WebAuthnService {
         }
         return WebAuthnService.instance;
     }
-    /**
-     * Configure WebAuthn settings
-     */
     configure(config) {
         this.config = { ...this.config, ...config };
         logger_1.logger.info('WebAuthn configured', { rpName: this.config.rpName, rpID: this.config.rpID });
     }
-    /**
-     * Generate registration options for new credential
-     */
     async generateRegistrationOptions(userId, userName, userDisplayName) {
         try {
-            // Get existing credentials to exclude
             const existingCredentials = await this.getUserCredentials(userId);
             const excludeCredentials = existingCredentials.map(cred => ({
                 id: Buffer.from(cred.credentialID, 'base64'),
                 type: 'public-key',
                 transports: cred.transports,
             }));
-            // Generate registration options
             const options = await (0, server_1.generateRegistrationOptions)({
                 rpName: this.config.rpName,
                 rpID: this.config.rpID,
@@ -62,9 +50,8 @@ class WebAuthnService {
                     residentKey: 'preferred',
                     userVerification: this.config.userVerification,
                 },
-                supportedAlgorithmIDs: [-7, -257], // ES256, RS256
+                supportedAlgorithmIDs: [-7, -257],
             });
-            // Store challenge for verification
             await this.storeChallenge(userId, options.challenge, 'registration');
             logger_1.logger.info('Generated WebAuthn registration options', { userId });
             return options;
@@ -74,17 +61,12 @@ class WebAuthnService {
             throw new Error('Failed to generate registration options');
         }
     }
-    /**
-     * Verify registration response
-     */
     async verifyRegistrationResponse(userId, response, credentialName) {
         try {
-            // Get stored challenge
             const expectedChallenge = await this.getChallenge(userId, 'registration');
             if (!expectedChallenge) {
                 throw new Error('Registration challenge not found or expired');
             }
-            // Verify the registration
             const verification = await (0, server_1.verifyRegistrationResponse)({
                 response,
                 expectedChallenge,
@@ -94,7 +76,6 @@ class WebAuthnService {
             });
             if (verification.verified && verification.registrationInfo) {
                 const { credentialPublicKey, credentialID, counter, credentialBackedUp, credentialDeviceType, } = verification.registrationInfo;
-                // Store credential
                 const credential = {
                     credentialID: Buffer.from(credentialID).toString('base64'),
                     credentialPublicKey: Buffer.from(credentialPublicKey).toString('base64'),
@@ -107,7 +88,6 @@ class WebAuthnService {
                     deviceType: credentialDeviceType || 'unknown',
                 };
                 await this.storeCredential(credential);
-                // Clear challenge
                 await this.clearChallenge(userId, 'registration');
                 logger_1.logger.info('WebAuthn credential registered', {
                     userId,
@@ -125,14 +105,10 @@ class WebAuthnService {
             throw error;
         }
     }
-    /**
-     * Generate authentication options
-     */
     async generateAuthenticationOptions(userId) {
         try {
             let allowCredentials = [];
             if (userId) {
-                // Get user's credentials
                 const credentials = await this.getUserCredentials(userId);
                 allowCredentials = credentials.map(cred => ({
                     id: Buffer.from(cred.credentialID, 'base64'),
@@ -140,14 +116,12 @@ class WebAuthnService {
                     transports: cred.transports,
                 }));
             }
-            // Generate authentication options
             const options = await (0, server_1.generateAuthenticationOptions)({
                 rpID: this.config.rpID,
                 timeout: this.config.timeout,
                 allowCredentials: allowCredentials.length > 0 ? allowCredentials : undefined,
                 userVerification: this.config.userVerification,
             });
-            // Store challenge for verification
             const challengeUserId = userId || 'anonymous';
             await this.storeChallenge(challengeUserId, options.challenge, 'authentication');
             logger_1.logger.info('Generated WebAuthn authentication options', { userId: challengeUserId });
@@ -158,32 +132,25 @@ class WebAuthnService {
             throw new Error('Failed to generate authentication options');
         }
     }
-    /**
-     * Verify authentication response
-     */
     async verifyAuthenticationResponse(response, userId) {
         try {
-            // Get credential by ID
             const credentialId = response.id;
             const credential = await this.getCredentialById(credentialId);
             if (!credential) {
                 logger_1.logger.warn('Credential not found', { credentialId });
                 return { verified: false };
             }
-            // Get stored challenge
             const challengeUserId = userId || credential.userId;
             const expectedChallenge = await this.getChallenge(challengeUserId, 'authentication');
             if (!expectedChallenge) {
                 throw new Error('Authentication challenge not found or expired');
             }
-            // Prepare authenticator for verification
             const authenticator = {
                 credentialID: Buffer.from(credential.credentialID, 'base64'),
                 credentialPublicKey: Buffer.from(credential.credentialPublicKey, 'base64'),
                 counter: credential.counter,
                 transports: credential.transports,
             };
-            // Verify the authentication
             const verification = await (0, server_1.verifyAuthenticationResponse)({
                 response,
                 expectedChallenge,
@@ -193,11 +160,9 @@ class WebAuthnService {
                 requireUserVerification: this.config.userVerification === 'required',
             });
             if (verification.verified) {
-                // Update credential counter and last used
                 credential.counter = verification.authenticationInfo.newCounter;
                 credential.lastUsedAt = new Date();
                 await this.updateCredential(credential);
-                // Clear challenge
                 await this.clearChallenge(challengeUserId, 'authentication');
                 logger_1.logger.info('WebAuthn authentication successful', {
                     userId: credential.userId,
@@ -216,9 +181,6 @@ class WebAuthnService {
             return { verified: false };
         }
     }
-    /**
-     * Get user's WebAuthn credentials
-     */
     async getUserCredentials(userId) {
         try {
             const key = `webauthn:credentials:${userId}`;
@@ -233,9 +195,6 @@ class WebAuthnService {
             return [];
         }
     }
-    /**
-     * Get credential by ID
-     */
     async getCredentialById(credentialId) {
         try {
             const key = `webauthn:credential:${credentialId}`;
@@ -250,17 +209,12 @@ class WebAuthnService {
             return null;
         }
     }
-    /**
-     * Store credential
-     */
     async storeCredential(credential) {
         try {
-            // Store in user's credential list
             const userKey = `webauthn:credentials:${credential.userId}`;
             const userCredentials = await this.getUserCredentials(credential.userId);
             userCredentials.push(credential);
             await redis_1.redis.set(userKey, JSON.stringify(userCredentials));
-            // Store credential by ID for quick lookup
             const credentialKey = `webauthn:credential:${credential.credentialID}`;
             await redis_1.redis.set(credentialKey, JSON.stringify(credential));
             logger_1.logger.info('Stored WebAuthn credential', {
@@ -273,12 +227,8 @@ class WebAuthnService {
             throw new Error('Failed to store credential');
         }
     }
-    /**
-     * Update credential
-     */
     async updateCredential(credential) {
         try {
-            // Update in user's credential list
             const userKey = `webauthn:credentials:${credential.userId}`;
             const userCredentials = await this.getUserCredentials(credential.userId);
             const index = userCredentials.findIndex(c => c.credentialID === credential.credentialID);
@@ -286,7 +236,6 @@ class WebAuthnService {
                 userCredentials[index] = credential;
                 await redis_1.redis.set(userKey, JSON.stringify(userCredentials));
             }
-            // Update credential by ID
             const credentialKey = `webauthn:credential:${credential.credentialID}`;
             await redis_1.redis.set(credentialKey, JSON.stringify(credential));
         }
@@ -295,17 +244,12 @@ class WebAuthnService {
             throw new Error('Failed to update credential');
         }
     }
-    /**
-     * Delete credential
-     */
     async deleteCredential(userId, credentialId) {
         try {
-            // Remove from user's credential list
             const userKey = `webauthn:credentials:${userId}`;
             const userCredentials = await this.getUserCredentials(userId);
             const filteredCredentials = userCredentials.filter(c => c.credentialID !== credentialId);
             await redis_1.redis.set(userKey, JSON.stringify(filteredCredentials));
-            // Remove credential by ID
             const credentialKey = `webauthn:credential:${credentialId}`;
             await redis_1.redis.del(credentialKey);
             logger_1.logger.info('Deleted WebAuthn credential', { userId, credentialId });
@@ -315,9 +259,6 @@ class WebAuthnService {
             throw new Error('Failed to delete credential');
         }
     }
-    /**
-     * Rename credential
-     */
     async renameCredential(userId, credentialId, newName) {
         try {
             const credential = await this.getCredentialById(credentialId);
@@ -333,9 +274,6 @@ class WebAuthnService {
             throw error;
         }
     }
-    /**
-     * Store challenge for verification
-     */
     async storeChallenge(userId, challenge, type) {
         const key = `webauthn:challenge:${type}:${userId}`;
         const challengeData = {
@@ -347,9 +285,6 @@ class WebAuthnService {
         };
         await redis_1.redis.setEx(key, Math.floor(this.challengeExpiry / 1000), JSON.stringify(challengeData));
     }
-    /**
-     * Get stored challenge
-     */
     async getChallenge(userId, type) {
         const key = `webauthn:challenge:${type}:${userId}`;
         const data = await redis_1.redis.get(key);
@@ -357,30 +292,20 @@ class WebAuthnService {
             return null;
         }
         const challengeData = JSON.parse(data);
-        // Check if expired
         if (new Date() > new Date(challengeData.expiresAt)) {
             await redis_1.redis.del(key);
             return null;
         }
         return challengeData.challenge;
     }
-    /**
-     * Clear challenge
-     */
     async clearChallenge(userId, type) {
         const key = `webauthn:challenge:${type}:${userId}`;
         await redis_1.redis.del(key);
     }
-    /**
-     * Check if user has WebAuthn credentials
-     */
     async hasWebAuthnCredentials(userId) {
         const credentials = await this.getUserCredentials(userId);
         return credentials.length > 0;
     }
-    /**
-     * Get credential statistics for user
-     */
     async getUserCredentialStats(userId) {
         const credentials = await this.getUserCredentials(userId);
         const stats = {
@@ -395,6 +320,5 @@ class WebAuthnService {
         return stats;
     }
 }
-// Export singleton instance
 exports.webAuthnService = WebAuthnService.getInstance();
 //# sourceMappingURL=WebAuthnService.js.map

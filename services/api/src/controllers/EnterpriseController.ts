@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
+
+import emailService from '../services/email/UnifiedEmailService';
 import { OrganizationService } from '../services/enterprise/OrganizationService';
 import { SSOService } from '../services/enterprise/SSOService';
 import { TeamService } from '../services/enterprise/TeamService';
 import { catchAsync } from '../utils/catchAsync';
 import { AppError } from '../utils/errors';
-import emailService from '../services/email/UnifiedEmailService';
 
 export class EnterpriseController {
   private organizationService: OrganizationService;

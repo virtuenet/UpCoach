@@ -1,5 +1,5 @@
-import { PersonalityProfile, PersonalityTraits } from '../../models/personality/PersonalityProfile';
 import { Avatar } from '../../models/personality/Avatar';
+import { PersonalityProfile, PersonalityTraits } from '../../models/personality/PersonalityProfile';
 import { UserAvatarPreference } from '../../models/personality/UserAvatarPreference';
 
 export interface AssessmentQuestion {

@@ -1,9 +1,10 @@
-import { Request, Response } from 'express';
 import { subDays, startOfDay, endOfDay, format } from 'date-fns';
 import { eachDayOfInterval } from 'date-fns/eachDayOfInterval';
+import { Request, Response } from 'express';
+
 import { sequelize } from '../database/connection';
-import { logger } from '../utils/logger';
 import { aiService } from '../services/ai/AIService';
+import { logger } from '../utils/logger';
 
 export class AIAnalyticsController {
   async getAIMetrics(req: Request, _res: Response): Promise<void> {

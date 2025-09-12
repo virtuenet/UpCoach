@@ -3,8 +3,10 @@
  * Implements comprehensive security headers including HSTS, CSP, and more
  */
 
-import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
+
+import { Request, Response, NextFunction } from 'express';
+
 import { logger } from '../utils/logger';
 
 export interface SecurityHeadersConfig {
@@ -37,7 +39,7 @@ const defaultConfig: SecurityHeadersConfig = {
   enableCSP: true,
   cspDirectives: {
     'default-src': ["'self'"],
-    'script-src': ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+    'script-src': ["'self'", "'strict-dynamic'", 'https://cdn.jsdelivr.net', 'https://js.stripe.com'],
     'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
     'font-src': ["'self'", 'https://fonts.gstatic.com'],
     'img-src': ["'self'", 'data:', 'https:'],
@@ -46,7 +48,7 @@ const defaultConfig: SecurityHeadersConfig = {
     'object-src': ["'none'"],
     'base-uri': ["'self'"],
     'form-action': ["'self'"],
-    'frame-ancestors': ["'none'"],
+    'frame-ancestors': ["'self'", 'https://upcoach.ai'],
     'block-all-mixed-content': [],
     'upgrade-insecure-requests': [],
   },
@@ -91,7 +93,7 @@ function buildCSPHeader(directives: Record<string, string[]>, nonce?: string): s
     if (values.length === 0) {
       cspParts.push(directive);
     } else {
-      let directiveValues = [...values];
+      const directiveValues = [...values];
 
       // Add nonce to script-src and style-src if provided
       if (nonce && (directive === 'script-src' || directive === 'style-src')) {

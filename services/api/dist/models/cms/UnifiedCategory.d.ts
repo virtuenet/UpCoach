@@ -1,7 +1,3 @@
-/**
- * Unified Category Model
- * Consolidates Category, ContentCategory, and related category models
- */
 import { Model, Sequelize, Optional } from 'sequelize';
 export interface UnifiedCategoryAttributes {
     id: string;

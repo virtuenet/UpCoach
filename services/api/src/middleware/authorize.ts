@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { AppError } from '../utils/errors';
+
 import { sequelize } from '../models';
+import { AppError } from '../utils/errors';
 import { logger } from '../utils/logger';
 
 export type ResourceType = 'organization' | 'team' | 'project';

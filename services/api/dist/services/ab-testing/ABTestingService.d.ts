@@ -36,49 +36,16 @@ export interface StatisticalSignificance {
 }
 export declare class ABTestingService {
     private static readonly HASH_SEED;
-    /**
-     * Get variant assignment for a user in an experiment
-     */
     getVariant(userId: string, experimentId: string, context?: Record<string, any>): Promise<VariantAssignment | null>;
-    /**
-     * Track conversion event for experiment
-     */
     trackConversion(userId: string, experimentId: string, eventType: string, eventValue?: number, properties?: Record<string, any>): Promise<boolean>;
-    /**
-     * Get experiment analytics
-     */
     getExperimentAnalytics(experimentId: string): Promise<ExperimentAnalytics | null>;
-    /**
-     * Generate user hash for consistent assignment
-     */
     private generateUserHash;
-    /**
-     * Check if user meets segmentation criteria
-     */
     private meetsSegmentationCriteria;
-    /**
-     * Evaluate a single segmentation rule
-     */
     private evaluateSegmentRule;
-    /**
-     * Get nested property from object
-     */
     private getNestedProperty;
-    /**
-     * Calculate statistical significance using z-test for proportions
-     */
     private calculateStatisticalSignificance;
-    /**
-     * Cumulative distribution function for standard normal distribution
-     */
     private normalCDF;
-    /**
-     * Error function approximation
-     */
     private erf;
-    /**
-     * Generate recommendations based on experiment results
-     */
     private generateRecommendations;
 }
 export default ABTestingService;

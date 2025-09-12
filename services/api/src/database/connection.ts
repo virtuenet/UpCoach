@@ -1,4 +1,5 @@
 import { Sequelize } from 'sequelize';
+import { logger } from '../utils/logger';
 
 // Check environment variables directly
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -10,7 +11,7 @@ if (!DATABASE_URL) {
 
 const sequelize = new Sequelize(DATABASE_URL, {
   dialect: 'postgres',
-  logging: NODE_ENV === 'development' ? console.log : false,
+  logging: NODE_ENV === 'development' ? (sql: string) => logger.debug(sql) : false,
   pool: {
     max: 5,
     min: 0,

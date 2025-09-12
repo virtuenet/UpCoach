@@ -2,5 +2,8 @@
  * Shared components index
  */
 
-// Placeholder for shared components
-export const SharedComponents = {};
+// Export SessionWarningModal from the shared components
+export { SessionWarningModal, useSessionWarning } from './SessionWarningModal';
+
+// Export LoadingSpinner component
+export { LoadingSpinner, type LoadingSpinnerProps } from './LoadingSpinner';

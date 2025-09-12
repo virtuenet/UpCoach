@@ -10,65 +10,65 @@ export declare const registerSchema: z.ZodEffects<z.ZodEffects<z.ZodObject<{
     acceptTerms: z.ZodEffects<z.ZodBoolean, boolean, boolean>;
     marketingConsent: z.ZodOptional<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
-    password?: string;
-    email?: string;
-    username?: string;
-    phone?: string;
-    firstName?: string;
-    lastName?: string;
-    confirmPassword?: string;
-    acceptTerms?: boolean;
-    marketingConsent?: boolean;
+    password: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    confirmPassword: string;
+    acceptTerms: boolean;
+    username?: string | undefined;
+    phone?: string | null | undefined;
+    marketingConsent?: boolean | undefined;
 }, {
-    password?: string;
-    email?: string;
-    username?: string;
-    phone?: string;
-    firstName?: string;
-    lastName?: string;
-    confirmPassword?: string;
-    acceptTerms?: boolean;
-    marketingConsent?: boolean;
+    password: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    confirmPassword: string;
+    acceptTerms: boolean;
+    username?: string | undefined;
+    phone?: string | null | undefined;
+    marketingConsent?: boolean | undefined;
 }>, {
-    password?: string;
-    email?: string;
-    username?: string;
-    phone?: string;
-    firstName?: string;
-    lastName?: string;
-    confirmPassword?: string;
-    acceptTerms?: boolean;
-    marketingConsent?: boolean;
+    password: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    confirmPassword: string;
+    acceptTerms: boolean;
+    username?: string | undefined;
+    phone?: string | null | undefined;
+    marketingConsent?: boolean | undefined;
 }, {
-    password?: string;
-    email?: string;
-    username?: string;
-    phone?: string;
-    firstName?: string;
-    lastName?: string;
-    confirmPassword?: string;
-    acceptTerms?: boolean;
-    marketingConsent?: boolean;
+    password: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    confirmPassword: string;
+    acceptTerms: boolean;
+    username?: string | undefined;
+    phone?: string | null | undefined;
+    marketingConsent?: boolean | undefined;
 }>, {
-    password?: string;
-    email?: string;
-    username?: string;
-    phone?: string;
-    firstName?: string;
-    lastName?: string;
-    confirmPassword?: string;
-    acceptTerms?: boolean;
-    marketingConsent?: boolean;
+    password: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    confirmPassword: string;
+    acceptTerms: boolean;
+    username?: string | undefined;
+    phone?: string | null | undefined;
+    marketingConsent?: boolean | undefined;
 }, {
-    password?: string;
-    email?: string;
-    username?: string;
-    phone?: string;
-    firstName?: string;
-    lastName?: string;
-    confirmPassword?: string;
-    acceptTerms?: boolean;
-    marketingConsent?: boolean;
+    password: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    confirmPassword: string;
+    acceptTerms: boolean;
+    username?: string | undefined;
+    phone?: string | null | undefined;
+    marketingConsent?: boolean | undefined;
 }>;
 export declare const loginSchema: z.ZodObject<{
     email: z.ZodEffects<z.ZodString, string, string>;
@@ -76,72 +76,72 @@ export declare const loginSchema: z.ZodObject<{
     rememberMe: z.ZodOptional<z.ZodBoolean>;
     captchaToken: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    password?: string;
-    email?: string;
-    rememberMe?: boolean;
-    captchaToken?: string;
+    password: string;
+    email: string;
+    rememberMe?: boolean | undefined;
+    captchaToken?: string | undefined;
 }, {
-    password?: string;
-    email?: string;
-    rememberMe?: boolean;
-    captchaToken?: string;
+    password: string;
+    email: string;
+    rememberMe?: boolean | undefined;
+    captchaToken?: string | undefined;
 }>;
 export declare const forgotPasswordSchema: z.ZodObject<{
     email: z.ZodEffects<z.ZodString, string, string>;
 }, "strip", z.ZodTypeAny, {
-    email?: string;
+    email: string;
 }, {
-    email?: string;
+    email: string;
 }>;
 export declare const resetPasswordSchema: z.ZodEffects<z.ZodObject<{
     token: z.ZodString;
     password: z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodString, string, string>, string, string>, string, string>, string, string>, string, string>, string, string>, string, string>;
     confirmPassword: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    password?: string;
-    token?: string;
-    confirmPassword?: string;
+    password: string;
+    token: string;
+    confirmPassword: string;
 }, {
-    password?: string;
-    token?: string;
-    confirmPassword?: string;
+    password: string;
+    token: string;
+    confirmPassword: string;
 }>, {
-    password?: string;
-    token?: string;
-    confirmPassword?: string;
+    password: string;
+    token: string;
+    confirmPassword: string;
 }, {
-    password?: string;
-    token?: string;
-    confirmPassword?: string;
+    password: string;
+    token: string;
+    confirmPassword: string;
 }>;
 export declare const changePasswordSchema: z.ZodEffects<z.ZodEffects<z.ZodObject<{
     currentPassword: z.ZodString;
     newPassword: z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodEffects<z.ZodString, string, string>, string, string>, string, string>, string, string>, string, string>, string, string>, string, string>;
     confirmPassword: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    currentPassword?: string;
-    newPassword?: string;
-    confirmPassword?: string;
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
 }, {
-    currentPassword?: string;
-    newPassword?: string;
-    confirmPassword?: string;
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
 }>, {
-    currentPassword?: string;
-    newPassword?: string;
-    confirmPassword?: string;
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
 }, {
-    currentPassword?: string;
-    newPassword?: string;
-    confirmPassword?: string;
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
 }>, {
-    currentPassword?: string;
-    newPassword?: string;
-    confirmPassword?: string;
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
 }, {
-    currentPassword?: string;
-    newPassword?: string;
-    confirmPassword?: string;
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
 }>;
 export declare const updateProfileSchema: z.ZodObject<{
     firstName: z.ZodOptional<z.ZodString>;
@@ -157,56 +157,56 @@ export declare const updateProfileSchema: z.ZodObject<{
         push: z.ZodOptional<z.ZodBoolean>;
         sms: z.ZodOptional<z.ZodBoolean>;
     }, "strip", z.ZodTypeAny, {
-        push?: boolean;
-        email?: boolean;
-        sms?: boolean;
+        push?: boolean | undefined;
+        email?: boolean | undefined;
+        sms?: boolean | undefined;
     }, {
-        push?: boolean;
-        email?: boolean;
-        sms?: boolean;
+        push?: boolean | undefined;
+        email?: boolean | undefined;
+        sms?: boolean | undefined;
     }>>;
 }, "strip", z.ZodTypeAny, {
-    bio?: string;
-    avatar?: string;
-    language?: "en" | "es" | "fr" | "de" | "pt" | "zh" | "ja" | "ko";
-    timezone?: string;
-    username?: string;
-    phone?: string;
-    firstName?: string;
-    lastName?: string;
+    username?: string | undefined;
+    bio?: string | undefined;
+    avatar?: string | undefined;
+    language?: "en" | "es" | "fr" | "de" | "pt" | "zh" | "ja" | "ko" | undefined;
+    timezone?: string | undefined;
+    phone?: string | null | undefined;
+    firstName?: string | undefined;
+    lastName?: string | undefined;
     notifications?: {
-        push?: boolean;
-        email?: boolean;
-        sms?: boolean;
-    };
+        push?: boolean | undefined;
+        email?: boolean | undefined;
+        sms?: boolean | undefined;
+    } | undefined;
 }, {
-    bio?: string;
-    avatar?: string;
-    language?: "en" | "es" | "fr" | "de" | "pt" | "zh" | "ja" | "ko";
-    timezone?: string;
-    username?: string;
-    phone?: string;
-    firstName?: string;
-    lastName?: string;
+    username?: string | undefined;
+    bio?: string | undefined;
+    avatar?: string | undefined;
+    language?: "en" | "es" | "fr" | "de" | "pt" | "zh" | "ja" | "ko" | undefined;
+    timezone?: string | undefined;
+    phone?: string | null | undefined;
+    firstName?: string | undefined;
+    lastName?: string | undefined;
     notifications?: {
-        push?: boolean;
-        email?: boolean;
-        sms?: boolean;
-    };
+        push?: boolean | undefined;
+        email?: boolean | undefined;
+        sms?: boolean | undefined;
+    } | undefined;
 }>;
 export declare const enable2FASchema: z.ZodObject<{
     password: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    password?: string;
+    password: string;
 }, {
-    password?: string;
+    password: string;
 }>;
 export declare const verify2FASchema: z.ZodObject<{
     code: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    code?: string;
+    code: string;
 }, {
-    code?: string;
+    code: string;
 }>;
 export declare const sessionSchema: z.ZodObject<{
     userId: z.ZodNumber;
@@ -216,42 +216,42 @@ export declare const sessionSchema: z.ZodObject<{
     expiresAt: z.ZodDate;
     isActive: z.ZodBoolean;
 }, "strip", z.ZodTypeAny, {
-    email?: string;
-    userId?: number;
-    expiresAt?: Date;
-    role?: "admin" | "coach" | "user";
-    isActive?: boolean;
-    sessionId?: string;
+    role: "admin" | "coach" | "user";
+    email: string;
+    isActive: boolean;
+    userId: number;
+    expiresAt: Date;
+    sessionId: string;
 }, {
-    email?: string;
-    userId?: number;
-    expiresAt?: Date;
-    role?: "admin" | "coach" | "user";
-    isActive?: boolean;
-    sessionId?: string;
+    role: "admin" | "coach" | "user";
+    email: string;
+    isActive: boolean;
+    userId: number;
+    expiresAt: Date;
+    sessionId: string;
 }>;
 export declare const oauthCallbackSchema: z.ZodObject<{
     code: z.ZodString;
     state: z.ZodString;
     provider: z.ZodEnum<["google", "facebook", "apple", "github"]>;
 }, "strip", z.ZodTypeAny, {
-    code?: string;
-    provider?: "google" | "facebook" | "apple" | "github";
-    state?: string;
+    code: string;
+    provider: "google" | "facebook" | "apple" | "github";
+    state: string;
 }, {
-    code?: string;
-    provider?: "google" | "facebook" | "apple" | "github";
-    state?: string;
+    code: string;
+    provider: "google" | "facebook" | "apple" | "github";
+    state: string;
 }>;
 export declare const verifyEmailSchema: z.ZodObject<{
     token: z.ZodString;
     email: z.ZodOptional<z.ZodEffects<z.ZodString, string, string>>;
 }, "strip", z.ZodTypeAny, {
-    token?: string;
-    email?: string;
+    token: string;
+    email?: string | undefined;
 }, {
-    token?: string;
-    email?: string;
+    token: string;
+    email?: string | undefined;
 }>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;

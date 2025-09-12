@@ -11,10 +11,10 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var AIInteraction_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AIInteraction = void 0;
-const sequelize_typescript_1 = require("sequelize-typescript");
 const sequelize_1 = require("sequelize");
-const ModelCompatibility_1 = require("./ModelCompatibility");
+const sequelize_typescript_1 = require("sequelize-typescript");
 const AIFeedback_1 = require("./AIFeedback");
+const ModelCompatibility_1 = require("./ModelCompatibility");
 let AIInteraction = AIInteraction_1 = class AIInteraction extends sequelize_typescript_1.Model {
     userId;
     user;
@@ -27,7 +27,6 @@ let AIInteraction = AIInteraction_1 = class AIInteraction extends sequelize_type
     responseData;
     metadata;
     feedback;
-    // Helper methods
     async recordInteraction(data) {
         return AIInteraction_1.create(data);
     }

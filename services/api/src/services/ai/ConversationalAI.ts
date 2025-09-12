@@ -1,9 +1,10 @@
+import { ChatMessage } from '../../models/ChatMessage';
+import { logger } from '../../utils/logger';
+
 import { aiService } from './AIService';
 import { contextManager } from './ContextManager';
 import { personalityEngine } from './PersonalityEngine';
 // import { recommendationEngine } from './RecommendationEngine';
-import { logger } from '../../utils/logger';
-import { ChatMessage } from '../../models/ChatMessage';
 // import { Chat } from '../../models/Chat';
 
 export interface ConversationState {
@@ -69,7 +70,7 @@ export class ConversationalAI {
         'motivation',
         [
           /\b(motivat|inspir|encourag|pump|excit)\b/i,
-          /\b(can\'t|cannot|unable|stuck|blocked)\b/i,
+          /\b(can't|cannot|unable|stuck|blocked)\b/i,
           /\b(give up|quit|stop|continue)\b/i,
         ],
       ],
@@ -552,7 +553,7 @@ Current context:
     const actionPatterns = [
       /(?:you could|you might|try to|consider|I suggest|I recommend)\s+(.+?)(?:\.|,|;|$)/gi,
       /(?:first|next|then|finally)\s*,?\s*(.+?)(?:\.|,|;|$)/gi,
-      /(?:\d+\.\s*|\-\s*|\*\s*)(.+?)(?:\.|$)/gi,
+      /(?:\d+\.\s*|-\s*|\*\s*)(.+?)(?:\.|$)/gi,
     ];
 
     for (const pattern of actionPatterns) {

@@ -1,7 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
-import { logger } from '../utils/logger';
+
+import { Request, Response, NextFunction } from 'express';
+
 import { redis } from '../services/redis';
+import { logger } from '../utils/logger';
 
 interface WebhookConfig {
   secret: string;

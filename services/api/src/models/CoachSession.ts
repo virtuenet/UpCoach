@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import {
   Table,
   Column,
@@ -10,9 +11,9 @@ import {
   BeforeCreate,
   AfterUpdate,
 } from 'sequelize-typescript';
+
+import type { CoachProfile } from './CoachProfile';
 import { User } from './User';
-import { CoachProfile } from './CoachProfile';
-import { Op } from 'sequelize';
 
 export enum SessionType {
   VIDEO = 'video',
@@ -55,14 +56,14 @@ export class CoachSession extends Model {
   })
   declare id: number;
 
-  @ForeignKey(() => CoachProfile)
+  @ForeignKey(() => require('./CoachProfile').CoachProfile)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
   coachId!: number;
 
-  @BelongsTo(() => CoachProfile)
+  @BelongsTo(() => require('./CoachProfile').CoachProfile)
   coach!: CoachProfile;
 
   @ForeignKey(() => User as any)
@@ -260,6 +261,7 @@ export class CoachSession extends Model {
   static async updateCoachStats(instance: CoachSession) {
     if (instance.changed('status') && instance.status === SessionStatus.COMPLETED) {
       // This would trigger the database trigger, but we can also handle it here
+      const { CoachProfile } = require('./CoachProfile');
       await CoachProfile.increment('totalSessions', {
         where: { id: instance.coachId },
       });
@@ -350,7 +352,7 @@ export class CoachSession extends Model {
       where,
       include: [
         {
-          model: CoachProfile,
+          model: require('./CoachProfile').CoachProfile,
           include: [{ model: User, attributes: ['id', 'name', 'email'] }],
         },
         {

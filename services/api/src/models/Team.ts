@@ -1,6 +1,7 @@
 import { Model, DataTypes, Sequelize, Association } from 'sequelize';
+
+import type { Organization } from './Organization';
 import { User } from './User';
-import { Organization } from './Organization';
 
 export interface TeamAttributes {
   id?: number;

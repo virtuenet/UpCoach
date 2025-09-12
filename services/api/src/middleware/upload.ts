@@ -1,15 +1,15 @@
-import multer from 'multer';
-// import path from 'path';
 import { Request } from 'express';
+import multer, { diskStorage, memoryStorage, MulterError } from 'multer';
+// import path from 'path';
 
 // Configure storage
-const storage = multer.memoryStorage();
+const storage = memoryStorage();
 
 // File filter function
 const fileFilter = (
   req: Request,
   file: Express.Multer.File,
-  callback: multer.FileFilterCallback
+  callback: (error: Error | null, acceptFile?: boolean) => void
 ) => {
   // Define allowed file types
   const allowedTypes = {
@@ -60,7 +60,7 @@ const getFileSizeLimit = (mimetype: string): number => {
 const customFileSizeLimit = (
   req: Request,
   file: Express.Multer.File,
-  callback: multer.FileFilterCallback
+  callback: (error: Error | null, acceptFile?: boolean) => void
 ) => {
   const _maxSize = getFileSizeLimit(file.mimetype);
 
@@ -108,7 +108,7 @@ export const uploadFields = (fields: { name: string; maxCount?: number }[]) => {
 
 // Error handler for multer errors
 export const handleUploadError = (error: any, req: Request, res: any, next: any) => {
-  if (error instanceof multer.MulterError) {
+  if (error instanceof MulterError) {
     switch (error.code) {
       case 'LIMIT_FILE_SIZE':
         return res.status(400).json({

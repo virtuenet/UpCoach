@@ -1,4 +1,5 @@
 import { QueryTypes, Sequelize } from 'sequelize';
+
 import { logger } from './logger';
 
 /**

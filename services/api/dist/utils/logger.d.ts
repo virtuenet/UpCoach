@@ -1,10 +1,7 @@
-import winston from 'winston';
+import * as winston from 'winston';
 export declare const loggerStream: {
     write: (message: string) => void;
 };
-/**
- * Safe logger wrapper that enforces size limits
- */
 declare class SafeLogger {
     private logger;
     constructor(logger: winston.Logger);

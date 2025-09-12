@@ -120,7 +120,7 @@ export const getByTestId = (container: HTMLElement, testId: string) => {
 
 // Fire event helpers
 export { fireEvent, screen, waitFor as waitForElement } from '@testing-library/react';
-export { userEvent } from '@testing-library/user-event';
+export { default as userEvent } from '@testing-library/user-event';
 
 // Performance testing helper
 export const measurePerformance = async (fn: () => Promise<void>) => {

@@ -1,11 +1,14 @@
-import request from 'supertest';
 import { describe, it, expect, beforeAll, afterAll, beforeEach, jest } from '@jest/globals';
-import app from '../index';
+import bcrypt from 'bcryptjs';
+import * as jwt from 'jsonwebtoken';
+import { TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken';
+import request from 'supertest';
+
 import { sequelize } from '../config/database';
+import app from '../index';
 import { User } from '../models/User';
 import { redis } from '../services/redis';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+
 
 describe('Authentication API', () => {
   let testUser: any;

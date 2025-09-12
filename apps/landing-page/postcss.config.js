@@ -2,25 +2,8 @@ module.exports = {
   plugins: {
     tailwindcss: {},
     autoprefixer: {},
-    ...(process.env.NODE_ENV === 'production'
-      ? {
-          cssnano: {
-            preset: [
-              'default',
-              {
-                discardComments: {
-                  removeAll: true,
-                },
-                minifyFontValues: {
-                  removeQuotes: false,
-                },
-                normalizeWhitespace: true,
-                colormin: true,
-                minifySelectors: true,
-              },
-            ],
-          },
-        }
-      : {}),
+    // Remove cssnano from PostCSS pipeline to avoid conflicts with Next.js built-in CSS optimization
+    // Next.js handles CSS minification internally through SWC
+    ...(process.env.NODE_ENV === 'production' ? {} : {}),
   },
 };

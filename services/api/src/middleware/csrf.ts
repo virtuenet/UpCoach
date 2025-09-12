@@ -1,7 +1,19 @@
-import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
-import { logger } from '../utils/logger';
+
+import { Request, Response, NextFunction } from 'express';
+
 import { redis } from '../services/redis';
+import { logger } from '../utils/logger';
+
+// Extend Request interface to include session
+declare module 'express-serve-static-core' {
+  interface Request {
+    session?: {
+      id?: string;
+      [key: string]: any;
+    };
+  }
+}
 
 interface CsrfOptions {
   /**

@@ -1,31 +1,43 @@
 import { Application } from 'express';
-import authRoutes from './auth';
-import userRoutes from './users';
-import taskRoutes from './tasks';
-import goalRoutes from './goals';
-import moodRoutes from './mood';
-import chatRoutes from './chat';
-import cmsRoutes from './cms';
-import financialRoutes from './financial';
+
+import { authMiddleware } from '../middleware/auth';
+
+import advancedAnalyticsRoutes from './advancedAnalytics';
 import aiRoutes from './ai';
+import financialRoutes from './financial';
 import coachContentRoutes from './coachContent';
 import referralRoutes from './referral';
 import onboardingRoutes from './onboarding';
 import forumRoutes from './forum';
 import aiAnalyticsRoutes from './aiAnalytics';
+import performanceAnalyticsRoutes from './analytics/performance';
+import authRoutes from './auth';
+import googleAuthRoutes from './googleAuth';
+import chatRoutes from './chat';
+import cmsRoutes from './cms';
 import coachRoutes from './coach';
-import advancedAnalyticsRoutes from './advancedAnalytics';
-import gamificationRoutes from './gamification';
-import enterpriseRoutes from './enterprise';
 import csrfRoutes from './csrf';
+import enterpriseRoutes from './enterprise';
+import gamificationRoutes from './gamification';
+import goalRoutes from './goals';
+import moodRoutes from './mood';
+import taskRoutes from './tasks';
 import twoFactorAuthRoutes from './twoFactorAuth';
-import { authMiddleware } from '../middleware/auth';
+import userRoutes from './users';
+
+// API v2 imports
+import v2Routes from './v2';
+
 
 export const setupRoutes = (app: Application): void => {
   const apiPrefix = '/api';
 
+  // API v2 routes (new mobile-optimized endpoints)
+  app.use(`${apiPrefix}/v2`, v2Routes);
+
   // Public routes (no authentication required)
   app.use(`${apiPrefix}/auth`, authRoutes);
+  app.use(`${apiPrefix}/auth/google`, googleAuthRoutes);
   app.use(`${apiPrefix}`, csrfRoutes); // CSRF token endpoint
 
   // Two-Factor Authentication routes (mixed public and protected)
@@ -62,6 +74,9 @@ export const setupRoutes = (app: Application): void => {
   // AI Analytics routes (admin only)
   app.use(`${apiPrefix}/analytics`, authMiddleware, aiAnalyticsRoutes);
 
+  // Performance Analytics routes (public for client reporting, admin for dashboard)
+  app.use(`${apiPrefix}/analytics`, performanceAnalyticsRoutes);
+
   // Coach marketplace routes (mixed public and protected)
   app.use(`${apiPrefix}`, coachRoutes);
 
@@ -87,6 +102,19 @@ export const setupRoutes = (app: Application): void => {
           register: 'POST /api/auth/register',
           refresh: 'POST /api/auth/refresh',
           logout: 'POST /api/auth/logout',
+          googleSignIn: 'POST /api/auth/google/signin',
+          googleRefresh: 'POST /api/auth/google/refresh',
+        },
+        v2: {
+          google: {
+            signin: 'POST /api/v2/auth/google/signin',
+            refresh: 'POST /api/v2/auth/google/refresh',
+            session: 'GET /api/v2/auth/google/session',
+            link: 'POST /api/v2/auth/google/link',
+            unlink: 'DELETE /api/v2/auth/google/unlink',
+            status: 'GET /api/v2/auth/google/status',
+            revoke: 'POST /api/v2/auth/google/revoke',
+          },
         },
         users: {
           profile: 'GET /api/users/profile',

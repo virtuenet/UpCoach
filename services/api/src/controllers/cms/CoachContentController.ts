@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import { Op } from 'sequelize';
+
 import { ContentArticle } from '../../models/cms/ContentArticle';
 import { ContentCategory } from '../../models/cms/ContentCategory';
 import { ContentMedia } from '../../models/cms/ContentMedia';
@@ -6,7 +8,6 @@ import { ContentMedia } from '../../models/cms/ContentMedia';
 // import { User } from '../../models/User';
 import { PublishingService } from '../../services/cms/PublishingService';
 import { logger } from '../../utils/logger';
-import { Op } from 'sequelize';
 
 const publishingService = new PublishingService();
 

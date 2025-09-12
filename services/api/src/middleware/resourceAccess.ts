@@ -1,14 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '../utils/logger';
-import { User } from '../models/User';
-import { Goal } from '../models/Goal';
-import { CoachSession } from '../models/CoachSession';
-import { Subscription } from '../models/financial/Subscription';
-import { Organization } from '../models/Organization';
-import { UserProfile } from '../models/UserProfile';
-import { CoachProfile } from '../models/CoachProfile';
+
 import { Content } from '../models/cms/Content';
+import { CoachProfile } from '../models/CoachProfile';
+import { CoachSession } from '../models/CoachSession';
 import { FinancialSnapshot } from '../models/financial/FinancialSnapshot';
+import { Subscription } from '../models/financial/Subscription';
+import { Goal } from '../models/Goal';
+import { Organization } from '../models/Organization';
+import { User } from '../models/User';
+import { UserProfile } from '../models/UserProfile';
+import { logger } from '../utils/logger';
 
 // Define resource types and their ownership rules
 enum ResourceType {

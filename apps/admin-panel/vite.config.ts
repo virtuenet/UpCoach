@@ -5,7 +5,7 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 8006,
+    port: 1006,
     host: true,
     headers: {
       // Security headers - will be loaded from design system at runtime

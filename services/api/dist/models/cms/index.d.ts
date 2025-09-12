@@ -1,7 +1,3 @@
-/**
- * Unified CMS Models Export
- * Provides backward compatibility aliases for old model names
- */
 import { UnifiedContent } from './UnifiedContent';
 import { UnifiedCategory } from './UnifiedCategory';
 import { UnifiedTag } from './UnifiedTag';

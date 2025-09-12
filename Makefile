@@ -83,9 +83,9 @@ test: test-unit test-e2e ## Run all tests
 
 .PHONY: test-unit
 test-unit: ## Run unit tests
-	cd landing-page && npm test
-	cd admin-panel && npm test
-	cd cms-panel && npm test
+	cd apps/landing-page && npm test
+	cd apps/admin-panel && npm test
+	cd apps/cms-panel && npm test
 
 .PHONY: test-e2e
 test-e2e: ## Run E2E tests with Playwright
@@ -97,9 +97,9 @@ test-flutter: ## Run Flutter tests
 
 .PHONY: test-coverage
 test-coverage: ## Generate test coverage report
-	cd landing-page && npm run test:coverage
-	cd admin-panel && npm run test:coverage
-	cd cms-panel && npm run test:coverage
+	cd apps/landing-page && npm run test:coverage
+	cd apps/admin-panel && npm run test:coverage
+	cd apps/cms-panel && npm run test:coverage
 
 # Development commands
 .PHONY: dev
@@ -108,50 +108,50 @@ dev: ## Start development environment
 
 .PHONY: dev-landing
 dev-landing: ## Start only landing page in dev mode
-	cd landing-page && npm run dev
+	cd apps/landing-page && npm run dev -- -p 1005
 
 .PHONY: dev-admin
 dev-admin: ## Start only admin panel in dev mode
-	cd admin-panel && npm run dev
+	cd apps/admin-panel && npm run dev
 
 .PHONY: dev-cms
 dev-cms: ## Start only CMS panel in dev mode
-	cd cms-panel && npm run dev
+	cd apps/cms-panel && npm run dev
 
 .PHONY: dev-mobile
 dev-mobile: ## Start Flutter mobile app
-	cd mobile-app && flutter run
+	cd apps/mobile && flutter run
 
 # Code quality commands
 .PHONY: lint
 lint: ## Run linters on all projects
-	cd landing-page && npm run lint
-	cd admin-panel && npm run lint
-	cd cms-panel && npm run lint
-	cd backend && npm run lint
+	cd apps/landing-page && npm run lint
+	cd apps/admin-panel && npm run lint
+	cd apps/cms-panel && npm run lint
+	cd services/api && npm run lint
 
 .PHONY: format
 format: ## Format code in all projects
-	cd landing-page && npm run format
-	cd admin-panel && npm run format
-	cd cms-panel && npm run format
-	cd backend && npm run format
+	cd apps/landing-page && npm run format
+	cd apps/admin-panel && npm run format
+	cd apps/cms-panel && npm run format
+	cd services/api && npm run format
 
 .PHONY: type-check
 type-check: ## Run TypeScript type checking
-	cd landing-page && npm run type-check
-	cd admin-panel && npm run type-check
-	cd cms-panel && npm run type-check
-	cd backend && npm run type-check
+	cd apps/landing-page && npm run type-check
+	cd apps/admin-panel && npm run type-check
+	cd apps/cms-panel && npm run type-check
+	cd services/api && npm run type-check
 
 # Security commands
 .PHONY: security-scan
 security-scan: ## Run security vulnerability scan
-	cd landing-page && npm audit
-	cd admin-panel && npm audit
-	cd cms-panel && npm audit
-	cd backend && npm audit
-	cd mobile-app && flutter pub audit
+	cd apps/landing-page && npm audit
+	cd apps/admin-panel && npm audit
+	cd apps/cms-panel && npm audit
+	cd services/api && npm audit
+	cd apps/mobile && flutter pub audit
 
 # Utility commands
 .PHONY: clean
@@ -164,19 +164,19 @@ clean: ## Clean up generated files and dependencies
 
 .PHONY: install
 install: ## Install all dependencies
-	cd landing-page && npm install
-	cd admin-panel && npm install
-	cd cms-panel && npm install
-	cd backend && npm install
-	cd mobile-app && flutter pub get
+	cd apps/landing-page && npm install
+	cd apps/admin-panel && npm install
+	cd apps/cms-panel && npm install
+	cd services/api && npm install
+	cd apps/mobile && flutter pub get
 
 .PHONY: update
 update: ## Update all dependencies
-	cd landing-page && npm update
-	cd admin-panel && npm update
-	cd cms-panel && npm update
-	cd backend && npm update
-	cd mobile-app && flutter pub upgrade
+	cd apps/landing-page && npm update
+	cd apps/admin-panel && npm update
+	cd apps/cms-panel && npm update
+	cd services/api && npm update
+	cd apps/mobile && flutter pub upgrade
 
 # Production commands
 .PHONY: build-prod
@@ -201,12 +201,12 @@ status: ## Check status of all services
 .PHONY: health
 health: ## Check health of all services
 	@echo "Checking service health..."
-	@curl -f http://localhost:8005/api/health || echo "Landing page is down"
-	@curl -f http://localhost:8006/api/health || echo "Admin panel is down"
-	@curl -f http://localhost:8007/api/health || echo "CMS panel is down"
-	@curl -f http://localhost:8000/api/health || echo "Backend API is down"
+	@curl -f http://localhost:1005/api/health || echo "Landing page is down"
+	@curl -f http://localhost:1006/api/health || echo "Admin panel is down"
+	@curl -f http://localhost:1007/api/health || echo "CMS panel is down"
+	@curl -f http://localhost:1080/api/health || echo "Backend API is down"
 
 .PHONY: metrics
 metrics: ## View service metrics
 	@echo "Opening monitoring dashboard..."
-	@open http://localhost:8005/metrics 
+	@open http://localhost:1005/metrics 
