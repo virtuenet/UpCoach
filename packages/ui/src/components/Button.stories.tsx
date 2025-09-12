@@ -134,14 +134,17 @@ export const FullWidth: Story = {
 
 // Comprehensive Examples
 export const AllVariants: Story = {
-  render: () => (
+  args: {
+    children: 'Button'
+  },
+  render: (args) => (
     <div className="space-y-4">
       <div className="space-x-4">
-        <Button variant="primary">Primary</Button>
-        <Button variant="secondary">Secondary</Button>
-        <Button variant="outline">Outline</Button>
-        <Button variant="ghost">Ghost</Button>
-        <Button variant="danger">Danger</Button>
+        <Button variant="primary">{args.children}</Button>
+        <Button variant="secondary">{args.children}</Button>
+        <Button variant="outline">{args.children}</Button>
+        <Button variant="ghost">{args.children}</Button>
+        <Button variant="danger">{args.children}</Button>
       </div>
     </div>
   ),
@@ -155,11 +158,14 @@ export const AllVariants: Story = {
 };
 
 export const AllSizes: Story = {
-  render: () => (
+  args: {
+    children: 'Button'
+  },
+  render: (args) => (
     <div className="flex items-center space-x-4">
-      <Button size="sm">Small</Button>
-      <Button size="md">Medium</Button>
-      <Button size="lg">Large</Button>
+      <Button size="sm">{args.children}</Button>
+      <Button size="md">{args.children}</Button>
+      <Button size="lg">{args.children}</Button>
     </div>
   ),
   parameters: {
@@ -172,17 +178,20 @@ export const AllSizes: Story = {
 };
 
 export const InteractiveStates: Story = {
-  render: () => (
+  args: {
+    children: 'Button'
+  },
+  render: (args) => (
     <div className="space-y-4">
       <div className="space-x-4">
-        <Button variant="primary">Normal</Button>
-        <Button variant="primary" loading>Loading</Button>
-        <Button variant="primary" disabled>Disabled</Button>
+        <Button variant="primary">{args.children}</Button>
+        <Button variant="primary" loading>{args.children}</Button>
+        <Button variant="primary" disabled>{args.children}</Button>
       </div>
       <div className="space-x-4">
-        <Button variant="outline">Normal</Button>
-        <Button variant="outline" loading>Loading</Button>
-        <Button variant="outline" disabled>Disabled</Button>
+        <Button variant="outline">{args.children}</Button>
+        <Button variant="outline" loading>{args.children}</Button>
+        <Button variant="outline" disabled>{args.children}</Button>
       </div>
     </div>
   ),
@@ -197,13 +206,16 @@ export const InteractiveStates: Story = {
 
 // Accessibility Testing
 export const AccessibilityExample: Story = {
-  render: () => (
+  args: {
+    children: 'Save'
+  },
+  render: (args) => (
     <div className="space-y-4">
       <Button 
         aria-label="Save document" 
         title="Save the current document"
       >
-        Save
+        {args.children}
       </Button>
       <Button 
         variant="danger"

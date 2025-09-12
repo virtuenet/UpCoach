@@ -1,13 +1,10 @@
 // Google Analytics event tracking utilities
 
-declare global {
-  interface Window {
-    gtag: (command: 'config' | 'event' | 'js' | 'set', targetId: string, config?: any) => void;
-    dataLayer: any[];
-  }
+interface Window {
+  gtag: (command: 'config' | 'event' | 'js' | 'set', targetId: string, config?: any) => void;
+  dataLayer: any[];
 }
 
-// Event categories
 export const GA_EVENTS = {
   // Engagement events
   NEWSLETTER_SIGNUP: 'newsletter_signup',
@@ -205,6 +202,3 @@ export const trackModalView = (modalName: string, trigger: string) => {
     modal_trigger: trigger,
   });
 };
-
-// Generic event tracking function - alias for 'event'
-export const trackEvent = event;

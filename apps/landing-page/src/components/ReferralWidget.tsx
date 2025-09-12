@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Gift, Copy, Check, Share2, Users, DollarSign, TrendingUp, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button, ButtonProps } from '@upcoach/ui/src/components/Button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { trackEvent } from '@/services/analytics';
-import { api } from '@/services/api';
+import api from '@/services/api';
 
 interface ReferralStats {
   totalReferrals: number;
@@ -214,7 +214,7 @@ export default function ReferralWidget({ isAuthenticated = false, userId }: Refe
                         </label>
                         <div className="flex gap-2 mt-1">
                           <Input value={stats.referralCode} readOnly className="font-mono" />
-                          <Button variant="outline" size="icon" onClick={copyReferralLink}>
+                          <Button variant="outline" size="sm" onClick={copyReferralLink}>
                             {copied ? (
                               <Check className="h-4 w-4 text-green-600" />
                             ) : (
