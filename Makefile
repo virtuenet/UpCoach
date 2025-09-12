@@ -193,6 +193,14 @@ deploy-prod: ## Deploy to production environment
 	@echo "Deploying to production..."
 	# Add your production deployment commands here
 
+# Port Management Commands
+.PHONY: verify-ports
+verify-ports: ## Verify all required ports are available
+	@bash scripts/verify-ports.sh
+
+.PHONY: check-ports
+check-ports: verify-ports ## Alias for verify-ports
+
 # Monitoring commands
 .PHONY: status
 status: ## Check status of all services
@@ -201,10 +209,21 @@ status: ## Check status of all services
 .PHONY: health
 health: ## Check health of all services
 	@echo "Checking service health..."
-	@curl -f http://localhost:1005/api/health || echo "Landing page is down"
-	@curl -f http://localhost:1006/api/health || echo "Admin panel is down"
-	@curl -f http://localhost:1007/api/health || echo "CMS panel is down"
-	@curl -f http://localhost:1080/api/health || echo "Backend API is down"
+	@curl -f http://localhost:1005 -s > /dev/null && echo "✅ Landing page is running" || echo "❌ Landing page is down"
+	@curl -f http://localhost:1006 -s > /dev/null && echo "✅ Admin panel is running" || echo "❌ Admin panel is down"  
+	@curl -f http://localhost:1007 -s > /dev/null && echo "✅ CMS panel is running" || echo "❌ CMS panel is down"
+	@curl -f http://localhost:1080/api/health -s > /dev/null && echo "✅ Backend API is running" || echo "❌ Backend API is down"
+
+.PHONY: urls
+urls: ## Show all service URLs
+	@echo "🌐 UpCoach Service URLs:"
+	@echo "========================"
+	@echo "Backend API:  http://localhost:1080"
+	@echo "Landing Page: http://localhost:1005" 
+	@echo "Admin Panel:  http://localhost:1006"
+	@echo "CMS Panel:    http://localhost:1007"
+	@echo "Mailhog:      http://localhost:1030"
+	@echo "PgAdmin:      http://localhost:1009"
 
 .PHONY: metrics
 metrics: ## View service metrics

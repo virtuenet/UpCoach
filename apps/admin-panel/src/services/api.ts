@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 
 // API Configuration
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:1080';
 
 // Create axios instance with default configuration
 export const apiClient: AxiosInstance = axios.create({

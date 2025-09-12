@@ -59,7 +59,7 @@ class ContentSecurityPolicyService {
     'connect-src': [
       "'self'",
       'http://localhost:7000', // Backend API (dev)
-      'http://localhost:8080', // Backend API (dev)
+      'http://localhost:1080', // Backend API (dev)
       'https://api.upcoach.ai', // Production API
       'https://*.sentry.io', // Sentry
       'https://*.datadog.com', // DataDog

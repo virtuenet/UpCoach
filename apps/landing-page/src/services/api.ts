@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1080/api';
 
 class ApiService {
   private client: AxiosInstance;

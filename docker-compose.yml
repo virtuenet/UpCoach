@@ -152,8 +152,8 @@ services:
     image: mailhog/mailhog
     container_name: upcoach-mailhog
     ports:
-      - "8008:1025"
-      - "8025:8025"
+      - "1008:1025"
+      - "1030:8025"
     profiles:
       - development
 
@@ -165,7 +165,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@upcoach.ai}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
     ports:
-      - "8009:80"
+      - "1009:80"
     depends_on:
       - postgres
     profiles:

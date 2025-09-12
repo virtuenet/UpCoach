@@ -3,7 +3,7 @@ import { useAuthStore } from '../stores/authStore';
 import { csrfManager } from '../services/csrfManager';
 import { logger } from '../utils/logger';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7000/api';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:1080/api';
 
 export const apiClient = createApiClient({
   baseURL: BASE_URL,
