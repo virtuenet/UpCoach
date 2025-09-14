@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-upcoach_secure_pass}
       POSTGRES_DB: ${DB_NAME:-upcoach_db}
     ports:
-      - "1084:5432"
+      - "1433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./services/api/migrations:/docker-entrypoint-initdb.d
@@ -26,7 +26,7 @@ services:
     image: redis:7-alpine
     container_name: upcoach-redis
     ports:
-      - "1085:6379"
+      - "1003:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -46,7 +46,7 @@ services:
       NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_URL:-http://localhost:8000}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
     ports:
-      - "1083:3000"
+      - "1005:3000"
     volumes:
       - ./landing-page:/app
       - /app/node_modules
@@ -66,7 +66,7 @@ services:
       VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
       VITE_API_URL: ${API_URL:-http://localhost:1080}
     ports:
-      - "1081:3001"
+      - "1006:3001"
     volumes:
       - ./admin-panel:/app
       - /app/node_modules
@@ -85,7 +85,7 @@ services:
       VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
       VITE_API_URL: ${API_URL:-http://localhost:1080}
     ports:
-      - "1082:3002"
+      - "1007:3002"
     volumes:
       - ./cms-panel:/app
       - /app/node_modules
@@ -152,8 +152,8 @@ services:
     image: mailhog/mailhog
     container_name: upcoach-mailhog
     ports:
-      - "1008:1025"
-      - "1030:8025"
+      - "1025:1025"
+      - "1026:8025"
     profiles:
       - development
 
@@ -165,7 +165,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@upcoach.ai}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
     ports:
-      - "1009:80"
+      - "1004:80"
     depends_on:
       - postgres
     profiles:
