@@ -206,16 +206,26 @@ class SecureCredentialManager {
     }
     sanitizeErrorMessage(message) {
         return message
+            .replace(/sk-[a-zA-Z0-9]{20,}/g, '[REDACTED_OPENAI_KEY]')
+            .replace(/claude_[a-zA-Z0-9_-]{20,}/g, '[REDACTED_CLAUDE_KEY]')
+            .replace(/ant_[a-zA-Z0-9_-]{20,}/g, '[REDACTED_ANTHROPIC_KEY]')
             .replace(/[a-zA-Z0-9_-]{20,}/g, '[REDACTED_KEY]')
             .replace(/token[:\s=]+[a-zA-Z0-9_-]+/gi, 'token: [REDACTED]')
             .replace(/bearer\s+[a-zA-Z0-9_-]+/gi, 'bearer [REDACTED]')
+            .replace(/[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, '[REDACTED_JWT]')
             .replace(/[A-Za-z0-9+/]{30,}={0,2}/g, '[REDACTED_B64]')
-            .replace(/authorization[:\s=]+[^\s,]+/gi, 'authorization: [REDACTED]');
+            .replace(/authorization[:\s=]+[^\s,]+/gi, 'authorization: [REDACTED]')
+            .replace(/api\s*key\s*[:\s=]+[^\s,]+/gi, 'api key: [REDACTED]')
+            .replace(/secret\s*[:\s=]+[^\s,]+/gi, 'secret: [REDACTED]')
+            .replace(/password\s*[:\s=]+[^\s,]+/gi, 'password: [REDACTED]')
+            .replace(/["']sk-[a-zA-Z0-9]{20,}["']/g, '"[REDACTED_OPENAI_KEY]"')
+            .replace(/["']claude_[a-zA-Z0-9_-]{20,}["']/g, '"[REDACTED_CLAUDE_KEY]"')
+            .replace(/["']ant_[a-zA-Z0-9_-]{20,}["']/g, '"[REDACTED_ANTHROPIC_KEY]"');
     }
     encryptValue(value) {
         const key = this.getCurrentEncryptionKey();
         const iv = crypto.randomBytes(16);
-        const cipher = crypto.createCipher('aes-256-gcm', key);
+        const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
         let encrypted = cipher.update(value, 'utf8', 'hex');
         encrypted += cipher.final('hex');
         const authTag = cipher.getAuthTag();
@@ -233,7 +243,7 @@ class SecureCredentialManager {
         if (!key) {
             throw new Error('Encryption key not found');
         }
-        const decipher = crypto.createDecipher('aes-256-gcm', key);
+        const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
         decipher.setAuthTag(authTag);
         let decrypted = decipher.update(encrypted, 'hex', 'utf8');
         decrypted += decipher.final('utf8');

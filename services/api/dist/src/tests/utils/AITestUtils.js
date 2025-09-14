@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AIResponseValidators = exports.MockDatabaseUtils = exports.PerformanceTestUtils = exports.AIMockPatterns = exports.AITestDataFactory = void 0;
 class AITestDataFactory {
+    static STATIC_DATE = new Date('2024-01-01');
     static createUser(overrides = {}) {
         return {
             id: 'test-user-123',
@@ -10,7 +11,7 @@ class AITestDataFactory {
                 coachingStyle: 'motivational',
                 focusAreas: ['productivity', 'wellness']
             },
-            createdAt: new Date('2024-01-01'),
+            createdAt: this.STATIC_DATE,
             ...overrides
         };
     }
@@ -57,7 +58,7 @@ class AITestDataFactory {
             insights: [
                 { type: 'behavior', message: 'You work best in the morning' }
             ],
-            lastInsightGeneration: new Date('2024-01-01'),
+            lastInsightGeneration: this.STATIC_DATE,
             profileMetrics: {
                 totalSessions: 25,
                 totalGoals: 5,
@@ -100,7 +101,7 @@ class AITestDataFactory {
     static createMockMoods(count = 5) {
         return Array(count).fill(null).map((_, index) => ({
             moodValue: 6 + (index % 4),
-            createdAt: new Date(Date.now() - (index * 24 * 60 * 60 * 1000))
+            createdAt: new Date(this.STATIC_DATE.getTime() - (index * 24 * 60 * 60 * 1000))
         }));
     }
 }

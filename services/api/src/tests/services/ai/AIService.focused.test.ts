@@ -8,10 +8,10 @@ jest.mock('@anthropic-ai/sdk');
 // Mock cache service
 jest.mock('../../../services/cache/UnifiedCacheService', () => ({
   getCacheService: () => ({
-    get: jest.fn().mockResolvedValue(null as any),
-    set: jest.fn().mockResolvedValue(true as any),
+    get: jest.fn().mockResolvedValue(null),
+    set: jest.fn().mockResolvedValue(true),
     getStats: () => ({ hits: 0, misses: 0 }),
-    invalidate: jest.fn().mockResolvedValue(true as any)
+    invalidate: jest.fn().mockResolvedValue(true)
   })
 }));
 

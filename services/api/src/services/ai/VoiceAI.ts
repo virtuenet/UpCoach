@@ -6,6 +6,7 @@ import { logger } from '../../utils/logger';
 
 import { aiService } from './AIService';
 import { userProfilingService } from './UserProfilingService';
+import { VoiceJournalEntry } from '../../models/VoiceJournalEntry';
 
 export interface VoiceAnalysis {
   transcript: string;
@@ -1178,6 +1179,186 @@ Style: ${style}`;
     }
 
     return recommendations.slice(0, 3);
+  }
+
+  /**
+   * Save voice analysis results to database
+   */
+  async saveAnalysis(
+    userId: string,
+    analysis: VoiceAnalysis,
+    options?: {
+      title?: string;
+      audioUrl?: string;
+      duration?: number;
+      sessionType?: 'reflection' | 'goal_setting' | 'check_in' | 'journal';
+    }
+  ): Promise<VoiceJournalEntry> {
+    try {
+      // Generate title if not provided
+      const title = options?.title || this.generateAnalysisTitle(analysis);
+      
+      // Extract key insights for summary
+      const summary = this.generateAnalysisSummary(analysis);
+      
+      // Extract emotional tone from sentiment
+      let emotionalTone: 'positive' | 'negative' | 'neutral' | 'mixed';
+      if (analysis.sentiment.score > 0.3) {
+        emotionalTone = 'positive';
+      } else if (analysis.sentiment.score < -0.3) {
+        emotionalTone = 'negative';
+      } else if (Math.abs(analysis.sentiment.score) < 0.1) {
+        emotionalTone = 'neutral';
+      } else {
+        emotionalTone = 'mixed';
+      }
+
+      // Generate tags from insights and themes
+      const tags = this.generateAnalysisTags(analysis, options?.sessionType);
+
+      // Create voice journal entry with analysis results
+      const voiceEntry = await VoiceJournalEntry.create({
+        userId,
+        title,
+        transcriptionText: analysis.transcript,
+        audioFilePath: options?.audioUrl,
+        duration: options?.duration || Math.floor(analysis.transcript.split(/\s+/).length / 2.5 * 60), // Estimated duration
+        summary,
+        tags,
+        emotionalTone,
+        isTranscribed: true,
+        isAnalyzed: true,
+        isFavorite: false,
+      });
+
+      logger.info('Voice analysis saved successfully', {
+        userId,
+        entryId: voiceEntry.id,
+        analysisType: options?.sessionType || 'general',
+        sentiment: analysis.sentiment.overall,
+        insightCount: analysis.insights.length,
+      });
+
+      return voiceEntry;
+    } catch (error) {
+      logger.error('Error saving voice analysis:', error);
+      throw new Error(`Failed to save voice analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Generate a meaningful title for the voice analysis
+   */
+  private generateAnalysisTitle(analysis: VoiceAnalysis): string {
+    const keyWords = analysis.transcript
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(word => word.length > 4)
+      .slice(0, 5);
+
+    const sentiment = analysis.sentiment.overall;
+    const date = new Date().toLocaleDateString();
+
+    // Extract key themes
+    const themes = this.extractKeyThemes(analysis.transcript);
+    const mainTheme = themes.length > 0 ? themes[0] : 'reflection';
+
+    if (mainTheme !== 'reflection') {
+      return `${mainTheme.charAt(0).toUpperCase() + mainTheme.slice(1)} Reflection - ${date}`;
+    }
+
+    // Use sentiment and key insights to create title
+    if (analysis.insights.length > 0) {
+      const firstInsight = analysis.insights[0];
+      if (firstInsight.type === 'emotional' && sentiment === 'positive') {
+        return `Positive Voice Reflection - ${date}`;
+      } else if (firstInsight.type === 'behavioral') {
+        return `Behavioral Insights - ${date}`;
+      } else if (firstInsight.type === 'health') {
+        return `Wellness Check-in - ${date}`;
+      }
+    }
+
+    return `Voice Reflection - ${date}`;
+  }
+
+  /**
+   * Generate a summary of the voice analysis
+   */
+  private generateAnalysisSummary(analysis: VoiceAnalysis): string {
+    const parts = [];
+
+    // Add sentiment summary
+    parts.push(`Overall sentiment: ${analysis.sentiment.overall} (${analysis.sentiment.score > 0 ? '+' : ''}${(analysis.sentiment.score * 100).toFixed(0)}%)`);
+
+    // Add speech pattern insights
+    parts.push(`Speech: ${analysis.speechPatterns.pace} pace, ${analysis.speechPatterns.tone} tone`);
+
+    // Add linguistic complexity
+    parts.push(`Language: ${analysis.linguisticAnalysis.complexity} complexity, ${analysis.linguisticAnalysis.vocabulary.uniqueWords} unique words`);
+
+    // Add top insights
+    if (analysis.insights.length > 0) {
+      const topInsights = analysis.insights
+        .filter(insight => insight.confidence > 0.7)
+        .slice(0, 2)
+        .map(insight => insight.insight);
+      
+      if (topInsights.length > 0) {
+        parts.push(`Key insights: ${topInsights.join('; ')}`);
+      }
+    }
+
+    return parts.join('. ');
+  }
+
+  /**
+   * Generate relevant tags for the analysis
+   */
+  private generateAnalysisTags(analysis: VoiceAnalysis, sessionType?: string): string[] {
+    const tags = new Set<string>();
+
+    // Add session type tag
+    if (sessionType) {
+      tags.add(sessionType);
+    }
+
+    // Add sentiment tags
+    tags.add(analysis.sentiment.overall);
+    
+    // Add emotion tags for dominant emotions
+    Object.entries(analysis.sentiment.emotions).forEach(([emotion, score]) => {
+      if (score > 0.6) {
+        tags.add(emotion);
+      }
+    });
+
+    // Add speech pattern tags
+    if (analysis.speechPatterns.pace !== 'normal') {
+      tags.add(`${analysis.speechPatterns.pace}_pace`);
+    }
+    
+    if (analysis.speechPatterns.tone === 'expressive') {
+      tags.add('expressive');
+    }
+
+    // Add linguistic tags
+    if (analysis.linguisticAnalysis.complexity === 'complex') {
+      tags.add('complex_language');
+    }
+
+    // Add insight type tags
+    analysis.insights.forEach(insight => {
+      if (insight.confidence > 0.7) {
+        tags.add(insight.type);
+      }
+    });
+
+    // Add theme tags
+    const themes = this.extractKeyThemes(analysis.transcript);
+    themes.forEach(theme => tags.add(theme));
+
+    return Array.from(tags).slice(0, 8); // Limit to 8 tags
   }
 }
 

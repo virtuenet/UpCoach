@@ -44,8 +44,12 @@ export interface MockProfile {
 
 /**
  * Factory for creating consistent test data
+ * Optimized to prevent memory leaks by using static dates and reusing objects
  */
 export class AITestDataFactory {
+  // Static date to prevent memory leaks from new Date() calls
+  private static readonly STATIC_DATE = new Date('2024-01-01');
+  
   static createUser(overrides: Partial<MockUser> = {}): MockUser {
     return {
       id: 'test-user-123',
@@ -54,7 +58,7 @@ export class AITestDataFactory {
         coachingStyle: 'motivational',
         focusAreas: ['productivity', 'wellness']
       },
-      createdAt: new Date('2024-01-01'),
+      createdAt: this.STATIC_DATE,
       ...overrides
     };
   }
@@ -68,7 +72,7 @@ export class AITestDataFactory {
       category: 'health',
       status: 'active',
       progress: 50,
-      targetDate: new Date('2024-12-31'),
+      targetDate: new Date('2024-12-31'), // Static date
       ...overrides
     };
   }
@@ -103,7 +107,7 @@ export class AITestDataFactory {
       insights: [
         { type: 'behavior', message: 'You work best in the morning' }
       ],
-      lastInsightGeneration: new Date('2024-01-01'),
+      lastInsightGeneration: this.STATIC_DATE,
       profileMetrics: {
         totalSessions: 25,
         totalGoals: 5,
@@ -150,7 +154,7 @@ export class AITestDataFactory {
   static createMockMoods(count = 5) {
     return Array(count).fill(null).map((_, index) => ({
       moodValue: 6 + (index % 4),
-      createdAt: new Date(Date.now() - (index * 24 * 60 * 60 * 1000))
+      createdAt: new Date(this.STATIC_DATE.getTime() - (index * 24 * 60 * 60 * 1000))
     }));
   }
 }

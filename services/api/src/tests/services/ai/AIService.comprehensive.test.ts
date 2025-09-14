@@ -160,6 +160,55 @@ describe('AI Services Comprehensive Test Suite', () => {
       expect(plan.interventions).toBeInstanceOf(Array);
       expect(plan.successMetrics).toBeInstanceOf(Array);
     });
+
+    it('should analyze goal completion risk factors', async () => {
+      const riskAnalysis = await predictiveAnalytics.analyzeGoalRisk('goal123');
+
+      expect(riskAnalysis).toHaveProperty('riskLevel');
+      expect(riskAnalysis).toHaveProperty('probability');
+      expect(riskAnalysis).toHaveProperty('factors');
+      expect(riskAnalysis).toHaveProperty('recommendations');
+      expect(riskAnalysis).toHaveProperty('timeline');
+      expect(riskAnalysis).toHaveProperty('interventions');
+
+      // Validate risk level
+      expect(['low', 'medium', 'high', 'critical']).toContain(riskAnalysis.riskLevel);
+
+      // Validate probability range
+      expect(riskAnalysis.probability).toBeGreaterThanOrEqual(0);
+      expect(riskAnalysis.probability).toBeLessThanOrEqual(1);
+
+      // Validate factors structure
+      expect(riskAnalysis.factors).toHaveProperty('positive');
+      expect(riskAnalysis.factors).toHaveProperty('negative');
+      expect(riskAnalysis.factors).toHaveProperty('neutral');
+      expect(Array.isArray(riskAnalysis.factors.positive)).toBe(true);
+      expect(Array.isArray(riskAnalysis.factors.negative)).toBe(true);
+      expect(Array.isArray(riskAnalysis.factors.neutral)).toBe(true);
+
+      // Validate timeline metrics
+      expect(riskAnalysis.timeline).toHaveProperty('currentProgress');
+      expect(riskAnalysis.timeline).toHaveProperty('expectedProgress');
+      expect(riskAnalysis.timeline).toHaveProperty('daysRemaining');
+      expect(riskAnalysis.timeline).toHaveProperty('requiredDailyProgress');
+      expect(riskAnalysis.timeline.currentProgress).toBeGreaterThanOrEqual(0);
+      expect(riskAnalysis.timeline.currentProgress).toBeLessThanOrEqual(100);
+
+      // Validate recommendations
+      expect(Array.isArray(riskAnalysis.recommendations)).toBe(true);
+      expect(riskAnalysis.recommendations.length).toBeGreaterThan(0);
+
+      // Validate interventions structure
+      expect(Array.isArray(riskAnalysis.interventions)).toBe(true);
+      riskAnalysis.interventions.forEach(intervention => {
+        expect(intervention).toHaveProperty('type');
+        expect(intervention).toHaveProperty('action');
+        expect(intervention).toHaveProperty('priority');
+        expect(intervention).toHaveProperty('expectedImpact');
+        expect(['immediate', 'short_term', 'long_term']).toContain(intervention.type);
+        expect(['high', 'medium', 'low']).toContain(intervention.priority);
+      });
+    });
   });
 
   describe('ConversationalAI', () => {
@@ -228,6 +277,71 @@ describe('AI Services Comprehensive Test Suite', () => {
       expect(comparison.comparison).toHaveProperty('sentiment');
       expect(comparison.comparison).toHaveProperty('speechRate');
       expect(comparison.comparison).toHaveProperty('vocabulary');
+    });
+
+    it('should save voice analysis to database', async () => {
+      const mockAnalysis = {
+        transcript: 'I feel motivated and excited about my goals today',
+        sentiment: { 
+          overall: 'positive' as const, 
+          score: 0.8, 
+          emotions: { 
+            joy: 0.8, 
+            sadness: 0.1, 
+            anger: 0.1, 
+            fear: 0.1, 
+            surprise: 0.2, 
+            trust: 0.7 
+          } 
+        },
+        speechPatterns: { 
+          pace: 'normal' as const, 
+          volume: 'normal' as const, 
+          tone: 'expressive' as const, 
+          fillerWords: 2, 
+          pauseDuration: 1.5, 
+          speechRate: 150 
+        },
+        linguisticAnalysis: { 
+          complexity: 'moderate' as const, 
+          vocabulary: { 
+            uniqueWords: 10, 
+            totalWords: 15, 
+            sophistication: 5.0 
+          }, 
+          sentenceStructure: { 
+            avgLength: 8, 
+            complexity: 4 
+          } 
+        },
+        insights: [{
+          type: 'emotional' as const,
+          insight: 'High positive sentiment detected',
+          confidence: 0.85,
+          recommendations: ['Leverage this positive energy for goal achievement']
+        }]
+      };
+
+      const options = {
+        title: 'Motivational Reflection',
+        audioUrl: '/path/to/audio.mp3',
+        duration: 120,
+        sessionType: 'reflection' as const,
+      };
+
+      const savedEntry = await voiceAI.saveAnalysis('user123', mockAnalysis, options);
+
+      expect(savedEntry).toHaveProperty('id');
+      expect(savedEntry).toHaveProperty('userId', 'user123');
+      expect(savedEntry).toHaveProperty('title', 'Motivational Reflection');
+      expect(savedEntry).toHaveProperty('transcriptionText', mockAnalysis.transcript);
+      expect(savedEntry).toHaveProperty('audioFilePath', '/path/to/audio.mp3');
+      expect(savedEntry).toHaveProperty('duration', 120);
+      expect(savedEntry).toHaveProperty('emotionalTone', 'positive');
+      expect(savedEntry).toHaveProperty('isTranscribed', true);
+      expect(savedEntry).toHaveProperty('isAnalyzed', true);
+      expect(savedEntry.tags).toContain('reflection');
+      expect(savedEntry.tags).toContain('positive');
     });
   });
 

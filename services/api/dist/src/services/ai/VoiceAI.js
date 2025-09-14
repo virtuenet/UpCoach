@@ -7,6 +7,7 @@ const Mood_1 = require("../../models/Mood");
 const logger_1 = require("../../utils/logger");
 const AIService_1 = require("./AIService");
 const UserProfilingService_1 = require("./UserProfilingService");
+const VoiceJournalEntry_1 = require("../../models/VoiceJournalEntry");
 class VoiceAI {
     openai;
     voiceSessions;
@@ -785,6 +786,123 @@ Style: ${style}`;
             recommendations.push('Be mindful of your speaking pace for clearer communication');
         }
         return recommendations.slice(0, 3);
+    }
+    async saveAnalysis(userId, analysis, options) {
+        try {
+            const title = options?.title || this.generateAnalysisTitle(analysis);
+            const summary = this.generateAnalysisSummary(analysis);
+            let emotionalTone;
+            if (analysis.sentiment.score > 0.3) {
+                emotionalTone = 'positive';
+            }
+            else if (analysis.sentiment.score < -0.3) {
+                emotionalTone = 'negative';
+            }
+            else if (Math.abs(analysis.sentiment.score) < 0.1) {
+                emotionalTone = 'neutral';
+            }
+            else {
+                emotionalTone = 'mixed';
+            }
+            const tags = this.generateAnalysisTags(analysis, options?.sessionType);
+            const voiceEntry = await VoiceJournalEntry_1.VoiceJournalEntry.create({
+                userId,
+                title,
+                transcriptionText: analysis.transcript,
+                audioFilePath: options?.audioUrl,
+                duration: options?.duration || Math.floor(analysis.transcript.split(/\s+/).length / 2.5 * 60),
+                summary,
+                tags,
+                emotionalTone,
+                isTranscribed: true,
+                isAnalyzed: true,
+                isFavorite: false,
+            });
+            logger_1.logger.info('Voice analysis saved successfully', {
+                userId,
+                entryId: voiceEntry.id,
+                analysisType: options?.sessionType || 'general',
+                sentiment: analysis.sentiment.overall,
+                insightCount: analysis.insights.length,
+            });
+            return voiceEntry;
+        }
+        catch (error) {
+            logger_1.logger.error('Error saving voice analysis:', error);
+            throw new Error(`Failed to save voice analysis: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }
+    generateAnalysisTitle(analysis) {
+        const keyWords = analysis.transcript
+            .toLowerCase()
+            .split(/\s+/)
+            .filter(word => word.length > 4)
+            .slice(0, 5);
+        const sentiment = analysis.sentiment.overall;
+        const date = new Date().toLocaleDateString();
+        const themes = this.extractKeyThemes(analysis.transcript);
+        const mainTheme = themes.length > 0 ? themes[0] : 'reflection';
+        if (mainTheme !== 'reflection') {
+            return `${mainTheme.charAt(0).toUpperCase() + mainTheme.slice(1)} Reflection - ${date}`;
+        }
+        if (analysis.insights.length > 0) {
+            const firstInsight = analysis.insights[0];
+            if (firstInsight.type === 'emotional' && sentiment === 'positive') {
+                return `Positive Voice Reflection - ${date}`;
+            }
+            else if (firstInsight.type === 'behavioral') {
+                return `Behavioral Insights - ${date}`;
+            }
+            else if (firstInsight.type === 'health') {
+                return `Wellness Check-in - ${date}`;
+            }
+        }
+        return `Voice Reflection - ${date}`;
+    }
+    generateAnalysisSummary(analysis) {
+        const parts = [];
+        parts.push(`Overall sentiment: ${analysis.sentiment.overall} (${analysis.sentiment.score > 0 ? '+' : ''}${(analysis.sentiment.score * 100).toFixed(0)}%)`);
+        parts.push(`Speech: ${analysis.speechPatterns.pace} pace, ${analysis.speechPatterns.tone} tone`);
+        parts.push(`Language: ${analysis.linguisticAnalysis.complexity} complexity, ${analysis.linguisticAnalysis.vocabulary.uniqueWords} unique words`);
+        if (analysis.insights.length > 0) {
+            const topInsights = analysis.insights
+                .filter(insight => insight.confidence > 0.7)
+                .slice(0, 2)
+                .map(insight => insight.insight);
+            if (topInsights.length > 0) {
+                parts.push(`Key insights: ${topInsights.join('; ')}`);
+            }
+        }
+        return parts.join('. ');
+    }
+    generateAnalysisTags(analysis, sessionType) {
+        const tags = new Set();
+        if (sessionType) {
+            tags.add(sessionType);
+        }
+        tags.add(analysis.sentiment.overall);
+        Object.entries(analysis.sentiment.emotions).forEach(([emotion, score]) => {
+            if (score > 0.6) {
+                tags.add(emotion);
+            }
+        });
+        if (analysis.speechPatterns.pace !== 'normal') {
+            tags.add(`${analysis.speechPatterns.pace}_pace`);
+        }
+        if (analysis.speechPatterns.tone === 'expressive') {
+            tags.add('expressive');
+        }
+        if (analysis.linguisticAnalysis.complexity === 'complex') {
+            tags.add('complex_language');
+        }
+        analysis.insights.forEach(insight => {
+            if (insight.confidence > 0.7) {
+                tags.add(insight.type);
+            }
+        });
+        const themes = this.extractKeyThemes(analysis.transcript);
+        themes.forEach(theme => tags.add(theme));
+        return Array.from(tags).slice(0, 8);
     }
 }
 exports.VoiceAI = VoiceAI;

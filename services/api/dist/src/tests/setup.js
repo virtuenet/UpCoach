@@ -18,14 +18,17 @@ if (process.env.NODE_ENV === 'test') {
     process.env.REDIS_URL = 'redis://localhost:6379';
     process.env.CSRF_SECRET = 'test-csrf-secret-that-is-long-enough-for-validation-and-more-than-64-chars';
 }
-global.console = {
-    ...console,
-    log: globals_1.jest.fn(),
-    debug: globals_1.jest.fn(),
-    info: globals_1.jest.fn(),
-    warn: globals_1.jest.fn(),
-    error: globals_1.jest.fn(),
-};
+const originalConsole = global.console;
+if (!process.env.VERBOSE_TESTS) {
+    global.console = {
+        ...console,
+        log: globals_1.jest.fn(),
+        debug: globals_1.jest.fn(),
+        info: globals_1.jest.fn(),
+        warn: originalConsole.warn,
+        error: originalConsole.error,
+    };
+}
 globals_1.jest.mock('openai');
 globals_1.jest.mock('@anthropic-ai/sdk');
 globals_1.jest.mock('stripe');
@@ -143,8 +146,20 @@ exports.mockAdminUser = {
 };
 (0, globals_1.afterEach)(() => {
     globals_1.jest.clearAllMocks();
+    globals_1.jest.clearAllTimers();
 });
 (0, globals_1.afterAll)(async () => {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    if (originalConsole) {
+        global.console = originalConsole;
+    }
+    globals_1.jest.clearAllMocks();
+    globals_1.jest.restoreAllMocks();
+    globals_1.jest.clearAllTimers();
+    globals_1.jest.resetModules();
+    await new Promise(resolve => setImmediate(resolve));
+    if (global.gc) {
+        global.gc();
+    }
+    console.log('🧹 Test cleanup completed');
 });
 //# sourceMappingURL=setup.js.map

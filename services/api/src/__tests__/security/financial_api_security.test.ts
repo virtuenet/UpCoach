@@ -251,8 +251,7 @@ describe('Financial API Security Tests', () => {
 
       // Test with user role (should fail)
       for (const endpoint of sensitiveEndpoints) {
-        const response = await request(testApp)
-          [endpoint.method.toLowerCase() as keyof typeof request](endpoint.path)
+        const response = await request(testApp)[endpoint.method.toLowerCase() as keyof typeof request](endpoint.path)
           .set('Authorization', `Bearer ${userToken}`);
         expect(response.status).toBe(403);
         expect(response.body.error).toContain('access denied');
@@ -260,8 +259,7 @@ describe('Financial API Security Tests', () => {
 
       // Test with admin role (should succeed)
       for (const endpoint of sensitiveEndpoints) {
-        const response = await request(testApp)
-          [endpoint.method.toLowerCase() as keyof typeof request](endpoint.path)
+        const response = await request(testApp)[endpoint.method.toLowerCase() as keyof typeof request](endpoint.path)
           .set('Authorization', `Bearer ${adminToken}`);
         expect([200, 201, 404]).toContain(response.status); // 404 acceptable for non-implemented endpoints
       }

@@ -37,7 +37,7 @@ describe('UserProfilingService', () => {
     });
 
     it('should create a new profile if none exists', async () => {
-      (UserProfile.findOne as jest.Mock).mockResolvedValue(null);
+      (UserProfile.findOne as any).mockResolvedValue(null);
 
       const mockProfile = {
         id: 'profile123',
@@ -70,7 +70,7 @@ describe('UserProfilingService', () => {
         save: jest.fn(),
       };
 
-      (UserProfile.findOne as jest.Mock).mockResolvedValue(mockProfile);
+      (UserProfile.findOne as any).mockResolvedValue(mockProfile);
 
       // Mock metric calculations
       (Mood.count as jest.Mock).mockResolvedValue(10);
@@ -220,7 +220,7 @@ describe('UserProfilingService', () => {
         toJSON: () => ({ id: 'profile123', userId: 'user123' }),
       };
 
-      (UserProfile.findOne as jest.Mock).mockResolvedValue(mockProfile);
+      (UserProfile.findOne as any).mockResolvedValue(mockProfile);
 
       const result = await userProfilingService.createOrUpdateProfile('user123');
 
@@ -228,7 +228,7 @@ describe('UserProfilingService', () => {
     });
 
     it('should return null if profile does not exist', async () => {
-      (UserProfile.findOne as jest.Mock).mockResolvedValue(null);
+      (UserProfile.findOne as any).mockResolvedValue(null);
 
       const result = await userProfilingService.createOrUpdateProfile('user123');
 
@@ -247,7 +247,7 @@ describe('UserProfilingService', () => {
         save: jest.fn(),
       };
 
-      (UserProfile.findOne as jest.Mock).mockResolvedValue(mockProfile);
+      (UserProfile.findOne as any).mockResolvedValue(mockProfile);
 
       const newPreferences = {
         notifications: false,
@@ -264,7 +264,7 @@ describe('UserProfilingService', () => {
     });
 
     it('should throw error if profile not found', async () => {
-      (UserProfile.findOne as jest.Mock).mockResolvedValue(null);
+      (UserProfile.findOne as any).mockResolvedValue(null);
 
       await expect(userProfilingService.updateUserPreferences('user123', {})).rejects.toThrow(
         'User profile not found'
@@ -284,7 +284,7 @@ describe('UserProfilingService', () => {
         lastInsightGeneration: recentDate,
       };
 
-      (UserProfile.findOne as jest.Mock).mockResolvedValue(mockProfile);
+      (UserProfile.findOne as any).mockResolvedValue(mockProfile);
 
       const result = await userProfilingService.getProfileInsights('user123');
 
@@ -303,7 +303,7 @@ describe('UserProfilingService', () => {
         save: jest.fn(),
       };
 
-      (UserProfile.findOne as jest.Mock).mockResolvedValue(mockProfile);
+      (UserProfile.findOne as any).mockResolvedValue(mockProfile);
 
       // Mock the createOrUpdateProfile to return updated profile
       jest.spyOn(userProfilingService, 'createOrUpdateProfile').mockResolvedValue({
@@ -334,13 +334,14 @@ describe('UserProfilingService', () => {
         },
       };
 
-      (UserProfile.findOne as jest.Mock).mockResolvedValue(mockProfile);
+      (UserProfile.findOne as any).mockResolvedValue(mockProfile);
 
       const assessment = await userProfilingService.assessReadinessLevel('user123');
 
-      expect(assessment.overallReadiness).toBeGreaterThan(80);
-      expect(assessment.strengths).toContain('consistency');
-      expect(assessment.recommendations).toBeDefined();
+      expect(assessment.level).toBe('advanced');
+      expect(assessment.reasoning).toBeDefined();
+      expect(assessment.nextSteps).toBeDefined();
+      expect(Array.isArray(assessment.nextSteps)).toBe(true);
     });
 
     it('should identify areas needing improvement', async () => {
@@ -359,12 +360,13 @@ describe('UserProfilingService', () => {
         },
       };
 
-      (UserProfile.findOne as jest.Mock).mockResolvedValue(mockProfile);
+      (UserProfile.findOne as any).mockResolvedValue(mockProfile);
 
       const assessment = await userProfilingService.assessReadinessLevel('user123');
 
-      expect(assessment.overallReadiness).toBeLessThan(50);
-      expect(assessment.areasForImprovement.length).toBeGreaterThan(0);
+      expect(assessment.level).toBe('beginner');
+      expect(assessment.reasoning).toBeDefined();
+      expect(assessment.nextSteps.length).toBeGreaterThan(0);
     });
   });
 });

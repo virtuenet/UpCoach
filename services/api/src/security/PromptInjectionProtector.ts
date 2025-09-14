@@ -39,49 +39,84 @@ export class PromptInjectionProtector {
 
     // Initialize suspicious patterns that could indicate prompt injection
     this.suspiciousPatterns = [
-      // Direct instruction overrides
-      /ignore\s+(all\s+)?(previous\s+)?(instructions?|prompts?|rules?)/gi,
-      /forget\s+(everything|all\s+previous|your\s+instructions?)/gi,
+      // Direct instruction overrides (more comprehensive patterns)
+      /ignore\s+(all\s+)?(previous\s+)?(instructions?|prompts?|rules?|commands?)/gi,
+      /forget\s+(everything|all\s+previous|your\s+instructions?|what\s+you\s+were\s+told)/gi,
       /override\s+(system|default|original)\s+(prompt|instructions?)/gi,
+      /disregard\s+(all|previous|system)\s+(instructions?|prompts?|rules?)/gi,
       
-      // System information extraction attempts
-      /show\s+(me\s+)?(your\s+)?(system\s+)?(prompt|instructions?|rules?)/gi,
-      /what\s+(is\s+)?(your\s+)?(system\s+)?(prompt|instructions?)/gi,
-      /reveal\s+(your\s+)?(system\s+)?(prompt|instructions?|configuration)/gi,
+      // System information extraction attempts (enhanced)
+      /show\s+(me\s+)?(your\s+)?(system\s+)?(prompt|instructions?|rules?|configuration)/gi,
+      /what\s+(is\s+|are\s+)?(your\s+)?(system\s+)?(prompt|instructions?|directives?)/gi,
+      /reveal\s+(your\s+)?(system\s+)?(prompt|instructions?|configuration|settings)/gi,
+      /display\s+(your\s+)?(system\s+)?(prompt|instructions?|rules?)/gi,
+      /tell\s+me\s+(your\s+)?(system\s+)?(prompt|instructions?|rules?)/gi,
+      /repeat\s+(your\s+)?(system\s+)?(prompt|instructions?|initial\s+prompt)/gi,
       
-      // Role manipulation attempts
-      /you\s+are\s+now\s+(a\s+)?(?!.*coach|.*assistant)/gi,
-      /act\s+as\s+(a\s+)?(?!.*coach|.*mentor)/gi,
-      /pretend\s+(to\s+be\s+)?(a\s+)?(?!.*coach)/gi,
+      // Role manipulation attempts (stricter detection)
+      /you\s+are\s+now\s+(a\s+|an\s+)?\w+(?!\s*(coach|assistant|ai))/gi,
+      /act\s+as\s+(a\s+|an\s+)?\w+(?!\s*(coach|mentor|assistant))/gi,
+      /pretend\s+(to\s+be\s+)?(a\s+|an\s+)?\w+(?!\s*coach)/gi,
+      /roleplay\s+as\s+(a\s+|an\s+)?\w+(?!\s*(coach|mentor))/gi,
+      /simulate\s+(being\s+)?(a\s+|an\s+)?\w+(?!\s*coach)/gi,
       
-      // API key and credential extraction
-      /(api[_\s]*key|secret[_\s]*key|token|password|credential)/gi,
-      /show\s+(me\s+)?(the\s+)?(?:api[_\s]*)?key/gi,
+      // API key and credential extraction (enhanced)
+      /(api[_\s]*key|secret[_\s]*key|access[_\s]*token|auth[_\s]*token|password|credential|private[_\s]*key)/gi,
+      /show\s+(me\s+)?(the\s+)?(api[_\s]*key|secret|token|password|credential)/gi,
+      /what\s+(is\s+)?(your\s+)?(api[_\s]*key|secret|token|password)/gi,
+      /reveal\s+(the\s+)?(api[_\s]*key|secret|token|password|credential)/gi,
       
-      // Output format manipulation
-      /output\s+in\s+(json|xml|csv|html|javascript|python)/gi,
-      /format\s+(your\s+)?response\s+as\s+(code|script|json)/gi,
+      // Output format manipulation (expanded)
+      /output\s+in\s+(json|xml|csv|html|javascript|python|code|raw|plain)/gi,
+      /format\s+(your\s+)?response\s+as\s+(code|script|json|xml|html|markdown)/gi,
+      /respond\s+in\s+(json|xml|code|script|raw)\s+format/gi,
+      /return\s+(only\s+)?(json|xml|code|raw\s+data)/gi,
       
-      // Instruction injection with delimiters
+      // Instruction injection with delimiters (comprehensive)
       /["""''`]{3,}[\s\S]*?["""''`]{3,}/g,
-      /---[\s\S]*?---/g,
+      /---+[\s\S]*?---+/g,
       /\[INST\][\s\S]*?\[\/INST\]/gi,
+      /\[SYSTEM\][\s\S]*?\[\/SYSTEM\]/gi,
+      /\[USER\][\s\S]*?\[\/USER\]/gi,
+      /<\|system\|>[\s\S]*?<\|\/system\|>/gi,
+      /<\|user\|>[\s\S]*?<\|\/user\|>/gi,
       
-      // Unicode and encoding attacks
+      // Unicode and encoding attacks (expanded)
       /\\u[0-9a-f]{4}/gi,
       /%[0-9a-f]{2}/gi,
+      /&#[0-9]+;/gi,
+      /&[a-zA-Z]+;/gi,
       
-      // Jailbreak attempts
-      /jailbreak|DAN\s+mode|developer\s+mode/gi,
+      // Jailbreak attempts (comprehensive)
+      /jailbreak|DAN\s+mode|developer\s+mode|admin\s+mode|god\s+mode/gi,
       /hypothetical\s+scenario.*ignore/gi,
+      /for\s+educational\s+purposes.*ignore/gi,
+      /simulation\s+mode.*override/gi,
+      /debug\s+mode.*show/gi,
+      
+      // Command execution attempts
+      /execute\s+(this\s+)?(command|code|script)/gi,
+      /run\s+(this\s+)?(command|code|script)/gi,
+      /eval\s*\(/gi,
+      /exec\s*\(/gi,
+      
+      // Social engineering patterns
+      /urgent.*ignore.*rules/gi,
+      /emergency.*override.*instructions/gi,
+      /administrator\s+said.*ignore/gi,
+      /security\s+test.*show.*system/gi,
     ];
 
     // Keywords that are commonly used in injection attempts
     this.injectionKeywords = new Set([
       'ignore', 'forget', 'override', 'bypass', 'disable', 'jailbreak',
-      'reveal', 'show', 'display', 'output', 'print', 'execute',
+      'reveal', 'show', 'display', 'output', 'print', 'execute', 'run',
       'administrator', 'admin', 'root', 'sudo', 'system', 'debug',
-      'developer', 'maintenance', 'testing', 'simulation', 'hypothetical'
+      'developer', 'maintenance', 'testing', 'simulation', 'hypothetical',
+      'disregard', 'roleplay', 'pretend', 'simulate', 'act',
+      'emergency', 'urgent', 'secret', 'password', 'token', 'credential',
+      'configuration', 'settings', 'directives', 'commands', 'eval',
+      'exec', 'script', 'code', 'mode', 'god', 'dan'
     ]);
 
     // Patterns that might try to extract system prompts

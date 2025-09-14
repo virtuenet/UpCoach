@@ -89,7 +89,7 @@ describe('ConversationalAI', () => {
     mockContextManager.getUserContext = jest.fn();
     mockPersonalityEngine.selectOptimalPersonality = jest.fn();
     mockPersonalityEngine.getSystemPrompt = jest.fn();
-    mockChatMessage.findAll = jest.fn();
+    mockChatMessage.findAll = jest.fn().mockResolvedValue([]);
 
     conversationalAI = new ConversationalAI();
   });
@@ -98,7 +98,14 @@ describe('ConversationalAI', () => {
     it('should process conversation with correct parameters and return expected structure', async () => {
       // Setup mocks
       const mockAIResponse = {
+        id: 'test-response-123',
         content: 'Based on your goals, I recommend starting with 3 workouts per week.',
+        usage: {
+          promptTokens: 10,
+          completionTokens: 20,
+          totalTokens: 30
+        },
+        model: 'gpt-4-turbo-preview'
       };
 
       const mockUserContext = {
@@ -137,7 +144,16 @@ describe('ConversationalAI', () => {
     });
 
     it('should handle conversation history correctly', async () => {
-      const mockAIResponse = { content: 'I can help you with your workout plan.' };
+      const mockAIResponse = {
+        id: 'test-response-456',
+        content: 'I can help you with your workout plan.',
+        usage: {
+          promptTokens: 10,
+          completionTokens: 20,
+          totalTokens: 30
+        },
+        model: 'gpt-4-turbo-preview'
+      };
       const mockUserContext = { userId: 'user123', preferences: {}, goals: [] };
       const mockHistory = [{ role: 'user', content: 'Hi', createdAt: new Date() }];
 
@@ -176,7 +192,16 @@ describe('ConversationalAI', () => {
 
   describe('generateSmartResponse', () => {
     it('should generate responses with different options', async () => {
-      const mockResponse = { content: 'Short motivational response.' };
+      const mockResponse = {
+        id: 'test-response-789',
+        content: 'Short motivational response.',
+        usage: {
+          promptTokens: 10,
+          completionTokens: 20,
+          totalTokens: 30
+        },
+        model: 'gpt-4-turbo-preview'
+      };
       mockAIService.generateResponse.mockResolvedValue(mockResponse);
 
       const result = await conversationalAI.generateSmartResponse('user123', 'I need motivation', {
@@ -208,7 +233,16 @@ describe('ConversationalAI', () => {
 
   describe('conversation state management', () => {
     it('should manage conversation state correctly', async () => {
-      const mockAIResponse = { content: 'Test response' };
+      const mockAIResponse = {
+        id: 'test-response-state',
+        content: 'Test response',
+        usage: {
+          promptTokens: 10,
+          completionTokens: 20,
+          totalTokens: 30
+        },
+        model: 'gpt-4-turbo-preview'
+      };
       const mockUserContext = { userId: 'user123', preferences: {}, goals: [] };
 
       mockAIService.generateResponse.mockResolvedValue(mockAIResponse);

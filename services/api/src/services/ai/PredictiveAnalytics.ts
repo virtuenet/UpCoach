@@ -9,6 +9,7 @@ import { UserProfile } from '../../models/UserProfile';
 import { logger } from '../../utils/logger';
 
 import { aiService } from './AIService';
+import { cacheService, Cached } from './CacheService';
 // import { sequelize } from '../../config/database';
 
 export interface Prediction {
@@ -41,6 +42,7 @@ export interface RiskAssessment {
 }
 
 export class PredictiveAnalytics {
+  @Cached({ ttl: 900, keyPrefix: 'prediction:success' }) // 15 minutes
   async predictUserSuccess(userId: string): Promise<Prediction> {
     try {
       // Gather historical data
@@ -66,6 +68,7 @@ export class PredictiveAnalytics {
     }
   }
 
+  @Cached({ ttl: 1800, keyPrefix: 'prediction:churn' }) // 30 minutes
   async predictChurnRisk(userId: string): Promise<RiskAssessment> {
     try {
       const userData = await this.gatherUserData(userId);
@@ -222,6 +225,7 @@ export class PredictiveAnalytics {
     }
   }
 
+  @Cached({ ttl: 1200, keyPrefix: 'analysis:behavior' }) // 20 minutes
   async analyzeBehaviorPatterns(userId: string): Promise<BehaviorPattern[]> {
     const userData = await this.gatherUserData(userId);
     const patterns: BehaviorPattern[] = [];
@@ -650,20 +654,27 @@ Provide JSON with:
       };
     }
 
-    // Calculate average mood
+    // Enhanced mood value mapping with more nuanced scoring
     const moodValues: Record<string, number> = {
+      great: 5,
+      good: 4,
+      okay: 3,
+      bad: 2,
+      terrible: 1,
+      // Legacy support
       happy: 5,
       content: 4,
       neutral: 3,
       stressed: 2,
       sad: 1,
     };
+
     const avgMood =
       moods.reduce((sum, m) => sum + (moodValues[m.mood as string] || 3), 0) / moods.length;
 
     const frequency = Math.min(1, moods.length / 30); // Expecting daily tracking
 
-    // Trend analysis
+    // Enhanced trend analysis with volatility detection
     const recentMoods = moods.slice(0, 7);
     const olderMoods = moods.slice(7, 14);
 
@@ -675,16 +686,22 @@ Provide JSON with:
       olderMoods.reduce((sum, m) => sum + (moodValues[m.mood as string] || 3), 0) /
       Math.max(1, olderMoods.length);
 
+    // Calculate mood volatility
+    const moodVariance = 
+      moods.reduce((sum, m) => {
+        const value = moodValues[m.mood as string] || 3;
+        return sum + Math.pow(value - avgMood, 2);
+      }, 0) / moods.length;
+    const moodVolatility = Math.sqrt(moodVariance);
+
     let trend: 'increasing' | 'stable' | 'decreasing' = 'stable';
     if (recentAvg > olderAvg + 0.5) trend = 'increasing';
     else if (recentAvg < olderAvg - 0.5) trend = 'decreasing';
 
     const impact = avgMood > 3.5 ? 'positive' : avgMood < 2.5 ? 'negative' : 'neutral';
 
-    const insights = [];
-    if (avgMood > 4) insights.push('Generally positive mood state');
-    if (trend === 'increasing') insights.push('Mood is improving over time');
-    if (frequency > 0.8) insights.push('Consistent mood tracking habit');
+    // Enhanced insights with pattern detection
+    const insights = this.generateMoodInsights(moods, avgMood, trend, moodVolatility, frequency);
 
     return {
       pattern: 'mood_tracking',
@@ -693,6 +710,174 @@ Provide JSON with:
       impact,
       insights,
     };
+  }
+
+  /**
+   * Generate sophisticated mood insights based on patterns
+   */
+  private generateMoodInsights(
+    moods: Mood[], 
+    avgMood: number, 
+    trend: 'increasing' | 'stable' | 'decreasing',
+    volatility: number,
+    frequency: number
+  ): string[] {
+    const insights = [];
+
+    // Overall mood state insights
+    if (avgMood > 4.2) insights.push('Exceptionally positive mood state');
+    else if (avgMood > 3.7) insights.push('Generally positive mood state');
+    else if (avgMood < 2.3) insights.push('Concerning low mood patterns detected');
+    else if (avgMood < 2.8) insights.push('Below-average mood state needs attention');
+
+    // Trend insights
+    if (trend === 'increasing') insights.push('Mood is improving over time - positive momentum');
+    else if (trend === 'decreasing') insights.push('Mood declining - may need intervention');
+
+    // Frequency insights
+    if (frequency > 0.8) insights.push('Consistent mood tracking habit established');
+    else if (frequency < 0.3) insights.push('Irregular mood tracking - encourage consistency');
+
+    // Volatility insights
+    if (volatility > 1.5) insights.push('High mood volatility - consider stability strategies');
+    else if (volatility < 0.5) insights.push('Stable mood patterns - good emotional regulation');
+
+    // Weekly pattern analysis
+    const weeklyPatterns = this.analyzeWeeklyMoodPatterns(moods);
+    if (weeklyPatterns.bestDay) {
+      insights.push(`${weeklyPatterns.bestDay}s tend to be your best mood days`);
+    }
+    if (weeklyPatterns.worstDay) {
+      insights.push(`${weeklyPatterns.worstDay}s show lower mood patterns`);
+    }
+
+    // Energy correlation insights
+    const energyCorrelation = this.analyzeMoodEnergyCorrelation(moods);
+    if (energyCorrelation > 0.7) {
+      insights.push('Strong positive correlation between mood and energy levels');
+    } else if (energyCorrelation < -0.3) {
+      insights.push('Mood and energy levels show concerning inverse relationship');
+    }
+
+    // Activity correlation insights
+    const activityInsights = this.analyzeMoodActivityCorrelations(moods);
+    insights.push(...activityInsights);
+
+    return insights.slice(0, 6); // Limit to most relevant insights
+  }
+
+  /**
+   * Analyze weekly mood patterns to identify best/worst days
+   */
+  private analyzeWeeklyMoodPatterns(moods: Mood[]): { bestDay?: string; worstDay?: string } {
+    const moodValues: Record<string, number> = {
+      great: 5, good: 4, okay: 3, bad: 2, terrible: 1,
+      happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1,
+    };
+
+    const dayAverages: Record<string, number[]> = {
+      Sunday: [], Monday: [], Tuesday: [], Wednesday: [], 
+      Thursday: [], Friday: [], Saturday: []
+    };
+
+    moods.forEach(mood => {
+      const dayName = new Date(mood.createdAt).toLocaleDateString('en-US', { weekday: 'long' });
+      const moodValue = moodValues[mood.mood as string] || 3;
+      if (dayAverages[dayName]) {
+        dayAverages[dayName].push(moodValue);
+      }
+    });
+
+    const dayScores: Record<string, number> = {};
+    Object.entries(dayAverages).forEach(([day, values]) => {
+      if (values.length > 0) {
+        dayScores[day] = values.reduce((sum, val) => sum + val, 0) / values.length;
+      }
+    });
+
+    const sortedDays = Object.entries(dayScores).sort((a, b) => b[1] - a[1]);
+    
+    return {
+      bestDay: sortedDays.length > 0 ? sortedDays[0][0] : undefined,
+      worstDay: sortedDays.length > 0 ? sortedDays[sortedDays.length - 1][0] : undefined
+    };
+  }
+
+  /**
+   * Analyze correlation between mood and energy levels
+   */
+  private analyzeMoodEnergyCorrelation(moods: Mood[]): number {
+    const moodValues: Record<string, number> = {
+      great: 5, good: 4, okay: 3, bad: 2, terrible: 1,
+      happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1,
+    };
+
+    const validMoods = moods.filter(m => m.energyLevel != null);
+    if (validMoods.length < 3) return 0;
+
+    const moodScores = validMoods.map(m => moodValues[m.mood as string] || 3);
+    const energyScores = validMoods.map(m => m.energyLevel || 5);
+
+    // Calculate Pearson correlation coefficient
+    const n = moodScores.length;
+    const sumMood = moodScores.reduce((sum, val) => sum + val, 0);
+    const sumEnergy = energyScores.reduce((sum, val) => sum + val, 0);
+    const sumMoodSquare = moodScores.reduce((sum, val) => sum + val * val, 0);
+    const sumEnergySquare = energyScores.reduce((sum, val) => sum + val * val, 0);
+    const sumProduct = moodScores.reduce((sum, val, i) => sum + val * energyScores[i], 0);
+
+    const numerator = n * sumProduct - sumMood * sumEnergy;
+    const denominator = Math.sqrt((n * sumMoodSquare - sumMood * sumMood) * (n * sumEnergySquare - sumEnergy * sumEnergy));
+
+    return denominator === 0 ? 0 : numerator / denominator;
+  }
+
+  /**
+   * Analyze mood correlations with activities
+   */
+  private analyzeMoodActivityCorrelations(moods: Mood[]): string[] {
+    const insights: string[] = [];
+    const activityMoodMap: Record<string, number[]> = {};
+
+    const moodValues: Record<string, number> = {
+      great: 5, good: 4, okay: 3, bad: 2, terrible: 1,
+      happy: 5, content: 4, neutral: 3, stressed: 2, sad: 1,
+    };
+
+    // Group moods by activities
+    moods.forEach(mood => {
+      const activities = Array.isArray(mood.activities) ? mood.activities : [];
+      activities.forEach(activity => {
+        if (!activityMoodMap[activity]) {
+          activityMoodMap[activity] = [];
+        }
+        activityMoodMap[activity].push(moodValues[mood.mood as string] || 3);
+      });
+    });
+
+    // Find activities with strong mood correlations
+    const activityAverages = Object.entries(activityMoodMap)
+      .filter(([_, values]) => values.length >= 3)
+      .map(([activity, values]) => ({
+        activity,
+        average: values.reduce((sum, val) => sum + val, 0) / values.length,
+        count: values.length
+      }))
+      .sort((a, b) => b.average - a.average);
+
+    if (activityAverages.length > 0) {
+      const topActivity = activityAverages[0];
+      if (topActivity.average > 4) {
+        insights.push(`${topActivity.activity} consistently correlates with positive moods`);
+      }
+
+      const bottomActivity = activityAverages[activityAverages.length - 1];
+      if (bottomActivity.average < 3 && activityAverages.length > 1) {
+        insights.push(`${bottomActivity.activity} may be associated with lower moods`);
+      }
+    }
+
+    return insights.slice(0, 2);
   }
 
   private async analyzeEngagementPatterns(_userId: string): Promise<BehaviorPattern> {
@@ -985,6 +1170,448 @@ Provide JSON with:
     ];
 
     return { interventions, successMetrics };
+  }
+
+  /**
+   * Analyze goal completion risks and provide detailed risk assessment
+   */
+  async analyzeGoalRisk(goalId: string): Promise<{
+    riskLevel: 'low' | 'medium' | 'high' | 'critical';
+    probability: number;
+    factors: {
+      positive: string[];
+      negative: string[];
+      neutral: string[];
+    };
+    recommendations: string[];
+    timeline: {
+      currentProgress: number;
+      expectedProgress: number;
+      daysRemaining: number;
+      requiredDailyProgress: number;
+    };
+    interventions: Array<{
+      type: 'immediate' | 'short_term' | 'long_term';
+      action: string;
+      priority: 'high' | 'medium' | 'low';
+      expectedImpact: string;
+    }>;
+  }> {
+    try {
+      const goal = await Goal.findByPk(goalId);
+      if (!goal) {
+        throw new Error(`Goal with ID ${goalId} not found`);
+      }
+
+      // Get related data for analysis
+      const [tasks, userData, relatedGoals] = await Promise.all([
+        Task.findAll({
+          where: { goalId },
+          order: [['createdAt', 'DESC']],
+          limit: 100,
+        }),
+        this.gatherUserData(goal.userId),
+        Goal.findAll({
+          where: {
+            userId: goal.userId,
+            id: { [Op.ne]: goalId },
+            status: { [Op.in]: ['in_progress', 'completed'] },
+          },
+          order: [['createdAt', 'DESC']],
+          limit: 10,
+        }),
+      ]);
+
+      // Calculate timeline metrics
+      const timeline = this.calculateGoalTimeline(goal, tasks);
+
+      // Analyze risk factors
+      const riskFactors = await this.analyzeRiskFactors(goal, tasks, userData, relatedGoals);
+
+      // Calculate overall risk probability
+      const probability = this.calculateRiskProbability(goal, tasks, riskFactors, timeline);
+
+      // Determine risk level
+      const riskLevel = this.determineRiskLevel(probability, timeline);
+
+      // Generate personalized recommendations
+      const recommendations = await this.generateRiskMitigationRecommendations(
+        goal,
+        riskFactors,
+        timeline,
+        riskLevel
+      );
+
+      // Generate intervention plan
+      const interventions = this.generateRiskInterventions(goal, riskLevel, riskFactors, timeline);
+
+      logger.info('Goal risk analysis completed', {
+        goalId,
+        riskLevel,
+        probability: Math.round(probability * 100),
+        factorsCount: {
+          positive: riskFactors.positive.length,
+          negative: riskFactors.negative.length,
+          neutral: riskFactors.neutral.length,
+        },
+      });
+
+      return {
+        riskLevel,
+        probability,
+        factors: riskFactors,
+        recommendations,
+        timeline,
+        interventions,
+      };
+    } catch (error) {
+      logger.error('Error analyzing goal risk:', error);
+      throw new Error(`Failed to analyze goal risk: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Calculate goal timeline and progress metrics
+   */
+  private calculateGoalTimeline(goal: Goal, tasks: Task[]): {
+    currentProgress: number;
+    expectedProgress: number;
+    daysRemaining: number;
+    requiredDailyProgress: number;
+  } {
+    const currentProgress = goal.progress || 0;
+    const targetDate = goal.targetDate ? new Date(goal.targetDate) : null;
+    const createdDate = new Date(goal.createdAt);
+    const now = new Date();
+
+    let daysRemaining = 30; // Default to 30 days if no target date
+    let expectedProgress = currentProgress;
+
+    if (targetDate) {
+      daysRemaining = Math.max(0, Math.ceil((targetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+      const totalDays = Math.ceil((targetDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+      const daysElapsed = totalDays - daysRemaining;
+      expectedProgress = totalDays > 0 ? (daysElapsed / totalDays) * 100 : 0;
+    }
+
+    const remainingProgress = 100 - currentProgress;
+    const requiredDailyProgress = daysRemaining > 0 ? remainingProgress / daysRemaining : 0;
+
+    return {
+      currentProgress,
+      expectedProgress: Math.max(0, Math.min(100, expectedProgress)),
+      daysRemaining,
+      requiredDailyProgress: Math.max(0, requiredDailyProgress),
+    };
+  }
+
+  /**
+   * Analyze various risk factors affecting goal completion
+   */
+  private async analyzeRiskFactors(
+    goal: Goal,
+    tasks: Task[],
+    userData: any,
+    relatedGoals: Goal[]
+  ): Promise<{
+    positive: string[];
+    negative: string[];
+    neutral: string[];
+  }> {
+    const factors = {
+      positive: [] as string[],
+      negative: [] as string[],
+      neutral: [] as string[],
+    };
+
+    // Task completion analysis
+    const completedTasks = tasks.filter((t: any) => t.status === 'completed');
+    const completionRate = tasks.length > 0 ? completedTasks.length / tasks.length : 0;
+
+    if (completionRate > 0.8) {
+      factors.positive.push(`Excellent task completion rate (${Math.round(completionRate * 100)}%)`);
+    } else if (completionRate > 0.6) {
+      factors.positive.push(`Good task completion rate (${Math.round(completionRate * 100)}%)`);
+    } else if (completionRate < 0.3) {
+      factors.negative.push(`Low task completion rate (${Math.round(completionRate * 100)}%)`);
+    } else {
+      factors.neutral.push(`Moderate task completion rate (${Math.round(completionRate * 100)}%)`);
+    }
+
+    // Progress velocity analysis
+    const recentTasks = tasks.filter(
+      (t: any) => new Date(t.createdAt) > new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+    );
+    const recentCompletions = recentTasks.filter((t: any) => t.status === 'completed');
+
+    if (recentCompletions.length > 5) {
+      factors.positive.push('High recent activity with multiple task completions');
+    } else if (recentCompletions.length === 0 && recentTasks.length === 0) {
+      factors.negative.push('No recent activity on this goal');
+    }
+
+    // Goal complexity analysis
+    if (tasks.length > 20) {
+      if (completionRate > 0.7) {
+        factors.positive.push('Successfully managing complex goal with many tasks');
+      } else {
+        factors.negative.push('Complex goal with many incomplete tasks may cause overwhelm');
+      }
+    } else if (tasks.length < 3) {
+      factors.negative.push('Goal may lack sufficient planning and breakdown');
+    }
+
+    // User engagement patterns
+    const overallEngagement = await this.calculateEngagementMetrics(userData);
+    if (overallEngagement.trend === 'decreasing') {
+      factors.negative.push('Overall user engagement is declining');
+    } else if (overallEngagement.trend === 'increasing') {
+      factors.positive.push('User engagement is increasing');
+    }
+
+    // Related goals analysis
+    const completedRelatedGoals = relatedGoals.filter((g: any) => g.status === 'completed');
+    if (completedRelatedGoals.length > 2) {
+      factors.positive.push('Strong track record of completing similar goals');
+    } else if (completedRelatedGoals.length === 0 && relatedGoals.length > 2) {
+      factors.negative.push('No completed goals in recent history');
+    }
+
+    // Time-based risk factors
+    const targetDate = goal.targetDate ? new Date(goal.targetDate) : null;
+    if (targetDate) {
+      const daysUntilTarget = Math.ceil((targetDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+      if (daysUntilTarget < 7 && goal.progress < 80) {
+        factors.negative.push('Goal deadline approaching with significant work remaining');
+      } else if (daysUntilTarget > 90 && goal.progress < 10) {
+        factors.negative.push('Long-term goal with minimal progress may lose momentum');
+      } else if (daysUntilTarget > 30 && goal.progress > 50) {
+        factors.positive.push('Good progress with adequate time remaining');
+      }
+    }
+
+    // Mood correlation analysis
+    if (userData.avgMoodTrend > 0.2) {
+      factors.positive.push('Positive mood trend supports goal achievement');
+    } else if (userData.avgMoodTrend < -0.2) {
+      factors.negative.push('Declining mood may impact goal motivation');
+    }
+
+    // Task priority analysis
+    const highPriorityTasks = tasks.filter((t: any) => t.priority === 'high');
+    const completedHighPriorityTasks = highPriorityTasks.filter((t: any) => t.status === 'completed');
+    
+    if (highPriorityTasks.length > 0) {
+      const highPriorityCompletion = completedHighPriorityTasks.length / highPriorityTasks.length;
+      if (highPriorityCompletion > 0.8) {
+        factors.positive.push('Excellent completion of high-priority tasks');
+      } else if (highPriorityCompletion < 0.4) {
+        factors.negative.push('Struggling with high-priority task completion');
+      }
+    }
+
+    return factors;
+  }
+
+  /**
+   * Calculate overall risk probability
+   */
+  private calculateRiskProbability(
+    goal: Goal,
+    tasks: Task[],
+    riskFactors: { positive: string[]; negative: string[]; neutral: string[] },
+    timeline: any
+  ): number {
+    let riskScore = 0.3; // Base risk
+
+    // Progress vs timeline risk
+    const progressGap = timeline.expectedProgress - timeline.currentProgress;
+    if (progressGap > 30) riskScore += 0.3;
+    else if (progressGap > 15) riskScore += 0.15;
+    else if (progressGap < -10) riskScore -= 0.1; // Ahead of schedule
+
+    // Required daily progress risk
+    if (timeline.requiredDailyProgress > 5) riskScore += 0.2;
+    else if (timeline.requiredDailyProgress > 2) riskScore += 0.1;
+
+    // Factor-based risk adjustment
+    const factorBalance = riskFactors.positive.length - riskFactors.negative.length;
+    riskScore -= factorBalance * 0.05; // Adjust by 5% per factor difference
+
+    // Task-based risk
+    const completionRate = tasks.length > 0 
+      ? tasks.filter((t: any) => t.status === 'completed').length / tasks.length 
+      : 0;
+    
+    if (completionRate < 0.3) riskScore += 0.2;
+    else if (completionRate > 0.8) riskScore -= 0.15;
+
+    // Days remaining risk
+    if (timeline.daysRemaining < 3 && timeline.currentProgress < 90) riskScore += 0.4;
+    else if (timeline.daysRemaining < 7 && timeline.currentProgress < 70) riskScore += 0.25;
+
+    return Math.max(0, Math.min(1, riskScore));
+  }
+
+  /**
+   * Determine risk level based on probability and timeline
+   */
+  private determineRiskLevel(probability: number, timeline: any): 'low' | 'medium' | 'high' | 'critical' {
+    // Critical conditions
+    if (
+      timeline.daysRemaining < 2 && timeline.currentProgress < 80 ||
+      probability > 0.9
+    ) {
+      return 'critical';
+    }
+
+    // High risk conditions
+    if (
+      probability > 0.7 ||
+      (timeline.daysRemaining < 7 && timeline.currentProgress < 60) ||
+      timeline.requiredDailyProgress > 5
+    ) {
+      return 'high';
+    }
+
+    // Medium risk conditions
+    if (
+      probability > 0.4 ||
+      timeline.currentProgress < timeline.expectedProgress - 20 ||
+      timeline.requiredDailyProgress > 2
+    ) {
+      return 'medium';
+    }
+
+    return 'low';
+  }
+
+  /**
+   * Generate risk mitigation recommendations
+   */
+  private async generateRiskMitigationRecommendations(
+    goal: Goal,
+    riskFactors: { positive: string[]; negative: string[]; neutral: string[] },
+    timeline: any,
+    riskLevel: string
+  ): Promise<string[]> {
+    const recommendations = [];
+
+    // Timeline-based recommendations
+    if (timeline.requiredDailyProgress > 3) {
+      recommendations.push('Break down remaining work into smaller, daily achievable tasks');
+      recommendations.push('Consider extending the deadline if possible to maintain quality');
+    }
+
+    if (timeline.currentProgress < timeline.expectedProgress - 15) {
+      recommendations.push('Schedule dedicated time blocks for goal-related activities');
+      recommendations.push('Review and eliminate low-priority tasks to focus on essentials');
+    }
+
+    // Risk level specific recommendations
+    if (riskLevel === 'critical' || riskLevel === 'high') {
+      recommendations.push('Seek support from friends, family, or mentors');
+      recommendations.push('Consider simplifying the goal scope to ensure completion');
+      recommendations.push('Implement daily progress tracking and accountability');
+    }
+
+    // Factor-based recommendations
+    if (riskFactors.negative.some(f => f.includes('completion rate'))) {
+      recommendations.push('Review task difficulty - consider breaking tasks into smaller steps');
+      recommendations.push('Identify and address barriers preventing task completion');
+    }
+
+    if (riskFactors.negative.some(f => f.includes('recent activity'))) {
+      recommendations.push('Set up daily reminders to maintain momentum');
+      recommendations.push('Start with just 10-15 minutes per day to rebuild the habit');
+    }
+
+    if (riskFactors.negative.some(f => f.includes('mood'))) {
+      recommendations.push('Focus on small wins to rebuild confidence and motivation');
+      recommendations.push('Consider addressing underlying wellness factors affecting mood');
+    }
+
+    // Positive reinforcement
+    if (riskFactors.positive.length > riskFactors.negative.length) {
+      recommendations.push('Leverage your current momentum - increase daily commitment slightly');
+      recommendations.push('Document what\'s working well to maintain successful strategies');
+    }
+
+    // Default recommendations if none specific
+    if (recommendations.length === 0) {
+      recommendations.push('Maintain current pace and review progress weekly');
+      recommendations.push('Prepare contingency plans for potential obstacles');
+    }
+
+    return recommendations.slice(0, 6); // Limit to 6 recommendations
+  }
+
+  /**
+   * Generate intervention plan based on risk level
+   */
+  private generateRiskInterventions(
+    goal: Goal,
+    riskLevel: string,
+    riskFactors: { positive: string[]; negative: string[]; neutral: string[] },
+    timeline: any
+  ): Array<{
+    type: 'immediate' | 'short_term' | 'long_term';
+    action: string;
+    priority: 'high' | 'medium' | 'low';
+    expectedImpact: string;
+  }> {
+    const interventions = [];
+
+    if (riskLevel === 'critical') {
+      interventions.push({
+        type: 'immediate',
+        action: 'Emergency goal review and scope reduction',
+        priority: 'high',
+        expectedImpact: '40% reduction in completion risk',
+      });
+
+      interventions.push({
+        type: 'immediate',
+        action: 'Daily accountability check-ins',
+        priority: 'high',
+        expectedImpact: '30% increase in daily progress',
+      });
+    }
+
+    if (riskLevel === 'high' || riskLevel === 'critical') {
+      interventions.push({
+        type: 'short_term',
+        action: 'Restructure remaining tasks by priority and effort',
+        priority: 'high',
+        expectedImpact: '25% improvement in completion rate',
+      });
+
+      interventions.push({
+        type: 'short_term',
+        action: 'Implement pomodoro technique for focused work',
+        priority: 'medium',
+        expectedImpact: '20% increase in task completion speed',
+      });
+    }
+
+    if (riskLevel === 'medium') {
+      interventions.push({
+        type: 'short_term',
+        action: 'Weekly progress review and plan adjustment',
+        priority: 'medium',
+        expectedImpact: '15% improvement in staying on track',
+      });
+    }
+
+    // Always include long-term intervention for future prevention
+    interventions.push({
+      type: 'long_term',
+      action: 'Develop better goal planning and breakdown skills',
+      priority: 'low',
+      expectedImpact: '50% reduction in future goal completion risks',
+    });
+
+    return interventions;
   }
 }
 

@@ -43,7 +43,7 @@ export class SentryService {
     }
 
     try {
-      Sentry.init({
+      (Sentry.init as any)({
         dsn: config.dsn,
         environment: config.environment,
         release: config.release || process.env.npm_package_version,

@@ -23,15 +23,20 @@ if (process.env.NODE_ENV === 'test') {
   process.env.CSRF_SECRET = 'test-csrf-secret-that-is-long-enough-for-validation-and-more-than-64-chars';
 }
 
-// Mock console methods to reduce noise
-global.console = {
-  ...console,
-  log: jest.fn(),
-  debug: jest.fn(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-};
+// Store original console for cleanup
+const originalConsole = global.console;
+
+// Mock console methods to reduce noise (only if VERBOSE_TESTS is not set)
+if (!process.env.VERBOSE_TESTS) {
+  global.console = {
+    ...console,
+    log: jest.fn(),
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: originalConsole.warn, // Keep warnings and errors
+    error: originalConsole.error,
+  };
+}
 
 // Mock external services
 jest.mock('openai');
@@ -164,10 +169,32 @@ export const mockAdminUser = {
 // Clear all mocks after each test
 afterEach(() => {
   jest.clearAllMocks();
+  // Clear any pending timers
+  jest.clearAllTimers();
 });
 
 // Clean up after all tests
 afterAll(async () => {
-  // Close any open handles
-  await new Promise(resolve => setTimeout(resolve, 500));
+  // Restore original console
+  if (originalConsole) {
+    global.console = originalConsole;
+  }
+  
+  // Clear all Jest mocks and timers
+  jest.clearAllMocks();
+  jest.restoreAllMocks();
+  jest.clearAllTimers();
+  
+  // Reset modules to prevent memory leaks
+  jest.resetModules();
+  
+  // Clear any pending promises
+  await new Promise(resolve => setImmediate(resolve));
+  
+  // Force garbage collection if available
+  if (global.gc) {
+    global.gc();
+  }
+  
+  console.log('🧹 Test cleanup completed');
 });
