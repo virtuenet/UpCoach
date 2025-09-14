@@ -1,5 +1,5 @@
 // @ts-check
-const eslint = require('eslint');
+// eslint configuration
 const tsParser = require('@typescript-eslint/parser');
 const reactPlugin = require('eslint-plugin-react');
 const reactHooksPlugin = require('eslint-plugin-react-hooks');
