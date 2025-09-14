@@ -3,7 +3,7 @@
     "target": "es2022",
     "module": "commonjs",
     "lib": ["es2022", "dom"],
-    "types": ["node", "jest"],
+    "skipLibCheck": true,
     "outDir": "./dist",
     "rootDir": ".",
     "strict": false,
@@ -48,7 +48,6 @@
     "node_modules",
     "dist",
     "src/**/*.test.ts",
-    "src/**/__tests__/**",
-    "src/tests/**"
+    "src/**/__tests__/**"
   ]
 } 
