@@ -1,9 +1,10 @@
 import { Metadata } from 'next';
 import dynamic from 'next/dynamic';
-import Hero from '@/components/sections/Hero';
-import LazySection from '@/components/LazySection';
+
 import ClientWrapper from '@/components/ClientWrapper';
+import LazySection from '@/components/LazySection';
 import LeadCaptureModal from '@/components/LeadCaptureModal';
+import Hero from '@/components/sections/Hero';
 
 // Lazy load non-critical sections
 const Features = dynamic(() => import('@/components/sections/Features'), {

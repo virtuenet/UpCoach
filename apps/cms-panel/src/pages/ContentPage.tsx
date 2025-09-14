@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, keepPreviousData, useQueryClient } from '@tanstack/react-query';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Search, Plus, Edit, Trash2, Eye, Calendar, Filter } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { format } from 'date-fns';
@@ -8,7 +8,6 @@ import toast from 'react-hot-toast';
 import { contentApi, Article } from '../api/content';
 
 export default function ContentPage() {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');

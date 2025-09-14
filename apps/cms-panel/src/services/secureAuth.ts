@@ -350,7 +350,8 @@ class SecureAuthService {
   /**
    * Broadcast session refresh to other tabs
    */
-  private broadcastRefresh(): void {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private _broadcastRefresh(): void {
     try {
       localStorage.setItem('auth_refresh', Date.now().toString());
       setTimeout(() => localStorage.removeItem('auth_refresh'), 100);

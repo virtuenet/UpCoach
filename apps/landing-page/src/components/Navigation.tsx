@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 
 interface NavigationProps {
   className?: string;
@@ -8,7 +7,6 @@ interface NavigationProps {
 
 export const Navigation: React.FC<NavigationProps> = ({ className = '' }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const router = useRouter();
 
   const navItems = [
     { name: 'Features', href: '/#features' },

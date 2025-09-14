@@ -1,4 +1,4 @@
-import { GlobalErrorBoundary, AsyncErrorBoundary } from './components/ErrorBoundary';
+// Removed unused imports
 import { Component, ReactNode } from 'react';
 import ErrorFallback from './ErrorFallback';
 

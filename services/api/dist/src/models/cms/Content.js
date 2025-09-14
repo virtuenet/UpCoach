@@ -2,10 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Content = void 0;
 const sequelize_1 = require("sequelize");
-const User_1 = require("../User");
-const ContentCategory_1 = require("./ContentCategory");
-const ContentMedia_1 = require("./ContentMedia");
-const ContentTag_1 = require("./ContentTag");
 class Content extends sequelize_1.Model {
     id;
     title;
@@ -166,22 +162,22 @@ class Content extends sequelize_1.Model {
             ],
         });
     }
-    static associate() {
-        Content.belongsTo(User_1.User, {
+    static associate(models) {
+        Content.belongsTo(models.User, {
             foreignKey: 'authorId',
             as: 'author',
         });
-        Content.belongsTo(ContentCategory_1.ContentCategory, {
+        Content.belongsTo(models.ContentCategory, {
             foreignKey: 'categoryId',
             as: 'category',
         });
-        Content.belongsToMany(ContentTag_1.ContentTag, {
+        Content.belongsToMany(models.ContentTag, {
             through: 'content_tag_relations',
             foreignKey: 'contentId',
             otherKey: 'tagId',
             as: 'tags',
         });
-        Content.hasMany(ContentMedia_1.ContentMedia, {
+        Content.hasMany(models.ContentMedia, {
             foreignKey: 'contentId',
             as: 'media',
         });

@@ -7,10 +7,15 @@ export { Button } from './Button';
 export { Card } from './Card';
 export { LoadingState } from './LoadingState';
 export { Navigation } from './Navigation';
+// Import for convenience object
+import { Button } from './Button';
+import { Card } from './Card';
+import { LoadingState } from './LoadingState';
+import { Navigation } from './Navigation';
 // Component Groups for convenience
 export const Components = {
-    Button: require('./Button').Button,
-    Card: require('./Card').Card,
-    LoadingState: require('./LoadingState').LoadingState,
-    Navigation: require('./Navigation').Navigation,
+    Button,
+    Card,
+    LoadingState,
+    Navigation,
 };

@@ -6,8 +6,9 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { createRoutesFromChildren, matchRoutes } from 'react-router';
+// React Router integration handled by Sentry browserTracingIntegration
 import * as Sentry from '@sentry/react';
+import { browserTracingIntegration, replayIntegration, captureConsoleIntegration } from '@sentry/react';
 import { logger } from '../../utils/logger';
 
 export interface SentryFrontendConfig {
@@ -56,28 +57,28 @@ class SentryFrontendService {
 
         // Performance Monitoring
         integrations: [
-          new Sentry.BrowserTracing(),
-          new Sentry.CaptureConsole({
+          browserTracingIntegration(),
+          captureConsoleIntegration({
             levels: ['error', 'warn'],
           }),
           // Session Replay
-          new Sentry.Replay({
+          replayIntegration({
             // Mask all text and inputs by default for privacy
             maskAllText: true,
             maskAllInputs: true,
             // Capture canvas
             blockAllMedia: false,
-            // Sample rates
-            sessionSampleRate: config.replaysSessionSampleRate || 0.1,
-            errorSampleRate: config.replaysOnErrorSampleRate || 1.0,
           }),
         ],
+
+        // Replay sampling
+        replaysSessionSampleRate: config.replaysSessionSampleRate || 0.1,
+        replaysOnErrorSampleRate: config.replaysOnErrorSampleRate || 1.0,
 
         // Performance sampling
         tracesSampleRate: config.tracesSampleRate || 0.1,
 
-        // Release Health
-        autoSessionTracking: true,
+        // Release Health - handled by default in v10
 
         // Debug mode
         debug: config.debug || false,
@@ -209,8 +210,8 @@ class SentryFrontendService {
    * Create error boundary component
    */
   createErrorBoundary(
-    fallback?: React.ComponentType<any>,
-    options?: Sentry.ErrorBoundaryOptions
+    _fallback?: React.ComponentType<any>,
+    _options?: Sentry.ErrorBoundaryProps
   ): React.ComponentType<any> {
     if (!this.initialized) {
       // Return a simple fallback if Sentry is not initialized
@@ -227,13 +228,10 @@ class SentryFrontendService {
   startTransaction(name: string, op: string): any {
     if (!this.initialized) return null;
 
-    return Sentry.startTransaction({
+    return Sentry.startSpan({
       name,
       op,
-      tags: {
-        source: 'cms-panel',
-      },
-    });
+    }, () => {});
   }
 
   /**
@@ -289,7 +287,7 @@ class SentryFrontendService {
   /**
    * Scrub sensitive data before sending
    */
-  private beforeSend(event: Sentry.Event): Sentry.Event | null {
+  private beforeSend(event: Sentry.ErrorEvent, _hint?: Sentry.EventHint): Sentry.ErrorEvent | null {
     // Remove sensitive request data
     if (event.request) {
       if (event.request.headers) {
@@ -299,18 +297,19 @@ class SentryFrontendService {
         delete event.request.headers['x-csrf-token'];
       }
 
-      if (event.request.data) {
+      if (event.request.data && typeof event.request.data === 'object') {
+        const data = event.request.data as Record<string, any>;
         const sensitiveFields = ['password', 'token', 'secret', 'apiKey', 'creditCard', 'ssn'];
         sensitiveFields.forEach(field => {
-          if (event.request.data[field]) {
-            event.request.data[field] = '[REDACTED]';
+          if (data[field]) {
+            data[field] = '[REDACTED]';
           }
         });
       }
     }
 
     // Remove sensitive URLs
-    if (event.request?.url) {
+    if (event.request?.url && typeof event.request.url === 'string') {
       event.request.url = event.request.url.replace(/token=[^&]+/, 'token=[REDACTED]');
     }
 
@@ -328,7 +327,8 @@ class SentryFrontendService {
   getRouterInstrumentation() {
     if (!this.initialized) return undefined;
 
-    return Sentry.reactRouterV6Instrumentation;
+    // Router instrumentation is handled by browserTracingIntegration
+    return undefined;
   }
 
   /**
@@ -336,11 +336,11 @@ class SentryFrontendService {
    */
   withErrorBoundary<P extends object>(
     Component: React.ComponentType<P>,
-    errorBoundaryOptions?: Sentry.ErrorBoundaryOptions
+    errorBoundaryOptions?: Sentry.ErrorBoundaryProps
   ): React.ComponentType<P> {
     if (!this.initialized) return Component;
 
-    return Sentry.withErrorBoundary(Component, errorBoundaryOptions);
+    return Sentry.withErrorBoundary(Component, errorBoundaryOptions || {});
   }
 
   /**

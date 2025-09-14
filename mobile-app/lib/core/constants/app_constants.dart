@@ -1,11 +1,15 @@
 class AppConstants {
   // API Configuration
-  static const String baseUrl = 'http://localhost:8000';
+  static const String baseUrl = 'http://localhost:1080';
   static const String apiUrl = '$baseUrl/api';
   
-  // Supabase Configuration
+  // Supabase Configuration  
   static const String supabaseUrl = 'YOUR_SUPABASE_URL';
   static const String supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY';
+  
+  // Google OAuth Configuration
+  static const String googleWebClientId = 'YOUR_GOOGLE_WEB_CLIENT_ID';
+  static const String googleServerClientId = 'YOUR_GOOGLE_SERVER_CLIENT_ID';
   
   // API Endpoints
   static const String authEndpoint = '$apiUrl/auth';

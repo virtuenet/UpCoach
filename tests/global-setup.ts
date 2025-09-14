@@ -289,12 +289,12 @@ class TestEnvironmentSetup {
     console.log('📊 Running database migrations...');
 
     // Set environment variables for migration
-    process.env.NODE_ENV = 'test';
+    (process.env as any).NODE_ENV = 'test';
     process.env.DATABASE_URL = `postgresql://${testConfig.databases.postgresql.username}:${testConfig.databases.postgresql.password}@${testConfig.databases.postgresql.host}:${testConfig.databases.postgresql.port}/${testConfig.databases.postgresql.database}`;
 
     return new Promise((resolve, reject) => {
       const migrationProcess = spawn('npm', ['run', 'db:migrate'], {
-        cwd: path.join(__dirname, '..', 'services', 'api'),
+        cwd: path.join(__dirname, '..'),
         stdio: 'pipe',
         env: { ...process.env },
       });
@@ -451,7 +451,7 @@ class TestEnvironmentSetup {
       console.log('📈 Test performance monitoring enabled');
       
       // Initialize test metrics collection
-      global.testMetrics = {
+      (global as any).testMetrics = {
         startTime: Date.now(),
         testCount: 0,
         failedTests: 0,
@@ -556,7 +556,7 @@ export default async function globalSetup(): Promise<void> {
   const setup = new TestEnvironmentSetup();
   
   // Store cleanup function globally
-  global.__TEST_SETUP__ = setup;
+  (global as any).__TEST_SETUP__ = setup;
   
   try {
     await setup.setup();

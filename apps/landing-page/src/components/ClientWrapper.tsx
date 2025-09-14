@@ -1,9 +1,10 @@
 'use client';
 
 import { ReactNode } from 'react';
+
+import ExperimentDashboard from '@/components/experiments/ExperimentDashboard';
 import LeadCaptureModal from '@/components/forms/LeadCaptureModal';
 import { ExperimentProvider } from '@/components/providers/ExperimentProvider';
-import ExperimentDashboard from '@/components/experiments/ExperimentDashboard';
 
 interface ClientWrapperProps {
   children: ReactNode;

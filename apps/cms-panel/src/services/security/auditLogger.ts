@@ -385,8 +385,8 @@ class AuditLoggerService {
         const aVal = a[options.sortBy!];
         const bVal = b[options.sortBy!];
 
-        if (aVal < bVal) return options.sortOrder === 'ASC' ? -1 : 1;
-        if (aVal > bVal) return options.sortOrder === 'ASC' ? 1 : -1;
+        if (aVal && bVal && aVal < bVal) return options.sortOrder === 'ASC' ? -1 : 1;
+        if (aVal && bVal && aVal > bVal) return options.sortOrder === 'ASC' ? 1 : -1;
         return 0;
       });
     }
@@ -559,7 +559,7 @@ class AuditLoggerService {
       const originalEnd = res.end;
 
       // Override response methods to log result
-      const logResponse = async (body?: any) => {
+      const logResponse = async (_body?: any) => {
         const duration = Date.now() - startTime;
         const statusCode = res.statusCode;
         const success = statusCode >= 200 && statusCode < 400;

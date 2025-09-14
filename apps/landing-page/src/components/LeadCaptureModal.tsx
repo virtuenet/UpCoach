@@ -1,10 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Gift, Sparkles } from 'lucide-react';
-import LeadCaptureForm from './LeadCaptureForm';
+import { useEffect, useState } from 'react';
+
 import { trackModalView } from '@/services/analytics';
+
+import LeadCaptureForm from './LeadCaptureForm';
+
 
 interface LeadCaptureModalProps {
   trigger?: 'exit-intent' | 'time-based' | 'scroll' | 'manual';

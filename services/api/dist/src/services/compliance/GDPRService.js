@@ -445,6 +445,56 @@ class GDPRService {
     }
     async checkLegalRetentionRequirements(userId) {
         const retainData = [];
+        try {
+            const legalCases = await database_1.sequelize.models.LegalCase?.findAll({
+                where: {
+                    userId,
+                    status: {
+                        [sequelize_1.Op.ne]: 'closed'
+                    }
+                }
+            });
+            if (legalCases && legalCases.length > 0) {
+                retainData.push('legal_cases');
+            }
+            const financialRecords = await database_1.sequelize.models.Transaction?.findAll({
+                where: {
+                    userId,
+                    createdAt: {
+                        [sequelize_1.Op.gte]: (0, date_fns_1.addDays)(new Date(), -7 * 365)
+                    }
+                }
+            });
+            if (financialRecords && financialRecords.length > 0) {
+                retainData.push('financial_records');
+            }
+            const regulatoryCompliance = await database_1.sequelize.models.ComplianceRecord?.findAll({
+                where: {
+                    userId,
+                    status: 'active'
+                }
+            });
+            if (regulatoryCompliance && regulatoryCompliance.length > 0) {
+                retainData.push('regulatory_compliance');
+            }
+            const activeHealthPlans = await database_1.sequelize.models.HealthPlan?.findAll({
+                where: {
+                    userId,
+                    status: 'active'
+                }
+            });
+            if (activeHealthPlans && activeHealthPlans.length > 0) {
+                retainData.push('health_plan_data');
+            }
+            logger_1.logger.info('Legal retention requirements checked', {
+                userId,
+                retainedCategories: retainData
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Error checking legal retention requirements', error);
+            retainData.push('legal_cases', 'financial_records', 'regulatory_compliance');
+        }
         return retainData;
     }
     async anonymizeUserContent(userId, transaction) {

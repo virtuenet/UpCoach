@@ -1,17 +1,12 @@
+import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from '@clerk/nextjs';
+
+import GoogleAnalytics from '../components/GoogleAnalytics';
 import Header from '../components/Header';
 import StructuredData from '../components/StructuredData';
 import WebVitals from '../components/WebVitals';
-import GoogleAnalytics from '../components/GoogleAnalytics';
+
 import { defaultMetadata } from './metadata';
 import '../styles/globals.css';
 

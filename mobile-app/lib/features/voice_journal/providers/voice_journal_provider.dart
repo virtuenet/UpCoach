@@ -3,6 +3,7 @@ import '../../../shared/models/voice_journal_entry.dart';
 import '../../../core/services/voice_recording_service.dart';
 import '../../../core/services/speech_to_text_service.dart';
 import '../../../core/services/voice_journal_storage_service.dart';
+import '../../../core/services/voice_journal_sync_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -38,6 +39,7 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
     this._voiceRecordingService, 
     this._speechToTextService,
     this._storageService,
+    this._syncService,
   ) : super(const VoiceJournalState()) {
     _init();
   }
@@ -45,6 +47,7 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
   final VoiceRecordingService _voiceRecordingService;
   final SpeechToTextService _speechToTextService;
   final VoiceJournalStorageService _storageService;
+  final VoiceJournalSyncService _syncService;
 
   Future<void> _init() async {
     await _voiceRecordingService.initialize();
@@ -525,38 +528,87 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
   // Cloud sync functionality
   Future<void> enableCloudSync() async {
     state = state.copyWith(isCloudSyncEnabled: true);
-    await _performCloudSync();
+    await _syncService.enableBackgroundSync();
+    await syncToCloud();
   }
 
   Future<void> disableCloudSync() async {
     state = state.copyWith(isCloudSyncEnabled: false);
+    await _syncService.cancelBackgroundSync();
   }
 
   Future<void> syncToCloud() async {
     if (!state.isCloudSyncEnabled) return;
-    await _performCloudSync();
-  }
-
-  Future<void> _performCloudSync() async {
+    
     state = state.copyWith(isSyncing: true, error: null);
 
     try {
-      // TODO: Implement actual cloud sync logic
-      // This would involve uploading entries to a cloud service
+      // Perform sync using the sync service
+      final syncResult = await _syncService.performSync();
       
-      // For now, simulate sync delay
-      await Future.delayed(const Duration(seconds: 2));
+      // Check for pending conflicts
+      final syncState = _syncService.syncState;
+      if (syncState.pendingConflicts.isNotEmpty) {
+        // Handle conflicts - this would trigger UI to show conflict resolution
+        state = state.copyWith(
+          error: 'Sync conflicts detected. Please resolve ${syncState.pendingConflicts.length} conflicts.',
+        );
+      }
+      
+      // Refresh entries after sync
+      await loadEntries();
       
       state = state.copyWith(
         isSyncing: false,
-        lastSyncTime: DateTime.now(),
+        lastSyncTime: syncResult.syncTime,
+        error: syncResult.isSuccess ? null : 'Sync completed with errors',
       );
+      
+      // Update analytics after sync
+      await _updateAnalytics();
+      
     } catch (e) {
       state = state.copyWith(
         isSyncing: false,
         error: 'Cloud sync failed: ${e.toString()}',
       );
     }
+  }
+  
+  // Resolve sync conflict manually
+  Future<void> resolveSyncConflict(
+    String entryId,
+    ConflictResolution resolution, {
+    VoiceJournalEntry? customResolution,
+  }) async {
+    try {
+      await _syncService.resolveConflictManually(
+        entryId,
+        resolution,
+        customResolution: customResolution,
+      );
+      
+      // Refresh entries after conflict resolution
+      await loadEntries();
+      
+    } catch (e) {
+      state = state.copyWith(
+        error: 'Failed to resolve conflict: ${e.toString()}',
+      );
+    }
+  }
+  
+  // Check if sync is needed
+  Future<bool> isSyncNeeded() async {
+    return await _syncService.isSyncNeeded();
+  }
+  
+  // Get sync statistics
+  Map<String, dynamic> getSyncStatistics() {
+    final syncStats = _syncService.getSyncStatistics();
+    syncStats['localEntries'] = state.entries.length;
+    syncStats['unsyncedEntries'] = state.entries.where((e) => !e.isSyncedToCloud).length;
+    return syncStats;
   }
 
   // Advanced analytics and insights
@@ -799,5 +851,6 @@ final voiceJournalProvider = StateNotifierProvider<VoiceJournalNotifier, VoiceJo
   final voiceRecordingService = ref.read(voiceRecordingServiceProvider);
   final speechToTextService = ref.read(speechToTextServiceProvider);
   final storageService = ref.read(voiceJournalStorageServiceProvider);
-  return VoiceJournalNotifier(voiceRecordingService, speechToTextService, storageService);
+  final syncService = ref.read(voiceJournalSyncServiceProvider.notifier);
+  return VoiceJournalNotifier(voiceRecordingService, speechToTextService, storageService, syncService);
 }); 

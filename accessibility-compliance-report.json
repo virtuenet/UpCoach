@@ -1,0 +1,68 @@
+{
+  "timestamp": "2025-09-12T17:15:11.957Z",
+  "summary": {
+    "totalComponents": 5,
+    "passedComponents": 1,
+    "totalIssues": 34
+  },
+  "results": {
+    "flutter": {
+      "status": "failed",
+      "issues": [
+        "lib/shared/widgets/main_navigation.dart missing Semantics widgets",
+        "lib/features/auth/screens/login_screen.dart missing Semantics widgets",
+        "Flutter analyze failed: Command failed: flutter analyze\nPackage file_picker:linux references file_picker:linux as the default plugin, but it does not provide an inline implementation.\nAsk the maintainers of file_picker to either avoid referencing a default implementation via `platforms: linux: default_package: file_picker` or add an inline implementation to file_picker via `platforms: linux:` `pluginClass` or `dartPluginClass`.\n\nPackage file_picker:macos references file_picker:macos as the default plugin, but it does not provide an inline implementation.\nAsk the maintainers of file_picker to either avoid referencing a default implementation via `platforms: macos: default_package: file_picker` or add an inline implementation to file_picker via `platforms: macos:` `pluginClass` or `dartPluginClass`.\n\nPackage file_picker:windows references file_picker:windows as the default plugin, but it does not provide an inline implementation.\nAsk the maintainers of file_picker to either avoid referencing a default implementation via `platforms: windows: default_package: file_picker` or add an inline implementation to file_picker via `platforms: windows:` `pluginClass` or `dartPluginClass`.\n\nPackage file_picker:linux references file_picker:linux as the default plugin, but it does not provide an inline implementation.\nAsk the maintainers of file_picker to either avoid referencing a default implementation via `platforms: linux: default_package: file_picker` or add an inline implementation to file_picker via `platforms: linux:` `pluginClass` or `dartPluginClass`.\n\nPackage file_picker:macos references file_picker:macos as the default plugin, but it does not provide an inline implementation.\nAsk the maintainers of file_picker to either avoid referencing a default implementation via `platforms: macos: default_package: file_picker` or add an inline implementation to file_picker via `platforms: macos:` `pluginClass` or `dartPluginClass`.\n\nPackage file_picker:windows references file_picker:windows as the default plugin, but it does not provide an inline implementation.\nAsk the maintainers of file_picker to either avoid referencing a default implementation via `platforms: windows: default_package: file_picker` or add an inline implementation to file_picker via `platforms: windows:` `pluginClass` or `dartPluginClass`.\n\nPackage file_picker:linux references file_picker:linux as the default plugin, but it does not provide an inline implementation.\nAsk the maintainers of file_picker to either avoid referencing a default implementation via `platforms: linux: default_package: file_picker` or add an inline implementation to file_picker via `platforms: linux:` `pluginClass` or `dartPluginClass`.\n\nPackage file_picker:macos references file_picker:macos as the default plugin, but it does not provide an inline implementation.\nAsk the maintainers of file_picker to either avoid referencing a default implementation via `platforms: macos: default_package: file_picker` or add an inline implementation to file_picker via `platforms: macos:` `pluginClass` or `dartPluginClass`.\n\nPackage file_picker:windows references file_picker:windows as the default plugin, but it does not provide an inline implementation.\nAsk the maintainers of file_picker to either avoid referencing a default implementation via `platforms: windows: default_package: file_picker` or add an inline implementation to file_picker via `platforms: windows:` `pluginClass` or `dartPluginClass`.\n\n2262 issues found. (ran in 6.6s)\n"
+      ]
+    },
+    "adminpanel": {
+      "status": "failed",
+      "issues": [
+        "App.test.tsx lacks accessibility attributes",
+        "App.tsx lacks accessibility attributes",
+        "main.tsx lacks accessibility attributes",
+        "components/Layout.tsx lacks accessibility attributes",
+        "Accessibility linting failed",
+        "Accessibility tests failed"
+      ]
+    },
+    "cmspanel": {
+      "status": "failed",
+      "issues": [
+        ".eslintrc.a11y.js not found",
+        "jest.a11y.config.js not found",
+        "src/tests/setupA11y.ts not found",
+        "Missing dependency: axe-core",
+        "Missing dependency: jest-axe",
+        "Missing dependency: eslint-plugin-jsx-a11y",
+        "App.test.tsx lacks accessibility attributes",
+        "App.tsx lacks accessibility attributes",
+        "main.tsx lacks accessibility attributes",
+        "components/ColorPicker.tsx lacks accessibility attributes",
+        "components/DataGrid.tsx lacks accessibility attributes",
+        "Accessibility linting failed",
+        "Accessibility tests failed"
+      ]
+    },
+    "landingpage": {
+      "status": "failed",
+      "issues": [
+        ".eslintrc.a11y.js not found",
+        "jest.a11y.config.js not found",
+        "src/tests/setupA11y.ts not found",
+        "Missing dependency: axe-core",
+        "Missing dependency: jest-axe",
+        "Missing dependency: eslint-plugin-jsx-a11y",
+        "app/global-error.tsx lacks accessibility attributes",
+        "app/layout.tsx lacks accessibility attributes",
+        "app/loading.tsx lacks accessibility attributes",
+        "components/AnalyticsDashboard.tsx lacks accessibility attributes",
+        "Accessibility linting failed",
+        "Accessibility tests failed"
+      ]
+    },
+    "backend": {
+      "status": "passed",
+      "issues": []
+    }
+  }
+}

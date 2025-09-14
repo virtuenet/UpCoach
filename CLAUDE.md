@@ -6,10 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 UpCoach is an AI-powered coaching platform with:
 - **Mobile App**: Flutter app for iOS/Android coaching experience
-- **Admin Panel**: React/Vite dashboard for platform management (port 8006)
-- **Backend API**: Express/TypeScript API service (port 8080)
-- **Landing Page**: Next.js marketing site (port 8005)
-- **CMS Panel**: React/Vite content management (port 8007)
+- **Admin Panel**: React/Vite dashboard for platform management (port 1006)
+- **Backend API**: Express/TypeScript API service (port 1080)
+- **Landing Page**: Next.js marketing site (port 1005)
+- **CMS Panel**: React/Vite content management (port 1007)
 
 ## Development Environment Setup
 

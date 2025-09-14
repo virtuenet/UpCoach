@@ -1,0 +1,210 @@
+{
+  "name": "UpCoach License Compliance Configuration",
+  "version": "1.0.0",
+  "description": "License compliance rules for UpCoach platform dependencies",
+  
+  "allowedLicenses": [
+    "MIT",
+    "Apache-2.0", 
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unlicense",
+    "CC0-1.0",
+    "0BSD",
+    "WTFPL",
+    "CC-BY-3.0",
+    "CC-BY-4.0",
+    "MPL-2.0",
+    "LGPL-2.1",
+    "LGPL-3.0"
+  ],
+  
+  "rejectedLicenses": [
+    "GPL-1.0",
+    "GPL-2.0", 
+    "GPL-3.0",
+    "AGPL-1.0",
+    "AGPL-3.0",
+    "SSPL-1.0",
+    "EUPL-1.0",
+    "EUPL-1.1",
+    "EUPL-1.2",
+    "OSL-3.0",
+    "EPL-1.0",
+    "EPL-2.0",
+    "CDDL-1.0",
+    "CDDL-1.1",
+    "CPL-1.0",
+    "CPOL-1.02",
+    "MS-PL",
+    "MS-RL",
+    "NPOSL-3.0",
+    "RPL-1.1",
+    "QPL-1.0"
+  ],
+  
+  "exceptions": [
+    {
+      "package": "react",
+      "version": "^18.0.0",
+      "license": "MIT",
+      "reason": "Core framework dependency",
+      "approved": true
+    },
+    {
+      "package": "next",
+      "version": "^13.0.0", 
+      "license": "MIT",
+      "reason": "Landing page framework",
+      "approved": true
+    },
+    {
+      "package": "express",
+      "version": "^4.18.0",
+      "license": "MIT", 
+      "reason": "Backend API framework",
+      "approved": true
+    },
+    {
+      "package": "sequelize",
+      "version": "^6.28.0",
+      "license": "MIT",
+      "reason": "Database ORM",
+      "approved": true
+    },
+    {
+      "package": "stripe",
+      "version": "^11.0.0",
+      "license": "MIT",
+      "reason": "Payment processing SDK",
+      "approved": true
+    },
+    {
+      "package": "openai",
+      "version": "^4.0.0",
+      "license": "Apache-2.0",
+      "reason": "AI service integration",
+      "approved": true
+    },
+    {
+      "package": "googleapis",
+      "version": "^118.0.0",
+      "license": "Apache-2.0", 
+      "reason": "Google OAuth integration",
+      "approved": true
+    },
+    {
+      "package": "@supabase/supabase-js",
+      "version": "^2.0.0",
+      "license": "MIT",
+      "reason": "Database and auth service",
+      "approved": true
+    },
+    {
+      "package": "flutter",
+      "license": "BSD-3-Clause",
+      "reason": "Mobile app framework", 
+      "approved": true
+    }
+  ],
+  
+  "reviewRequired": [
+    {
+      "license": "MPL-2.0",
+      "reason": "Copyleft license - requires legal review for compatibility"
+    },
+    {
+      "license": "LGPL-2.1", 
+      "reason": "Copyleft license - requires legal review for dynamic linking"
+    },
+    {
+      "license": "LGPL-3.0",
+      "reason": "Copyleft license - requires legal review for dynamic linking"
+    }
+  ],
+  
+  "licenseTexts": {
+    "MIT": "Permission is hereby granted, free of charge, to any person obtaining a copy...",
+    "Apache-2.0": "Licensed under the Apache License, Version 2.0...",
+    "BSD-3-Clause": "Redistribution and use in source and binary forms..."
+  },
+  
+  "complianceRules": {
+    "attributionRequired": [
+      "MIT",
+      "Apache-2.0",
+      "BSD-2-Clause", 
+      "BSD-3-Clause"
+    ],
+    "copyleftLicenses": [
+      "GPL-2.0",
+      "GPL-3.0", 
+      "AGPL-3.0",
+      "LGPL-2.1",
+      "LGPL-3.0",
+      "MPL-2.0"
+    ],
+    "commerciallyPermissive": [
+      "MIT",
+      "Apache-2.0",
+      "BSD-2-Clause",
+      "BSD-3-Clause", 
+      "ISC",
+      "Unlicense"
+    ]
+  },
+  
+  "reporting": {
+    "generateAttribution": true,
+    "attributionFile": "THIRD_PARTY_LICENSES.md",
+    "generateManifest": true,
+    "manifestFile": "license-manifest.json",
+    "includeDevDependencies": false,
+    "includeLicenseText": true
+  },
+  
+  "automation": {
+    "failOnRejected": true,
+    "failOnUnknown": true,
+    "failOnMissing": true,
+    "warnOnReviewRequired": true,
+    "autoApproveAllowed": true,
+    "autoRejectBlacklisted": true
+  },
+  
+  "paths": {
+    "include": [
+      "services/api/package.json",
+      "apps/admin-panel/package.json", 
+      "apps/cms-panel/package.json",
+      "apps/landing-page/package.json",
+      "mobile-app/pubspec.yaml"
+    ],
+    "exclude": [
+      "node_modules/**/*",
+      "dist/**/*",
+      "build/**/*",
+      "coverage/**/*",
+      "**/*.test.js",
+      "**/*.spec.js"
+    ]
+  },
+  
+  "notifications": {
+    "email": "legal@upcoach.ai",
+    "slack": "#legal-compliance",
+    "webhook": "https://hooks.slack.com/services/...",
+    "onViolation": true,
+    "onNewLicense": true,
+    "onReviewRequired": true
+  },
+  
+  "metadata": {
+    "lastUpdated": "2024-09-13T00:00:00Z",
+    "reviewedBy": "Legal Team",
+    "nextReview": "2024-12-13T00:00:00Z",
+    "complianceVersion": "1.0",
+    "organization": "UpCoach Inc."
+  }
+}

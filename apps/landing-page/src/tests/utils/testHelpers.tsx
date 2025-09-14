@@ -1,6 +1,6 @@
 import { render, RenderOptions, act } from '@testing-library/react';
-import { ReactElement } from 'react';
 import userEvent from '@testing-library/user-event';
+import React, { ReactElement } from 'react';
 
 // Custom render function with providers
 export function renderWithProviders(ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) {
@@ -78,7 +78,7 @@ export const generateTestLead = (overrides = {}) => ({
 
 // Accessibility testing helpers
 export const checkAccessibility = async (container: HTMLElement) => {
-  const results = [];
+  const results: string[] = [];
 
   // Check for alt text on images
   const images = container.querySelectorAll('img');
@@ -131,7 +131,7 @@ export class MockIntersectionObserver {
 
   constructor() {
     this.observer = {
-      observe: (target: Element) => {
+      observe: (_target: Element) => {
         // Store callback for manual triggering
       },
       unobserve: (target: Element) => {
@@ -140,7 +140,11 @@ export class MockIntersectionObserver {
       disconnect: () => {
         this.callbacks.clear();
       },
-    } as any;
+      takeRecords: () => [],
+      root: null,
+      rootMargin: '',
+      thresholds: [],
+    } as IntersectionObserver;
 
     global.IntersectionObserver = jest.fn(callback => {
       this.callbacks.set(document.body, callback);
@@ -170,7 +174,7 @@ export class MockFetch {
   }
 
   init() {
-    global.fetch = jest.fn(() => {
+    global.fetch = jest.fn((_input: RequestInfo | URL, _init?: RequestInit) => {
       const { response, error } = this.responses[this.callCount] || {
         response: {},
         error: false,

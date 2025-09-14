@@ -33,15 +33,45 @@ import {
 const LazyBarChart = lazy(() => 
   import('recharts').then(module => ({
     default: ({ data, ...props }: any) => {
-      const { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } = module;
+      const { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Legend } = module;
       return (
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data} {...props}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Bar dataKey="users" fill="#1976d2" />
-            <Bar dataKey="active" fill="#42a5f5" />
+          <BarChart 
+            data={data} 
+            {...props}
+            aria-label="User growth and activity bar chart"
+            role="img"
+          >
+            <CartesianGrid strokeDasharray="3 3" aria-hidden="true" />
+            <XAxis 
+              dataKey="month" 
+              aria-label="Month"
+            />
+            <YAxis 
+              aria-label="Number of users"
+            />
+            <Tooltip 
+              formatter={(value, name) => [
+                value, 
+                name === 'users' ? 'Total Users' : 'Active Users'
+              ]}
+              labelFormatter={(label) => `Month: ${label}`}
+            />
+            <Legend 
+              wrapperStyle={{ paddingTop: '20px' }}
+            />
+            <Bar 
+              dataKey="users" 
+              fill="#1976d2" 
+              name="Total Users"
+              aria-label="Total users data"
+            />
+            <Bar 
+              dataKey="active" 
+              fill="#42a5f5" 
+              name="Active Users"
+              aria-label="Active users data"
+            />
           </BarChart>
         </ResponsiveContainer>
       );
@@ -70,10 +100,14 @@ const LazyLineChart = lazy(() =>
 const LazyPieChart = lazy(() =>
   import('recharts').then(module => ({
     default: ({ data, ...props }: any) => {
-      const { PieChart, Pie, Cell, ResponsiveContainer } = module;
+      const { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } = module;
       return (
         <ResponsiveContainer width="100%" height={200}>
-          <PieChart {...props}>
+          <PieChart 
+            {...props}
+            aria-label="Content moderation status pie chart"
+            role="img"
+          >
             <Pie
               data={data}
               cx="50%"
@@ -82,11 +116,22 @@ const LazyPieChart = lazy(() =>
               outerRadius={80}
               paddingAngle={5}
               dataKey="value"
+              aria-label="Content moderation distribution"
             >
               {data.map((entry: any, index: number) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={entry.color}
+                  aria-label={`${entry.name}: ${entry.value}%`}
+                />
               ))}
             </Pie>
+            <Tooltip 
+              formatter={(value, name) => [`${value}%`, name]}
+            />
+            <Legend 
+              wrapperStyle={{ paddingTop: '10px' }}
+            />
           </PieChart>
         </ResponsiveContainer>
       );
@@ -96,19 +141,40 @@ const LazyPieChart = lazy(() =>
 
 // Skeleton components for better loading UX
 const ChartSkeleton = ({ height = 300 }: { height?: number }) => (
-  <Box sx={{ width: '100%', height }}>
-    <Skeleton variant="rectangular" width="100%" height="80%" />
-    <Skeleton variant="text" width="60%" sx={{ mt: 1 }} />
-    <Skeleton variant="text" width="40%" />
+  <Box 
+    sx={{ width: '100%', height }}
+    role="status"
+    aria-label="Chart loading"
+    aria-live="polite"
+  >
+    <Skeleton 
+      variant="rectangular" 
+      width="100%" 
+      height="80%" 
+      aria-hidden="true"
+    />
+    <Skeleton 
+      variant="text" 
+      width="60%" 
+      sx={{ mt: 1 }} 
+      aria-hidden="true"
+    />
+    <Skeleton 
+      variant="text" 
+      width="40%" 
+      aria-hidden="true"
+    />
+    <span className="sr-only">Loading chart data...</span>
   </Box>
 );
 
 const StatCardSkeleton = () => (
-  <Card>
+  <Card role="status" aria-label="Statistics card loading">
     <CardContent>
-      <Skeleton variant="text" width="60%" />
-      <Skeleton variant="text" width="40%" height={40} />
-      <Skeleton variant="text" width="80%" />
+      <Skeleton variant="text" width="60%" aria-hidden="true" />
+      <Skeleton variant="text" width="40%" height={40} aria-hidden="true" />
+      <Skeleton variant="text" width="80%" aria-hidden="true" />
+      <span className="sr-only">Loading statistics...</span>
     </CardContent>
   </Card>
 );
@@ -147,19 +213,40 @@ interface StatsCardProps {
 }
 
 function StatsCard({ title, value, subtitle, trend, icon, color }: StatsCardProps) {
+  const trendDirection = trend && trend > 0 ? 'increased' : 'decreased';
+  const trendAnnouncement = trend ? `${title} has ${trendDirection} by ${Math.abs(trend)} percent` : '';
+  
   return (
-    <Card sx={{ height: '100%' }}>
+    <Card 
+      sx={{ height: '100%' }}
+      role="region"
+      aria-labelledby={`stats-${title.replace(/\s+/g, '-').toLowerCase()}-title`}
+      aria-describedby={`stats-${title.replace(/\s+/g, '-').toLowerCase()}-value`}
+    >
       <CardContent>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-          <Avatar sx={{ bgcolor: `${color}.main`, color: 'white' }}>
+          <Avatar 
+            sx={{ bgcolor: `${color}.main`, color: 'white' }}
+            aria-hidden="true"
+          >
             {icon}
           </Avatar>
           {trend && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Box 
+              sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+              role="img"
+              aria-label={trendAnnouncement}
+            >
               {trend > 0 ? (
-                <TrendingUp sx={{ color: 'success.main', fontSize: 16 }} />
+                <TrendingUp 
+                  sx={{ color: 'success.main', fontSize: 16 }} 
+                  aria-hidden="true"
+                />
               ) : (
-                <TrendingDown sx={{ color: 'error.main', fontSize: 16 }} />
+                <TrendingDown 
+                  sx={{ color: 'error.main', fontSize: 16 }} 
+                  aria-hidden="true"
+                />
               )}
               <Typography
                 variant="caption"
@@ -167,20 +254,34 @@ function StatsCard({ title, value, subtitle, trend, icon, color }: StatsCardProp
                   color: trend > 0 ? 'success.main' : 'error.main',
                   fontWeight: 600,
                 }}
+                aria-label={`${Math.abs(trend)} percent ${trendDirection}`}
               >
                 {Math.abs(trend)}%
               </Typography>
             </Box>
           )}
         </Box>
-        <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
+        <Typography 
+          variant="h4" 
+          sx={{ fontWeight: 700, mb: 0.5 }}
+          id={`stats-${title.replace(/\s+/g, '-').toLowerCase()}-value`}
+          aria-live="polite"
+        >
           {value}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography 
+          variant="body2" 
+          color="text.secondary"
+          id={`stats-${title.replace(/\s+/g, '-').toLowerCase()}-title`}
+        >
           {title}
         </Typography>
         {subtitle && (
-          <Typography variant="caption" color="text.secondary">
+          <Typography 
+            variant="caption" 
+            color="text.secondary"
+            aria-label={`Additional info: ${subtitle}`}
+          >
             {subtitle}
           </Typography>
         )}
@@ -202,20 +303,34 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <Box>
+    <Box role="main" aria-labelledby="dashboard-title">
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 600 }}>
+        <Typography 
+          variant="h4" 
+          sx={{ fontWeight: 600 }}
+          id="dashboard-title"
+          component="h1"
+        >
           System Overview
         </Typography>
-        <Tooltip title="Refresh data">
-          <IconButton onClick={handleRefresh}>
+        <Tooltip title="Refresh dashboard data">
+          <IconButton 
+            onClick={handleRefresh}
+            aria-label="Refresh dashboard data"
+            size="large"
+          >
             <Refresh />
           </IconButton>
         </Tooltip>
       </Box>
 
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+      <Box 
+        sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}
+        role="region"
+        aria-labelledby="stats-section"
+      >
         {/* Stats Cards */}
+        <div style={{ display: 'none' }} id="stats-section">Key Performance Indicators</div>
         <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 45%', md: '1 1 22%' } }}>
           <StatsCard
             title="Total Users"
@@ -257,16 +372,36 @@ export default function DashboardPage() {
           />
         </Box>
 
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mt: 3 }}>
+      <Box 
+        sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mt: 3 }}
+        role="region"
+        aria-labelledby="charts-section"
+      >
+        <div style={{ display: 'none' }} id="charts-section">Data Visualization Charts</div>
+        
         {/* User Growth Chart */}
         <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 65%' } }}>
-          <Card>
+          <Card 
+            role="region" 
+            aria-labelledby="user-growth-title"
+            aria-describedby="user-growth-description"
+          >
             <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>
+              <Typography 
+                variant="h6" 
+                sx={{ mb: 2 }}
+                id="user-growth-title"
+                component="h2"
+              >
                 User Growth & Activity
               </Typography>
+              <div id="user-growth-description" className="sr-only">
+                Bar chart showing user growth and activity over the past 6 months
+              </div>
               <Suspense fallback={<ChartSkeleton height={300} />}>
-                <LazyBarChart data={memoizedUserGrowthData} />
+                <div role="img" aria-labelledby="user-growth-title" aria-describedby="user-growth-description">
+                  <LazyBarChart data={memoizedUserGrowthData} />
+                </div>
               </Suspense>
             </CardContent>
           </Card>
@@ -274,17 +409,39 @@ export default function DashboardPage() {
 
         {/* Content Moderation Status */}
         <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 30%' } }}>
-          <Card>
+          <Card 
+            role="region" 
+            aria-labelledby="moderation-title"
+            aria-describedby="moderation-description"
+          >
             <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>
+              <Typography 
+                variant="h6" 
+                sx={{ mb: 2 }}
+                id="moderation-title"
+                component="h2"
+              >
                 Content Moderation
               </Typography>
+              <div id="moderation-description" className="sr-only">
+                Pie chart showing content moderation status distribution: approved, pending, and rejected content
+              </div>
               <Suspense fallback={<ChartSkeleton height={300} />}>
-                <LazyPieChart data={memoizedContentModerationData} />
+                <div role="img" aria-labelledby="moderation-title" aria-describedby="moderation-description">
+                  <LazyPieChart data={memoizedContentModerationData} />
+                </div>
               </Suspense>
-              <Box sx={{ mt: 2 }}>
+              <Box 
+                sx={{ mt: 2 }}
+                role="list"
+                aria-label="Content moderation legend"
+              >
                 {memoizedContentModerationData.map((item, index) => (
-                  <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <Box 
+                    key={index} 
+                    sx={{ display: 'flex', alignItems: 'center', mb: 1 }}
+                    role="listitem"
+                  >
                     <Box
                       sx={{
                         width: 12,
@@ -293,8 +450,13 @@ export default function DashboardPage() {
                         bgcolor: item.color,
                         mr: 1,
                       }}
+                      role="img"
+                      aria-label={`${item.name} indicator color`}
                     />
-                    <Typography variant="body2">
+                    <Typography 
+                      variant="body2"
+                      aria-label={`${item.name} represents ${item.value} percent of content`}
+                    >
                       {item.name}: {item.value}%
                     </Typography>
                   </Box>
@@ -305,22 +467,44 @@ export default function DashboardPage() {
         </Box>
       </Box>
 
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mt: 3 }}>
+      <Box 
+        sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mt: 3 }}
+        role="region"
+        aria-labelledby="health-activity-section"
+      >
+        <div style={{ display: 'none' }} id="health-activity-section">System Health and Recent Activity</div>
+        
         {/* System Health */}
         <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 45%' } }}>
-          <Card>
+          <Card 
+            role="region" 
+            aria-labelledby="system-health-title"
+          >
             <CardContent>
-              <Typography variant="h6" sx={{ mb: 2 }}>
+              <Typography 
+                variant="h6" 
+                sx={{ mb: 2 }}
+                id="system-health-title"
+                component="h2"
+              >
                 System Health
               </Typography>
-              <Box sx={{ mb: 3 }}>
+              
+              <Box sx={{ mb: 3 }} role="group" aria-labelledby="api-response-label">
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2">API Response Time</Typography>
+                  <Typography 
+                    variant="body2"
+                    id="api-response-label"
+                    component="h3"
+                  >
+                    API Response Time
+                  </Typography>
                   <Chip
                     label="Excellent"
                     color="success"
                     size="small"
-                    icon={<CheckCircle />}
+                    icon={<CheckCircle aria-hidden="true" />}
+                    aria-label="API Response Time status: Excellent"
                   />
                 </Box>
                 <LinearProgress
@@ -328,17 +512,29 @@ export default function DashboardPage() {
                   value={95}
                   sx={{ height: 8, borderRadius: 4 }}
                   color="success"
+                  aria-label="API Response Time: 95 percent excellent"
+                  role="progressbar"
+                  aria-valuenow={95}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
                 />
               </Box>
               
-              <Box sx={{ mb: 3 }}>
+              <Box sx={{ mb: 3 }} role="group" aria-labelledby="db-performance-label">
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2">Database Performance</Typography>
+                  <Typography 
+                    variant="body2"
+                    id="db-performance-label"
+                    component="h3"
+                  >
+                    Database Performance
+                  </Typography>
                   <Chip
                     label="Good"
                     color="warning"
                     size="small"
-                    icon={<Warning />}
+                    icon={<Warning aria-hidden="true" />}
+                    aria-label="Database Performance status: Good with warnings"
                   />
                 </Box>
                 <LinearProgress
@@ -346,17 +542,29 @@ export default function DashboardPage() {
                   value={78}
                   sx={{ height: 8, borderRadius: 4 }}
                   color="warning"
+                  aria-label="Database Performance: 78 percent good"
+                  role="progressbar"
+                  aria-valuenow={78}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
                 />
               </Box>
               
-              <Box>
+              <Box role="group" aria-labelledby="server-uptime-label">
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2">Server Uptime</Typography>
+                  <Typography 
+                    variant="body2"
+                    id="server-uptime-label"
+                    component="h3"
+                  >
+                    Server Uptime
+                  </Typography>
                   <Chip
                     label="99.9%"
                     color="success"
                     size="small"
-                    icon={<CheckCircle />}
+                    icon={<CheckCircle aria-hidden="true" />}
+                    aria-label="Server Uptime: 99.9 percent excellent"
                   />
                 </Box>
                 <LinearProgress
@@ -364,6 +572,11 @@ export default function DashboardPage() {
                   value={99.9}
                   sx={{ height: 8, borderRadius: 4 }}
                   color="success"
+                  aria-label="Server Uptime: 99.9 percent excellent"
+                  role="progressbar"
+                  aria-valuenow={99.9}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
                 />
               </Box>
             </CardContent>
@@ -372,20 +585,41 @@ export default function DashboardPage() {
 
         {/* Recent Activity */}
         <Box sx={{ flex: { xs: '1 1 100%', md: '1 1 45%' } }}>
-          <Card>
+          <Card 
+            role="region" 
+            aria-labelledby="recent-activity-title"
+          >
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="h6">
+                <Typography 
+                  variant="h6"
+                  id="recent-activity-title"
+                  component="h2"
+                >
                   Recent Activity
                 </Typography>
-                <IconButton size="small">
-                  <MoreVert />
-                </IconButton>
+                <Tooltip title="More activity options">
+                  <IconButton 
+                    size="small"
+                    aria-label="More activity options"
+                  >
+                    <MoreVert />
+                  </IconButton>
+                </Tooltip>
               </Box>
-              <List sx={{ maxHeight: 300, overflow: 'auto' }}>
+              <List 
+                sx={{ maxHeight: 300, overflow: 'auto' }}
+                role="log"
+                aria-label="Recent user activities"
+                aria-live="polite"
+              >
                 {memoizedRecentActivities.map((activity, index) => (
                   <Box key={activity.id}>
-                    <ListItem alignItems="flex-start" sx={{ px: 0 }}>
+                    <ListItem 
+                      alignItems="flex-start" 
+                      sx={{ px: 0 }}
+                      role="listitem"
+                    >
                       <ListItemAvatar>
                         <Avatar
                           sx={{
@@ -401,6 +635,7 @@ export default function DashboardPage() {
                             height: 32,
                             fontSize: '0.75rem',
                           }}
+                          aria-label={`${activity.user} profile`}
                         >
                           {activity.user.split(' ').map(n => n[0]).join('')}
                         </Avatar>
@@ -408,11 +643,22 @@ export default function DashboardPage() {
                       <ListItemText
                         primary={activity.action}
                         secondary={`${activity.user} • ${activity.time}`}
-                        primaryTypographyProps={{ variant: 'body2' }}
-                        secondaryTypographyProps={{ variant: 'caption' }}
+                        primaryTypographyProps={{ 
+                          variant: 'body2',
+                          'aria-label': `Activity: ${activity.action}` 
+                        }}
+                        secondaryTypographyProps={{ 
+                          variant: 'caption',
+                          'aria-label': `By ${activity.user}, ${activity.time}` 
+                        }}
                       />
                     </ListItem>
-                    {index < recentActivities.length - 1 && <Divider />}
+                    {index < recentActivities.length - 1 && (
+                      <Divider 
+                        aria-hidden="true" 
+                        role="separator" 
+                      />
+                    )}
                   </Box>
                 ))}
               </List>

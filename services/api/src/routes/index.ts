@@ -24,6 +24,7 @@ import moodRoutes from './mood';
 import taskRoutes from './tasks';
 import twoFactorAuthRoutes from './twoFactorAuth';
 import userRoutes from './users';
+import voiceJournalRoutes from './voiceJournal';
 
 // API v2 imports
 import v2Routes from './v2';
@@ -61,6 +62,9 @@ export const setupRoutes = (app: Application): void => {
 
   // AI routes (protected)
   app.use(`${apiPrefix}/ai`, authMiddleware, aiRoutes);
+
+  // Voice Journal routes (protected)
+  app.use(`${apiPrefix}/voice-journal`, authMiddleware, voiceJournalRoutes);
 
   // Referral routes (mixed public and protected)
   app.use(`${apiPrefix}/referrals`, referralRoutes);

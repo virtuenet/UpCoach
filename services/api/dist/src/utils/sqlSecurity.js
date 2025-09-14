@@ -87,6 +87,7 @@ function buildUpdateQuery(table, data, conditions) {
 }
 function validateQueryParams(params) {
     const validated = {};
+    const sqlInjectionRegex = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|ALTER|CREATE|TABLE|FROM|WHERE|AND|OR|EXEC|EXECUTE|DECLARE|CAST|CHAR|CHR|ASCII|SUBSTRING|CONCAT|WAITFOR|DELAY|BENCHMARK|SLEEP|LOAD_FILE|OUTFILE|DUMPFILE|INTO)\b|--|\/\*|\*\/|;|['"`]|\bOR\b|\bAND\b|\b1\s*=\s*1\b|\b0x[0-9a-fA-F]+\b|@@\w+|\\x[0-9a-fA-F]{2})/gi;
     for (const [key, value] of Object.entries(params)) {
         if (value === null || value === undefined) {
             validated[key] = value;
@@ -95,10 +96,24 @@ function validateQueryParams(params) {
         switch (typeof value) {
             case 'string':
                 const cleaned = value
-                    .replace(/;/g, '')
-                    .replace(/--/g, '')
-                    .replace(/\/\*/g, '')
-                    .replace(/\*\//g, '');
+                    .replace(sqlInjectionRegex, '')
+                    .trim();
+                if (cleaned !== value) {
+                    logger_1.logger.error('🚨 SECURITY ALERT: SQL injection attempt detected', {
+                        key,
+                        originalValue: value,
+                        cleanedValue: cleaned,
+                        timestamp: new Date().toISOString(),
+                        userAgent: process.env.HTTP_USER_AGENT || 'unknown',
+                        ip: process.env.HTTP_CLIENT_IP || 'unknown'
+                    });
+                    if (process.env.NODE_ENV === 'production') {
+                        const severePatterns = /(\bDROP\b|\bDELETE\b|\bEXEC\b|\bSLEEP\b|\bWAITFOR\b)/gi;
+                        if (severePatterns.test(value)) {
+                            throw new Error('Request blocked: Potential SQL injection attack detected');
+                        }
+                    }
+                }
                 validated[key] = cleaned;
                 break;
             case 'number':
@@ -110,7 +125,28 @@ function validateQueryParams(params) {
                     validated[key] = value;
                 }
                 else if (Array.isArray(value)) {
-                    validated[key] = value.map(v => (typeof v === 'string' ? v.replace(/[;'"]/g, '') : v));
+                    validated[key] = value.map(v => {
+                        if (typeof v === 'string') {
+                            const cleanedVal = v.replace(sqlInjectionRegex, '').trim();
+                            if (cleanedVal !== v) {
+                                logger_1.logger.error('🚨 SECURITY ALERT: SQL injection attempt in array value', {
+                                    originalValue: v,
+                                    cleanedValue: cleanedVal,
+                                    timestamp: new Date().toISOString(),
+                                    userAgent: process.env.HTTP_USER_AGENT || 'unknown',
+                                    ip: process.env.HTTP_CLIENT_IP || 'unknown'
+                                });
+                                if (process.env.NODE_ENV === 'production') {
+                                    const severePatterns = /(\bDROP\b|\bDELETE\b|\bEXEC\b|\bSLEEP\b|\bWAITFOR\b)/gi;
+                                    if (severePatterns.test(v)) {
+                                        throw new Error('Request blocked: Potential SQL injection attack detected in array');
+                                    }
+                                }
+                            }
+                            return cleanedVal;
+                        }
+                        return v;
+                    });
                 }
                 else {
                     validated[key] = JSON.stringify(value);
@@ -118,7 +154,7 @@ function validateQueryParams(params) {
                 break;
             default:
                 logger_1.logger.warn('Unexpected parameter type', { key, type: typeof value });
-                validated[key] = String(value);
+                validated[key] = String(value).replace(sqlInjectionRegex, '').trim();
         }
     }
     return validated;

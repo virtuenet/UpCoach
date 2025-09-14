@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum BiometricType {
@@ -12,13 +12,20 @@ enum BiometricType {
 
 class BiometricService {
   final LocalAuthentication _localAuth = LocalAuthentication();
-  final SharedPreferences _prefs;
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage(
+    aOptions: AndroidOptions(
+      encryptedSharedPreferences: true,
+    ),
+    iOptions: IOSOptions(
+      accessibility: IOSAccessibility.first_unlock_this_device,
+    ),
+  );
   
   static const String _biometricEnabledKey = 'biometric_enabled';
   static const String _lastAuthTimeKey = 'last_biometric_auth';
   static const String _authRequiredAfterKey = 'auth_required_after_seconds';
   
-  BiometricService(this._prefs);
+  BiometricService();
   
   Future<bool> isBiometricAvailable() async {
     try {
@@ -74,26 +81,31 @@ class BiometricService {
   }
   
   Future<bool> isBiometricEnabled() async {
-    return _prefs.getBool(_biometricEnabledKey) ?? false;
+    final enabled = await _secureStorage.read(key: _biometricEnabledKey);
+    return enabled == 'true';
   }
   
   Future<void> setBiometricEnabled(bool enabled) async {
-    await _prefs.setBool(_biometricEnabledKey, enabled);
+    await _secureStorage.write(key: _biometricEnabledKey, value: enabled.toString());
   }
   
   Future<void> setAuthRequiredAfter(int seconds) async {
-    await _prefs.setInt(_authRequiredAfterKey, seconds);
+    await _secureStorage.write(key: _authRequiredAfterKey, value: seconds.toString());
   }
   
   Future<int> getAuthRequiredAfter() async {
-    return _prefs.getInt(_authRequiredAfterKey) ?? 300; // Default 5 minutes
+    final value = await _secureStorage.read(key: _authRequiredAfterKey);
+    return int.tryParse(value ?? '') ?? 300; // Default 5 minutes
   }
   
   Future<bool> isAuthenticationRequired() async {
     final isEnabled = await isBiometricEnabled();
     if (!isEnabled) return false;
     
-    final lastAuthTime = _prefs.getInt(_lastAuthTimeKey);
+    final lastAuthTimeStr = await _secureStorage.read(key: _lastAuthTimeKey);
+    if (lastAuthTimeStr == null) return true;
+    
+    final lastAuthTime = int.tryParse(lastAuthTimeStr);
     if (lastAuthTime == null) return true;
     
     final authRequiredAfter = await getAuthRequiredAfter();
@@ -103,17 +115,17 @@ class BiometricService {
   }
   
   Future<void> _updateLastAuthTime() async {
-    await _prefs.setInt(_lastAuthTimeKey, DateTime.now().millisecondsSinceEpoch);
+    await _secureStorage.write(key: _lastAuthTimeKey, value: DateTime.now().millisecondsSinceEpoch.toString());
   }
   
   Future<void> clearAuthTime() async {
-    await _prefs.remove(_lastAuthTimeKey);
+    await _secureStorage.delete(key: _lastAuthTimeKey);
   }
 }
 
 // Providers
 final biometricServiceProvider = Provider<BiometricService>((ref) {
-  throw UnimplementedError('biometricServiceProvider must be overridden');
+  return BiometricService();
 });
 
 final isBiometricAvailableProvider = FutureProvider<bool>((ref) async {

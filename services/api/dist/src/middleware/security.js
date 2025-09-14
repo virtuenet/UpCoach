@@ -32,8 +32,9 @@ const cspConfig = {
         'https://api.openai.com',
         'https://api.stripe.com',
         'wss:',
-        process.env.FRONTEND_URL || 'http://localhost:3000',
+        process.env.FRONTEND_URL || 'http://localhost:8005',
         process.env.ADMIN_URL || 'http://localhost:8006',
+        process.env.CMS_URL || 'http://localhost:8007',
     ],
     mediaSrc: ["'self'"],
     objectSrc: ["'none'"],
@@ -178,7 +179,7 @@ class AdvancedThreatDetector {
             name: 'NESTED_UNION'
         },
         {
-            pattern: /\b(and|or)\s+(\d+\s*=\s*\d+|'[^']*'\s*=\s*'[^']*')(\s*(--|\#|;)|$)/gi,
+            pattern: /\b(and|or)\s+(\d+\s*=\s*\d+|'[^']*'\s*=\s*'[^']*')(\s*(--|#|;)|$)/gi,
             type: 'sqli',
             confidence: 0.80,
             name: 'BOOLEAN_BLIND'
@@ -226,7 +227,7 @@ class AdvancedThreatDetector {
             name: 'COMMAND_EXECUTION'
         },
         {
-            pattern: /(\%[0-9a-fA-F]{2}){4,}/g,
+            pattern: /(%[0-9a-fA-F]{2}){4,}/g,
             type: 'sqli',
             confidence: 0.60,
             name: 'URL_ENCODED_PAYLOAD'
@@ -268,13 +269,13 @@ class AdvancedThreatDetector {
             name: 'XSS_PATTERNS'
         },
         {
-            pattern: /(\.\.[\/\\]){2,}/g,
+            pattern: /(\.\.[\\/]){2,}/g,
             type: 'path_traversal',
             confidence: 0.90,
             name: 'PATH_TRAVERSAL'
         },
         {
-            pattern: /%00|%0d|%0a|\x00/gi,
+            pattern: /%00|%0d|%0a/gi,
             type: 'null_byte',
             confidence: 0.85,
             name: 'NULL_BYTE_INJECTION'

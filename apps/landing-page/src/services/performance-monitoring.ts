@@ -376,7 +376,7 @@ export class PerformanceOptimizer {
       const newLink = link.cloneNode() as HTMLLinkElement;
       newLink.media = 'print';
       newLink.onload = function () {
-        this.media = 'all';
+        (this as HTMLLinkElement).media = 'all';
       };
       link.parentNode?.replaceChild(newLink, link);
     });

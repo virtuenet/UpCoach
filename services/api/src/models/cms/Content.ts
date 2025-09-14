@@ -1,10 +1,17 @@
-import { Model, DataTypes, Sequelize, Association, Optional } from 'sequelize';
+import { Model, DataTypes, Sequelize, Association, Optional , ModelStatic } from 'sequelize';
 
-import { User } from '../User';
 
-import { ContentCategory } from './ContentCategory';
-import { ContentMedia } from './ContentMedia';
-import { ContentTag } from './ContentTag';
+// Use type imports to break circular dependencies
+export type UserModel = ModelStatic<any>;
+export type ContentCategoryModel = ModelStatic<any>;
+export type ContentMediaModel = ModelStatic<any>;
+export type ContentTagModel = ModelStatic<any>;
+
+// Define the actual types for associations
+type User = any;
+type ContentCategory = any;
+type ContentTag = any;
+type ContentMedia = any;
 
 export interface ContentAttributes {
   id: string;
@@ -245,25 +252,32 @@ export class Content
     );
   }
 
-  public static associate(): void {
-    Content.belongsTo(User, {
+  public static associate(
+    models: {
+      User: UserModel;
+      ContentCategory: ContentCategoryModel;
+      ContentTag: ContentTagModel;
+      ContentMedia: ContentMediaModel;
+    }
+  ): void {
+    Content.belongsTo(models.User, {
       foreignKey: 'authorId',
       as: 'author',
     });
 
-    Content.belongsTo(ContentCategory, {
+    Content.belongsTo(models.ContentCategory, {
       foreignKey: 'categoryId',
       as: 'category',
     });
 
-    Content.belongsToMany(ContentTag, {
+    Content.belongsToMany(models.ContentTag, {
       through: 'content_tag_relations',
       foreignKey: 'contentId',
       otherKey: 'tagId',
       as: 'tags',
     });
 
-    Content.hasMany(ContentMedia, {
+    Content.hasMany(models.ContentMedia, {
       foreignKey: 'contentId',
       as: 'media',
     });

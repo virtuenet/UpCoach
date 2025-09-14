@@ -15,10 +15,16 @@ export interface SuccessResponse<T = any> {
 export interface ErrorResponse {
   success: false;
   error: string;
+  accessibleError?: string; // Screen reader friendly error message
   message?: string;
   code?: string;
   details?: any;
   timestamp?: string;
+  semanticType?: 'server-error' | 'client-error' | 'information';
+  severity?: 'low' | 'medium' | 'high';
+  userAction?: string | null; // Suggested action for users
+  path?: string;
+  requestId?: string;
 }
 
 export type ApiResponse<T = any> = SuccessResponse<T> | ErrorResponse;
@@ -132,15 +138,21 @@ export interface HealthCheckResponse {
   >;
 }
 
-// Validation error response
+// Validation error response with accessibility support
 export interface ValidationErrorResponse {
   success: false;
   error: 'VALIDATION_ERROR';
+  accessibleError?: string;
   errors: Array<{
     field: string;
     message: string;
+    accessibleMessage?: string; // Screen reader friendly field error
     value?: any;
+    severity?: 'error' | 'warning';
+    inputType?: 'text' | 'email' | 'password' | 'number' | 'select' | 'checkbox';
   }>;
+  semanticType: 'client-error';
+  userAction: string;
 }
 
 // WebSocket responses
@@ -169,12 +181,22 @@ export class ResponseBuilder {
     };
   }
 
-  static error(error: string | Error, code?: string): ErrorResponse {
+  static error(
+    error: string | Error, 
+    code?: string, 
+    accessibleMessage?: string,
+    userAction?: string
+  ): ErrorResponse {
+    const errorMessage = (error as Error)?.message || error.toString();
     return {
       success: false,
-      error: (error as Error)?.message || error.toString(),
+      error: errorMessage,
+      accessibleError: accessibleMessage || `Error: ${errorMessage}. ${userAction || 'Please try again.'}`,
       code,
       timestamp: new Date().toISOString(),
+      semanticType: 'server-error',
+      severity: 'medium',
+      userAction: userAction || 'Please try again or contact support if the issue persists',
     };
   }
 
@@ -199,11 +221,26 @@ export class ResponseBuilder {
     };
   }
 
-  static validation(errors: ValidationErrorResponse['errors']): ValidationErrorResponse {
+  static validation(
+    errors: ValidationErrorResponse['errors'], 
+    accessibleSummary?: string
+  ): ValidationErrorResponse {
+    const enhancedErrors = errors.map(err => ({
+      ...err,
+      accessibleMessage: err.accessibleMessage || 
+        `${err.field} field has an error: ${err.message}`,
+      severity: err.severity || 'error' as const,
+    }));
+    
+    const defaultSummary = `Form validation failed with ${errors.length} error${errors.length > 1 ? 's' : ''}. Please correct the highlighted fields.`;
+    
     return {
       success: false,
       error: 'VALIDATION_ERROR',
-      errors,
+      accessibleError: accessibleSummary || defaultSummary,
+      errors: enhancedErrors,
+      semanticType: 'client-error',
+      userAction: 'Please correct the errors shown and submit again',
     };
   }
 }

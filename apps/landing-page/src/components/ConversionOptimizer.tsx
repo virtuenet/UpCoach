@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Gift, Clock, Users, TrendingUp, Shield, Award } from 'lucide-react';
 import { Button } from '@upcoach/ui/src/components/Button';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Gift, Clock, Users, TrendingUp, Shield } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+
 import { trackEvent } from '@/services/analytics';
 
 interface ConversionOptimizerProps {

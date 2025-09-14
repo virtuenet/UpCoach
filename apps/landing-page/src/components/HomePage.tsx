@@ -1,15 +1,15 @@
 'use client';
 
-import Hero from './sections/Hero';
+import Navigation from './Navigation';
+import AppDownload from './sections/AppDownload';
+import FAQ from './sections/FAQ';
 import Features from './sections/Features';
+import Footer from './sections/Footer';
+import Hero from './sections/Hero';
+import LeadGeneration from './sections/LeadGeneration';
 import Pricing from './sections/Pricing';
 import Testimonials from './sections/Testimonials';
-import FAQ from './sections/FAQ';
-import Footer from './sections/Footer';
-import Navigation from './Navigation';
 import TrustIndicators from './sections/TrustIndicators';
-import AppDownload from './sections/AppDownload';
-import LeadGeneration from './sections/LeadGeneration';
 
 export default function HomePage() {
   return (

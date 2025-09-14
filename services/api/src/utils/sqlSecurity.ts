@@ -153,6 +153,9 @@ export function buildUpdateQuery(
 export function validateQueryParams(params: Record<string, any>): Record<string, any> {
   const validated: Record<string, any> = {};
 
+  // Enhanced SQL injection detection with more comprehensive patterns
+  const sqlInjectionRegex = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|ALTER|CREATE|TABLE|FROM|WHERE|AND|OR|EXEC|EXECUTE|DECLARE|CAST|CHAR|CHR|ASCII|SUBSTRING|CONCAT|WAITFOR|DELAY|BENCHMARK|SLEEP|LOAD_FILE|OUTFILE|DUMPFILE|INTO)\b|--|\/\*|\*\/|;|['"`]|\bOR\b|\bAND\b|\b1\s*=\s*1\b|\b0x[0-9a-fA-F]+\b|@@\w+|\\x[0-9a-fA-F]{2})/gi;
+
   for (const [key, value] of Object.entries(params)) {
     // Skip null/undefined values
     if (value === null || value === undefined) {
@@ -160,15 +163,33 @@ export function validateQueryParams(params: Record<string, any>): Record<string,
       continue;
     }
 
-    // Validate based on type
+    // Validate based on type with enhanced injection protection
     switch (typeof value) {
       case 'string':
-        // Remove any SQL keywords or dangerous patterns
+        // Aggressively filter out potential SQL injection patterns
         const cleaned = value
-          .replace(/;/g, '') // Remove semicolons
-          .replace(/--/g, '') // Remove SQL comments
-          .replace(/\/\*/g, '') // Remove block comments
-          .replace(/\*\//g, '');
+          .replace(sqlInjectionRegex, '') // Remove SQL keywords and dangerous patterns
+          .trim();
+        
+        if (cleaned !== value) {
+          logger.error('🚨 SECURITY ALERT: SQL injection attempt detected', { 
+            key, 
+            originalValue: value, 
+            cleanedValue: cleaned,
+            timestamp: new Date().toISOString(),
+            userAgent: process.env.HTTP_USER_AGENT || 'unknown',
+            ip: process.env.HTTP_CLIENT_IP || 'unknown'
+          });
+          
+          // In production, consider blocking the request entirely for severe patterns
+          if (process.env.NODE_ENV === 'production') {
+            const severePatterns = /(\bDROP\b|\bDELETE\b|\bEXEC\b|\bSLEEP\b|\bWAITFOR\b)/gi;
+            if (severePatterns.test(value)) {
+              throw new Error('Request blocked: Potential SQL injection attack detected');
+            }
+          }
+        }
+        
         validated[key] = cleaned;
         break;
 
@@ -181,7 +202,30 @@ export function validateQueryParams(params: Record<string, any>): Record<string,
         if (value instanceof Date) {
           validated[key] = value;
         } else if (Array.isArray(value)) {
-          validated[key] = value.map(v => (typeof v === 'string' ? v.replace(/[;'"]/g, '') : v));
+          validated[key] = value.map(v => {
+            if (typeof v === 'string') {
+              const cleanedVal = v.replace(sqlInjectionRegex, '').trim();
+              if (cleanedVal !== v) {
+                logger.error('🚨 SECURITY ALERT: SQL injection attempt in array value', { 
+                  originalValue: v, 
+                  cleanedValue: cleanedVal,
+                  timestamp: new Date().toISOString(),
+                  userAgent: process.env.HTTP_USER_AGENT || 'unknown',
+                  ip: process.env.HTTP_CLIENT_IP || 'unknown'
+                });
+                
+                // Block severe patterns in production
+                if (process.env.NODE_ENV === 'production') {
+                  const severePatterns = /(\bDROP\b|\bDELETE\b|\bEXEC\b|\bSLEEP\b|\bWAITFOR\b)/gi;
+                  if (severePatterns.test(v)) {
+                    throw new Error('Request blocked: Potential SQL injection attack detected in array');
+                  }
+                }
+              }
+              return cleanedVal;
+            }
+            return v;
+          });
         } else {
           validated[key] = JSON.stringify(value);
         }
@@ -189,7 +233,7 @@ export function validateQueryParams(params: Record<string, any>): Record<string,
 
       default:
         logger.warn('Unexpected parameter type', { key, type: typeof value });
-        validated[key] = String(value);
+        validated[key] = String(value).replace(sqlInjectionRegex, '').trim();
     }
   }
 

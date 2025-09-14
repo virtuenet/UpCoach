@@ -28,7 +28,6 @@ module.exports = {
         '!services/api/src/migrations/**',
       ],
       coverageDirectory: '<rootDir>/coverage/backend-unit',
-      coverageReporters: ['text', 'lcov', 'html', 'json-summary', 'clover'],
       coverageThreshold: {
         global: {
           branches: 90,
@@ -49,9 +48,7 @@ module.exports = {
           statements: 95,
         },
       },
-      testTimeout: 30000,
       maxWorkers: 1,
-      forceExit: true,
       detectOpenHandles: true,
     },
     
@@ -63,7 +60,6 @@ module.exports = {
       preset: 'ts-jest',
       testEnvironment: 'node',
       setupFilesAfterEnv: ['<rootDir>/services/api/src/tests/setup.ts'],
-      testTimeout: 60000,
       maxWorkers: 1,
       slowTestThreshold: 30,
       collectCoverageFrom: [
@@ -89,7 +85,6 @@ module.exports = {
       ],
       preset: 'ts-jest',
       testEnvironment: 'node',
-      testTimeout: 45000,
       setupFilesAfterEnv: ['<rootDir>/packages/test-contracts/src/setup.ts'],
       collectCoverageFrom: [
         'packages/test-contracts/src/**/*.ts',
@@ -116,7 +111,6 @@ module.exports = {
       preset: 'ts-jest',
       testEnvironment: 'node',
       setupFilesAfterEnv: ['<rootDir>/tests/integration/setup.ts'],
-      testTimeout: 120000, // 2 minutes for complex integration flows
       maxWorkers: 1, // Run integration tests sequentially
       slowTestThreshold: 60,
       collectCoverageFrom: [
@@ -143,11 +137,9 @@ module.exports = {
       ],
       preset: 'ts-jest',
       testEnvironment: 'node',
-      testTimeout: 300000, // 5 minutes for load tests
       maxWorkers: 1,
       setupFilesAfterEnv: ['<rootDir>/tests/performance/setup.ts'],
       collectCoverageFrom: [],
-      coverageProvider: 'v8',
     },
 
     {
@@ -157,7 +149,6 @@ module.exports = {
       ],
       preset: 'ts-jest',
       testEnvironment: 'node',
-      testTimeout: 120000, // 2 minutes for security scans
       maxWorkers: 1,
       setupFilesAfterEnv: ['<rootDir>/tests/security/setup.ts'],
       collectCoverageFrom: [],
@@ -276,15 +267,7 @@ module.exports = {
 
   // Global coverage directory and thresholds
   coverageDirectory: '<rootDir>/coverage/combined',
-  coverageReporters: [
-    'text',
-    'text-summary',
-    'lcov',
-    'html',
-    'json-summary',
-    'clover',
-    'cobertura',
-  ],
+  coverageReporters: ['text', 'text-summary', 'lcov', 'html', 'json-summary'],
 
   // Combined coverage threshold (A+ standards)
   coverageThreshold: {
@@ -336,7 +319,6 @@ module.exports = {
   verbose: process.env.CI ? false : true,
   silent: false,
   bail: process.env.CI ? 1 : 0,
-  forceExit: true,
   detectOpenHandles: true,
   maxWorkers: process.env.CI ? 2 : '50%',
   
@@ -352,7 +334,6 @@ module.exports = {
 
   // Module resolution
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
-  modulePathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/build/'],
   
   // Test execution settings
   testTimeout: 30000,
@@ -419,6 +400,8 @@ module.exports = {
     '/build/',
     '/coverage/',
     '\\.snap$',
+    '/visual-tests/',
+    '/shared/',
   ],
 
   // File watching configuration
@@ -427,5 +410,24 @@ module.exports = {
     '/dist/',
     '/build/',
     '/coverage/',
+    '/visual-tests/',
+    '/services/api/dist/',
+  ],
+  
+  // Module path ignore patterns to prevent naming collisions
+  modulePathIgnorePatterns: [
+    '<rootDir>/visual-tests/',
+    '<rootDir>/shared/',
+    '<rootDir>/services/api/dist/',
+    '<rootDir>/dist/',
+    '<rootDir>/build/',
+  ],
+  
+  // Limit Jest search roots to avoid conflicts
+  roots: [
+    '<rootDir>/services/',
+    '<rootDir>/apps/',
+    '<rootDir>/packages/',
+    '<rootDir>/tests/',
   ],
 };

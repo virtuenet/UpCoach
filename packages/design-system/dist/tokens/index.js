@@ -19,12 +19,18 @@ export { responsiveTypography } from './typography';
 export { componentSpacing, layout, getSpacing, createSpacing } from './spacing';
 export { shadows, borders, transitions, animation, blur, opacity, zIndex } from './effects';
 export { media, container, grid, isBreakpoint, getCurrentBreakpoint, responsiveValue, } from './breakpoints';
+// Import defaults for tokens object
+import colorsDefault from './colors';
+import typographyDefault from './typography';
+import spacingDefault from './spacing';
+import effectsDefault from './effects';
+import breakpointsDefault from './breakpoints';
 // Complete tokens object
 export const tokens = {
-    colors: require('./colors').default,
-    typography: require('./typography').default,
-    spacing: require('./spacing').default,
-    effects: require('./effects').default,
-    breakpoints: require('./breakpoints').default,
+    colors: colorsDefault,
+    typography: typographyDefault,
+    spacing: spacingDefault,
+    effects: effectsDefault,
+    breakpoints: breakpointsDefault,
 };
 export default tokens;

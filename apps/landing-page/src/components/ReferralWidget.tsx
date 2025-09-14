@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { Button } from '@upcoach/ui/src/components/Button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Gift, Copy, Check, Share2, Users, DollarSign, TrendingUp, X } from 'lucide-react';
-import { Button, ButtonProps } from '@upcoach/ui/src/components/Button';
+import React, { useState, useEffect } from 'react';
+
+import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { trackEvent } from '@/services/analytics';
 import api from '@/services/api';
 

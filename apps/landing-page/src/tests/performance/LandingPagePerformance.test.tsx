@@ -1,9 +1,11 @@
 import { render } from '@testing-library/react';
-import { measureRenderTime } from '../utils/testHelpers';
-import Hero from '@/components/sections/Hero';
-import Features from '@/components/sections/Features';
-import Pricing from '@/components/sections/Pricing';
+
 import LeadCaptureForm from '@/components/LeadCaptureForm';
+import Features from '@/components/sections/Features';
+import Hero from '@/components/sections/Hero';
+import Pricing from '@/components/sections/Pricing';
+
+import { measureRenderTime } from '../utils/testHelpers';
 
 describe('Landing Page Performance Tests', () => {
   // Performance thresholds in milliseconds

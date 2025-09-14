@@ -1,6 +1,6 @@
-import { DataTypes, Model, Optional } from 'sequelize';
+import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
 
-import { sequelize } from '../config/database';
+// Use dynamic import or passed sequelize instance to avoid circular deps
 
 export interface UserProfileAttributes {
   id: string;
@@ -129,142 +129,155 @@ export class UserProfile
   public metadata?: any;
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
+
+  // Static method declaration
+  static initializeModel: (sequelize: any) => typeof UserProfile;
 }
 
-UserProfile.init(
-  {
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
-    },
-    userId: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      unique: true,
-      references: {
-        model: 'users',
-        key: 'id',
+// Static method for deferred initialization
+UserProfile.initializeModel = function(sequelizeInstance: any) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for UserProfile initialization');
+  }
+
+  return UserProfile.init(
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
       },
-    },
-    age: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    occupation: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    timezone: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      defaultValue: 'UTC',
-    },
-    coachingStyle: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    sessionFrequency: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    commitmentLevel: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    learningStyle: {
-      type: DataTypes.ENUM('visual', 'auditory', 'kinesthetic', 'reading', 'balanced'),
-      defaultValue: 'balanced',
-    },
-    communicationPreference: {
-      type: DataTypes.ENUM('supportive', 'direct', 'analytical', 'motivational', 'empathetic'),
-      defaultValue: 'supportive',
-    },
-    personalityType: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    aiPersonalization: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-      defaultValue: {},
-    },
-    coachingPreferences: {
-      type: DataTypes.JSONB,
-      defaultValue: {
-        preferredMethods: ['goal', 'habit', 'reflection'],
-        sessionFrequency: 'weekly',
-        sessionDuration: 30,
-        preferredTimes: ['morning', 'evening'],
-        focusAreas: ['productivity', 'wellbeing'],
-      },
-    },
-    behaviorPatterns: {
-      type: DataTypes.JSONB,
-      defaultValue: {
-        avgSessionDuration: 0,
-        completionRate: 0,
-        engagementLevel: 0,
-        preferredTopics: [],
-        responseTime: 0,
-        consistencyScore: 0,
-      },
-    },
-    progressMetrics: {
-      type: DataTypes.JSONB,
-      defaultValue: {
-        totalGoalsSet: 0,
-        goalsCompleted: 0,
-        currentStreak: 0,
-        longestStreak: 0,
-        totalSessions: 0,
-        accountAge: 0,
-        lastActiveDate: new Date(),
-      },
-    },
-    strengths: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      defaultValue: [],
-    },
-    growthAreas: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      defaultValue: [],
-    },
-    motivators: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      defaultValue: [],
-    },
-    obstacles: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      defaultValue: [],
-    },
-    preferences: {
-      type: DataTypes.JSONB,
-      defaultValue: {},
-    },
-    metadata: {
-      type: DataTypes.JSONB,
-      defaultValue: {},
-    },
-  },
-  {
-    sequelize,
-    modelName: 'UserProfile',
-    tableName: 'user_profiles',
-    timestamps: true,
-    indexes: [
-      {
-        fields: ['userId'],
+      userId: {
+        type: DataTypes.UUID,
+        allowNull: false,
         unique: true,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
       },
+      age: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      occupation: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      timezone: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: 'UTC',
+      },
+      coachingStyle: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      sessionFrequency: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      commitmentLevel: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      learningStyle: {
+        type: DataTypes.ENUM('visual', 'auditory', 'kinesthetic', 'reading', 'balanced'),
+        defaultValue: 'balanced',
+      },
+      communicationPreference: {
+        type: DataTypes.ENUM('supportive', 'direct', 'analytical', 'motivational', 'empathetic'),
+        defaultValue: 'supportive',
+      },
+      personalityType: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      aiPersonalization: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+        defaultValue: {},
+      },
+      coachingPreferences: {
+        type: DataTypes.JSONB,
+        defaultValue: {
+          preferredMethods: ['goal', 'habit', 'reflection'],
+          sessionFrequency: 'weekly',
+          sessionDuration: 30,
+          preferredTimes: ['morning', 'evening'],
+          focusAreas: ['productivity', 'wellbeing'],
+        },
+      },
+      behaviorPatterns: {
+        type: DataTypes.JSONB,
+        defaultValue: {
+          avgSessionDuration: 0,
+          completionRate: 0,
+          engagementLevel: 0,
+          preferredTopics: [],
+          responseTime: 0,
+          consistencyScore: 0,
+        },
+      },
+      progressMetrics: {
+        type: DataTypes.JSONB,
+        defaultValue: {
+          totalGoalsSet: 0,
+          goalsCompleted: 0,
+          currentStreak: 0,
+          longestStreak: 0,
+          totalSessions: 0,
+          accountAge: 0,
+          lastActiveDate: new Date(),
+        },
+      },
+      strengths: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        defaultValue: [],
+      },
+      growthAreas: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        defaultValue: [],
+      },
+      motivators: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        defaultValue: [],
+      },
+      obstacles: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        defaultValue: [],
+      },
+      preferences: {
+        type: DataTypes.JSONB,
+        defaultValue: {},
+      },
+      metadata: {
+        type: DataTypes.JSONB,
+        defaultValue: {},
+      },
+    },
+    {
+      sequelize: sequelizeInstance,
+      modelName: 'UserProfile',
+      tableName: 'user_profiles',
+      timestamps: true,
+      indexes: [
+        {
+          fields: ['userId'],
+          unique: true,
+        },
       {
         fields: ['learningStyle'],
       },
       {
         fields: ['communicationPreference'],
       },
-    ],
-  }
-);
+      ],
+    }
+  );
+};
+
+// Comment out immediate initialization to prevent premature execution
+// UserProfile.init(...) will be called via UserProfile.initializeModel() after database is ready
 
 export default UserProfile;

@@ -8,6 +8,7 @@ class AIResponse with _$AIResponse {
   const factory AIResponse({
     required String content,
     required String sessionId,
+    String? conversationId,
     @Default('assistant') String role,
     Map<String, dynamic>? metadata,
     DateTime? timestamp,
@@ -99,4 +100,20 @@ class LearningModule with _$LearningModule {
 
   factory LearningModule.fromJson(Map<String, dynamic> json) =>
       _$LearningModuleFromJson(json);
+}
+
+@freezed
+class AIConversation with _$AIConversation {
+  const factory AIConversation({
+    required String id,
+    required String title,
+    required int messageCount,
+    DateTime? lastMessageAt,
+    required DateTime createdAt,
+    DateTime? updatedAt,
+    Map<String, dynamic>? metadata,
+  }) = _AIConversation;
+
+  factory AIConversation.fromJson(Map<String, dynamic> json) =>
+      _$AIConversationFromJson(json);
 }

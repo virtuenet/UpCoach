@@ -674,9 +674,69 @@ class GDPRService {
   private async checkLegalRetentionRequirements(userId: string): Promise<string[]> {
     const retainData: string[] = [];
 
-    // Check for ongoing legal cases
-    // Check for financial records (7 year requirement)
-    // Check for regulatory requirements
+    try {
+      // Check for ongoing legal cases
+      const legalCases = await sequelize.models.LegalCase?.findAll({
+        where: { 
+          userId, 
+          status: { 
+            [Op.ne]: 'closed' 
+          } 
+        }
+      });
+
+      if (legalCases && legalCases.length > 0) {
+        retainData.push('legal_cases');
+      }
+
+      // Check for financial records (7 year requirement)
+      const financialRecords = await sequelize.models.Transaction?.findAll({
+        where: {
+          userId,
+          createdAt: {
+            [Op.gte]: addDays(new Date(), -7 * 365)
+          }
+        }
+      });
+
+      if (financialRecords && financialRecords.length > 0) {
+        retainData.push('financial_records');
+      }
+
+      // Check for regulatory compliance requirements
+      const regulatoryCompliance = await sequelize.models.ComplianceRecord?.findAll({
+        where: {
+          userId,
+          status: 'active'
+        }
+      });
+
+      if (regulatoryCompliance && regulatoryCompliance.length > 0) {
+        retainData.push('regulatory_compliance');
+      }
+
+      // Additional checks for health and coaching data
+      const activeHealthPlans = await sequelize.models.HealthPlan?.findAll({
+        where: {
+          userId,
+          status: 'active'
+        }
+      });
+
+      if (activeHealthPlans && activeHealthPlans.length > 0) {
+        retainData.push('health_plan_data');
+      }
+
+      logger.info('Legal retention requirements checked', { 
+        userId, 
+        retainedCategories: retainData 
+      });
+
+    } catch (error) {
+      logger.error('Error checking legal retention requirements', error);
+      // In case of error, default to retaining critical data
+      retainData.push('legal_cases', 'financial_records', 'regulatory_compliance');
+    }
 
     return retainData;
   }

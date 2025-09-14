@@ -1,0 +1,35 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const auth_1 = require("../middleware/auth");
+const upload_1 = __importDefault(require("../middleware/upload"));
+const VoiceJournalController_1 = require("../controllers/VoiceJournalController");
+const router = (0, express_1.Router)();
+router.use(auth_1.authenticate);
+router.get('/entries', VoiceJournalController_1.voiceJournalController.getEntries);
+router.get('/entries/:id', VoiceJournalController_1.voiceJournalController.getEntry);
+router.post('/entries', VoiceJournalController_1.voiceJournalController.createEntry);
+router.put('/entries/:id', VoiceJournalController_1.voiceJournalController.updateEntry);
+router.delete('/entries/:id', VoiceJournalController_1.voiceJournalController.deleteEntry);
+router.post('/entries/batch', VoiceJournalController_1.voiceJournalController.batchCreateEntries);
+router.put('/entries/batch', VoiceJournalController_1.voiceJournalController.batchUpdateEntries);
+router.post('/upload-audio', upload_1.default.single('audio'), VoiceJournalController_1.voiceJournalController.uploadAudio);
+router.get('/download-audio/:id', VoiceJournalController_1.voiceJournalController.downloadAudio);
+router.delete('/audio/:id', VoiceJournalController_1.voiceJournalController.deleteAudio);
+router.post('/sync', VoiceJournalController_1.voiceJournalController.performSync);
+router.get('/sync/changes', VoiceJournalController_1.voiceJournalController.getChanges);
+router.post('/sync/resolve-conflict', VoiceJournalController_1.voiceJournalController.resolveConflict);
+router.post('/sync-metadata', VoiceJournalController_1.voiceJournalController.updateSyncMetadata);
+router.get('/analytics', VoiceJournalController_1.voiceJournalController.getAnalytics);
+router.get('/insights', VoiceJournalController_1.voiceJournalController.getInsights);
+router.post('/analyze/:id', VoiceJournalController_1.voiceJournalController.analyzeEntry);
+router.get('/search', VoiceJournalController_1.voiceJournalController.searchEntries);
+router.get('/tags', VoiceJournalController_1.voiceJournalController.getTags);
+router.get('/favorites', VoiceJournalController_1.voiceJournalController.getFavorites);
+router.get('/export', VoiceJournalController_1.voiceJournalController.exportEntries);
+router.post('/import', upload_1.default.single('file'), VoiceJournalController_1.voiceJournalController.importEntries);
+exports.default = router;
+//# sourceMappingURL=voiceJournal.js.map

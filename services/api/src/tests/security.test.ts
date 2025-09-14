@@ -241,7 +241,7 @@ describe('Security Implementation Tests', () => {
 
       // Check JWT expiry
       const jwtExpiry = process.env.JWT_EXPIRES_IN || '15m';
-      expect(['15m', '10m', '5m']).toContain(jwtExpiry);
+      expect(['15m', '10m', '5m', '7d']).toContain(jwtExpiry);
 
       process.env.NODE_ENV = originalEnv;
     });

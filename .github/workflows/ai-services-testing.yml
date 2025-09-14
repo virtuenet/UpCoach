@@ -1,0 +1,444 @@
+name: AI Services Testing Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'services/api/src/services/ai/**'
+      - 'services/api/src/tests/**'
+      - 'services/api/src/controllers/ai/**'
+      - 'services/api/src/routes/ai*.ts'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'services/api/src/services/ai/**'
+      - 'services/api/src/tests/**'
+      - 'services/api/src/controllers/ai/**'
+      - 'services/api/src/routes/ai*.ts'
+
+env:
+  NODE_VERSION: '18'
+  WORKING_DIRECTORY: './services/api'
+
+jobs:
+  # TypeScript compilation and linting
+  lint-and-compile:
+    name: Lint and Compile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.WORKING_DIRECTORY }}/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm ci
+
+      - name: Run TypeScript compilation
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npx tsc --noEmit
+
+      - name: Run ESLint
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm run lint
+
+      - name: Check code formatting
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm run format -- --check
+
+  # Unit Tests
+  unit-tests:
+    name: AI Services Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-compile
+    strategy:
+      matrix:
+        service: [
+          'AIService',
+          'ConversationalAI', 
+          'RecommendationEngine',
+          'UserProfilingService',
+          'VoiceAI',
+          'InsightGenerator',
+          'PredictiveAnalytics',
+          'AdaptiveLearning'
+        ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.WORKING_DIRECTORY }}/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm ci
+
+      - name: Run unit tests for ${{ matrix.service }}
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm run test:ai:unit -- --testNamePattern="${{ matrix.service }}"
+        env:
+          CI: true
+          NODE_ENV: test
+          AI_TESTING_MODE: true
+          MOCK_AI_RESPONSES: true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-results-${{ matrix.service }}
+          path: ${{ env.WORKING_DIRECTORY }}/coverage/ai-services/
+
+  # Integration Tests
+  integration-tests:
+    name: AI Services Integration Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_USER: test
+          POSTGRES_DB: upcoach_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.WORKING_DIRECTORY }}/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm ci
+
+      - name: Run database migrations
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm run db:migrate
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/upcoach_test
+
+      - name: Run integration tests
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm run test:ai:integration
+        env:
+          CI: true
+          NODE_ENV: test
+          DATABASE_URL: postgresql://test:test@localhost:5432/upcoach_test
+          REDIS_URL: redis://localhost:6379/1
+          MOCK_AI_RESPONSES: false
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_TEST }}
+          CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY_TEST }}
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: ${{ env.WORKING_DIRECTORY }}/coverage/ai-services/
+
+  # Performance Tests
+  performance-tests:
+    name: AI Services Performance Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.WORKING_DIRECTORY }}/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm ci
+
+      - name: Run performance tests
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm run test:ai:performance
+        env:
+          CI: true
+          NODE_ENV: test
+          PERFORMANCE_TESTING: true
+          MOCK_AI_RESPONSES: true
+
+      - name: Upload performance test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-test-results
+          path: ${{ env.WORKING_DIRECTORY }}/coverage/ai-services/
+
+      - name: Comment performance results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            try {
+              const reportPath = '${{ env.WORKING_DIRECTORY }}/coverage/ai-services/performance-report.json';
+              if (fs.existsSync(reportPath)) {
+                const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+                const comment = `
+                ## 🚀 AI Services Performance Test Results
+                
+                | Service | Response Time | Throughput | Error Rate | Status |
+                |---------|---------------|------------|------------|--------|
+                ${report.results.map(r => 
+                  `| ${r.testName} | ${r.responseTime} | ${r.throughput} | ${r.errorRate} | ${r.passed ? '✅' : '❌'} |`
+                ).join('\n')}
+                
+                ### Summary
+                - **Total Tests**: ${report.summary.totalTests}
+                - **Passed**: ${report.summary.passedTests} 
+                - **Failed**: ${report.summary.failedTests}
+                - **Average Response Time**: ${report.summary.averageResponseTime.toFixed(2)}ms
+                
+                ${report.recommendations.length > 0 ? '### Recommendations\n' + report.recommendations.map(r => `- ${r}`).join('\n') : ''}
+                `;
+                
+                github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: comment
+                });
+              }
+            } catch (error) {
+              console.log('Could not read performance report:', error);
+            }
+
+  # Contract Tests
+  contract-tests:
+    name: AI Services Contract Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.WORKING_DIRECTORY }}/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm ci
+
+      - name: Run contract tests
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm run test:ai:contracts
+        env:
+          CI: true
+          NODE_ENV: test
+          CONTRACT_TESTING: true
+          MOCK_AI_RESPONSES: true
+
+      - name: Upload contract test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: contract-test-results
+          path: ${{ env.WORKING_DIRECTORY }}/coverage/ai-services/
+
+  # Coverage Collection
+  coverage:
+    name: AI Services Coverage
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, contract-tests]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.WORKING_DIRECTORY }}/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm ci
+
+      - name: Run comprehensive coverage
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm run test:ai:coverage
+        env:
+          CI: true
+          NODE_ENV: test
+          AI_TESTING_MODE: true
+
+      - name: Check coverage thresholds
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: |
+          COVERAGE=$(npm run test:ai:coverage -- --coverageReporters=text-summary | grep -E "Statements.*%" | awk '{print $3}' | sed 's/%//')
+          if [ $(echo "$COVERAGE < 80" | bc -l) -eq 1 ]; then
+            echo "❌ Coverage $COVERAGE% is below 80% threshold"
+            exit 1
+          else
+            echo "✅ Coverage $COVERAGE% meets threshold"
+          fi
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          directory: ${{ env.WORKING_DIRECTORY }}/coverage/ai-services
+          flags: ai-services
+          name: ai-services-coverage
+          fail_ci_if_error: true
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ${{ env.WORKING_DIRECTORY }}/coverage/ai-services/
+
+  # Quality Gate
+  quality-gate:
+    name: AI Services Quality Gate
+    runs-on: ubuntu-latest
+    needs: [lint-and-compile, unit-tests, integration-tests, contract-tests, coverage]
+    if: always()
+    steps:
+      - name: Check all jobs status
+        run: |
+          if [[ "${{ needs.lint-and-compile.result }}" != "success" ]]; then
+            echo "❌ Lint and compile failed"
+            exit 1
+          fi
+          
+          if [[ "${{ needs.unit-tests.result }}" != "success" ]]; then
+            echo "❌ Unit tests failed"
+            exit 1
+          fi
+          
+          if [[ "${{ needs.integration-tests.result }}" != "success" ]]; then
+            echo "❌ Integration tests failed"
+            exit 1
+          fi
+          
+          if [[ "${{ needs.contract-tests.result }}" != "success" ]]; then
+            echo "❌ Contract tests failed"
+            exit 1
+          fi
+          
+          if [[ "${{ needs.coverage.result }}" != "success" ]]; then
+            echo "❌ Coverage check failed"
+            exit 1
+          fi
+          
+          echo "✅ All AI services quality gates passed"
+
+      - name: Set deployment ready status
+        if: success() && github.ref == 'refs/heads/main'
+        run: echo "AI_SERVICES_DEPLOYMENT_READY=true" >> $GITHUB_ENV
+
+      - name: Comment on PR success
+        if: success() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `
+              ## ✅ AI Services Quality Gate Passed
+              
+              All AI service tests passed successfully:
+              - ✅ TypeScript compilation and linting
+              - ✅ Unit tests (all 8 AI services)  
+              - ✅ Integration tests
+              - ✅ Contract validation tests
+              - ✅ Code coverage ≥80%
+              
+              **This PR is ready for review and deployment** 🚀
+              `
+            });
+
+  # Load Testing (Optional - runs on schedule or manual trigger)
+  load-testing:
+    name: AI Services Load Testing
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.WORKING_DIRECTORY }}/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: npm ci
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Run load tests
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: |
+          # Start API server in background
+          npm start &
+          sleep 30
+          
+          # Run k6 load tests
+          k6 run src/tests/load/ai-services-load.js
+
+      - name: Upload load test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: load-test-results
+          path: ${{ env.WORKING_DIRECTORY }}/load-test-results/

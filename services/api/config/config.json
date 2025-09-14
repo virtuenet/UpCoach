@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "upcoach",
+    "password": "0DxCgNroM9sdBIANLZfuDwxR",
+    "database": "upcoach_db",
+    "host": "localhost",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "upcoach",
+    "password": "0DxCgNroM9sdBIANLZfuDwxR",
+    "database": "upcoach_test",
+    "host": "localhost",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "upcoach",
+    "password": "0DxCgNroM9sdBIANLZfuDwxR",
+    "database": "upcoach_prod",
+    "host": "localhost",
+    "dialect": "postgres"
+  }
+}

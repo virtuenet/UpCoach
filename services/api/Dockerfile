@@ -1,5 +1,5 @@
 # Use Node.js 18 LTS Alpine image
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # Install system dependencies
 RUN apk add --no-cache \
@@ -15,7 +15,7 @@ COPY package*.json ./
 COPY tsconfig.json ./
 
 # Install dependencies (production only for final stage)
-RUN npm install --only=production && npm cache clean --force
+RUN npm install --omit=dev && npm cache clean --force
 
 # Development stage
 FROM base AS development
@@ -31,7 +31,7 @@ RUN chown -R upcoach:nodejs /app
 USER upcoach
 
 # Expose port
-EXPOSE 3001
+EXPOSE 1080
 
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
@@ -68,11 +68,11 @@ USER upcoach
 RUN mkdir -p logs uploads
 
 # Expose port
-EXPOSE 3001
+EXPOSE 1080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => { process.exit(1); });"
+    CMD node -e "require('http').get('http://localhost:1080/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => { process.exit(1); });"
 
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]

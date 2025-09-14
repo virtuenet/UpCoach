@@ -21,32 +21,142 @@ class AIService {
   })  : _api = api,
         _auth = auth;
 
-  // Conversational AI
-  Future<AIResponse> sendMessage(String message, {String? sessionId}) async {
-    final response = await _api.post(
-      '/ai/conversation/process',
-      data: {
-        'message': message,
-        'sessionId': sessionId,
-        'userId': _auth.currentUser?.id,
-      },
-    );
-    return AIResponse.fromJson(response.data['data']);
+  // Conversational AI with enhanced error handling and retry logic
+  Future<AIResponse> sendMessage(String message, {
+    String? sessionId,
+    String? conversationId,
+    int retryCount = 0,
+  }) async {
+    try {
+      final response = await _api.post(
+        '/api/chat/message',
+        data: {
+          'content': message,
+          'conversationId': conversationId,
+          'aiProvider': 'openai', // Default to OpenAI, can be made configurable
+        },
+        options: Options(
+          sendTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
+        ),
+      );
+
+      // Parse the enhanced backend response structure
+      final responseData = response.data;
+      if (responseData['success'] == true && responseData['data'] != null) {
+        final aiMessage = responseData['data']['aiMessage'];
+        return AIResponse(
+          content: aiMessage['content'] ?? '',
+          sessionId: sessionId ?? responseData['data']['conversationId'],
+          conversationId: responseData['data']['conversationId'],
+          role: 'assistant',
+          timestamp: DateTime.parse(aiMessage['created_at'] ?? DateTime.now().toIso8601String()),
+          metadata: aiMessage['metadata'],
+        );
+      } else {
+        throw Exception('Invalid response format from AI service');
+      }
+    } on DioException catch (e) {
+      // Implement retry logic for transient errors
+      if (retryCount < 2 && _isRetriableError(e)) {
+        await Future.delayed(Duration(seconds: retryCount + 1));
+        return sendMessage(
+          message,
+          sessionId: sessionId,
+          conversationId: conversationId,
+          retryCount: retryCount + 1,
+        );
+      }
+      
+      // Log error for monitoring
+      _logAIError('sendMessage', e, {'message': message, 'sessionId': sessionId});
+      
+      // Return fallback response for offline mode
+      if (_isOfflineError(e)) {
+        return _getOfflineFallbackResponse(message, sessionId);
+      }
+      
+      throw _handleAIServiceError(e);
+    } catch (e) {
+      _logAIError('sendMessage', e, {'message': message, 'sessionId': sessionId});
+      rethrow;
+    }
   }
 
   Future<AIResponse> getSmartResponse(
     String message, {
     List<Map<String, String>>? conversationHistory,
+    String? conversationId,
   }) async {
-    final response = await _api.post(
-      '/ai/conversation/smart-response',
-      data: {
-        'message': message,
-        'conversationHistory': conversationHistory ?? [],
-        'userId': _auth.currentUser?.id,
-      },
-    );
-    return AIResponse.fromJson(response.data['data']);
+    try {
+      // Create or get conversation if not provided
+      String? activeConversationId = conversationId;
+      
+      if (activeConversationId == null) {
+        final createResponse = await _api.post(
+          '/api/chat/conversations',
+          data: {
+            'title': message.length > 50 ? message.substring(0, 47) + '...' : message,
+          },
+        );
+        
+        if (createResponse.data['success'] == true) {
+          activeConversationId = createResponse.data['data']['conversation']['id'];
+        }
+      }
+      
+      // Send message with conversation context
+      final response = await _api.post(
+        '/api/chat/message',
+        data: {
+          'content': message,
+          'conversationId': activeConversationId,
+          'aiProvider': 'openai',
+        },
+        options: Options(
+          sendTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
+        ),
+      );
+
+      // Parse enhanced response with performance metrics
+      final responseData = response.data;
+      if (responseData['success'] == true && responseData['data'] != null) {
+        final aiMessage = responseData['data']['aiMessage'];
+        
+        // Track performance metrics
+        _trackAIPerformance({
+          'responseTime': DateTime.now().millisecondsSinceEpoch,
+          'tokens': aiMessage['metadata']?['tokens'] ?? 0,
+          'provider': aiMessage['metadata']?['provider'] ?? 'openai',
+        });
+        
+        return AIResponse(
+          content: aiMessage['content'] ?? '',
+          sessionId: activeConversationId,
+          conversationId: activeConversationId,
+          role: 'assistant',
+          timestamp: DateTime.parse(aiMessage['created_at'] ?? DateTime.now().toIso8601String()),
+          metadata: {
+            ...?aiMessage['metadata'],
+            'conversationHistory': conversationHistory,
+          },
+        );
+      } else {
+        throw Exception('Invalid response format from AI service');
+      }
+    } on DioException catch (e) {
+      _logAIError('getSmartResponse', e, {'message': message});
+      
+      if (_isOfflineError(e)) {
+        return _getOfflineFallbackResponse(message, conversationId);
+      }
+      
+      throw _handleAIServiceError(e);
+    } catch (e) {
+      _logAIError('getSmartResponse', e, {'message': message});
+      rethrow;
+    }
   }
 
   // Recommendations
@@ -250,5 +360,119 @@ class AIService {
       '/ai/insights/$insightId/dismiss',
       data: {'reason': reason},
     );
+  }
+
+  // Enhanced error handling and monitoring methods
+  bool _isRetriableError(DioException error) {
+    return error.type == DioExceptionType.connectionTimeout ||
+           error.type == DioExceptionType.receiveTimeout ||
+           (error.response?.statusCode ?? 0) >= 500;
+  }
+
+  bool _isOfflineError(DioException error) {
+    return error.type == DioExceptionType.connectionError ||
+           error.type == DioExceptionType.unknown && error.error is SocketException;
+  }
+
+  AIResponse _getOfflineFallbackResponse(String message, String? sessionId) {
+    return AIResponse(
+      content: 'I\'m currently offline, but your message has been saved. I\'ll respond as soon as connection is restored.',
+      sessionId: sessionId ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      role: 'assistant',
+      timestamp: DateTime.now(),
+      metadata: {
+        'offline': true,
+        'savedForSync': true,
+      },
+    );
+  }
+
+  Exception _handleAIServiceError(DioException error) {
+    if (error.response?.statusCode == 429) {
+      final resetTime = error.response?.data?['resetTime'] ?? 60;
+      return Exception('Too many requests. Please wait $resetTime seconds.');
+    } else if (error.response?.statusCode == 400) {
+      return Exception(error.response?.data?['message'] ?? 'Invalid request');
+    } else if (error.response?.statusCode == 401) {
+      return Exception('Authentication required. Please sign in again.');
+    } else {
+      return Exception('AI service temporarily unavailable. Please try again.');
+    }
+  }
+
+  void _logAIError(String method, dynamic error, Map<String, dynamic> context) {
+    // In production, this would send to a logging service
+    print('[AI Service Error] $method: $error');
+    print('Context: $context');
+  }
+
+  void _trackAIPerformance(Map<String, dynamic> metrics) {
+    // In production, this would send to analytics/monitoring service
+    print('[AI Performance] $metrics');
+  }
+
+  // Get conversation history for context
+  Future<List<Map<String, String>>> getConversationHistory(String conversationId) async {
+    try {
+      final response = await _api.get('/api/chat/conversations/$conversationId');
+      
+      if (response.data['success'] == true && response.data['data'] != null) {
+        final messages = response.data['data']['conversation']['messages'] as List;
+        
+        return messages.map<Map<String, String>>((msg) => {
+          'role': msg['is_from_user'] ? 'user' : 'assistant',
+          'content': msg['content'] ?? '',
+        }).toList();
+      }
+      
+      return [];
+    } catch (e) {
+      _logAIError('getConversationHistory', e, {'conversationId': conversationId});
+      return [];
+    }
+  }
+
+  // Create new conversation
+  Future<String?> createConversation({String? title}) async {
+    try {
+      final response = await _api.post(
+        '/api/chat/conversations',
+        data: {'title': title ?? 'New AI Coaching Session'},
+      );
+      
+      if (response.data['success'] == true) {
+        return response.data['data']['conversation']['id'];
+      }
+      return null;
+    } catch (e) {
+      _logAIError('createConversation', e, {'title': title});
+      return null;
+    }
+  }
+
+  // Get all conversations
+  Future<List<AIConversation>> getConversations() async {
+    try {
+      final response = await _api.get('/api/chat/conversations');
+      
+      if (response.data['success'] == true && response.data['data'] != null) {
+        final conversations = response.data['data']['conversations'] as List;
+        
+        return conversations.map((conv) => AIConversation(
+          id: conv['id'],
+          title: conv['title'] ?? 'Untitled',
+          messageCount: conv['message_count'] ?? 0,
+          lastMessageAt: conv['last_message_at'] != null 
+            ? DateTime.parse(conv['last_message_at'])
+            : null,
+          createdAt: DateTime.parse(conv['created_at']),
+        )).toList();
+      }
+      
+      return [];
+    } catch (e) {
+      _logAIError('getConversations', e, {});
+      return [];
+    }
   }
 }

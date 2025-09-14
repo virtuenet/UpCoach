@@ -1,0 +1,759 @@
+# Security Testing CI/CD Pipeline
+# Comprehensive security validation for UpCoach platform
+#
+# This workflow implements a multi-stage security testing approach:
+# 1. Static Application Security Testing (SAST)
+# 2. Dependency vulnerability scanning  
+# 3. Container security scanning
+# 4. Dynamic Application Security Testing (DAST)
+# 5. Mobile security testing
+# 6. Infrastructure security validation
+# 7. Security reporting and alerting
+
+name: Security Testing Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Daily security scans at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: 'Type of security scan to run'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+        - 'full'
+        - 'sast-only'
+        - 'dast-only'
+        - 'mobile-only'
+        - 'dependencies-only'
+      target_environment:
+        description: 'Target environment for DAST'
+        required: false
+        default: 'staging'
+        type: choice
+        options:
+        - 'staging'
+        - 'development'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  NODE_VERSION: '18.x'
+  FLUTTER_VERSION: '3.16.x'
+  ZAP_VERSION: '2.14.0'
+
+jobs:
+  # Security Setup and Validation
+  security-setup:
+    name: Security Pipeline Setup
+    runs-on: ubuntu-latest
+    outputs:
+      run-sast: ${{ steps.determine-scans.outputs.run-sast }}
+      run-dast: ${{ steps.determine-scans.outputs.run-dast }}
+      run-mobile: ${{ steps.determine-scans.outputs.run-mobile }}
+      run-dependencies: ${{ steps.determine-scans.outputs.run-dependencies }}
+      target-url: ${{ steps.setup-target.outputs.target-url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Determine scans to run
+        id: determine-scans
+        run: |
+          SCAN_TYPE="${{ github.event.inputs.scan_type || 'full' }}"
+          
+          case $SCAN_TYPE in
+            "full")
+              echo "run-sast=true" >> $GITHUB_OUTPUT
+              echo "run-dast=true" >> $GITHUB_OUTPUT
+              echo "run-mobile=true" >> $GITHUB_OUTPUT
+              echo "run-dependencies=true" >> $GITHUB_OUTPUT
+              ;;
+            "sast-only")
+              echo "run-sast=true" >> $GITHUB_OUTPUT
+              echo "run-dast=false" >> $GITHUB_OUTPUT
+              echo "run-mobile=false" >> $GITHUB_OUTPUT
+              echo "run-dependencies=false" >> $GITHUB_OUTPUT
+              ;;
+            "dast-only")
+              echo "run-sast=false" >> $GITHUB_OUTPUT
+              echo "run-dast=true" >> $GITHUB_OUTPUT
+              echo "run-mobile=false" >> $GITHUB_OUTPUT
+              echo "run-dependencies=false" >> $GITHUB_OUTPUT
+              ;;
+            "mobile-only")
+              echo "run-sast=false" >> $GITHUB_OUTPUT
+              echo "run-dast=false" >> $GITHUB_OUTPUT
+              echo "run-mobile=true" >> $GITHUB_OUTPUT
+              echo "run-dependencies=false" >> $GITHUB_OUTPUT
+              ;;
+            "dependencies-only")
+              echo "run-sast=false" >> $GITHUB_OUTPUT
+              echo "run-dast=false" >> $GITHUB_OUTPUT
+              echo "run-mobile=false" >> $GITHUB_OUTPUT
+              echo "run-dependencies=true" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+      - name: Setup target environment
+        id: setup-target
+        run: |
+          TARGET_ENV="${{ github.event.inputs.target_environment || 'staging' }}"
+          
+          case $TARGET_ENV in
+            "staging")
+              echo "target-url=https://staging.upcoach.ai" >> $GITHUB_OUTPUT
+              ;;
+            "development")
+              echo "target-url=http://localhost:8080" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+  # Static Application Security Testing (SAST)
+  sast-scan:
+    name: SAST Security Scan
+    runs-on: ubuntu-latest
+    needs: security-setup
+    if: needs.security-setup.outputs.run-sast == 'true'
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      # CodeQL Analysis
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript, typescript
+          config-file: .github/codeql/codeql-config.yml
+
+      - name: Install dependencies
+        run: |
+          npm ci --prefix services/api
+          npm ci --prefix apps/admin-panel
+          npm ci --prefix apps/cms-panel
+          npm ci --prefix apps/landing-page
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+
+      # Semgrep SAST
+      - name: Run Semgrep
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/owasp-top-ten
+            p/react
+            p/typescript
+            p/nodejs
+            .semgrep.yml
+          generateSarif: "1"
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: Upload Semgrep SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+        if: always()
+
+      # SonarCloud Analysis
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=upcoach-security
+            -Dsonar.organization=upcoach
+            -Dsonar.sources=services/api/src,apps/admin-panel/src,apps/cms-panel/src
+            -Dsonar.tests=services/api/tests,tests
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.security.hotspots.maxLineCount=1000
+
+      # ESLint Security Analysis
+      - name: Run ESLint Security Analysis
+        run: |
+          npx eslint --ext .js,.jsx,.ts,.tsx \
+            --config .eslintrc.security.js \
+            --format @microsoft/eslint-formatter-sarif \
+            --output-file eslint-security.sarif \
+            services/api/src apps/*/src || true
+
+      - name: Upload ESLint SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: eslint-security.sarif
+        if: always()
+
+      # Custom Security Tests
+      - name: Run Custom Security Tests
+        run: |
+          cd tests/security
+          npm install
+          npm run test:auth-flows
+          npm run test:authorization
+          npm run test:input-validation
+          npm run test:network-headers
+
+      - name: Upload SAST Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: sast-results
+          path: |
+            semgrep.sarif
+            eslint-security.sarif
+            sonar-report.json
+            tests/security/results/
+        if: always()
+
+  # Dependency Vulnerability Scanning
+  dependency-scan:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    needs: security-setup
+    if: needs.security-setup.outputs.run-dependencies == 'true'
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # NPM Audit
+      - name: Run npm audit
+        run: |
+          cd services/api && npm audit --audit-level=moderate --json > npm-audit-api.json || true
+          cd ../../apps/admin-panel && npm audit --audit-level=moderate --json > npm-audit-admin.json || true
+          cd ../cms-panel && npm audit --audit-level=moderate --json > npm-audit-cms.json || true
+          cd ../landing-page && npm audit --audit-level=moderate --json > npm-audit-landing.json || true
+
+      # Snyk Vulnerability Scan
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: test
+          args: --all-projects --severity-threshold=medium --json > snyk-results.json || true
+
+      - name: Run Snyk to check for container vulnerabilities
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: node:18-alpine
+          args: --severity-threshold=medium --json > snyk-container.json || true
+
+      # OWASP Dependency Check
+      - name: Run OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        env:
+          JAVA_HOME: /opt/jdk
+        with:
+          project: 'UpCoach'
+          path: '.'
+          format: 'ALL'
+          args: >
+            --enableRetired
+            --enableExperimental
+            --failOnCVSS 7
+            --suppression dependency-check-suppressions.xml
+
+      - name: Upload Dependency Check Results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: reports/dependency-check-report.sarif
+        if: always()
+
+      # License Compliance Check
+      - name: Check License Compliance
+        run: |
+          npx license-checker --json > license-report.json
+          npx license-compliance --config license-compliance.json
+
+      - name: Upload Dependency Scan Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-scan-results
+          path: |
+            npm-audit-*.json
+            snyk-*.json
+            reports/dependency-check-*
+            license-report.json
+        if: always()
+
+  # Container Security Scanning
+  container-scan:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    needs: security-setup
+    if: needs.security-setup.outputs.run-dependencies == 'true'
+    permissions:
+      security-events: write
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Build container images
+      - name: Build API container
+        run: |
+          docker build -f services/api/Dockerfile -t upcoach-api:security-test services/api
+
+      - name: Build Admin Panel container
+        run: |
+          docker build -f apps/admin-panel/Dockerfile -t upcoach-admin:security-test apps/admin-panel
+
+      # Trivy Container Scanning
+      - name: Run Trivy vulnerability scanner - API
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'upcoach-api:security-test'
+          format: 'sarif'
+          output: 'trivy-api.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+
+      - name: Run Trivy vulnerability scanner - Admin
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'upcoach-admin:security-test'
+          format: 'sarif'
+          output: 'trivy-admin.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-api.sarif'
+        if: always()
+
+      - name: Upload Trivy admin scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-admin.sarif'
+        if: always()
+
+      # Docker Scout (if available)
+      - name: Docker Scout CVE Analysis
+        uses: docker/scout-action@v1
+        if: github.event_name != 'pull_request_target'
+        with:
+          command: cves
+          image: upcoach-api:security-test
+          sarif-file: docker-scout-api.sarif
+          summary: true
+
+      - name: Upload Docker Scout Results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: docker-scout-api.sarif
+        if: always()
+
+  # Mobile Security Testing (Flutter)
+  mobile-security-scan:
+    name: Mobile Security Scan
+    runs-on: ubuntu-latest
+    needs: security-setup
+    if: needs.security-setup.outputs.run-mobile == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install Flutter dependencies
+        run: |
+          cd mobile-app
+          flutter pub get
+
+      - name: Run Flutter security tests
+        run: |
+          cd mobile-app
+          flutter test test/security/mobile_security_test.dart
+          flutter analyze --verbose > flutter-analysis.txt || true
+
+      # Mobile App Security Analysis
+      - name: Run MobSF Analysis (if available)
+        run: |
+          # Build APK for security analysis
+          cd mobile-app
+          flutter build apk --debug
+          
+          # Note: In production, you would send this to MobSF instance
+          echo "APK built for security analysis: build/app/outputs/flutter-apk/app-debug.apk"
+
+      - name: Check for hardcoded secrets in mobile app
+        run: |
+          cd mobile-app
+          grep -r -n -i "api_key\|secret\|password\|token" lib/ || true
+          grep -r -n -i "localhost\|192\.168\|10\." lib/ || true
+
+      - name: Upload Mobile Security Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-security-results
+          path: |
+            mobile-app/flutter-analysis.txt
+            mobile-app/build/app/outputs/flutter-apk/app-debug.apk
+        if: always()
+
+  # Dynamic Application Security Testing (DAST)
+  dast-scan:
+    name: DAST Security Scan
+    runs-on: ubuntu-latest
+    needs: [security-setup, sast-scan]
+    if: needs.security-setup.outputs.run-dast == 'true'
+    permissions:
+      security-events: write
+      contents: read
+    services:
+      # Start application services for DAST testing
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: upcoach_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Start application for DAST testing
+      - name: Install and start application
+        run: |
+          cd services/api
+          npm ci
+          npm run build
+          npm start &
+          
+          # Wait for application to start
+          sleep 30
+          curl -f http://localhost:8080/api/health || exit 1
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/upcoach_test
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+
+      # OWASP ZAP DAST Scan
+      - name: Setup ZAP
+        run: |
+          docker pull zaproxy/zap-stable:${{ env.ZAP_VERSION }}
+
+      - name: Run ZAP Baseline Scan
+        run: |
+          docker run -v $(pwd)/tests/security:/zap/wrk/:rw \
+            -t zaproxy/zap-stable:${{ env.ZAP_VERSION }} \
+            zap-baseline.py \
+            -t http://host.docker.internal:8080 \
+            -J zap-baseline-report.json \
+            -r zap-baseline-report.html \
+            -x zap-baseline-report.xml \
+            -c .zap/rules.tsv \
+            || true
+
+      - name: Run ZAP Full Scan
+        if: github.event_name == 'schedule' || github.event.inputs.scan_type == 'full'
+        run: |
+          docker run -v $(pwd)/tests/security:/zap/wrk/:rw \
+            -t zaproxy/zap-stable:${{ env.ZAP_VERSION }} \
+            zap-full-scan.py \
+            -t http://host.docker.internal:8080 \
+            -J zap-full-report.json \
+            -r zap-full-report.html \
+            -x zap-full-report.xml \
+            -c .zap/rules.tsv \
+            || true
+
+      # Custom DAST Tests using our ZAP integration
+      - name: Run Custom OWASP ZAP Tests
+        run: |
+          cd tests/security
+          npm install
+          node owasp-zap-integration.js
+        env:
+          TARGET_URL: http://localhost:8080
+          ZAP_HOST: localhost
+          ZAP_PORT: 8080
+
+      # API Security Testing
+      - name: Run API Security Tests
+        run: |
+          cd tests/security
+          npx newman run postman-collections/security-tests.json \
+            --environment postman-environments/local.json \
+            --reporters cli,json \
+            --reporter-json-export api-security-results.json
+
+      # SSL/TLS Security Testing
+      - name: Run SSL/TLS Security Tests
+        run: |
+          # Test SSL configuration (if HTTPS endpoint available)
+          if [[ "${{ needs.security-setup.outputs.target-url }}" == https* ]]; then
+            docker run -v $(pwd):/output drwetter/testssl.sh \
+              --jsonfile-pretty /output/testssl-results.json \
+              --htmlfile /output/testssl-results.html \
+              ${{ needs.security-setup.outputs.target-url }}
+          fi
+
+      - name: Upload DAST Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: dast-results
+          path: |
+            tests/security/zap-*-report.*
+            tests/security/api-security-results.json
+            testssl-results.*
+        if: always()
+
+  # Security Performance Testing
+  security-performance-test:
+    name: Security Performance Test
+    runs-on: ubuntu-latest
+    needs: security-setup
+    if: needs.security-setup.outputs.run-dast == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install k6
+        run: |
+          curl -s https://get.k6.io | bash
+          sudo mv k6 /usr/local/bin/
+
+      - name: Run Security Load Tests
+        run: |
+          cd tests/security
+          k6 run security-load-test.js --out json=security-load-results.json
+        env:
+          TARGET_URL: http://localhost:8080
+
+      - name: Upload Security Performance Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-performance-results
+          path: tests/security/security-load-results.json
+        if: always()
+
+  # Security Report Generation
+  security-report:
+    name: Generate Security Report
+    runs-on: ubuntu-latest
+    needs: [sast-scan, dependency-scan, container-scan, mobile-security-scan, dast-scan]
+    if: always()
+    permissions:
+      security-events: write
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all security artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: security-results
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Generate Consolidated Security Report
+        run: |
+          cd scripts
+          npm install
+          node generate-security-report.js ../security-results
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Security Issue (if critical vulnerabilities found)
+        uses: actions/github-script@v7
+        if: steps.security-check.outputs.critical-found == 'true'
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('security-results/consolidated-report.json'));
+            
+            if (report.summary.critical > 0 || report.summary.high > 0) {
+              github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `🚨 Critical Security Vulnerabilities Found - ${new Date().toISOString().split('T')[0]}`,
+                body: `## Security Alert\n\n` +
+                     `**Critical Vulnerabilities:** ${report.summary.critical}\n` +
+                     `**High Risk Vulnerabilities:** ${report.summary.high}\n\n` +
+                     `Please review the security report and address these issues immediately.\n\n` +
+                     `**Scan Details:**\n` +
+                     `- Commit: ${context.sha}\n` +
+                     `- Branch: ${context.ref}\n` +
+                     `- Workflow: ${context.workflow}\n\n` +
+                     `[View detailed report](${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`,
+                labels: ['security', 'critical', 'bug']
+              });
+            }
+
+      - name: Comment on PR with Security Results
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('security-results/consolidated-report.json'));
+            
+            const comment = `## 🔒 Security Scan Results\n\n` +
+              `| Risk Level | Count |\n` +
+              `|------------|-------|\n` +
+              `| Critical | ${report.summary.critical} |\n` +
+              `| High | ${report.summary.high} |\n` +
+              `| Medium | ${report.summary.medium} |\n` +
+              `| Low | ${report.summary.low} |\n\n` +
+              `**Security Score:** ${report.securityScore}/100\n\n` +
+              (report.summary.critical > 0 ? '❌ **Critical vulnerabilities found. Please address before merging.**\n' : '') +
+              (report.summary.high > 0 ? '⚠️ **High-risk vulnerabilities found. Review recommended.**\n' : '') +
+              (report.summary.critical === 0 && report.summary.high === 0 ? '✅ **No critical or high-risk vulnerabilities found.**\n' : '') +
+              `\n[View detailed report](${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Upload Consolidated Security Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: consolidated-security-report
+          path: |
+            security-results/consolidated-report.*
+            security-results/executive-summary.*
+        if: always()
+
+      # Fail the build if critical vulnerabilities are found
+      - name: Check Security Gate
+        run: |
+          CRITICAL_COUNT=$(jq '.summary.critical' security-results/consolidated-report.json)
+          HIGH_COUNT=$(jq '.summary.high' security-results/consolidated-report.json)
+          
+          echo "Critical vulnerabilities: $CRITICAL_COUNT"
+          echo "High vulnerabilities: $HIGH_COUNT"
+          
+          if [ "$CRITICAL_COUNT" -gt 0 ]; then
+            echo "❌ SECURITY GATE FAILED: Critical vulnerabilities found"
+            exit 1
+          fi
+          
+          if [ "$HIGH_COUNT" -gt 5 ]; then
+            echo "❌ SECURITY GATE FAILED: Too many high-risk vulnerabilities ($HIGH_COUNT > 5)"
+            exit 1
+          fi
+          
+          echo "✅ Security gate passed"
+
+  # Security Monitoring Setup
+  security-monitoring:
+    name: Setup Security Monitoring
+    runs-on: ubuntu-latest
+    needs: [security-report]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update Security Baseline
+        run: |
+          # Update security baseline for trend analysis
+          mkdir -p .security
+          echo "{\"date\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"commit\": \"$GITHUB_SHA\", \"ref\": \"$GITHUB_REF\"}" > .security/scan-metadata.json
+
+      - name: Commit Security Baseline
+        run: |
+          git config --local user.email "security-bot@upcoach.ai"
+          git config --local user.name "Security Bot"
+          git add .security/
+          git commit -m "Update security baseline [skip ci]" || exit 0
+          git push
+
+      # Send notification to security team
+      - name: Send Security Notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#security'
+          text: |
+            Security scan completed for UpCoach platform
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Report: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_SECURITY_WEBHOOK }}
+        if: always()
+
+# Security workflow configuration notes:
+# 1. Configure secrets: SEMGREP_APP_TOKEN, SONAR_TOKEN, SNYK_TOKEN, SLACK_SECURITY_WEBHOOK
+# 2. Set up ZAP configuration files in .zap/ directory
+# 3. Create security policy files: dependency-check-suppressions.xml, license-compliance.json
+# 4. Configure branch protection rules to require security checks
+# 5. Set up security team notifications and escalation procedures

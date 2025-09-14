@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Users,
@@ -12,6 +11,7 @@ import {
   Monitor,
   BarChart3,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface AnalyticsData {
   pageViews: number;

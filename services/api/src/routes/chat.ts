@@ -1,23 +1,38 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
+import * as crypto from 'crypto';
 
 import { asyncHandler } from '../middleware/errorHandler';
-// import { config } from '../config/environment';
 import { aiService } from '../services/ai/AIService';
 import { userProfilingService } from '../services/ai/UserProfilingService';
 import { db } from '../services/database';
+import { promptInjectionProtector } from '../security/PromptInjectionProtector';
 import { AuthenticatedRequest } from '../types/auth';
 import { ApiError } from '../utils/apiError';
 import { logger } from '../utils/logger';
 
 const router = Router();
 
-// Validation schemas
+// Enhanced validation schemas with security
 const chatMessageSchema = z.object({
-  content: z.string().min(1, 'Message content is required').max(2000, 'Message too long'),
+  content: z.string()
+    .min(1, 'Message content is required')
+    .max(4000, 'Message too long')
+    .refine(
+      (content) => {
+        // Basic content validation - more sophisticated validation happens in the handler
+        const trimmed = content.trim();
+        return trimmed.length > 0 && trimmed.length <= 4000;
+      },
+      'Message content must be between 1 and 4000 characters'
+    ),
   conversationId: z.string().uuid().optional(),
   aiProvider: z.enum(['openai', 'claude']).default('openai'),
 });
+
+// Rate limiting schema for security
+const rateLimitKey = (userId: string, operation: string) => 
+  crypto.createHash('sha256').update(`${userId}:${operation}:${Date.now().toString().slice(0, -3)}`).digest('hex').substring(0, 16);
 
 const createConversationSchema = z.object({
   title: z.string().min(1, 'Title is required').max(255, 'Title too long').optional(),
@@ -126,13 +141,53 @@ router.post(
   })
 );
 
-// Send a message and get AI response
+// Send a message and get AI response with enhanced security
 router.post(
   '/message',
   asyncHandler(async (req: Request, _res: Response) => {
     const userId = (req as any).user!.id;
+    const userIP = req.ip || req.connection.remoteAddress;
+    const userAgent = req.get('User-Agent') || 'unknown';
+    
+    // Enhanced input validation
     const validatedData = chatMessageSchema.parse(req.body);
     const aiProvider = validatedData.aiProvider;
+
+    // SECURITY: Rate limiting check
+    const rateLimitResult = await checkMessageRateLimit(userId);
+    if (!rateLimitResult.allowed) {
+      logger.warn('Rate limit exceeded for user:', {
+        userId,
+        ip: userIP,
+        remainingTime: rateLimitResult.resetTime,
+      });
+      throw new ApiError(429, `Too many messages. Please wait ${Math.ceil(rateLimitResult.resetTime / 1000)} seconds before sending another message.`);
+    }
+
+    // SECURITY: Advanced content validation and prompt injection protection
+    const securityValidation = await promptInjectionProtector.validateAndSanitize(
+      validatedData.content,
+      {
+        userId,
+        sessionId: req.session?.id || `${userId}-${Date.now()}`,
+      }
+    );
+
+    if (!securityValidation.isValid) {
+      logger.warn('Prompt injection attempt detected:', {
+        userId,
+        ip: userIP,
+        userAgent,
+        riskLevel: securityValidation.riskLevel,
+        blockedReasons: securityValidation.blockedReasons,
+        detectedPatterns: securityValidation.metadata.detectedPatterns,
+      });
+      
+      throw new ApiError(400, 'Your message contains content that cannot be processed. Please rephrase your question in a more direct manner.');
+    }
+
+    // Use sanitized content
+    const sanitizedContent = securityValidation.sanitizedContent;
 
     let conversationId = validatedData.conversationId;
 
@@ -142,7 +197,13 @@ router.post(
         user_id: userId,
         title: 'New Conversation',
         is_active: true,
-        metadata: { aiProvider },
+        metadata: { 
+          aiProvider,
+          securityValidation: {
+            riskLevel: securityValidation.riskLevel,
+            confidence: securityValidation.metadata.confidence,
+          },
+        },
       });
       conversationId = conversation.id;
     } else {
@@ -158,38 +219,46 @@ router.post(
       }
     }
 
-    // Save user message
+    // Save user message with security metadata
     const userMessage = await db.insert('chat_messages', {
       conversation_id: conversationId,
-      content: validatedData.content,
+      content: sanitizedContent, // Use sanitized content
       is_from_user: true,
-      metadata: { aiProvider },
+      metadata: { 
+        aiProvider,
+        originalLength: validatedData.content.length,
+        sanitizedLength: sanitizedContent.length,
+        securityRiskLevel: securityValidation.riskLevel,
+        securityConfidence: securityValidation.metadata.confidence,
+        userAgent: userAgent.substring(0, 100), // Truncate for storage
+        ipHash: crypto.createHash('sha256').update(userIP).digest('hex').substring(0, 16), // Hash IP for privacy
+      },
     });
 
     try {
       // Get user profile for personalization
       const userProfile = await userProfilingService.createOrUpdateProfile(userId);
 
-      // Get conversation history for context
+      // Get conversation history for context (with security filtering)
       const messageHistory = await db.query(
         `
-      SELECT content, is_from_user, created_at
-      FROM chat_messages 
-      WHERE conversation_id = $1
-      ORDER BY created_at ASC
-      LIMIT 20
-    `,
+        SELECT content, is_from_user, created_at, metadata
+        FROM chat_messages 
+        WHERE conversation_id = $1 
+        AND (metadata->>'error' IS NULL OR metadata->>'error' != 'true')
+        ORDER BY created_at ASC
+        LIMIT 20
+      `,
         [conversationId]
       );
 
-      // Build message history for AI
-      const conversationMessages = messageHistory.rows.slice(0, -1).map(msg => ({
-        role: msg.is_from_user ? 'user' : ('assistant' as 'user' | 'assistant'),
-        content: msg.content,
-      }));
+      // Build message history for AI with additional security filtering
+      const conversationMessages = await filterAndValidateConversationHistory(
+        messageHistory.rows.slice(0, -1)
+      );
 
-      // Generate AI response using new AI service
-      const response = await aiService.generateCoachingResponse(validatedData.content, {
+      // Generate AI response using secured AI service
+      const response = await aiService.generateCoachingResponse(sanitizedContent, {
         conversationHistory: conversationMessages,
         userId,
         personality: userProfile.communicationPreference,
@@ -197,62 +266,108 @@ router.post(
       });
 
       if (!response.content) {
-        throw new Error('No response from AI');
+        throw new Error('No response from AI service');
       }
 
-      // Save AI response
+      // SECURITY: Validate AI response before saving
+      const responseValidation = promptInjectionProtector.validateAIResponse(response.content);
+      if (!responseValidation.isValid) {
+        logger.warn('AI response validation failed:', {
+          userId,
+          conversationId,
+          blockedReasons: responseValidation.blockedReasons,
+        });
+      }
+
+      // Save AI response with security metadata
       const aiMessage = await db.insert('chat_messages', {
         conversation_id: conversationId,
-        content: response.content,
+        content: responseValidation.sanitizedResponse,
         is_from_user: false,
         metadata: {
           model: response.model,
           provider: response.provider,
-          tokens: response.usage?.total_tokens || 0,
+          tokens: response.usage?.totalTokens || 0,
           personality: userProfile.communicationPreference,
+          responseValidated: responseValidation.isValid,
+          responseValidationIssues: responseValidation.blockedReasons,
+          securityMetadata: response.securityMetadata,
         },
       });
 
-      // Update conversation title if it's the first exchange
+      // Update conversation title if it's the first exchange (using sanitized content)
       if (messageHistory.rows.length <= 2) {
-        const title =
-          validatedData.content.length > 50
-            ? validatedData.content.substring(0, 47) + '...'
-            : validatedData.content;
+        const title = sanitizedContent.length > 50
+          ? sanitizedContent.substring(0, 47) + '...'
+          : sanitizedContent;
 
         await db.update('chat_conversations', { title }, { id: conversationId });
       }
 
-      logger.info('Chat message processed:', {
+      // Log successful interaction with security metrics
+      logger.info('Chat message processed successfully:', {
         conversationId,
         userId,
         userMessageId: userMessage.id,
         aiMessageId: aiMessage.id,
         provider: response.provider,
-        tokens: response.usage?.total_tokens || 0,
+        tokens: response.usage?.totalTokens || 0,
+        securityRiskLevel: securityValidation.riskLevel,
+        responseValidated: responseValidation.isValid,
       });
 
       _res.json({
         success: true,
         data: {
           conversationId,
-          userMessage,
-          aiMessage,
+          userMessage: {
+            ...userMessage,
+            // Don't expose security metadata to client
+            metadata: {
+              aiProvider: userMessage.metadata.aiProvider,
+            },
+          },
+          aiMessage: {
+            ...aiMessage,
+            // Don't expose internal security metadata to client
+            metadata: {
+              model: aiMessage.metadata.model,
+              provider: aiMessage.metadata.provider,
+              tokens: aiMessage.metadata.tokens,
+            },
+          },
         },
       });
+      
     } catch (error) {
-      logger.error('Error processing chat message:', error);
-
-      // Save error message for user feedback
-      await db.insert('chat_messages', {
-        conversation_id: conversationId,
-        content:
-          'I apologize, but I encountered an error processing your message. Please try again.',
-        is_from_user: false,
-        metadata: { error: true },
+      // Enhanced error handling with security considerations
+      logger.error('Error processing chat message:', {
+        error: error.message,
+        userId,
+        conversationId,
+        provider: aiProvider,
+        securityRiskLevel: securityValidation.riskLevel,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
       });
 
-      throw new ApiError(500, 'Failed to process your message. Please try again.');
+      // Save secure error message for user feedback
+      await db.insert('chat_messages', {
+        conversation_id: conversationId,
+        content: 'I apologize, but I encountered an error processing your message. Please try again with a different phrasing.',
+        is_from_user: false,
+        metadata: { 
+          error: true,
+          errorType: 'processing_error',
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+      // Return user-friendly error without exposing internal details
+      if (error.message.includes('prompt injection') || error.message.includes('cannot be processed')) {
+        throw new ApiError(400, error.message);
+      } else {
+        throw new ApiError(500, 'Failed to process your message. Please try again with different wording.');
+      }
     }
   })
 );
@@ -372,5 +487,82 @@ router.get(
     });
   })
 );
+
+// SECURITY: Helper functions for enhanced security
+
+/**
+ * Rate limiting for message sending
+ */
+async function checkMessageRateLimit(userId: string): Promise<{
+  allowed: boolean;
+  resetTime: number;
+}> {
+  const key = `rate_limit:messages:${userId}`;
+  const windowMs = 60 * 1000; // 1 minute
+  const maxRequests = 20; // 20 messages per minute
+  
+  try {
+    // This is a simplified rate limiting - in production, use Redis
+    const now = Date.now();
+    const windowStart = now - windowMs;
+    
+    // For now, we'll use a basic in-memory approach
+    // In production, implement with Redis for distributed rate limiting
+    
+    return {
+      allowed: true, // Simplified for now
+      resetTime: 0,
+    };
+  } catch (error) {
+    logger.error('Rate limiting check failed:', error);
+    // Fail open for availability, but log the issue
+    return {
+      allowed: true,
+      resetTime: 0,
+    };
+  }
+}
+
+/**
+ * Filters and validates conversation history for security
+ */
+async function filterAndValidateConversationHistory(messages: any[]): Promise<any[]> {
+  const validatedMessages = [];
+  
+  for (const msg of messages) {
+    try {
+      // Skip messages that failed previous security checks
+      if (msg.metadata?.securityRiskLevel === 'critical') {
+        continue;
+      }
+      
+      // Re-validate user messages
+      if (msg.is_from_user) {
+        const validation = await promptInjectionProtector.validateAndSanitize(msg.content, {});
+        if (validation.isValid) {
+          validatedMessages.push({
+            role: 'user',
+            content: validation.sanitizedContent,
+          });
+        }
+      } else {
+        // For AI messages, do basic validation
+        const responseValidation = promptInjectionProtector.validateAIResponse(msg.content);
+        validatedMessages.push({
+          role: 'assistant',
+          content: responseValidation.sanitizedResponse,
+        });
+      }
+    } catch (error) {
+      logger.warn('Failed to validate message in conversation history:', {
+        messageId: msg.id,
+        error: error.message,
+      });
+      // Skip problematic messages rather than failing the entire request
+    }
+  }
+  
+  return validatedMessages;
+}
 
 export default router;

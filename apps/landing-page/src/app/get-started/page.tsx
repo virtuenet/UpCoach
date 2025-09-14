@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import { Button } from '@upcoach/ui/src/components/Button';
+import { Card } from '@upcoach/ui/src/components/Card';
 import { motion } from 'framer-motion';
 import { ArrowRight, Check, Zap, Shield, Award, Users } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@upcoach/ui/src/components/Button';
-import { Card } from '@upcoach/ui/src/components/Card';
+import React, { useState } from 'react';
+
 import { trackEvent } from '@/services/analytics';
 
 interface Step {
@@ -92,20 +93,21 @@ export default function GetStartedPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="flex flex-col sm:flex-row gap-4 justify-center mb-8"
           >
-            <Button
-              size="lg"
-              className="text-lg px-8 py-6"
-              onClick={() => handleGetStarted('hero')}
-              asChild
-            >
-              <Link href="/register">
+            <Link href="/register">
+              <Button
+                size="lg"
+                className="text-lg px-8 py-6"
+                onClick={() => handleGetStarted('hero')}
+              >
                 Get Started Free
                 <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8 py-6" asChild>
-              <Link href="#how-it-works">See How It Works</Link>
-            </Button>
+              </Button>
+            </Link>
+            <Link href="#how-it-works">
+              <Button size="lg" variant="outline" className="text-lg px-8 py-6">
+                See How It Works
+              </Button>
+            </Link>
           </motion.div>
 
           <motion.div
@@ -245,14 +247,15 @@ export default function GetStartedPage() {
                     ${plan === 'basic' ? '9' : plan === 'pro' ? '29' : '49'}
                     <span className="text-base font-normal text-gray-600">/month</span>
                   </div>
-                  <Button
-                    className="w-full"
-                    variant={selectedPlan === plan ? 'default' : 'outline'}
-                    onClick={() => handleGetStarted(`pricing-${plan}`)}
-                    asChild
-                  >
-                    <Link href={`/register?plan=${plan}`}>Select {plan}</Link>
-                  </Button>
+                  <Link href={`/register?plan=${plan}`}>
+                    <Button
+                      className="w-full"
+                      variant={selectedPlan === plan ? 'primary' : 'outline'}
+                      onClick={() => handleGetStarted(`pricing-${plan}`)}
+                    >
+                      Select {plan}
+                    </Button>
+                  </Link>
                 </Card>
               </motion.div>
             ))}
@@ -271,18 +274,17 @@ export default function GetStartedPage() {
           <p className="text-xl mb-8 opacity-90">
             Join thousands of people already achieving their goals with UpCoach
           </p>
-          <Button
-            size="lg"
-            variant="secondary"
-            className="text-lg px-8 py-6"
-            onClick={() => handleGetStarted('final-cta')}
-            asChild
-          >
-            <Link href="/register">
+          <Link href="/register">
+            <Button
+              size="lg"
+              variant="secondary"
+              className="text-lg px-8 py-6"
+              onClick={() => handleGetStarted('final-cta')}
+            >
               Start Your Free Trial
               <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
+            </Button>
+          </Link>
           <p className="mt-4 text-sm opacity-75">No credit card required • Cancel anytime</p>
         </div>
       </section>

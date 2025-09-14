@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
 import { X, Link, AlertCircle } from 'lucide-react';
 import { validateUserUrl } from '../utils/urlValidator';
 

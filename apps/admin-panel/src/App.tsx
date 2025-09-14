@@ -1,8 +1,8 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { useAuthStore } from './stores/authStore';
+
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import UsersPage from './pages/UsersPage';
@@ -13,6 +13,7 @@ import PendingModerationPage from './pages/PendingModerationPage';
 import FlaggedContentPage from './pages/FlaggedContentPage';
 import UserReportsPage from './pages/UserReportsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import { useAuthStore } from './stores/authStore';
 import UserMetricsPage from './pages/UserMetricsPage';
 import ContentPerformancePage from './pages/ContentPerformancePage';
 import SystemHealthPage from './pages/SystemHealthPage';

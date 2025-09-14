@@ -1,7 +1,8 @@
+import { MessageSquare, Phone, MapPin, Clock, Users } from 'lucide-react';
 import { Metadata } from 'next';
+
 import ContactForm from '@/components/forms/ContactForm';
 import NewsletterForm from '@/components/forms/NewsletterForm';
-import { Mail, MessageSquare, Phone, MapPin, Clock, Users } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Contact Us',

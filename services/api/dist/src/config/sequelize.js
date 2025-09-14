@@ -37,7 +37,7 @@ exports.sequelize = void 0;
 const dotenv = __importStar(require("dotenv"));
 const sequelize_1 = require("sequelize");
 dotenv.config();
-exports.sequelize = new sequelize_1.Sequelize(process.env.DATABASE_URL || 'postgresql://upcoach:upcoach_secure_pass@localhost:8004/upcoach_db', {
+exports.sequelize = new sequelize_1.Sequelize(process.env.DATABASE_URL || 'postgresql://upcoach:upcoach_secure_pass@localhost:1433/upcoach_db', {
     dialect: 'postgres',
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
     pool: {

@@ -147,9 +147,9 @@ describe('AI Services Integration Tests', () => {
             },
           ],
         }),
-        usage: { total_tokens: 100, input_tokens: 80, output_tokens: 20 },
+        usage: { totalTokens: 100, promptTokens: 80, completionTokens: 20 },
         model: 'gpt-4',
-        provider: 'openai',
+        id: 'integration-test-ai-response',
       });
 
       const response = await request(app)
@@ -186,9 +186,9 @@ describe('AI Services Integration Tests', () => {
             },
           ],
         }),
-        usage: { total_tokens: 100, input_tokens: 80, output_tokens: 20 },
+        usage: { totalTokens: 100, promptTokens: 80, completionTokens: 20 },
         model: 'gpt-4',
-        provider: 'openai',
+        id: 'integration-test-ai-response',
       });
 
       const response = await request(app)
@@ -206,9 +206,9 @@ describe('AI Services Integration Tests', () => {
     test('POST /api/ai/conversation/process - should process conversation', async () => {
       jest.spyOn(AIService.prototype, 'generateResponse').mockResolvedValue({
         content: 'I can help you with that goal!',
-        provider: 'openai',
+        id: 'integration-test-ai-response',
         model: 'gpt-4',
-        usage: { total_tokens: 100, input_tokens: 80, output_tokens: 20 },
+        usage: { totalTokens: 100, promptTokens: 80, completionTokens: 20 },
       });
 
       const response = await request(app)
@@ -228,9 +228,9 @@ describe('AI Services Integration Tests', () => {
     test('POST /api/ai/conversation/smart-response - should generate contextual response', async () => {
       jest.spyOn(AIService.prototype, 'generateResponse').mockResolvedValue({
         content: 'Based on your morning routine...',
-        provider: 'openai',
+        id: 'integration-test-ai-response',
         model: 'gpt-4',
-        usage: { total_tokens: 100, input_tokens: 80, output_tokens: 20 },
+        usage: { totalTokens: 100, promptTokens: 80, completionTokens: 20 },
       });
 
       const response = await request(app)

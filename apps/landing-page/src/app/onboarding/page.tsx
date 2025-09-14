@@ -1,6 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { Button } from '@upcoach/ui/src/components/Button';
+import { Card } from '@upcoach/ui/src/components/Card';
+import { Input } from '@upcoach/ui/src/components/Input';
+import { Label } from '@upcoach/ui/src/components/Label';
+import { Progress } from '@upcoach/ui/src/components/Progress';
+import { Textarea } from '@upcoach/ui/src/components/Textarea';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight,
@@ -14,15 +19,10 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@upcoach/ui/src/components/Button';
-import { Card } from '@upcoach/ui/src/components/Card';
-import { Input } from '@upcoach/ui/src/components/Input';
-import { Textarea } from '@upcoach/ui/src/components/Textarea';
-import { RadioGroup, RadioGroupItem } from '@upcoach/ui/src/components/RadioGroup';
-import { Label } from '@upcoach/ui/src/components/Label';
-import { Progress } from '@upcoach/ui/src/components/Progress';
+import React, { useState, useEffect } from 'react';
+
 import { trackEvent } from '@/services/analytics';
-import { api } from '@/services/api';
+import api from '@/services/api';
 
 interface OnboardingData {
   profile: {
@@ -302,20 +302,23 @@ export default function OnboardingPage() {
                   <div className="space-y-4">
                     <div>
                       <Label>Primary Goal Area</Label>
-                      <RadioGroup
-                        value={data.goals.primaryGoal}
-                        onValueChange={value => updateData('goals', 'primaryGoal', value)}
-                        className="mt-2"
-                      >
+                      <div className="mt-2 space-y-2">
                         {goalOptions.map(goal => (
-                          <div key={goal} className="flex items-center space-x-2 mb-2">
-                            <RadioGroupItem value={goal} id={goal} />
-                            <Label htmlFor={goal} className="cursor-pointer">
+                          <div key={goal} className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              name="primaryGoal"
+                              value={goal}
+                              checked={data.goals.primaryGoal === goal}
+                              onChange={(e) => updateData('goals', 'primaryGoal', e.target.value)}
+                              className="h-4 w-4"
+                            />
+                            <Label className="cursor-pointer">
                               {goal}
                             </Label>
                           </div>
                         ))}
-                      </RadioGroup>
+                      </div>
                     </div>
                     <div>
                       <Label htmlFor="specific-goals">Specific Goals</Label>
@@ -336,22 +339,23 @@ export default function OnboardingPage() {
                     </div>
                     <div>
                       <Label>Timeline</Label>
-                      <RadioGroup
-                        value={data.goals.timeline}
-                        onValueChange={value => updateData('goals', 'timeline', value)}
-                        className="mt-2"
-                      >
-                        <div className="grid grid-cols-2 gap-4">
-                          {['1-3 months', '3-6 months', '6-12 months', '1+ years'].map(time => (
-                            <div key={time} className="flex items-center space-x-2">
-                              <RadioGroupItem value={time} id={time} />
-                              <Label htmlFor={time} className="cursor-pointer">
-                                {time}
-                              </Label>
-                            </div>
-                          ))}
-                        </div>
-                      </RadioGroup>
+                      <div className="mt-2 grid grid-cols-2 gap-4">
+                        {['1-3 months', '3-6 months', '6-12 months', '1+ years'].map(time => (
+                          <div key={time} className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              name="timeline"
+                              value={time}
+                              checked={data.goals.timeline === time}
+                              onChange={(e) => updateData('goals', 'timeline', e.target.value)}
+                              className="h-4 w-4"
+                            />
+                            <Label className="cursor-pointer">
+                              {time}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -367,11 +371,7 @@ export default function OnboardingPage() {
                   <div className="space-y-4">
                     <div>
                       <Label>Preferred Coaching Style</Label>
-                      <RadioGroup
-                        value={data.preferences.coachingStyle}
-                        onValueChange={value => updateData('preferences', 'coachingStyle', value)}
-                        className="mt-2 space-y-3"
-                      >
+                      <div className="mt-2 space-y-3">
                         {coachingStyles.map(style => (
                           <div
                             key={style.value}
@@ -382,7 +382,14 @@ export default function OnboardingPage() {
                             }`}
                           >
                             <div className="flex items-start space-x-2">
-                              <RadioGroupItem value={style.value} id={style.value} />
+                              <input
+                                type="radio"
+                                name="coachingStyle"
+                                value={style.value}
+                                checked={data.preferences.coachingStyle === style.value}
+                                onChange={(e) => updateData('preferences', 'coachingStyle', e.target.value)}
+                                className="h-4 w-4 mt-1"
+                              />
                               <div className="flex-1">
                                 <Label
                                   htmlFor={style.value}
@@ -395,7 +402,7 @@ export default function OnboardingPage() {
                             </div>
                           </div>
                         ))}
-                      </RadioGroup>
+                      </div>
                     </div>
                     <div>
                       <Label htmlFor="challenges">Current Challenges</Label>
@@ -453,34 +460,28 @@ export default function OnboardingPage() {
                     </div>
                     <div>
                       <Label>Commitment Level</Label>
-                      <RadioGroup
-                        value={data.availability.commitmentLevel}
-                        onValueChange={value =>
-                          updateData('availability', 'commitmentLevel', value)
-                        }
-                        className="mt-2"
-                      >
+                      <div className="mt-2">
                         <div className="space-y-2">
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="daily" id="daily" />
+                            <input type="radio" name="commitmentLevel" value="daily" checked={data.availability.commitmentLevel === 'daily'} onChange={(e) => updateData('availability', 'commitmentLevel', e.target.value)} className="h-4 w-4" />
                             <Label htmlFor="daily" className="cursor-pointer">
                               Daily (10-15 minutes per day)
                             </Label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="regular" id="regular" />
+                            <input type="radio" name="commitmentLevel" value="regular" checked={data.availability.commitmentLevel === 'regular'} onChange={(e) => updateData('availability', 'commitmentLevel', e.target.value)} className="h-4 w-4" />
                             <Label htmlFor="regular" className="cursor-pointer">
                               Regular (3-4 times per week)
                             </Label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="weekly" id="weekly" />
+                            <input type="radio" name="commitmentLevel" value="weekly" checked={data.availability.commitmentLevel === 'weekly'} onChange={(e) => updateData('availability', 'commitmentLevel', e.target.value)} className="h-4 w-4" />
                             <Label htmlFor="weekly" className="cursor-pointer">
                               Weekly (1-2 times per week)
                             </Label>
                           </div>
                         </div>
-                      </RadioGroup>
+                      </div>
                     </div>
                   </div>
                 </div>

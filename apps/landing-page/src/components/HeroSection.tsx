@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { Badge } from '@upcoach/ui/src/components/Badge';
+import { Button } from '@upcoach/ui/src/components/Button';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Star, Users, TrendingUp, Clock } from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '@upcoach/ui/src/components/Button';
-import { Badge } from '@upcoach/ui/src/components/Badge';
+import React, { useState, useEffect } from 'react';
+
 import { trackEvent } from '@/services/analytics';
 
 interface HeroSectionProps {

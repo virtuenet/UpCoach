@@ -1,0 +1,272 @@
+# UpCoach Security: Custom Semgrep Rules
+# Custom security rules for UpCoach platform
+
+rules:
+  # JWT Security Rules
+  - id: jwt-hardcoded-secret
+    pattern-either:
+      - pattern: |
+          jwt.sign($DATA, "...")
+      - pattern: |
+          jwt.verify($DATA, "...")
+      - pattern: |
+          sign($DATA, "...")
+      - pattern: |
+          verify($DATA, "...")
+    message: "Hardcoded JWT secret detected. Use environment variables for secrets."
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+      owasp: "A07:2021 - Identification and Authentication Failures"
+
+  - id: weak-jwt-secret
+    pattern-either:
+      - pattern: |
+          jwt.sign($DATA, $SECRET)
+      - pattern: |
+          sign($DATA, $SECRET)
+    metavariable-pattern:
+      metavariable: $SECRET
+      patterns:
+        - pattern-either:
+          - pattern: '"secret"'
+          - pattern: '"password"'
+          - pattern: '"key"'
+          - pattern: '"test"'
+          - pattern: '"dev"'
+          - pattern: '"default"'
+    message: "Weak JWT secret detected. Use cryptographically strong secrets (64+ chars)."
+    severity: WARNING
+    languages: [javascript, typescript]
+
+  # SQL Injection Rules
+  - id: sql-injection-risk
+    pattern-either:
+      - pattern: |
+          db.query($QUERY + $INPUT)
+      - pattern: |
+          sequelize.query($QUERY + $INPUT)
+      - pattern: |
+          query($QUERY + $INPUT)
+      - pattern: |
+          `$...{$INPUT}...`
+    message: "Potential SQL injection vulnerability. Use parameterized queries."
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      cwe: "CWE-89: SQL Injection"
+      owasp: "A03:2021 - Injection"
+
+  # XSS Prevention Rules
+  - id: dangerous-innerhtml
+    pattern-either:
+      - pattern: |
+          $ELEMENT.innerHTML = $INPUT
+      - pattern: |
+          $ELEMENT.dangerouslySetInnerHTML = { __html: $INPUT }
+    message: "Potential XSS vulnerability. Sanitize user input before rendering."
+    severity: WARNING
+    languages: [javascript, typescript]
+    metadata:
+      cwe: "CWE-79: Cross-site Scripting (XSS)"
+      owasp: "A03:2021 - Injection"
+
+  # Authentication Rules
+  - id: missing-auth-middleware
+    pattern: |
+      app.$METHOD($PATH, $HANDLER)
+    metavariable-pattern:
+      metavariable: $PATH
+      patterns:
+        - pattern-either:
+          - pattern-regex: '"/api/(users|admin|profile|settings|financial).*"'
+          - pattern-regex: '"/api/(?!auth|health|csrf).*"'
+    metavariable-pattern:
+      metavariable: $HANDLER
+      patterns:
+        - pattern-not: authMiddleware
+        - pattern-not: authenticate
+        - pattern-not: requireAuth
+    message: "Protected API endpoint missing authentication middleware"
+    severity: WARNING
+    languages: [javascript, typescript]
+
+  # Password Security Rules  
+  - id: weak-password-validation
+    pattern-either:
+      - pattern: |
+          password.length < 8
+      - pattern: |
+          $PASSWORD.length < 8
+      - pattern: |
+          /^.{1,7}$/.test($PASSWORD)
+    message: "Weak password validation. Require minimum 8 characters with complexity."
+    severity: WARNING
+    languages: [javascript, typescript]
+
+  # Environment Variable Security
+  - id: exposed-env-vars
+    pattern-either:
+      - pattern: |
+          console.log(process.env.$VAR)
+      - pattern: |
+          logger.info(process.env.$VAR)
+      - pattern: |
+          res.json({..., env: process.env})
+    message: "Environment variables may be exposed in logs or responses"
+    severity: WARNING
+    languages: [javascript, typescript]
+
+  # Google OAuth Security
+  - id: oauth-state-missing
+    pattern-either:
+      - pattern: |
+          googleAuth.getAuthUrl({...})
+      - pattern: |
+          oauth2Client.generateAuthUrl({...})
+    metavariable-pattern:
+      metavariable: $CONFIG
+      patterns:
+        - pattern-not: |
+            {..., state: $STATE}
+    message: "OAuth authorization missing state parameter for CSRF protection"
+    severity: ERROR
+    languages: [javascript, typescript]
+
+  # File Upload Security
+  - id: unsafe-file-upload
+    pattern-either:
+      - pattern: |
+          multer({...})
+      - pattern: |
+          upload.single($FIELD)
+      - pattern: |
+          upload.array($FIELD)
+    metavariable-pattern:
+      metavariable: $CONFIG
+      patterns:
+        - pattern-not: |
+            {..., fileFilter: $FILTER}
+        - pattern-not: |
+            {..., limits: {..., fileSize: $SIZE}}
+    message: "File upload missing security controls (file type filter, size limits)"
+    severity: WARNING
+    languages: [javascript, typescript]
+
+  # CORS Security
+  - id: permissive-cors
+    pattern-either:
+      - pattern: |
+          cors({origin: '*'})
+      - pattern: |
+          cors({origin: true})
+      - pattern: |
+          res.header('Access-Control-Allow-Origin', '*')
+    message: "Permissive CORS configuration allows all origins"
+    severity: WARNING
+    languages: [javascript, typescript]
+
+  # Session Security
+  - id: insecure-session-config
+    pattern: |
+      session({..., $CONFIG})
+    metavariable-pattern:
+      metavariable: $CONFIG
+      patterns:
+        - pattern-either:
+          - pattern: |
+              secure: false
+          - pattern: |
+              httpOnly: false
+          - pattern: |
+              sameSite: false
+    message: "Insecure session configuration detected"
+    severity: ERROR
+    languages: [javascript, typescript]
+
+  # React Security Rules
+  - id: react-unsafe-refs
+    pattern-either:
+      - pattern: |
+          React.createRef()
+      - pattern: |
+          useRef($INITIAL)
+    metavariable-pattern:
+      metavariable: $INITIAL
+      pattern: null
+    message: "Unsafe ref usage - ensure refs are properly validated"
+    severity: INFO
+    languages: [javascript, typescript]
+
+  # Flutter/Dart Security Rules
+  - id: dart-http-insecure
+    pattern-either:
+      - pattern: |
+          http://$URL
+      - pattern: |
+          HttpClient()
+    message: "Insecure HTTP connection detected. Use HTTPS in production."
+    severity: WARNING
+    languages: [dart]
+
+  - id: dart-hardcoded-secrets
+    pattern-either:
+      - pattern: |
+          const String $VAR = "sk_...";
+      - pattern: |
+          const String $VAR = "pk_...";
+      - pattern: |
+          final String $VAR = "AIza...";
+    message: "Hardcoded API key detected. Use secure storage or environment variables."
+    severity: ERROR
+    languages: [dart]
+
+  # AI/LLM Security Rules
+  - id: prompt-injection-risk
+    pattern-either:
+      - pattern: |
+          openai.createCompletion({prompt: $USER_INPUT})
+      - pattern: |
+          aiService.generateResponse($USER_INPUT)
+      - pattern: |
+          `${$USER_INPUT}...`
+    message: "Potential prompt injection vulnerability. Sanitize user input to AI models."
+    severity: WARNING
+    languages: [javascript, typescript]
+    metadata:
+      cwe: "CWE-94: Code Injection"
+
+  # Rate Limiting Rules
+  - id: missing-rate-limiting
+    pattern: |
+      app.$METHOD("/api/$PATH", $HANDLER)
+    metavariable-pattern:
+      metavariable: $PATH
+      patterns:
+        - pattern-either:
+          - pattern-regex: "login"
+          - pattern-regex: "register" 
+          - pattern-regex: "reset-password"
+          - pattern-regex: "2fa"
+    metavariable-pattern:
+      metavariable: $HANDLER
+      patterns:
+        - pattern-not: rateLimit
+        - pattern-not: rateLimiter
+    message: "Authentication endpoint missing rate limiting"
+    severity: WARNING
+    languages: [javascript, typescript]
+
+# Path-based exclusions
+paths:
+  exclude:
+    - "node_modules/"
+    - "dist/"
+    - "build/"
+    - "coverage/"
+    - "*.test.ts"
+    - "*.spec.ts"
+    - "__tests__/"
+    - "test/"
+    - "tests/"

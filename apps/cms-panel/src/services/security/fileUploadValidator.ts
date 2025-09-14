@@ -189,7 +189,7 @@ class FileUploadValidatorService {
     // 6. Check magic bytes if buffer is available
     if (this.config.checkMagicBytes && file.buffer) {
       const detectedType = this.detectFileType(file.buffer);
-      result.detectedType = detectedType;
+      result.detectedType = detectedType ?? undefined;
 
       if (detectedType && detectedType !== file.mimetype) {
         warnings.push(

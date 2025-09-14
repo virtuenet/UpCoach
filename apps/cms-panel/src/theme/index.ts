@@ -17,9 +17,9 @@ const cmsTheme = createTheme(theme, {
     // CMS-specific content editor styling
     MuiPaper: {
       styleOverrides: {
-        ...theme.components?.MuiPaper?.styleOverrides,
+        ...(theme.components?.MuiPaper?.styleOverrides || {}),
         root: {
-          ...theme.components?.MuiPaper?.styleOverrides?.root,
+          ...(typeof theme.components?.MuiPaper?.styleOverrides?.root === 'object' ? theme.components.MuiPaper.styleOverrides.root : {}),
           '&.content-editor': {
             padding: theme.spacing(3),
             backgroundColor: theme.palette.background.paper,

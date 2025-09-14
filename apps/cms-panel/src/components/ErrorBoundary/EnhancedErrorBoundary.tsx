@@ -1,5 +1,4 @@
-import { GlobalErrorBoundary, AsyncErrorBoundary } from './components/ErrorBoundary';
-import { FolderOpen, ExpandMore } from '@mui/icons-material';
+// Removed unused imports
 /**
  * Enhanced Error Boundary Component
  * Comprehensive error handling with recovery strategies

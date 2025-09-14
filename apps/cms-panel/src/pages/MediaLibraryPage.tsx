@@ -11,11 +11,6 @@ import {
   Trash2,
   Edit3,
   X,
-  Image as ImageIcon,
-  File,
-  Video,
-  Music,
-  FileText,
 } from 'lucide-react';
 import { mediaApi, MediaItem } from '../api/media';
 import LoadingSpinner from '../components/LoadingSpinner';

@@ -1,5 +1,6 @@
 import { render, screen, waitFor, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+
 import HomePage from '@/app/page';
 import { trackAppDownload, trackFormSubmit, trackPricingView } from '@/services/analytics';
 

@@ -13,12 +13,17 @@ class ResponseBuilder {
             timestamp: new Date().toISOString(),
         };
     }
-    static error(error, code) {
+    static error(error, code, accessibleMessage, userAction) {
+        const errorMessage = error?.message || error.toString();
         return {
             success: false,
-            error: error?.message || error.toString(),
+            error: errorMessage,
+            accessibleError: accessibleMessage || `Error: ${errorMessage}. ${userAction || 'Please try again.'}`,
             code,
             timestamp: new Date().toISOString(),
+            semanticType: 'server-error',
+            severity: 'medium',
+            userAction: userAction || 'Please try again or contact support if the issue persists',
         };
     }
     static paginated(data, page, pageSize, total) {
@@ -36,11 +41,21 @@ class ResponseBuilder {
             },
         };
     }
-    static validation(errors) {
+    static validation(errors, accessibleSummary) {
+        const enhancedErrors = errors.map(err => ({
+            ...err,
+            accessibleMessage: err.accessibleMessage ||
+                `${err.field} field has an error: ${err.message}`,
+            severity: err.severity || 'error',
+        }));
+        const defaultSummary = `Form validation failed with ${errors.length} error${errors.length > 1 ? 's' : ''}. Please correct the highlighted fields.`;
         return {
             success: false,
             error: 'VALIDATION_ERROR',
-            errors,
+            accessibleError: accessibleSummary || defaultSummary,
+            errors: enhancedErrors,
+            semanticType: 'client-error',
+            userAction: 'Please correct the errors shown and submit again',
         };
     }
 }

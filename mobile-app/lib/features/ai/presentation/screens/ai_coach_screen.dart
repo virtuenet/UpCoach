@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:upcoach/core/theme/app_colors.dart';
 import 'package:upcoach/shared/widgets/custom_app_bar.dart';
 import 'package:upcoach/shared/widgets/loading_indicator.dart';
+import '../../../../shared/constants/ui_constants.dart';
 import '../../domain/services/ai_service.dart';
 import '../../domain/models/ai_response.dart';
 import '../widgets/chat_message_widget.dart';
@@ -67,15 +69,30 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
     }
   }
 
-  Future<void> _sendMessage(String message) async {
-    if (message.trim().isEmpty) return;
+  Future<void> _sendMessage(String message, {List<dynamic>? attachments}) async {
+    if (message.trim().isEmpty && (attachments == null || attachments.isEmpty)) return;
+
+    // Format message with attachment info if present
+    String fullMessage = message;
+    if (attachments != null && attachments.isNotEmpty) {
+      final attachmentInfo = attachments.map((a) => '[${a.type}: ${a.name}]').join(', ');
+      fullMessage = '$message\n\nAttachments: $attachmentInfo';
+    }
 
     // Add user message
     final userMessage = AIResponse(
-      content: message,
+      content: fullMessage,
       sessionId: _sessionId,
       role: 'user',
       timestamp: DateTime.now(),
+      metadata: attachments != null ? {
+        'attachments': attachments.map((a) => {
+          'type': a.type,
+          'name': a.name,
+          'path': a.path,
+          'size': a.sizeInBytes,
+        }).toList(),
+      } : null,
     );
     ref.read(chatMessagesProvider.notifier).addMessage(userMessage);
 
@@ -91,8 +108,14 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
         'content': m.content,
       }).toList();
       
+      // Process attachments if needed (e.g., image recognition, document analysis)
+      if (attachments != null && attachments.isNotEmpty) {
+        // TODO: Implement attachment processing (e.g., send to backend for analysis)
+        // For now, we'll include attachment info in the context
+      }
+      
       final response = await aiService.getSmartResponse(
-        message,
+        fullMessage,
         conversationHistory: history,
       );
       

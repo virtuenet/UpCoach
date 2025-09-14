@@ -11,6 +11,9 @@ export async function initializeDatabase(): Promise<void> {
     await sequelize.authenticate();
     logger.info('Database connection established successfully.');
 
+    // Initialize models after database connection is ready
+    await initializeModels();
+
     // Sync models with database - temporarily disabled for debugging
     // if (env === 'development') {
     //   await sequelize.sync({ alter: true });
@@ -19,6 +22,19 @@ export async function initializeDatabase(): Promise<void> {
     logger.info('Database sync disabled for debugging.');
   } catch (error) {
     logger.error('Unable to connect to the database:', error);
+    throw error;
+  }
+}
+
+// Initialize all models after database connection is established
+async function initializeModels(): Promise<void> {
+  try {
+    // Import and initialize models that have deferred initialization
+    const { initializeAllModels } = await import('../models/modelInitializer');
+    await initializeAllModels(sequelize);
+    logger.info('All models initialized successfully.');
+  } catch (error) {
+    logger.error('Failed to initialize models:', error);
     throw error;
   }
 }

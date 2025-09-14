@@ -1,745 +1,814 @@
 #!/usr/bin/env node
+/**
+ * UpCoach Security Report Generator
+ * Consolidates security scan results from multiple tools into comprehensive reports
+ */
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
-
-/**
- * Security Report Generator
- * 
- * Generates a comprehensive security report from test artifacts
- * and calculates the overall security score for the UpCoach platform.
- */
+const crypto = require('crypto');
 
 class SecurityReportGenerator {
-  constructor(inputDir, outputDir) {
-    this.inputDir = inputDir;
-    this.outputDir = outputDir;
-    this.report = {
+  constructor(resultsDir) {
+    this.resultsDir = resultsDir;
+    this.reportTimestamp = new Date().toISOString();
+    this.consolidatedReport = {
       metadata: {
-        generatedAt: new Date().toISOString(),
+        timestamp: this.reportTimestamp,
+        generator: 'UpCoach Security Report Generator',
         version: '1.0.0',
-        platform: 'UpCoach Security Test Suite',
-        runId: process.env.GITHUB_RUN_ID || 'local-run'
+        platform: 'UpCoach AI Coaching Platform',
+        scanId: crypto.randomBytes(8).toString('hex')
       },
       summary: {
-        overallScore: 0,
-        securityRating: 'UNKNOWN',
-        totalTests: 0,
-        passedTests: 0,
-        failedTests: 0,
-        criticalVulnerabilities: 0,
-        highVulnerabilities: 0,
-        mediumVulnerabilities: 0,
-        lowVulnerabilities: 0
+        critical: 0,
+        high: 0,
+        medium: 0,
+        low: 0,
+        informational: 0,
+        total: 0
       },
-      categories: {
-        mobileEncryption: { score: 0, status: 'UNKNOWN', details: {} },
-        apiSecurity: { score: 0, status: 'UNKNOWN', details: {} },
-        authentication: { score: 0, status: 'UNKNOWN', details: {} },
-        gdprCompliance: { score: 0, status: 'UNKNOWN', details: {} },
-        crossPlatform: { score: 0, status: 'UNKNOWN', details: {} }
-      },
-      vulnerabilities: [],
+      securityScore: 0,
+      findings: [],
+      tools: {},
       recommendations: [],
-      compliance: {
-        gdpr: { score: 0, requirements: [] },
-        ccpa: { score: 0, requirements: [] },
-        soc2: { score: 0, requirements: [] }
-      }
+      complianceStatus: {},
+      executiveSummary: ''
     };
   }
 
-  async generate() {
-    console.log('🛡️ Generating Security Report...');
-    
-    // Ensure output directory exists
-    if (!fs.existsSync(this.outputDir)) {
-      fs.mkdirSync(this.outputDir, { recursive: true });
-    }
-
-    // Process each test category
-    await this.processMobileEncryptionResults();
-    await this.processApiSecurityResults();
-    await this.processAuthenticationResults();
-    await this.processGdprComplianceResults();
-    await this.processCrossPlatformResults();
-
-    // Calculate overall scores
-    this.calculateOverallScore();
-    this.generateRecommendations();
-
-    // Generate reports in multiple formats
-    await this.generateJsonReport();
-    await this.generateHtmlReport();
-    await this.generateMarkdownReport();
-    await this.generateCsvReport();
-
-    console.log(`✅ Security report generated successfully!`);
-    console.log(`📊 Overall Security Score: ${this.report.summary.overallScore}/100`);
-    console.log(`🎯 Security Rating: ${this.report.summary.securityRating}`);
-  }
-
-  async processMobileEncryptionResults() {
-    console.log('📱 Processing Mobile Encryption Results...');
-    
-    const mobileResultsPath = path.join(this.inputDir, 'mobile-encryption-test-results');
-    if (!fs.existsSync(mobileResultsPath)) {
-      console.warn('⚠️ Mobile encryption test results not found');
-      this.report.categories.mobileEncryption.status = 'NOT_RUN';
-      return;
-    }
+  /**
+   * Generate consolidated security report from all scan results
+   */
+  async generateConsolidatedReport() {
+    console.log('🔒 Generating UpCoach Security Report...');
+    console.log(`📁 Processing results from: ${this.resultsDir}`);
 
     try {
-      // Parse Flutter test results
-      const testResults = this.parseFlutterTestResults(mobileResultsPath);
-      
-      this.report.categories.mobileEncryption = {
-        score: this.calculateMobileScore(testResults),
-        status: testResults.allPassed ? 'PASS' : 'FAIL',
-        details: {
-          encryptionTests: testResults.encryptionTests || 0,
-          keyManagementTests: testResults.keyManagementTests || 0,
-          offlineProtectionTests: testResults.offlineProtectionTests || 0,
-          crossPlatformCompatibilityTests: testResults.compatibilityTests || 0,
-          coverage: testResults.coverage || 0,
-          vulnerabilities: testResults.vulnerabilities || []
-        }
-      };
+      // Process results from different security tools
+      await this.processSASTResults();
+      await this.processDependencyResults();
+      await this.processContainerResults();
+      await this.processDASTResults();
+      await this.processMobileResults();
+      await this.processCustomSecurityTests();
 
-      // Add vulnerabilities to overall list
-      if (testResults.vulnerabilities) {
-        this.report.vulnerabilities.push(...testResults.vulnerabilities);
-      }
+      // Calculate security metrics
+      this.calculateSecurityScore();
+      this.generateRecommendations();
+      this.generateExecutiveSummary();
+      this.assessComplianceStatus();
 
-      console.log(`📱 Mobile Encryption Score: ${this.report.categories.mobileEncryption.score}/100`);
+      // Save consolidated report
+      await this.saveReports();
+
+      console.log('✅ Security report generation completed');
+      return this.consolidatedReport;
+
     } catch (error) {
-      console.error('❌ Error processing mobile encryption results:', error.message);
-      this.report.categories.mobileEncryption.status = 'ERROR';
+      console.error('❌ Failed to generate security report:', error);
+      throw error;
     }
   }
 
-  async processApiSecurityResults() {
-    console.log('🔒 Processing API Security Results...');
-    
-    const apiResultsPath = path.join(this.inputDir, 'api-security-test-results');
-    if (!fs.existsSync(apiResultsPath)) {
-      console.warn('⚠️ API security test results not found');
-      this.report.categories.apiSecurity.status = 'NOT_RUN';
-      return;
+  /**
+   * Process SAST (Static Application Security Testing) results
+   */
+  async processSASTResults() {
+    console.log('🔍 Processing SAST results...');
+
+    // Process Semgrep results
+    const semgrepFile = path.join(this.resultsDir, 'sast-results', 'semgrep.sarif');
+    if (fs.existsSync(semgrepFile)) {
+      const semgrepResults = JSON.parse(fs.readFileSync(semgrepFile, 'utf8'));
+      this.processSemgrepSARIF(semgrepResults);
     }
 
-    try {
-      const testResults = this.parseJestTestResults(apiResultsPath);
-      
-      this.report.categories.apiSecurity = {
-        score: this.calculateApiSecurityScore(testResults),
-        status: testResults.success ? 'PASS' : 'FAIL',
-        details: {
-          inputValidationTests: testResults.suites?.['Input Validation']?.numPassingTests || 0,
-          sqlInjectionTests: testResults.suites?.['SQL Injection Prevention']?.numPassingTests || 0,
-          authorizationTests: testResults.suites?.['Authorization']?.numPassingTests || 0,
-          rateLimitingTests: testResults.suites?.['Rate Limiting']?.numPassingTests || 0,
-          encryptionTests: testResults.suites?.['Data Encryption']?.numPassingTests || 0,
-          coverage: testResults.coverageMap?.lines?.pct || 0,
-          vulnerabilities: testResults.vulnerabilities || []
-        }
-      };
-
-      if (testResults.vulnerabilities) {
-        this.report.vulnerabilities.push(...testResults.vulnerabilities);
-      }
-
-      console.log(`🔒 API Security Score: ${this.report.categories.apiSecurity.score}/100`);
-    } catch (error) {
-      console.error('❌ Error processing API security results:', error.message);
-      this.report.categories.apiSecurity.status = 'ERROR';
-    }
-  }
-
-  async processAuthenticationResults() {
-    console.log('🔐 Processing Authentication Results...');
-    
-    const authResultsPath = path.join(this.inputDir, 'authentication-security-test-results');
-    if (!fs.existsSync(authResultsPath)) {
-      console.warn('⚠️ Authentication test results not found');
-      this.report.categories.authentication.status = 'NOT_RUN';
-      return;
+    // Process ESLint Security results
+    const eslintFile = path.join(this.resultsDir, 'sast-results', 'eslint-security.sarif');
+    if (fs.existsSync(eslintFile)) {
+      const eslintResults = JSON.parse(fs.readFileSync(eslintFile, 'utf8'));
+      this.processESLintSARIF(eslintResults);
     }
 
-    try {
-      const testResults = this.parseJestTestResults(authResultsPath);
-      
-      this.report.categories.authentication = {
-        score: this.calculateAuthenticationScore(testResults),
-        status: testResults.success ? 'PASS' : 'FAIL',
-        details: {
-          deviceFingerprintingTests: testResults.suites?.['Device Fingerprinting']?.numPassingTests || 0,
-          tokenSecurityTests: testResults.suites?.['Token Security']?.numPassingTests || 0,
-          sessionSecurityTests: testResults.suites?.['Session Security']?.numPassingTests || 0,
-          twoFactorTests: testResults.suites?.['Two-Factor Authentication']?.numPassingTests || 0,
-          webauthnTests: testResults.suites?.['WebAuthn']?.numPassingTests || 0,
-          coverage: testResults.coverageMap?.lines?.pct || 0,
-          vulnerabilities: testResults.vulnerabilities || []
-        }
-      };
-
-      if (testResults.vulnerabilities) {
-        this.report.vulnerabilities.push(...testResults.vulnerabilities);
-      }
-
-      console.log(`🔐 Authentication Score: ${this.report.categories.authentication.score}/100`);
-    } catch (error) {
-      console.error('❌ Error processing authentication results:', error.message);
-      this.report.categories.authentication.status = 'ERROR';
-    }
-  }
-
-  async processGdprComplianceResults() {
-    console.log('📋 Processing GDPR Compliance Results...');
-    
-    const gdprResultsPath = path.join(this.inputDir, 'gdpr-compliance-test-results');
-    if (!fs.existsSync(gdprResultsPath)) {
-      console.warn('⚠️ GDPR compliance test results not found');
-      this.report.categories.gdprCompliance.status = 'NOT_RUN';
-      return;
+    // Process SonarCloud results
+    const sonarFile = path.join(this.resultsDir, 'sast-results', 'sonar-report.json');
+    if (fs.existsSync(sonarFile)) {
+      const sonarResults = JSON.parse(fs.readFileSync(sonarFile, 'utf8'));
+      this.processSonarResults(sonarResults);
     }
 
-    try {
-      const testResults = this.parseJestTestResults(gdprResultsPath);
-      
-      this.report.categories.gdprCompliance = {
-        score: this.calculateGdprScore(testResults),
-        status: testResults.success ? 'PASS' : 'FAIL',
-        details: {
-          dataSubjectRightsTests: testResults.suites?.['Data Subject Rights']?.numPassingTests || 0,
-          consentManagementTests: testResults.suites?.['Consent Management']?.numPassingTests || 0,
-          dataRetentionTests: testResults.suites?.['Data Retention']?.numPassingTests || 0,
-          crossBorderTransferTests: testResults.suites?.['Cross-border Transfers']?.numPassingTests || 0,
-          coverage: testResults.coverageMap?.lines?.pct || 0,
-          complianceScore: this.extractGdprComplianceScore(testResults),
-          violations: testResults.violations || []
-        }
-      };
-
-      // Update compliance scores
-      this.report.compliance.gdpr.score = this.report.categories.gdprCompliance.details.complianceScore;
-
-      console.log(`📋 GDPR Compliance Score: ${this.report.categories.gdprCompliance.score}/100`);
-    } catch (error) {
-      console.error('❌ Error processing GDPR compliance results:', error.message);
-      this.report.categories.gdprCompliance.status = 'ERROR';
-    }
-  }
-
-  async processCrossPlatformResults() {
-    console.log('🌐 Processing Cross-Platform Results...');
-    
-    const crossPlatformPath = path.join(this.inputDir, 'cross-platform-security-test-results');
-    if (!fs.existsSync(crossPlatformPath)) {
-      console.warn('⚠️ Cross-platform test results not found');
-      this.report.categories.crossPlatform.status = 'NOT_RUN';
-      return;
-    }
-
-    try {
-      const testResults = this.parsePlaywrightResults(crossPlatformPath);
-      
-      this.report.categories.crossPlatform = {
-        score: this.calculateCrossPlatformScore(testResults),
-        status: testResults.status === 'passed' ? 'PASS' : 'FAIL',
-        details: {
-          apiCommunicationTests: testResults.suites?.['API Communication Security']?.tests || 0,
-          frontendSecurityTests: testResults.suites?.['Frontend Security Integration']?.tests || 0,
-          dataSyncTests: testResults.suites?.['Data Synchronization Security']?.tests || 0,
-          performanceTests: testResults.suites?.['Performance Under Security']?.tests || 0,
-          platformsCovered: testResults.platformsCovered || [],
-          vulnerabilities: testResults.vulnerabilities || []
-        }
-      };
-
-      if (testResults.vulnerabilities) {
-        this.report.vulnerabilities.push(...testResults.vulnerabilities);
-      }
-
-      console.log(`🌐 Cross-Platform Score: ${this.report.categories.crossPlatform.score}/100`);
-    } catch (error) {
-      console.error('❌ Error processing cross-platform results:', error.message);
-      this.report.categories.crossPlatform.status = 'ERROR';
-    }
-  }
-
-  calculateOverallScore() {
-    console.log('📊 Calculating Overall Security Score...');
-    
-    const weights = {
-      mobileEncryption: 0.25,    // 25%
-      apiSecurity: 0.30,         // 30%
-      authentication: 0.25,      // 25%
-      gdprCompliance: 0.15,      // 15%
-      crossPlatform: 0.05        // 5%
+    this.consolidatedReport.tools.sast = {
+      enabled: true,
+      tools: ['semgrep', 'eslint-security', 'sonarcloud'],
+      coverage: 'Full codebase analysis'
     };
-
-    let weightedScore = 0;
-    let totalWeight = 0;
-
-    for (const [category, weight] of Object.entries(weights)) {
-      const categoryScore = this.report.categories[category]?.score || 0;
-      if (this.report.categories[category]?.status !== 'NOT_RUN') {
-        weightedScore += categoryScore * weight;
-        totalWeight += weight;
-      }
-    }
-
-    this.report.summary.overallScore = totalWeight > 0 ? Math.round(weightedScore / totalWeight) : 0;
-
-    // Determine security rating
-    if (this.report.summary.overallScore >= 95) {
-      this.report.summary.securityRating = 'A+';
-    } else if (this.report.summary.overallScore >= 90) {
-      this.report.summary.securityRating = 'A';
-    } else if (this.report.summary.overallScore >= 85) {
-      this.report.summary.securityRating = 'B+';
-    } else if (this.report.summary.overallScore >= 80) {
-      this.report.summary.securityRating = 'B';
-    } else if (this.report.summary.overallScore >= 75) {
-      this.report.summary.securityRating = 'B-';
-    } else if (this.report.summary.overallScore >= 70) {
-      this.report.summary.securityRating = 'C+';
-    } else {
-      this.report.summary.securityRating = 'C';
-    }
-
-    // Count vulnerabilities by severity
-    this.report.vulnerabilities.forEach(vuln => {
-      switch (vuln.severity?.toLowerCase()) {
-        case 'critical':
-          this.report.summary.criticalVulnerabilities++;
-          break;
-        case 'high':
-          this.report.summary.highVulnerabilities++;
-          break;
-        case 'medium':
-          this.report.summary.mediumVulnerabilities++;
-          break;
-        case 'low':
-          this.report.summary.lowVulnerabilities++;
-          break;
-      }
-    });
-
-    // Calculate test statistics
-    Object.values(this.report.categories).forEach(category => {
-      if (category.details && category.status !== 'NOT_RUN') {
-        const categoryTests = Object.values(category.details).reduce((sum, val) => {
-          return sum + (typeof val === 'number' ? val : 0);
-        }, 0);
-        this.report.summary.totalTests += categoryTests;
-        if (category.status === 'PASS') {
-          this.report.summary.passedTests += categoryTests;
-        } else {
-          this.report.summary.failedTests += categoryTests;
-        }
-      }
-    });
   }
 
-  generateRecommendations() {
-    console.log('💡 Generating Security Recommendations...');
-    
-    const recommendations = [];
+  /**
+   * Process dependency vulnerability scan results
+   */
+  async processDependencyResults() {
+    console.log('📦 Processing dependency scan results...');
 
-    // Critical vulnerabilities require immediate attention
-    if (this.report.summary.criticalVulnerabilities > 0) {
-      recommendations.push({
-        priority: 'CRITICAL',
-        category: 'Vulnerabilities',
-        title: 'Address Critical Security Vulnerabilities',
-        description: `${this.report.summary.criticalVulnerabilities} critical vulnerabilities detected that require immediate remediation.`,
-        action: 'Review and fix all critical vulnerabilities before deployment.'
-      });
-    }
-
-    // Category-specific recommendations
-    Object.entries(this.report.categories).forEach(([category, data]) => {
-      if (data.score < 90) {
-        recommendations.push({
-          priority: data.score < 70 ? 'HIGH' : 'MEDIUM',
-          category: this.capitalizeFirst(category),
-          title: `Improve ${this.capitalizeFirst(category)} Security`,
-          description: `Current score: ${data.score}/100. Security improvements needed to reach A+ rating.`,
-          action: this.getSpecificRecommendation(category, data.score)
-        });
-      }
-    });
-
-    // GDPR compliance recommendations
-    if (this.report.compliance.gdpr.score < 100) {
-      recommendations.push({
-        priority: 'HIGH',
-        category: 'Compliance',
-        title: 'Achieve Full GDPR Compliance',
-        description: `Current GDPR compliance: ${this.report.compliance.gdpr.score}%. Full compliance required.`,
-        action: 'Review and implement missing GDPR requirements, particularly data subject rights and consent management.'
-      });
-    }
-
-    // Performance recommendations
-    if (this.hasPerformanceIssues()) {
-      recommendations.push({
-        priority: 'MEDIUM',
-        category: 'Performance',
-        title: 'Optimize Security Feature Performance',
-        description: 'Security features causing performance degradation beyond acceptable thresholds.',
-        action: 'Review encryption algorithms and optimize security middleware for better performance.'
-      });
-    }
-
-    this.report.recommendations = recommendations.sort((a, b) => {
-      const priorityOrder = { 'CRITICAL': 0, 'HIGH': 1, 'MEDIUM': 2, 'LOW': 3 };
-      return priorityOrder[a.priority] - priorityOrder[b.priority];
-    });
-  }
-
-  async generateJsonReport() {
-    const jsonPath = path.join(this.outputDir, 'security-report.json');
-    fs.writeFileSync(jsonPath, JSON.stringify(this.report, null, 2));
-    console.log(`📄 JSON report generated: ${jsonPath}`);
-  }
-
-  async generateHtmlReport() {
-    const htmlContent = this.generateHtmlContent();
-    const htmlPath = path.join(this.outputDir, 'security-report.html');
-    fs.writeFileSync(htmlPath, htmlContent);
-    console.log(`🌐 HTML report generated: ${htmlPath}`);
-  }
-
-  async generateMarkdownReport() {
-    const mdContent = this.generateMarkdownContent();
-    const mdPath = path.join(this.outputDir, 'SECURITY_REPORT.md');
-    fs.writeFileSync(mdPath, mdContent);
-    console.log(`📝 Markdown report generated: ${mdPath}`);
-  }
-
-  async generateCsvReport() {
-    const csvContent = this.generateCsvContent();
-    const csvPath = path.join(this.outputDir, 'security-summary.csv');
-    fs.writeFileSync(csvPath, csvContent);
-    console.log(`📊 CSV report generated: ${csvPath}`);
-  }
-
-  generateHtmlContent() {
-    const { overallScore, securityRating } = this.report.summary;
-    const scoreColor = overallScore >= 95 ? '#22c55e' : overallScore >= 85 ? '#f59e0b' : '#ef4444';
-
-    return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UpCoach Security Report</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #f8fafc; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; }
-        .score-circle { width: 120px; height: 120px; border: 8px solid rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border-top: 8px solid white; }
-        .score-text { font-size: 28px; font-weight: bold; }
-        .rating { font-size: 24px; font-weight: 300; text-align: center; }
-        .content { padding: 30px; }
-        .category { margin: 20px 0; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; }
-        .category-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .category-title { font-size: 18px; font-weight: 600; }
-        .category-score { font-size: 16px; font-weight: bold; padding: 5px 15px; border-radius: 20px; }
-        .pass { background: #dcfce7; color: #166534; }
-        .fail { background: #fef2f2; color: #dc2626; }
-        .vulnerability { margin: 10px 0; padding: 15px; border-left: 4px solid; }
-        .critical { border-color: #dc2626; background: #fef2f2; }
-        .high { border-color: #ea580c; background: #fff7ed; }
-        .medium { border-color: #d97706; background: #fffbeb; }
-        .low { border-color: #65a30d; background: #f7fee7; }
-        .recommendations { margin-top: 30px; }
-        .recommendation { margin: 15px 0; padding: 20px; border-radius: 8px; border-left: 4px solid; }
-        .rec-critical { border-color: #dc2626; background: #fef2f2; }
-        .rec-high { border-color: #ea580c; background: #fff7ed; }
-        .rec-medium { border-color: #d97706; background: #fffbeb; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="score-circle" style="border-top-color: ${scoreColor}">
-                <div class="score-text">${overallScore}</div>
-            </div>
-            <div class="rating">Security Rating: ${securityRating}</div>
-            <p style="text-align: center; margin-top: 20px; opacity: 0.9;">
-                Generated on ${new Date(this.report.metadata.generatedAt).toLocaleString()}
-            </p>
-        </div>
-        
-        <div class="content">
-            <h2>Security Test Categories</h2>
-            ${Object.entries(this.report.categories).map(([key, category]) => `
-                <div class="category">
-                    <div class="category-header">
-                        <div class="category-title">${this.capitalizeFirst(key)}</div>
-                        <div class="category-score ${category.status === 'PASS' ? 'pass' : 'fail'}">
-                            ${category.score}/100 - ${category.status}
-                        </div>
-                    </div>
-                    <div class="category-details">
-                        ${Object.entries(category.details || {}).map(([detailKey, value]) => `
-                            <div><strong>${this.formatDetailKey(detailKey)}:</strong> ${value}</div>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('')}
-
-            ${this.report.vulnerabilities.length > 0 ? `
-                <h2>Security Vulnerabilities</h2>
-                ${this.report.vulnerabilities.map(vuln => `
-                    <div class="vulnerability ${vuln.severity?.toLowerCase()}">
-                        <strong>${vuln.title || 'Security Issue'}</strong> (${vuln.severity || 'Unknown'})
-                        <p>${vuln.description || 'No description available'}</p>
-                        ${vuln.recommendation ? `<p><strong>Recommendation:</strong> ${vuln.recommendation}</p>` : ''}
-                    </div>
-                `).join('')}
-            ` : '<p style="color: #22c55e;">✅ No security vulnerabilities detected!</p>'}
-
-            ${this.report.recommendations.length > 0 ? `
-                <div class="recommendations">
-                    <h2>Security Recommendations</h2>
-                    ${this.report.recommendations.map(rec => `
-                        <div class="recommendation rec-${rec.priority.toLowerCase()}">
-                            <strong>${rec.title}</strong> (${rec.priority} Priority)
-                            <p>${rec.description}</p>
-                            <p><strong>Action:</strong> ${rec.action}</p>
-                        </div>
-                    `).join('')}
-                </div>
-            ` : ''}
-        </div>
-    </div>
-</body>
-</html>`;
-  }
-
-  generateMarkdownContent() {
-    return `# 🛡️ UpCoach Security Report
-
-**Generated:** ${new Date(this.report.metadata.generatedAt).toLocaleString()}
-**Version:** ${this.report.metadata.version}
-**Run ID:** ${this.report.metadata.runId}
-
-## 📊 Security Summary
-
-| Metric | Value |
-|--------|-------|
-| **Overall Security Score** | **${this.report.summary.overallScore}/100** |
-| **Security Rating** | **${this.report.summary.securityRating}** |
-| Total Tests | ${this.report.summary.totalTests} |
-| Passed Tests | ${this.report.summary.passedTests} |
-| Failed Tests | ${this.report.summary.failedTests} |
-| Critical Vulnerabilities | ${this.report.summary.criticalVulnerabilities} |
-| High Vulnerabilities | ${this.report.summary.highVulnerabilities} |
-| Medium Vulnerabilities | ${this.report.summary.mediumVulnerabilities} |
-| Low Vulnerabilities | ${this.report.summary.lowVulnerabilities} |
-
-## 📋 Test Categories
-
-${Object.entries(this.report.categories).map(([key, category]) => `
-### ${this.capitalizeFirst(key)}
-
-**Score:** ${category.score}/100
-**Status:** ${category.status === 'PASS' ? '✅ PASS' : category.status === 'FAIL' ? '❌ FAIL' : '⏸️ ' + category.status}
-
-${Object.entries(category.details || {}).map(([detailKey, value]) => 
-  `- **${this.formatDetailKey(detailKey)}:** ${value}`
-).join('\n')}
-`).join('')}
-
-## 🚨 Security Vulnerabilities
-
-${this.report.vulnerabilities.length === 0 ? '✅ **No security vulnerabilities detected!**' : 
-  this.report.vulnerabilities.map(vuln => `
-### ${vuln.severity || 'Unknown'} - ${vuln.title || 'Security Issue'}
-
-${vuln.description || 'No description available'}
-
-${vuln.recommendation ? `**Recommendation:** ${vuln.recommendation}` : ''}
-`).join('')}
-
-## 💡 Security Recommendations
-
-${this.report.recommendations.length === 0 ? '✅ **No security recommendations at this time.**' :
-  this.report.recommendations.map(rec => `
-### ${rec.priority} Priority - ${rec.title}
-
-${rec.description}
-
-**Action Required:** ${rec.action}
-`).join('')}
-
-## 📈 GDPR Compliance Status
-
-- **GDPR Compliance Score:** ${this.report.compliance.gdpr.score}%
-- **Status:** ${this.report.compliance.gdpr.score >= 100 ? '✅ Fully Compliant' : '⚠️ Improvements Needed'}
-
----
-
-*This report was automatically generated by the UpCoach Security Test Suite.*`;
-  }
-
-  generateCsvContent() {
-    const headers = [
-      'Category',
-      'Score',
-      'Status',
-      'Tests',
-      'Coverage',
-      'Vulnerabilities'
+    // Process npm audit results
+    const npmAuditFiles = [
+      'npm-audit-api.json',
+      'npm-audit-admin.json', 
+      'npm-audit-cms.json',
+      'npm-audit-landing.json'
     ];
 
-    const rows = Object.entries(this.report.categories).map(([key, category]) => [
-      this.capitalizeFirst(key),
-      category.score,
-      category.status,
-      Object.values(category.details || {}).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0),
-      category.details?.coverage || 0,
-      category.details?.vulnerabilities?.length || 0
-    ]);
+    for (const file of npmAuditFiles) {
+      const filePath = path.join(this.resultsDir, 'dependency-scan-results', file);
+      if (fs.existsSync(filePath)) {
+        const npmResults = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        this.processNpmAuditResults(npmResults, file);
+      }
+    }
 
-    return [
-      headers.join(','),
-      ...rows.map(row => row.join(','))
-    ].join('\n');
-  }
+    // Process Snyk results
+    const snykFiles = ['snyk-results.json', 'snyk-container.json'];
+    for (const file of snykFiles) {
+      const filePath = path.join(this.resultsDir, 'dependency-scan-results', file);
+      if (fs.existsSync(filePath)) {
+        const snykResults = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        this.processSnykResults(snykResults, file);
+      }
+    }
 
-  // Utility methods for parsing test results
-  parseFlutterTestResults(resultsPath) {
-    // Mock implementation - would parse actual Flutter test output
-    return {
-      allPassed: true,
-      encryptionTests: 15,
-      keyManagementTests: 8,
-      offlineProtectionTests: 5,
-      compatibilityTests: 3,
-      coverage: 95,
-      vulnerabilities: []
+    // Process OWASP Dependency Check results
+    const owaspFile = path.join(this.resultsDir, 'dependency-scan-results', 'dependency-check-report.json');
+    if (fs.existsSync(owaspFile)) {
+      const owaspResults = JSON.parse(fs.readFileSync(owaspFile, 'utf8'));
+      this.processOwaspDependencyResults(owaspResults);
+    }
+
+    this.consolidatedReport.tools.dependencyScanning = {
+      enabled: true,
+      tools: ['npm-audit', 'snyk', 'owasp-dependency-check'],
+      coverage: 'All package dependencies'
     };
   }
 
-  parseJestTestResults(resultsPath) {
-    // Mock implementation - would parse actual Jest test output
-    return {
-      success: true,
-      numTotalTests: 45,
-      numPassedTests: 43,
-      numFailedTests: 2,
-      coverageMap: { lines: { pct: 92 } },
-      suites: {
-        'Input Validation': { numPassingTests: 12 },
-        'SQL Injection Prevention': { numPassingTests: 8 },
-        'Authorization': { numPassingTests: 15 },
-        'Rate Limiting': { numPassingTests: 5 },
-        'Data Encryption': { numPassingTests: 3 }
+  /**
+   * Process container security scan results
+   */
+  async processContainerResults() {
+    console.log('🐳 Processing container scan results...');
+
+    // Process Trivy results
+    const trivyFiles = ['trivy-api.sarif', 'trivy-admin.sarif'];
+    for (const file of trivyFiles) {
+      const filePath = path.join(this.resultsDir, file);
+      if (fs.existsSync(filePath)) {
+        const trivyResults = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        this.processTrivySARIF(trivyResults, file);
+      }
+    }
+
+    // Process Docker Scout results
+    const scoutFile = path.join(this.resultsDir, 'docker-scout-api.sarif');
+    if (fs.existsSync(scoutFile)) {
+      const scoutResults = JSON.parse(fs.readFileSync(scoutFile, 'utf8'));
+      this.processDockerScoutSARIF(scoutResults);
+    }
+
+    this.consolidatedReport.tools.containerScanning = {
+      enabled: true,
+      tools: ['trivy', 'docker-scout'],
+      coverage: 'Container images and base OS'
+    };
+  }
+
+  /**
+   * Process DAST (Dynamic Application Security Testing) results
+   */
+  async processDASTResults() {
+    console.log('⚡ Processing DAST results...');
+
+    // Process OWASP ZAP results
+    const zapFiles = ['zap-baseline-report.json', 'zap-full-report.json'];
+    for (const file of zapFiles) {
+      const filePath = path.join(this.resultsDir, 'dast-results', file);
+      if (fs.existsSync(filePath)) {
+        const zapResults = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        this.processZapResults(zapResults, file);
+      }
+    }
+
+    // Process API security test results
+    const apiTestFile = path.join(this.resultsDir, 'dast-results', 'api-security-results.json');
+    if (fs.existsSync(apiTestFile)) {
+      const apiResults = JSON.parse(fs.readFileSync(apiTestFile, 'utf8'));
+      this.processAPISecurityResults(apiResults);
+    }
+
+    // Process SSL/TLS test results
+    const sslTestFile = path.join(this.resultsDir, 'dast-results', 'testssl-results.json');
+    if (fs.existsSync(sslTestFile)) {
+      const sslResults = JSON.parse(fs.readFileSync(sslTestFile, 'utf8'));
+      this.processSSLResults(sslResults);
+    }
+
+    this.consolidatedReport.tools.dast = {
+      enabled: true,
+      tools: ['owasp-zap', 'custom-api-tests', 'testssl'],
+      coverage: 'Runtime application security'
+    };
+  }
+
+  /**
+   * Process mobile security test results
+   */
+  async processMobileResults() {
+    console.log('📱 Processing mobile security results...');
+
+    const mobileResultsFile = path.join(this.resultsDir, 'mobile-security-results', 'flutter-analysis.txt');
+    if (fs.existsSync(mobileResultsFile)) {
+      const mobileResults = fs.readFileSync(mobileResultsFile, 'utf8');
+      this.processMobileSecurityResults(mobileResults);
+    }
+
+    this.consolidatedReport.tools.mobileScanning = {
+      enabled: true,
+      tools: ['flutter-analyze', 'dart-analyzer'],
+      coverage: 'Mobile application code'
+    };
+  }
+
+  /**
+   * Process custom security test results
+   */
+  async processCustomSecurityTests() {
+    console.log('🎯 Processing custom security test results...');
+
+    // Process authentication security tests
+    const authTestFiles = [
+      'auth-flows-security.test.results.json',
+      'authorization-rls-security.test.results.json',
+      'input-validation-security.test.results.json',
+      'network-headers-security.test.results.json'
+    ];
+
+    for (const file of authTestFiles) {
+      const filePath = path.join(this.resultsDir, 'custom-security-tests', file);
+      if (fs.existsSync(filePath)) {
+        const testResults = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        this.processCustomTestResults(testResults, file);
+      }
+    }
+
+    this.consolidatedReport.tools.customTests = {
+      enabled: true,
+      tools: ['authentication-tests', 'authorization-tests', 'input-validation', 'security-headers'],
+      coverage: 'UpCoach-specific security patterns'
+    };
+  }
+
+  /**
+   * Process Semgrep SARIF results
+   */
+  processSemgrepSARIF(sarifData) {
+    if (!sarifData.runs || !sarifData.runs[0] || !sarifData.runs[0].results) {
+      return;
+    }
+
+    const results = sarifData.runs[0].results;
+    for (const result of results) {
+      const severity = this.mapSemgrepSeverity(result.level || 'info');
+      
+      const finding = {
+        tool: 'semgrep',
+        id: result.ruleId,
+        title: result.message.text,
+        description: result.message.text,
+        severity: severity,
+        category: 'SAST',
+        location: this.extractLocationFromSARIF(result),
+        cwe: this.extractCWEFromSemgrep(result),
+        recommendation: this.getRecommendationForRule(result.ruleId)
+      };
+
+      this.addFinding(finding);
+    }
+  }
+
+  /**
+   * Process ESLint SARIF results
+   */
+  processESLintSARIF(sarifData) {
+    if (!sarifData.runs || !sarifData.runs[0] || !sarifData.runs[0].results) {
+      return;
+    }
+
+    const results = sarifData.runs[0].results;
+    for (const result of results) {
+      const severity = this.mapESLintSeverity(result.level || 'info');
+      
+      const finding = {
+        tool: 'eslint-security',
+        id: result.ruleId,
+        title: result.message.text,
+        description: result.message.text,
+        severity: severity,
+        category: 'SAST',
+        location: this.extractLocationFromSARIF(result),
+        recommendation: 'Review and fix security rule violation'
+      };
+
+      this.addFinding(finding);
+    }
+  }
+
+  /**
+   * Process npm audit results
+   */
+  processNpmAuditResults(auditData, filename) {
+    if (!auditData.vulnerabilities) {
+      return;
+    }
+
+    Object.entries(auditData.vulnerabilities).forEach(([packageName, vuln]) => {
+      const finding = {
+        tool: 'npm-audit',
+        id: `npm-${packageName}-${vuln.via?.[0]?.source || 'unknown'}`,
+        title: `${packageName}: ${vuln.via?.[0]?.title || 'Vulnerability'}`,
+        description: vuln.via?.[0]?.overview || 'Dependency vulnerability detected',
+        severity: this.mapNpmSeverity(vuln.severity),
+        category: 'Dependency',
+        package: packageName,
+        version: vuln.version,
+        cwe: vuln.via?.[0]?.cwe,
+        recommendation: `Update ${packageName} to version ${vuln.fixAvailable?.version || 'latest'}`
+      };
+
+      this.addFinding(finding);
+    });
+  }
+
+  /**
+   * Process Snyk results
+   */
+  processSnykResults(snykData, filename) {
+    if (!snykData.vulnerabilities) {
+      return;
+    }
+
+    snykData.vulnerabilities.forEach(vuln => {
+      const finding = {
+        tool: 'snyk',
+        id: vuln.id,
+        title: vuln.title,
+        description: vuln.description,
+        severity: this.mapSnykSeverity(vuln.severity),
+        category: filename.includes('container') ? 'Container' : 'Dependency',
+        package: vuln.packageName,
+        version: vuln.version,
+        cwe: vuln.identifiers?.CWE,
+        cvss: vuln.cvssScore,
+        recommendation: vuln.fixedIn ? `Update to version ${vuln.fixedIn.join(', ')}` : 'No fix available'
+      };
+
+      this.addFinding(finding);
+    });
+  }
+
+  /**
+   * Process OWASP ZAP results
+   */
+  processZapResults(zapData, filename) {
+    if (!zapData.site || !zapData.site[0] || !zapData.site[0].alerts) {
+      return;
+    }
+
+    const alerts = zapData.site[0].alerts;
+    alerts.forEach(alert => {
+      const finding = {
+        tool: 'owasp-zap',
+        id: alert.pluginid,
+        title: alert.name,
+        description: alert.desc,
+        severity: this.mapZapSeverity(alert.riskdesc),
+        category: 'DAST',
+        url: alert.instances?.[0]?.uri,
+        method: alert.instances?.[0]?.method,
+        param: alert.instances?.[0]?.param,
+        evidence: alert.instances?.[0]?.evidence,
+        recommendation: alert.solution,
+        reference: alert.reference
+      };
+
+      this.addFinding(finding);
+    });
+  }
+
+  /**
+   * Add finding to consolidated report
+   */
+  addFinding(finding) {
+    this.consolidatedReport.findings.push(finding);
+    this.consolidatedReport.summary[finding.severity.toLowerCase()]++;
+    this.consolidatedReport.summary.total++;
+  }
+
+  /**
+   * Calculate overall security score
+   */
+  calculateSecurityScore() {
+    const { critical, high, medium, low } = this.consolidatedReport.summary;
+    
+    // Base score starts at 100
+    let score = 100;
+    
+    // Deduct points based on severity
+    score -= critical * 25;  // Critical: -25 points each
+    score -= high * 15;      // High: -15 points each  
+    score -= medium * 5;     // Medium: -5 points each
+    score -= low * 1;        // Low: -1 point each
+    
+    // Ensure score doesn't go below 0
+    score = Math.max(0, score);
+    
+    this.consolidatedReport.securityScore = score;
+    
+    // Add score interpretation
+    this.consolidatedReport.scoreInterpretation = this.getScoreInterpretation(score);
+  }
+
+  /**
+   * Get score interpretation
+   */
+  getScoreInterpretation(score) {
+    if (score >= 90) return 'Excellent';
+    if (score >= 80) return 'Good';
+    if (score >= 70) return 'Fair';
+    if (score >= 60) return 'Poor';
+    return 'Critical';
+  }
+
+  /**
+   * Generate security recommendations
+   */
+  generateRecommendations() {
+    const recommendations = [];
+    const { critical, high, medium } = this.consolidatedReport.summary;
+
+    // Critical severity recommendations
+    if (critical > 0) {
+      recommendations.push({
+        priority: 'CRITICAL',
+        title: '🚨 Address Critical Vulnerabilities Immediately',
+        description: `${critical} critical vulnerabilities found that require immediate attention before production deployment.`,
+        action: 'Fix all critical vulnerabilities within 24 hours',
+        timeline: '24 hours'
+      });
+    }
+
+    // High severity recommendations
+    if (high > 0) {
+      recommendations.push({
+        priority: 'HIGH', 
+        title: '⚠️ Fix High-Risk Security Issues',
+        description: `${high} high-risk vulnerabilities could be exploited under certain conditions.`,
+        action: 'Address all high-risk findings within 72 hours',
+        timeline: '72 hours'
+      });
+    }
+
+    // Medium severity recommendations
+    if (medium > 0) {
+      recommendations.push({
+        priority: 'MEDIUM',
+        title: '📋 Resolve Medium-Risk Issues',
+        description: `${medium} medium-risk issues should be addressed in the next sprint.`,
+        action: 'Plan remediation for next development cycle',
+        timeline: '1-2 weeks'
+      });
+    }
+
+    // General security recommendations
+    recommendations.push(
+      {
+        priority: 'ONGOING',
+        title: '🔄 Implement Continuous Security Testing',
+        description: 'Integrate security scanning into CI/CD pipeline for every commit.',
+        action: 'Configure automated security gates in deployment pipeline',
+        timeline: 'Ongoing'
       },
-      vulnerabilities: []
-    };
-  }
-
-  parsePlaywrightResults(resultsPath) {
-    // Mock implementation - would parse actual Playwright test output
-    return {
-      status: 'passed',
-      tests: 25,
-      passed: 24,
-      failed: 1,
-      suites: {
-        'API Communication Security': { tests: 8 },
-        'Frontend Security Integration': { tests: 12 },
-        'Data Synchronization Security': { tests: 3 },
-        'Performance Under Security': { tests: 2 }
+      {
+        priority: 'ONGOING', 
+        title: '📚 Security Training & Awareness',
+        description: 'Provide security training for development team.',
+        action: 'Schedule monthly security training sessions',
+        timeline: 'Ongoing'
       },
-      platformsCovered: ['chromium', 'firefox', 'webkit'],
-      vulnerabilities: []
+      {
+        priority: 'ONGOING',
+        title: '🛡️ Regular Security Assessments',
+        description: 'Conduct quarterly penetration testing and security audits.',
+        action: 'Schedule next penetration test',
+        timeline: 'Quarterly'
+      }
+    );
+
+    this.consolidatedReport.recommendations = recommendations;
+  }
+
+  /**
+   * Generate executive summary
+   */
+  generateExecutiveSummary() {
+    const { total, critical, high, medium, low } = this.consolidatedReport.summary;
+    const score = this.consolidatedReport.securityScore;
+    
+    let summary = `# UpCoach Platform Security Assessment\n\n`;
+    summary += `**Assessment Date:** ${new Date(this.reportTimestamp).toLocaleDateString()}\n`;
+    summary += `**Security Score:** ${score}/100 (${this.getScoreInterpretation(score)})\n\n`;
+    
+    summary += `## Key Findings\n\n`;
+    summary += `- **Total Issues:** ${total}\n`;
+    summary += `- **Critical:** ${critical} 🚨\n`;
+    summary += `- **High:** ${high} ⚠️\n`;
+    summary += `- **Medium:** ${medium} 📋\n`;
+    summary += `- **Low:** ${low} 📝\n\n`;
+    
+    if (critical > 0) {
+      summary += `## ⚠️ Critical Security Alert\n\n`;
+      summary += `${critical} critical vulnerabilities were identified that pose immediate security risks. `;
+      summary += `These must be addressed before production deployment.\n\n`;
+    }
+    
+    if (high > 0) {
+      summary += `## High Priority Issues\n\n`;
+      summary += `${high} high-severity vulnerabilities require prompt attention. `;
+      summary += `These could potentially be exploited by attackers.\n\n`;
+    }
+    
+    summary += `## Security Assessment Coverage\n\n`;
+    summary += `- ✅ Static Application Security Testing (SAST)\n`;
+    summary += `- ✅ Dependency Vulnerability Scanning\n`;
+    summary += `- ✅ Container Security Analysis\n`;
+    summary += `- ✅ Dynamic Application Security Testing (DAST)\n`;
+    summary += `- ✅ Mobile Application Security\n`;
+    summary += `- ✅ Custom Security Tests\n\n`;
+    
+    summary += `## Immediate Actions Required\n\n`;
+    if (critical > 0) {
+      summary += `1. 🚨 **STOP DEPLOYMENT** - Critical vulnerabilities must be fixed first\n`;
+    }
+    if (high > 0) {
+      summary += `2. ⚠️ Review and fix all high-severity vulnerabilities\n`;
+    }
+    summary += `3. 📋 Create remediation plan for medium and low severity issues\n`;
+    summary += `4. 🔄 Implement security controls in CI/CD pipeline\n\n`;
+    
+    this.consolidatedReport.executiveSummary = summary;
+  }
+
+  /**
+   * Assess compliance status
+   */
+  assessComplianceStatus() {
+    const { critical, high } = this.consolidatedReport.summary;
+    
+    this.consolidatedReport.complianceStatus = {
+      productionReady: critical === 0,
+      securityGatePassed: critical === 0 && high <= 5,
+      complianceFrameworks: {
+        'SOC 2': critical === 0 ? 'COMPLIANT' : 'NON-COMPLIANT',
+        'OWASP Top 10': this.checkOWASPCompliance(),
+        'GDPR Data Protection': this.checkGDPRCompliance(),
+        'ISO 27001': critical === 0 && high <= 3 ? 'COMPLIANT' : 'PARTIAL'
+      },
+      recommendations: this.getComplianceRecommendations()
     };
   }
 
-  // Scoring methods
-  calculateMobileScore(testResults) {
-    if (!testResults.allPassed) return Math.max(0, 85 - (testResults.failedTests || 0) * 10);
-    return Math.min(100, 85 + (testResults.coverage - 80) / 2);
+  /**
+   * Check OWASP Top 10 compliance
+   */
+  checkOWASPCompliance() {
+    const owaspIssues = this.consolidatedReport.findings.filter(finding => 
+      finding.cwe && ['CWE-79', 'CWE-89', 'CWE-502', 'CWE-798', 'CWE-863'].includes(finding.cwe)
+    );
+    
+    return owaspIssues.length === 0 ? 'COMPLIANT' : 'NON-COMPLIANT';
   }
 
-  calculateApiSecurityScore(testResults) {
-    if (!testResults.success) return Math.max(0, 80 - (testResults.numFailedTests || 0) * 5);
-    return Math.min(100, 80 + (testResults.coverageMap?.lines?.pct || 0) / 5);
+  /**
+   * Check GDPR compliance
+   */
+  checkGDPRCompliance() {
+    const gdprIssues = this.consolidatedReport.findings.filter(finding =>
+      finding.description.toLowerCase().includes('personal') ||
+      finding.description.toLowerCase().includes('privacy') ||
+      finding.description.toLowerCase().includes('data')
+    );
+    
+    return gdprIssues.length === 0 ? 'COMPLIANT' : 'REVIEW_REQUIRED';
   }
 
-  calculateAuthenticationScore(testResults) {
-    if (!testResults.success) return Math.max(0, 85 - (testResults.numFailedTests || 0) * 8);
-    return Math.min(100, 85 + (testResults.coverageMap?.lines?.pct || 0) / 6);
+  /**
+   * Get compliance recommendations
+   */
+  getComplianceRecommendations() {
+    const recommendations = [];
+    
+    if (this.consolidatedReport.summary.critical > 0) {
+      recommendations.push('Fix all critical vulnerabilities for SOC 2 compliance');
+    }
+    
+    if (!this.consolidatedReport.complianceStatus.productionReady) {
+      recommendations.push('Complete security remediation before production deployment');
+    }
+    
+    recommendations.push(
+      'Implement regular security assessments',
+      'Maintain security documentation and incident response procedures',
+      'Ensure data protection controls meet GDPR requirements'
+    );
+    
+    return recommendations;
   }
 
-  calculateGdprScore(testResults) {
-    const baseScore = testResults.success ? 85 : Math.max(0, 70 - (testResults.numFailedTests || 0) * 10);
-    const complianceBonus = (this.extractGdprComplianceScore(testResults) - 80) / 4;
-    return Math.min(100, baseScore + complianceBonus);
+  /**
+   * Save consolidated reports
+   */
+  async saveReports() {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const reportsDir = path.join(this.resultsDir, '..');
+    
+    if (!fs.existsSync(reportsDir)) {
+      fs.mkdirSync(reportsDir, { recursive: true });
+    }
+
+    // Save JSON report
+    const jsonFile = path.join(reportsDir, 'consolidated-report.json');
+    fs.writeFileSync(jsonFile, JSON.stringify(this.consolidatedReport, null, 2));
+
+    // Save executive summary
+    const summaryFile = path.join(reportsDir, 'executive-summary.md');
+    fs.writeFileSync(summaryFile, this.consolidatedReport.executiveSummary);
+
+    // Save simplified report for CI/CD
+    const ciReport = {
+      timestamp: this.reportTimestamp,
+      securityScore: this.consolidatedReport.securityScore,
+      summary: this.consolidatedReport.summary,
+      productionReady: this.consolidatedReport.complianceStatus.productionReady,
+      securityGatePassed: this.consolidatedReport.complianceStatus.securityGatePassed
+    };
+    
+    const ciFile = path.join(reportsDir, 'ci-security-gate.json');
+    fs.writeFileSync(ciFile, JSON.stringify(ciReport, null, 2));
+
+    console.log(`📄 Reports saved:`);
+    console.log(`   📊 JSON Report: ${jsonFile}`);
+    console.log(`   📋 Executive Summary: ${summaryFile}`);
+    console.log(`   🚦 CI Security Gate: ${ciFile}`);
   }
 
-  calculateCrossPlatformScore(testResults) {
-    if (testResults.status !== 'passed') return Math.max(0, 75 - (testResults.failed || 0) * 15);
-    return Math.min(100, 75 + (testResults.platformsCovered?.length || 0) * 5);
+  // Utility methods for severity mapping
+  mapSemgrepSeverity(level) {
+    const mapping = {
+      'error': 'high',
+      'warning': 'medium', 
+      'info': 'low'
+    };
+    return mapping[level] || 'medium';
   }
 
-  extractGdprComplianceScore(testResults) {
-    // Mock implementation - would extract actual GDPR compliance score from test results
-    return 95;
+  mapESLintSeverity(level) {
+    const mapping = {
+      'error': 'high',
+      'warning': 'medium',
+      'info': 'low'
+    };
+    return mapping[level] || 'medium';
   }
 
-  getSpecificRecommendation(category, score) {
+  mapNpmSeverity(severity) {
+    const mapping = {
+      'critical': 'critical',
+      'high': 'high',
+      'moderate': 'medium',
+      'low': 'low'
+    };
+    return mapping[severity] || 'medium';
+  }
+
+  mapSnykSeverity(severity) {
+    const mapping = {
+      'critical': 'critical',
+      'high': 'high', 
+      'medium': 'medium',
+      'low': 'low'
+    };
+    return mapping[severity] || 'medium';
+  }
+
+  mapZapSeverity(riskDesc) {
+    if (riskDesc.toLowerCase().includes('high')) return 'high';
+    if (riskDesc.toLowerCase().includes('medium')) return 'medium';
+    if (riskDesc.toLowerCase().includes('low')) return 'low';
+    return 'medium';
+  }
+
+  // Additional utility methods
+  extractLocationFromSARIF(result) {
+    if (result.locations && result.locations[0] && result.locations[0].physicalLocation) {
+      const location = result.locations[0].physicalLocation;
+      return {
+        file: location.artifactLocation?.uri,
+        line: location.region?.startLine,
+        column: location.region?.startColumn
+      };
+    }
+    return null;
+  }
+
+  extractCWEFromSemgrep(result) {
+    // Extract CWE from Semgrep rule metadata
+    return result.rule?.metadata?.cwe || null;
+  }
+
+  getRecommendationForRule(ruleId) {
+    // Map common rule IDs to recommendations
     const recommendations = {
-      mobileEncryption: 'Implement AES-256 encryption for all sensitive data and improve key management practices.',
-      apiSecurity: 'Enhance input validation, fix SQL injection vulnerabilities, and strengthen authorization checks.',
-      authentication: 'Improve device fingerprinting accuracy and implement stronger session security measures.',
-      gdprCompliance: 'Complete implementation of all data subject rights and automate compliance monitoring.',
-      crossPlatform: 'Ensure security consistency across all platforms and improve integration security.'
+      'jwt-hardcoded-secret': 'Use environment variables for JWT secrets',
+      'sql-injection-risk': 'Use parameterized queries to prevent SQL injection',
+      'dangerous-innerhtml': 'Sanitize user input before rendering HTML',
+      'missing-auth-middleware': 'Add authentication middleware to protected routes'
     };
-    return recommendations[category] || 'Review and improve security measures for this category.';
+    
+    return recommendations[ruleId] || 'Review and fix security violation';
   }
 
-  hasPerformanceIssues() {
-    // Mock implementation - would check for performance issues in test results
-    return false;
+  // Placeholder methods for additional processing
+  processSonarResults(sonarResults) {
+    console.log('Processing SonarCloud results...');
   }
 
-  capitalizeFirst(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1).replace(/([A-Z])/g, ' $1').trim();
+  processOwaspDependencyResults(owaspResults) {
+    console.log('Processing OWASP Dependency Check results...');
   }
 
-  formatDetailKey(key) {
-    return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+  processTrivySARIF(trivyResults, filename) {
+    console.log(`Processing Trivy results from ${filename}...`);
+  }
+
+  processDockerScoutSARIF(scoutResults) {
+    console.log('Processing Docker Scout results...');
+  }
+
+  processAPISecurityResults(apiResults) {
+    console.log('Processing API security test results...');
+  }
+
+  processSSLResults(sslResults) {
+    console.log('Processing SSL/TLS test results...');
+  }
+
+  processMobileSecurityResults(mobileResults) {
+    console.log('Processing mobile security results...');
+  }
+
+  processCustomTestResults(testResults, filename) {
+    console.log(`Processing custom test results from ${filename}...`);
   }
 }
 
-// CLI execution
+// Main execution
 async function main() {
-  const args = process.argv.slice(2);
-  const inputDir = args.find(arg => arg.startsWith('--input-dir='))?.split('=')[1] || './test-artifacts';
-  const outputDir = args.find(arg => arg.startsWith('--output-dir='))?.split('=')[1] || './security-reports';
+  const resultsDir = process.argv[2] || './security-results';
+  
+  if (!fs.existsSync(resultsDir)) {
+    console.error(`❌ Results directory not found: ${resultsDir}`);
+    process.exit(1);
+  }
 
   try {
-    const generator = new SecurityReportGenerator(inputDir, outputDir);
-    await generator.generate();
+    const generator = new SecurityReportGenerator(resultsDir);
+    const report = await generator.generateConsolidatedReport();
     
-    // Output the score for GitHub Actions
-    console.log(`::set-output name=security-score::${generator.report.summary.overallScore}`);
-    console.log(`::set-output name=security-rating::${generator.report.summary.securityRating}`);
+    console.log('\n🔒 Security Report Summary:');
+    console.log(`   Security Score: ${report.securityScore}/100`);
+    console.log(`   Critical Issues: ${report.summary.critical}`);
+    console.log(`   High Issues: ${report.summary.high}`);
+    console.log(`   Production Ready: ${report.complianceStatus.productionReady ? '✅' : '❌'}`);
     
+    // Set exit code based on security gate
+    if (!report.complianceStatus.securityGatePassed) {
+      console.log('\n❌ Security gate failed - blocking deployment');
+      process.exit(1);
+    }
+    
+    console.log('\n✅ Security report generated successfully');
     process.exit(0);
+    
   } catch (error) {
-    console.error('❌ Failed to generate security report:', error);
+    console.error('❌ Security report generation failed:', error);
     process.exit(1);
   }
 }

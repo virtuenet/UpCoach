@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';

@@ -1,8 +1,10 @@
 import '@testing-library/jest-dom';
 import { TextEncoder, TextDecoder } from 'util';
 
+import { ReactNode } from 'react';
+
 // Polyfill TextEncoder/TextDecoder for Jest
-global.TextEncoder = TextEncoder;
+global.TextEncoder = TextEncoder as any;
 global.TextDecoder = TextDecoder as any;
 
 // Mock Next.js router
@@ -29,9 +31,9 @@ jest.mock('next/navigation', () => ({
 // Mock Next.js Image component
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: (props: any) => {
+  default: (props: { src: string; alt?: string; width?: number; height?: number }) => {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img {...props} />;
+    return <img {...props} alt={props.alt || ''} />;
   },
 }));
 
@@ -39,12 +41,12 @@ jest.mock('next/image', () => ({
 jest.mock('@clerk/nextjs', () => ({
   useUser: () => ({ user: null }),
   useAuth: () => ({ isSignedIn: false }),
-  SignInButton: ({ children }: any) => <div>{children}</div>,
-  SignUpButton: ({ children }: any) => <div>{children}</div>,
-  SignedIn: ({ children }: any) => <div>{children}</div>,
-  SignedOut: ({ children }: any) => <div>{children}</div>,
+  SignInButton: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  SignUpButton: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  SignedIn: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  SignedOut: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   UserButton: () => <div>User Button</div>,
-  ClerkProvider: ({ children }: any) => <div>{children}</div>,
+  ClerkProvider: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 
 // Mock window.matchMedia
@@ -76,18 +78,18 @@ global.IntersectionObserver = jest.fn().mockImplementation(() => ({
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
   constructor() {}
-  disconnect() {}
-  observe() {}
-  unobserve() {}
-} as any;
+  disconnect(): void {}
+  observe(): void {}
+  unobserve(): void {}
+}; // Removed 'as any'
 
 // Mock window.gtag
-global.gtag = jest.fn();
+(global as any).gtag = jest.fn();
 
 // Suppress console errors in tests
 const originalError = console.error;
 beforeAll(() => {
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     if (typeof args[0] === 'string' && args[0].includes('Warning: ReactDOM.render')) {
       return;
     }

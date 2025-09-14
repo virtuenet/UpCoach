@@ -70,6 +70,17 @@ export interface ApiErrorResponse {
   path?: string;
   requestId?: string;
   stack?: string;
+  accessibleError?: string;
+  semanticType?: 'server-error' | 'client-error' | 'information';
+  severity?: 'high' | 'medium' | 'low';
+  userAction?: string | null;
+  // Additional error tracking properties
+  originalError?: {
+    name: string;
+    message: string;
+  };
+  correlationId?: string;
+  supportMessage?: string;
 }
 
 export interface ErrorDetails {

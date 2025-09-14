@@ -77,6 +77,7 @@ describe('CoachIntelligenceService', () => {
     it('should successfully process a coaching session', async () => {
       // Mock AI service response for conversation insights
       mockAiService.generateResponse.mockResolvedValueOnce({
+        id: 'ai-response-1',
         content: JSON.stringify({
           summary: 'User discussed productivity goals and time management strategies',
           tags: ['productivity', 'time-management', 'goals'],
@@ -89,7 +90,13 @@ describe('CoachIntelligenceService', () => {
           challengesIdentified: ['Difficulty with consistency'],
           progressIndicators: ['Increased motivation'],
           coachingTechniques: ['Goal setting', 'Accountability']
-        })
+        }),
+        usage: {
+          promptTokens: 150,
+          completionTokens: 200,
+          totalTokens: 350
+        },
+        model: 'gpt-4'
       });
 
       // Mock memory creation
@@ -470,7 +477,14 @@ describe('CoachIntelligenceService', () => {
 
     it('should handle malformed AI responses', async () => {
       mockAiService.generateResponse.mockResolvedValueOnce({
-        content: 'Invalid JSON response'
+        id: 'ai-response-error',
+        content: 'Invalid JSON response',
+        usage: {
+          promptTokens: 50,
+          completionTokens: 20,
+          totalTokens: 70
+        },
+        model: 'gpt-4'
       });
 
       const mockMemory = {

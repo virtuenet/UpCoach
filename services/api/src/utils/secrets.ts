@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 
 import { logger } from './logger';
 
@@ -157,8 +157,12 @@ export function validateEnvironmentSecrets(): void {
 
   if (errors.length > 0) {
     logger.error('Environment secret validation failed:', errors);
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('Invalid environment secrets detected. Please check configuration.');
+    // Never allow invalid secrets in production or staging environments
+    if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
+      throw new Error('🚨 CRITICAL: Invalid environment secrets detected in production/staging environment.');
+    } else if (process.env.NODE_ENV !== 'test') {
+      // For development, log warnings but allow continuation for developer experience
+      logger.warn('⚠️  Development environment: Please configure proper secrets before deployment');
     }
   }
 }

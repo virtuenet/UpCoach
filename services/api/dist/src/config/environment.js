@@ -142,10 +142,11 @@ if (!envResult.success) {
     envResult.error.issues.forEach(issue => {
         console.error(`  - ${issue.path.join('.')}: ${issue.message}`);
     });
-    if (process.env.NODE_ENV === 'test' || process.argv.some(arg => arg.includes('jest'))) {
+    if (process.env.NODE_ENV === 'test') {
         console.warn('⚠️  Running in test mode - continuing with environment validation warnings');
     }
     else {
+        console.error('🚨 CRITICAL: Environment validation failed in non-test environment');
         process.exit(1);
     }
 }
@@ -202,10 +203,11 @@ if (env.NODE_ENV === 'production') {
     secretValidation.forEach(({ name, value }) => {
         if (!(0, secrets_1.validateSecret)(value, 64)) {
             console.error(`❌ Security validation failed for ${name}: Secret is weak or contains placeholder values`);
-            if (process.env.NODE_ENV === 'test' || process.argv.some(arg => arg.includes('jest'))) {
+            if (process.env.NODE_ENV === 'test') {
                 console.warn(`⚠️  Test mode: continuing with weak ${name} - this should only be used for testing`);
             }
             else {
+                console.error(`🚨 CRITICAL: Weak secret detected in production environment: ${name}`);
                 process.exit(1);
             }
         }

@@ -14,6 +14,7 @@ class ExperimentEvent extends sequelize_1.Model {
     timestamp;
     sessionId;
     metadata;
+    static initializeModel;
     static async trackEvent(experimentId, userId, variantId, eventType, eventValue, properties) {
         return this.create({
             experimentId,
@@ -110,78 +111,83 @@ class ExperimentEvent extends sequelize_1.Model {
     }
 }
 exports.ExperimentEvent = ExperimentEvent;
-ExperimentEvent.init({
-    id: {
-        type: sequelize_1.DataTypes.UUID,
-        defaultValue: sequelize_1.DataTypes.UUIDV4,
-        primaryKey: true,
-    },
-    experimentId: {
-        type: sequelize_1.DataTypes.UUID,
-        allowNull: false,
-        references: {
-            model: 'experiments',
-            key: 'id',
+ExperimentEvent.initializeModel = function (sequelizeInstance) {
+    if (!sequelizeInstance) {
+        throw new Error('Sequelize instance required for ExperimentEvent initialization');
+    }
+    return ExperimentEvent.init({
+        id: {
+            type: sequelize_1.DataTypes.UUID,
+            defaultValue: sequelize_1.DataTypes.UUIDV4,
+            primaryKey: true,
         },
-    },
-    userId: {
-        type: sequelize_1.DataTypes.UUID,
-        allowNull: false,
-        references: {
-            model: 'users',
-            key: 'id',
+        experimentId: {
+            type: sequelize_1.DataTypes.UUID,
+            allowNull: false,
+            references: {
+                model: 'experiments',
+                key: 'id',
+            },
         },
-    },
-    variantId: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: false,
-    },
-    eventType: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: false,
-    },
-    eventValue: {
-        type: sequelize_1.DataTypes.DECIMAL(10, 2),
-        allowNull: true,
-    },
-    properties: {
-        type: sequelize_1.DataTypes.JSONB,
-        allowNull: true,
-    },
-    timestamp: {
-        type: sequelize_1.DataTypes.DATE,
-        defaultValue: sequelize_1.DataTypes.NOW,
-        allowNull: false,
-    },
-    sessionId: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: true,
-    },
-    metadata: {
-        type: sequelize_1.DataTypes.JSONB,
-        allowNull: true,
-    },
-}, {
-    sequelize: database_1.sequelize,
-    modelName: 'ExperimentEvent',
-    tableName: 'experiment_events',
-    timestamps: false,
-    indexes: [
-        {
-            fields: ['experimentId', 'variantId'],
+        userId: {
+            type: sequelize_1.DataTypes.UUID,
+            allowNull: false,
+            references: {
+                model: 'users',
+                key: 'id',
+            },
         },
-        {
-            fields: ['userId'],
+        variantId: {
+            type: sequelize_1.DataTypes.STRING,
+            allowNull: false,
         },
-        {
-            fields: ['eventType'],
+        eventType: {
+            type: sequelize_1.DataTypes.STRING,
+            allowNull: false,
         },
-        {
-            fields: ['timestamp'],
+        eventValue: {
+            type: sequelize_1.DataTypes.DECIMAL(10, 2),
+            allowNull: true,
         },
-        {
-            fields: ['experimentId', 'variantId', 'eventType'],
+        properties: {
+            type: sequelize_1.DataTypes.JSONB,
+            allowNull: true,
         },
-    ],
-});
+        timestamp: {
+            type: sequelize_1.DataTypes.DATE,
+            defaultValue: sequelize_1.DataTypes.NOW,
+            allowNull: false,
+        },
+        sessionId: {
+            type: sequelize_1.DataTypes.STRING,
+            allowNull: true,
+        },
+        metadata: {
+            type: sequelize_1.DataTypes.JSONB,
+            allowNull: true,
+        },
+    }, {
+        sequelize: sequelizeInstance,
+        modelName: 'ExperimentEvent',
+        tableName: 'experiment_events',
+        timestamps: false,
+        indexes: [
+            {
+                fields: ['experimentId', 'variantId'],
+            },
+            {
+                fields: ['userId'],
+            },
+            {
+                fields: ['eventType'],
+            },
+            {
+                fields: ['timestamp'],
+            },
+            {
+                fields: ['experimentId', 'variantId', 'eventType'],
+            },
+        ],
+    });
+};
 //# sourceMappingURL=ExperimentEvent.js.map

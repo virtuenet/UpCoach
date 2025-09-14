@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
+import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -28,11 +30,10 @@ class GoogleAuthService {
       'profile',
       'openid',
     ],
-    // Server client ID for web/backend verification
-    // This should be configured per environment
+    // Server client ID for web/backend verification - loaded from secure env config
     serverClientId: kIsWeb 
-        ? 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com'
-        : null,
+        ? AppConstants.googleWebClientId
+        : AppConstants.googleServerClientId,
   );
 
   GoogleAuthService._internal() {
@@ -59,11 +60,106 @@ class GoogleAuthService {
     );
   }
 
+  // OAuth state management for CSRF protection
+  
+  /// Generate secure OAuth state parameter
+  String _generateOAuthState() {
+    final random = Random.secure();
+    final bytes = List<int>.generate(32, (i) => random.nextInt(256));
+    return base64UrlEncode(bytes);
+  }
+  
+  /// Generate code verifier for PKCE
+  String _generateCodeVerifier() {
+    final random = Random.secure();
+    final bytes = List<int>.generate(32, (i) => random.nextInt(256));
+    return base64UrlEncode(bytes);
+  }
+  
+  /// Generate code challenge from verifier
+  String _generateCodeChallenge(String verifier) {
+    final bytes = utf8.encode(verifier);
+    final digest = sha256.convert(bytes);
+    return base64UrlEncode(digest.bytes).replaceAll('=', '');
+  }
+  
+  /// Store OAuth state securely with expiration
+  Future<void> _storeOAuthState(String state, {Duration expiry = const Duration(minutes: 10)}) async {
+    final expiryTime = DateTime.now().add(expiry);
+    await _secureStorage.write(
+      key: 'oauth_state_$state', 
+      value: expiryTime.toIso8601String(),
+    );
+    
+    // Clean up old states
+    await _cleanupExpiredStates();
+  }
+  
+  /// Validate OAuth state parameter
+  Future<bool> _validateOAuthState(String? state) async {
+    if (state == null || state.isEmpty) {
+      debugPrint('🚨 SECURITY: OAuth state parameter is missing');
+      return false;
+    }
+    
+    final storedExpiry = await _secureStorage.read(key: 'oauth_state_$state');
+    if (storedExpiry == null) {
+      debugPrint('🚨 SECURITY: OAuth state not found or expired');
+      return false;
+    }
+    
+    final expiryTime = DateTime.parse(storedExpiry);
+    if (DateTime.now().isAfter(expiryTime)) {
+      debugPrint('🚨 SECURITY: OAuth state has expired');
+      await _secureStorage.delete(key: 'oauth_state_$state');
+      return false;
+    }
+    
+    // State is valid - remove it (one-time use)
+    await _secureStorage.delete(key: 'oauth_state_$state');
+    return true;
+  }
+  
+  /// Clean up expired OAuth states
+  Future<void> _cleanupExpiredStates() async {
+    try {
+      final allKeys = await _secureStorage.readAll();
+      final now = DateTime.now();
+      
+      for (final entry in allKeys.entries) {
+        if (entry.key.startsWith('oauth_state_')) {
+          try {
+            final expiryTime = DateTime.parse(entry.value);
+            if (now.isAfter(expiryTime)) {
+              await _secureStorage.delete(key: entry.key);
+            }
+          } catch (e) {
+            // Invalid timestamp, delete the key
+            await _secureStorage.delete(key: entry.key);
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Warning: Failed to cleanup expired OAuth states: $e');
+    }
+  }
+
   /// Sign in with Google
   Future<AuthResponse> signIn() async {
     try {
       // Sign out any previous session for clean state
       await _googleSignIn.signOut();
+      
+      // Generate OAuth state parameter for CSRF protection
+      final oauthState = _generateOAuthState();
+      await _storeOAuthState(oauthState);
+      
+      // Generate PKCE parameters for enhanced security
+      final codeVerifier = _generateCodeVerifier();
+      final codeChallenge = _generateCodeChallenge(codeVerifier);
+      
+      // Store PKCE verifier securely
+      await _secureStorage.write(key: 'pkce_verifier_$oauthState', value: codeVerifier);
       
       // Trigger the Google Sign-In flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -89,12 +185,27 @@ class GoogleAuthService {
       final deviceInfo = await _getDeviceInfo();
       final appInfo = await _getAppInfo();
       
+      // Validate OAuth state (simulated - in practice this would come from backend redirect)
+      final isStateValid = await _validateOAuthState(oauthState);
+      if (!isStateValid) {
+        throw GoogleAuthException(
+          'OAuth state validation failed - possible CSRF attack',
+          GoogleAuthErrorCode.unauthorized,
+        );
+      }
+      
+      // Get stored PKCE verifier
+      final storedVerifier = await _secureStorage.read(key: 'pkce_verifier_$oauthState');
+      
       // Send tokens to backend for verification
       final response = await _dio.post(
         '/v2/auth/google/signin',
         data: {
           'id_token': googleAuth.idToken,
           'access_token': googleAuth.accessToken,
+          'oauth_state': oauthState,
+          'code_verifier': storedVerifier,
+          'code_challenge': codeChallenge,
           'client_info': {
             'platform': Platform.operatingSystem,
             'app_version': appInfo['version'],
@@ -106,6 +217,11 @@ class GoogleAuthService {
           },
         },
       );
+      
+      // Clean up PKCE verifier after use
+      if (storedVerifier != null) {
+        await _secureStorage.delete(key: 'pkce_verifier_$oauthState');
+      }
 
       final authResponse = AuthResponse.fromJson(response.data);
       

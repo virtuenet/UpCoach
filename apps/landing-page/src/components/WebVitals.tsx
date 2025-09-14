@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+
 import { trackWebVitals } from '@/services/analytics';
 
 type MetricType = {

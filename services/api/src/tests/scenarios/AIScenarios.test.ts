@@ -82,9 +82,9 @@ describe('AI Coaching Scenarios', () => {
             },
           ],
         }),
-        usage: { total_tokens: 100, input_tokens: 80, output_tokens: 20 },
+        usage: { totalTokens: 100, promptTokens: 80, completionTokens: 20 },
         model: 'gpt-4',
-        provider: 'openai',
+        id: 'scenarios-test-ai-response',
       });
 
       const recommendations = await recommendationEngine.generateRecommendations(
@@ -104,9 +104,9 @@ describe('AI Coaching Scenarios', () => {
       jest.spyOn(aiService, 'generateResponse').mockResolvedValue({
         content:
           "Got it. Here's your action plan: 1) Set one goal today. 2) Track it daily. 3) Review weekly.",
-        provider: 'openai',
+        id: 'scenarios-test-ai-response',
         model: 'gpt-4',
-        usage: { total_tokens: 100, input_tokens: 80, output_tokens: 20 },
+        usage: { totalTokens: 100, promptTokens: 80, completionTokens: 20 },
       });
 
       const response = await aiService.generateResponse(messages, {
@@ -182,9 +182,9 @@ describe('AI Coaching Scenarios', () => {
       jest.spyOn(aiService, 'generateResponse').mockResolvedValue({
         content:
           "I notice you've been having a tough week. Let's start small - just 5 minutes today. You've got this!",
-        provider: 'openai',
+        id: 'scenarios-test-ai-response',
         model: 'gpt-4',
-        usage: { total_tokens: 100, input_tokens: 80, output_tokens: 20 },
+        usage: { totalTokens: 100, promptTokens: 80, completionTokens: 20 },
       });
 
       const messages = [{ role: 'user' as const, content: "I can't seem to stick to anything" }];
@@ -210,9 +210,9 @@ describe('AI Coaching Scenarios', () => {
           },
         ]),
         usage: {
-          input_tokens: 100,
-          output_tokens: 50,
-          total_tokens: 150,
+          promptTokens: 100,
+          completionTokens: 50,
+          totalTokens: 150,
         },
         model: 'gpt-4',
         finishReason: 'stop',
@@ -289,9 +289,9 @@ describe('AI Coaching Scenarios', () => {
           },
         ]),
         usage: {
-          input_tokens: 120,
-          output_tokens: 80,
-          total_tokens: 200,
+          promptTokens: 120,
+          completionTokens: 80,
+          totalTokens: 200,
         },
         model: 'gpt-4',
         finishReason: 'stop',
@@ -312,7 +312,7 @@ describe('AI Coaching Scenarios', () => {
       const optimizationInsights = insights.insights.filter(i => i.type === 'opportunity');
 
       expect(optimizationInsights.length).toBeGreaterThan(0);
-      expect(insights.summary.potentialGrowthAreas).toBeDefined();
+      expect(insights.summary.keyTakeaways).toBeDefined();
     });
   });
 
@@ -395,9 +395,9 @@ describe('AI Coaching Scenarios', () => {
 
       const summary = await voiceAI.getVoiceInsightSummary(testUser.id, 7);
 
-      expect(summary.trend).toBe('improving');
-      expect(summary.averageSentiment).toBeGreaterThan(0.5);
-      expect(summary.insights).toContain('positive trend');
+      expect(summary.trends).toBeInstanceOf(Array);
+      expect(summary.stats.avgSentiment).toBeGreaterThan(0.5);
+      expect(summary.recommendations).toBeInstanceOf(Array);
     });
   });
 
@@ -413,7 +413,9 @@ describe('AI Coaching Scenarios', () => {
 
       // Mock AI response for learning path
       jest.spyOn(aiService, 'generateResponse').mockResolvedValue({
-        modules: [
+        id: 'response-123',
+        content: JSON.stringify({
+          modules: [
           {
             id: 'mod1',
             title: 'Overcoming Speech Anxiety',
@@ -426,7 +428,11 @@ describe('AI Coaching Scenarios', () => {
             duration: 14,
             activities: ['voice exercises', 'posture practice'],
           },
-        ],
+          ]
+        }),
+        usage: { promptTokens: 100, completionTokens: 150, totalTokens: 250 },
+        model: 'gpt-4',
+        provider: 'openai' as const
       });
 
       const learningPath = await (
@@ -511,7 +517,7 @@ describe('AI Coaching Scenarios', () => {
           title: 'Fitness goal',
           category: 'health',
           progress: 75,
-          status: 'active',
+          status: 'in_progress',
         }),
         // Moods
         ...Array(30)
@@ -529,8 +535,8 @@ describe('AI Coaching Scenarios', () => {
 
       expect(monthlyReport.insights.length).toBeGreaterThan(0);
       expect(monthlyReport.summary).toBeDefined();
-      expect(monthlyReport.summary.overallProgress).toBeDefined();
-      expect(monthlyReport.keyAchievements).toBeDefined();
+      expect(monthlyReport.summary.totalInsights).toBeDefined();
+      expect(monthlyReport.summary.keyTakeaways).toBeDefined();
       expect(monthlyReport.recommendations).toBeDefined();
 
       // Check insight categories

@@ -1,10 +1,10 @@
 # Landing Page Dockerfile
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
-RUN npm install --only=production --legacy-peer-deps --platform=linux/x64
+RUN npm install --omit=dev --legacy-peer-deps --platform=linux/x64
 
 # Development stage
 FROM base AS development
@@ -26,8 +26,8 @@ COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
 
-EXPOSE 3000
-ENV PORT 3000
+EXPOSE 1083
+ENV PORT 1083
 ENV NODE_ENV production
 
 CMD ["node", "server.js"]

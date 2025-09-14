@@ -107,7 +107,7 @@ class SessionTracker {
 
         Object.entries(scrollTracked).forEach(([threshold, tracked]) => {
           if (!tracked && scrollPercent >= parseInt(threshold)) {
-            scrollTracked[threshold as keyof typeof scrollTracked] = true;
+            scrollTracked[threshold as '25' | '50' | '75' | '90'] = true;
             this.trackConversion(ConversionType.SCROLL_DEPTH, FunnelStage.INTEREST, {
               scroll_depth: threshold,
             });

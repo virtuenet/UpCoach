@@ -27,6 +27,7 @@ const mood_1 = __importDefault(require("./mood"));
 const tasks_1 = __importDefault(require("./tasks"));
 const twoFactorAuth_1 = __importDefault(require("./twoFactorAuth"));
 const users_1 = __importDefault(require("./users"));
+const voiceJournal_1 = __importDefault(require("./voiceJournal"));
 const v2_1 = __importDefault(require("./v2"));
 const setupRoutes = (app) => {
     const apiPrefix = '/api';
@@ -44,6 +45,7 @@ const setupRoutes = (app) => {
     app.use(`${apiPrefix}/coach-content`, auth_1.authMiddleware, coachContent_1.default);
     app.use(`${apiPrefix}/financial`, auth_1.authMiddleware, financial_1.default);
     app.use(`${apiPrefix}/ai`, auth_1.authMiddleware, ai_1.default);
+    app.use(`${apiPrefix}/voice-journal`, auth_1.authMiddleware, voiceJournal_1.default);
     app.use(`${apiPrefix}/referrals`, referral_1.default);
     app.use(`${apiPrefix}/onboarding`, auth_1.authMiddleware, onboarding_1.default);
     app.use(`${apiPrefix}/forum`, forum_1.default);

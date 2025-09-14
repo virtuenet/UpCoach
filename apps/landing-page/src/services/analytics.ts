@@ -40,7 +40,7 @@ const isGALoaded = (): boolean => {
 export const pageview = (url: string) => {
   if (!isGALoaded()) return;
 
-  window.gtag('config', process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID!, {
+  (window as any).gtag('config', process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID!, {
     page_path: url,
   });
 };
@@ -49,11 +49,14 @@ export const pageview = (url: string) => {
 export const event = (action: string, parameters?: Record<string, any>) => {
   if (!isGALoaded()) return;
 
-  window.gtag('event', action, {
+  (window as any).gtag('event', action, {
     ...parameters,
     send_to: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
   });
 };
+
+// Alias for backward compatibility
+export const trackEvent = event;
 
 // Specific event tracking functions
 export const trackNewsletterSignup = (source: string) => {
@@ -163,7 +166,7 @@ export const trackEcommerceEvent = (
 ) => {
   if (!isGALoaded()) return;
 
-  window.gtag('event', eventName, {
+  (window as any).gtag('event', eventName, {
     ...parameters,
     send_to: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
   });
@@ -173,14 +176,14 @@ export const trackEcommerceEvent = (
 export const setUserProperties = (properties: Record<string, any>) => {
   if (!isGALoaded()) return;
 
-  window.gtag('set', 'user_properties', properties);
+  (window as any).gtag('set', 'user_properties', properties);
 };
 
 // Custom dimensions
 export const setCustomDimension = (name: string, value: string) => {
   if (!isGALoaded()) return;
 
-  window.gtag('event', 'page_view', {
+  (window as any).gtag('event', 'page_view', {
     [name]: value,
   });
 };

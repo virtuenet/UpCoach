@@ -145,7 +145,7 @@ describe('GoogleAuthService', () => {
 
     beforeEach(() => {
       // Mock fetch globally
-      global.fetch = jest.fn();
+      global.fetch = jest.fn() as any;
     });
 
     afterEach(() => {
@@ -156,7 +156,7 @@ describe('GoogleAuthService', () => {
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(validUserData),
-      });
+      } as any);
 
       const result = await googleAuthService.verifyAccessToken('valid-access-token');
 
@@ -179,7 +179,7 @@ describe('GoogleAuthService', () => {
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: false,
         status: 401,
-      });
+      } as any);
 
       await expect(
         googleAuthService.verifyAccessToken('invalid-access-token')
@@ -190,7 +190,7 @@ describe('GoogleAuthService', () => {
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ ...validUserData, verified_email: false }),
-      });
+      } as any);
 
       await expect(
         googleAuthService.verifyAccessToken('unverified-email-token')
@@ -228,9 +228,10 @@ describe('GoogleAuthService', () => {
           name: 'Access Token User',
           verified_email: true,
         }),
-      });
+      }) as any;
 
       const result = await googleAuthService.getUserInfo({
+        idToken: 'mock-id-token',
         accessToken: 'access-token',
       });
 
@@ -240,7 +241,7 @@ describe('GoogleAuthService', () => {
 
     it('should throw error when neither token is provided', async () => {
       await expect(
-        googleAuthService.getUserInfo({})
+        googleAuthService.getUserInfo({ idToken: '' })
       ).rejects.toThrow('Either ID token or access token must be provided');
     });
   });

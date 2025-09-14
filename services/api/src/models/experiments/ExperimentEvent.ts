@@ -1,6 +1,6 @@
-import { DataTypes, Model, Optional } from 'sequelize';
+import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
 
-import { sequelize } from '../../config/database';
+// Use dynamic import or passed sequelize instance to avoid circular deps
 
 export interface ExperimentEventAttributes {
   id: string;
@@ -32,6 +32,9 @@ class ExperimentEvent
   public timestamp!: Date;
   public sessionId?: string;
   public metadata?: Record<string, any>;
+
+  // Static method declaration
+  static initializeModel: (sequelize: any) => typeof ExperimentEvent;
 
   // Static methods for analytics
   static async trackEvent(
@@ -126,8 +129,8 @@ class ExperimentEvent
       this.findAll({
         where: whereClause,
         attributes: [
-          [sequelize.fn('AVG', sequelize.col('eventValue')), 'averageValue'],
-          [sequelize.fn('SUM', sequelize.col('eventValue')), 'totalValue'],
+          [(this as any).sequelize.fn('AVG', (this as any).sequelize.col('eventValue')), 'averageValue'],
+          [(this as any).sequelize.fn('SUM', (this as any).sequelize.col('eventValue')), 'totalValue'],
         ],
         raw: true,
       }),
@@ -183,82 +186,92 @@ class ExperimentEvent
   }
 }
 
-ExperimentEvent.init(
-  {
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
-    },
-    experimentId: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: 'experiments',
-        key: 'id',
-      },
-    },
-    userId: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
-    },
-    variantId: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    eventType: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    eventValue: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
-    },
-    properties: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-    timestamp: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      allowNull: false,
-    },
-    sessionId: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    metadata: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-  },
-  {
-    sequelize,
-    modelName: 'ExperimentEvent',
-    tableName: 'experiment_events',
-    timestamps: false,
-    indexes: [
-      {
-        fields: ['experimentId', 'variantId'],
-      },
-      {
-        fields: ['userId'],
-      },
-      {
-        fields: ['eventType'],
-      },
-      {
-        fields: ['timestamp'],
-      },
-      {
-        fields: ['experimentId', 'variantId', 'eventType'],
-      },
-    ],
+// Static method for deferred initialization
+ExperimentEvent.initializeModel = function(sequelizeInstance: any) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for ExperimentEvent initialization');
   }
-);
+
+  return ExperimentEvent.init(
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      experimentId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: 'experiments',
+          key: 'id',
+        },
+      },
+      userId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
+      },
+      variantId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      eventType: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      eventValue: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true,
+      },
+      properties: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
+      timestamp: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+        allowNull: false,
+      },
+      sessionId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      metadata: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
+    },
+    {
+      sequelize: sequelizeInstance,
+      modelName: 'ExperimentEvent',
+      tableName: 'experiment_events',
+      timestamps: false,
+      indexes: [
+        {
+          fields: ['experimentId', 'variantId'],
+        },
+        {
+          fields: ['userId'],
+        },
+        {
+          fields: ['eventType'],
+        },
+        {
+          fields: ['timestamp'],
+        },
+        {
+          fields: ['experimentId', 'variantId', 'eventType'],
+        },
+      ],
+    }
+  );
+};
+
+// Comment out immediate initialization to prevent premature execution
+// ExperimentEvent.init(...) will be called via ExperimentEvent.initializeModel() after database is ready
 
 export { ExperimentEvent };

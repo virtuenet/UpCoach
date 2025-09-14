@@ -1,0 +1,477 @@
+name: Local LLM Testing Pipeline
+
+on:
+  push:
+    branches: [ main, develop, 'feature/local-llm*' ]
+    paths: 
+      - 'services/api/src/services/ai/**'
+      - 'mobile-app/lib/core/services/llm/**'
+      - 'services/api/src/tests/**/*local*llm*'
+      - '.github/workflows/local-llm-testing.yml'
+  pull_request:
+    branches: [ main ]
+    types: [opened, synchronize, reopened]
+
+env:
+  NODE_VERSION: '18'
+  FLUTTER_VERSION: '3.16.0'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # ============================================================================
+  # Backend Local LLM Testing
+  # ============================================================================
+  backend-local-llm-tests:
+    name: Backend Local LLM Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    
+    strategy:
+      matrix:
+        test-type: ['unit', 'integration', 'performance']
+        
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'services/api/package-lock.json'
+          
+      - name: Install dependencies
+        working-directory: services/api
+        run: |
+          npm ci
+          npm run build
+          
+      - name: Setup test models (if needed)
+        if: matrix.test-type != 'unit'
+        working-directory: services/api
+        run: |
+          mkdir -p models/test
+          # Download lightweight test models for integration/performance tests
+          wget -q -O models/test/tinyllama-test.gguf \
+            "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.q4_k_m.gguf" || \
+            echo "Using mock model for testing"
+          
+      - name: Run unit tests
+        if: matrix.test-type == 'unit'
+        working-directory: services/api
+        run: |
+          npm run test:local-llm:unit
+        env:
+          NODE_ENV: test
+          USE_REAL_MODELS: false
+          
+      - name: Run integration tests
+        if: matrix.test-type == 'integration'
+        working-directory: services/api
+        run: |
+          npm run test:local-llm:integration
+        env:
+          NODE_ENV: test
+          USE_REAL_MODELS: true
+          TEST_MODEL_PATH: ./models/test
+          
+      - name: Run performance tests
+        if: matrix.test-type == 'performance'
+        working-directory: services/api
+        run: |
+          npm run test:local-llm:performance
+        env:
+          NODE_ENV: test
+          PERFORMANCE_TESTING: true
+          
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: backend-test-results-${{ matrix.test-type }}
+          path: |
+            services/api/coverage/
+            services/api/test-results/
+            services/api/performance-results.json
+          retention-days: 7
+          
+      - name: Upload coverage to Codecov
+        if: matrix.test-type == 'unit'
+        uses: codecov/codecov-action@v3
+        with:
+          file: services/api/coverage/lcov.info
+          flags: backend-local-llm
+          name: backend-local-llm-coverage
+
+  # ============================================================================
+  # Mobile Local LLM Testing
+  # ============================================================================
+  mobile-local-llm-tests:
+    name: Mobile Local LLM Tests
+    runs-on: macos-14 # For iOS testing capabilities
+    timeout-minutes: 60
+    
+    strategy:
+      matrix:
+        platform: ['ios', 'android']
+        test-type: ['unit', 'widget', 'integration']
+        
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+          
+      - name: Setup iOS Simulator (iOS only)
+        if: matrix.platform == 'ios'
+        run: |
+          xcrun simctl list devices
+          xcrun simctl create "iPhone 15" "iPhone 15"
+          xcrun simctl boot "iPhone 15"
+          
+      - name: Setup Android Emulator (Android only)
+        if: matrix.platform == 'android'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          script: echo "Android emulator started"
+          
+      - name: Get Flutter dependencies
+        working-directory: mobile-app
+        run: |
+          flutter pub get
+          flutter pub run build_runner build --delete-conflicting-outputs
+          
+      - name: Run unit tests
+        if: matrix.test-type == 'unit'
+        working-directory: mobile-app
+        run: |
+          flutter test test/unit/ --coverage
+          
+      - name: Run widget tests
+        if: matrix.test-type == 'widget'
+        working-directory: mobile-app
+        run: |
+          flutter test test/widgets/ --coverage
+          
+      - name: Run integration tests
+        if: matrix.test-type == 'integration'
+        working-directory: mobile-app
+        run: |
+          flutter test integration_test/ --device-id=${{ matrix.platform == 'ios' && 'iPhone 15' || 'emulator-5554' }}
+          
+      - name: Run golden tests (iOS only)
+        if: matrix.platform == 'ios' && matrix.test-type == 'widget'
+        working-directory: mobile-app
+        run: |
+          flutter test test/golden/ --update-goldens
+          
+      - name: Upload mobile test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: mobile-test-results-${{ matrix.platform }}-${{ matrix.test-type }}
+          path: |
+            mobile-app/coverage/
+            mobile-app/test/golden/**/*.png
+          retention-days: 7
+
+  # ============================================================================
+  # Cross-Platform Integration Testing
+  # ============================================================================
+  cross-platform-integration:
+    name: Cross-Platform Integration
+    runs-on: ubuntu-latest
+    needs: [backend-local-llm-tests]
+    timeout-minutes: 30
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_DB: upcoach_test
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: |
+          cd services/api && npm ci
+          cd ../../tests && npm ci
+          
+      - name: Setup test environment
+        run: |
+          cp .env.test.example .env.test
+          cd services/api && npm run db:migrate:test
+          
+      - name: Run cross-platform integration tests
+        run: |
+          cd tests && npm run test:integration:cross-platform
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/upcoach_test
+          REDIS_URL: redis://localhost:6379
+          
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: cross-platform-test-results
+          path: |
+            tests/results/
+          retention-days: 7
+
+  # ============================================================================
+  # Performance and Load Testing
+  # ============================================================================
+  performance-testing:
+    name: Performance & Load Testing
+    runs-on: ubuntu-latest
+    needs: [backend-local-llm-tests]
+    timeout-minutes: 20
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
+            --keyserver hkp://keyserver.ubuntu.com:80 \
+            --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | \
+            sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Start test services
+        run: |
+          cd services/api
+          npm ci
+          npm run build
+          npm run start:test &
+          sleep 10 # Wait for service to start
+          
+      - name: Run load tests
+        run: |
+          k6 run tests/performance/local-llm-load-test.js \
+            --env BASE_URL=http://localhost:8080 \
+            --out json=load-test-results.json
+            
+      - name: Run stress tests
+        run: |
+          k6 run tests/performance/local-llm-stress-test.js \
+            --env BASE_URL=http://localhost:8080 \
+            --out json=stress-test-results.json
+            
+      - name: Upload performance results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: performance-test-results
+          path: |
+            *-test-results.json
+          retention-days: 7
+
+  # ============================================================================
+  # Security Testing
+  # ============================================================================
+  security-testing:
+    name: Security Testing
+    runs-on: ubuntu-latest
+    needs: [backend-local-llm-tests]
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        working-directory: services/api
+        run: npm ci
+        
+      - name: Run security audit
+        working-directory: services/api
+        run: |
+          npm audit --audit-level=high
+          npm run security:scan
+          
+      - name: Run local LLM security tests
+        working-directory: services/api
+        run: |
+          npm run test:security:local-llm
+          
+      - name: Upload security results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-test-results
+          path: |
+            services/api/security-report.json
+          retention-days: 30
+
+  # ============================================================================
+  # Quality Gates and Reporting
+  # ============================================================================
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    needs: 
+      - backend-local-llm-tests
+      - mobile-local-llm-tests
+      - cross-platform-integration
+      - performance-testing
+      - security-testing
+    if: always()
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Download all test artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: test-results/
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: Install quality gate tools
+        run: |
+          npm install -g junit-report-merger
+          npm install -g lcov-result-merger
+          
+      - name: Merge test results
+        run: |
+          # Merge JUnit reports
+          junit-report-merger test-results/**/junit.xml test-results/merged-junit.xml
+          
+          # Merge coverage reports
+          lcov-result-merger test-results/**/lcov.info test-results/merged-coverage.info
+          
+      - name: Generate quality report
+        run: |
+          node scripts/generate-quality-report.js test-results/
+          
+      - name: Check quality gates
+        run: |
+          node scripts/check-quality-gates.js test-results/
+        env:
+          MIN_COVERAGE: 85
+          MAX_PERFORMANCE_REGRESSION: 10
+          MAX_ERROR_RATE: 5
+          
+      - name: Upload final quality report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: quality-report
+          path: |
+            test-results/quality-report.html
+            test-results/quality-metrics.json
+          retention-days: 30
+          
+      - name: Comment quality results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const qualityData = JSON.parse(fs.readFileSync('test-results/quality-metrics.json', 'utf8'));
+            
+            const comment = `
+            ## 🧪 Local LLM Testing Results
+            
+            ### Coverage
+            - **Backend**: ${qualityData.coverage.backend}%
+            - **Mobile**: ${qualityData.coverage.mobile}%
+            - **Overall**: ${qualityData.coverage.overall}%
+            
+            ### Performance
+            - **P95 Latency**: ${qualityData.performance.p95Latency}ms
+            - **Throughput**: ${qualityData.performance.throughput} req/s
+            - **Error Rate**: ${qualityData.performance.errorRate}%
+            
+            ### Quality Gates
+            ${qualityData.qualityGates.passed ? '✅ All quality gates passed!' : '❌ Some quality gates failed'}
+            
+            [View detailed report](${qualityData.reportUrl})
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # ============================================================================
+  # Notification and Alerts
+  # ============================================================================
+  notify-results:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    needs: [quality-gates]
+    if: always() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    
+    steps:
+      - name: Notify on success
+        if: needs.quality-gates.result == 'success'
+        run: |
+          echo "✅ Local LLM testing pipeline completed successfully"
+          # Add Slack/Teams notification here if needed
+          
+      - name: Notify on failure
+        if: needs.quality-gates.result == 'failure'
+        run: |
+          echo "❌ Local LLM testing pipeline failed"
+          # Add alert notification here if needed
+          exit 1

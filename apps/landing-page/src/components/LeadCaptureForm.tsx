@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Loader2, Mail, User, Briefcase } from 'lucide-react';
+import { useState } from 'react';
+
 import { trackFormSubmit } from '@/services/analytics';
 
 interface LeadCaptureFormProps {
@@ -13,7 +14,7 @@ interface LeadCaptureFormProps {
 
 export default function LeadCaptureForm({
   source = 'unknown',
-  variant = 'inline',
+  variant: _variant = 'inline',
   onSuccess,
 }: LeadCaptureFormProps) {
   const [formData, setFormData] = useState({

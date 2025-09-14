@@ -40,15 +40,17 @@ describe('AI Services Performance Tests', () => {
 
     // Mock AI responses to be fast
     jest.spyOn(aiService, 'generateResponse').mockImplementation(async () => ({
+      id: 'perf-test-1',
       content: 'Mock response',
-      provider: 'openai',
+      usage: { totalTokens: 100, promptTokens: 80, completionTokens: 20 },
       model: 'gpt-4',
-      usage: { total_tokens: 100, input_tokens: 80, output_tokens: 20 },
     }));
 
     jest.spyOn(aiService, 'generateResponse').mockImplementation(async () => ({
+      id: 'perf-test-2',
       content: JSON.stringify({ recommendations: [{ title: 'Mock recommendation' }] }),
-      usage: { total_tokens: 100, input_tokens: 80, output_tokens: 20 },
+      usage: { totalTokens: 100, promptTokens: 80, completionTokens: 20 },
+      model: 'gpt-4',
     }));
   });
 
@@ -91,8 +93,10 @@ describe('AI Services Performance Tests', () => {
       };
 
       jest.spyOn(aiService, 'generateResponse').mockImplementation(async () => ({
+        id: 'stream-test',
         content: 'Test streaming response',
-        usage: { total_tokens: 100, input_tokens: 80, output_tokens: 20 },
+        model: 'gpt-4',
+        usage: { totalTokens: 100, promptTokens: 80, completionTokens: 20 },
       }));
 
       const start = performance.now();

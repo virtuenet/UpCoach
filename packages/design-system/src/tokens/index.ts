@@ -30,13 +30,20 @@ export {
   responsiveValue,
 } from './breakpoints';
 
+// Import defaults for tokens object
+import colorsDefault from './colors';
+import typographyDefault from './typography';
+import spacingDefault from './spacing';
+import effectsDefault from './effects';
+import breakpointsDefault from './breakpoints';
+
 // Complete tokens object
 export const tokens = {
-  colors: require('./colors').default,
-  typography: require('./typography').default,
-  spacing: require('./spacing').default,
-  effects: require('./effects').default,
-  breakpoints: require('./breakpoints').default,
+  colors: colorsDefault,
+  typography: typographyDefault,
+  spacing: spacingDefault,
+  effects: effectsDefault,
+  breakpoints: breakpointsDefault,
 } as const;
 
 export default tokens;
