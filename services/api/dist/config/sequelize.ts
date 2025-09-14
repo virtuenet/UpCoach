@@ -6,7 +6,7 @@ dotenv.config();
 
 // Initialize Sequelize with PostgreSQL connection
 export const sequelize = new Sequelize(
-  process.env.DATABASE_URL || 'postgresql://upcoach:upcoach_secure_pass@localhost:8004/upcoach_db',
+  process.env.DATABASE_URL || 'postgresql://upcoach:upcoach_secure_pass@localhost:1433/upcoach_db',
   {
     dialect: 'postgres',
     logging: process.env.NODE_ENV === 'development' ? console.log : false,

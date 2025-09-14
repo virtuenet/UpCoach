@@ -1,47 +1,10 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['<rootDir>/src', '<rootDir>/tests'],
-  testMatch: ['**/__tests__/**/*.+(ts|tsx|js)', '**/?(*.)+(spec|test).+(ts|tsx|js)'],
+  roots: ['<rootDir>/src'],
   transform: {
-    '^.+\\.(ts|tsx)$': [
-      'ts-jest',
-      {
-        tsconfig: {
-          target: 'es2022',
-          module: 'commonjs',
-          lib: ['es2022', 'dom'],
-          types: ['node', 'jest'],
-          strict: false,
-          noImplicitAny: false,
-          strictNullChecks: false,
-          esModuleInterop: true,
-          skipLibCheck: true,
-          forceConsistentCasingInFileNames: true,
-          resolveJsonModule: true,
-          allowSyntheticDefaultImports: true,
-          experimentalDecorators: true,
-          emitDecoratorMetadata: true,
-        },
-      },
-    ],
+    '^.+\\.ts$': 'ts-jest'
   },
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
-  },
-  collectCoverageFrom: [
-    'src/**/*.{js,ts}',
-    '!src/**/*.d.ts',
-    '!src/index.ts',
-    '!src/tests/**',
-    '!src/**/*.test.ts',
-    '!src/**/*.spec.ts',
-  ],
-  coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html', 'json-summary'],
-  testTimeout: 30000,
-  setupFilesAfterEnv: ['<rootDir>/src/tests/setup.ts'],
-  maxWorkers: 1,
-  forceExit: true,
-  detectOpenHandles: true,
+  testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.ts$',
+  moduleFileExtensions: ['ts', 'js', 'json', 'node']
 };

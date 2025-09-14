@@ -3,7 +3,6 @@
  * Global configuration and mocking setup for AI service testing
  */
 
-import { jest } from '@jest/globals';
 import { getAITestConfig } from './ai-test.config';
 import { AIMockPatterns, AITestDataFactory, MockDatabaseUtils } from '../utils/AITestUtils';
 
@@ -14,78 +13,84 @@ const testConfig = getAITestConfig();
  * Setup global mocks for AI services
  */
 function setupAIMocks() {
-  // Mock OpenAI
-  jest.mock('openai', () => ({
-    OpenAI: jest.fn().mockImplementation(() => ({
-      chat: {
-        completions: {
-          create: jest.fn().mockImplementation(async (params: any) => ({
-            id: `chatcmpl-${Date.now()}`,
-            object: 'chat.completion',
-            created: Math.floor(Date.now() / 1000),
-            model: (params as any).model || 'gpt-4-turbo-preview',
-            choices: [{
-              index: 0,
-              message: {
-                role: 'assistant',
-                content: AIMockPatterns.generateCoachingResponse(
-                  (params as any).messages?.[(params as any).messages.length - 1]?.content || 'test',
-                  {}
-                ).content
-              },
-              finish_reason: 'stop'
-            }],
-            usage: {
-              prompt_tokens: (params as any).messages?.length * 10 || 10,
-              completion_tokens: 25,
-              total_tokens: ((params as any).messages?.length * 10 || 10) + 25
-            }
-          }))
+  // Mock OpenAI with explicit type casting
+  const mockOpenAI = {
+    OpenAI: function() {
+      return {
+        chat: {
+          completions: {
+            create: async (params: any) => ({
+              id: `chatcmpl-${Date.now()}`,
+              object: 'chat.completion',
+              created: Math.floor(Date.now() / 1000),
+              model: params.model || 'gpt-4-turbo-preview',
+              choices: [{
+                index: 0,
+                message: {
+                  role: 'assistant',
+                  content: AIMockPatterns.generateCoachingResponse(
+                    params.messages?.[params.messages.length - 1]?.content || 'test',
+                    {}
+                  ).content
+                },
+                finish_reason: 'stop'
+              }],
+              usage: {
+                prompt_tokens: params.messages?.length * 10 || 10,
+                completion_tokens: 25,
+                total_tokens: (params.messages?.length * 10 || 10) + 25
+              }
+            })
+          }
         }
-      }
-    }))
-  }));
+      };
+    }
+  };
 
   // Mock Anthropic Claude
-  jest.mock('@anthropic-ai/sdk', () => ({
+  const mockAnthropic = {
     __esModule: true,
-    default: jest.fn().mockImplementation(() => ({
-      messages: {
-        create: jest.fn().mockImplementation(async (params: any) => ({
-          id: `msg_${Date.now()}`,
-          type: 'message',
-          role: 'assistant',
-          content: [{
-            type: 'text',
-            text: AIMockPatterns.generateCoachingResponse(
-              (params as any).messages?.[(params as any).messages.length - 1]?.content || 'test',
-              {}
-            ).content
-          }],
-          model: (params as any).model || 'claude-3-sonnet-20240229',
-          stop_reason: 'end_turn',
-          stop_sequence: null,
-          usage: {
-            input_tokens: (params as any).messages?.length * 8 || 8,
-            output_tokens: 20
-          }
-        }))
-      }
-    }))
-  }));
+    default: function() {
+      return {
+        messages: {
+          create: async (params: any) => ({
+            id: `msg_${Date.now()}`,
+            type: 'message',
+            role: 'assistant',
+            content: [{
+              type: 'text',
+              text: AIMockPatterns.generateCoachingResponse(
+                params.messages?.[params.messages.length - 1]?.content || 'test',
+                {}
+              ).content
+            }],
+            model: params.model || 'claude-3-sonnet-20240229',
+            stop_reason: 'end_turn',
+            stop_sequence: null,
+            usage: {
+              input_tokens: params.messages?.length * 8 || 8,
+              output_tokens: 20
+            }
+          })
+        }
+      };
+    }
+  };
 
   // Mock Redis for caching
-  jest.mock('ioredis', () => ({
+  const mockRedis = {
     __esModule: true,
-    default: jest.fn().mockImplementation(() => ({
-      get: jest.fn().mockResolvedValue(null as any),
-      set: jest.fn().mockResolvedValue('OK' as any),
-      del: jest.fn().mockResolvedValue(1 as any),
-      exists: jest.fn().mockResolvedValue(0 as any),
-      expire: jest.fn().mockResolvedValue(1 as any),
-      flushdb: jest.fn().mockResolvedValue('OK' as any)
-    }) as any)
-  }));
+    default: function() {
+      return {
+        get: () => Promise.resolve(null),
+        set: () => Promise.resolve('OK'),
+        del: () => Promise.resolve(1),
+        exists: () => Promise.resolve(0),
+        expire: () => Promise.resolve(1),
+        flushdb: () => Promise.resolve('OK')
+      };
+    }
+  };
 
   // Mock database models
   const mockUser = MockDatabaseUtils.mockUserOperations();
@@ -93,26 +98,59 @@ function setupAIMocks() {
   const mockTask = MockDatabaseUtils.mockTaskOperations();
   const mockMood = MockDatabaseUtils.mockMoodOperations();
 
-  jest.mock('../../models', () => ({
+  const mockModels = {
     User: mockUser,
     Goal: mockGoal,
     Task: mockTask,
     Mood: mockMood,
     UserProfile: {
-      findOne: jest.fn(),
-      findByPk: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn()
+      findOne: () => Promise.resolve(null),
+      findByPk: () => Promise.resolve(null),
+      create: (data: any) => Promise.resolve(data),
+      update: (data: any) => Promise.resolve([1])
     },
     ChatMessage: {
-      findAll: jest.fn().mockResolvedValue([] as any),
-      create: jest.fn() as any
+      findAll: () => Promise.resolve([]),
+      create: (data: any) => Promise.resolve(data)
     },
     VoiceJournalEntry: {
-      findAll: jest.fn().mockResolvedValue([] as any),
-      create: jest.fn() as any
+      findAll: () => Promise.resolve([]),
+      create: (data: any) => Promise.resolve(data)
     }
-  }));
+  };
+
+  // Apply mocks using require.cache manipulation (more reliable than jest.mock)
+  const moduleCache = require.cache;
+  
+  // Override modules in cache
+  Object.keys(moduleCache).forEach(key => {
+    if (key.includes('openai')) {
+      moduleCache[key].exports = mockOpenAI;
+    } else if (key.includes('@anthropic-ai/sdk')) {
+      moduleCache[key].exports = mockAnthropic;
+    } else if (key.includes('ioredis')) {
+      moduleCache[key].exports = mockRedis;
+    } else if (key.includes('models') && key.includes('index')) {
+      moduleCache[key].exports = mockModels;
+    }
+  });
+
+  // Set up module interception for new requires
+  const Module = require('module');
+  const originalRequire = Module.prototype.require;
+
+  Module.prototype.require = function(id: string) {
+    if (id === 'openai') {
+      return mockOpenAI;
+    } else if (id === '@anthropic-ai/sdk') {
+      return mockAnthropic;
+    } else if (id === 'ioredis') {
+      return mockRedis;
+    } else if (id.includes('../../models')) {
+      return mockModels;
+    }
+    return originalRequire.apply(this, arguments);
+  };
 }
 
 /**
@@ -120,25 +158,26 @@ function setupAIMocks() {
  */
 function setupPerformanceMonitoring() {
   // Add performance markers
-  global.performance = global.performance || {
-    mark: jest.fn(),
-    measure: jest.fn(),
+  (global as any).performance = (global as any).performance || {
+    mark: () => {},
+    measure: () => {},
     now: () => Date.now(),
-    clearMarks: jest.fn(),
-    clearMeasures: jest.fn(),
-    getEntriesByName: jest.fn().mockReturnValue([]),
-    getEntriesByType: jest.fn().mockReturnValue([])
-  } as any;
+    clearMarks: () => {},
+    clearMeasures: () => {},
+    getEntriesByName: () => [],
+    getEntriesByType: () => []
+  };
 
   // Mock console methods for cleaner test output
   if (!process.env.VERBOSE_TESTS) {
+    const originalConsole = global.console;
     global.console = {
-      ...console,
-      log: jest.fn(),
-      debug: jest.fn(),
-      info: jest.fn(),
-      warn: console.warn, // Keep warnings
-      error: console.error // Keep errors
+      ...originalConsole,
+      log: () => {},
+      debug: () => {},
+      info: () => {},
+      warn: originalConsole.warn,
+      error: originalConsole.error
     };
   }
 }
@@ -174,7 +213,7 @@ function setupTestDataFactories() {
 function setupTimeouts() {
   // Set default timeout based on test type
   const testType = process.env.TEST_TYPE || 'unit';
-  const timeouts = {
+  const timeouts: { [key: string]: number } = {
     unit: 10000,      // 10 seconds
     integration: 30000, // 30 seconds
     performance: 60000, // 1 minute
@@ -182,7 +221,9 @@ function setupTimeouts() {
     scenario: 120000    // 2 minutes
   };
 
-  jest.setTimeout(timeouts[testType as keyof typeof timeouts] || 10000);
+  if (typeof jest !== 'undefined') {
+    jest.setTimeout(timeouts[testType] || 10000);
+  }
 }
 
 /**
@@ -207,78 +248,80 @@ function setupEnvironment() {
  * Setup custom Jest matchers for AI testing
  */
 function setupCustomMatchers() {
-  expect.extend({
-    toBeValidAIResponse(received) {
-      const pass = (
-        received &&
-        typeof received.id === 'string' &&
-        typeof received.content === 'string' &&
-        received.content.length > 0 &&
-        received.usage &&
-        typeof received.usage.totalTokens === 'number' &&
-        received.usage.totalTokens > 0
-      );
+  if (typeof expect !== 'undefined') {
+    expect.extend({
+      toBeValidAIResponse(received) {
+        const pass = (
+          received &&
+          typeof received.id === 'string' &&
+          typeof received.content === 'string' &&
+          received.content.length > 0 &&
+          received.usage &&
+          typeof received.usage.totalTokens === 'number' &&
+          received.usage.totalTokens > 0
+        );
 
-      return {
-        message: () => `expected ${JSON.stringify(received)} to be a valid AI response`,
-        pass
-      };
-    },
+        return {
+          message: () => `expected ${JSON.stringify(received)} to be a valid AI response`,
+          pass
+        };
+      },
 
-    toBeWithinResponseTime(received, expectedTime) {
-      const pass = received <= expectedTime;
-      return {
-        message: () => `expected response time ${received}ms to be within ${expectedTime}ms`,
-        pass
-      };
-    },
+      toBeWithinResponseTime(received: number, expectedTime: number) {
+        const pass = received <= expectedTime;
+        return {
+          message: () => `expected response time ${received}ms to be within ${expectedTime}ms`,
+          pass
+        };
+      },
 
-    toHaveValidRecommendations(received) {
-      const pass = (
-        received &&
-        Array.isArray(received.goals) &&
-        Array.isArray(received.habits) &&
-        Array.isArray(received.content) &&
-        Array.isArray(received.activities)
-      );
+      toHaveValidRecommendations(received) {
+        const pass = (
+          received &&
+          Array.isArray(received.goals) &&
+          Array.isArray(received.habits) &&
+          Array.isArray(received.content) &&
+          Array.isArray(received.activities)
+        );
 
-      return {
-        message: () => `expected ${JSON.stringify(received)} to have valid recommendation structure`,
-        pass
-      };
-    },
+        return {
+          message: () => `expected ${JSON.stringify(received)} to have valid recommendation structure`,
+          pass
+        };
+      },
 
-    toHaveValidUserProfile(received) {
-      const pass = (
-        received &&
-        typeof received.learningStyle === 'string' &&
-        typeof received.communicationPreference === 'string' &&
-        received.coachingPreferences &&
-        received.behaviorPatterns
-      );
+      toHaveValidUserProfile(received) {
+        const pass = (
+          received &&
+          typeof received.learningStyle === 'string' &&
+          typeof received.communicationPreference === 'string' &&
+          received.coachingPreferences &&
+          received.behaviorPatterns
+        );
 
-      return {
-        message: () => `expected ${JSON.stringify(received)} to be a valid user profile`,
-        pass
-      };
-    },
+        return {
+          message: () => `expected ${JSON.stringify(received)} to be a valid user profile`,
+          pass
+        };
+      },
 
-    toHaveValidVoiceAnalysis(received) {
-      const pass = (
-        received &&
-        typeof received.transcript === 'string' &&
-        received.sentiment &&
-        received.speechPatterns &&
-        received.linguisticAnalysis &&
-        Array.isArray(received.insights)
-      );
+      toHaveValidVoiceAnalysis(received) {
+        const pass = (
+          received &&
+          typeof received.transcript === 'string' &&
+          received.sentiment &&
+          received.speechPatterns &&
+          received.linguisticAnalysis &&
+          Array.isArray(received.insights)
+        );
 
-      return {
-        message: () => `expected ${JSON.stringify(received)} to be a valid voice analysis`,
-        pass
-      };
-    }
-  });
+        return {
+          message: () => `expected ${JSON.stringify(received)} to be a valid voice analysis`,
+          pass
+        };
+      }
+    });
+  }
 }
 
 /**
@@ -299,27 +342,39 @@ function setupAITesting() {
 }
 
 // Global setup and teardown hooks
-beforeAll(async () => {
-  setupAITesting();
-});
+if (typeof beforeAll !== 'undefined') {
+  beforeAll(async () => {
+    setupAITesting();
+  });
+}
 
-afterAll(async () => {
-  // Cleanup after all tests
-  jest.clearAllMocks();
-  jest.restoreAllMocks();
-});
+if (typeof afterAll !== 'undefined') {
+  afterAll(async () => {
+    // Cleanup after all tests
+    if (typeof jest !== 'undefined') {
+      jest.clearAllMocks();
+      jest.restoreAllMocks();
+    }
+  });
+}
 
-beforeEach(() => {
-  // Reset mocks before each test
-  jest.clearAllMocks();
-});
+if (typeof beforeEach !== 'undefined') {
+  beforeEach(() => {
+    // Reset mocks before each test
+    if (typeof jest !== 'undefined') {
+      jest.clearAllMocks();
+    }
+  });
+}
 
-afterEach(() => {
-  // Cleanup after each test if needed
-  if (testConfig.database.resetBetweenTests) {
-    // Reset database state would go here
-  }
-});
+if (typeof afterEach !== 'undefined') {
+  afterEach(() => {
+    // Cleanup after each test if needed
+    if (testConfig.database.resetBetweenTests) {
+      // Reset database state would go here
+    }
+  });
+}
 
 // Export for use in individual test files
 export {

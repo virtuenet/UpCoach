@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MockDatabaseUtils = exports.AIMockPatterns = exports.AITestDataFactory = exports.testConfig = void 0;
 exports.setupAITesting = setupAITesting;
-const globals_1 = require("@jest/globals");
 const ai_test_config_1 = require("./ai-test.config");
 const AITestUtils_1 = require("../utils/AITestUtils");
 Object.defineProperty(exports, "AIMockPatterns", { enumerable: true, get: function () { return AITestUtils_1.AIMockPatterns; } });
@@ -11,110 +10,149 @@ Object.defineProperty(exports, "MockDatabaseUtils", { enumerable: true, get: fun
 const testConfig = (0, ai_test_config_1.getAITestConfig)();
 exports.testConfig = testConfig;
 function setupAIMocks() {
-    globals_1.jest.mock('openai', () => ({
-        OpenAI: globals_1.jest.fn().mockImplementation(() => ({
-            chat: {
-                completions: {
-                    create: globals_1.jest.fn().mockImplementation(async (params) => ({
-                        id: `chatcmpl-${Date.now()}`,
-                        object: 'chat.completion',
-                        created: Math.floor(Date.now() / 1000),
-                        model: params.model || 'gpt-4-turbo-preview',
-                        choices: [{
-                                index: 0,
-                                message: {
-                                    role: 'assistant',
-                                    content: AITestUtils_1.AIMockPatterns.generateCoachingResponse(params.messages?.[params.messages.length - 1]?.content || 'test', {}).content
-                                },
-                                finish_reason: 'stop'
-                            }],
-                        usage: {
-                            prompt_tokens: params.messages?.length * 10 || 10,
-                            completion_tokens: 25,
-                            total_tokens: (params.messages?.length * 10 || 10) + 25
-                        }
-                    }))
-                }
-            }
-        }))
-    }));
-    globals_1.jest.mock('@anthropic-ai/sdk', () => ({
-        __esModule: true,
-        default: globals_1.jest.fn().mockImplementation(() => ({
-            messages: {
-                create: globals_1.jest.fn().mockImplementation(async (params) => ({
-                    id: `msg_${Date.now()}`,
-                    type: 'message',
-                    role: 'assistant',
-                    content: [{
-                            type: 'text',
-                            text: AITestUtils_1.AIMockPatterns.generateCoachingResponse(params.messages?.[params.messages.length - 1]?.content || 'test', {}).content
-                        }],
-                    model: params.model || 'claude-3-sonnet-20240229',
-                    stop_reason: 'end_turn',
-                    stop_sequence: null,
-                    usage: {
-                        input_tokens: params.messages?.length * 8 || 8,
-                        output_tokens: 20
+    const mockOpenAI = {
+        OpenAI: function () {
+            return {
+                chat: {
+                    completions: {
+                        create: async (params) => ({
+                            id: `chatcmpl-${Date.now()}`,
+                            object: 'chat.completion',
+                            created: Math.floor(Date.now() / 1000),
+                            model: params.model || 'gpt-4-turbo-preview',
+                            choices: [{
+                                    index: 0,
+                                    message: {
+                                        role: 'assistant',
+                                        content: AITestUtils_1.AIMockPatterns.generateCoachingResponse(params.messages?.[params.messages.length - 1]?.content || 'test', {}).content
+                                    },
+                                    finish_reason: 'stop'
+                                }],
+                            usage: {
+                                prompt_tokens: params.messages?.length * 10 || 10,
+                                completion_tokens: 25,
+                                total_tokens: (params.messages?.length * 10 || 10) + 25
+                            }
+                        })
                     }
-                }))
-            }
-        }))
-    }));
-    globals_1.jest.mock('ioredis', () => ({
+                }
+            };
+        }
+    };
+    const mockAnthropic = {
         __esModule: true,
-        default: globals_1.jest.fn().mockImplementation(() => ({
-            get: globals_1.jest.fn().mockResolvedValue(null),
-            set: globals_1.jest.fn().mockResolvedValue('OK'),
-            del: globals_1.jest.fn().mockResolvedValue(1),
-            exists: globals_1.jest.fn().mockResolvedValue(0),
-            expire: globals_1.jest.fn().mockResolvedValue(1),
-            flushdb: globals_1.jest.fn().mockResolvedValue('OK')
-        }))
-    }));
+        default: function () {
+            return {
+                messages: {
+                    create: async (params) => ({
+                        id: `msg_${Date.now()}`,
+                        type: 'message',
+                        role: 'assistant',
+                        content: [{
+                                type: 'text',
+                                text: AITestUtils_1.AIMockPatterns.generateCoachingResponse(params.messages?.[params.messages.length - 1]?.content || 'test', {}).content
+                            }],
+                        model: params.model || 'claude-3-sonnet-20240229',
+                        stop_reason: 'end_turn',
+                        stop_sequence: null,
+                        usage: {
+                            input_tokens: params.messages?.length * 8 || 8,
+                            output_tokens: 20
+                        }
+                    })
+                }
+            };
+        }
+    };
+    const mockRedis = {
+        __esModule: true,
+        default: function () {
+            return {
+                get: () => Promise.resolve(null),
+                set: () => Promise.resolve('OK'),
+                del: () => Promise.resolve(1),
+                exists: () => Promise.resolve(0),
+                expire: () => Promise.resolve(1),
+                flushdb: () => Promise.resolve('OK')
+            };
+        }
+    };
     const mockUser = AITestUtils_1.MockDatabaseUtils.mockUserOperations();
     const mockGoal = AITestUtils_1.MockDatabaseUtils.mockGoalOperations();
     const mockTask = AITestUtils_1.MockDatabaseUtils.mockTaskOperations();
     const mockMood = AITestUtils_1.MockDatabaseUtils.mockMoodOperations();
-    globals_1.jest.mock('../../models', () => ({
+    const mockModels = {
         User: mockUser,
         Goal: mockGoal,
         Task: mockTask,
         Mood: mockMood,
         UserProfile: {
-            findOne: globals_1.jest.fn(),
-            findByPk: globals_1.jest.fn(),
-            create: globals_1.jest.fn(),
-            update: globals_1.jest.fn()
+            findOne: () => Promise.resolve(null),
+            findByPk: () => Promise.resolve(null),
+            create: (data) => Promise.resolve(data),
+            update: (data) => Promise.resolve([1])
         },
         ChatMessage: {
-            findAll: globals_1.jest.fn().mockResolvedValue([]),
-            create: globals_1.jest.fn()
+            findAll: () => Promise.resolve([]),
+            create: (data) => Promise.resolve(data)
         },
         VoiceJournalEntry: {
-            findAll: globals_1.jest.fn().mockResolvedValue([]),
-            create: globals_1.jest.fn()
+            findAll: () => Promise.resolve([]),
+            create: (data) => Promise.resolve(data)
         }
-    }));
+    };
+    const moduleCache = require.cache;
+    Object.keys(moduleCache).forEach(key => {
+        if (key.includes('openai')) {
+            moduleCache[key].exports = mockOpenAI;
+        }
+        else if (key.includes('@anthropic-ai/sdk')) {
+            moduleCache[key].exports = mockAnthropic;
+        }
+        else if (key.includes('ioredis')) {
+            moduleCache[key].exports = mockRedis;
+        }
+        else if (key.includes('models') && key.includes('index')) {
+            moduleCache[key].exports = mockModels;
+        }
+    });
+    const Module = require('module');
+    const originalRequire = Module.prototype.require;
+    Module.prototype.require = function (id) {
+        if (id === 'openai') {
+            return mockOpenAI;
+        }
+        else if (id === '@anthropic-ai/sdk') {
+            return mockAnthropic;
+        }
+        else if (id === 'ioredis') {
+            return mockRedis;
+        }
+        else if (id.includes('../../models')) {
+            return mockModels;
+        }
+        return originalRequire.apply(this, arguments);
+    };
 }
 function setupPerformanceMonitoring() {
     global.performance = global.performance || {
-        mark: globals_1.jest.fn(),
-        measure: globals_1.jest.fn(),
+        mark: () => { },
+        measure: () => { },
         now: () => Date.now(),
-        clearMarks: globals_1.jest.fn(),
-        clearMeasures: globals_1.jest.fn(),
-        getEntriesByName: globals_1.jest.fn().mockReturnValue([]),
-        getEntriesByType: globals_1.jest.fn().mockReturnValue([])
+        clearMarks: () => { },
+        clearMeasures: () => { },
+        getEntriesByName: () => [],
+        getEntriesByType: () => []
     };
     if (!process.env.VERBOSE_TESTS) {
+        const originalConsole = global.console;
         global.console = {
-            ...console,
-            log: globals_1.jest.fn(),
-            debug: globals_1.jest.fn(),
-            info: globals_1.jest.fn(),
-            warn: console.warn,
-            error: console.error
+            ...originalConsole,
+            log: () => { },
+            debug: () => { },
+            info: () => { },
+            warn: originalConsole.warn,
+            error: originalConsole.error
         };
     }
 }
@@ -140,7 +178,9 @@ function setupTimeouts() {
         contract: 15000,
         scenario: 120000
     };
-    globals_1.jest.setTimeout(timeouts[testType] || 10000);
+    if (typeof jest !== 'undefined') {
+        jest.setTimeout(timeouts[testType] || 10000);
+    }
 }
 function setupEnvironment() {
     process.env.NODE_ENV = 'test';
@@ -152,62 +192,64 @@ function setupEnvironment() {
     process.env.REDIS_URL = 'redis://localhost:6379/1';
 }
 function setupCustomMatchers() {
-    expect.extend({
-        toBeValidAIResponse(received) {
-            const pass = (received &&
-                typeof received.id === 'string' &&
-                typeof received.content === 'string' &&
-                received.content.length > 0 &&
-                received.usage &&
-                typeof received.usage.totalTokens === 'number' &&
-                received.usage.totalTokens > 0);
-            return {
-                message: () => `expected ${JSON.stringify(received)} to be a valid AI response`,
-                pass
-            };
-        },
-        toBeWithinResponseTime(received, expectedTime) {
-            const pass = received <= expectedTime;
-            return {
-                message: () => `expected response time ${received}ms to be within ${expectedTime}ms`,
-                pass
-            };
-        },
-        toHaveValidRecommendations(received) {
-            const pass = (received &&
-                Array.isArray(received.goals) &&
-                Array.isArray(received.habits) &&
-                Array.isArray(received.content) &&
-                Array.isArray(received.activities));
-            return {
-                message: () => `expected ${JSON.stringify(received)} to have valid recommendation structure`,
-                pass
-            };
-        },
-        toHaveValidUserProfile(received) {
-            const pass = (received &&
-                typeof received.learningStyle === 'string' &&
-                typeof received.communicationPreference === 'string' &&
-                received.coachingPreferences &&
-                received.behaviorPatterns);
-            return {
-                message: () => `expected ${JSON.stringify(received)} to be a valid user profile`,
-                pass
-            };
-        },
-        toHaveValidVoiceAnalysis(received) {
-            const pass = (received &&
-                typeof received.transcript === 'string' &&
-                received.sentiment &&
-                received.speechPatterns &&
-                received.linguisticAnalysis &&
-                Array.isArray(received.insights));
-            return {
-                message: () => `expected ${JSON.stringify(received)} to be a valid voice analysis`,
-                pass
-            };
-        }
-    });
+    if (typeof expect !== 'undefined') {
+        expect.extend({
+            toBeValidAIResponse(received) {
+                const pass = (received &&
+                    typeof received.id === 'string' &&
+                    typeof received.content === 'string' &&
+                    received.content.length > 0 &&
+                    received.usage &&
+                    typeof received.usage.totalTokens === 'number' &&
+                    received.usage.totalTokens > 0);
+                return {
+                    message: () => `expected ${JSON.stringify(received)} to be a valid AI response`,
+                    pass
+                };
+            },
+            toBeWithinResponseTime(received, expectedTime) {
+                const pass = received <= expectedTime;
+                return {
+                    message: () => `expected response time ${received}ms to be within ${expectedTime}ms`,
+                    pass
+                };
+            },
+            toHaveValidRecommendations(received) {
+                const pass = (received &&
+                    Array.isArray(received.goals) &&
+                    Array.isArray(received.habits) &&
+                    Array.isArray(received.content) &&
+                    Array.isArray(received.activities));
+                return {
+                    message: () => `expected ${JSON.stringify(received)} to have valid recommendation structure`,
+                    pass
+                };
+            },
+            toHaveValidUserProfile(received) {
+                const pass = (received &&
+                    typeof received.learningStyle === 'string' &&
+                    typeof received.communicationPreference === 'string' &&
+                    received.coachingPreferences &&
+                    received.behaviorPatterns);
+                return {
+                    message: () => `expected ${JSON.stringify(received)} to be a valid user profile`,
+                    pass
+                };
+            },
+            toHaveValidVoiceAnalysis(received) {
+                const pass = (received &&
+                    typeof received.transcript === 'string' &&
+                    received.sentiment &&
+                    received.speechPatterns &&
+                    received.linguisticAnalysis &&
+                    Array.isArray(received.insights));
+                return {
+                    message: () => `expected ${JSON.stringify(received)} to be a valid voice analysis`,
+                    pass
+                };
+            }
+        });
+    }
 }
 function setupAITesting() {
     console.log('🤖 Setting up AI Services testing environment...');
@@ -220,18 +262,30 @@ function setupAITesting() {
     setupCustomMatchers();
     console.log('✅ AI Services testing environment ready');
 }
-beforeAll(async () => {
-    setupAITesting();
-});
-afterAll(async () => {
-    globals_1.jest.clearAllMocks();
-    globals_1.jest.restoreAllMocks();
-});
-beforeEach(() => {
-    globals_1.jest.clearAllMocks();
-});
-afterEach(() => {
-    if (testConfig.database.resetBetweenTests) {
-    }
-});
+if (typeof beforeAll !== 'undefined') {
+    beforeAll(async () => {
+        setupAITesting();
+    });
+}
+if (typeof afterAll !== 'undefined') {
+    afterAll(async () => {
+        if (typeof jest !== 'undefined') {
+            jest.clearAllMocks();
+            jest.restoreAllMocks();
+        }
+    });
+}
+if (typeof beforeEach !== 'undefined') {
+    beforeEach(() => {
+        if (typeof jest !== 'undefined') {
+            jest.clearAllMocks();
+        }
+    });
+}
+if (typeof afterEach !== 'undefined') {
+    afterEach(() => {
+        if (testConfig.database.resetBetweenTests) {
+        }
+    });
+}
 //# sourceMappingURL=ai-test-setup.js.map

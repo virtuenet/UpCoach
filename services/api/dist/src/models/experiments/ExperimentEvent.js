@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ExperimentEvent = void 0;
 const sequelize_1 = require("sequelize");
-const database_1 = require("../../config/database");
 class ExperimentEvent extends sequelize_1.Model {
     id;
     experimentId;
@@ -76,8 +75,8 @@ class ExperimentEvent extends sequelize_1.Model {
             this.findAll({
                 where: whereClause,
                 attributes: [
-                    [database_1.sequelize.fn('AVG', database_1.sequelize.col('eventValue')), 'averageValue'],
-                    [database_1.sequelize.fn('SUM', database_1.sequelize.col('eventValue')), 'totalValue'],
+                    [this.sequelize.fn('AVG', this.sequelize.col('eventValue')), 'averageValue'],
+                    [this.sequelize.fn('SUM', this.sequelize.col('eventValue')), 'totalValue'],
                 ],
                 raw: true,
             }),
