@@ -39,7 +39,7 @@ services:
   landing-page:
     build:
       context: ./apps/landing-page
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.debug
     container_name: upcoach-landing
     environment:
       NODE_ENV: ${NODE_ENV:-development}

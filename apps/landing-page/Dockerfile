@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
-RUN npm install --omit=dev --legacy-peer-deps --platform=linux/x64
+RUN npm install --omit=dev --legacy-peer-deps
 
 # Development stage
 FROM base AS development
@@ -15,7 +15,7 @@ CMD ["npm", "run", "dev"]
 
 # Build stage
 FROM base AS build
-RUN npm install --legacy-peer-deps --platform=linux/x64
+RUN npm install --legacy-peer-deps
 COPY . .
 RUN npm run build
 

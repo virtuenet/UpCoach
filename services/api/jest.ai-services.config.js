@@ -23,8 +23,8 @@ module.exports = {
     '<rootDir>/src/tests/config/ai-test-setup.ts'
   ],
   
-  // Module path mapping
-  moduleNameMapping: {
+  // Module path mapping (fixed property name)
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@tests/(.*)$': '<rootDir>/src/tests/$1',
     '^@services/(.*)$': '<rootDir>/src/services/$1',
@@ -96,11 +96,11 @@ module.exports = {
   },
   
   // Test timeout for AI operations (increased for API calls)
-  testTimeout: 30000,
+  // testTimeout removed to prevent warnings
   
-  // Global setup and teardown
-  globalSetup: '<rootDir>/src/tests/config/ai-global-setup.ts',
-  globalTeardown: '<rootDir>/src/tests/config/ai-global-teardown.ts',
+  // Global setup and teardown (commented out until files exist)
+  // globalSetup: '<rootDir>/src/tests/config/ai-global-setup.ts',
+  // globalTeardown: '<rootDir>/src/tests/config/ai-global-teardown.ts',
   
   // Transform configuration
   transform: {
@@ -130,46 +130,38 @@ module.exports = {
   errorOnDeprecated: true,
   verbose: true,
   
-  // Parallel execution configuration
-  maxWorkers: '50%', // Use half of available CPU cores
+  // Parallel execution configuration for memory optimization
+  maxWorkers: 1, // Reduced from 50% to prevent memory issues in CI
+  workerIdleMemoryLimit: '512MB', // Force worker restart when memory exceeds limit
   
-  // Cache configuration
-  cache: true,
+  // Cache configuration with memory limits
+  cache: false, // Disable cache in CI to prevent memory issues
   cacheDirectory: '<rootDir>/node_modules/.cache/jest-ai',
   
-  // Reporter configuration
+  // Reporter configuration (simplified to reduce memory usage)
   reporters: [
-    'default',
-    [
-      'jest-html-reporters',
-      {
-        publicPath: './coverage/ai-services/html-report',
-        filename: 'ai-services-test-report.html',
-        pageTitle: 'UpCoach AI Services Test Report',
-        overwrite: true,
-        expand: true,
-        hideIcon: false,
-        testCommand: 'npm run test:ai'
-      }
-    ],
-    [
-      'jest-junit',
-      {
-        outputDirectory: './coverage/ai-services',
-        outputName: 'ai-services-junit.xml',
-        suiteName: 'AI Services Test Suite',
-        classNameTemplate: '{classname}',
-        titleTemplate: '{title}',
-        ancestorSeparator: ' › ',
-        usePathForSuiteName: true
-      }
-    ]
+    'default'
+    // Additional reporters commented out to reduce memory usage in CI
+    // Uncomment for detailed reporting when needed
+    // [
+    //   'jest-html-reporters',
+    //   {
+    //     publicPath: './coverage/ai-services/html-report',
+    //     filename: 'ai-services-test-report.html',
+    //     pageTitle: 'UpCoach AI Services Test Report',
+    //     overwrite: true,
+    //     expand: true,
+    //     hideIcon: false,
+    //     testCommand: 'npm run test:ai'
+    //   }
+    // ]
   ],
   
-  // Mock configuration for AI services
+  // Mock configuration for AI services - Enhanced for memory cleanup
   clearMocks: true,
   restoreMocks: true,
   resetMocks: true,
+  resetModules: true, // Important: Reset module registry between tests
   
   // Global variables for AI testing
   globals: {
@@ -230,7 +222,7 @@ module.exports = {
         TEST_TYPE: 'integration',
         MOCK_AI_RESPONSES: false
       },
-      testTimeout: 60000 // 1 minute for integration tests
+      // testTimeout removed to prevent warnings
     },
     
     // Performance tests
@@ -243,7 +235,7 @@ module.exports = {
         PERFORMANCE_TESTING: true,
         MOCK_AI_RESPONSES: true
       },
-      testTimeout: 120000 // 2 minutes for performance tests
+      // testTimeout removed to prevent warnings
     },
     
     // Contract tests
@@ -267,7 +259,7 @@ module.exports = {
         TEST_TYPE: 'scenario',
         MOCK_AI_RESPONSES: false
       },
-      testTimeout: 180000 // 3 minutes for scenario tests
+      // testTimeout removed to prevent warnings
     }
   ]
 };
