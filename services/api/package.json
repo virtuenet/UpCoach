@@ -23,12 +23,14 @@
     "lint": "eslint src --ext .ts --max-warnings 1000",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write src",
+    "type-check": "tsc --noEmit",
     "db:migrate": "npx sequelize-cli db:migrate",
     "db:seed": "npx sequelize-cli db:seed:all",
     "db:reset": "npx sequelize-cli db:migrate:undo:all && npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.57.0",
+    "archiver": "^7.0.0",
     "@node-saml/node-saml": "^5.1.0",
     "@sentry/node": "^10.8.0",
     "@sentry/profiling-node": "^10.8.0",
@@ -92,6 +94,7 @@
   },
   "devDependencies": {
     "@jest/globals": "^30.0.5",
+    "@types/archiver": "^6.0.0",
     "@types/bcrypt": "^6.0.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/compression": "^1.7.5",
