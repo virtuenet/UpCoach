@@ -1,6 +1,10 @@
-export { LoadingSpinner, LoadingSpinnerProps, SessionWarningModal, useSessionWarning } from './components/index.js';
-export { SharedHooks } from './hooks/index.js';
-export { Metric, PerformanceBudget, PerformanceReport, SharedUtils, checkPerformanceBudget, createPerformanceHook, generatePerformanceReport, initializePerformanceMonitoring, measureWebVitals, reportPerformanceData } from './utils/index.js';
-export { ApiClient, ApiClientConfig, createApiClient, handleApiError, transformers, withRetry } from './services/index.js';
-import 'react';
-import 'axios';
+/**
+ * @upcoach/shared
+ * Shared components, hooks, utilities, and services
+ */
+export * from './components';
+export * from './hooks';
+export * from './utils';
+export * from './services';
+export { SessionWarningModal, useSessionWarning } from './components/SessionWarningModal';
+//# sourceMappingURL=index.d.ts.map

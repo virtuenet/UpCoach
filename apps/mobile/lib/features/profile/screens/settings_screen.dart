@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/profile_provider.dart';
+import '../../../core/services/two_factor_auth_service.dart';
+import '../../auth/screens/two_factor_setup_screen.dart';
+import '../../auth/screens/disable_two_factor_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   final int initialTab;
@@ -18,21 +21,26 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  
+  final TwoFactorAuthService _twoFactorService = TwoFactorAuthService();
+
   // Notification settings
   bool _pushNotifications = true;
   bool _emailNotifications = true;
   bool _taskReminders = true;
   bool _goalReminders = true;
   bool _moodReminders = true;
-  
+
   // Privacy settings
   bool _shareAnalytics = true;
   bool _publicProfile = false;
-  
+
   // App settings
   String _theme = 'system';
   String _language = 'english';
+
+  // Security settings
+  bool _twoFactorEnabled = false;
+  bool _isLoading2FAStatus = false;
 
   @override
   void initState() {
@@ -42,6 +50,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       vsync: this,
       initialIndex: widget.initialTab,
     );
+    _load2FAStatus();
+  }
+
+  Future<void> _load2FAStatus() async {
+    setState(() => _isLoading2FAStatus = true);
+    try {
+      final status = await _twoFactorService.get2FAStatus();
+      setState(() {
+        _twoFactorEnabled = status['enabled'] ?? false;
+        _isLoading2FAStatus = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading2FAStatus = false);
+      // Silently handle errors in settings screen
+    }
   }
 
   @override
@@ -165,13 +188,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         ),
         ListTile(
           title: const Text('Two-Factor Authentication'),
-          subtitle: const Text('Add an extra layer of security'),
-          trailing: Switch(
-            value: false,
-            onChanged: (value) {
-              // TODO: Implement 2FA
-            },
-          ),
+          subtitle: Text(_twoFactorEnabled
+            ? 'Enhanced security enabled'
+            : 'Add an extra layer of security'),
+          trailing: _isLoading2FAStatus
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Switch(
+                value: _twoFactorEnabled,
+                onChanged: (value) async {
+                  if (value) {
+                    await _setupTwoFactor();
+                  } else {
+                    await _disableTwoFactor();
+                  }
+                },
+              ),
         ),
         
         const Divider(),
@@ -416,6 +451,66 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         ],
       ),
     );
+  }
+
+  Future<void> _setupTwoFactor() async {
+    try {
+      final result = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const TwoFactorSetupScreen(),
+        ),
+      );
+
+      if (result == true) {
+        setState(() {
+          _twoFactorEnabled = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Two-factor authentication enabled successfully'),
+            backgroundColor: AppTheme.successColor,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to setup 2FA: $e'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+    }
+  }
+
+  Future<void> _disableTwoFactor() async {
+    try {
+      final result = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const DisableTwoFactorScreen(),
+        ),
+      );
+
+      if (result == true) {
+        setState(() {
+          _twoFactorEnabled = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Two-factor authentication disabled'),
+            backgroundColor: AppTheme.warningColor,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to disable 2FA: $e'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+    }
   }
 
   void _showDeleteAccountDialog() {

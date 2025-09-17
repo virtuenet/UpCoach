@@ -25,16 +25,22 @@ import taskRoutes from './tasks';
 import twoFactorAuthRoutes from './twoFactorAuth';
 import userRoutes from './users';
 import voiceJournalRoutes from './voiceJournal';
+import { localLLMRouter } from './localLLM';
 
 // API v2 imports
 import v2Routes from './v2';
 
+// Mobile-specific imports
+import mobileRoutes from './mobile';
 
 export const setupRoutes = (app: Application): void => {
   const apiPrefix = '/api';
 
   // API v2 routes (new mobile-optimized endpoints)
   app.use(`${apiPrefix}/v2`, v2Routes);
+
+  // Mobile-specific routes
+  app.use(`${apiPrefix}/mobile`, mobileRoutes);
 
   // Public routes (no authentication required)
   app.use(`${apiPrefix}/auth`, authRoutes);
@@ -62,6 +68,9 @@ export const setupRoutes = (app: Application): void => {
 
   // AI routes (protected)
   app.use(`${apiPrefix}/ai`, authMiddleware, aiRoutes);
+
+  // Local LLM routes (protected)
+  app.use(`${apiPrefix}/local-llm`, authMiddleware, localLLMRouter);
 
   // Voice Journal routes (protected)
   app.use(`${apiPrefix}/voice-journal`, authMiddleware, voiceJournalRoutes);

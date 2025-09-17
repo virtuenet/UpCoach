@@ -1,6 +1,5 @@
 /**
  * Shared hooks index
  */
-declare const SharedHooks: {};
-
-export { SharedHooks };
+export declare const SharedHooks: {};
+//# sourceMappingURL=index.d.ts.map

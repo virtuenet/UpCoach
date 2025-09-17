@@ -6,6 +6,11 @@ import { insightGenerator } from '../../services/ai/InsightGenerator';
 import { predictiveAnalytics } from '../../services/ai/PredictiveAnalytics';
 import { recommendationEngine } from '../../services/ai/RecommendationEngine';
 import { voiceAI } from '../../services/ai/VoiceAI';
+import { enhancedAIService } from '../../services/ai/EnhancedAIService';
+import { personalizationEngine } from '../../services/ai/PersonalizationEngine';
+import { analyticsEngine } from '../../services/ai/AnalyticsEngine';
+import { hybridDecisionEngine } from '../../services/ai/HybridDecisionEngine';
+import { AIInteraction } from '../../models/AIInteraction';
 import { logger } from '../../utils/logger';
 
 export class AIController {
@@ -368,6 +373,231 @@ export class AIController {
       });
     } catch (error) {
       logger.error('Error dismissing insight:', error);
+      next(error);
+    }
+  }
+
+  // Hybrid AI Methods
+  async hybridGenerate(req: Request, _res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user?.id;
+      const { messages, options = {} } = req.body;
+
+      const startTime = Date.now();
+
+      // Use enhanced AI service with hybrid processing
+      const result = await enhancedAIService.generateHybridResponse(messages, {
+        ...options,
+        routingContext: {
+          userId,
+          requestType: 'conversation',
+          priority: options.priority || 'normal',
+        },
+      });
+
+      const processingTime = Date.now() - startTime;
+
+      // Record interaction
+      if (userId) {
+        await AIInteraction.create({
+          userId,
+          type: 'conversation',
+          model: result.response.model,
+          tokensUsed: result.response.usage.totalTokens,
+          responseTime: processingTime / 1000,
+          requestData: { messages, options },
+          responseData: { content: result.response.content },
+          metadata: {
+            provider: result.metrics.provider,
+            fallbackOccurred: result.metrics.fallbackOccurred,
+            routingDecisionTime: result.metrics.routingDecisionTime,
+            qualityScore: result.metrics.qualityScore,
+          },
+        });
+      }
+
+      _res.json({
+        success: true,
+        response: result.response,
+        metrics: result.metrics,
+        processingTime,
+      });
+    } catch (error) {
+      logger.error('Error in hybrid generation:', error);
+      next(error);
+    }
+  }
+
+  async getRoutingDecision(req: Request, _res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user?.id;
+      const { messages, options = {} } = req.body;
+
+      const decision = await hybridDecisionEngine.routeRequest(messages, options, {
+        userId,
+        requestType: 'query',
+      });
+
+      _res.json({
+        success: true,
+        decision,
+      });
+    } catch (error) {
+      logger.error('Error getting routing decision:', error);
+      next(error);
+    }
+  }
+
+  // Personalization Methods
+  async getPersonalizationPreferences(req: Request, _res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user?.id || '';
+
+      const preferences = await personalizationEngine.getUserPreferences(userId);
+
+      _res.json({
+        success: true,
+        preferences,
+      });
+    } catch (error) {
+      logger.error('Error getting personalization preferences:', error);
+      next(error);
+    }
+  }
+
+  async updatePersonalization(req: Request, _res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user?.id || '';
+      const { preferences, behavior, context } = req.body;
+
+      await personalizationEngine.updateUserProfile(userId, {
+        preferences,
+        behavior,
+        context,
+      });
+
+      _res.json({
+        success: true,
+        message: 'Personalization updated successfully',
+      });
+    } catch (error) {
+      logger.error('Error updating personalization:', error);
+      next(error);
+    }
+  }
+
+  async getPersonalizedContent(req: Request, _res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user?.id || '';
+      const { contentType, limit = 10 } = req.query;
+
+      const recommendations = await personalizationEngine.getPersonalizedContent(
+        userId,
+        contentType as string,
+        parseInt(limit as string)
+      );
+
+      _res.json({
+        success: true,
+        recommendations,
+      });
+    } catch (error) {
+      logger.error('Error getting personalized content:', error);
+      next(error);
+    }
+  }
+
+  async getCoachingStrategy(req: Request, _res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user?.id || '';
+
+      const strategy = await personalizationEngine.generateCoachingStrategy(userId);
+
+      _res.json({
+        success: true,
+        strategy,
+      });
+    } catch (error) {
+      logger.error('Error getting coaching strategy:', error);
+      next(error);
+    }
+  }
+
+  // Advanced Analytics Methods
+  async getBehaviorPatterns(req: Request, _res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user?.id || '';
+      const { days = 30 } = req.query;
+
+      const patterns = await analyticsEngine.analyzeBehaviorPatterns(
+        userId,
+        parseInt(days as string)
+      );
+
+      _res.json({
+        success: true,
+        patterns,
+      });
+    } catch (error) {
+      logger.error('Error getting behavior patterns:', error);
+      next(error);
+    }
+  }
+
+  async getEngagementMetrics(req: Request, _res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user?.id || '';
+      const { startDate, endDate } = req.query;
+
+      const metrics = await analyticsEngine.getEngagementMetrics(userId, {
+        startDate: startDate ? new Date(startDate as string) : undefined,
+        endDate: endDate ? new Date(endDate as string) : undefined,
+      });
+
+      _res.json({
+        success: true,
+        metrics,
+      });
+    } catch (error) {
+      logger.error('Error getting engagement metrics:', error);
+      next(error);
+    }
+  }
+
+  async getSuccessFactors(req: Request, _res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user?.id || '';
+
+      const factors = await analyticsEngine.identifySuccessFactors(userId);
+
+      _res.json({
+        success: true,
+        factors,
+      });
+    } catch (error) {
+      logger.error('Error getting success factors:', error);
+      next(error);
+    }
+  }
+
+  async trackAnalyticsEvent(req: Request, _res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user?.id || '';
+      const { eventType, eventData, metadata } = req.body;
+
+      await analyticsEngine.trackEvent(userId, {
+        type: eventType,
+        data: eventData,
+        metadata,
+        timestamp: new Date(),
+      });
+
+      _res.json({
+        success: true,
+        message: 'Event tracked successfully',
+      });
+    } catch (error) {
+      logger.error('Error tracking analytics event:', error);
       next(error);
     }
   }

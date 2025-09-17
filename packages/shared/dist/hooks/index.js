@@ -1,8 +1,6 @@
-'use strict';
-
-// src/hooks/index.ts
-var SharedHooks = {};
-
-exports.SharedHooks = SharedHooks;
-//# sourceMappingURL=index.js.map
+/**
+ * Shared hooks index
+ */
+// Placeholder for shared hooks
+export const SharedHooks = {};
 //# sourceMappingURL=index.js.map

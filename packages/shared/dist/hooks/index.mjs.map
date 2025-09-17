@@ -1,1 +1,0 @@
-{"version":3,"sources":["../../src/hooks/index.ts"],"names":[],"mappings":";AAKO,IAAM,cAAc","file":"index.mjs","sourcesContent":["/**\n * Shared hooks index\n */\n\n// Placeholder for shared hooks\nexport const SharedHooks = {};"]}

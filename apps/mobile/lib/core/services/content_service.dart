@@ -4,6 +4,7 @@ import '../../shared/models/content_article.dart';
 import '../providers/dio_provider.dart';
 import '../utils/api_exception.dart';
 import '../utils/logger.dart';
+import 'offline_storage_service.dart';
 
 part 'content_service.g.dart';
 
@@ -15,6 +16,7 @@ ContentService contentService(ContentServiceRef ref) {
 
 class ContentService {
   final Dio _dio;
+  final OfflineStorageService _offlineStorage = OfflineStorageService.instance;
   static const String _baseEndpoint = '/cms';
 
   ContentService(this._dio);
@@ -157,21 +159,51 @@ class ContentService {
 
   // Save article for offline reading
   Future<void> saveArticleOffline(ContentArticle article) async {
-    // TODO: Implement offline storage using local database
-    logger.i('Saving article offline: ${article.id}');
+    try {
+      await _offlineStorage.saveArticleOffline(article);
+      logger.i('Article ${article.id} saved offline successfully');
+    } catch (e) {
+      logger.e('Failed to save article offline', error: e);
+      rethrow;
+    }
   }
 
-  // Get saved articles
+  // Get saved articles (from offline storage and online)
   Future<List<ContentArticle>> getSavedArticles() async {
     try {
-      final response = await _dio.get('$_baseEndpoint/articles/saved');
-      final articles = (response.data['data'] as List)
-          .map((json) => ContentArticle.fromJson(json))
-          .toList();
-      return articles;
-    } on DioException catch (e) {
-      logger.e('Failed to fetch saved articles', error: e);
-      throw ApiException.fromDioError(e);
+      // Get offline saved articles first
+      final offlineArticles = await _offlineStorage.getSavedArticles();
+
+      // Try to get online saved articles
+      try {
+        final response = await _dio.get('$_baseEndpoint/articles/saved');
+        final onlineArticles = (response.data['data'] as List)
+            .map((json) => ContentArticle.fromJson(json))
+            .toList();
+
+        // Merge offline and online articles, avoiding duplicates
+        final Map<int, ContentArticle> articlesMap = {};
+
+        // Add offline articles first
+        for (final article in offlineArticles) {
+          articlesMap[article.id] = article;
+        }
+
+        // Add online articles that aren't already offline
+        for (final article in onlineArticles) {
+          if (!articlesMap.containsKey(article.id)) {
+            articlesMap[article.id] = article;
+          }
+        }
+
+        return articlesMap.values.toList();
+      } on DioException catch (e) {
+        logger.w('Failed to fetch online saved articles, returning offline only', error: e);
+        return offlineArticles;
+      }
+    } catch (e) {
+      logger.e('Failed to get saved articles', error: e);
+      return [];
     }
   }
   
@@ -221,5 +253,85 @@ class ContentService {
     } on DioException catch (e) {
       logger.e('Failed to track article share', error: e);
     }
+  }
+
+  // Remove saved article (both online and offline)
+  Future<void> removeSavedArticle(int articleId) async {
+    try {
+      // Remove from offline storage
+      await _offlineStorage.removeSavedArticle(articleId);
+
+      // Try to remove from online saved list
+      try {
+        await _dio.delete('$_baseEndpoint/articles/$articleId/save');
+      } on DioException catch (e) {
+        logger.w('Failed to remove article from online saved list', error: e);
+        // Continue even if online removal fails
+      }
+
+      logger.i('Article $articleId removed from saved successfully');
+    } catch (e) {
+      logger.e('Failed to remove saved article', error: e);
+      throw Exception('Failed to remove saved article: $e');
+    }
+  }
+
+  // Check if article is saved (offline or online)
+  Future<bool> isArticleSaved(int articleId) async {
+    try {
+      // Check offline first (faster)
+      final isOffline = await _offlineStorage.isArticleSavedOffline(articleId);
+      if (isOffline) return true;
+
+      // Check online if not offline
+      try {
+        final response = await _dio.get('$_baseEndpoint/articles/$articleId/saved-status');
+        return response.data['isSaved'] ?? false;
+      } on DioException catch (e) {
+        logger.w('Failed to check online saved status', error: e);
+        return false;
+      }
+    } catch (e) {
+      logger.e('Failed to check if article is saved', error: e);
+      return false;
+    }
+  }
+
+  // Get offline storage statistics
+  Future<Map<String, dynamic>> getOfflineStorageStats() async {
+    return await _offlineStorage.getStorageStats();
+  }
+
+  // Clear all offline data
+  Future<void> clearOfflineData() async {
+    try {
+      await _offlineStorage.clearAllOfflineData();
+      logger.i('All offline data cleared successfully');
+    } catch (e) {
+      logger.e('Failed to clear offline data', error: e);
+      rethrow;
+    }
+  }
+
+  // Get article (prioritize offline if available)
+  Future<ContentArticle> getArticleWithOfflineFallback({
+    int? id,
+    String? slug,
+  }) async {
+    if (id == null && slug == null) {
+      throw ArgumentError('Either id or slug must be provided');
+    }
+
+    // Try offline first if we have an ID
+    if (id != null) {
+      final offlineArticle = await _offlineStorage.getSavedArticleById(id);
+      if (offlineArticle != null) {
+        logger.i('Retrieved article $id from offline storage');
+        return offlineArticle;
+      }
+    }
+
+    // Fall back to online
+    return await getArticle(id: id, slug: slug);
   }
 }

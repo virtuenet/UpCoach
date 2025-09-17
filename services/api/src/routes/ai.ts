@@ -2,14 +2,15 @@ import { Router } from 'express';
 
 import { aiController } from '../controllers/ai/AIController';
 import { userProfilingController } from '../controllers/ai/UserProfilingController';
+import { localLLMController } from '../controllers/ai/LocalLLMController';
 import { authenticate } from '../middleware/auth';
 import { createRateLimiter, intelligentRateLimiter } from '../middleware/rateLimiter';
-import { 
-  validateConversationInput, 
-  validateVoiceInput, 
+import {
+  validateConversationInput,
+  validateVoiceInput,
   validateLearningPathInput,
   validateGeneralAIInput,
-  sanitizeParams 
+  sanitizeParams
 } from '../middleware/aiInputValidation';
 import upload from '../middleware/upload';
 
@@ -20,6 +21,14 @@ const aiRateLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 50, // 50 AI requests per 15 minutes per user
   message: 'AI service rate limit exceeded. Please wait before making more requests.',
+  useFingerprint: true,
+});
+
+// Local LLM specific rate limiter - more generous for local processing
+const localLLMRateLimiter = createRateLimiter({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 100, // 100 local LLM requests per 5 minutes
+  message: 'Local LLM rate limit exceeded. Please wait before making more requests.',
   useFingerprint: true,
 });
 
@@ -98,5 +107,29 @@ router.get('/insights/report', authenticate, aiRateLimiter, aiController.getInsi
 router.get('/insights/report/:userId', authenticate, aiRateLimiter, aiController.getInsightReport);
 router.get('/insights/active', authenticate, aiRateLimiter, aiController.getActiveInsights);
 router.post('/insights/:insightId/dismiss', authenticate, aiRateLimiter, aiController.dismissInsight);
+
+// Local LLM Routes
+router.get('/local-llm/status', authenticate, localLLMRateLimiter, localLLMController.getStatus);
+router.get('/local-llm/models', authenticate, localLLMRateLimiter, localLLMController.getAvailableModels);
+router.post('/local-llm/generate', authenticate, localLLMRateLimiter, validateConversationInput, localLLMController.generateResponse);
+router.post('/local-llm/initialize', authenticate, aiRateLimiter, localLLMController.initializeModel);
+router.get('/local-llm/health', localLLMController.healthCheck);
+router.get('/local-llm/metrics', authenticate, localLLMRateLimiter, localLLMController.getMetrics);
+
+// Hybrid AI Routes (local + cloud fallback)
+router.post('/hybrid/generate', authenticate, aiRateLimiter, validateConversationInput, aiController.hybridGenerate);
+router.get('/hybrid/routing-decision', authenticate, aiRateLimiter, aiController.getRoutingDecision);
+
+// Real-time Personalization Routes
+router.get('/personalization/preferences', authenticate, aiRateLimiter, aiController.getPersonalizationPreferences);
+router.post('/personalization/update', authenticate, aiRateLimiter, aiController.updatePersonalization);
+router.get('/personalization/content-recommendations', authenticate, aiRateLimiter, aiController.getPersonalizedContent);
+router.get('/personalization/coaching-strategy', authenticate, aiRateLimiter, aiController.getCoachingStrategy);
+
+// Advanced Analytics Routes
+router.get('/analytics/behavior-patterns', authenticate, aiRateLimiter, aiController.getBehaviorPatterns);
+router.get('/analytics/engagement-metrics', authenticate, aiRateLimiter, aiController.getEngagementMetrics);
+router.get('/analytics/success-factors', authenticate, aiRateLimiter, aiController.getSuccessFactors);
+router.post('/analytics/track-event', authenticate, aiRateLimiter, aiController.trackAnalyticsEvent);
 
 export default router;

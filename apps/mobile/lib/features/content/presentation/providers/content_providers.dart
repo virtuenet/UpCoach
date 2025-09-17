@@ -184,7 +184,8 @@ class SavedArticles extends _$SavedArticles {
   }
 
   Future<void> removeArticle(int articleId) async {
-    // TODO: Implement remove from saved
+    final service = ref.watch(contentServiceProvider);
+    await service.removeSavedArticle(articleId);
     ref.invalidateSelf();
   }
 }

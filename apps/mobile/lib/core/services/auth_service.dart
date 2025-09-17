@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'dart:io' show Platform;
 import '../constants/app_constants.dart';
 import '../../shared/models/user_model.dart';
 import '../../shared/models/auth_response.dart';
@@ -73,6 +75,9 @@ class AuthService {
 
   Future<void> signOut() async {
     try {
+      // Sign out from Google if signed in
+      await signOutFromGoogle();
+
       final accessToken = await _secureStorage.read(key: 'access_token');
       if (accessToken != null) {
         await _dio.post(
@@ -88,6 +93,7 @@ class AuthService {
       // Clear stored tokens
       await _secureStorage.delete(key: 'access_token');
       await _secureStorage.delete(key: 'refresh_token');
+      _currentUser = null;
     }
   }
 
@@ -159,33 +165,71 @@ class AuthService {
 
   Future<AuthResponse> signInWithGoogle() async {
     try {
-      // TODO: Implement actual Google Sign In using google_sign_in package
-      // For now, throw an error to indicate it's not implemented
-      throw Exception('Google Sign In not yet implemented');
-      
-      // Implementation would look like:
-      // final GoogleSignIn _googleSignIn = GoogleSignIn();
-      // final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      // if (googleUser == null) throw Exception('Google sign in cancelled');
-      // 
-      // final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      // 
-      // final response = await _dio.post(
-      //   '/auth/google',
-      //   data: {
-      //     'id_token': googleAuth.idToken,
-      //     'access_token': googleAuth.accessToken,
-      //   },
-      // );
-      // 
-      // final authResponse = AuthResponse.fromJson(response.data);
-      // 
-      // await _secureStorage.write(key: 'access_token', value: authResponse.accessToken);
-      // await _secureStorage.write(key: 'refresh_token', value: authResponse.refreshToken);
-      // 
-      // return authResponse;
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
+        serverClientId: _getServerClientId(),
+      );
+
+      // Sign in with Google
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        throw Exception('Google sign in was cancelled by user');
+      }
+
+      // Get authentication details
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      if (googleAuth.idToken == null) {
+        throw Exception('Failed to get Google ID token');
+      }
+
+      // Send to backend for verification and user creation/login
+      final response = await _dio.post(
+        '/auth/google',
+        data: {
+          'idToken': googleAuth.idToken,
+          'accessToken': googleAuth.accessToken,
+          'email': googleUser.email,
+          'displayName': googleUser.displayName,
+          'photoUrl': googleUser.photoUrl,
+        },
+      );
+
+      final authResponse = AuthResponse.fromJson(response.data);
+
+      // Store tokens securely
+      if (authResponse.token != null) {
+        await _secureStorage.write(key: 'auth_token', value: authResponse.token);
+      }
+      if (authResponse.refreshToken != null) {
+        await _secureStorage.write(key: 'refresh_token', value: authResponse.refreshToken);
+      }
+
+      _currentUser = authResponse.user;
+      return authResponse;
     } on DioException catch (e) {
       throw _handleError(e);
+    } catch (e) {
+      throw Exception('Google Sign In failed: $e');
+    }
+  }
+
+  String? _getServerClientId() {
+    // TODO: Replace with your actual OAuth 2.0 client IDs
+    if (Platform.isAndroid) {
+      return 'your-android-client-id.apps.googleusercontent.com';
+    } else if (Platform.isIOS) {
+      return 'your-ios-client-id.apps.googleusercontent.com';
+    }
+    return null;
+  }
+
+  Future<void> signOutFromGoogle() async {
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      await googleSignIn.signOut();
+    } catch (e) {
+      // Silently handle sign out errors
     }
   }
 }

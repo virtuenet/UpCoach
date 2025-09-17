@@ -238,8 +238,44 @@ export class FinancialDashboardController {
    */
   async getRevenueByCountry(req: Request, res: Response): Promise<void> {
     try {
-      // TODO: Implement revenue by country logic
-      res.json([]);
+      const { startDate, endDate } = req.query;
+      const start = startDate ? new Date(startDate as string) : startOfMonth(subMonths(new Date(), 12));
+      const end = endDate ? new Date(endDate as string) : endOfMonth(new Date());
+
+      // Get revenue data aggregated by country from transactions
+      const revenueByCountry = await Transaction.findAll({
+        attributes: [
+          'country',
+          [Transaction.sequelize!.fn('SUM', Transaction.sequelize!.col('amount')), 'totalRevenue'],
+          [Transaction.sequelize!.fn('COUNT', Transaction.sequelize!.col('id')), 'transactionCount'],
+        ],
+        where: {
+          status: 'completed',
+          createdAt: { [Op.between]: [start, end] },
+          country: { [Op.not]: null },
+        },
+        group: ['country'],
+        order: [[Transaction.sequelize!.literal('totalRevenue'), 'DESC']],
+      });
+
+      const formattedData = revenueByCountry.map((record: any) => ({
+        country: record.country,
+        revenue: parseFloat(record.get('totalRevenue') || '0'),
+        transactions: parseInt(record.get('transactionCount') || '0'),
+        percentage: 0, // Will be calculated below
+      }));
+
+      // Calculate percentages
+      const totalRevenue = formattedData.reduce((sum, item) => sum + item.revenue, 0);
+      formattedData.forEach(item => {
+        item.percentage = totalRevenue > 0 ? (item.revenue / totalRevenue) * 100 : 0;
+      });
+
+      res.json({
+        countries: formattedData,
+        total: totalRevenue,
+        period: { start, end },
+      });
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
@@ -250,18 +286,123 @@ export class FinancialDashboardController {
    */
   async getRevenueForecast(req: Request, res: Response): Promise<void> {
     try {
-      const {
-        /* months = 6 */
-      } = req.query;
-      // TODO: Implement revenue forecasting logic
+      const { months = 6 } = req.query;
+      const forecastMonths = parseInt(months as string);
+
+      // Get historical revenue data for the last 12 months for better prediction
+      const historicalData = [];
+      for (let i = 11; i >= 0; i--) {
+        const monthStart = startOfMonth(subMonths(new Date(), i));
+        const monthEnd = endOfMonth(subMonths(new Date(), i));
+
+        const revenue = await Transaction.sum('amount', {
+          where: {
+            status: 'completed',
+            createdAt: { [Op.between]: [monthStart, monthEnd] },
+          },
+        });
+
+        historicalData.push({
+          month: format(monthStart, 'yyyy-MM'),
+          revenue: revenue || 0,
+          date: monthStart,
+        });
+      }
+
+      // Simple linear regression for forecasting
+      const forecast = this.calculateLinearRegression(historicalData, forecastMonths);
+
+      // Calculate accuracy based on recent trend consistency
+      const accuracy = this.calculateForecastAccuracy(historicalData);
+
+      // Calculate confidence based on data variance
+      const confidence = this.calculateForecastConfidence(historicalData);
+
       res.json({
-        forecast: [],
-        accuracy: 0,
-        confidence: 0,
+        historical: historicalData,
+        forecast: forecast.map(f => ({
+          month: f.month,
+          predictedRevenue: Math.max(0, f.revenue), // Ensure non-negative
+          confidence: confidence,
+        })),
+        accuracy,
+        confidence,
+        algorithm: 'Linear Regression',
+        basedOnMonths: historicalData.length,
       });
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
+  }
+
+  private calculateLinearRegression(data: any[], forecastMonths: number): any[] {
+    const n = data.length;
+    const x = data.map((_, index) => index);
+    const y = data.map(d => d.revenue);
+
+    // Calculate slope and intercept
+    const sumX = x.reduce((a, b) => a + b, 0);
+    const sumY = y.reduce((a, b) => a + b, 0);
+    const sumXY = x.map((xi, i) => xi * y[i]).reduce((a, b) => a + b, 0);
+    const sumXX = x.map(xi => xi * xi).reduce((a, b) => a + b, 0);
+
+    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+    const intercept = (sumY - slope * sumX) / n;
+
+    // Generate forecast
+    const forecast = [];
+    for (let i = 1; i <= forecastMonths; i++) {
+      const futureDate = subMonths(new Date(), -i);
+      const predictedRevenue = slope * (n + i - 1) + intercept;
+
+      forecast.push({
+        month: format(futureDate, 'yyyy-MM'),
+        revenue: Math.round(predictedRevenue * 100) / 100,
+        date: futureDate,
+      });
+    }
+
+    return forecast;
+  }
+
+  private calculateForecastAccuracy(data: any[]): number {
+    // Calculate R-squared for historical data trend
+    if (data.length < 3) return 50; // Default for insufficient data
+
+    const revenues = data.map(d => d.revenue);
+    const n = revenues.length;
+    const mean = revenues.reduce((a, b) => a + b, 0) / n;
+
+    // Calculate R-squared
+    let totalSumSquares = 0;
+    let residualSumSquares = 0;
+
+    for (let i = 0; i < n; i++) {
+      totalSumSquares += Math.pow(revenues[i] - mean, 2);
+      // Simple trend line prediction
+      const predicted = mean + ((i - n/2) * (revenues[n-1] - revenues[0]) / n);
+      residualSumSquares += Math.pow(revenues[i] - predicted, 2);
+    }
+
+    const rSquared = 1 - (residualSumSquares / totalSumSquares);
+    return Math.max(0, Math.min(100, rSquared * 100)); // Convert to percentage
+  }
+
+  private calculateForecastConfidence(data: any[]): number {
+    // Calculate confidence based on data consistency and variance
+    if (data.length < 3) return 60; // Default for insufficient data
+
+    const revenues = data.map(d => d.revenue);
+    const mean = revenues.reduce((a, b) => a + b, 0) / revenues.length;
+
+    // Calculate coefficient of variation
+    const variance = revenues.reduce((sum, revenue) => sum + Math.pow(revenue - mean, 2), 0) / revenues.length;
+    const standardDeviation = Math.sqrt(variance);
+    const coefficientOfVariation = standardDeviation / mean;
+
+    // Lower variation = higher confidence
+    const confidence = Math.max(50, Math.min(95, 90 - (coefficientOfVariation * 100)));
+    return Math.round(confidence);
   }
 
   /**
@@ -603,17 +744,120 @@ export class FinancialDashboardController {
   async downloadReport(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
+      const { format = 'pdf' } = req.query;
+
       const report = await FinancialReport.findByPk(id);
 
       if (!report) {
         throw new ApiError(404, 'Report not found');
       }
 
-      // TODO: Implement report download logic
-      res.status(501).json({ error: 'Not implemented' });
+      // Generate report content based on format
+      if (format === 'csv') {
+        await this.generateCSVReport(report, res);
+      } else if (format === 'excel') {
+        await this.generateExcelReport(report, res);
+      } else {
+        await this.generatePDFReport(report, res);
+      }
     } catch (error) {
       res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
+  }
+
+  private async generateCSVReport(report: any, res: Response): Promise<void> {
+    // Get report data based on report type
+    const data = await this.getReportData(report.type, report.parameters);
+
+    // Convert data to CSV format
+    const csvContent = this.convertToCSV(data);
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${report.name}_${format(new Date(), 'yyyy-MM-dd')}.csv"`);
+    res.send(csvContent);
+  }
+
+  private async generateExcelReport(report: any, res: Response): Promise<void> {
+    // Implementation would require xlsx library
+    res.status(501).json({ error: 'Excel export not yet implemented' });
+  }
+
+  private async generatePDFReport(report: any, res: Response): Promise<void> {
+    // Implementation would require puppeteer or similar library
+    res.status(501).json({ error: 'PDF export not yet implemented' });
+  }
+
+  private async getReportData(reportType: string, parameters: any): Promise<any[]> {
+    // Retrieve actual report data based on type
+    switch (reportType) {
+      case 'revenue':
+        return await this.getRevenueReportData(parameters);
+      case 'subscriptions':
+        return await this.getSubscriptionReportData(parameters);
+      default:
+        return [];
+    }
+  }
+
+  private async getRevenueReportData(parameters: any): Promise<any[]> {
+    const { startDate, endDate } = parameters;
+    const transactions = await Transaction.findAll({
+      where: {
+        status: 'completed',
+        createdAt: { [Op.between]: [new Date(startDate), new Date(endDate)] },
+      },
+      order: [['createdAt', 'DESC']],
+    });
+
+    return transactions.map(t => ({
+      date: format(new Date(t.createdAt), 'yyyy-MM-dd HH:mm:ss'),
+      amount: t.amount,
+      currency: t.currency,
+      status: t.status,
+      country: t.country,
+      paymentMethod: t.paymentMethod,
+    }));
+  }
+
+  private async getSubscriptionReportData(parameters: any): Promise<any[]> {
+    const { startDate, endDate } = parameters;
+    const subscriptions = await Subscription.findAll({
+      where: {
+        createdAt: { [Op.between]: [new Date(startDate), new Date(endDate)] },
+      },
+      order: [['createdAt', 'DESC']],
+    });
+
+    return subscriptions.map(s => ({
+      date: format(new Date(s.createdAt), 'yyyy-MM-dd HH:mm:ss'),
+      plan: s.plan,
+      status: s.status,
+      amount: s.amount,
+      currency: s.currency,
+      interval: s.interval,
+      canceledAt: s.canceledAt ? format(new Date(s.canceledAt), 'yyyy-MM-dd HH:mm:ss') : null,
+    }));
+  }
+
+  private convertToCSV(data: any[]): string {
+    if (!data.length) return '';
+
+    const headers = Object.keys(data[0]);
+    const csvRows = [
+      headers.join(','), // Header row
+      ...data.map(row =>
+        headers.map(header => {
+          const value = row[header];
+          // Escape commas and quotes in CSV
+          if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+            return `"${value.replace(/"/g, '""')}"`;
+          }
+          return value || '';
+        }).join(',')
+      )
+    ];
+
+    return csvRows.join('\n');
   }
 
   /**
@@ -644,13 +888,89 @@ export class FinancialDashboardController {
    */
   async getCohortAnalysis(req: Request, res: Response): Promise<void> {
     try {
-      const {
-        /* months = 12 */
-      } = req.query;
+      const { months = 12 } = req.query;
+      const analysisMonths = parseInt(months as string);
 
-      // TODO: Implement cohort analysis logic
+      // Get subscription cohorts data
+      const cohorts = [];
+
+      for (let i = analysisMonths - 1; i >= 0; i--) {
+        const cohortStart = startOfMonth(subMonths(new Date(), i));
+        const cohortEnd = endOfMonth(subMonths(new Date(), i));
+
+        // Get all subscriptions that started in this month (cohort)
+        const cohortSubscriptions = await Subscription.findAll({
+          where: {
+            createdAt: { [Op.between]: [cohortStart, cohortEnd] },
+          },
+          attributes: ['id', 'userId', 'createdAt', 'canceledAt'],
+        });
+
+        if (cohortSubscriptions.length === 0) {
+          cohorts.push({
+            month: format(cohortStart, 'yyyy-MM'),
+            totalUsers: 0,
+            retention: [],
+          });
+          continue;
+        }
+
+        // Calculate retention for each subsequent month
+        const retention = [];
+        for (let j = 0; j <= Math.min(11, Math.floor((new Date().getTime() - cohortStart.getTime()) / (30.44 * 24 * 60 * 60 * 1000))); j++) {
+          const retentionMonth = subMonths(cohortStart, -j);
+          const retentionMonthEnd = endOfMonth(retentionMonth);
+
+          // Count how many users were still active in this retention month
+          let activeUsers = 0;
+          for (const subscription of cohortSubscriptions) {
+            const subStart = new Date(subscription.createdAt);
+            const subEnd = subscription.canceledAt ? new Date(subscription.canceledAt) : new Date();
+
+            // Check if subscription was active during retention month
+            if (subStart <= retentionMonthEnd && subEnd >= retentionMonth) {
+              activeUsers++;
+            }
+          }
+
+          retention.push({
+            monthIndex: j,
+            activeUsers,
+            retentionRate: (activeUsers / cohortSubscriptions.length) * 100,
+          });
+        }
+
+        cohorts.push({
+          month: format(cohortStart, 'yyyy-MM'),
+          totalUsers: cohortSubscriptions.length,
+          retention,
+        });
+      }
+
+      // Calculate average retention rates across all cohorts
+      const maxRetentionMonths = Math.max(...cohorts.map(c => c.retention.length));
+      const averageRetention = [];
+
+      for (let month = 0; month < maxRetentionMonths; month++) {
+        const validCohorts = cohorts.filter(c => c.retention[month] && c.totalUsers > 0);
+        if (validCohorts.length > 0) {
+          const avgRetention = validCohorts.reduce((sum, c) => sum + c.retention[month].retentionRate, 0) / validCohorts.length;
+          averageRetention.push({
+            monthIndex: month,
+            averageRetentionRate: Math.round(avgRetention * 100) / 100,
+            cohortsCount: validCohorts.length,
+          });
+        }
+      }
+
       res.json({
-        cohorts: [],
+        cohorts,
+        averageRetention,
+        totalCohorts: cohorts.length,
+        analysisRange: {
+          start: format(subMonths(new Date(), analysisMonths - 1), 'yyyy-MM'),
+          end: format(new Date(), 'yyyy-MM'),
+        },
       });
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });

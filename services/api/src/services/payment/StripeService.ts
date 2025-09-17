@@ -25,8 +25,25 @@ interface CreateCustomerParams {
 
 interface CreateSubscriptionParams {
   customer: string;
-  price: string;
+  price?: string;
+  items?: Array<{
+    price?: string;
+    price_data?: {
+      currency: string;
+      product_data: {
+        name: string;
+        metadata?: Record<string, string>;
+      };
+      recurring: {
+        interval: 'day' | 'week' | 'month' | 'year';
+        interval_count?: number;
+      };
+      unit_amount: number;
+    };
+    quantity?: number;
+  }>;
   payment_method?: string;
+  payment_behavior?: 'allow_incomplete' | 'default_incomplete' | 'error_if_incomplete' | 'pending_if_incomplete';
   expand?: string[];
   trial_period_days?: number;
   metadata?: Record<string, string>;
@@ -210,19 +227,28 @@ export class StripeService {
    */
   async createSubscription(params: CreateSubscriptionParams): Promise<Stripe.Subscription> {
     try {
-      const subscription = await this.stripe.subscriptions.create({
+      const subscriptionParams: Stripe.SubscriptionCreateParams = {
         customer: params.customer,
-        items: [{ price: params.price }],
-        payment_behavior: 'default_incomplete',
+        payment_behavior: params.payment_behavior || 'default_incomplete',
         payment_settings: { save_default_payment_method: 'on_subscription' },
         expand: params.expand || ['latest_invoice.payment_intent'],
         trial_period_days: params.trial_period_days,
         metadata: params.metadata,
-      });
+      };
+
+      // Handle items - either with price ID or price_data
+      if (params.items) {
+        subscriptionParams.items = params.items as any;
+      } else if (params.price) {
+        subscriptionParams.items = [{ price: params.price }];
+      } else {
+        throw new Error('Either price or items must be provided');
+      }
+
+      const subscription = await this.stripe.subscriptions.create(subscriptionParams);
 
       logger.info(`Subscription created: ${subscription.id}`, {
         customer: params.customer,
-        price: params.price,
         status: subscription.status,
       });
 
@@ -252,12 +278,16 @@ export class StripeService {
    */
   async updateSubscription(
     subscriptionId: string,
-    params: Partial<Omit<CreateSubscriptionParams, 'customer'>>
+    params: Partial<Omit<CreateSubscriptionParams, 'customer'>> & {
+      proration_behavior?: 'create_prorations' | 'none' | 'always_invoice';
+    }
   ): Promise<Stripe.Subscription> {
     try {
-      const updateParams: any = {};
-      
-      if (params.price) {
+      const updateParams: Stripe.SubscriptionUpdateParams = {};
+
+      if (params.items) {
+        updateParams.items = params.items as any;
+      } else if (params.price) {
         // Get current subscription to update the price
         const currentSubscription = await this.stripe.subscriptions.retrieve(subscriptionId);
         updateParams.items = [
@@ -267,9 +297,13 @@ export class StripeService {
           },
         ];
       }
-      
+
       if (params.metadata) {
         updateParams.metadata = params.metadata;
+      }
+
+      if (params.proration_behavior) {
+        updateParams.proration_behavior = params.proration_behavior;
       }
 
       const subscription = await this.stripe.subscriptions.update(subscriptionId, updateParams);

@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: false, // Disable SWC minification to resolve CSS parsing conflicts
   eslint: {
     // Warning: This allows production builds to successfully complete even with ESLint warnings
     ignoreDuringBuilds: true,
@@ -19,7 +18,26 @@ const nextConfig = {
     return config;
   },
   images: {
-    domains: ['images.unsplash.com', 'via.placeholder.com', 'upcoach.ai'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'upcoach.ai',
+        port: '',
+        pathname: '/**',
+      },
+    ],
     formats: ['image/webp', 'image/avif'],
     unoptimized: false, // Re-enable image optimization
     minimumCacheTTL: 60, // Cache images for 60 seconds

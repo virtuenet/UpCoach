@@ -128,6 +128,7 @@
     "lint-staged": "^15.1.0",
     "nyc": "^15.1.0",
     "prettier": "^3.1.0",
+    "tsup": "^8.0.1",
     "turbo": "^1.11.0",
     "typescript": "^5.3.0",
     "wait-on": "^7.2.0"

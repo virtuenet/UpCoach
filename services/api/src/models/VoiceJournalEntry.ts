@@ -1,38 +1,110 @@
-import { DataTypes, Model } from 'sequelize';
-import { sequelize } from '../config/database';
+import { DataTypes, Model, Optional } from 'sequelize';
+import { sequelize } from '../config/sequelize';
 
 export interface VoiceJournalEntryAttributes {
   id: string;
-  title: string;
-  transcriptionText?: string;
-  audioFilePath?: string;
-  duration?: number;
-  summary?: string;
-  tags?: string[];
-  emotionalTone?: string;
-  isTranscribed: boolean;
-  isAnalyzed: boolean;
-  isFavorite: boolean;
   userId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  title: string;
+  audioPath: string;
+  duration?: number;
+  transcription?: string;
+  notes?: string;
+  tags: string[];
+  mood?: string;
+  emotions?: {
+    primary?: string;
+    secondary?: string;
+    confidence?: number;
+    valence?: number;
+    arousal?: number;
+  };
+  isProcessing: boolean;
+  processedAt?: Date;
+  processingError?: string;
+  metadata?: {
+    fileSize?: number;
+    mimeType?: string;
+    originalName?: string;
+    sampleRate?: number;
+    bitrate?: number;
+  };
+  isFavorite: boolean;
+  isArchived: boolean;
+  syncedAt?: Date;
+  deviceId?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  deletedAt?: Date;
 }
 
-export class VoiceJournalEntry extends Model<VoiceJournalEntryAttributes> implements VoiceJournalEntryAttributes {
+export interface VoiceJournalEntryCreationAttributes
+  extends Optional<
+    VoiceJournalEntryAttributes,
+    | 'id'
+    | 'duration'
+    | 'transcription'
+    | 'notes'
+    | 'tags'
+    | 'mood'
+    | 'emotions'
+    | 'isProcessing'
+    | 'processedAt'
+    | 'processingError'
+    | 'metadata'
+    | 'isFavorite'
+    | 'isArchived'
+    | 'syncedAt'
+    | 'deviceId'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'deletedAt'
+  > {}
+
+export class VoiceJournalEntry extends Model<VoiceJournalEntryAttributes, VoiceJournalEntryCreationAttributes>
+  implements VoiceJournalEntryAttributes {
   public id!: string;
-  public title!: string;
-  public transcriptionText?: string;
-  public audioFilePath?: string;
-  public duration?: number;
-  public summary?: string;
-  public tags?: string[];
-  public emotionalTone?: string;
-  public isTranscribed!: boolean;
-  public isAnalyzed!: boolean;
-  public isFavorite!: boolean;
   public userId!: string;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  public title!: string;
+  public audioPath!: string;
+  public duration?: number;
+  public transcription?: string;
+  public notes?: string;
+  public tags!: string[];
+  public mood?: string;
+  public emotions?: {
+    primary?: string;
+    secondary?: string;
+    confidence?: number;
+    valence?: number;
+    arousal?: number;
+  };
+  public isProcessing!: boolean;
+  public processedAt?: Date;
+  public processingError?: string;
+  public metadata?: {
+    fileSize?: number;
+    mimeType?: string;
+    originalName?: string;
+    sampleRate?: number;
+    bitrate?: number;
+  };
+  public isFavorite!: boolean;
+  public isArchived!: boolean;
+  public syncedAt?: Date;
+  public deviceId?: string;
+
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
+  declare readonly deletedAt?: Date;
+
+  // Association properties
+  public readonly user?: any;
+
+  // Associations
+  public static associate(models: any) {
+    // VoiceJournalEntry belongs to User
+    VoiceJournalEntry.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+  }
 }
 
 VoiceJournalEntry.init(
@@ -42,97 +114,119 @@ VoiceJournalEntry.init(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    title: {
-      type: DataTypes.STRING,
+    userId: {
+      type: DataTypes.UUID,
       allowNull: false,
-      validate: {
-        notEmpty: true,
-        len: [1, 255],
+      references: {
+        model: 'Users',
+        key: 'id',
       },
+      onDelete: 'CASCADE',
     },
-    transcriptionText: {
+    title: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+    },
+    audioPath: {
+      type: DataTypes.STRING(500),
+      allowNull: false,
+    },
+    duration: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      comment: 'Duration in seconds',
+    },
+    transcription: {
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    audioFilePath: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    duration: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        min: 0,
-      },
-    },
-    summary: {
+    notes: {
       type: DataTypes.TEXT,
       allowNull: true,
     },
     tags: {
       type: DataTypes.ARRAY(DataTypes.STRING),
-      allowNull: true,
       defaultValue: [],
+      allowNull: false,
     },
-    emotionalTone: {
-      type: DataTypes.STRING,
+    mood: {
+      type: DataTypes.STRING(50),
       allowNull: true,
-      validate: {
-        isIn: [['positive', 'negative', 'neutral', 'mixed']],
-      },
     },
-    isTranscribed: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
+    emotions: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+      comment: 'Emotion analysis results from voice',
     },
-    isAnalyzed: {
+    isProcessing: {
       type: DataTypes.BOOLEAN,
-      allowNull: false,
       defaultValue: false,
+      allowNull: false,
+    },
+    processedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    processingError: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    metadata: {
+      type: DataTypes.JSONB,
+      allowNull: true,
     },
     isFavorite: {
       type: DataTypes.BOOLEAN,
-      allowNull: false,
       defaultValue: false,
-    },
-    userId: {
-      type: DataTypes.UUID,
       allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
     },
-    createdAt: {
+    isArchived: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
+    },
+    syncedAt: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
     },
-    updatedAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
+    deviceId: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
     },
   },
   {
     sequelize,
     modelName: 'VoiceJournalEntry',
-    tableName: 'voice_journal_entries',
+    tableName: 'VoiceJournalEntries',
     timestamps: true,
+    paranoid: true,
     indexes: [
       {
         fields: ['userId'],
       },
       {
-        fields: ['userId', 'createdAt'],
+        fields: ['createdAt'],
       },
       {
-        fields: ['userId', 'isFavorite'],
+        fields: ['mood'],
       },
       {
-        fields: ['userId', 'isTranscribed'],
+        fields: ['isProcessing'],
       },
       {
-        fields: ['userId', 'isAnalyzed'],
+        fields: ['isFavorite'],
+      },
+      {
+        fields: ['isArchived'],
+      },
+      {
+        fields: ['tags'],
+        using: 'GIN',
+      },
+      {
+        name: 'voice_journal_search_idx',
+        fields: ['title', 'transcription'],
+        type: 'FULLTEXT',
       },
     ],
   }
