@@ -110,6 +110,10 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
     }
   }
 
+  void _editGoal() {
+    context.push('/goals/edit', extra: _goal);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -142,8 +146,9 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
             onSelected: (value) {
               if (value == 'delete') {
                 _deleteGoal();
+              } else if (value == 'edit') {
+                _editGoal();
               }
-              // TODO: Implement edit functionality
             },
           ),
         ],

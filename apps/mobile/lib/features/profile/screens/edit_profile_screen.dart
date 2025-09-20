@@ -247,7 +247,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               title: const Text('Take Photo'),
               onTap: () {
                 context.pop();
-                // TODO: Implement camera functionality
+                _pickImageFromCamera();
               },
             ),
             ListTile(
@@ -255,7 +255,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               title: const Text('Choose from Gallery'),
               onTap: () {
                 context.pop();
-                // TODO: Implement gallery functionality
+                _pickImageFromGallery();
               },
             ),
             if (ref.read(profileProvider).user?.avatarUrl != null)
@@ -267,12 +267,102 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ),
                 onTap: () {
                   context.pop();
-                  // TODO: Implement remove photo functionality
+                  _removePhoto();
                 },
               ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _pickImageFromCamera() async {
+    try {
+      // Request camera permission
+      final permission = await Permission.camera.request();
+      if (!permission.isGranted) {
+        _showSnackBar('Camera permission is required to take photos');
+        return;
+      }
+
+      final XFile? image = await ImagePicker().pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (image != null) {
+        await _processSelectedImage(image);
+      }
+    } catch (e) {
+      _showSnackBar('Failed to take photo: $e');
+    }
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    try {
+      // Request photo library permission
+      final permission = await Permission.photos.request();
+      if (!permission.isGranted) {
+        _showSnackBar('Photo library permission is required to select images');
+        return;
+      }
+
+      final XFile? image = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (image != null) {
+        await _processSelectedImage(image);
+      }
+    } catch (e) {
+      _showSnackBar('Failed to select image: $e');
+    }
+  }
+
+  Future<void> _processSelectedImage(XFile image) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final uploadUrl = await _uploadProfileImage(File(image.path));
+
+      // Update user profile with new avatar URL
+      await ref.read(profileProvider.notifier).updateProfile(
+        avatarUrl: uploadUrl,
+      );
+
+      _showSnackBar('Profile photo updated successfully');
+    } catch (e) {
+      _showSnackBar('Failed to update profile photo: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _removePhoto() async {
+    try {
+      await ref.read(profileProvider.notifier).updateProfile(
+        avatarUrl: null,
+      );
+      _showSnackBar('Profile photo removed successfully');
+    } catch (e) {
+      _showSnackBar('Failed to remove profile photo: $e');
+    }
+  }
+
+  void _showSnackBar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
   }
 } 

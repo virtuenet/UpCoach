@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../core/services/content_service.dart';
 import '../../../shared/models/content_article.dart';
 import '../../../shared/widgets/loading_indicator.dart';
@@ -384,13 +385,36 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
                                               children: [
                                                 IconButton(
                                                   icon: const Icon(Icons.share_outlined),
-                                                  onPressed: () {
-                                                    // TODO: Implement share functionality
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(
-                                                        content: Text('Share functionality coming soon'),
-                                                      ),
-                                                    );
+                                                  onPressed: () async {
+                                                    try {
+                                                      final String shareText = '''
+${article.title}
+
+${article.excerpt}
+
+Published: ${article.publishedAt != null ? DateFormat('MMM d, yyyy').format(article.publishedAt!) : DateFormat('MMM d, yyyy').format(article.createdAt)}
+Author: ${article.author ?? 'UpCoach'}
+Category: ${article.category}
+
+${article.contentUrl?.isNotEmpty == true ? 'Read more: ${article.contentUrl}' : ''}
+
+---
+Saved from UpCoach - Your AI-powered coaching companion 📚
+''';
+
+                                                      final box = context.findRenderObject() as RenderBox?;
+                                                      await Share.share(
+                                                        shareText,
+                                                        subject: 'Article: ${article.title}',
+                                                        sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+                                                      );
+                                                    } catch (e) {
+                                                      if (context.mounted) {
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          SnackBar(content: Text('Error sharing article: $e')),
+                                                        );
+                                                      }
+                                                    }
                                                   },
                                                   iconSize: 20,
                                                   color: AppColors.textSecondary,

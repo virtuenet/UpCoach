@@ -36,12 +36,68 @@ describe('GDPR Compliance Validation Tests', () => {
 
   beforeAll(async () => {
     testApp = app;
-    gdprService = new GDPRService();
-    consentService = new ConsentManagementService();
-    retentionService = new DataRetentionService();
+    // gdprService = new GDPRService();
+    // consentService = new ConsentManagementService();
+    // retentionService = new DataRetentionService();
 
     testUserId = 'gdpr-test-user-1';
     testUser2Id = 'gdpr-test-user-2';
+
+    // Create test tables if they don't exist
+    await sequelize.query(`
+      CREATE TABLE IF NOT EXISTS voice_journal_entries (
+        id VARCHAR(255) PRIMARY KEY,
+        user_id VARCHAR(255) NOT NULL,
+        content TEXT,
+        timestamp TIMESTAMP,
+        mood VARCHAR(100),
+        tags JSON,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await sequelize.query(`
+      CREATE TABLE IF NOT EXISTS progress_photos (
+        id VARCHAR(255) PRIMARY KEY,
+        user_id VARCHAR(255) NOT NULL,
+        image_path VARCHAR(500),
+        category VARCHAR(100),
+        title VARCHAR(255),
+        notes TEXT,
+        taken_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await sequelize.query(`
+      CREATE TABLE IF NOT EXISTS ai_chat_history (
+        id VARCHAR(255) PRIMARY KEY,
+        user_id VARCHAR(255) NOT NULL,
+        message TEXT,
+        response TEXT,
+        timestamp TIMESTAMP,
+        session_id VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await sequelize.query(`
+      CREATE TABLE IF NOT EXISTS goals (
+        id VARCHAR(255) PRIMARY KEY,
+        user_id VARCHAR(255) NOT NULL,
+        title VARCHAR(255),
+        description TEXT,
+        category VARCHAR(100),
+        priority VARCHAR(50),
+        target_date TIMESTAMP,
+        status VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
 
     // Create test users
     await User.create({
@@ -146,26 +202,61 @@ describe('GDPR Compliance Validation Tests', () => {
       currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     });
 
-    // TODO: Create personal content data when models are implemented
-    // await VoiceJournalEntry.create({
-    //   userId: testUserId,
-    //   content: 'Personal coaching session notes with sensitive health information',
-    //   timestamp: new Date(),
-    //   mood: 'reflective',
-    //   tags: ['health', 'personal-growth', 'medical']
-    // });
+    // Create personal content data for GDPR testing
+    // Simulate VoiceJournalEntry data
+    await sequelize.query(`
+      INSERT INTO voice_journal_entries (id, user_id, content, timestamp, mood, tags, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+    `, [
+      'voice-journal-1',
+      testUserId,
+      'Personal coaching session notes with sensitive health information about anxiety management and personal goals',
+      new Date(),
+      'reflective',
+      JSON.stringify(['health', 'personal-growth', 'mental-health'])
+    ]);
 
-    // await ProgressPhoto.create({
-    //   userId: testUserId,
-    //   imagePath: '/secure/photos/gdpr-test-photo.jpg',
-    //   category: 'health-progress',
-    //   title: 'Health transformation photo',
-    //   notes: 'Personal health milestone - lost 10kg',
-    //   takenAt: new Date(),
-    //   metadata: {
-    //     camera: 'iPhone 13',
-    //     location: 'Home'
-    //   }
+    // Simulate ProgressPhoto data
+    await sequelize.query(`
+      INSERT INTO progress_photos (id, user_id, image_path, category, title, notes, taken_at, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+    `, [
+      'progress-photo-1',
+      testUserId,
+      '/secure/photos/gdpr-test-photo.jpg',
+      'health-progress',
+      'Health transformation photo',
+      'Personal health milestone - lost 10kg after 3 months of coaching',
+      new Date()
+    ]);
+
+    // Simulate AI Chat History data
+    await sequelize.query(`
+      INSERT INTO ai_chat_history (id, user_id, message, response, timestamp, session_id, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+    `, [
+      'ai-chat-1',
+      testUserId,
+      'I am struggling with work-life balance and feeling anxious about my performance at work.',
+      'I understand you are experiencing work-related stress. Let me help you develop some coping strategies...',
+      new Date(),
+      'session-123'
+    ]);
+
+    // Simulate Goal data with personal information
+    await sequelize.query(`
+      INSERT INTO goals (id, user_id, title, description, category, priority, target_date, status, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+    `, [
+      'goal-1',
+      testUserId,
+      'Overcome social anxiety',
+      'Work with my coach to develop confidence in social situations and reduce anxiety in workplace meetings',
+      'personal',
+      'high',
+      new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+      'active'
+    ]);
     // });
 
     // Create consent records

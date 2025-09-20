@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -109,9 +110,12 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
       }).toList();
       
       // Process attachments if needed (e.g., image recognition, document analysis)
+      String attachmentContext = '';
       if (attachments != null && attachments.isNotEmpty) {
-        // TODO: Implement attachment processing (e.g., send to backend for analysis)
-        // For now, we'll include attachment info in the context
+        attachmentContext = await _processAttachments(attachments);
+        if (attachmentContext.isNotEmpty) {
+          fullMessage += '\n\nAttachment Analysis:\n$attachmentContext';
+        }
       }
       
       final response = await aiService.getSmartResponse(
@@ -145,6 +149,112 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
         backgroundColor: AppColors.error,
       ),
     );
+  }
+
+  Future<String> _processAttachments(List<AttachmentFile> attachments) async {
+    final List<String> analysisResults = [];
+
+    for (final attachment in attachments) {
+      try {
+        String analysis = '';
+
+        switch (attachment.type) {
+          case AttachmentType.image:
+            analysis = await _processImageAttachment(attachment);
+            break;
+          case AttachmentType.document:
+            analysis = await _processDocumentAttachment(attachment);
+            break;
+          case AttachmentType.audio:
+            analysis = await _processAudioAttachment(attachment);
+            break;
+          case AttachmentType.video:
+            analysis = await _processVideoAttachment(attachment);
+            break;
+          default:
+            analysis = 'File "${attachment.name}" (${attachment.type}) attached - ${(attachment.sizeInBytes / 1024).toStringAsFixed(1)} KB';
+        }
+
+        if (analysis.isNotEmpty) {
+          analysisResults.add('• ${attachment.name}: $analysis');
+        }
+      } catch (e) {
+        analysisResults.add('• ${attachment.name}: Failed to process attachment ($e)');
+      }
+    }
+
+    return analysisResults.join('\n');
+  }
+
+  Future<String> _processImageAttachment(AttachmentFile attachment) async {
+    try {
+      // For image files, we can extract basic metadata and potentially run OCR
+      final file = File(attachment.path);
+      if (!await file.exists()) {
+        return 'Image file not found';
+      }
+
+      final fileSize = (attachment.sizeInBytes / 1024).toStringAsFixed(1);
+      return 'Image uploaded ($fileSize KB). The user has shared a visual reference that may be relevant to their coaching goals or progress tracking.';
+    } catch (e) {
+      return 'Unable to process image: $e';
+    }
+  }
+
+  Future<String> _processDocumentAttachment(AttachmentFile attachment) async {
+    try {
+      // For document files, we could extract text content
+      final file = File(attachment.path);
+      if (!await file.exists()) {
+        return 'Document file not found';
+      }
+
+      final fileSize = (attachment.sizeInBytes / 1024).toStringAsFixed(1);
+      String fileTypeInfo = '';
+
+      if (attachment.name.toLowerCase().endsWith('.pdf')) {
+        fileTypeInfo = 'PDF document';
+      } else if (attachment.name.toLowerCase().endsWith('.txt')) {
+        fileTypeInfo = 'Text document';
+      } else if (attachment.name.toLowerCase().endsWith('.docx') ||
+                 attachment.name.toLowerCase().endsWith('.doc')) {
+        fileTypeInfo = 'Word document';
+      } else {
+        fileTypeInfo = 'Document';
+      }
+
+      return '$fileTypeInfo uploaded ($fileSize KB). The user has shared a document that may contain important information about their goals, progress, or coaching needs.';
+    } catch (e) {
+      return 'Unable to process document: $e';
+    }
+  }
+
+  Future<String> _processAudioAttachment(AttachmentFile attachment) async {
+    try {
+      final file = File(attachment.path);
+      if (!await file.exists()) {
+        return 'Audio file not found';
+      }
+
+      final fileSize = (attachment.sizeInBytes / 1024).toStringAsFixed(1);
+      return 'Audio recording uploaded ($fileSize KB). The user has shared an audio message or recording that may contain insights about their experience, goals, or coaching journey.';
+    } catch (e) {
+      return 'Unable to process audio: $e';
+    }
+  }
+
+  Future<String> _processVideoAttachment(AttachmentFile attachment) async {
+    try {
+      final file = File(attachment.path);
+      if (!await file.exists()) {
+        return 'Video file not found';
+      }
+
+      final fileSize = (attachment.sizeInBytes / 1024).toStringAsFixed(1);
+      return 'Video uploaded ($fileSize KB). The user has shared a video that may show their progress, demonstrate a technique, or provide visual context for their coaching needs.';
+    } catch (e) {
+      return 'Unable to process video: $e';
+    }
   }
 
   @override

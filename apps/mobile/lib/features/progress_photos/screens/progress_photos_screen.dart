@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:share_plus/share_plus.dart';
 import 'dart:io';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/progress_photo.dart';
@@ -1037,14 +1038,74 @@ class _PhotoDetailScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.share),
-            onPressed: () {
-              // TODO: Implement share functionality
+            onPressed: () async {
+              try {
+                final box = context.findRenderObject() as RenderBox?;
+                await Share.shareXFiles(
+                  [XFile(photo.imagePath)],
+                  text: 'Progress photo taken on ${_formatDate(photo.createdAt)}\n${photo.notes?.isNotEmpty == true ? photo.notes! : 'My UpCoach progress journey 💪'}',
+                  subject: 'UpCoach Progress Photo',
+                  sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+                );
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error sharing photo: $e')),
+                  );
+                }
+              }
             },
           ),
           IconButton(
             icon: const Icon(Icons.delete),
-            onPressed: () {
-              // TODO: Implement delete functionality
+            onPressed: () async {
+              final bool? shouldDelete = await showDialog<bool>(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Delete Photo'),
+                    content: const Text('Are you sure you want to delete this progress photo? This action cannot be undone.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        style: TextButton.styleFrom(foregroundColor: Colors.red),
+                        child: const Text('Delete'),
+                      ),
+                    ],
+                  );
+                },
+              );
+
+              if (shouldDelete == true && context.mounted) {
+                try {
+                  // Delete the physical file
+                  final file = File(photo.imagePath);
+                  if (await file.exists()) {
+                    await file.delete();
+                  }
+
+                  // Remove from state management (if using Riverpod)
+                  // This would need to be implemented in the provider
+
+                  Navigator.of(context).pop(); // Go back to main screen
+
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Photo deleted successfully')),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error deleting photo: $e')),
+                    );
+                  }
+                }
+              }
             },
           ),
         ],

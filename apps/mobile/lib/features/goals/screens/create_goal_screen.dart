@@ -6,7 +6,9 @@ import '../../../shared/models/goal_model.dart';
 import '../providers/goal_provider.dart';
 
 class CreateGoalScreen extends ConsumerStatefulWidget {
-  const CreateGoalScreen({super.key});
+  final Goal? goalToEdit;
+
+  const CreateGoalScreen({super.key, this.goalToEdit});
 
   @override
   ConsumerState<CreateGoalScreen> createState() => _CreateGoalScreenState();
@@ -23,6 +25,24 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
   DateTime? _targetDate;
   final List<String> _milestones = [];
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeForm();
+  }
+
+  void _initializeForm() {
+    if (widget.goalToEdit != null) {
+      final goal = widget.goalToEdit!;
+      _titleController.text = goal.title;
+      _descriptionController.text = goal.description;
+      _category = goal.category;
+      _priority = goal.priority;
+      _targetDate = goal.targetDate;
+      _milestones.addAll(goal.milestones);
+    }
+  }
 
   @override
   void dispose() {
@@ -74,28 +94,46 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
       );
       return;
     }
-    
+
     setState(() {
       _isLoading = true;
     });
 
     try {
-      await ref.read(goalProvider.notifier).createGoal(
-        title: _titleController.text.trim(),
-        description: _descriptionController.text.trim().isEmpty 
-            ? null 
-            : _descriptionController.text.trim(),
-        category: _category,
-        priority: _priority,
-        targetDate: _targetDate!,
-        milestones: _milestones,
-      );
+      final isEditing = widget.goalToEdit != null;
+
+      if (isEditing) {
+        // Update existing goal
+        await ref.read(goalProvider.notifier).updateGoal(
+          goalId: widget.goalToEdit!.id,
+          title: _titleController.text.trim(),
+          description: _descriptionController.text.trim().isEmpty
+              ? null
+              : _descriptionController.text.trim(),
+          category: _category,
+          priority: _priority,
+          targetDate: _targetDate!,
+          milestones: _milestones,
+        );
+      } else {
+        // Create new goal
+        await ref.read(goalProvider.notifier).createGoal(
+          title: _titleController.text.trim(),
+          description: _descriptionController.text.trim().isEmpty
+              ? null
+              : _descriptionController.text.trim(),
+          category: _category,
+          priority: _priority,
+          targetDate: _targetDate!,
+          milestones: _milestones,
+        );
+      }
 
       if (mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Goal created successfully'),
+          SnackBar(
+            content: Text(isEditing ? 'Goal updated successfully' : 'Goal created successfully'),
             backgroundColor: AppTheme.successColor,
           ),
         );
@@ -104,7 +142,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to create goal: $e'),
+            content: Text('Failed to ${widget.goalToEdit != null ? 'update' : 'create'} goal: $e'),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -122,7 +160,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Goal'),
+        title: Text(widget.goalToEdit != null ? 'Edit Goal' : 'Create Goal'),
         actions: [
           TextButton(
             onPressed: _isLoading ? null : _createGoal,
@@ -324,7 +362,9 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                       ),
                     )
                   : const Icon(Icons.flag),
-              label: Text(_isLoading ? 'Creating...' : 'Create Goal'),
+              label: Text(_isLoading
+                  ? (widget.goalToEdit != null ? 'Updating...' : 'Creating...')
+                  : (widget.goalToEdit != null ? 'Update Goal' : 'Create Goal')),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(48),
               ),

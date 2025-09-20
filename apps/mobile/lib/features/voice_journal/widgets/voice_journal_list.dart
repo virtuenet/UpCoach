@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/voice_journal_provider.dart';
 import '../../../shared/models/voice_journal_entry.dart';
@@ -420,11 +421,33 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
     );
   }
 
-  void _shareEntry() {
-    // TODO: Implement sharing functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Share feature coming soon!')),
-    );
+  void _shareEntry() async {
+    try {
+      final String shareText = '''
+${widget.entry.title}
+
+Recorded on: ${_formatDate(widget.entry.createdAt)}
+Duration: ${_formatDuration(widget.entry.durationSeconds)}
+
+${widget.entry.transcription?.isNotEmpty == true ? 'Transcription:\n${widget.entry.transcription!}' : 'Voice journal entry from UpCoach'}
+
+---
+Created with UpCoach - Your AI-powered coaching companion 🎯
+''';
+
+      final box = context.findRenderObject() as RenderBox?;
+      await Share.share(
+        shareText,
+        subject: 'Voice Journal Entry: ${widget.entry.title}',
+        sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error sharing entry: $e')),
+        );
+      }
+    }
   }
 
   void _showDeleteDialog() {
