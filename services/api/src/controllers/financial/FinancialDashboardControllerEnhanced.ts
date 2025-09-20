@@ -869,10 +869,24 @@ export class FinancialDashboardControllerEnhanced {
     
     // Calculate revenue metrics
     // Calculate initial revenue from subscriptions
-    // Note: This requires a separate query to get subscription data
-    const initialRevenue = 0; // TODO: Implement subscription revenue calculation
-    // const subscriptions = await Subscription.findAll({ where: { userId: { [Op.in]: cohortUsers.map(u => u.id) } } });
-    // const initialRevenue = subscriptions.reduce((sum, sub) => sum + (sub.amount || 0), 0);
+    let initialRevenue = 0;
+    try {
+      const { Subscription } = await import('../../models/financial/Subscription');
+      const subscriptions = await Subscription.findAll({
+        where: {
+          userId: { [Op.in]: cohortUsers.map(u => u.id) },
+          status: ['active', 'trialing']
+        }
+      });
+      initialRevenue = subscriptions.reduce((sum, sub) => {
+        // Convert to monthly revenue for consistent comparison
+        const monthlyAmount = this.convertToMonthlyRevenue(sub.amount, sub.billingInterval);
+        return sum + monthlyAmount;
+      }, 0);
+    } catch (error) {
+      logger.error('Error calculating subscription revenue:', error);
+      // Continue with 0 revenue if subscription data is unavailable
+    }
     
     // Calculate retention (simplified - implement based on your data model)
     const retention = {
@@ -1280,21 +1294,83 @@ export class FinancialDashboardControllerEnhanced {
       }
     });
     
-    // Simplified anomaly detection
-    // TODO: Add budget comparison when budgeted field is available
-    const avgCost = recentCosts.reduce((sum, c) => sum + Number(c.amount), 0) / recentCosts.length;
-    recentCosts.forEach(cost => {
-      if (Number(cost.amount) > avgCost * 2) {
-        alerts.push({
-          severity: 'medium',
-          title: `Cost Spike: ${cost.category}`,
-          description: `${cost.category} costs are significantly above average`,
-          action: 'Review and optimize spending'
-        });
+    // Budget comparison and anomaly detection
+    try {
+      const { Budget } = await import('../../models/financial/Budget');
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+
+      // Group costs by category for budget comparison
+      const costsByCategory = recentCosts.reduce((acc, cost) => {
+        const category = cost.category;
+        if (!acc[category]) {
+          acc[category] = 0;
+        }
+        acc[category] += Number(cost.amount);
+        return acc;
+      }, {} as Record<string, number>);
+
+      // Check budget vs actual for each category
+      for (const [category, actualAmount] of Object.entries(costsByCategory)) {
+        const budget = await Budget.getBudgetForPeriod(
+          category as any,
+          currentYear,
+          currentMonth
+        );
+
+        if (budget) {
+          const utilization = await budget.getBudgetUtilization(actualAmount);
+
+          if (utilization.isOverBudget) {
+            alerts.push({
+              severity: 'high',
+              title: `Budget Exceeded: ${category}`,
+              description: `${category} costs (${actualAmount.toFixed(2)}) exceed budget (${budget.budgetedAmount})`,
+              action: 'Review spending and adjust budget or reduce costs'
+            });
+          } else if (utilization.utilizationPercentage > 80) {
+            alerts.push({
+              severity: 'medium',
+              title: `Budget Warning: ${category}`,
+              description: `${category} has used ${utilization.utilizationPercentage.toFixed(1)}% of budget`,
+              action: 'Monitor spending closely'
+            });
+          }
+        }
       }
-    });
+    } catch (error) {
+      logger.error('Error performing budget comparison:', error);
+      // Fall back to simple anomaly detection
+      const avgCost = recentCosts.reduce((sum, c) => sum + Number(c.amount), 0) / recentCosts.length;
+      recentCosts.forEach(cost => {
+        if (Number(cost.amount) > avgCost * 2) {
+          alerts.push({
+            severity: 'medium',
+            title: `Cost Spike: ${cost.category}`,
+            description: `${cost.category} costs are significantly above average`,
+            action: 'Review and optimize spending'
+          });
+        }
+      });
+    }
     
     return alerts;
+  }
+
+  /**
+   * Convert subscription amount to monthly revenue for consistent comparison
+   */
+  private convertToMonthlyRevenue(amount: number, billingInterval: string): number {
+    switch (billingInterval) {
+      case 'monthly':
+        return amount;
+      case 'quarterly':
+        return amount / 3;
+      case 'yearly':
+        return amount / 12;
+      default:
+        return amount; // Default to amount as-is
+    }
   }
 }
 

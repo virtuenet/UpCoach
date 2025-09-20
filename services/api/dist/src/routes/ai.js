@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const AIController_1 = require("../controllers/ai/AIController");
 const UserProfilingController_1 = require("../controllers/ai/UserProfilingController");
+const LocalLLMController_1 = require("../controllers/ai/LocalLLMController");
 const auth_1 = require("../middleware/auth");
 const rateLimiter_1 = require("../middleware/rateLimiter");
 const aiInputValidation_1 = require("../middleware/aiInputValidation");
@@ -15,6 +16,12 @@ const aiRateLimiter = (0, rateLimiter_1.createRateLimiter)({
     windowMs: 15 * 60 * 1000,
     max: 50,
     message: 'AI service rate limit exceeded. Please wait before making more requests.',
+    useFingerprint: true,
+});
+const localLLMRateLimiter = (0, rateLimiter_1.createRateLimiter)({
+    windowMs: 5 * 60 * 1000,
+    max: 100,
+    message: 'Local LLM rate limit exceeded. Please wait before making more requests.',
     useFingerprint: true,
 });
 const conversationRateLimiter = (0, rateLimiter_1.createRateLimiter)({
@@ -59,5 +66,21 @@ router.get('/insights/report', auth_1.authenticate, aiRateLimiter, AIController_
 router.get('/insights/report/:userId', auth_1.authenticate, aiRateLimiter, AIController_1.aiController.getInsightReport);
 router.get('/insights/active', auth_1.authenticate, aiRateLimiter, AIController_1.aiController.getActiveInsights);
 router.post('/insights/:insightId/dismiss', auth_1.authenticate, aiRateLimiter, AIController_1.aiController.dismissInsight);
+router.get('/local-llm/status', auth_1.authenticate, localLLMRateLimiter, LocalLLMController_1.localLLMController.getStatus);
+router.get('/local-llm/models', auth_1.authenticate, localLLMRateLimiter, LocalLLMController_1.localLLMController.getAvailableModels);
+router.post('/local-llm/generate', auth_1.authenticate, localLLMRateLimiter, aiInputValidation_1.validateConversationInput, LocalLLMController_1.localLLMController.generateResponse);
+router.post('/local-llm/initialize', auth_1.authenticate, aiRateLimiter, LocalLLMController_1.localLLMController.initializeModel);
+router.get('/local-llm/health', LocalLLMController_1.localLLMController.healthCheck);
+router.get('/local-llm/metrics', auth_1.authenticate, localLLMRateLimiter, LocalLLMController_1.localLLMController.getMetrics);
+router.post('/hybrid/generate', auth_1.authenticate, aiRateLimiter, aiInputValidation_1.validateConversationInput, AIController_1.aiController.hybridGenerate);
+router.get('/hybrid/routing-decision', auth_1.authenticate, aiRateLimiter, AIController_1.aiController.getRoutingDecision);
+router.get('/personalization/preferences', auth_1.authenticate, aiRateLimiter, AIController_1.aiController.getPersonalizationPreferences);
+router.post('/personalization/update', auth_1.authenticate, aiRateLimiter, AIController_1.aiController.updatePersonalization);
+router.get('/personalization/content-recommendations', auth_1.authenticate, aiRateLimiter, AIController_1.aiController.getPersonalizedContent);
+router.get('/personalization/coaching-strategy', auth_1.authenticate, aiRateLimiter, AIController_1.aiController.getCoachingStrategy);
+router.get('/analytics/behavior-patterns', auth_1.authenticate, aiRateLimiter, AIController_1.aiController.getBehaviorPatterns);
+router.get('/analytics/engagement-metrics', auth_1.authenticate, aiRateLimiter, AIController_1.aiController.getEngagementMetrics);
+router.get('/analytics/success-factors', auth_1.authenticate, aiRateLimiter, AIController_1.aiController.getSuccessFactors);
+router.post('/analytics/track-event', auth_1.authenticate, aiRateLimiter, AIController_1.aiController.trackAnalyticsEvent);
 exports.default = router;
 //# sourceMappingURL=ai.js.map

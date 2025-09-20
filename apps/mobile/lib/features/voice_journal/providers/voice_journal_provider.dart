@@ -2,32 +2,36 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/models/voice_journal_entry.dart';
 import '../../../core/services/voice_recording_service.dart';
 import '../../../core/services/speech_to_text_service.dart';
+import '../../../core/services/voice_journal_storage_service.dart';
 import 'dart:io';
 
 class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
-  VoiceJournalNotifier(this._voiceRecordingService, this._speechToTextService)
-      : super(const VoiceJournalState()) {
+  VoiceJournalNotifier(
+    this._voiceRecordingService,
+    this._speechToTextService,
+    this._storageService,
+  ) : super(const VoiceJournalState()) {
     _init();
   }
 
   final VoiceRecordingService _voiceRecordingService;
   final SpeechToTextService _speechToTextService;
+  final VoiceJournalStorageService _storageService;
 
   Future<void> _init() async {
     await _voiceRecordingService.initialize();
     await _speechToTextService.initialize();
+    await _storageService.initialize();
     await loadEntries();
   }
 
   // Load voice journal entries
   Future<void> loadEntries() async {
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
-      // TODO: Load from local storage/database
-      // For now, use empty list
-      final entries = <VoiceJournalEntry>[];
-      
+      final entries = await _storageService.loadEntries();
+
       state = state.copyWith(
         entries: entries,
         isLoading: false,
@@ -93,8 +97,18 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
         currentEntry: entry,
       );
 
-      // TODO: Save to local storage/database
-      
+      // Save to local storage
+      final saved = await _storageService.saveEntry(entry);
+      if (!saved) {
+        // If save failed, remove from state and show error
+        final revertedEntries = state.entries.where((e) => e.id != entry.id).toList();
+        state = state.copyWith(
+          entries: revertedEntries,
+          error: 'Failed to save voice journal entry to storage',
+        );
+        return null;
+      }
+
       return entry;
     } catch (e) {
       state = state.copyWith(isRecording: false, error: e.toString());
@@ -151,7 +165,8 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
           isTranscribing: false,
         );
 
-        // TODO: Save to local storage/database
+        // Save updated entry to local storage
+        await _storageService.updateEntry(updatedEntry);
       } else {
         state = state.copyWith(
           isTranscribing: false,
@@ -193,15 +208,16 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
       updatedEntries.removeAt(entryIndex);
       
       state = state.copyWith(entries: updatedEntries);
-      
-      // TODO: Delete from local storage/database
+
+      // Delete from local storage
+      await _storageService.deleteEntry(entryId);
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
   }
 
   // Toggle favorite status
-  void toggleFavorite(String entryId) {
+  void toggleFavorite(String entryId) async {
     final entryIndex = state.entries.indexWhere((e) => e.id == entryId);
     if (entryIndex == -1) return;
 
@@ -215,12 +231,13 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
     updatedEntries[entryIndex] = updatedEntry;
 
     state = state.copyWith(entries: updatedEntries);
-    
-    // TODO: Save to local storage/database
+
+    // Save updated entry to local storage
+    await _storageService.updateEntry(updatedEntry);
   }
 
   // Update entry title
-  void updateEntryTitle(String entryId, String newTitle) {
+  void updateEntryTitle(String entryId, String newTitle) async {
     final entryIndex = state.entries.indexWhere((e) => e.id == entryId);
     if (entryIndex == -1) return;
 
@@ -234,8 +251,9 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
     updatedEntries[entryIndex] = updatedEntry;
 
     state = state.copyWith(entries: updatedEntries);
-    
-    // TODO: Save to local storage/database
+
+    // Save updated entry to local storage
+    await _storageService.updateEntry(updatedEntry);
   }
 
   // Search entries
@@ -274,11 +292,62 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
       'totalDurationMinutes': (totalDuration / 60).round(),
       'transcribedEntries': transcribedEntries,
       'favoriteEntries': favoriteEntries,
-      'averageConfidence': transcribedEntries > 0 
+      'averageConfidence': transcribedEntries > 0
           ? state.entries.where((e) => e.isTranscribed).fold<double>(
               0, (sum, entry) => sum + entry.confidence) / transcribedEntries
           : 0.0,
     };
+  }
+
+  // Get storage statistics
+  Future<Map<String, dynamic>> getStorageStatistics() async {
+    try {
+      return await _storageService.getStorageStatistics();
+    } catch (e) {
+      return {};
+    }
+  }
+
+  // Export entries for backup
+  Future<Map<String, dynamic>> exportEntries() async {
+    try {
+      return await _storageService.exportToJson();
+    } catch (e) {
+      state = state.copyWith(error: 'Failed to export entries: ${e.toString()}');
+      return {};
+    }
+  }
+
+  // Import entries from backup
+  Future<bool> importEntries(Map<String, dynamic> jsonData) async {
+    try {
+      final success = await _storageService.importFromJson(jsonData);
+      if (success) {
+        // Reload entries after import
+        await loadEntries();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      state = state.copyWith(error: 'Failed to import entries: ${e.toString()}');
+      return false;
+    }
+  }
+
+  // Clean up orphaned audio files
+  Future<int> cleanupOrphanedFiles() async {
+    try {
+      return await _storageService.cleanupOrphanedFiles();
+    } catch (e) {
+      state = state.copyWith(error: 'Failed to cleanup files: ${e.toString()}');
+      return 0;
+    }
+  }
+
+  // Close storage service
+  Future<void> dispose() async {
+    await _storageService.close();
+    super.dispose();
   }
 }
 
@@ -286,5 +355,6 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
 final voiceJournalProvider = StateNotifierProvider<VoiceJournalNotifier, VoiceJournalState>((ref) {
   final voiceRecordingService = ref.read(voiceRecordingServiceProvider);
   final speechToTextService = ref.read(speechToTextServiceProvider);
-  return VoiceJournalNotifier(voiceRecordingService, speechToTextService);
+  final storageService = ref.read(voiceJournalStorageServiceProvider);
+  return VoiceJournalNotifier(voiceRecordingService, speechToTextService, storageService);
 }); 

@@ -41,7 +41,7 @@ if (!process.env.VERBOSE_TESTS) {
 // Mock external services
 jest.mock('openai');
 jest.mock('@anthropic-ai/sdk');
-jest.mock('stripe');
+// jest.mock('stripe'); // Temporarily disabled due to module resolution
 jest.mock('ioredis');
 
 // Mock individual model files to prevent initialization

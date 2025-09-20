@@ -31,7 +31,6 @@ if (!process.env.VERBOSE_TESTS) {
 }
 globals_1.jest.mock('openai');
 globals_1.jest.mock('@anthropic-ai/sdk');
-globals_1.jest.mock('stripe');
 globals_1.jest.mock('ioredis');
 globals_1.jest.mock('../models/User');
 globals_1.jest.mock('../models/Goal');

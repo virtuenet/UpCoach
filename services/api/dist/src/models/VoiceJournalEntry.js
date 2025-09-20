@@ -2,22 +2,30 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VoiceJournalEntry = void 0;
 const sequelize_1 = require("sequelize");
-const database_1 = require("../config/database");
+const sequelize_2 = require("../config/sequelize");
 class VoiceJournalEntry extends sequelize_1.Model {
     id;
-    title;
-    transcriptionText;
-    audioFilePath;
-    duration;
-    summary;
-    tags;
-    emotionalTone;
-    isTranscribed;
-    isAnalyzed;
-    isFavorite;
     userId;
-    createdAt;
-    updatedAt;
+    title;
+    audioPath;
+    duration;
+    transcription;
+    notes;
+    tags;
+    mood;
+    emotions;
+    isProcessing;
+    processedAt;
+    processingError;
+    metadata;
+    isFavorite;
+    isArchived;
+    syncedAt;
+    deviceId;
+    user;
+    static associate(models) {
+        VoiceJournalEntry.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+    }
 }
 exports.VoiceJournalEntry = VoiceJournalEntry;
 VoiceJournalEntry.init({
@@ -26,96 +34,118 @@ VoiceJournalEntry.init({
         defaultValue: sequelize_1.DataTypes.UUIDV4,
         primaryKey: true,
     },
-    title: {
-        type: sequelize_1.DataTypes.STRING,
+    userId: {
+        type: sequelize_1.DataTypes.UUID,
         allowNull: false,
-        validate: {
-            notEmpty: true,
-            len: [1, 255],
+        references: {
+            model: 'Users',
+            key: 'id',
         },
+        onDelete: 'CASCADE',
     },
-    transcriptionText: {
+    title: {
+        type: sequelize_1.DataTypes.STRING(255),
+        allowNull: false,
+    },
+    audioPath: {
+        type: sequelize_1.DataTypes.STRING(500),
+        allowNull: false,
+    },
+    duration: {
+        type: sequelize_1.DataTypes.FLOAT,
+        allowNull: true,
+        comment: 'Duration in seconds',
+    },
+    transcription: {
         type: sequelize_1.DataTypes.TEXT,
         allowNull: true,
     },
-    audioFilePath: {
-        type: sequelize_1.DataTypes.STRING,
-        allowNull: true,
-    },
-    duration: {
-        type: sequelize_1.DataTypes.INTEGER,
-        allowNull: true,
-        validate: {
-            min: 0,
-        },
-    },
-    summary: {
+    notes: {
         type: sequelize_1.DataTypes.TEXT,
         allowNull: true,
     },
     tags: {
         type: sequelize_1.DataTypes.ARRAY(sequelize_1.DataTypes.STRING),
-        allowNull: true,
         defaultValue: [],
+        allowNull: false,
     },
-    emotionalTone: {
-        type: sequelize_1.DataTypes.STRING,
+    mood: {
+        type: sequelize_1.DataTypes.STRING(50),
         allowNull: true,
-        validate: {
-            isIn: [['positive', 'negative', 'neutral', 'mixed']],
-        },
     },
-    isTranscribed: {
-        type: sequelize_1.DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
+    emotions: {
+        type: sequelize_1.DataTypes.JSONB,
+        allowNull: true,
+        comment: 'Emotion analysis results from voice',
     },
-    isAnalyzed: {
+    isProcessing: {
         type: sequelize_1.DataTypes.BOOLEAN,
-        allowNull: false,
         defaultValue: false,
+        allowNull: false,
+    },
+    processedAt: {
+        type: sequelize_1.DataTypes.DATE,
+        allowNull: true,
+    },
+    processingError: {
+        type: sequelize_1.DataTypes.TEXT,
+        allowNull: true,
+    },
+    metadata: {
+        type: sequelize_1.DataTypes.JSONB,
+        allowNull: true,
     },
     isFavorite: {
         type: sequelize_1.DataTypes.BOOLEAN,
-        allowNull: false,
         defaultValue: false,
-    },
-    userId: {
-        type: sequelize_1.DataTypes.UUID,
         allowNull: false,
-        references: {
-            model: 'users',
-            key: 'id',
-        },
     },
-    createdAt: {
+    isArchived: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
+    syncedAt: {
         type: sequelize_1.DataTypes.DATE,
-        allowNull: false,
+        allowNull: true,
     },
-    updatedAt: {
-        type: sequelize_1.DataTypes.DATE,
-        allowNull: false,
+    deviceId: {
+        type: sequelize_1.DataTypes.STRING(255),
+        allowNull: true,
     },
 }, {
-    sequelize: database_1.sequelize,
+    sequelize: sequelize_2.sequelize,
     modelName: 'VoiceJournalEntry',
-    tableName: 'voice_journal_entries',
+    tableName: 'VoiceJournalEntries',
     timestamps: true,
+    paranoid: true,
     indexes: [
         {
             fields: ['userId'],
         },
         {
-            fields: ['userId', 'createdAt'],
+            fields: ['createdAt'],
         },
         {
-            fields: ['userId', 'isFavorite'],
+            fields: ['mood'],
         },
         {
-            fields: ['userId', 'isTranscribed'],
+            fields: ['isProcessing'],
         },
         {
-            fields: ['userId', 'isAnalyzed'],
+            fields: ['isFavorite'],
+        },
+        {
+            fields: ['isArchived'],
+        },
+        {
+            fields: ['tags'],
+            using: 'GIN',
+        },
+        {
+            name: 'voice_journal_search_idx',
+            fields: ['title', 'transcription'],
+            type: 'FULLTEXT',
         },
     ],
 });

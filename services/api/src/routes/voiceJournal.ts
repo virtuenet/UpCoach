@@ -44,4 +44,26 @@ router.get('/favorites', voiceJournalController.getFavorites);
 router.get('/export', voiceJournalController.exportEntries);
 router.post('/import', upload.single('file'), voiceJournalController.importEntries);
 
+// ============= Enhanced Local Storage Operations =============
+
+// Offline entry management
+router.post('/offline/store', upload.single('audioFile'), voiceJournalController.storeOfflineEntry);
+router.get('/offline/entries', voiceJournalController.getOfflineEntries);
+router.post('/offline/sync', voiceJournalController.syncOfflineEntries);
+
+// Local audio file management
+router.post('/local/audio/:entryId', upload.single('audio'), voiceJournalController.storeAudioFileLocal);
+router.get('/local/audio/:entryId', voiceJournalController.getAudioFileLocal);
+
+// Local caching operations
+router.post('/cache/store', voiceJournalController.cacheEntriesLocally);
+router.get('/cache/entries', voiceJournalController.getCachedEntries);
+
+// Storage management
+router.get('/storage/status', voiceJournalController.getLocalStorageStatus);
+router.delete('/storage/purge', voiceJournalController.purgeOldData);
+
+// Advanced sync operations
+router.post('/sync/advanced', voiceJournalController.performAdvancedSync);
+
 export default router;

@@ -8,6 +8,11 @@ import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 
 import { logger } from '../utils/logger';
+import {
+  securityMonitoringService,
+  SecurityEventType,
+  SecurityEventSeverity,
+} from '../services/security/SecurityMonitoringService';
 
 export interface SecurityHeadersConfig {
   enableHSTS?: boolean;
@@ -345,8 +350,25 @@ async function processCSPReport(report: any): Promise<void> {
     lineNumber: report['line-number'],
   });
 
-  // TODO: Send to monitoring service
-  // TODO: Store for analysis
+  // Send to monitoring service
+  await securityMonitoringService.recordEvent({
+    type: SecurityEventType.CSP_VIOLATION,
+    severity: SecurityEventSeverity.MEDIUM,
+    source: 'security_headers_middleware',
+    description: `CSP violation: ${report['violated-directive']} blocked ${report['blocked-uri']}`,
+    metadata: {
+      documentUri: report['document-uri'],
+      violatedDirective: report['violated-directive'],
+      blockedUri: report['blocked-uri'],
+      sourceFile: report['source-file'],
+      lineNumber: report['line-number'],
+      originalText: report['original-policy'],
+      disposition: report['disposition'],
+    },
+    endpoint: report['document-uri'],
+  });
+
+  // Store for analysis - handled by monitoring service compliance storage
 }
 
 /**
@@ -361,8 +383,23 @@ async function processExpectCTReport(report: any): Promise<void> {
     servedCertificateChain: report['served-certificate-chain'],
   });
 
-  // TODO: Alert security team
-  // TODO: Store for compliance
+  // Alert security team via monitoring service
+  await securityMonitoringService.recordEvent({
+    type: SecurityEventType.EXPECT_CT_VIOLATION,
+    severity: SecurityEventSeverity.HIGH,
+    source: 'security_headers_middleware',
+    description: `Expect-CT violation detected for ${report.hostname}:${report.port}`,
+    metadata: {
+      hostname: report.hostname,
+      port: report.port,
+      effectiveExpirationDate: report['effective-expiration-date'],
+      failureMode: report['failure-mode'],
+      servedCertificateChain: report['served-certificate-chain'],
+      testReport: report['test-report'],
+    },
+  });
+
+  // Store for compliance - handled by monitoring service compliance storage
 }
 
 // Export singleton instance

@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.financialDashboardControllerEnhanced = exports.FinancialDashboardControllerEnhanced = void 0;
 const sequelize_1 = require("sequelize");
@@ -506,7 +539,23 @@ class FinancialDashboardControllerEnhanced {
         });
         const cohortSize = cohortUsers.length;
         const cohortId = (0, date_fns_1.format)(cohortDate, 'yyyy-MM');
-        const initialRevenue = 0;
+        let initialRevenue = 0;
+        try {
+            const { Subscription } = await Promise.resolve().then(() => __importStar(require('../../models/financial/Subscription')));
+            const subscriptions = await Subscription.findAll({
+                where: {
+                    userId: { [sequelize_1.Op.in]: cohortUsers.map(u => u.id) },
+                    status: ['active', 'trialing']
+                }
+            });
+            initialRevenue = subscriptions.reduce((sum, sub) => {
+                const monthlyAmount = this.convertToMonthlyRevenue(sub.amount, sub.billingInterval);
+                return sum + monthlyAmount;
+            }, 0);
+        }
+        catch (error) {
+            logger_1.logger.error('Error calculating subscription revenue:', error);
+        }
         const retention = {
             month1: cohortSize > 0 ? 0.85 : 0,
             month3: cohortSize > 0 ? 0.70 : 0,
@@ -824,18 +873,68 @@ class FinancialDashboardControllerEnhanced {
                 periodStart: { [sequelize_1.Op.gte]: (0, date_fns_1.subMonths)(new Date(), 1) }
             }
         });
-        const avgCost = recentCosts.reduce((sum, c) => sum + Number(c.amount), 0) / recentCosts.length;
-        recentCosts.forEach(cost => {
-            if (Number(cost.amount) > avgCost * 2) {
-                alerts.push({
-                    severity: 'medium',
-                    title: `Cost Spike: ${cost.category}`,
-                    description: `${cost.category} costs are significantly above average`,
-                    action: 'Review and optimize spending'
-                });
+        try {
+            const { Budget } = await Promise.resolve().then(() => __importStar(require('../../models/financial/Budget')));
+            const currentMonth = new Date().getMonth() + 1;
+            const currentYear = new Date().getFullYear();
+            const costsByCategory = recentCosts.reduce((acc, cost) => {
+                const category = cost.category;
+                if (!acc[category]) {
+                    acc[category] = 0;
+                }
+                acc[category] += Number(cost.amount);
+                return acc;
+            }, {});
+            for (const [category, actualAmount] of Object.entries(costsByCategory)) {
+                const budget = await Budget.getBudgetForPeriod(category, currentYear, currentMonth);
+                if (budget) {
+                    const utilization = await budget.getBudgetUtilization(actualAmount);
+                    if (utilization.isOverBudget) {
+                        alerts.push({
+                            severity: 'high',
+                            title: `Budget Exceeded: ${category}`,
+                            description: `${category} costs (${actualAmount.toFixed(2)}) exceed budget (${budget.budgetedAmount})`,
+                            action: 'Review spending and adjust budget or reduce costs'
+                        });
+                    }
+                    else if (utilization.utilizationPercentage > 80) {
+                        alerts.push({
+                            severity: 'medium',
+                            title: `Budget Warning: ${category}`,
+                            description: `${category} has used ${utilization.utilizationPercentage.toFixed(1)}% of budget`,
+                            action: 'Monitor spending closely'
+                        });
+                    }
+                }
             }
-        });
+        }
+        catch (error) {
+            logger_1.logger.error('Error performing budget comparison:', error);
+            const avgCost = recentCosts.reduce((sum, c) => sum + Number(c.amount), 0) / recentCosts.length;
+            recentCosts.forEach(cost => {
+                if (Number(cost.amount) > avgCost * 2) {
+                    alerts.push({
+                        severity: 'medium',
+                        title: `Cost Spike: ${cost.category}`,
+                        description: `${cost.category} costs are significantly above average`,
+                        action: 'Review and optimize spending'
+                    });
+                }
+            });
+        }
         return alerts;
+    }
+    convertToMonthlyRevenue(amount, billingInterval) {
+        switch (billingInterval) {
+            case 'monthly':
+                return amount;
+            case 'quarterly':
+                return amount / 3;
+            case 'yearly':
+                return amount / 12;
+            default:
+                return amount;
+        }
     }
 }
 exports.FinancialDashboardControllerEnhanced = FinancialDashboardControllerEnhanced;

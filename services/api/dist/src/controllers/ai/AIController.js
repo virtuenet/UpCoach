@@ -7,6 +7,11 @@ const InsightGenerator_1 = require("../../services/ai/InsightGenerator");
 const PredictiveAnalytics_1 = require("../../services/ai/PredictiveAnalytics");
 const RecommendationEngine_1 = require("../../services/ai/RecommendationEngine");
 const VoiceAI_1 = require("../../services/ai/VoiceAI");
+const EnhancedAIService_1 = require("../../services/ai/EnhancedAIService");
+const PersonalizationEngine_1 = require("../../services/ai/PersonalizationEngine");
+const AnalyticsEngine_1 = require("../../services/ai/AnalyticsEngine");
+const HybridDecisionEngine_1 = require("../../services/ai/HybridDecisionEngine");
+const AIInteraction_1 = require("../../models/AIInteraction");
 const logger_1 = require("../../utils/logger");
 class AIController {
     async getRecommendations(req, _res, next) {
@@ -308,6 +313,196 @@ class AIController {
         }
         catch (error) {
             logger_1.logger.error('Error dismissing insight:', error);
+            next(error);
+        }
+    }
+    async hybridGenerate(req, _res, next) {
+        try {
+            const userId = req.user?.id;
+            const { messages, options = {} } = req.body;
+            const startTime = Date.now();
+            const result = await EnhancedAIService_1.enhancedAIService.generateHybridResponse(messages, {
+                ...options,
+                routingContext: {
+                    userId,
+                    requestType: 'conversation',
+                    priority: options.priority || 'normal',
+                },
+            });
+            const processingTime = Date.now() - startTime;
+            if (userId) {
+                await AIInteraction_1.AIInteraction.create({
+                    userId,
+                    type: 'conversation',
+                    model: result.response.model,
+                    tokensUsed: result.response.usage.totalTokens,
+                    responseTime: processingTime / 1000,
+                    requestData: { messages, options },
+                    responseData: { content: result.response.content },
+                    metadata: {
+                        provider: result.metrics.provider,
+                        fallbackOccurred: result.metrics.fallbackOccurred,
+                        routingDecisionTime: result.metrics.routingDecisionTime,
+                        qualityScore: result.metrics.qualityScore,
+                    },
+                });
+            }
+            _res.json({
+                success: true,
+                response: result.response,
+                metrics: result.metrics,
+                processingTime,
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Error in hybrid generation:', error);
+            next(error);
+        }
+    }
+    async getRoutingDecision(req, _res, next) {
+        try {
+            const userId = req.user?.id;
+            const { messages, options = {} } = req.body;
+            const decision = await HybridDecisionEngine_1.hybridDecisionEngine.routeRequest(messages, options, {
+                userId,
+                requestType: 'query',
+            });
+            _res.json({
+                success: true,
+                decision,
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Error getting routing decision:', error);
+            next(error);
+        }
+    }
+    async getPersonalizationPreferences(req, _res, next) {
+        try {
+            const userId = req.user?.id || '';
+            const preferences = await PersonalizationEngine_1.personalizationEngine.getUserPreferences(userId);
+            _res.json({
+                success: true,
+                preferences,
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Error getting personalization preferences:', error);
+            next(error);
+        }
+    }
+    async updatePersonalization(req, _res, next) {
+        try {
+            const userId = req.user?.id || '';
+            const { preferences, behavior, context } = req.body;
+            await PersonalizationEngine_1.personalizationEngine.updateUserProfile(userId, {
+                preferences,
+                behavior,
+                context,
+            });
+            _res.json({
+                success: true,
+                message: 'Personalization updated successfully',
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Error updating personalization:', error);
+            next(error);
+        }
+    }
+    async getPersonalizedContent(req, _res, next) {
+        try {
+            const userId = req.user?.id || '';
+            const { contentType, limit = 10 } = req.query;
+            const recommendations = await PersonalizationEngine_1.personalizationEngine.getPersonalizedContent(userId, contentType, parseInt(limit));
+            _res.json({
+                success: true,
+                recommendations,
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Error getting personalized content:', error);
+            next(error);
+        }
+    }
+    async getCoachingStrategy(req, _res, next) {
+        try {
+            const userId = req.user?.id || '';
+            const strategy = await PersonalizationEngine_1.personalizationEngine.generateCoachingStrategy(userId);
+            _res.json({
+                success: true,
+                strategy,
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Error getting coaching strategy:', error);
+            next(error);
+        }
+    }
+    async getBehaviorPatterns(req, _res, next) {
+        try {
+            const userId = req.user?.id || '';
+            const { days = 30 } = req.query;
+            const patterns = await AnalyticsEngine_1.analyticsEngine.analyzeBehaviorPatterns(userId, parseInt(days));
+            _res.json({
+                success: true,
+                patterns,
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Error getting behavior patterns:', error);
+            next(error);
+        }
+    }
+    async getEngagementMetrics(req, _res, next) {
+        try {
+            const userId = req.user?.id || '';
+            const { startDate, endDate } = req.query;
+            const metrics = await AnalyticsEngine_1.analyticsEngine.getEngagementMetrics(userId, {
+                startDate: startDate ? new Date(startDate) : undefined,
+                endDate: endDate ? new Date(endDate) : undefined,
+            });
+            _res.json({
+                success: true,
+                metrics,
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Error getting engagement metrics:', error);
+            next(error);
+        }
+    }
+    async getSuccessFactors(req, _res, next) {
+        try {
+            const userId = req.user?.id || '';
+            const factors = await AnalyticsEngine_1.analyticsEngine.identifySuccessFactors(userId);
+            _res.json({
+                success: true,
+                factors,
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Error getting success factors:', error);
+            next(error);
+        }
+    }
+    async trackAnalyticsEvent(req, _res, next) {
+        try {
+            const userId = req.user?.id || '';
+            const { eventType, eventData, metadata } = req.body;
+            await AnalyticsEngine_1.analyticsEngine.trackEvent(userId, {
+                type: eventType,
+                data: eventData,
+                metadata,
+                timestamp: new Date(),
+            });
+            _res.json({
+                success: true,
+                message: 'Event tracked successfully',
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Error tracking analytics event:', error);
             next(error);
         }
     }

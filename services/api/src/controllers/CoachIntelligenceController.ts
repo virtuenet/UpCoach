@@ -5,6 +5,8 @@ import KpiTracker from '../models/analytics/KpiTracker';
 import UserAnalytics from '../models/analytics/UserAnalytics';
 import CoachMemory from '../models/coaching/CoachMemory';
 import CoachIntelligenceService from '../services/coaching/CoachIntelligenceService';
+import { coachIntelligenceService } from '../services/coaching/CoachIntelligenceServiceEnhanced';
+import { missedSessionsCalculator } from '../services/coaching/MissedSessionsCalculator';
 import { logger } from '../utils/logger';
 
 /**
@@ -620,6 +622,388 @@ export class CoachIntelligenceController {
     }
   }
 
+  // ============= Enhanced Coach Intelligence Methods =============
+
+  /**
+   * Calculate engagement score for user
+   * GET /api/coach-intelligence/engagement/:userId
+   */
+  async getEngagementScore(req: Request, _res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        _res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: errors.array(),
+        });
+        return;
+      }
+
+      const { userId } = req.params;
+      const engagementMetrics = await coachIntelligenceService.calculateEngagementScore(userId);
+
+      _res.status(200).json({
+        success: true,
+        message: 'Engagement score calculated successfully',
+        data: {
+          engagementMetrics,
+          riskAssessment: {
+            level: engagementMetrics.churnRisk > 0.7 ? 'high' :
+                   engagementMetrics.churnRisk > 0.4 ? 'medium' : 'low',
+            recommendations: engagementMetrics.churnRisk > 0.5 ? [
+              'Schedule immediate check-in',
+              'Review engagement patterns',
+              'Adjust coaching frequency'
+            ] : [
+              'Continue current approach',
+              'Monitor for changes'
+            ]
+          }
+        }
+      });
+    } catch (error) {
+      logger.error('Error calculating engagement score:', error);
+      _res.status(500).json({
+        success: false,
+        message: 'Failed to calculate engagement score',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error'
+      });
+    }
+  }
+
+  /**
+   * Calculate missed sessions for user
+   * GET /api/coach-intelligence/missed-sessions/:userId
+   */
+  async getMissedSessions(req: Request, _res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        _res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: errors.array(),
+        });
+        return;
+      }
+
+      const { userId } = req.params;
+      const missedSessionsData = await missedSessionsCalculator.calculateMissedSessions(userId);
+
+      _res.status(200).json({
+        success: true,
+        message: 'Missed sessions data retrieved successfully',
+        data: {
+          missedSessions: missedSessionsData,
+          actionRequired: missedSessionsData.riskLevel === 'high' || missedSessionsData.riskLevel === 'critical',
+          urgencyLevel: missedSessionsData.riskLevel,
+          nextActions: missedSessionsData.recommendations.slice(0, 3)
+        }
+      });
+    } catch (error) {
+      logger.error('Error retrieving missed sessions data:', error);
+      _res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve missed sessions data',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error'
+      });
+    }
+  }
+
+  /**
+   * Get missed sessions analytics for admin panel
+   * GET /api/coach-intelligence/missed-sessions/analytics
+   */
+  async getMissedSessionsAnalytics(req: Request, _res: Response): Promise<void> {
+    try {
+      const analytics = await missedSessionsCalculator.getMissedSessionsAnalytics();
+
+      _res.status(200).json({
+        success: true,
+        message: 'Missed sessions analytics retrieved successfully',
+        data: {
+          analytics,
+          generatedAt: new Date(),
+          alerts: {
+            highRiskUsers: analytics.summary.highRiskUsers,
+            totalMissedSessions: analytics.summary.totalMissedSessions,
+            averageMissedSessions: analytics.summary.averageMissedSessions
+          }
+        }
+      });
+    } catch (error) {
+      logger.error('Error retrieving missed sessions analytics:', error);
+      _res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve missed sessions analytics',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error'
+      });
+    }
+  }
+
+  /**
+   * Predict users at risk of missing sessions
+   * GET /api/coach-intelligence/predict-at-risk-users
+   */
+  async predictAtRiskUsers(req: Request, _res: Response): Promise<void> {
+    try {
+      const atRiskUsers = await missedSessionsCalculator.predictAtRiskUsers();
+
+      _res.status(200).json({
+        success: true,
+        message: 'At-risk users prediction completed',
+        data: {
+          atRiskUsers: atRiskUsers.slice(0, 20), // Top 20 at-risk users
+          totalAtRisk: atRiskUsers.length,
+          criticalUsers: atRiskUsers.filter(u => u.riskScore > 0.8).length,
+          interventionRequired: atRiskUsers.filter(u => u.riskScore > 0.7).length
+        }
+      });
+    } catch (error) {
+      logger.error('Error predicting at-risk users:', error);
+      _res.status(500).json({
+        success: false,
+        message: 'Failed to predict at-risk users',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error'
+      });
+    }
+  }
+
+  /**
+   * Set user session expectations
+   * POST /api/coach-intelligence/session-expectations/:userId
+   */
+  async setSessionExpectations(req: Request, _res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        _res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: errors.array(),
+        });
+        return;
+      }
+
+      const { userId } = req.params;
+      const { expectedSessionsPerWeek, preferredDays, preferredTimes, customSchedule } = req.body;
+
+      await missedSessionsCalculator.setUserSessionExpectation(userId, {
+        userId,
+        expectedSessionsPerWeek,
+        preferredDays,
+        preferredTimes,
+        customSchedule
+      });
+
+      _res.status(200).json({
+        success: true,
+        message: 'Session expectations set successfully',
+        data: {
+          userId,
+          expectedSessionsPerWeek,
+          preferredDays,
+          preferredTimes
+        }
+      });
+    } catch (error) {
+      logger.error('Error setting session expectations:', error);
+      _res.status(500).json({
+        success: false,
+        message: 'Failed to set session expectations',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error'
+      });
+    }
+  }
+
+  /**
+   * Track custom KPI
+   * POST /api/coach-intelligence/track-kpi/:userId
+   */
+  async trackCustomKPI(req: Request, _res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        _res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: errors.array(),
+        });
+        return;
+      }
+
+      const { userId } = req.params;
+      const { kpiName, value, metadata } = req.body;
+
+      const customKPI = await coachIntelligenceService.trackCustomKPI(
+        userId,
+        kpiName,
+        value,
+        metadata
+      );
+
+      _res.status(201).json({
+        success: true,
+        message: 'Custom KPI tracked successfully',
+        data: {
+          customKPI,
+          trendAnalysis: {
+            direction: customKPI.trend,
+            forecast: customKPI.forecast,
+            achievement: `${Math.round(customKPI.achievement)}%`
+          },
+          nextSteps: customKPI.insights.slice(0, 3)
+        }
+      });
+    } catch (error) {
+      logger.error('Error tracking custom KPI:', error);
+      _res.status(500).json({
+        success: false,
+        message: 'Failed to track custom KPI',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error'
+      });
+    }
+  }
+
+  /**
+   * Generate KPI report
+   * GET /api/coach-intelligence/kpi-report/:userId
+   */
+  async generateKPIReport(req: Request, _res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        _res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: errors.array(),
+        });
+        return;
+      }
+
+      const { userId } = req.params;
+      const { period = 'month' } = req.query;
+
+      const kpiReport = await coachIntelligenceService.generateKPIReport(
+        userId,
+        period as 'week' | 'month' | 'quarter'
+      );
+
+      _res.status(200).json({
+        success: true,
+        message: 'KPI report generated successfully',
+        data: {
+          report: kpiReport,
+          executiveSummary: {
+            overallPerformance: `${Math.round(kpiReport.performanceScore * 100)}%`,
+            topPerformer: kpiReport.kpis.length > 0 ? kpiReport.kpis[0].name : 'N/A',
+            priorityActions: kpiReport.recommendations.slice(0, 3),
+            riskAreas: kpiReport.kpis.filter(k => k.trend === 'down').length
+          }
+        }
+      });
+    } catch (error) {
+      logger.error('Error generating KPI report:', error);
+      _res.status(500).json({
+        success: false,
+        message: 'Failed to generate KPI report',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error'
+      });
+    }
+  }
+
+  /**
+   * Predict user success
+   * GET /api/coach-intelligence/predict-success/:userId
+   */
+  async predictUserSuccess(req: Request, _res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        _res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: errors.array(),
+        });
+        return;
+      }
+
+      const { userId } = req.params;
+      const { goalId } = req.query;
+
+      const prediction = await coachIntelligenceService.predictUserSuccess(
+        userId,
+        goalId as string
+      );
+
+      _res.status(200).json({
+        success: true,
+        message: 'Success prediction completed',
+        data: {
+          prediction,
+          summary: {
+            successLikelihood: `${Math.round(prediction.successProbability * 100)}%`,
+            confidenceLevel: `${Math.round(prediction.confidenceLevel * 100)}%`,
+            estimatedDays: Math.round(prediction.timeToGoal),
+            riskFactorCount: prediction.riskFactors.length,
+            successFactorCount: prediction.successFactors.length
+          },
+          actionPlan: prediction.recommendedActions.slice(0, 5)
+        }
+      });
+    } catch (error) {
+      logger.error('Error predicting user success:', error);
+      _res.status(500).json({
+        success: false,
+        message: 'Failed to predict user success',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error'
+      });
+    }
+  }
+
+  /**
+   * Generate behavior insights
+   * GET /api/coach-intelligence/behavior-insights/:userId
+   */
+  async getBehaviorInsights(req: Request, _res: Response): Promise<void> {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        _res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: errors.array(),
+        });
+        return;
+      }
+
+      const { userId } = req.params;
+      const behaviorInsights = await coachIntelligenceService.generateBehaviorInsights(userId);
+
+      _res.status(200).json({
+        success: true,
+        message: 'Behavior insights generated successfully',
+        data: {
+          insights: behaviorInsights,
+          summary: {
+            totalPatterns: behaviorInsights.length,
+            positivePatterns: behaviorInsights.filter(i => i.impact === 'positive').length,
+            areasForImprovement: behaviorInsights.filter(i => i.impact === 'negative').length,
+            keyRecommendations: behaviorInsights.flatMap(i => i.recommendations).slice(0, 5)
+          }
+        }
+      });
+    } catch (error) {
+      logger.error('Error generating behavior insights:', error);
+      _res.status(500).json({
+        success: false,
+        message: 'Failed to generate behavior insights',
+        error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Internal server error'
+      });
+    }
+  }
+
   /**
    * Helper method to aggregate string arrays and find most common items
    */
@@ -730,6 +1114,49 @@ export const coachIntelligenceValidation = {
     body('note').optional().isString().withMessage('Note must be a string'),
     body('context').optional().isString().withMessage('Context must be a string'),
   ],
+
+  // Enhanced Coach Intelligence Validation
+  getEngagementScore: [param('userId').isUUID().withMessage('Valid user ID is required')],
+
+  getMissedSessions: [param('userId').isUUID().withMessage('Valid user ID is required')],
+
+  setSessionExpectations: [
+    param('userId').isUUID().withMessage('Valid user ID is required'),
+    body('expectedSessionsPerWeek')
+      .isInt({ min: 1, max: 21 })
+      .withMessage('Expected sessions per week must be between 1 and 21'),
+    body('preferredDays')
+      .isArray()
+      .withMessage('Preferred days must be an array'),
+    body('preferredTimes')
+      .isArray()
+      .withMessage('Preferred times must be an array'),
+  ],
+
+  trackCustomKPI: [
+    param('userId').isUUID().withMessage('Valid user ID is required'),
+    body('kpiName')
+      .isString()
+      .isLength({ min: 3, max: 100 })
+      .withMessage('KPI name must be between 3 and 100 characters'),
+    body('value').isNumeric().withMessage('KPI value must be numeric'),
+    body('metadata').optional().isObject().withMessage('Metadata must be an object'),
+  ],
+
+  generateKPIReport: [
+    param('userId').isUUID().withMessage('Valid user ID is required'),
+    query('period')
+      .optional()
+      .isIn(['week', 'month', 'quarter'])
+      .withMessage('Period must be week, month, or quarter'),
+  ],
+
+  predictUserSuccess: [
+    param('userId').isUUID().withMessage('Valid user ID is required'),
+    query('goalId').optional().isUUID().withMessage('Goal ID must be a valid UUID'),
+  ],
+
+  getBehaviorInsights: [param('userId').isUUID().withMessage('Valid user ID is required')],
 };
 
 export default CoachIntelligenceController;

@@ -117,6 +117,22 @@ const envSchema = z.object({
   SMTP_PASS: z.string().optional(),
   EMAIL_FROM: z.string().email().optional(),
 
+  // SMS Configuration
+  SMS_PROVIDER: z.enum(['mock', 'twilio', 'aws-sns']).optional().default('mock'),
+
+  // Twilio SMS Configuration
+  TWILIO_ACCOUNT_SID: z.string().optional(),
+  TWILIO_AUTH_TOKEN: z.string().optional(),
+  TWILIO_FROM_NUMBER: z.string().optional(),
+
+  // AWS SNS SMS Configuration
+  AWS_SNS_ACCESS_KEY_ID: z.string().optional(),
+  AWS_SNS_SECRET_ACCESS_KEY: z.string().optional(),
+  AWS_SNS_REGION: z.string().optional().default('us-east-1'),
+
+  // SMS Testing
+  SMS_SIMULATE_FAILURE: z.string().transform(val => val === 'true').optional().default('false'),
+
   // Push Notifications
   FCM_SERVER_KEY: z.string().optional(),
 
@@ -322,6 +338,25 @@ export const config = {
     user: env.SMTP_USER,
     pass: env.SMTP_PASS,
     from: env.EMAIL_FROM,
+  },
+
+  // SMS
+  sms: {
+    provider: env.SMS_PROVIDER,
+    twilio: {
+      accountSid: env.TWILIO_ACCOUNT_SID || '',
+      authToken: env.TWILIO_AUTH_TOKEN || '',
+      fromNumber: env.TWILIO_FROM_NUMBER || '',
+    },
+    awsSns: {
+      accessKeyId: env.AWS_SNS_ACCESS_KEY_ID || '',
+      secretAccessKey: env.AWS_SNS_SECRET_ACCESS_KEY || '',
+      region: env.AWS_SNS_REGION,
+    },
+    mock: {
+      enabled: env.NODE_ENV !== 'production',
+      simulateFailure: env.SMS_SIMULATE_FAILURE,
+    },
   },
 
   // Push Notifications

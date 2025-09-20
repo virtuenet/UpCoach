@@ -26,8 +26,8 @@ COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
 
-EXPOSE 1083
-ENV PORT 1083
+EXPOSE 3000
+ENV PORT 3000
 ENV NODE_ENV production
 
 CMD ["node", "server.js"]

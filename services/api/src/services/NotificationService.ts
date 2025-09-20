@@ -15,6 +15,7 @@ export interface NotificationOptions {
   persistent?: boolean;
   duration?: number; // in milliseconds
   metadata?: Record<string, any>;
+  timestamp?: string; // ISO string for when notification was sent
 }
 
 export interface NotificationAction {
@@ -220,12 +221,21 @@ export class NotificationService extends EventEmitter {
    */
   private async send(notification: NotificationOptions): Promise<void> {
     try {
+      // Add timestamp if not present
+      const timestampedNotification = {
+        ...notification,
+        timestamp: notification.timestamp || new Date().toISOString()
+      };
+
       // Emit to WebSocket subscribers
-      this.emit('notification', notification);
+      this.emit('notification', timestampedNotification);
 
       // Store in cache for polling clients
       const key = `notification:${notification.userId}:${Date.now()}`;
-      await this.cache.set(key, notification, { ttl: 300 }); // 5 minutes TTL
+      await this.cache.set(key, timestampedNotification, { ttl: 300 }); // 5 minutes TTL
+
+      // Store in notification history for user
+      await this.addToNotificationHistory(timestampedNotification);
 
       // Log notification
       logger.info('Notification sent', {
@@ -236,7 +246,7 @@ export class NotificationService extends EventEmitter {
 
       // For critical errors, also send email
       if (notification.type === 'error' && notification.persistent) {
-        await this.sendEmailNotification(notification);
+        await this.sendEmailNotification(timestampedNotification);
       }
     } catch (error) {
       logger.error('Failed to send notification', error);
@@ -269,32 +279,116 @@ export class NotificationService extends EventEmitter {
   }
 
   /**
-   * Get user email (placeholder - implement with actual user service)
+   * Get user email from database with caching
    */
   private async getUserEmail(userId: string): Promise<string | null> {
-    // TODO: Implement actual user email lookup
-    const cached = await this.cache.get<string>(`user:email:${userId}`);
-    return cached;
+    try {
+      // First check cache
+      const cached = await this.cache.get<string>(`user:email:${userId}`);
+      if (cached) {
+        return cached;
+      }
+
+      // Import User model
+      const { User } = await import('../models/User');
+
+      // Fetch from database
+      const user = await User.findByPk(userId, {
+        attributes: ['email']
+      });
+
+      if (!user || !user.email) {
+        return null;
+      }
+
+      // Cache the email for 30 minutes
+      await this.cache.set(`user:email:${userId}`, user.email, 30 * 60);
+
+      return user.email;
+    } catch (error) {
+      logger.error('Error fetching user email:', error);
+      return null;
+    }
   }
 
   /**
    * Get recent notifications for a user
    */
   async getRecentNotifications(
-    _userId: string,
-    _limit: number = 10
+    userId: string,
+    limit: number = 10
   ): Promise<NotificationOptions[]> {
-    // For now, return empty array as cache.keys is not implemented
-    // TODO: Implement when cache service supports key pattern search
-    return [];
+    try {
+      // Get the notification history for this user from cache
+      const historyKey = `notifications:history:${userId}`;
+      const history = await this.cache.get<NotificationOptions[]>(historyKey);
+
+      if (!history || !Array.isArray(history)) {
+        return [];
+      }
+
+      // Sort by most recent first and limit results
+      return history
+        .sort((a, b) => {
+          const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+          const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+          return bTime - aTime;
+        })
+        .slice(0, limit);
+    } catch (error) {
+      logger.error('Error fetching recent notifications:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Add notification to user's history
+   */
+  private async addToNotificationHistory(notification: NotificationOptions): Promise<void> {
+    try {
+      const historyKey = `notifications:history:${notification.userId}`;
+      const maxHistorySize = 100; // Keep last 100 notifications
+
+      // Get existing history
+      const existingHistory = await this.cache.get<NotificationOptions[]>(historyKey) || [];
+
+      // Add new notification to the beginning
+      const updatedHistory = [notification, ...existingHistory];
+
+      // Trim to maximum size
+      if (updatedHistory.length > maxHistorySize) {
+        updatedHistory.splice(maxHistorySize);
+      }
+
+      // Store back with 7-day TTL
+      await this.cache.set(historyKey, updatedHistory, 7 * 24 * 60 * 60);
+    } catch (error) {
+      logger.error('Error adding notification to history:', error);
+    }
   }
 
   /**
    * Clear notifications for a user
    */
   async clearNotifications(userId: string): Promise<void> {
-    // TODO: Implement when cache service supports key pattern deletion
-    logger.info(`Clearing notifications for user ${userId}`);
+    try {
+      // Clear the notification history for this user
+      const historyKey = `notifications:history:${userId}`;
+      await this.cache.delete(historyKey);
+
+      // Clear any pending notifications
+      const pendingKey = `notifications:pending:${userId}`;
+      await this.cache.delete(pendingKey);
+
+      // Clear user email cache to force refresh
+      const emailKey = `user:email:${userId}`;
+      await this.cache.delete(emailKey);
+
+      logger.info(`Successfully cleared all notifications for user ${userId}`);
+    } catch (error) {
+      logger.error(`Error clearing notifications for user ${userId}:`, error);
+      throw error;
+    }
   }
 
   /**

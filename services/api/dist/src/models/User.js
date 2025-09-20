@@ -58,6 +58,8 @@ class User extends sequelize_1.Model {
     tasks;
     moods;
     chats;
+    subscriptions;
+    activities;
     async comparePassword(password) {
         return bcrypt.compare(password, this.password);
     }
@@ -68,6 +70,8 @@ class User extends sequelize_1.Model {
         User.hasMany(models.Mood, { foreignKey: 'userId', as: 'moods' });
         User.hasMany(models.Chat, { foreignKey: 'userId', as: 'chats' });
         User.hasMany(models.Content, { foreignKey: 'authorId', as: 'content' });
+        User.hasMany(models.Subscription, { foreignKey: 'userId', as: 'subscriptions' });
+        User.hasMany(models.UserActivity, { foreignKey: 'userId', as: 'activities' });
     }
 }
 exports.User = User;

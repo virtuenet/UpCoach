@@ -111,6 +111,14 @@ const envSchema = zod_1.z.object({
     SMTP_USER: zod_1.z.string().optional(),
     SMTP_PASS: zod_1.z.string().optional(),
     EMAIL_FROM: zod_1.z.string().email().optional(),
+    SMS_PROVIDER: zod_1.z.enum(['mock', 'twilio', 'aws-sns']).optional().default('mock'),
+    TWILIO_ACCOUNT_SID: zod_1.z.string().optional(),
+    TWILIO_AUTH_TOKEN: zod_1.z.string().optional(),
+    TWILIO_FROM_NUMBER: zod_1.z.string().optional(),
+    AWS_SNS_ACCESS_KEY_ID: zod_1.z.string().optional(),
+    AWS_SNS_SECRET_ACCESS_KEY: zod_1.z.string().optional(),
+    AWS_SNS_REGION: zod_1.z.string().optional().default('us-east-1'),
+    SMS_SIMULATE_FAILURE: zod_1.z.string().transform(val => val === 'true').optional().default('false'),
     FCM_SERVER_KEY: zod_1.z.string().optional(),
     ANALYTICS_API_KEY: zod_1.z.string().optional(),
     CDN_URL: zod_1.z.string().optional(),
@@ -267,6 +275,23 @@ exports.config = {
         user: env.SMTP_USER,
         pass: env.SMTP_PASS,
         from: env.EMAIL_FROM,
+    },
+    sms: {
+        provider: env.SMS_PROVIDER,
+        twilio: {
+            accountSid: env.TWILIO_ACCOUNT_SID || '',
+            authToken: env.TWILIO_AUTH_TOKEN || '',
+            fromNumber: env.TWILIO_FROM_NUMBER || '',
+        },
+        awsSns: {
+            accessKeyId: env.AWS_SNS_ACCESS_KEY_ID || '',
+            secretAccessKey: env.AWS_SNS_SECRET_ACCESS_KEY || '',
+            region: env.AWS_SNS_REGION,
+        },
+        mock: {
+            enabled: env.NODE_ENV !== 'production',
+            simulateFailure: env.SMS_SIMULATE_FAILURE,
+        },
     },
     fcm: {
         serverKey: env.FCM_SERVER_KEY || '',

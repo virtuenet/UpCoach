@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/constants/ui_constants.dart';
 import '../providers/profile_provider.dart';
 import '../../../shared/widgets/loading_overlay.dart';
 import '../../../core/utils/image_utils.dart';
@@ -76,15 +77,27 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         setState(() {
           _isUploading = true;
         });
-        
-        // TODO: In a real app, upload image to cloud storage and get URL
-        // For now, simulate upload delay and use local file path
-        await Future.delayed(const Duration(seconds: 2));
-        avatarUrl = _selectedImage!.path; // This would be a real URL in production
-        
-        setState(() {
-          _isUploading = false;
-        });
+
+        try {
+          avatarUrl = await _uploadProfileImage(_selectedImage!);
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to upload image: $e'),
+                backgroundColor: AppTheme.errorColor,
+              ),
+            );
+          }
+          setState(() {
+            _isUploading = false;
+          });
+          return; // Exit early if image upload fails
+        } finally {
+          setState(() {
+            _isUploading = false;
+          });
+        }
       }
 
       // Update profile with all fields
@@ -128,6 +141,230 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         });
       }
     }
+  }
+
+  Future<String> _uploadProfileImage(File imageFile) async {
+    try {
+      // Compress image before uploading
+      final compressedImage = await ImageUtils.compressImage(
+        imageFile,
+        quality: 80,
+        maxWidth: 512,
+        maxHeight: 512,
+      );
+
+      // Generate unique filename
+      final fileName = 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      // TODO: Replace with actual cloud storage upload (AWS S3, Google Cloud Storage, etc.)
+      // For now, using a mock upload service
+      final uploadUrl = await _mockUploadToCloudStorage(compressedImage, fileName);
+
+      return uploadUrl;
+    } catch (e) {
+      throw Exception('Image upload failed: $e');
+    }
+  }
+
+  Future<String> _mockUploadToCloudStorage(File imageFile, String fileName) async {
+    // Simulate network delay
+    await Future.delayed(const Duration(seconds: 2));
+
+    // In production, this would be replaced with actual cloud storage upload
+    // For now, return a mock URL
+    return 'https://storage.upcoach.ai/profiles/$fileName';
+  }
+
+  Widget _buildProfilePhoto() {
+    final user = ref.read(profileProvider).user;
+
+    return Stack(
+      children: [
+        CircleAvatar(
+          radius: 60,
+          backgroundImage: _selectedImage != null
+              ? FileImage(_selectedImage!)
+              : (user?.avatarUrl != null
+                  ? NetworkImage(user!.avatarUrl!)
+                  : null) as ImageProvider?,
+          child: _selectedImage == null && user?.avatarUrl == null
+              ? const Icon(Icons.person, size: 60)
+              : null,
+        ),
+        if (_isUploading)
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: Colors.black54,
+              borderRadius: BorderRadius.circular(60),
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: GestureDetector(
+            onTap: _isUploading ? null : _showImageOptions,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: const Icon(
+                Icons.camera_alt,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExtendedForm() {
+    return Column(
+      children: [
+        // Phone Field
+        TextFormField(
+          controller: _phoneController,
+          decoration: const InputDecoration(
+            labelText: 'Phone',
+            hintText: 'Enter your phone number',
+            prefixIcon: Icon(Icons.phone_outlined),
+          ),
+          keyboardType: TextInputType.phone,
+        ),
+
+        const SizedBox(height: UIConstants.spacingMD),
+
+        // Website Field
+        TextFormField(
+          controller: _websiteController,
+          decoration: const InputDecoration(
+            labelText: 'Website',
+            hintText: 'Enter your website URL',
+            prefixIcon: Icon(Icons.language),
+          ),
+          keyboardType: TextInputType.url,
+        ),
+
+        const SizedBox(height: UIConstants.spacingMD),
+
+        // Location Field
+        TextFormField(
+          controller: _locationController,
+          decoration: const InputDecoration(
+            labelText: 'Location',
+            hintText: 'Enter your location',
+            prefixIcon: Icon(Icons.location_on_outlined),
+          ),
+          textCapitalization: TextCapitalization.words,
+        ),
+
+        const SizedBox(height: UIConstants.spacingMD),
+
+        // Gender Dropdown
+        DropdownButtonFormField<String>(
+          value: _selectedGender,
+          decoration: const InputDecoration(
+            labelText: 'Gender',
+            prefixIcon: Icon(Icons.person_outline),
+          ),
+          items: _genderOptions.map((gender) {
+            return DropdownMenuItem(
+              value: gender,
+              child: Text(gender),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              _selectedGender = value;
+            });
+          },
+        ),
+
+        const SizedBox(height: UIConstants.spacingMD),
+
+        // Date of Birth Field
+        GestureDetector(
+          onTap: _showDatePicker,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.calendar_today),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    _selectedBirthDate != null
+                        ? '${_selectedBirthDate!.day}/${_selectedBirthDate!.month}/${_selectedBirthDate!.year}'
+                        : 'Select date of birth',
+                    style: TextStyle(
+                      color: _selectedBirthDate != null ? Colors.black : Colors.grey,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _showDatePicker() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedBirthDate ?? DateTime.now().subtract(const Duration(days: 6570)), // 18 years ago
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+
+    if (picked != null && picked != _selectedBirthDate) {
+      setState(() {
+        _selectedBirthDate = picked;
+      });
+    }
+  }
+
+  void _showPermissionDialog(ImageSource source) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Permission Required'),
+        content: Text(
+          source == ImageSource.camera
+              ? 'Camera permission is required to take photos.'
+              : 'Photo library permission is required to select images.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              openAppSettings();
+            },
+            child: const Text('Settings'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -318,12 +555,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to pick image: $e'),
-          backgroundColor: AppTheme.errorColor,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to pick image: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
     }
   }
 

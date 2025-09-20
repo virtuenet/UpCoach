@@ -69,6 +69,8 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   public readonly tasks?: any[];
   public readonly moods?: any[];
   public readonly chats?: any[];
+  public readonly subscriptions?: any[];
+  public readonly activities?: any[];
 
   // Instance methods
   public async comparePassword(password: string): Promise<boolean> {
@@ -89,6 +91,10 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
     User.hasMany(models.Chat, { foreignKey: 'userId', as: 'chats' });
     // User has many content (as author)
     User.hasMany(models.Content, { foreignKey: 'authorId', as: 'content' });
+    // User has many subscriptions
+    User.hasMany(models.Subscription, { foreignKey: 'userId', as: 'subscriptions' });
+    // User has many activities
+    User.hasMany(models.UserActivity, { foreignKey: 'userId', as: 'activities' });
   }
 }
 

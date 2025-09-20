@@ -1,7 +1,6 @@
 'use client';
 
-import { Badge } from '@upcoach/ui/src/components/Badge';
-import { Button } from '@upcoach/ui/src/components/Button';
+import { Badge, Button } from '@upcoach/ui';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Star, Users, TrendingUp, Clock } from 'lucide-react';
 import React, { useState, useEffect } from 'react';

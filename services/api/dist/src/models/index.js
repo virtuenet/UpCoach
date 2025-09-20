@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SOC2Incident = exports.SOC2Control = exports.PHIAccessLog = exports.AIFeedback = exports.AIInteraction = exports.UserProfile = exports.Template = exports.ContentMedia = exports.ContentTag = exports.ContentCategory = exports.Content = exports.ContentAnalytics = exports.Media = exports.Category = exports.Course = exports.Article = exports.KpiTracker = exports.UserAnalytics = exports.CoachMemory = exports.UserAvatarPreference = exports.Avatar = exports.PersonalityProfile = exports.ExperimentEvent = exports.Experiment = exports.RevenueAnalytics = exports.ReportFormat = exports.ReportStatus = exports.ReportType = exports.FinancialReport = exports.BillingEventSource = exports.BillingEventType = exports.BillingEvent = exports.SnapshotPeriod = exports.FinancialSnapshot = exports.CostTracking = exports.BillingInterval = exports.SubscriptionPlan = exports.SubscriptionStatus = exports.Subscription = exports.PaymentMethod = exports.TransactionType = exports.TransactionStatus = exports.Transaction = exports.ChatMessage = exports.Chat = exports.Mood = exports.Task = exports.Goal = exports.User = exports.sequelize = void 0;
-exports.SystemMetrics = exports.SOC2Audit = exports.SOC2Assessment = void 0;
+exports.AIFeedback = exports.AIInteraction = exports.UserProfile = exports.Template = exports.ContentMedia = exports.ContentTag = exports.ContentCategory = exports.Content = exports.ContentAnalytics = exports.Media = exports.Category = exports.Course = exports.Article = exports.KpiTracker = exports.UserAnalytics = exports.CoachMemory = exports.UserAvatarPreference = exports.Avatar = exports.PersonalityProfile = exports.ExperimentEvent = exports.Experiment = exports.RevenueAnalytics = exports.ReportFormat = exports.ReportStatus = exports.ReportType = exports.FinancialReport = exports.BillingEventSource = exports.BillingEventType = exports.BillingEvent = exports.SnapshotPeriod = exports.FinancialSnapshot = exports.CostTracking = exports.BillingInterval = exports.SubscriptionPlan = exports.SubscriptionStatus = exports.Subscription = exports.PaymentMethod = exports.TransactionType = exports.TransactionStatus = exports.Transaction = exports.ChatMessage = exports.Chat = exports.Mood = exports.Task = exports.Goal = exports.OrganizationMember = exports.Organization = exports.UserActivity = exports.User = exports.sequelize = void 0;
+exports.SystemMetrics = exports.SOC2Audit = exports.SOC2Assessment = exports.SOC2Incident = exports.SOC2Control = exports.PHIAccessLog = void 0;
 exports.defineAssociations = defineAssociations;
 exports.initializeDatabase = initializeDatabase;
 const sequelize_1 = require("../config/sequelize");
@@ -45,6 +45,12 @@ const Task_1 = require("./Task");
 Object.defineProperty(exports, "Task", { enumerable: true, get: function () { return Task_1.Task; } });
 const User_1 = require("./User");
 Object.defineProperty(exports, "User", { enumerable: true, get: function () { return User_1.User; } });
+const UserActivity_1 = require("./UserActivity");
+Object.defineProperty(exports, "UserActivity", { enumerable: true, get: function () { return UserActivity_1.UserActivity; } });
+const Organization_1 = require("./Organization");
+Object.defineProperty(exports, "Organization", { enumerable: true, get: function () { return Organization_1.Organization; } });
+const OrganizationMember_1 = require("./OrganizationMember");
+Object.defineProperty(exports, "OrganizationMember", { enumerable: true, get: function () { return OrganizationMember_1.OrganizationMember; } });
 var Experiment_1 = require("./experiments/Experiment");
 Object.defineProperty(exports, "Experiment", { enumerable: true, get: function () { return Experiment_1.Experiment; } });
 var ExperimentEvent_1 = require("./experiments/ExperimentEvent");
@@ -100,7 +106,7 @@ Object.defineProperty(exports, "SOC2Audit", { enumerable: true, get: function ()
 var SystemMetrics_1 = require("./compliance/SystemMetrics");
 Object.defineProperty(exports, "SystemMetrics", { enumerable: true, get: function () { return SystemMetrics_1.SystemMetrics; } });
 function defineAssociations() {
-    const { Transaction, Subscription, BillingEvent, Article, Course, Category, ContentAnalytics } = sequelize_1.sequelize.models;
+    const { Transaction, Subscription, BillingEvent, Article, Course, Category, ContentAnalytics, User, UserActivity, Organization, OrganizationMember } = sequelize_1.sequelize.models;
     if (Transaction && Subscription) {
         Transaction.belongsTo(Subscription, { foreignKey: 'subscriptionId', as: 'subscription' });
         Subscription.hasMany(Transaction, { foreignKey: 'subscriptionId', as: 'transactions' });
@@ -122,6 +128,24 @@ function defineAssociations() {
         Category.hasMany(Category, { foreignKey: 'parentId', as: 'children' });
     }
     if (ContentAnalytics && Article && Course) {
+    }
+    if (User && UserActivity) {
+        User.hasMany(UserActivity, { foreignKey: 'userId', as: 'activities' });
+        UserActivity.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+    }
+    if (User && Subscription) {
+        User.hasMany(Subscription, { foreignKey: 'userId', as: 'subscriptions' });
+        Subscription.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+    }
+    if (User && Organization && OrganizationMember) {
+        Organization.belongsTo(User, { foreignKey: 'ownerId', as: 'owner' });
+        User.hasMany(Organization, { foreignKey: 'ownerId', as: 'ownedOrganizations' });
+        OrganizationMember.belongsTo(Organization, { foreignKey: 'organizationId', as: 'organization' });
+        OrganizationMember.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+        OrganizationMember.belongsTo(User, { foreignKey: 'invitedBy', as: 'inviter' });
+        Organization.hasMany(OrganizationMember, { foreignKey: 'organizationId', as: 'memberships' });
+        User.hasMany(OrganizationMember, { foreignKey: 'userId', as: 'organizationMemberships' });
+        User.hasMany(OrganizationMember, { foreignKey: 'invitedBy', as: 'invitedMemberships' });
     }
 }
 async function initializeDatabase() {

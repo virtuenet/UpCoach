@@ -7,6 +7,7 @@ exports.marketingAutomation = exports.MarketingAutomationService = void 0;
 const axios_1 = __importDefault(require("axios"));
 const User_1 = require("../../models/User");
 const logger_1 = require("../../utils/logger");
+const AnalyticsService_1 = require("../analytics/AnalyticsService");
 class MarketingAutomationService {
     campaigns = new Map();
     segmentEngine;
@@ -250,17 +251,23 @@ class MarketingAutomationService {
         }
         return abTest.variants[0].content;
     }
-    async matchesBehavior(_userId, behavior) {
-        const count = 0;
-        switch (behavior.operator) {
-            case 'equals':
-                return count === behavior.count;
-            case 'greater_than':
-                return count > (behavior.count || 0);
-            case 'less_than':
-                return count < (behavior.count || 0);
-            default:
-                return false;
+    async matchesBehavior(userId, behavior) {
+        try {
+            const count = await AnalyticsService_1.analyticsService.getUserActionCount(userId, behavior.action, behavior.timeframe);
+            switch (behavior.operator) {
+                case 'equals':
+                    return count === behavior.count;
+                case 'greater_than':
+                    return count > (behavior.count || 0);
+                case 'less_than':
+                    return count < (behavior.count || 0);
+                default:
+                    return false;
+            }
+        }
+        catch (error) {
+            logger_1.logger.error('Failed to match behavior', { error, userId, behavior });
+            return false;
         }
     }
     async scheduleDelivery(delivery) {
@@ -286,14 +293,20 @@ class SegmentEngine {
     async getUserSegments(userId) {
         const segments = [];
         const user = await User_1.User.findByPk(userId, {
-            include: ['goals'],
+            include: ['goals', 'subscriptions', 'activities'],
         });
         if (!user)
             return segments;
         if (user.createdAt > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)) {
             segments.push('new_users');
         }
-        const recentActivity = [];
+        if (user.subscriptions?.some((s) => s.status === 'active')) {
+            segments.push('paid_users');
+        }
+        else {
+            segments.push('free_users');
+        }
+        const recentActivity = user.activities?.filter((a) => a.createdAt > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) || [];
         if (recentActivity?.length > 20) {
             segments.push('power_users');
         }
@@ -310,7 +323,14 @@ class SegmentEngine {
         return segments;
     }
     async updateUserSegments(userId) {
-        const _segments = await this.getUserSegments(userId);
+        try {
+            const segments = await this.getUserSegments(userId);
+            await AnalyticsService_1.analyticsService.updateUserProperty(userId, 'segments', segments);
+            logger_1.logger.info('User segments updated', { userId, segments });
+        }
+        catch (error) {
+            logger_1.logger.error('Failed to update user segments', { error, userId });
+        }
     }
 }
 class ContentPersonalizer {

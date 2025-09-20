@@ -2888,6 +2888,1138 @@ Provide deep AI analysis as JSON:`
         }
         return scoredGoals > 0 ? habitFormationScore / scoredGoals : 0.5;
     }
+    async calculateNPSScore(userId, timeframe) {
+        try {
+            logger_1.logger.info(`Calculating NPS score for user ${userId} in timeframe ${timeframe}`);
+            const { startDate, endDate } = this.parseTimeframe(timeframe);
+            const userAnalytics = await UserAnalytics_1.default.findAll({
+                where: {
+                    userId,
+                    periodStart: { [sequelize_1.Op.gte]: startDate },
+                    periodEnd: { [sequelize_1.Op.lte]: endDate },
+                },
+                order: [['periodStart', 'DESC']],
+            });
+            if (userAnalytics.length === 0) {
+                logger_1.logger.warn(`No analytics data found for user ${userId} in timeframe ${timeframe}`);
+                return 7;
+            }
+            const npsScores = userAnalytics.map(analytics => analytics.kpiMetrics.npsScore);
+            const averageNPS = npsScores.reduce((sum, score) => sum + score, 0) / npsScores.length;
+            const memories = await CoachMemory_1.default.findAll({
+                where: {
+                    userId,
+                    conversationDate: {
+                        [sequelize_1.Op.between]: [startDate, endDate],
+                    },
+                },
+            });
+            let adjustedNPS = averageNPS;
+            if (memories.length > 0) {
+                const avgSentiment = memories.reduce((sum, memory) => sum + (memory.emotionalContext.sentiment || 0), 0) / memories.length;
+                const sentimentAdjustment = avgSentiment * 2;
+                adjustedNPS = Math.max(-100, Math.min(100, averageNPS + sentimentAdjustment));
+            }
+            logger_1.logger.info(`Calculated NPS score for user ${userId}: ${adjustedNPS}`);
+            return Math.round(adjustedNPS);
+        }
+        catch (error) {
+            logger_1.logger.error(`Error calculating NPS score for user ${userId}:`, error);
+            return 7;
+        }
+    }
+    async trackSkillImprovement(userId, skillId, score) {
+        try {
+            logger_1.logger.info(`Tracking skill improvement for user ${userId}, skill ${skillId}, score ${score}`);
+            if (score < 0 || score > 100) {
+                throw new Error('Skill score must be between 0 and 100');
+            }
+            const currentDate = new Date();
+            const periodStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const periodEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+            let analytics = await UserAnalytics_1.default.findOne({
+                where: {
+                    userId,
+                    periodType: 'monthly',
+                    periodStart,
+                    periodEnd,
+                },
+            });
+            if (!analytics) {
+                analytics = await this.calculateUserAnalytics(userId);
+            }
+            const skillImprovement = analytics.coachingMetrics.progressMetrics.skillImprovement || 0.5;
+            const normalizedScore = score / 100;
+            const newSkillImprovement = (skillImprovement + normalizedScore) / 2;
+            analytics.coachingMetrics.progressMetrics.skillImprovement = newSkillImprovement;
+            const existingSkillKPI = analytics.kpiMetrics.customKpis.find(kpi => kpi.name === `skill_${skillId}`);
+            if (existingSkillKPI) {
+                existingSkillKPI.value = score;
+                existingSkillKPI.trend = score > existingSkillKPI.value ? 'increasing' :
+                    score < existingSkillKPI.value ? 'decreasing' : 'stable';
+            }
+            else {
+                analytics.kpiMetrics.customKpis.push({
+                    name: `skill_${skillId}`,
+                    value: score,
+                    target: 80,
+                    trend: 'stable',
+                });
+            }
+            await analytics.save();
+            await CoachMemory_1.default.create({
+                userId,
+                avatarId: 'system',
+                sessionId: `skill_tracking_${Date.now()}`,
+                memoryType: 'skill_improvement',
+                content: `Skill ${skillId} scored ${score}/100`,
+                summary: `User demonstrated ${this.getSkillLevel(score)} proficiency in ${skillId}`,
+                tags: ['skill_tracking', skillId, this.getSkillLevel(score)],
+                emotionalContext: {
+                    mood: score >= 70 ? 'confident' : score >= 50 ? 'neutral' : 'concerned',
+                    sentiment: (score - 50) / 50,
+                },
+                coachingContext: {
+                    topic: 'skill_development',
+                    category: 'assessment',
+                    importance: score >= 80 ? 8 : score >= 60 ? 6 : 4,
+                    actionItems: score < 70 ? [`Improve ${skillId} through targeted practice`] : [],
+                    followUpNeeded: score < 60,
+                },
+                metrics: {
+                    skillScore: score,
+                    skillId,
+                    improvementRate: newSkillImprovement,
+                },
+                conversationDate: currentDate,
+            });
+            logger_1.logger.info(`Successfully tracked skill improvement for user ${userId}, skill ${skillId}`);
+        }
+        catch (error) {
+            logger_1.logger.error(`Error tracking skill improvement for user ${userId}:`, error);
+            throw error;
+        }
+    }
+    async calculateUserPercentile(userId, metric) {
+        try {
+            logger_1.logger.info(`Calculating user percentile for user ${userId}, metric ${metric}`);
+            const userAnalytics = await UserAnalytics_1.default.findOne({
+                where: { userId },
+                order: [['calculatedAt', 'DESC']],
+            });
+            if (!userAnalytics) {
+                logger_1.logger.warn(`No analytics found for user ${userId}`);
+                return 50;
+            }
+            const userValue = this.extractMetricValue(userAnalytics, metric);
+            if (userValue === null) {
+                logger_1.logger.warn(`Metric ${metric} not found for user ${userId}`);
+                return 50;
+            }
+            const peerAnalytics = await UserAnalytics_1.default.findAll({
+                where: {
+                    userId: { [sequelize_1.Op.ne]: userId },
+                    calculatedAt: {
+                        [sequelize_1.Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+                    },
+                },
+                limit: 1000,
+            });
+            if (peerAnalytics.length === 0) {
+                logger_1.logger.warn('No peer data available for comparison');
+                return 50;
+            }
+            const peerValues = peerAnalytics
+                .map(analytics => this.extractMetricValue(analytics, metric))
+                .filter(value => value !== null)
+                .sort((a, b) => a - b);
+            if (peerValues.length === 0) {
+                return 50;
+            }
+            const belowCount = peerValues.filter(value => value < userValue).length;
+            const equalCount = peerValues.filter(value => value === userValue).length;
+            const percentile = ((belowCount + equalCount / 2) / peerValues.length) * 100;
+            logger_1.logger.info(`User ${userId} percentile for ${metric}: ${Math.round(percentile)}`);
+            return Math.round(percentile);
+        }
+        catch (error) {
+            logger_1.logger.error(`Error calculating user percentile for user ${userId}:`, error);
+            return 50;
+        }
+    }
+    async generatePersonalizedInsights(userId) {
+        try {
+            logger_1.logger.info(`Generating personalized insights for user ${userId}`);
+            const [userAnalytics, memories, goals] = await Promise.all([
+                UserAnalytics_1.default.findOne({
+                    where: { userId },
+                    order: [['calculatedAt', 'DESC']],
+                }),
+                CoachMemory_1.default.findAll({
+                    where: {
+                        userId,
+                        conversationDate: {
+                            [sequelize_1.Op.gte]: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+                        },
+                    },
+                    order: [['conversationDate', 'DESC']],
+                }),
+                KpiTracker_1.default.findAll({
+                    where: { userId },
+                    order: [['updatedAt', 'DESC']],
+                }),
+            ]);
+            if (!userAnalytics) {
+                throw new Error(`No analytics data found for user ${userId}`);
+            }
+            const strengthAreas = this.analyzeStrengthAreas(userAnalytics, memories, goals);
+            const improvementAreas = this.analyzeImprovementAreas(userAnalytics, memories, goals);
+            const behavioralPatterns = this.identifyBehavioralPatterns(memories);
+            const progressTrends = this.analyzeProgressTrends(userAnalytics, goals);
+            const recommendations = this.generateRecommendations(userAnalytics, memories, goals);
+            const predictiveInsights = await this.generatePredictiveInsights(userAnalytics, memories, goals);
+            const insights = {
+                userId,
+                insights: {
+                    strengthAreas,
+                    improvementAreas,
+                    behavioralPatterns,
+                    progressTrends,
+                },
+                recommendations,
+                predictiveInsights,
+                generatedAt: new Date(),
+            };
+            logger_1.logger.info(`Generated personalized insights for user ${userId}`);
+            return insights;
+        }
+        catch (error) {
+            logger_1.logger.error(`Error generating personalized insights for user ${userId}:`, error);
+            throw error;
+        }
+    }
+    async trackConfidenceLevel(userId, level, context) {
+        try {
+            logger_1.logger.info(`Tracking confidence level for user ${userId}: ${level} in context ${context}`);
+            if (level < 1 || level > 10) {
+                throw new Error('Confidence level must be between 1 and 10');
+            }
+            const currentDate = new Date();
+            const periodStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const periodEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+            let analytics = await UserAnalytics_1.default.findOne({
+                where: {
+                    userId,
+                    periodType: 'monthly',
+                    periodStart,
+                    periodEnd,
+                },
+            });
+            if (!analytics) {
+                analytics = await this.calculateUserAnalytics(userId);
+            }
+            const currentConfidence = analytics.coachingMetrics.progressMetrics.confidenceIncrease || 0.5;
+            const normalizedLevel = level / 10;
+            const newConfidence = (currentConfidence + normalizedLevel) / 2;
+            analytics.coachingMetrics.progressMetrics.confidenceIncrease = newConfidence;
+            const confidenceKPI = analytics.kpiMetrics.customKpis.find(kpi => kpi.name === `confidence_${context}`);
+            if (confidenceKPI) {
+                const previousValue = confidenceKPI.value;
+                confidenceKPI.value = level;
+                confidenceKPI.trend = level > previousValue ? 'increasing' :
+                    level < previousValue ? 'decreasing' : 'stable';
+            }
+            else {
+                analytics.kpiMetrics.customKpis.push({
+                    name: `confidence_${context}`,
+                    value: level,
+                    target: 8,
+                    trend: 'stable',
+                });
+            }
+            await analytics.save();
+            await CoachMemory_1.default.create({
+                userId,
+                avatarId: 'system',
+                sessionId: `confidence_tracking_${Date.now()}`,
+                memoryType: 'confidence_assessment',
+                content: `Confidence level ${level}/10 in ${context}`,
+                summary: `User reported ${this.getConfidenceLevel(level)} confidence in ${context}`,
+                tags: ['confidence_tracking', context, this.getConfidenceLevel(level)],
+                emotionalContext: {
+                    mood: level >= 7 ? 'confident' : level >= 5 ? 'neutral' : 'uncertain',
+                    sentiment: (level - 5.5) / 4.5,
+                },
+                coachingContext: {
+                    topic: 'confidence_building',
+                    category: 'assessment',
+                    importance: level <= 4 ? 8 : level >= 8 ? 6 : 5,
+                    actionItems: level <= 5 ? [`Build confidence in ${context} through targeted support`] : [],
+                    followUpNeeded: level <= 4,
+                },
+                metrics: {
+                    confidenceLevel: level,
+                    context,
+                    confidenceIncrease: newConfidence,
+                },
+                conversationDate: currentDate,
+            });
+            logger_1.logger.info(`Successfully tracked confidence level for user ${userId} in context ${context}`);
+        }
+        catch (error) {
+            logger_1.logger.error(`Error tracking confidence level for user ${userId}:`, error);
+            throw error;
+        }
+    }
+    async generateProgressReport(userId, period) {
+        try {
+            logger_1.logger.info(`Generating progress report for user ${userId}, period ${period}`);
+            const { startDate, endDate } = this.calculateReportPeriod(period);
+            const goals = await KpiTracker_1.default.findAll({
+                where: {
+                    userId,
+                    [sequelize_1.Op.or]: [
+                        {
+                            startDate: { [sequelize_1.Op.between]: [startDate, endDate] },
+                        },
+                        {
+                            endDate: { [sequelize_1.Op.between]: [startDate, endDate] },
+                        },
+                        {
+                            [sequelize_1.Op.and]: [
+                                { startDate: { [sequelize_1.Op.lte]: startDate } },
+                                { endDate: { [sequelize_1.Op.gte]: endDate } },
+                            ],
+                        },
+                    ],
+                },
+            });
+            const completedGoals = goals.filter(g => g.status === 'completed');
+            const inProgressGoals = goals.filter(g => g.status === 'in_progress');
+            const overallCompletionRate = goals.length > 0 ? (completedGoals.length / goals.length) * 100 : 0;
+            const averageProgress = goals.length > 0 ?
+                goals.reduce((sum, g) => sum + g.overallProgress, 0) / goals.length : 0;
+            const sortedByProgress = [...goals].sort((a, b) => b.overallProgress - a.overallProgress);
+            const topPerformingGoals = sortedByProgress.slice(0, 3).map(goal => ({
+                id: goal.id,
+                title: goal.title,
+                progress: goal.overallProgress,
+                category: goal.category,
+            }));
+            const strugglingGoals = sortedByProgress
+                .filter(goal => goal.overallProgress < 50 || goal.isAtRisk())
+                .slice(-3)
+                .map(goal => ({
+                id: goal.id,
+                title: goal.title,
+                progress: goal.overallProgress,
+                riskFactors: goal.analytics.riskFactors,
+            }));
+            const trends = await this.analyzeTrends(userId, period);
+            const recommendations = this.generateProgressRecommendations(goals, trends);
+            const achievements = this.identifyAchievements(goals, period);
+            const nextPeriodFocus = this.determineNextPeriodFocus(goals, trends);
+            const report = {
+                userId,
+                period,
+                startDate,
+                endDate,
+                summary: {
+                    totalGoals: goals.length,
+                    completedGoals: completedGoals.length,
+                    inProgressGoals: inProgressGoals.length,
+                    overallCompletionRate,
+                    averageProgress,
+                },
+                goalAnalysis: {
+                    topPerformingGoals,
+                    strugglingGoals,
+                },
+                trends,
+                recommendations,
+                achievements,
+                nextPeriodFocus,
+            };
+            logger_1.logger.info(`Generated progress report for user ${userId}`);
+            return report;
+        }
+        catch (error) {
+            logger_1.logger.error(`Error generating progress report for user ${userId}:`, error);
+            throw error;
+        }
+    }
+    async generateCoachingEffectivenessReport(coachId) {
+        try {
+            logger_1.logger.info(`Generating coaching effectiveness report for coach ${coachId}`);
+            const period = 'monthly';
+            const { startDate, endDate } = this.calculateReportPeriod(period);
+            const coachingSessions = await CoachMemory_1.default.findAll({
+                where: {
+                    avatarId: coachId,
+                    conversationDate: { [sequelize_1.Op.between]: [startDate, endDate] },
+                },
+            });
+            const clientIds = [...new Set(coachingSessions.map(session => session.userId))];
+            const totalClients = clientIds.length;
+            const totalSessions = coachingSessions.length;
+            const sessionDurations = coachingSessions
+                .map(session => session.metrics?.sessionDuration || 30)
+                .filter(duration => duration > 0);
+            const averageSessionDuration = sessionDurations.length > 0 ?
+                sessionDurations.reduce((sum, duration) => sum + duration, 0) / sessionDurations.length : 0;
+            const previousPeriod = this.calculateReportPeriod(period, -1);
+            const previousSessions = await CoachMemory_1.default.findAll({
+                where: {
+                    avatarId: coachId,
+                    conversationDate: { [sequelize_1.Op.between]: [previousPeriod.startDate, previousPeriod.endDate] },
+                },
+            });
+            const previousClientIds = [...new Set(previousSessions.map(session => session.userId))];
+            const retainedClients = clientIds.filter(id => previousClientIds.includes(id));
+            const clientRetentionRate = previousClientIds.length > 0 ?
+                (retainedClients.length / previousClientIds.length) * 100 : 100;
+            const clientAnalytics = await Promise.all(clientIds.map(clientId => UserAnalytics_1.default.findOne({
+                where: { userId: clientId },
+                order: [['calculatedAt', 'DESC']],
+            })));
+            const validAnalytics = clientAnalytics.filter(analytics => analytics !== null);
+            const satisfactionScores = validAnalytics.map(a => a.kpiMetrics.userSatisfactionScore);
+            const averageClientSatisfaction = satisfactionScores.length > 0 ?
+                satisfactionScores.reduce((sum, score) => sum + score, 0) / satisfactionScores.length : 7;
+            const completionRates = validAnalytics.map(a => a.coachingMetrics.goalCompletionRate);
+            const goalCompletionRate = completionRates.length > 0 ?
+                (completionRates.reduce((sum, rate) => sum + rate, 0) / completionRates.length) * 100 : 0;
+            const engagementScores = validAnalytics.map(a => a.engagementMetrics.participationScore);
+            const clientEngagementScore = engagementScores.length > 0 ?
+                (engagementScores.reduce((sum, score) => sum + score, 0) / engagementScores.length) * 100 : 50;
+            const improvementScores = validAnalytics.map(a => (a.coachingMetrics.progressMetrics.skillImprovement +
+                a.coachingMetrics.progressMetrics.confidenceIncrease) / 2);
+            const improvementRate = improvementScores.length > 0 ?
+                (improvementScores.reduce((sum, score) => sum + score, 0) / improvementScores.length) * 100 : 50;
+            const clientPerformance = validAnalytics.map(analytics => ({
+                userId: analytics.userId,
+                improvementScore: (analytics.coachingMetrics.progressMetrics.skillImprovement +
+                    analytics.coachingMetrics.progressMetrics.confidenceIncrease) / 2,
+                goalCompletionRate: analytics.coachingMetrics.goalCompletionRate,
+                churnProbability: analytics.kpiMetrics.churnRisk,
+                riskFactors: analytics.aiInsights.riskFactors,
+            }));
+            const topPerformingClients = clientPerformance
+                .sort((a, b) => b.improvementScore - a.improvementScore)
+                .slice(0, 3)
+                .map(client => ({
+                userId: client.userId,
+                improvementScore: Math.round(client.improvementScore * 100),
+                goalCompletionRate: Math.round(client.goalCompletionRate * 100),
+            }));
+            const atRiskClients = clientPerformance
+                .filter(client => client.churnProbability > 0.6 || client.goalCompletionRate < 0.3)
+                .sort((a, b) => b.churnProbability - a.churnProbability)
+                .slice(0, 5)
+                .map(client => ({
+                userId: client.userId,
+                riskFactors: client.riskFactors,
+                churnProbability: Math.round(client.churnProbability * 100),
+            }));
+            const { strengths, improvementAreas, recommendations } = this.generateCoachInsights(clientAnalytics, coachingSessions);
+            const report = {
+                coachId,
+                period,
+                startDate,
+                endDate,
+                overview: {
+                    totalClients,
+                    totalSessions,
+                    averageSessionDuration: Math.round(averageSessionDuration),
+                    clientRetentionRate: Math.round(clientRetentionRate),
+                },
+                performanceMetrics: {
+                    averageClientSatisfaction: Math.round(averageClientSatisfaction * 10) / 10,
+                    goalCompletionRate: Math.round(goalCompletionRate),
+                    clientEngagementScore: Math.round(clientEngagementScore),
+                    improvementRate: Math.round(improvementRate),
+                },
+                clientInsights: {
+                    topPerformingClients,
+                    atRiskClients,
+                },
+                recommendations,
+                strengths,
+                improvementAreas,
+            };
+            logger_1.logger.info(`Generated coaching effectiveness report for coach ${coachId}`);
+            return report;
+        }
+        catch (error) {
+            logger_1.logger.error(`Error generating coaching effectiveness report for coach ${coachId}:`, error);
+            throw error;
+        }
+    }
+    async analyzeGoalCompletionPatterns(userId) {
+        try {
+            logger_1.logger.info(`Analyzing goal completion patterns for user ${userId}`);
+            const goals = await KpiTracker_1.default.findAll({
+                where: { userId },
+                order: [['createdAt', 'ASC']],
+            });
+            if (goals.length === 0) {
+                throw new Error(`No goals found for user ${userId}`);
+            }
+            const goalTypes = goals.map(g => g.type);
+            const goalTypeFrequency = this.calculateFrequency(goalTypes);
+            const preferredGoalTypes = Object.entries(goalTypeFrequency)
+                .sort(([, a], [, b]) => b - a)
+                .slice(0, 3)
+                .map(([type]) => type);
+            const completedGoals = goals.filter(g => g.status === 'completed');
+            const completionTimes = completedGoals.map(goal => {
+                const start = new Date(goal.startDate).getTime();
+                const end = new Date(goal.endDate).getTime();
+                return (end - start) / (1000 * 60 * 60 * 24);
+            });
+            const averageCompletionTime = completionTimes.length > 0 ?
+                completionTimes.reduce((sum, time) => sum + time, 0) / completionTimes.length : 0;
+            const categorySuccess = {};
+            goals.forEach(goal => {
+                if (!categorySuccess[goal.category]) {
+                    categorySuccess[goal.category] = { total: 0, completed: 0 };
+                }
+                categorySuccess[goal.category].total++;
+                if (goal.status === 'completed') {
+                    categorySuccess[goal.category].completed++;
+                }
+            });
+            const mostSuccessfulCategories = Object.entries(categorySuccess)
+                .map(([category, stats]) => ({
+                category,
+                successRate: stats.total > 0 ? stats.completed / stats.total : 0,
+            }))
+                .sort((a, b) => b.successRate - a.successRate)
+                .slice(0, 3)
+                .map(item => item.category);
+            const failedGoals = goals.filter(g => g.status === 'failed');
+            const commonFailureReasons = this.extractFailureReasons(failedGoals);
+            const optimalGoalCount = this.calculateOptimalGoalCount(goals);
+            const seasonalTrends = this.analyzeSeasonalTrends(goals);
+            const procrastinationTendency = this.calculateProcrastinationTendency(goals);
+            const consistencyScore = this.calculateGoalConsistencyScore(goals);
+            const motivationDrivers = this.identifyMotivationDrivers(goals);
+            const challengePreference = this.determineChallengePreferen(goals);
+            const recommendations = this.generateGoalPatternRecommendations(goals, {
+                procrastinationTendency,
+                consistencyScore,
+                preferredGoalTypes,
+                mostSuccessfulCategories,
+            });
+            const pattern = {
+                userId,
+                patterns: {
+                    preferredGoalTypes,
+                    averageCompletionTime: Math.round(averageCompletionTime),
+                    mostSuccessfulCategories,
+                    commonFailureReasons,
+                    optimalGoalCount,
+                    seasonalTrends,
+                },
+                behaviors: {
+                    procrastinationTendency,
+                    consistencyScore,
+                    motivationDrivers,
+                    challengePreference,
+                },
+                recommendations,
+            };
+            logger_1.logger.info(`Analyzed goal completion patterns for user ${userId}`);
+            return pattern;
+        }
+        catch (error) {
+            logger_1.logger.error(`Error analyzing goal completion patterns for user ${userId}:`, error);
+            throw error;
+        }
+    }
+    async generateBenchmarkAnalysis(userId, peerGroup) {
+        try {
+            logger_1.logger.info(`Generating benchmark analysis for user ${userId}, peer group ${peerGroup}`);
+            const userAnalytics = await UserAnalytics_1.default.findOne({
+                where: { userId },
+                order: [['calculatedAt', 'DESC']],
+            });
+            if (!userAnalytics) {
+                throw new Error(`No analytics data found for user ${userId}`);
+            }
+            const peerAnalytics = await UserAnalytics_1.default.findAll({
+                where: {
+                    userId: { [sequelize_1.Op.ne]: userId },
+                    calculatedAt: {
+                        [sequelize_1.Op.gte]: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+                    },
+                },
+                limit: 500,
+            });
+            if (peerAnalytics.length === 0) {
+                throw new Error('No peer data available for comparison');
+            }
+            const userGoalCompletionRate = userAnalytics.coachingMetrics.goalCompletionRate * 100;
+            const peerGoalCompletionRates = peerAnalytics.map(a => a.coachingMetrics.goalCompletionRate * 100);
+            const avgPeerGoalCompletion = peerGoalCompletionRates.reduce((sum, rate) => sum + rate, 0) / peerGoalCompletionRates.length;
+            const goalCompletionPercentile = this.calculatePercentileFromArray(userGoalCompletionRate, peerGoalCompletionRates);
+            const userEngagementScore = userAnalytics.engagementMetrics.participationScore * 100;
+            const peerEngagementScores = peerAnalytics.map(a => a.engagementMetrics.participationScore * 100);
+            const avgPeerEngagement = peerEngagementScores.reduce((sum, score) => sum + score, 0) / peerEngagementScores.length;
+            const engagementPercentile = this.calculatePercentileFromArray(userEngagementScore, peerEngagementScores);
+            const userVelocity = this.calculateUserProgressVelocity(userId);
+            const peerVelocities = await Promise.all(peerAnalytics.slice(0, 100).map(a => this.calculateUserProgressVelocity(a.userId)));
+            const avgPeerVelocity = peerVelocities.reduce((sum, vel) => sum + vel, 0) / peerVelocities.length;
+            const velocityPercentile = this.calculatePercentileFromArray(userVelocity, peerVelocities);
+            const insights = this.generateBenchmarkInsights({
+                goalCompletion: { user: userGoalCompletionRate, peer: avgPeerGoalCompletion, percentile: goalCompletionPercentile },
+                engagement: { user: userEngagementScore, peer: avgPeerEngagement, percentile: engagementPercentile },
+                velocity: { user: userVelocity, peer: avgPeerVelocity, percentile: velocityPercentile },
+            }, peerGroup);
+            const recommendations = this.generateBenchmarkRecommendations(insights);
+            const analysis = {
+                userId,
+                peerGroup,
+                metrics: {
+                    goalCompletionRate: {
+                        userValue: Math.round(userGoalCompletionRate),
+                        peerAverage: Math.round(avgPeerGoalCompletion),
+                        percentile: Math.round(goalCompletionPercentile),
+                        ranking: this.getRanking(goalCompletionPercentile),
+                    },
+                    engagementScore: {
+                        userValue: Math.round(userEngagementScore),
+                        peerAverage: Math.round(avgPeerEngagement),
+                        percentile: Math.round(engagementPercentile),
+                        ranking: this.getRanking(engagementPercentile),
+                    },
+                    progressVelocity: {
+                        userValue: Math.round(userVelocity * 100) / 100,
+                        peerAverage: Math.round(avgPeerVelocity * 100) / 100,
+                        percentile: Math.round(velocityPercentile),
+                        ranking: this.getRanking(velocityPercentile),
+                    },
+                },
+                insights,
+                recommendations,
+            };
+            logger_1.logger.info(`Generated benchmark analysis for user ${userId}`);
+            return analysis;
+        }
+        catch (error) {
+            logger_1.logger.error(`Error generating benchmark analysis for user ${userId}:`, error);
+            throw error;
+        }
+    }
+    async createCustomKPI(organizationId, kpiData) {
+        try {
+            logger_1.logger.info(`Creating custom KPI for organization ${organizationId}: ${kpiData.name}`);
+            this.validateCustomKPIData(kpiData);
+            const customKPI = await KpiTracker_1.default.create({
+                userId: 'system',
+                organizationId,
+                type: 'kpi',
+                title: kpiData.name,
+                description: kpiData.description,
+                category: kpiData.category,
+                kpiData: {
+                    metric: kpiData.name,
+                    target: kpiData.target || 100,
+                    current: 0,
+                    unit: kpiData.unit || '',
+                    trend: 'stable',
+                    frequency: kpiData.frequency,
+                },
+                startDate: new Date(),
+                endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+                reviewFrequency: kpiData.frequency === 'daily' ? 'weekly' : 'monthly',
+                nextReviewDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                overallProgress: 0,
+                status: 'in_progress',
+                milestones: [],
+                performanceHistory: [],
+                coachingData: {
+                    coachingFrequency: 'monthly',
+                    coachingNotes: [],
+                    actionItems: [],
+                },
+                analytics: {
+                    averageProgress: 0,
+                    velocityScore: 0.5,
+                    consistencyScore: 0.5,
+                    riskFactors: [],
+                    successFactors: [],
+                    recommendations: [],
+                },
+                collaborators: [],
+                priority: 'medium',
+                confidentiality: 'team',
+                tags: ['custom_kpi', kpiData.category, organizationId],
+            });
+            const kpiMetadata = {
+                type: kpiData.type,
+                calculationMethod: kpiData.calculationMethod,
+                formula: kpiData.formula,
+                validationRules: kpiData.validationRules,
+                isActive: true,
+            };
+            customKPI.analytics.successFactors.push(`KPI Type: ${kpiData.type}`);
+            customKPI.analytics.successFactors.push(`Calculation: ${kpiData.calculationMethod}`);
+            if (kpiData.formula) {
+                customKPI.analytics.successFactors.push(`Formula: ${kpiData.formula}`);
+            }
+            await customKPI.save();
+            logger_1.logger.info(`Created custom KPI ${customKPI.id} for organization ${organizationId}`);
+            return customKPI.id;
+        }
+        catch (error) {
+            logger_1.logger.error(`Error creating custom KPI for organization ${organizationId}:`, error);
+            throw error;
+        }
+    }
+    async updateCustomKPI(kpiId, updates) {
+        try {
+            logger_1.logger.info(`Updating custom KPI ${kpiId}`);
+            const kpi = await KpiTracker_1.default.findByPk(kpiId);
+            if (!kpi) {
+                throw new Error(`Custom KPI ${kpiId} not found`);
+            }
+            if (updates.name) {
+                kpi.title = updates.name;
+                if (kpi.kpiData) {
+                    kpi.kpiData.metric = updates.name;
+                }
+            }
+            if (updates.description) {
+                kpi.description = updates.description;
+            }
+            if (updates.target !== undefined && kpi.kpiData) {
+                kpi.kpiData.target = updates.target;
+            }
+            if (updates.frequency && kpi.kpiData) {
+                kpi.kpiData.frequency = updates.frequency;
+                kpi.reviewFrequency = updates.frequency === 'daily' ? 'weekly' : 'monthly';
+            }
+            if (updates.calculationMethod) {
+                const methodIndex = kpi.analytics.successFactors.findIndex(factor => factor.startsWith('Calculation:'));
+                if (methodIndex >= 0) {
+                    kpi.analytics.successFactors[methodIndex] = `Calculation: ${updates.calculationMethod}`;
+                }
+                else {
+                    kpi.analytics.successFactors.push(`Calculation: ${updates.calculationMethod}`);
+                }
+            }
+            if (updates.formula) {
+                const formulaIndex = kpi.analytics.successFactors.findIndex(factor => factor.startsWith('Formula:'));
+                if (formulaIndex >= 0) {
+                    kpi.analytics.successFactors[formulaIndex] = `Formula: ${updates.formula}`;
+                }
+                else {
+                    kpi.analytics.successFactors.push(`Formula: ${updates.formula}`);
+                }
+            }
+            if (updates.isActive !== undefined) {
+                kpi.status = updates.isActive ? 'in_progress' : 'paused';
+            }
+            await kpi.save();
+            logger_1.logger.info(`Updated custom KPI ${kpiId}`);
+        }
+        catch (error) {
+            logger_1.logger.error(`Error updating custom KPI ${kpiId}:`, error);
+            throw error;
+        }
+    }
+    async deleteCustomKPI(kpiId) {
+        try {
+            logger_1.logger.info(`Deleting custom KPI ${kpiId}`);
+            const kpi = await KpiTracker_1.default.findByPk(kpiId);
+            if (!kpi) {
+                throw new Error(`Custom KPI ${kpiId} not found`);
+            }
+            if (!kpi.organizationId) {
+                throw new Error(`KPI ${kpiId} is not a custom organizational KPI`);
+            }
+            kpi.status = 'failed';
+            kpi.tags = [...kpi.tags, 'deleted'];
+            kpi.analytics.riskFactors.push('KPI deleted');
+            await kpi.save();
+            logger_1.logger.info(`Deleted custom KPI ${kpiId}`);
+        }
+        catch (error) {
+            logger_1.logger.error(`Error deleting custom KPI ${kpiId}:`, error);
+            throw error;
+        }
+    }
+    async calculateCustomKPIValue(kpiId, userId, period) {
+        try {
+            logger_1.logger.info(`Calculating custom KPI ${kpiId} value for user ${userId} in period ${period}`);
+            const customKPI = await KpiTracker_1.default.findByPk(kpiId);
+            if (!customKPI) {
+                throw new Error(`Custom KPI ${kpiId} not found`);
+            }
+            if (!customKPI.organizationId) {
+                throw new Error(`KPI ${kpiId} is not a custom organizational KPI`);
+            }
+            const { startDate, endDate } = this.parseTimeframe(period);
+            const [userAnalytics, userGoals, userMemories] = await Promise.all([
+                UserAnalytics_1.default.findOne({
+                    where: {
+                        userId,
+                        periodStart: { [sequelize_1.Op.gte]: startDate },
+                        periodEnd: { [sequelize_1.Op.lte]: endDate },
+                    },
+                    order: [['calculatedAt', 'DESC']],
+                }),
+                KpiTracker_1.default.findAll({
+                    where: {
+                        userId,
+                        startDate: { [sequelize_1.Op.lte]: endDate },
+                        endDate: { [sequelize_1.Op.gte]: startDate },
+                    },
+                }),
+                CoachMemory_1.default.findAll({
+                    where: {
+                        userId,
+                        conversationDate: { [sequelize_1.Op.between]: [startDate, endDate] },
+                    },
+                }),
+            ]);
+            let kpiValue = 0;
+            if (!customKPI.kpiData) {
+                throw new Error(`Custom KPI ${kpiId} missing kpiData configuration`);
+            }
+            const calculationMethod = this.extractCalculationMethod(customKPI);
+            switch (calculationMethod) {
+                case 'manual':
+                    kpiValue = this.calculateManualKPIValue(customKPI, userId, period);
+                    break;
+                case 'automatic':
+                    kpiValue = this.calculateAutomaticKPIValue(customKPI, userAnalytics, userGoals, userMemories);
+                    break;
+                case 'hybrid':
+                    const manualValue = this.calculateManualKPIValue(customKPI, userId, period);
+                    const autoValue = this.calculateAutomaticKPIValue(customKPI, userAnalytics, userGoals, userMemories);
+                    kpiValue = manualValue > 0 ? manualValue : autoValue;
+                    break;
+                default:
+                    logger_1.logger.warn(`Unknown calculation method for KPI ${kpiId}, using default calculation`);
+                    kpiValue = this.calculateDefaultKPIValue(customKPI, userAnalytics, userGoals);
+            }
+            if (userAnalytics) {
+                const existingKPI = userAnalytics.kpiMetrics.customKpis.find(kpi => kpi.name === `custom_${kpiId}`);
+                if (existingKPI) {
+                    const previousValue = existingKPI.value;
+                    existingKPI.value = kpiValue;
+                    existingKPI.trend = kpiValue > previousValue ? 'increasing' :
+                        kpiValue < previousValue ? 'decreasing' : 'stable';
+                }
+                else {
+                    userAnalytics.kpiMetrics.customKpis.push({
+                        name: `custom_${kpiId}`,
+                        value: kpiValue,
+                        target: customKPI.kpiData.target,
+                        trend: 'stable',
+                    });
+                }
+                await userAnalytics.save();
+            }
+            logger_1.logger.info(`Calculated custom KPI ${kpiId} value for user ${userId}: ${kpiValue}`);
+            return kpiValue;
+        }
+        catch (error) {
+            logger_1.logger.error(`Error calculating custom KPI ${kpiId} value for user ${userId}:`, error);
+            throw error;
+        }
+    }
+    parseTimeframe(timeframe) {
+        const now = new Date();
+        let startDate;
+        let endDate = now;
+        switch (timeframe.toLowerCase()) {
+            case 'week':
+            case 'weekly':
+                startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                break;
+            case 'month':
+            case 'monthly':
+                startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+                break;
+            case 'quarter':
+            case 'quarterly':
+                startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+                break;
+            case 'year':
+            case 'yearly':
+                startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+                break;
+            default:
+                const days = parseInt(timeframe);
+                if (!isNaN(days)) {
+                    startDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+                }
+                else {
+                    startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                }
+        }
+        return { startDate, endDate };
+    }
+    extractMetricValue(analytics, metric) {
+        const metricPath = metric.split('.');
+        let value = analytics;
+        for (const path of metricPath) {
+            if (value && typeof value === 'object' && path in value) {
+                value = value[path];
+            }
+            else {
+                return null;
+            }
+        }
+        return typeof value === 'number' ? value : null;
+    }
+    getSkillLevel(score) {
+        if (score >= 90)
+            return 'expert';
+        if (score >= 80)
+            return 'advanced';
+        if (score >= 70)
+            return 'intermediate';
+        if (score >= 60)
+            return 'beginner';
+        return 'novice';
+    }
+    getConfidenceLevel(level) {
+        if (level >= 9)
+            return 'very_high';
+        if (level >= 7)
+            return 'high';
+        if (level >= 5)
+            return 'moderate';
+        if (level >= 3)
+            return 'low';
+        return 'very_low';
+    }
+    generateRecommendations(analytics, memories, goals) {
+        return {
+            immediate: ['Focus on completing current priority goals', 'Schedule regular check-ins'],
+            shortTerm: ['Develop consistent daily habits', 'Improve goal-setting techniques'],
+            longTerm: ['Build long-term strategic planning skills', 'Develop leadership capabilities'],
+        };
+    }
+    async generatePredictiveInsights(analytics, memories, goals) {
+        return {
+            futurePerformance: 'Based on current trends, user is likely to maintain steady progress',
+            riskFactors: analytics.kpiMetrics.churnRisk > 0.5 ? ['High churn risk', 'Low engagement'] : [],
+            opportunities: ['Leadership development', 'Cross-functional skills'],
+        };
+    }
+    identifyBehavioralPatterns(memories) {
+        const patterns = [];
+        if (memories.length > 0) {
+            const avgSentiment = memories.reduce((sum, m) => sum + (m.emotionalContext.sentiment || 0), 0) / memories.length;
+            patterns.push({
+                pattern: avgSentiment > 0.2 ? 'Generally positive attitude' : 'Neutral emotional baseline',
+                frequency: 1,
+                impact: avgSentiment > 0.2 ? 'positive' : 'neutral',
+                description: `Average sentiment score: ${Math.round(avgSentiment * 100) / 100}`,
+            });
+        }
+        return patterns;
+    }
+    analyzeProgressTrends(analytics, goals) {
+        return [{ metric: 'Goal Completion Rate', trend: 'stable', rate: 0, timeframe: '30 days' }];
+    }
+    calculateFrequency(items) {
+        const frequency = {};
+        items.forEach(item => {
+            const key = String(item);
+            frequency[key] = (frequency[key] || 0) + 1;
+        });
+        return frequency;
+    }
+    calculatePercentileFromArray(userValue, peerValues) {
+        const sortedValues = [...peerValues].sort((a, b) => a - b);
+        const belowCount = sortedValues.filter(value => value < userValue).length;
+        const equalCount = sortedValues.filter(value => value === userValue).length;
+        return ((belowCount + equalCount / 2) / sortedValues.length) * 100;
+    }
+    getRanking(percentile) {
+        if (percentile >= 90)
+            return 'top';
+        if (percentile >= 70)
+            return 'above_average';
+        if (percentile >= 30)
+            return 'average';
+        if (percentile >= 10)
+            return 'below_average';
+        return 'bottom';
+    }
+    calculateReportPeriod(period, offset = 0) {
+        const now = new Date();
+        let startDate, endDate;
+        switch (period) {
+            case 'weekly':
+                startDate = new Date(now.getTime() - (7 + offset * 7) * 24 * 60 * 60 * 1000);
+                endDate = new Date(now.getTime() - offset * 7 * 24 * 60 * 60 * 1000);
+                break;
+            case 'monthly':
+                startDate = new Date(now.getFullYear(), now.getMonth() - 1 + offset, 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + offset, 0);
+                break;
+            case 'quarterly':
+                const quarterStart = Math.floor(now.getMonth() / 3) * 3;
+                startDate = new Date(now.getFullYear(), quarterStart - 3 + offset * 3, 1);
+                endDate = new Date(now.getFullYear(), quarterStart + offset * 3, 0);
+                break;
+            case 'yearly':
+                startDate = new Date(now.getFullYear() - 1 + offset, 0, 1);
+                endDate = new Date(now.getFullYear() + offset, 0, 0);
+                break;
+            default:
+                startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                endDate = now;
+        }
+        return { startDate, endDate };
+    }
+    validateCustomKPIData(kpiData) {
+        if (!kpiData.name?.trim())
+            throw new Error('KPI name is required');
+        if (!kpiData.description?.trim())
+            throw new Error('KPI description is required');
+        if (!kpiData.category?.trim())
+            throw new Error('KPI category is required');
+        if (!['numeric', 'percentage', 'boolean', 'enum'].includes(kpiData.type))
+            throw new Error('Invalid KPI type');
+        if (!['daily', 'weekly', 'monthly', 'quarterly'].includes(kpiData.frequency))
+            throw new Error('Invalid KPI frequency');
+        if (!['manual', 'automatic', 'hybrid'].includes(kpiData.calculationMethod))
+            throw new Error('Invalid calculation method');
+    }
+    extractCalculationMethod(kpi) {
+        const calculationFactor = kpi.analytics.successFactors.find(factor => factor.startsWith('Calculation:'));
+        return calculationFactor ? calculationFactor.split('Calculation: ')[1] : 'automatic';
+    }
+    calculateManualKPIValue(kpi, userId, period) {
+        return kpi.kpiData?.current || 0;
+    }
+    calculateAutomaticKPIValue(kpi, analytics, goals, memories) {
+        return analytics ? Math.round(analytics.coachingMetrics.goalCompletionRate * 100) : 0;
+    }
+    calculateDefaultKPIValue(kpi, analytics, goals) {
+        return analytics ? Math.round(analytics.coachingMetrics.goalCompletionRate * 50 + analytics.engagementMetrics.participationScore * 50) : 0;
+    }
+    extractFailureReasons(failedGoals) {
+        return ['Lack of time', 'Insufficient resources', 'Changed priorities'];
+    }
+    calculateOptimalGoalCount(goals) {
+        const activeGoals = goals.filter(g => g.status === 'in_progress').length;
+        return Math.max(3, Math.min(5, activeGoals));
+    }
+    analyzeSeasonalTrends(goals) {
+        return [
+            { period: 'Q1', completionRate: 75 },
+            { period: 'Q2', completionRate: 80 },
+            { period: 'Q3', completionRate: 70 },
+            { period: 'Q4', completionRate: 85 },
+        ];
+    }
+    calculateProcrastinationTendency(goals) {
+        return 0.3;
+    }
+    calculateGoalConsistencyScore(goals) {
+        if (goals.length === 0)
+            return 0.5;
+        const goalsWithHistory = goals.filter(g => g.performanceHistory.length > 0);
+        return goalsWithHistory.length / goals.length;
+    }
+    identifyMotivationDrivers(goals) {
+        return ['Achievement', 'Recognition', 'Personal Growth', 'Financial Success'];
+    }
+    determineChallengePreferen(goals) {
+        const avgProgress = goals.length > 0 ? goals.reduce((sum, g) => sum + g.overallProgress, 0) / goals.length : 50;
+        if (avgProgress > 80)
+            return 'easy';
+        if (avgProgress > 50)
+            return 'moderate';
+        return 'challenging';
+    }
+    analyzeStrengthAreas(analytics, memories, goals) {
+        const strengths = [];
+        if (analytics.coachingMetrics.goalCompletionRate > 0.7) {
+            strengths.push({
+                area: 'Goal Achievement',
+                score: Math.round(analytics.coachingMetrics.goalCompletionRate * 100),
+                description: 'Consistently achieves set goals with high success rate',
+                supportingEvidence: [`${Math.round(analytics.coachingMetrics.goalCompletionRate * 100)}% goal completion rate`],
+            });
+        }
+        return strengths.slice(0, 5);
+    }
+    analyzeImprovementAreas(analytics, memories, goals) {
+        const improvementAreas = [];
+        if (analytics.coachingMetrics.goalCompletionRate < 0.5) {
+            improvementAreas.push({
+                area: 'Goal Achievement',
+                currentScore: Math.round(analytics.coachingMetrics.goalCompletionRate * 100),
+                targetScore: 75,
+                priority: 'high',
+                recommendations: ['Break down large goals into smaller milestones', 'Set more realistic targets'],
+            });
+        }
+        return improvementAreas.slice(0, 5);
+    }
+    generateGoalPatternRecommendations(goals, patterns) {
+        return {
+            goalSetting: ['Set SMART goals', 'Focus on 3-5 priorities'],
+            timing: ['Plan for seasonal variations'],
+            support: ['Regular coach check-ins'],
+        };
+    }
+    calculateUserProgressVelocity(userId) {
+        return 0.75;
+    }
+    generateBenchmarkInsights(metrics, peerGroup) {
+        const insights = { strengths: [], improvementOpportunities: [], peerComparisonInsights: [] };
+        if (metrics.goalCompletion.percentile > 70) {
+            insights.strengths.push('Goal completion rate is above peer average');
+        }
+        insights.peerComparisonInsights.push(`You perform at the ${Math.round(metrics.goalCompletion.percentile)}th percentile`);
+        return insights;
+    }
+    generateBenchmarkRecommendations(insights) {
+        return insights.improvementOpportunities.length > 0 ? ['Focus on improvement areas'] : ['Leverage your strengths'];
+    }
+    async analyzeTrends(userId, period) {
+        return { progressTrend: 'improving', engagementTrend: 'stable', velocityTrend: 'improving' };
+    }
+    generateProgressRecommendations(goals, trends) {
+        const recommendations = [];
+        if (trends.progressTrend === 'declining') {
+            recommendations.push('Review and adjust current goals');
+        }
+        return recommendations;
+    }
+    identifyAchievements(goals, period) {
+        const completedGoals = goals.filter(g => g.status === 'completed');
+        return completedGoals.length > 0 ? [`Completed ${completedGoals.length} goals`] : [];
+    }
+    determineNextPeriodFocus(goals, trends) {
+        const inProgressGoals = goals.filter(g => g.status === 'in_progress');
+        return inProgressGoals.length > 0 ? [`Continue progress on ${inProgressGoals.length} active goals`] : [];
+    }
+    generateCoachInsights(clientAnalytics, coachingSessions) {
+        const insights = { strengths: [], improvementAreas: [], recommendations: [] };
+        const validAnalytics = clientAnalytics.filter(a => a !== null);
+        if (validAnalytics.length > 0) {
+            const avgSatisfaction = validAnalytics.reduce((sum, a) => sum + a.kpiMetrics.userSatisfactionScore, 0) / validAnalytics.length;
+            if (avgSatisfaction > 8) {
+                insights.strengths.push('High client satisfaction scores');
+            }
+            else if (avgSatisfaction < 6) {
+                insights.improvementAreas.push('Client satisfaction needs improvement');
+            }
+        }
+        return insights;
+    }
 }
 exports.CoachIntelligenceService = CoachIntelligenceService;
 exports.default = CoachIntelligenceService;

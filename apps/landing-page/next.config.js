@@ -5,7 +5,8 @@ const nextConfig = {
     // Warning: This allows production builds to successfully complete even with ESLint warnings
     ignoreDuringBuilds: true,
   },
-  // output: 'export', // Temporarily disabled to fix CSS build issues
+  output: 'standalone', // Enable for Docker production builds
+  outputFileTracingRoot: require('path').join(__dirname, '../../'),
   trailingSlash: true,
   // Remove experimental CSS optimization entirely
   experimental: {
@@ -38,9 +39,14 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
+    // Legacy domains configuration for compatibility
+    domains: ['images.unsplash.com', 'via.placeholder.com', 'upcoach.ai'],
     formats: ['image/webp', 'image/avif'],
     unoptimized: false, // Re-enable image optimization
     minimumCacheTTL: 60, // Cache images for 60 seconds
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   compress: true, // Enable gzip compression
   poweredByHeader: false, // Remove X-Powered-By header

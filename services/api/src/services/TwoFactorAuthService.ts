@@ -655,10 +655,8 @@ class TwoFactorAuthService {
       const key = `2fa:sms:${userId}`;
       await redis.setEx(key, 300, JSON.stringify({ code, phoneNumber, sentAt: new Date() }));
 
-      // TODO: Implement actual SMS sending service (Twilio, AWS SNS, etc.)
+      // Send SMS via configured SMS service (supports Twilio, AWS SNS, and mock)
       // SECURITY: Never log the actual code - removed security vulnerability
-
-      // Send SMS via SMS service (placeholder)
       const smsResult = await this.sendSMS(phoneNumber, `Your UpCoach verification code is: ${code}. This code expires in 5 minutes.`);
 
       if (smsResult.success) {
@@ -890,19 +888,38 @@ class TwoFactorAuthService {
   }
 
   /**
-   * Placeholder SMS sending service (should be replaced with actual SMS provider)
+   * Send SMS using the configured SMS service
    */
   private async sendSMS(phoneNumber: string, message: string): Promise<{ success: boolean; message?: string }> {
-    // TODO: Implement actual SMS service (Twilio, AWS SNS, etc.)
-    // For now, return success in development, fail in production without configuration
-    if (process.env.NODE_ENV === 'production' && !process.env.SMS_API_KEY) {
-      return { success: false, message: 'SMS service not configured' };
+    try {
+      // Import SMS service dynamically to avoid circular dependencies
+      const { smsService } = await import('./sms/SMSService');
+
+      const result = await smsService.sendSMS(phoneNumber, message);
+
+      if (result.success) {
+        logger.info('SMS sent successfully', {
+          provider: result.provider,
+          messageId: result.messageId
+        });
+        return { success: true };
+      } else {
+        logger.error('SMS sending failed', {
+          provider: result.provider,
+          error: result.error
+        });
+        return {
+          success: false,
+          message: result.error || 'Failed to send SMS'
+        };
+      }
+    } catch (error) {
+      logger.error('SMS service error', error);
+      return {
+        success: false,
+        message: 'SMS service unavailable'
+      };
     }
-
-    // Simulate SMS sending delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    return { success: true };
   }
 
   /**

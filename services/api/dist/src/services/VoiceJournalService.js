@@ -152,10 +152,10 @@ class VoiceJournalService {
     async deleteAudioFile(entryId, userId) {
         try {
             const entry = await this.getEntry(entryId, userId);
-            if (!entry?.audioFilePath) {
+            if (!entry?.audioPath) {
                 return false;
             }
-            await this.updateEntry(entryId, userId, { audioFilePath: '' });
+            await this.updateEntry(entryId, userId, { audioPath: '' });
             logger_1.logger.info('Deleted audio file reference:', { entryId, userId });
             return true;
         }
@@ -259,7 +259,7 @@ class VoiceJournalService {
                 topics: [],
                 emotions: [],
                 keyPhrases: [],
-                summary: entry.summary || 'No summary available',
+                summary: entry.notes || 'No summary available',
             };
         }
         catch (error) {

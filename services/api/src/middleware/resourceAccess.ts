@@ -7,9 +7,15 @@ import { FinancialSnapshot } from '../models/financial/FinancialSnapshot';
 import { Subscription } from '../models/financial/Subscription';
 import { Goal } from '../models/Goal';
 import { Organization } from '../models/Organization';
+import { OrganizationMember } from '../models/OrganizationMember';
 import { User } from '../models/User';
 import { UserProfile } from '../models/UserProfile';
 import { logger } from '../utils/logger';
+import {
+  securityMonitoringService,
+  SecurityEventType,
+  SecurityEventSeverity,
+} from '../services/security/SecurityMonitoringService';
 
 // Define resource types and their ownership rules
 enum ResourceType {
@@ -86,19 +92,15 @@ const OWNERSHIP_RULES: Record<ResourceType, ResourceOwnershipRule> = {
     ownerField: 'ownerId',
     additionalChecks: async (resource, userId, userRole) => {
       // Check if user is owner or member
-      if (resource.ownerId === userId) return true;
+      if (resource.ownerId === Number(userId)) return true;
 
-      // TODO: Implement OrganizationMember model and membership check
-      // const membership = await OrganizationMember.findOne({
-      //   where: {
-      //     organizationId: resource.id,
-      //     userId: userId,
-      //     status: 'active'
-      //   }
-      // });
-      // return !!membership;
+      // Check organization membership
+      const membership = await OrganizationMember.findActiveMembership(
+        Number(userId),
+        resource.id
+      );
 
-      return false; // Temporarily deny access until OrganizationMember is implemented
+      return !!membership;
     },
   },
   [ResourceType.PROFILE]: {
@@ -142,18 +144,17 @@ const OWNERSHIP_RULES: Record<ResourceType, ResourceOwnershipRule> = {
 
       if (org.ownerId === Number(userId)) return true;
 
-      // TODO: Implement OrganizationMember model and membership check
-      // const membership = await OrganizationMember.findOne({
-      //   where: {
-      //     organizationId: resource.organizationId,
-      //     userId: userId,
-      //     role: ['owner', 'manager'],
-      //     status: 'active'
-      //   }
-      // });
-      // return !!membership;
+      // Check organization membership with financial access permissions
+      const membership = await OrganizationMember.findActiveMembership(
+        Number(userId),
+        resource.organizationId
+      );
 
-      return false; // Temporarily deny access until OrganizationMember is implemented
+      if (membership && membership.canViewFinancialData()) {
+        return true;
+      }
+
+      return false;
     },
   },
   [ResourceType.TRANSACTION]: {
@@ -295,6 +296,28 @@ export const checkResourceAccess = async (
         ip: req.ip,
       });
 
+      // Record security event for monitoring and alerting
+      await securityMonitoringService.recordEvent({
+        type: SecurityEventType.IDOR_ATTEMPT,
+        severity: SecurityEventSeverity.HIGH,
+        source: 'resource_access_middleware',
+        description: `IDOR attempt: User ${userId} tried to access ${resourceType} resource ${resourceId}`,
+        metadata: {
+          resourceType,
+          resourceId,
+          path: req.path,
+          method: req.method,
+          userAgent: req.get('user-agent'),
+          referer: req.get('referer'),
+        },
+        userId,
+        ipAddress: req.ip,
+        userAgent: req.get('user-agent'),
+        endpoint: req.path,
+        method: req.method,
+        resourceId,
+      });
+
       res.status(403).json({ error: 'Access denied' });
       return;
     }
@@ -338,6 +361,25 @@ export const checkResourceAction = (allowedActions: string[]) => {
         path: req.path,
       });
 
+      // Record security event for unauthorized action
+      await securityMonitoringService.recordEvent({
+        type: SecurityEventType.AUTHORIZATION_FAILURE,
+        severity: SecurityEventSeverity.MEDIUM,
+        source: 'resource_action_middleware',
+        description: `Unauthorized action attempt: User ${userId} tried ${mappedAction} on ${req.path}`,
+        metadata: {
+          action: mappedAction,
+          allowedActions,
+          path: req.path,
+          userAgent: req.get('user-agent'),
+        },
+        userId,
+        ipAddress: req.ip,
+        userAgent: req.get('user-agent'),
+        endpoint: req.path,
+        method: req.method,
+      });
+
       _res.status(403).json({ error: 'Action not allowed' });
       return;
     }
@@ -347,6 +389,25 @@ export const checkResourceAction = (allowedActions: string[]) => {
       // Only admins can delete most resources
       const resourceType = extractResourceType(req.path);
       if (resourceType && ![ResourceType.GOAL, ResourceType.SESSION].includes(resourceType)) {
+        // Record privilege escalation attempt
+        await securityMonitoringService.recordEvent({
+          type: SecurityEventType.PRIVILEGE_ESCALATION,
+          severity: SecurityEventSeverity.HIGH,
+          source: 'resource_action_middleware',
+          description: `Privilege escalation attempt: Non-admin user ${userId} tried to delete ${resourceType}`,
+          metadata: {
+            action: mappedAction,
+            resourceType,
+            userRole,
+            path: req.path,
+          },
+          userId,
+          ipAddress: req.ip,
+          userAgent: req.get('user-agent'),
+          endpoint: req.path,
+          method: req.method,
+        });
+
         _res.status(403).json({ error: 'Only administrators can delete this resource' });
         return;
       }

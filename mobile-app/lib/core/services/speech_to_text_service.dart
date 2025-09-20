@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:http/http.dart' as http;
 
 class TranscriptionResult {
   final String text;
@@ -19,11 +21,15 @@ class TranscriptionResult {
 
 class SpeechToTextService {
   final SpeechToText _speechToText = SpeechToText();
-  
+
   bool _isInitialized = false;
   bool _isListening = false;
   String _currentTranscription = '';
   double _confidence = 0.0;
+
+  // Google Cloud Speech API configuration
+  static const String _googleCloudApiKey = 'YOUR_GOOGLE_CLOUD_API_KEY'; // Should be stored securely
+  static const String _baseUrl = 'https://speech.googleapis.com/v1/speech:recognize';
   
   final StreamController<TranscriptionResult> _transcriptionController =
       StreamController<TranscriptionResult>.broadcast();
@@ -112,38 +118,129 @@ class SpeechToTextService {
     }
   }
   
-  // Transcribe audio file (requires cloud service integration)
+  // Transcribe audio file using Google Cloud Speech-to-Text
   Future<TranscriptionResult?> transcribeAudioFile(String filePath, {
     String language = 'en-US',
+    bool enableWordTimeOffsets = false,
+    bool enableAutomaticPunctuation = true,
+    bool enableWordConfidence = true,
   }) async {
-    // This would integrate with cloud services like:
-    // - Google Cloud Speech-to-Text
-    // - Azure Speech Services
-    // - AWS Transcribe
-    // For now, return a placeholder
-    
     try {
       final file = File(filePath);
       if (!await file.exists()) {
-        throw Exception('Audio file not found');
+        throw Exception('Audio file not found: $filePath');
       }
-      
-      // Placeholder implementation
-      // In a real implementation, you would:
-      // 1. Upload file to cloud service
-      // 2. Get transcription result
-      // 3. Parse confidence scores
-      
-      await Future.delayed(const Duration(seconds: 2)); // Simulate API call
-      
+
+      // Read audio file and encode to base64
+      final audioBytes = await file.readAsBytes();
+      final audioContent = base64Encode(audioBytes);
+
+      // Determine audio encoding from file extension
+      final fileExtension = filePath.split('.').last.toLowerCase();
+      String encoding;
+      int sampleRateHertz = 16000;
+
+      switch (fileExtension) {
+        case 'wav':
+          encoding = 'LINEAR16';
+          sampleRateHertz = 44100;
+          break;
+        case 'flac':
+          encoding = 'FLAC';
+          sampleRateHertz = 44100;
+          break;
+        case 'm4a':
+        case 'aac':
+          encoding = 'AAC';
+          sampleRateHertz = 44100;
+          break;
+        case 'mp3':
+          encoding = 'MP3';
+          sampleRateHertz = 44100;
+          break;
+        default:
+          encoding = 'LINEAR16';
+      }
+
+      // Prepare request body
+      final requestBody = {
+        'config': {
+          'encoding': encoding,
+          'sampleRateHertz': sampleRateHertz,
+          'languageCode': language,
+          'enableAutomaticPunctuation': enableAutomaticPunctuation,
+          'enableWordTimeOffsets': enableWordTimeOffsets,
+          'enableWordConfidence': enableWordConfidence,
+          'model': 'latest_long',
+          'useEnhanced': true,
+        },
+        'audio': {
+          'content': audioContent,
+        },
+      };
+
+      // Make API request to Google Cloud Speech-to-Text
+      final response = await http.post(
+        Uri.parse('$_baseUrl?key=$_googleCloudApiKey'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+
+        if (responseData['results'] != null && responseData['results'].isNotEmpty) {
+          final result = responseData['results'][0];
+          final alternative = result['alternatives'][0];
+
+          return TranscriptionResult(
+            text: alternative['transcript'] ?? '',
+            confidence: (alternative['confidence'] as num?)?.toDouble() ?? 0.0,
+            isFinal: true,
+            timestamp: DateTime.now(),
+          );
+        } else {
+          print('No transcription results found');
+          return null;
+        }
+      } else {
+        print('API Error: ${response.statusCode} - ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('Error transcribing audio file: $e');
+      return null;
+    }
+  }
+
+  // Alternative transcription using local models (offline)
+  Future<TranscriptionResult?> transcribeAudioFileOffline(String filePath, {
+    String language = 'en-US',
+  }) async {
+    try {
+      final file = File(filePath);
+      if (!await file.exists()) {
+        throw Exception('Audio file not found: $filePath');
+      }
+
+      // For offline transcription, you would use libraries like:
+      // - Vosk (https://alphacephei.com/vosk/)
+      // - Whisper.cpp
+      // - DeepSpeech
+
+      // Placeholder for offline implementation
+      await Future.delayed(const Duration(seconds: 3)); // Simulate processing time
+
       return TranscriptionResult(
-        text: 'This is a placeholder transcription. Integrate with actual cloud service.',
-        confidence: 0.95,
+        text: 'Offline transcription not yet implemented. Use online transcription for now.',
+        confidence: 0.8,
         isFinal: true,
         timestamp: DateTime.now(),
       );
     } catch (e) {
-      print('Error transcribing audio file: $e');
+      print('Error in offline transcription: $e');
       return null;
     }
   }
@@ -179,7 +276,113 @@ class SpeechToTextService {
       'ja-JP', // Japanese
       'ko-KR', // Korean
       'id-ID', // Indonesian
+      'ar-SA', // Arabic
+      'hi-IN', // Hindi
+      'ru-RU', // Russian
+      'th-TH', // Thai
+      'vi-VN', // Vietnamese
     ];
+  }
+
+  // Detect language from audio file
+  Future<String?> detectLanguage(String filePath) async {
+    try {
+      final file = File(filePath);
+      if (!await file.exists()) {
+        throw Exception('Audio file not found: $filePath');
+      }
+
+      final audioBytes = await file.readAsBytes();
+      final audioContent = base64Encode(audioBytes);
+
+      final requestBody = {
+        'config': {
+          'encoding': 'LINEAR16',
+          'sampleRateHertz': 16000,
+          'languageCode': 'auto', // Auto-detect
+          'alternativeLanguageCodes': getSupportedLanguages().take(3).toList(),
+        },
+        'audio': {
+          'content': audioContent,
+        },
+      };
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl?key=$_googleCloudApiKey'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(requestBody),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        if (responseData['results'] != null && responseData['results'].isNotEmpty) {
+          return responseData['results'][0]['languageCode'] as String?;
+        }
+      }
+
+      return null;
+    } catch (e) {
+      print('Error detecting language: $e');
+      return null;
+    }
+  }
+
+  // Get transcription with timestamps
+  Future<Map<String, dynamic>?> transcribeWithTimestamps(String filePath, {
+    String language = 'en-US',
+  }) async {
+    try {
+      final result = await transcribeAudioFile(
+        filePath,
+        language: language,
+        enableWordTimeOffsets: true,
+        enableWordConfidence: true,
+      );
+
+      if (result != null) {
+        return {
+          'transcript': result.text,
+          'confidence': result.confidence,
+          'timestamp': result.timestamp,
+          'isFinal': result.isFinal,
+        };
+      }
+
+      return null;
+    } catch (e) {
+      print('Error transcribing with timestamps: $e');
+      return null;
+    }
+  }
+
+  // Real-time transcription with enhanced features
+  Future<bool> startEnhancedListening({
+    String localeId = 'en_US',
+    Duration? timeout,
+    Duration? pauseFor,
+    bool enableProfanityFilter = false,
+  }) async {
+    if (!_isInitialized || _isListening) return false;
+
+    try {
+      await _speechToText.listen(
+        onResult: _onSpeechResult,
+        localeId: localeId,
+        listenFor: timeout ?? const Duration(minutes: 10),
+        pauseFor: pauseFor ?? const Duration(seconds: 3),
+        partialResults: true,
+        cancelOnError: true,
+        listenMode: ListenMode.confirmation,
+        sampleRate: 44100,
+      );
+
+      _isListening = true;
+      _listeningController.add(true);
+      return true;
+    } catch (e) {
+      print('Error starting enhanced speech recognition: $e');
+      return false;
+    }
   }
   
   // Event handlers

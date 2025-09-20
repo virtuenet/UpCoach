@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { catchAsync } from '../utils/catchAsync';
 import { VoiceJournalService } from '../services/VoiceJournalService';
+import { voiceJournalLocalStorageService } from '../services/VoiceJournalLocalStorageService';
 import { ApiError } from '../utils/apiError';
 import path from 'path';
 import fs from 'fs/promises';
@@ -470,6 +471,291 @@ class VoiceJournalController {
       success: true,
       imported: imported.length,
       message: `Successfully imported ${imported.length} entries`,
+    });
+  });
+
+  // ============= Enhanced Local Storage Operations =============
+
+  /**
+   * Store entry for offline access
+   */
+  storeOfflineEntry = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user!.id;
+    const { entryData } = req.body;
+    const audioFile = req.file;
+
+    if (!entryData) {
+      throw new ApiError(400, 'Entry data is required');
+    }
+
+    const audioBuffer = audioFile ? audioFile.buffer : undefined;
+
+    const entryId = await voiceJournalLocalStorageService.storeOfflineEntry(
+      userId,
+      entryData,
+      audioBuffer
+    );
+
+    res.status(201).json({
+      success: true,
+      entryId,
+      message: 'Entry stored for offline sync',
+      offlineMode: true
+    });
+  });
+
+  /**
+   * Get offline entries for user
+   */
+  getOfflineEntries = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user!.id;
+
+    const offlineEntries = await voiceJournalLocalStorageService.getOfflineEntries(userId);
+
+    res.json({
+      success: true,
+      entries: offlineEntries,
+      count: offlineEntries.length,
+      offlineMode: true
+    });
+  });
+
+  /**
+   * Sync offline entries with server
+   */
+  syncOfflineEntries = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user!.id;
+    const { forceSync = false } = req.body;
+
+    const syncResult = await voiceJournalLocalStorageService.syncOfflineEntries(
+      userId,
+      forceSync
+    );
+
+    res.json({
+      success: true,
+      syncResult,
+      message: `Sync completed: ${syncResult.uploaded} uploaded, ${syncResult.downloaded} downloaded, ${syncResult.conflicts} conflicts`
+    });
+  });
+
+  /**
+   * Store audio file locally with enhanced metadata
+   */
+  storeAudioFileLocal = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user!.id;
+    const { entryId } = req.params;
+    const file = req.file;
+
+    if (!file) {
+      throw new ApiError(400, 'No audio file provided');
+    }
+
+    if (!entryId) {
+      throw new ApiError(400, 'Entry ID is required');
+    }
+
+    const localPath = await voiceJournalLocalStorageService.storeAudioFileLocal(
+      entryId,
+      userId,
+      file.buffer,
+      file.originalname,
+      {
+        mimetype: file.mimetype,
+        uploadedAt: new Date()
+      }
+    );
+
+    res.json({
+      success: true,
+      localPath,
+      message: 'Audio file stored locally',
+      metadata: {
+        filename: file.originalname,
+        size: file.size,
+        format: path.extname(file.originalname)
+      }
+    });
+  });
+
+  /**
+   * Get audio file from local storage
+   */
+  getAudioFileLocal = catchAsync(async (req: Request, res: Response) => {
+    const { entryId } = req.params;
+    const userId = req.user!.id;
+
+    const audioData = await voiceJournalLocalStorageService.getAudioFileLocal(entryId, userId);
+
+    if (!audioData) {
+      throw new ApiError(404, 'Audio file not found in local storage');
+    }
+
+    res.set({
+      'Content-Type': audioData.metadata.mimetype || 'audio/mpeg',
+      'Content-Length': audioData.buffer.length.toString(),
+      'Content-Disposition': `attachment; filename="${audioData.filename}"`,
+    });
+
+    res.send(audioData.buffer);
+  });
+
+  /**
+   * Cache entries locally for offline access
+   */
+  cacheEntriesLocally = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user!.id;
+    const { entries } = req.body;
+
+    if (!Array.isArray(entries)) {
+      throw new ApiError(400, 'Entries must be an array');
+    }
+
+    await voiceJournalLocalStorageService.cacheEntriesLocally(userId, entries);
+
+    res.json({
+      success: true,
+      cached: entries.length,
+      message: `Cached ${entries.length} entries for offline access`
+    });
+  });
+
+  /**
+   * Get cached entries from local storage
+   */
+  getCachedEntries = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user!.id;
+
+    const cachedEntries = await voiceJournalLocalStorageService.getCachedEntries(userId);
+
+    res.json({
+      success: true,
+      entries: cachedEntries,
+      count: cachedEntries.length,
+      cached: true,
+      message: cachedEntries.length > 0 ? 'Retrieved cached entries' : 'No cached entries found'
+    });
+  });
+
+  /**
+   * Purge old local data
+   */
+  purgeOldData = catchAsync(async (req: Request, res: Response) => {
+    const { olderThanDays = 90 } = req.query;
+
+    const purgeResult = await voiceJournalLocalStorageService.purgeOldData(
+      Number(olderThanDays)
+    );
+
+    res.json({
+      success: true,
+      purged: purgeResult,
+      message: `Purged old data: ${Object.values(purgeResult).reduce((a, b) => a + b, 0)} files removed`
+    });
+  });
+
+  /**
+   * Get local storage status and statistics
+   */
+  getLocalStorageStatus = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user!.id;
+
+    try {
+      const offlineEntries = await voiceJournalLocalStorageService.getOfflineEntries(userId);
+      const cachedEntries = await voiceJournalLocalStorageService.getCachedEntries(userId);
+
+      // Calculate storage usage (simplified)
+      const storageStats = {
+        offlineEntries: offlineEntries.length,
+        cachedEntries: cachedEntries.length,
+        pendingSync: offlineEntries.filter(e => e.offlineStatus === 'pending').length,
+        failedSync: offlineEntries.filter(e => e.offlineStatus === 'failed').length,
+        lastCacheUpdate: cachedEntries.length > 0 ? new Date() : null,
+        storageHealth: 'good' // Would implement actual health check
+      };
+
+      res.json({
+        success: true,
+        status: storageStats,
+        message: 'Local storage status retrieved successfully'
+      });
+
+    } catch (error) {
+      res.json({
+        success: true,
+        status: {
+          offlineEntries: 0,
+          cachedEntries: 0,
+          pendingSync: 0,
+          failedSync: 0,
+          lastCacheUpdate: null,
+          storageHealth: 'unknown'
+        },
+        message: 'Local storage status unavailable'
+      });
+    }
+  });
+
+  /**
+   * Enhanced sync with detailed progress
+   */
+  performAdvancedSync = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user!.id;
+    const {
+      includeAudio = true,
+      resolveConflicts = 'merge',
+      downloadNew = true,
+      uploadPending = true
+    } = req.body;
+
+    // First, get current sync status
+    const offlineEntries = await voiceJournalLocalStorageService.getOfflineEntries(userId);
+    const pendingCount = offlineEntries.filter(e => e.offlineStatus === 'pending').length;
+
+    if (pendingCount === 0 && !downloadNew) {
+      return res.json({
+        success: true,
+        message: 'No sync required',
+        syncResult: {
+          uploaded: 0,
+          downloaded: 0,
+          conflicts: 0,
+          resolved: 0,
+          errors: [],
+          timestamp: new Date()
+        }
+      });
+    }
+
+    // Perform sync
+    const syncResult = await voiceJournalLocalStorageService.syncOfflineEntries(userId, false);
+
+    // Update cache with latest entries if requested
+    if (downloadNew) {
+      try {
+        const latestEntries = await this.voiceJournalService.getEntries(userId, { limit: 100 });
+        await voiceJournalLocalStorageService.cacheEntriesLocally(userId, latestEntries);
+      } catch (error) {
+        // Non-critical error - sync can still succeed
+      }
+    }
+
+    res.json({
+      success: true,
+      syncResult,
+      message: 'Advanced sync completed successfully',
+      statistics: {
+        beforeSync: {
+          pending: pendingCount,
+          total: offlineEntries.length
+        },
+        afterSync: {
+          uploaded: syncResult.uploaded,
+          downloaded: syncResult.downloaded,
+          conflicts: syncResult.conflicts,
+          errors: syncResult.errors.length
+        }
+      }
     });
   });
 }

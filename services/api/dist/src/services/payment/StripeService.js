@@ -135,18 +135,26 @@ class StripeService {
     }
     async createSubscription(params) {
         try {
-            const subscription = await this.stripe.subscriptions.create({
+            const subscriptionParams = {
                 customer: params.customer,
-                items: [{ price: params.price }],
-                payment_behavior: 'default_incomplete',
+                payment_behavior: params.payment_behavior || 'default_incomplete',
                 payment_settings: { save_default_payment_method: 'on_subscription' },
                 expand: params.expand || ['latest_invoice.payment_intent'],
                 trial_period_days: params.trial_period_days,
                 metadata: params.metadata,
-            });
+            };
+            if (params.items) {
+                subscriptionParams.items = params.items;
+            }
+            else if (params.price) {
+                subscriptionParams.items = [{ price: params.price }];
+            }
+            else {
+                throw new Error('Either price or items must be provided');
+            }
+            const subscription = await this.stripe.subscriptions.create(subscriptionParams);
             logger_1.logger.info(`Subscription created: ${subscription.id}`, {
                 customer: params.customer,
-                price: params.price,
                 status: subscription.status,
             });
             return subscription;
@@ -170,7 +178,10 @@ class StripeService {
     async updateSubscription(subscriptionId, params) {
         try {
             const updateParams = {};
-            if (params.price) {
+            if (params.items) {
+                updateParams.items = params.items;
+            }
+            else if (params.price) {
                 const currentSubscription = await this.stripe.subscriptions.retrieve(subscriptionId);
                 updateParams.items = [
                     {
@@ -181,6 +192,9 @@ class StripeService {
             }
             if (params.metadata) {
                 updateParams.metadata = params.metadata;
+            }
+            if (params.proration_behavior) {
+                updateParams.proration_behavior = params.proration_behavior;
             }
             const subscription = await this.stripe.subscriptions.update(subscriptionId, updateParams);
             logger_1.logger.info(`Subscription updated: ${subscriptionId}`);

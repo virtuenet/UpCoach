@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@upcoach/ui/src/components/Button';
+import { Button } from '@upcoach/ui';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Gift, Clock, Users, TrendingUp, Shield } from 'lucide-react';
 import React, { useState, useEffect } from 'react';

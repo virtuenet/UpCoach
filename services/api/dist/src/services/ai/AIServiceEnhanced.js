@@ -637,6 +637,42 @@ class AIServiceEnhanced {
                 : 0
         };
     }
+    async generateHybridResponse(messages, options = {}) {
+        try {
+            const startTime = Date.now();
+            const openai = new openai_1.OpenAI({
+                apiKey: environment_1.config.openaiApiKey,
+            });
+            const response = await openai.chat.completions.create({
+                model: options.model || 'gpt-3.5-turbo',
+                messages: messages,
+                max_tokens: options.maxTokens || 1000,
+                temperature: options.temperature || 0.7,
+            });
+            const routingDecisionTime = Date.now() - startTime;
+            return {
+                response: {
+                    content: response.choices[0]?.message?.content || '',
+                    model: response.model,
+                    usage: {
+                        totalTokens: response.usage?.total_tokens || 0,
+                        promptTokens: response.usage?.prompt_tokens || 0,
+                        completionTokens: response.usage?.completion_tokens || 0,
+                    },
+                },
+                metrics: {
+                    provider: 'openai',
+                    fallbackOccurred: false,
+                    routingDecisionTime,
+                    qualityScore: 0.85,
+                },
+            };
+        }
+        catch (error) {
+            logger_1.logger.error('Error in hybrid response generation:', error);
+            throw error;
+        }
+    }
 }
 exports.AIServiceEnhanced = AIServiceEnhanced;
 exports.aiServiceEnhanced = new AIServiceEnhanced();

@@ -2,6 +2,7 @@ import axios from 'axios';
 
 import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
+import { analyticsService } from '../analytics/AnalyticsService';
 
 interface MarketingEvent {
   userId: string;
@@ -370,24 +371,28 @@ export class MarketingAutomationService {
     return abTest.variants[0].content as CampaignContent;
   }
 
-  private async matchesBehavior(_userId: string, behavior: BehaviorFilter): Promise<boolean> {
-    // Query user behavior from analytics
-    // TODO: Implement getUserActionCount in analyticsService
-    const count = 0; // await analyticsService.getUserActionCount(
-    //   userId,
-    //   behavior.action,
-    //   behavior.timeframe
-    // );
+  private async matchesBehavior(userId: string, behavior: BehaviorFilter): Promise<boolean> {
+    try {
+      // Query user behavior from analytics
+      const count = await analyticsService.getUserActionCount(
+        userId,
+        behavior.action,
+        behavior.timeframe
+      );
 
-    switch (behavior.operator) {
-      case 'equals':
-        return count === behavior.count;
-      case 'greater_than':
-        return count > (behavior.count || 0);
-      case 'less_than':
-        return count < (behavior.count || 0);
-      default:
-        return false;
+      switch (behavior.operator) {
+        case 'equals':
+          return count === behavior.count;
+        case 'greater_than':
+          return count > (behavior.count || 0);
+        case 'less_than':
+          return count < (behavior.count || 0);
+        default:
+          return false;
+      }
+    } catch (error) {
+      logger.error('Failed to match behavior', { error, userId, behavior });
+      return false;
     }
   }
 
@@ -423,7 +428,7 @@ class SegmentEngine {
     const segments: string[] = [];
 
     const user = await User.findByPk(userId, {
-      include: ['goals'],
+      include: ['goals', 'subscriptions', 'activities'],
     });
 
     if (!user) return segments;
@@ -433,18 +438,17 @@ class SegmentEngine {
       segments.push('new_users');
     }
 
-    // TODO: Add subscriptions relation to User model
-    // if (user.subscriptions?.some((s: any) => s.status === 'active')) {
-    //   segments.push('paid_users');
-    // } else {
-    //   segments.push('free_users');
-    // }
+    // Subscription-based segments
+    if (user.subscriptions?.some((s: any) => s.status === 'active')) {
+      segments.push('paid_users');
+    } else {
+      segments.push('free_users');
+    }
 
-    // TODO: Add activities relation to User model
-    // const recentActivity = user.activities?.filter(
-    //   (a: any) => a.createdAt > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-    // );
-    const recentActivity = [];
+    // Activity-based segments
+    const recentActivity = user.activities?.filter(
+      (a: any) => a.createdAt > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+    ) || [];
 
     if (recentActivity?.length > 20) {
       segments.push('power_users');
@@ -464,11 +468,16 @@ class SegmentEngine {
   }
 
   async updateUserSegments(userId: string): Promise<void> {
-    const _segments = await this.getUserSegments(userId);
+    try {
+      const segments = await this.getUserSegments(userId);
 
-    // Store segments in cache or database
-    // TODO: Implement updateUserProperty in analyticsService
-    // await analyticsService.updateUserProperty(userId, 'segments', segments);
+      // Store segments in analytics for marketing segmentation
+      await analyticsService.updateUserProperty(userId, 'segments', segments);
+
+      logger.info('User segments updated', { userId, segments });
+    } catch (error) {
+      logger.error('Failed to update user segments', { error, userId });
+    }
   }
 }
 

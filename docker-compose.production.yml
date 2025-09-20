@@ -1,4 +1,4 @@
-version: '3.8'
+# Removed version as it's obsolete in Compose Spec
 
 services:
   # PostgreSQL Database
@@ -80,7 +80,7 @@ services:
       dockerfile: Dockerfile.production
       args:
         NODE_ENV: production
-    container_name: upcoach-backend
+    # container_name removed to allow replicas
     restart: always
     environment:
       NODE_ENV: production
@@ -126,6 +126,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    # Removed container_name to allow replicas
     deploy:
       replicas: 3
       update_config:
@@ -152,7 +153,7 @@ services:
       args:
         VITE_API_URL: ${API_URL:-https://api.upcoach.ai}
         VITE_APP_ENV: production
-    container_name: upcoach-admin
+    # container_name removed to allow replicas
     restart: always
     environment:
       NODE_ENV: production
@@ -185,7 +186,7 @@ services:
       args:
         VITE_API_URL: ${API_URL:-https://api.upcoach.ai}
         VITE_APP_ENV: production
-    container_name: upcoach-cms
+    # container_name removed to allow replicas
     restart: always
     environment:
       NODE_ENV: production
@@ -218,7 +219,7 @@ services:
       args:
         NEXT_PUBLIC_API_URL: ${API_URL:-https://api.upcoach.ai}
         NEXT_PUBLIC_APP_ENV: production
-    container_name: upcoach-landing
+    # container_name removed to allow replicas
     restart: always
     environment:
       NODE_ENV: production

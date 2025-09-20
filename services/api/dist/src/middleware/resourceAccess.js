@@ -8,9 +8,11 @@ const FinancialSnapshot_1 = require("../models/financial/FinancialSnapshot");
 const Subscription_1 = require("../models/financial/Subscription");
 const Goal_1 = require("../models/Goal");
 const Organization_1 = require("../models/Organization");
+const OrganizationMember_1 = require("../models/OrganizationMember");
 const User_1 = require("../models/User");
 const UserProfile_1 = require("../models/UserProfile");
 const logger_1 = require("../utils/logger");
+const SecurityMonitoringService_1 = require("../services/security/SecurityMonitoringService");
 var ResourceType;
 (function (ResourceType) {
     ResourceType["USER"] = "user";
@@ -71,9 +73,10 @@ const OWNERSHIP_RULES = {
         model: Organization_1.Organization,
         ownerField: 'ownerId',
         additionalChecks: async (resource, userId, userRole) => {
-            if (resource.ownerId === userId)
+            if (resource.ownerId === Number(userId))
                 return true;
-            return false;
+            const membership = await OrganizationMember_1.OrganizationMember.findActiveMembership(Number(userId), resource.id);
+            return !!membership;
         },
     },
     [ResourceType.PROFILE]: {
@@ -114,6 +117,10 @@ const OWNERSHIP_RULES = {
                 return false;
             if (org.ownerId === Number(userId))
                 return true;
+            const membership = await OrganizationMember_1.OrganizationMember.findActiveMembership(Number(userId), resource.organizationId);
+            if (membership && membership.canViewFinancialData()) {
+                return true;
+            }
             return false;
         },
     },
@@ -218,6 +225,26 @@ const checkResourceAccess = async (req, res, next) => {
                 method: req.method,
                 ip: req.ip,
             });
+            await SecurityMonitoringService_1.securityMonitoringService.recordEvent({
+                type: SecurityMonitoringService_1.SecurityEventType.IDOR_ATTEMPT,
+                severity: SecurityMonitoringService_1.SecurityEventSeverity.HIGH,
+                source: 'resource_access_middleware',
+                description: `IDOR attempt: User ${userId} tried to access ${resourceType} resource ${resourceId}`,
+                metadata: {
+                    resourceType,
+                    resourceId,
+                    path: req.path,
+                    method: req.method,
+                    userAgent: req.get('user-agent'),
+                    referer: req.get('referer'),
+                },
+                userId,
+                ipAddress: req.ip,
+                userAgent: req.get('user-agent'),
+                endpoint: req.path,
+                method: req.method,
+                resourceId,
+            });
             res.status(403).json({ error: 'Access denied' });
             return;
         }
@@ -250,12 +277,46 @@ const checkResourceAction = (allowedActions) => {
                 allowedActions,
                 path: req.path,
             });
+            await SecurityMonitoringService_1.securityMonitoringService.recordEvent({
+                type: SecurityMonitoringService_1.SecurityEventType.AUTHORIZATION_FAILURE,
+                severity: SecurityMonitoringService_1.SecurityEventSeverity.MEDIUM,
+                source: 'resource_action_middleware',
+                description: `Unauthorized action attempt: User ${userId} tried ${mappedAction} on ${req.path}`,
+                metadata: {
+                    action: mappedAction,
+                    allowedActions,
+                    path: req.path,
+                    userAgent: req.get('user-agent'),
+                },
+                userId,
+                ipAddress: req.ip,
+                userAgent: req.get('user-agent'),
+                endpoint: req.path,
+                method: req.method,
+            });
             _res.status(403).json({ error: 'Action not allowed' });
             return;
         }
         if (mappedAction === 'delete' && userRole !== 'admin') {
             const resourceType = extractResourceType(req.path);
             if (resourceType && ![ResourceType.GOAL, ResourceType.SESSION].includes(resourceType)) {
+                await SecurityMonitoringService_1.securityMonitoringService.recordEvent({
+                    type: SecurityMonitoringService_1.SecurityEventType.PRIVILEGE_ESCALATION,
+                    severity: SecurityMonitoringService_1.SecurityEventSeverity.HIGH,
+                    source: 'resource_action_middleware',
+                    description: `Privilege escalation attempt: Non-admin user ${userId} tried to delete ${resourceType}`,
+                    metadata: {
+                        action: mappedAction,
+                        resourceType,
+                        userRole,
+                        path: req.path,
+                    },
+                    userId,
+                    ipAddress: req.ip,
+                    userAgent: req.get('user-agent'),
+                    endpoint: req.path,
+                    method: req.method,
+                });
                 _res.status(403).json({ error: 'Only administrators can delete this resource' });
                 return;
             }

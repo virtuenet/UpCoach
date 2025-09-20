@@ -9,6 +9,7 @@ exports.securityHeaders = securityHeaders;
 exports.securityReportHandler = securityReportHandler;
 const crypto_1 = __importDefault(require("crypto"));
 const logger_1 = require("../utils/logger");
+const SecurityMonitoringService_1 = require("../services/security/SecurityMonitoringService");
 const defaultConfig = {
     enableHSTS: true,
     hstsMaxAge: 31536000,
@@ -234,6 +235,22 @@ async function processCSPReport(report) {
         sourceFile: report['source-file'],
         lineNumber: report['line-number'],
     });
+    await SecurityMonitoringService_1.securityMonitoringService.recordEvent({
+        type: SecurityMonitoringService_1.SecurityEventType.CSP_VIOLATION,
+        severity: SecurityMonitoringService_1.SecurityEventSeverity.MEDIUM,
+        source: 'security_headers_middleware',
+        description: `CSP violation: ${report['violated-directive']} blocked ${report['blocked-uri']}`,
+        metadata: {
+            documentUri: report['document-uri'],
+            violatedDirective: report['violated-directive'],
+            blockedUri: report['blocked-uri'],
+            sourceFile: report['source-file'],
+            lineNumber: report['line-number'],
+            originalText: report['original-policy'],
+            disposition: report['disposition'],
+        },
+        endpoint: report['document-uri'],
+    });
 }
 async function processExpectCTReport(report) {
     logger_1.logger.warn('Expect-CT violation detected', {
@@ -242,6 +259,20 @@ async function processExpectCTReport(report) {
         effectiveExpirationDate: report['effective-expiration-date'],
         failureMode: report['failure-mode'],
         servedCertificateChain: report['served-certificate-chain'],
+    });
+    await SecurityMonitoringService_1.securityMonitoringService.recordEvent({
+        type: SecurityMonitoringService_1.SecurityEventType.EXPECT_CT_VIOLATION,
+        severity: SecurityMonitoringService_1.SecurityEventSeverity.HIGH,
+        source: 'security_headers_middleware',
+        description: `Expect-CT violation detected for ${report.hostname}:${report.port}`,
+        metadata: {
+            hostname: report.hostname,
+            port: report.port,
+            effectiveExpirationDate: report['effective-expiration-date'],
+            failureMode: report['failure-mode'],
+            servedCertificateChain: report['served-certificate-chain'],
+            testReport: report['test-report'],
+        },
     });
 }
 exports.ctMonitor = CertificateTransparencyMonitor.getInstance();

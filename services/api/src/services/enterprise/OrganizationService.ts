@@ -410,9 +410,24 @@ export class OrganizationService {
     );
 
     // Get additional stats (storage, API calls, etc.)
-    // These would come from other services/tables
-    const storageUsed = 0; // TODO: Implement storage tracking
-    const apiCallsThisMonth = 0; // TODO: Implement API usage tracking
+    let storageUsed = 0;
+    let apiCallsThisMonth = 0;
+
+    try {
+      // Get storage usage
+      const { storageTracker } = await import('../storage/StorageTracker');
+      storageUsed = await storageTracker.getCurrentStorageUsed(organizationId);
+    } catch (error) {
+      logger.error('Error getting storage usage:', error);
+    }
+
+    try {
+      // Get API usage for current month
+      const { apiUsageTracker } = await import('../analytics/APIUsageTracker');
+      apiCallsThisMonth = await apiUsageTracker.getMonthlyAPIUsage(organizationId);
+    } catch (error) {
+      logger.error('Error getting API usage:', error);
+    }
 
     return {
       totalMembers: parseInt((stats[0] as any)?.total_members || '0'),

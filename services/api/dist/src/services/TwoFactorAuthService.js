@@ -588,11 +588,34 @@ class TwoFactorAuthService {
         }
     }
     async sendSMS(phoneNumber, message) {
-        if (process.env.NODE_ENV === 'production' && !process.env.SMS_API_KEY) {
-            return { success: false, message: 'SMS service not configured' };
+        try {
+            const { smsService } = await Promise.resolve().then(() => __importStar(require('./sms/SMSService')));
+            const result = await smsService.sendSMS(phoneNumber, message);
+            if (result.success) {
+                logger_1.logger.info('SMS sent successfully', {
+                    provider: result.provider,
+                    messageId: result.messageId
+                });
+                return { success: true };
+            }
+            else {
+                logger_1.logger.error('SMS sending failed', {
+                    provider: result.provider,
+                    error: result.error
+                });
+                return {
+                    success: false,
+                    message: result.error || 'Failed to send SMS'
+                };
+            }
         }
-        await new Promise(resolve => setTimeout(resolve, 500));
-        return { success: true };
+        catch (error) {
+            logger_1.logger.error('SMS service error', error);
+            return {
+                success: false,
+                message: 'SMS service unavailable'
+            };
+        }
     }
     maskPhoneNumber(phoneNumber) {
         if (phoneNumber.length <= 4)

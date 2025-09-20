@@ -1,11 +1,6 @@
 'use client';
 
-import { Button } from '@upcoach/ui/src/components/Button';
-import { Card } from '@upcoach/ui/src/components/Card';
-import { Input } from '@upcoach/ui/src/components/Input';
-import { Label } from '@upcoach/ui/src/components/Label';
-import { Progress } from '@upcoach/ui/src/components/Progress';
-import { Textarea } from '@upcoach/ui/src/components/Textarea';
+import { Button, Card, Input, Label, Progress, Textarea } from '@upcoach/ui';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight,
@@ -260,7 +255,7 @@ export default function OnboardingPage() {
                       <Input
                         id="name"
                         value={data.profile.name}
-                        onChange={e => updateData('profile', 'name', e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateData('profile', 'name', e.target.value)}
                         placeholder="John Doe"
                         className="mt-1"
                       />
@@ -271,7 +266,7 @@ export default function OnboardingPage() {
                         id="age"
                         type="number"
                         value={data.profile.age || ''}
-                        onChange={e => updateData('profile', 'age', parseInt(e.target.value))}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateData('profile', 'age', parseInt(e.target.value))}
                         placeholder="25"
                         className="mt-1"
                       />
@@ -281,7 +276,7 @@ export default function OnboardingPage() {
                       <Input
                         id="occupation"
                         value={data.profile.occupation || ''}
-                        onChange={e => updateData('profile', 'occupation', e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateData('profile', 'occupation', e.target.value)}
                         placeholder="Software Engineer"
                         className="mt-1"
                       />
@@ -310,7 +305,7 @@ export default function OnboardingPage() {
                               name="primaryGoal"
                               value={goal}
                               checked={data.goals.primaryGoal === goal}
-                              onChange={(e) => updateData('goals', 'primaryGoal', e.target.value)}
+                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateData('goals', 'primaryGoal', e.target.value)}
                               className="h-4 w-4"
                             />
                             <Label className="cursor-pointer">

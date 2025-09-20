@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { Request } from 'express';
+import { QueryTypes } from 'sequelize';
 
 import { User } from '../../models/User';
+import { sequelize } from '../../models';
 import { logger } from '../../utils/logger';
 import { getCacheService } from '../cache/UnifiedCacheService';
 
@@ -449,14 +451,136 @@ export class AnalyticsService {
     };
   }
 
+  // Get user action count for marketing automation
+  async getUserActionCount(
+    userId: string,
+    action: string,
+    timeframe: string
+  ): Promise<number> {
+    try {
+      const cacheKey = `analytics:action_count:${userId}:${action}:${timeframe}`;
+      const cached = await getCacheService().get(cacheKey);
+      if (cached) return cached;
+
+      // Parse timeframe (e.g., "last_7_days", "last_30_days", "last_1_hour")
+      const timeframeParts = timeframe.match(/last_(\d+)_(\w+)/);
+      if (!timeframeParts) {
+        logger.warn('Invalid timeframe format', { timeframe });
+        return 0;
+      }
+
+      const [, amount, unit] = timeframeParts;
+      const duration = this.parseTimeframeToDuration(parseInt(amount), unit);
+      const since = new Date(Date.now() - duration);
+
+      // Query user_activity_logs table
+      const result = await sequelize.query(`
+        SELECT COUNT(*) as count
+        FROM user_activity_logs
+        WHERE user_id = $1
+          AND activity_type = $2
+          AND created_at >= $3
+      `, {
+        bind: [userId, action, since],
+        type: QueryTypes.SELECT
+      });
+
+      const count = parseInt((result as any)[0]?.count || '0');
+
+      // Cache for 5 minutes
+      await getCacheService().set(cacheKey, count, { ttl: 300 });
+
+      return count;
+    } catch (error) {
+      logger.error('Failed to get user action count', { error, userId, action, timeframe });
+      return 0;
+    }
+  }
+
+  // Update user property for marketing segmentation
+  async updateUserProperty(
+    userId: string,
+    property: string,
+    value: any
+  ): Promise<void> {
+    try {
+      // Update user traits for analytics platforms
+      const traits: UserTraits = {
+        userId: parseInt(userId),
+        customTraits: {
+          [property]: value,
+        },
+      };
+
+      await this.identify(traits);
+
+      // Also cache the property for fast access
+      const cacheKey = `analytics:user_property:${userId}:${property}`;
+      await getCacheService().set(cacheKey, value, { ttl: 3600 });
+
+      logger.info('User property updated', { userId, property, value });
+    } catch (error) {
+      logger.error('Failed to update user property', { error, userId, property, value });
+      throw error;
+    }
+  }
+
+  private parseTimeframeToDuration(amount: number, unit: string): number {
+    const multipliers: Record<string, number> = {
+      minutes: 60 * 1000,
+      minute: 60 * 1000,
+      hours: 60 * 60 * 1000,
+      hour: 60 * 60 * 1000,
+      days: 24 * 60 * 60 * 1000,
+      day: 24 * 60 * 60 * 1000,
+      weeks: 7 * 24 * 60 * 60 * 1000,
+      week: 7 * 24 * 60 * 60 * 1000,
+      months: 30 * 24 * 60 * 60 * 1000,
+      month: 30 * 24 * 60 * 60 * 1000,
+    };
+
+    return amount * (multipliers[unit] || multipliers.day);
+  }
+
   private async getUserSessionCount(userId: number): Promise<number> {
-    // Implement session counting logic
-    return 0;
+    // Implement session counting logic using user_activity_logs
+    try {
+      const result = await sequelize.query(`
+        SELECT COUNT(DISTINCT session_id) as count
+        FROM user_activity_logs
+        WHERE user_id = $1
+          AND activity_type = 'session_start'
+          AND created_at >= NOW() - INTERVAL '30 days'
+      `, {
+        bind: [userId],
+        type: QueryTypes.SELECT
+      });
+
+      return parseInt((result as any)[0]?.count || '0');
+    } catch (error) {
+      logger.error('Failed to get user session count', { error, userId });
+      return 0;
+    }
   }
 
   private async getUserEventCount(userId: number): Promise<number> {
-    // Implement event counting logic
-    return 0;
+    // Implement event counting logic using user_activity_logs
+    try {
+      const result = await sequelize.query(`
+        SELECT COUNT(*) as count
+        FROM user_activity_logs
+        WHERE user_id = $1
+          AND created_at >= NOW() - INTERVAL '30 days'
+      `, {
+        bind: [userId],
+        type: QueryTypes.SELECT
+      });
+
+      return parseInt((result as any)[0]?.count || '0');
+    } catch (error) {
+      logger.error('Failed to get user event count', { error, userId });
+      return 0;
+    }
   }
 
   private async getUserLastActive(userId: number): Promise<Date | null> {

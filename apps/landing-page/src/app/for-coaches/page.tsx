@@ -1,8 +1,6 @@
 'use client';
 
-import { Badge } from '@upcoach/ui/src/components/Badge';
-import { Button } from '@upcoach/ui/src/components/Button';
-import { Card } from '@upcoach/ui/src/components/Card';
+import { Badge, Button, Card } from '@upcoach/ui';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,

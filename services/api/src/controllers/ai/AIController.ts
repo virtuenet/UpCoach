@@ -11,6 +11,14 @@ import { personalizationEngine } from '../../services/ai/PersonalizationEngine';
 import { analyticsEngine } from '../../services/ai/AnalyticsEngine';
 import { hybridDecisionEngine } from '../../services/ai/HybridDecisionEngine';
 import { AIInteraction } from '../../models/AIInteraction';
+
+// Type assertion for model static methods
+type ModelStatic = typeof AIInteraction & {
+  create: (values: any) => Promise<AIInteraction>;
+  findByPk: (id: any) => Promise<AIInteraction | null>;
+  findAll: (options?: any) => Promise<AIInteraction[]>;
+  findOne: (options?: any) => Promise<AIInteraction | null>;
+};
 import { logger } from '../../utils/logger';
 
 export class AIController {
@@ -399,7 +407,7 @@ export class AIController {
 
       // Record interaction
       if (userId) {
-        await AIInteraction.create({
+        await (AIInteraction as any).create({
           userId,
           type: 'conversation',
           model: result.response.model,

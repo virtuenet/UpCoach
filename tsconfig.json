@@ -35,7 +35,8 @@
   },
   "include": [
     "packages/*/src/**/*",
-    "apps/*/src/**/*"
+    "apps/*/src/**/*",
+    "types/missing-types.d.ts"
   ],
   "exclude": [
     "node_modules",

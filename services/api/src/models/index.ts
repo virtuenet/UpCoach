@@ -49,6 +49,9 @@ import { Goal } from './Goal';
 import { Mood } from './Mood';
 import { Task } from './Task';
 import { User } from './User';
+import { UserActivity } from './UserActivity';
+import { Organization } from './Organization';
+import { OrganizationMember } from './OrganizationMember';
 // import { UserProfile } from './UserProfile';
 // import { AIInteraction } from './AIInteraction';
 // import { AIFeedback } from './AIFeedback';
@@ -61,6 +64,9 @@ export { sequelize };
 export {
   // Core Models
   User,
+  UserActivity,
+  Organization,
+  OrganizationMember,
   Goal,
   Task,
   Mood,
@@ -125,8 +131,19 @@ export { SystemMetrics } from './compliance/SystemMetrics';
 // Define associations
 export function defineAssociations() {
   // Import models for associations
-  const { Transaction, Subscription, BillingEvent, Article, Course, Category, ContentAnalytics } =
-    sequelize.models;
+  const {
+    Transaction,
+    Subscription,
+    BillingEvent,
+    Article,
+    Course,
+    Category,
+    ContentAnalytics,
+    User,
+    UserActivity,
+    Organization,
+    OrganizationMember
+  } = sequelize.models;
 
   // Financial associations
   if (Transaction && Subscription) {
@@ -157,6 +174,34 @@ export function defineAssociations() {
 
   if (ContentAnalytics && Article && Course) {
     // ContentAnalytics polymorphic associations would be handled in queries
+  }
+
+  // User activity associations
+  if (User && UserActivity) {
+    User.hasMany(UserActivity, { foreignKey: 'userId', as: 'activities' });
+    UserActivity.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+  }
+
+  // Subscription associations
+  if (User && Subscription) {
+    User.hasMany(Subscription, { foreignKey: 'userId', as: 'subscriptions' });
+    Subscription.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+  }
+
+  // Organization and membership associations
+  if (User && Organization && OrganizationMember) {
+    // Organization -> User (owner)
+    Organization.belongsTo(User, { foreignKey: 'ownerId', as: 'owner' });
+    User.hasMany(Organization, { foreignKey: 'ownerId', as: 'ownedOrganizations' });
+
+    // OrganizationMember associations
+    OrganizationMember.belongsTo(Organization, { foreignKey: 'organizationId', as: 'organization' });
+    OrganizationMember.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+    OrganizationMember.belongsTo(User, { foreignKey: 'invitedBy', as: 'inviter' });
+
+    Organization.hasMany(OrganizationMember, { foreignKey: 'organizationId', as: 'memberships' });
+    User.hasMany(OrganizationMember, { foreignKey: 'userId', as: 'organizationMemberships' });
+    User.hasMany(OrganizationMember, { foreignKey: 'invitedBy', as: 'invitedMemberships' });
   }
 }
 

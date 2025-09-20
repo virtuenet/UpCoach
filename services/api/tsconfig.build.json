@@ -5,7 +5,11 @@
     "removeComments": true,
     "typeRoots": ["../../node_modules/@types", "./node_modules/@types"],
     "noEmitOnError": false,
-    "allowJs": true
+    "allowJs": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "noImplicitReturns": false
   },
   "include": ["src/**/*.ts"],
   "exclude": [

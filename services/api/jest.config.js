@@ -7,6 +7,15 @@ module.exports = {
   },
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.ts$',
   moduleFileExtensions: ['ts', 'js', 'json', 'node'],
+
+  // TypeScript configuration for Jest
+  globals: {
+    'ts-jest': {
+      tsconfig: {
+        types: ['jest', 'node']
+      }
+    }
+  },
   
   // Memory optimization settings
   maxWorkers: 1, // Prevent memory issues from parallel execution

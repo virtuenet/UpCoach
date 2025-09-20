@@ -28,10 +28,13 @@ const tasks_1 = __importDefault(require("./tasks"));
 const twoFactorAuth_1 = __importDefault(require("./twoFactorAuth"));
 const users_1 = __importDefault(require("./users"));
 const voiceJournal_1 = __importDefault(require("./voiceJournal"));
+const localLLM_1 = require("./localLLM");
 const v2_1 = __importDefault(require("./v2"));
+const mobile_1 = __importDefault(require("./mobile"));
 const setupRoutes = (app) => {
     const apiPrefix = '/api';
     app.use(`${apiPrefix}/v2`, v2_1.default);
+    app.use(`${apiPrefix}/mobile`, mobile_1.default);
     app.use(`${apiPrefix}/auth`, auth_2.default);
     app.use(`${apiPrefix}/auth/google`, googleAuth_1.default);
     app.use(`${apiPrefix}`, csrf_1.default);
@@ -45,6 +48,7 @@ const setupRoutes = (app) => {
     app.use(`${apiPrefix}/coach-content`, auth_1.authMiddleware, coachContent_1.default);
     app.use(`${apiPrefix}/financial`, auth_1.authMiddleware, financial_1.default);
     app.use(`${apiPrefix}/ai`, auth_1.authMiddleware, ai_1.default);
+    app.use(`${apiPrefix}/local-llm`, auth_1.authMiddleware, localLLM_1.localLLMRouter);
     app.use(`${apiPrefix}/voice-journal`, auth_1.authMiddleware, voiceJournal_1.default);
     app.use(`${apiPrefix}/referrals`, referral_1.default);
     app.use(`${apiPrefix}/onboarding`, auth_1.authMiddleware, onboarding_1.default);

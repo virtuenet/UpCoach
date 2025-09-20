@@ -1,0 +1,303 @@
+name: Production Deployment Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deployment (skip quality gates)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '18'
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+
+jobs:
+  quality-gates:
+    name: Quality Gates Validation
+    runs-on: ubuntu-latest
+    outputs:
+      deploy-ready: ${{ steps.gates.outputs.ready }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: |
+          npm ci
+          npm run install:workspaces
+
+      - name: Type Check
+        run: npm run type-check
+
+      - name: Lint Code
+        run: npm run lint
+
+      - name: Security Audit
+        run: npm audit --audit-level=high
+
+      - name: Run Comprehensive Tests
+        run: npm run test:comprehensive:ci
+
+      - name: Check Test Coverage
+        run: npm run coverage:check
+
+      - name: Performance Tests
+        run: npm run test:performance
+
+      - name: Security Tests
+        run: npm run test:security
+
+      - name: Build All Services
+        run: npm run build
+
+      - name: Production Readiness Check
+        run: bash scripts/production-readiness-check.sh
+
+      - name: Quality Gates Assessment
+        id: gates
+        run: |
+          echo "ready=true" >> $GITHUB_OUTPUT
+          echo "✅ All quality gates passed"
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    needs: quality-gates
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy Scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy Results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Docker Security Scan
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            -v $PWD:/root/ \
+            aquasec/trivy image --exit-code 1 \
+            $(docker build -q -f services/api/Dockerfile.production services/api)
+
+  build-and-test:
+    name: Build and Test Docker Images
+    runs-on: ubuntu-latest
+    needs: [quality-gates, security-scan]
+    if: needs.quality-gates.outputs.deploy-ready == 'true'
+
+    strategy:
+      matrix:
+        service:
+          - { name: 'backend', path: 'services/api', dockerfile: 'Dockerfile.production' }
+          - { name: 'admin-panel', path: 'apps/admin-panel', dockerfile: 'Dockerfile.production' }
+          - { name: 'cms-panel', path: 'apps/cms-panel', dockerfile: 'Dockerfile.production' }
+          - { name: 'landing-page', path: 'apps/landing-page', dockerfile: 'Dockerfile.production' }
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.CONTAINER_REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.service.path }}
+          file: ${{ matrix.service.path }}/${{ matrix.service.dockerfile }}
+          push: false
+          tags: |
+            ${{ secrets.CONTAINER_REGISTRY }}/upcoach/${{ matrix.service.name }}:${{ github.sha }}
+            ${{ secrets.CONTAINER_REGISTRY }}/upcoach/${{ matrix.service.name }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test Docker Image
+        run: |
+          docker run --rm \
+            ${{ secrets.CONTAINER_REGISTRY }}/upcoach/${{ matrix.service.name }}:${{ github.sha }} \
+            /bin/sh -c "echo 'Container started successfully'"
+
+      - name: Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.service.path }}
+          file: ${{ matrix.service.path }}/${{ matrix.service.dockerfile }}
+          push: true
+          tags: |
+            ${{ secrets.CONTAINER_REGISTRY }}/upcoach/${{ matrix.service.name }}:${{ github.sha }}
+            ${{ secrets.CONTAINER_REGISTRY }}/upcoach/${{ matrix.service.name }}:latest
+
+  integration-tests:
+    name: Integration Testing
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    services:
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_USER: test
+          POSTGRES_DB: upcoach_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Test Environment
+        run: |
+          cp .env.test.example .env.test
+          docker-compose -f docker-compose.test.yml up -d
+
+      - name: Wait for Services
+        run: |
+          npm run ci:setup
+
+      - name: Run Integration Tests
+        run: |
+          npm run test:integration
+          npm run test:e2e
+
+      - name: Cleanup Test Environment
+        if: always()
+        run: |
+          docker-compose -f docker-compose.test.yml down
+          npm run ci:teardown
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    environment: staging
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Staging
+        run: |
+          bash scripts/execute-staging-deployment.sh
+
+      - name: Validate Staging Deployment
+        run: |
+          bash scripts/validate-deployment.sh staging
+
+      - name: Run Smoke Tests
+        run: |
+          npm run test:smoke -- --env=staging
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    environment: production
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Pre-deployment Backup
+        run: |
+          bash scripts/backup-production.sh
+
+      - name: Deploy to Production
+        run: |
+          bash scripts/execute-production-deployment.sh
+
+      - name: Validate Production Deployment
+        run: |
+          bash scripts/validate-deployment.sh production
+
+      - name: Run Production Health Checks
+        run: |
+          bash scripts/production-health-check.sh
+
+      - name: Rollback on Failure
+        if: failure()
+        run: |
+          bash scripts/rollback-production.sh
+
+      - name: Notify Deployment Success
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#deployments'
+          text: '🚀 Production deployment successful!'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Deployment Failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#deployments'
+          text: '🚨 Production deployment failed! Rolling back...'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  post-deployment:
+    name: Post-Deployment Tasks
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: success()
+
+    steps:
+      - name: Update Monitoring Dashboards
+        run: |
+          bash scripts/update-monitoring.sh
+
+      - name: Generate Deployment Report
+        run: |
+          bash scripts/generate-deployment-report.sh
+
+      - name: Clean Up Old Images
+        run: |
+          bash scripts/cleanup-old-images.sh
