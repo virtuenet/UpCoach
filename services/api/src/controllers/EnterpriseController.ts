@@ -382,6 +382,58 @@ export class EnterpriseController {
     });
   });
 
+  updatePolicy = catchAsync(async (req: Request, _res: Response) => {
+    const { policyId } = req.params;
+    const { name, type, rules, enforcementLevel, appliesTo } = req.body;
+    const updatedBy = (req as any).user!.id;
+
+    const policy = await this.teamService.updatePolicy(parseInt(policyId), {
+      name,
+      type,
+      rules,
+      enforcementLevel,
+      appliesTo,
+      updatedBy: parseInt(updatedBy as string),
+    });
+
+    _res.json({
+      success: true,
+      data: { policy },
+      message: 'Policy updated successfully',
+    });
+  });
+
+  deletePolicy = catchAsync(async (req: Request, _res: Response) => {
+    const { policyId } = req.params;
+    const deletedBy = (req as any).user!.id;
+
+    await this.teamService.deletePolicy(parseInt(policyId), {
+      deletedBy: parseInt(deletedBy as string),
+    });
+
+    _res.json({
+      success: true,
+      message: 'Policy deleted successfully',
+    });
+  });
+
+  togglePolicy = catchAsync(async (req: Request, _res: Response) => {
+    const { policyId } = req.params;
+    const { enabled } = req.body;
+    const updatedBy = (req as any).user!.id;
+
+    const policy = await this.teamService.togglePolicy(parseInt(policyId), {
+      enabled: enabled !== undefined ? enabled : undefined,
+      updatedBy: parseInt(updatedBy as string),
+    });
+
+    _res.json({
+      success: true,
+      data: { policy },
+      message: `Policy ${policy.isActive ? 'enabled' : 'disabled'} successfully`,
+    });
+  });
+
   // Enterprise Audit Logs
   getAuditLogs = catchAsync(async (req: Request, _res: Response) => {
     const { organizationId } = req.params;

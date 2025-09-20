@@ -313,15 +313,34 @@ export default function DashboardPage() {
         >
           System Overview
         </Typography>
-        <Tooltip title="Refresh dashboard data">
-          <IconButton 
-            onClick={handleRefresh}
-            aria-label="Refresh dashboard data"
-            size="large"
-          >
-            <Refresh />
-          </IconButton>
-        </Tooltip>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Tooltip title={autoRefresh ? 'Disable auto-refresh' : 'Enable auto-refresh'}>
+            <Chip
+              label={autoRefresh ? 'Auto-refresh ON' : 'Auto-refresh OFF'}
+              color={autoRefresh ? 'success' : 'default'}
+              variant={autoRefresh ? 'filled' : 'outlined'}
+              onClick={handleToggleAutoRefresh}
+              size="small"
+            />
+          </Tooltip>
+          <Tooltip title="Refresh dashboard data">
+            <IconButton
+              onClick={handleRefresh}
+              disabled={isLoading}
+              aria-label="Refresh dashboard data"
+              size="large"
+              sx={{
+                animation: isLoading ? 'spin 1s linear infinite' : 'none',
+                '@keyframes spin': {
+                  '0%': { transform: 'rotate(0deg)' },
+                  '100%': { transform: 'rotate(360deg)' },
+                },
+              }}
+            >
+              <Refresh />
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Box>
 
       <Box 
@@ -334,9 +353,9 @@ export default function DashboardPage() {
         <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 45%', md: '1 1 22%' } }}>
           <StatsCard
             title="Total Users"
-            value="2,134"
-            subtitle="Active users: 1,687"
-            trend={12}
+            value={dashboardData.userStats.totalUsers.toLocaleString()}
+            subtitle={`Active users: ${dashboardData.userStats.activeUsers.toLocaleString()}`}
+            trend={dashboardData.userStats.growth}
             icon={<People />}
             color="primary"
           />
@@ -344,9 +363,9 @@ export default function DashboardPage() {
         <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 45%', md: '1 1 22%' } }}>
           <StatsCard
             title="Pending Moderation"
-            value="23"
+            value={dashboardData.contentStats.pendingModeration.toString()}
             subtitle="Requires attention"
-            trend={-8}
+            trend={dashboardData.contentStats.moderationRate - 95} // Trend based on moderation rate
             icon={<Security />}
             color="warning"
           />
@@ -354,9 +373,9 @@ export default function DashboardPage() {
         <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 45%', md: '1 1 22%' } }}>
           <StatsCard
             title="Monthly Revenue"
-            value="$48,250"
+            value={`$${dashboardData.financialStats.revenue.toLocaleString()}`}
             subtitle="vs last month"
-            trend={15}
+            trend={dashboardData.financialStats.growth}
             icon={<AttachMoney />}
             color="success"
           />
@@ -364,9 +383,9 @@ export default function DashboardPage() {
         <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 45%', md: '1 1 22%' } }}>
           <StatsCard
             title="Content Items"
-            value="1,456"
-            subtitle="Published: 1,392"
-            trend={5}
+            value={dashboardData.contentStats.totalContent.toLocaleString()}
+            subtitle={`Approved today: ${dashboardData.contentStats.approvedToday}`}
+            trend={Math.round((dashboardData.contentStats.approvedToday / dashboardData.contentStats.totalContent) * 1000) / 10} // Daily approval rate
             icon={<ContentCopy />}
             color="info"
           />

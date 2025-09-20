@@ -8,8 +8,7 @@ import forumVoteFactory from '../../models/community/ForumVote';
 import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
 import { getCacheService } from '../cache/UnifiedCacheService';
-// import DOMPurify from 'isomorphic-dompurify';
-// import { marked } from 'marked';
+import DOMPurify from 'isomorphic-dompurify';
 
 // Initialize forum models
 const ForumCategory = forumCategoryFactory(sequelize);
@@ -451,12 +450,89 @@ export class ForumService {
   // Helper methods
 
   private sanitizeContent(content: string): string {
-    // TODO: Implement proper sanitization
-    // For now, just do basic cleaning
-    return content
-      .replace(/<script[^>]*>.*?<\/script>/gi, '')
-      .replace(/<iframe[^>]*>.*?<\/iframe>/gi, '')
-      .trim();
+    if (!content || typeof content !== 'string') {
+      return '';
+    }
+
+    // Configure DOMPurify for forum content
+    const cleanConfig = {
+      ALLOWED_TAGS: [
+        'p', 'br', 'strong', 'b', 'em', 'i', 'u', 'strike', 's',
+        'blockquote', 'code', 'pre', 'ul', 'ol', 'li',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'a', 'img'
+      ],
+      ALLOWED_ATTR: {
+        'a': ['href', 'title', 'target', 'rel'],
+        'img': ['src', 'alt', 'title', 'width', 'height'],
+        '*': ['class']
+      },
+      ALLOW_DATA_ATTR: false,
+      FORBID_TAGS: ['script', 'object', 'embed', 'iframe', 'form', 'input', 'textarea', 'select', 'button'],
+      FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur', 'style'],
+      KEEP_CONTENT: true,
+      RETURN_DOM: false,
+      RETURN_DOM_FRAGMENT: false,
+      SANITIZE_DOM: true,
+      SANITIZE_NAMED_PROPS: true,
+      WHOLE_DOCUMENT: false,
+      // Security-focused configurations
+      FORCE_BODY: false,
+      RETURN_TRUSTED_TYPE: false,
+      SAFE_FOR_TEMPLATES: true
+    };
+
+    try {
+      // First pass: Basic validation and length check
+      if (content.length > 50000) { // 50KB limit for forum posts
+        content = content.substring(0, 50000);
+      }
+
+      // Second pass: Remove potentially dangerous patterns
+      content = content
+        .replace(/javascript:/gi, 'blocked:')
+        .replace(/data:/gi, 'blocked:')
+        .replace(/vbscript:/gi, 'blocked:')
+        .replace(/on\w+\s*=/gi, '')
+        .replace(/<\s*script[^>]*>.*?<\s*\/\s*script\s*>/gis, '')
+        .replace(/<\s*iframe[^>]*>.*?<\s*\/\s*iframe\s*>/gis, '')
+        .replace(/<\s*object[^>]*>.*?<\s*\/\s*object\s*>/gis, '')
+        .replace(/<\s*embed[^>]*>.*?<\s*\/\s*embed\s*>/gis, '');
+
+      // Third pass: DOMPurify sanitization
+      const sanitized = DOMPurify.sanitize(content, cleanConfig);
+
+      // Fourth pass: Additional validation for links
+      const linkRegex = /<a[^>]+href\s*=\s*["']([^"']+)["'][^>]*>/gi;
+      const processedContent = sanitized.replace(linkRegex, (match, href) => {
+        // Validate URL protocols
+        const allowedProtocols = ['http:', 'https:', 'mailto:'];
+        try {
+          const url = new URL(href);
+          if (!allowedProtocols.includes(url.protocol)) {
+            return match.replace(href, '#blocked-url');
+          }
+          // Add security attributes to external links
+          if (url.hostname !== 'localhost' && !url.hostname.includes('upcoach')) {
+            return match.replace('>', ' rel="noopener noreferrer nofollow" target="_blank">');
+          }
+          return match;
+        } catch {
+          // Invalid URL - remove the link but keep content
+          return match.replace(/<a[^>]*>/gi, '').replace(/<\/a>/gi, '');
+        }
+      });
+
+      return processedContent.trim();
+    } catch (error) {
+      logger.error('Content sanitization failed', { error, contentLength: content.length });
+      // Fallback to very basic sanitization
+      return content
+        .replace(/<[^>]*>/g, '') // Strip all HTML tags
+        .replace(/[<>"'&]/g, '') // Remove potentially dangerous characters
+        .trim()
+        .substring(0, 10000); // Limit length
+    }
   }
 
   private async trackActivity(

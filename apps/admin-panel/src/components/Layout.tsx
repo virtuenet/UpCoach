@@ -1,8 +1,8 @@
 import React, { useState, ErrorInfo, ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, Typography, Button, Paper } from '@mui/material';
-import { 
-  Navigation, 
+import {
+  Navigation,
   adminNavigation,
   generateBreadcrumbs,
   NavigationItem
@@ -10,6 +10,133 @@ import {
 import { useAuthStore } from '../stores/authStore';
 import Breadcrumbs from './Breadcrumbs';
 import * as Icons from '@mui/icons-material';
+
+// Enhanced monitoring service for error tracking
+class MonitoringService {
+  private static instance: MonitoringService;
+  private isInitialized = false;
+
+  public static getInstance(): MonitoringService {
+    if (!MonitoringService.instance) {
+      MonitoringService.instance = new MonitoringService();
+    }
+    return MonitoringService.instance;
+  }
+
+  public initialize() {
+    if (this.isInitialized) return;
+
+    // Initialize monitoring based on environment
+    if (process.env.NODE_ENV === 'production') {
+      // In production, we would initialize Sentry, DataDog, or other monitoring services
+      // For now, we'll set up enhanced console logging with structured data
+      this.initializeProductionLogging();
+    }
+
+    this.isInitialized = true;
+  }
+
+  private initializeProductionLogging() {
+    // Enhanced console logging for production environments
+    // This could be replaced with actual monitoring service initialization
+    console.info('Monitoring service initialized for production environment');
+  }
+
+  public captureError(error: Error, context?: {
+    component?: string;
+    errorInfo?: ErrorInfo;
+    user?: any;
+    additionalData?: Record<string, any>;
+  }) {
+    const errorData = {
+      timestamp: new Date().toISOString(),
+      error: {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      },
+      context: {
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+        viewport: {
+          width: window.innerWidth,
+          height: window.innerHeight,
+        },
+        component: context?.component || 'Unknown',
+        user: context?.user ? {
+          id: context.user.id,
+          email: context.user.email,
+          // Don't log sensitive user data
+        } : null,
+        react: context?.errorInfo ? {
+          componentStack: context.errorInfo.componentStack,
+        } : null,
+        ...context?.additionalData,
+      },
+      severity: 'error',
+      environment: process.env.NODE_ENV,
+    };
+
+    if (process.env.NODE_ENV === 'production') {
+      // Send to monitoring service
+      this.sendToMonitoringService(errorData);
+    } else {
+      // Enhanced development logging
+      console.group('🚨 Error Captured by Monitoring Service');
+      console.error('Error:', error);
+      console.log('Context:', errorData.context);
+      console.groupEnd();
+    }
+  }
+
+  private async sendToMonitoringService(errorData: any) {
+    try {
+      // In a real implementation, this would send to:
+      // - Sentry: Sentry.captureException(error, { contexts: { ...context } });
+      // - DataDog: ddTrace.tracer.recordError(error, context);
+      // - Custom API endpoint for internal monitoring
+
+      // For now, we'll use a structured console log that monitoring tools can pick up
+      console.error('MONITORING_ERROR', JSON.stringify(errorData));
+
+      // Optionally send to a custom monitoring endpoint
+      if (process.env.REACT_APP_MONITORING_ENDPOINT) {
+        await fetch(process.env.REACT_APP_MONITORING_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(errorData),
+        }).catch(err => {
+          console.warn('Failed to send error to monitoring endpoint:', err);
+        });
+      }
+    } catch (monitoringError) {
+      console.warn('Failed to send error to monitoring service:', monitoringError);
+    }
+  }
+
+  public captureEvent(eventName: string, data?: Record<string, any>) {
+    const eventData = {
+      timestamp: new Date().toISOString(),
+      event: eventName,
+      data: data || {},
+      context: {
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+      },
+      environment: process.env.NODE_ENV,
+    };
+
+    if (process.env.NODE_ENV === 'production') {
+      console.log('MONITORING_EVENT', JSON.stringify(eventData));
+    }
+  }
+}
+
+// Initialize monitoring service
+const monitoring = MonitoringService.getInstance();
+monitoring.initialize();
 
 // Icon mapping to convert string names to actual icon components
 const iconMap: Record<string, React.ComponentType<any>> = {
@@ -57,22 +184,16 @@ class ErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ errorInfo });
-    
-    // Enhanced error logging with context
-    console.error('Error Boundary caught error:', {
-      error: error.message,
-      stack: error.stack,
-      componentStack: errorInfo.componentStack,
-      timestamp: new Date().toISOString(),
-      url: window.location.href,
-      userAgent: navigator.userAgent,
-    });
 
-    // In production, send to monitoring service
-    if (process.env.NODE_ENV === 'production') {
-      // TODO: Send to Sentry or similar service
-      // Sentry.captureException(error, { contexts: { react: errorInfo } });
-    }
+    // Send error to monitoring service with full context
+    monitoring.captureError(error, {
+      component: 'ErrorBoundary',
+      errorInfo,
+      additionalData: {
+        errorBoundaryState: this.state,
+        props: this.props,
+      },
+    });
   }
 
   private handleRetry = () => {

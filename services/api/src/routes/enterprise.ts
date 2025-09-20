@@ -161,24 +161,41 @@ router.get(
   enterpriseController.getPolicies
 );
 
-// TODO: Implement these policy methods
-// router.put(
-//   '/policies/:policyId',
-//   authorize('organization', 'admin'),
-//   enterpriseController.updatePolicy
-// );
+// Policy management routes
+router.put(
+  '/policies/:policyId',
+  authorize('organization', 'admin'),
+  [
+    body('name').optional().notEmpty().trim(),
+    body('type').optional().isIn(['security', 'data_retention', 'access_control', 'compliance']),
+    body('rules').optional().isObject(),
+    body('enforcementLevel').optional().isIn(['soft', 'hard']),
+    body('appliesTo').optional().isObject(),
+  ],
+  validateRequest,
+  enterpriseController.updatePolicy
+);
 
-// router.delete(
-//   '/policies/:policyId',
-//   authorize('organization', 'admin'),
-//   enterpriseController.deletePolicy
-// );
+router.delete(
+  '/policies/:policyId',
+  authorize('organization', 'admin'),
+  [
+    param('policyId').isInt({ min: 1 }),
+  ],
+  validateRequest,
+  enterpriseController.deletePolicy
+);
 
-// router.patch(
-//   '/policies/:policyId/toggle',
-//   authorize('organization', 'admin'),
-//   enterpriseController.togglePolicy
-// );
+router.patch(
+  '/policies/:policyId/toggle',
+  authorize('organization', 'admin'),
+  [
+    param('policyId').isInt({ min: 1 }),
+    body('enabled').optional().isBoolean(),
+  ],
+  validateRequest,
+  enterpriseController.togglePolicy
+);
 
 // Audit logs
 router.get(

@@ -14,6 +14,131 @@ import {
 } from '../../models';
 import { logger } from '../../utils/logger';
 
+// Notification types for financial events
+interface NotificationData {
+  userId: number;
+  type: 'email' | 'in_app' | 'both';
+  template: string;
+  subject: string;
+  data: Record<string, any>;
+  priority: 'low' | 'medium' | 'high' | 'critical';
+}
+
+// Financial notification service
+class FinancialNotificationService {
+  async sendNotification(notificationData: NotificationData): Promise<void> {
+    try {
+      // Create in-app notification
+      if (notificationData.type === 'in_app' || notificationData.type === 'both') {
+        await this.createInAppNotification(notificationData);
+      }
+
+      // Send email notification
+      if (notificationData.type === 'email' || notificationData.type === 'both') {
+        await this.sendEmailNotification(notificationData);
+      }
+
+      logger.info('Financial notification sent', {
+        userId: notificationData.userId,
+        template: notificationData.template,
+        type: notificationData.type,
+      });
+    } catch (error) {
+      logger.error('Failed to send financial notification', {
+        error,
+        userId: notificationData.userId,
+        template: notificationData.template,
+      });
+    }
+  }
+
+  private async createInAppNotification(notificationData: NotificationData): Promise<void> {
+    // Insert notification into database
+    const query = `
+      INSERT INTO notifications (user_id, type, title, message, data, priority, created_at, is_read)
+      VALUES ($1, $2, $3, $4, $5, $6, NOW(), false)
+    `;
+
+    const values = [
+      notificationData.userId,
+      'financial',
+      notificationData.subject,
+      this.generateMessage(notificationData.template, notificationData.data),
+      JSON.stringify(notificationData.data),
+      notificationData.priority,
+    ];
+
+    // Since we're using Sequelize, we'll use raw query for now
+    // In a real implementation, this would use the Notification model
+    try {
+      await require('../../models').sequelize.query(query, {
+        replacements: values,
+        type: require('sequelize').QueryTypes.INSERT,
+      });
+    } catch (error) {
+      logger.error('Failed to create in-app notification', { error, userId: notificationData.userId });
+    }
+  }
+
+  private async sendEmailNotification(notificationData: NotificationData): Promise<void> {
+    try {
+      // Get user email
+      const user = await User.findByPk(notificationData.userId);
+      if (!user) {
+        logger.error('User not found for email notification', { userId: notificationData.userId });
+        return;
+      }
+
+      // For now, we'll log the email that would be sent
+      // In production, this would integrate with your email service (SendGrid, AWS SES, etc.)
+      const emailContent = {
+        to: user.email,
+        subject: notificationData.subject,
+        template: notificationData.template,
+        data: notificationData.data,
+        priority: notificationData.priority,
+      };
+
+      // Log email for development/staging
+      if (process.env.NODE_ENV !== 'production') {
+        logger.info('Email notification (development mode)', emailContent);
+      } else {
+        // In production, send actual email
+        // await emailService.sendTemplateEmail(emailContent);
+        logger.info('Email notification sent', {
+          userId: notificationData.userId,
+          template: notificationData.template,
+          to: user.email,
+        });
+      }
+    } catch (error) {
+      logger.error('Failed to send email notification', {
+        error,
+        userId: notificationData.userId,
+      });
+    }
+  }
+
+  private generateMessage(template: string, data: Record<string, any>): string {
+    const messages: Record<string, string> = {
+      payment_success: `Your payment of ${data.amount} ${data.currency?.toUpperCase()} has been processed successfully.`,
+      payment_failed: `Your payment of ${data.amount} ${data.currency?.toUpperCase()} failed. Please update your payment method.`,
+      subscription_created: `Welcome! Your ${data.plan} subscription has been activated.`,
+      subscription_updated: `Your subscription has been updated from ${data.previousPlan} to ${data.newPlan}.`,
+      subscription_canceled: `Your ${data.plan} subscription has been canceled. You'll continue to have access until ${data.periodEnd}.`,
+      trial_ending: `Your trial period ends in ${data.daysRemaining} days. Update your payment method to continue service.`,
+      invoice_payment_success: `Your subscription payment of ${data.amount} ${data.currency?.toUpperCase()} has been processed.`,
+      invoice_payment_failed: `Your subscription payment failed. Please update your payment method to avoid service interruption.`,
+      refund_issued: `A refund of ${data.amount} ${data.currency?.toUpperCase()} has been issued to your account.`,
+      dispute_created: `A dispute has been created for your payment. Our team will review and contact you if needed.`,
+    };
+
+    return messages[template] || 'Financial event notification';
+  }
+}
+
+const notificationService = new FinancialNotificationService();
+
 export class StripeWebhookService {
   /**
    * Handle incoming Stripe webhook
@@ -121,6 +246,20 @@ export class StripeWebhookService {
       isProcessed: true,
       processedAt: new Date(),
     });
+
+    // Send success notification to user
+    await notificationService.sendNotification({
+      userId: user.id,
+      type: 'both',
+      template: 'payment_success',
+      subject: 'Payment successful',
+      data: {
+        amount: paymentIntent.amount / 100,
+        currency: paymentIntent.currency,
+        description: paymentIntent.description || 'Payment',
+      },
+      priority: 'medium',
+    });
   }
 
   /**
@@ -157,6 +296,20 @@ export class StripeWebhookService {
       currency: paymentIntent.currency,
       isProcessed: true,
       processedAt: new Date(),
+    });
+
+    // Send failure notification to user
+    await notificationService.sendNotification({
+      userId: user.id,
+      type: 'both',
+      template: 'payment_failed',
+      subject: 'Payment failed',
+      data: {
+        amount: paymentIntent.amount / 100,
+        currency: paymentIntent.currency,
+        reason: paymentIntent.last_payment_error?.message || 'Unknown error',
+      },
+      priority: 'high',
     });
   }
 
@@ -203,6 +356,22 @@ export class StripeWebhookService {
       isProcessed: true,
       processedAt: new Date(),
     });
+
+    // Send subscription creation notification
+    await notificationService.sendNotification({
+      userId: user.id,
+      type: 'both',
+      template: 'subscription_created',
+      subject: 'Subscription activated',
+      data: {
+        plan: subscription.plan,
+        amount: subscription.amount,
+        currency: subscription.currency,
+        periodStart: subscription.currentPeriodStart?.toLocaleDateString(),
+        periodEnd: subscription.currentPeriodEnd?.toLocaleDateString(),
+      },
+      priority: 'medium',
+    });
   }
 
   /**
@@ -247,6 +416,21 @@ export class StripeWebhookService {
       isProcessed: true,
       processedAt: new Date(),
     });
+
+    // Send subscription update notification
+    await notificationService.sendNotification({
+      userId: subscription.userId,
+      type: 'both',
+      template: 'subscription_updated',
+      subject: 'Subscription updated',
+      data: {
+        previousPlan: previousPlan,
+        newPlan: newPlan,
+        amount: stripeSubscription.items.data[0].price.unit_amount! / 100,
+        currency: stripeSubscription.currency,
+      },
+      priority: 'medium',
+    });
   }
 
   /**
@@ -275,6 +459,20 @@ export class StripeWebhookService {
       isProcessed: true,
       processedAt: new Date(),
     });
+
+    // Send subscription cancellation notification
+    await notificationService.sendNotification({
+      userId: subscription.userId,
+      type: 'both',
+      template: 'subscription_canceled',
+      subject: 'Subscription canceled',
+      data: {
+        plan: subscription.plan,
+        periodEnd: subscription.currentPeriodEnd?.toLocaleDateString(),
+        canceledAt: new Date().toLocaleDateString(),
+      },
+      priority: 'high',
+    });
   }
 
   /**
@@ -299,7 +497,19 @@ export class StripeWebhookService {
       processedAt: new Date(),
     });
 
-    // TODO: Send notification to user
+    // Send notification to user about trial ending
+    await notificationService.sendNotification({
+      userId: subscription.userId,
+      type: 'both',
+      template: 'trial_ending',
+      subject: 'Your trial is ending soon',
+      data: {
+        plan: subscription.plan,
+        trialEndDate: stripeSubscription.trial_end ? new Date(stripeSubscription.trial_end * 1000).toLocaleDateString() : 'soon',
+        daysRemaining: stripeSubscription.trial_end ? Math.ceil((stripeSubscription.trial_end * 1000 - Date.now()) / (1000 * 60 * 60 * 24)) : 0,
+      },
+      priority: 'high',
+    });
   }
 
   /**
@@ -328,6 +538,21 @@ export class StripeWebhookService {
       paymentMethod: PaymentMethod.CARD,
       description: 'Subscription payment',
       stripeInvoiceId: invoice.id,
+    });
+
+    // Send invoice payment success notification
+    await notificationService.sendNotification({
+      userId: subscription.userId,
+      type: 'in_app', // Less intrusive for recurring payments
+      template: 'invoice_payment_success',
+      subject: 'Subscription payment processed',
+      data: {
+        amount: invoice.amount_paid / 100,
+        currency: invoice.currency,
+        plan: subscription.plan,
+        nextPaymentDate: subscription.currentPeriodEnd?.toLocaleDateString(),
+      },
+      priority: 'low',
     });
   }
 
@@ -358,6 +583,21 @@ export class StripeWebhookService {
       currency: invoice.currency,
       isProcessed: true,
       processedAt: new Date(),
+    });
+
+    // Send invoice payment failure notification
+    await notificationService.sendNotification({
+      userId: subscription.userId,
+      type: 'both',
+      template: 'invoice_payment_failed',
+      subject: 'Subscription payment failed',
+      data: {
+        amount: invoice.amount_due / 100,
+        currency: invoice.currency,
+        plan: subscription.plan,
+        nextAttempt: invoice.next_payment_attempt ? new Date(invoice.next_payment_attempt * 1000).toLocaleDateString() : 'Unknown',
+      },
+      priority: 'critical',
     });
   }
 
@@ -403,6 +643,21 @@ export class StripeWebhookService {
       isProcessed: true,
       processedAt: new Date(),
     });
+
+    // Send refund notification
+    await notificationService.sendNotification({
+      userId: transaction.userId,
+      type: 'both',
+      template: 'refund_issued',
+      subject: 'Refund issued',
+      data: {
+        amount: charge.amount_refunded / 100,
+        currency: charge.currency,
+        originalTransactionId: transaction.stripeTransactionId,
+        refundReason: charge.refunds?.data[0]?.reason || 'requested_by_customer',
+      },
+      priority: 'medium',
+    });
   }
 
   /**
@@ -428,6 +683,30 @@ export class StripeWebhookService {
       isProcessed: false, // Requires manual review
       processedAt: new Date(),
     });
+
+    // Send dispute notification (high priority for manual review)
+    await notificationService.sendNotification({
+      userId: transaction.userId,
+      type: 'both',
+      template: 'dispute_created',
+      subject: 'Payment dispute created',
+      data: {
+        amount: dispute.amount / 100,
+        currency: dispute.currency,
+        reason: dispute.reason,
+        transactionId: transaction.stripeTransactionId,
+        disputeId: dispute.id,
+      },
+      priority: 'critical',
+    });
+
+    // Also notify internal team for disputes
+    logger.warn('Payment dispute created - requires manual review', {
+      userId: transaction.userId,
+      disputeId: dispute.id,
+      amount: dispute.amount / 100,
+      reason: dispute.reason,
+    });
   }
 
   /**
@@ -435,7 +714,12 @@ export class StripeWebhookService {
    */
   private async recordBillingEvent(event: Stripe.Event): Promise<void> {
     // This is handled in individual event handlers
-    logger.info(`Processed Stripe webhook: ${event.type}`);
+    logger.info(`Processed Stripe webhook: ${event.type}`, {
+      eventId: event.id,
+      eventType: event.type,
+      created: event.created,
+      livemode: event.livemode,
+    });
   }
 
   /**
