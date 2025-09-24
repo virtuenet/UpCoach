@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.aiAnalyticsController = exports.AIAnalyticsController = void 0;
 const date_fns_1 = require("date-fns");
-const eachDayOfInterval_1 = require("date-fns/eachDayOfInterval");
 const connection_1 = require("../database/connection");
 const AIService_1 = require("../services/ai/AIService");
 const logger_1 = require("../utils/logger");
@@ -150,7 +149,7 @@ class AIAnalyticsController {
                 replacements: { startDate, endDate },
                 type: 'SELECT',
             });
-            const dateRange = (0, eachDayOfInterval_1.eachDayOfInterval)({ start: startDate, end: endDate });
+            const dateRange = (0, date_fns_1.eachDayOfInterval)({ start: startDate, end: endDate });
             const filledData = dateRange.map(date => {
                 const dateStr = (0, date_fns_1.format)(date, 'yyyy-MM-dd');
                 const existing = usageData.find((d) => (0, date_fns_1.format)(new Date(d.date), 'yyyy-MM-dd') === dateStr);

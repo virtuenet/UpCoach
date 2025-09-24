@@ -52,33 +52,33 @@ export default function ContentPage() {
   const deleteMutation = useMutation({
     mutationFn: contentApi.deleteArticle,
     onSuccess: () => {
-      toast.success('Article deleted successfully');
+      toast('Article deleted successfully', { type: 'success' });
       queryClient.invalidateQueries({ queryKey: ['articles'] });
     },
     onError: (error: any) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete article');
+      toast(error instanceof Error ? error.message : 'Failed to delete article', { type: 'error' });
     },
   });
 
   const publishMutation = useMutation({
     mutationFn: contentApi.publishArticle,
     onSuccess: () => {
-      toast.success('Article published successfully');
+      toast('Article published successfully', { type: 'success' });
       queryClient.invalidateQueries({ queryKey: ['articles'] });
     },
     onError: (error: any) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to publish article');
+      toast(error instanceof Error ? error.message : 'Failed to publish article', { type: 'error' });
     },
   });
 
   const archiveMutation = useMutation({
     mutationFn: contentApi.archiveArticle,
     onSuccess: () => {
-      toast.success('Article archived successfully');
+      toast('Article archived successfully', { type: 'success' });
       queryClient.invalidateQueries({ queryKey: ['articles'] });
     },
     onError: (error: any) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to archive article');
+      toast(error instanceof Error ? error.message : 'Failed to archive article', { type: 'error' });
     },
   });
 

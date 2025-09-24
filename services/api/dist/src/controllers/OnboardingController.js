@@ -8,6 +8,174 @@ const UserProfile_1 = require("../models/UserProfile");
 const AIService_1 = require("../services/ai/AIService");
 const AnalyticsService_1 = require("../services/analytics/AnalyticsService");
 const logger_1 = require("../utils/logger");
+class OnboardingEmailCampaignService {
+    async triggerCampaign(userId, campaignType, userData) {
+        try {
+            const campaigns = {
+                user_registered: {
+                    sequence: [
+                        { delay: 0, template: 'welcome', subject: 'Welcome to UpCoach!' },
+                        { delay: 24, template: 'onboarding_step1', subject: 'Get started with your first session' },
+                        { delay: 72, template: 'onboarding_step2', subject: 'Tips to make the most of UpCoach' },
+                        { delay: 168, template: 'onboarding_week1', subject: 'How has your first week been?' },
+                    ],
+                },
+                profile_completed: {
+                    sequence: [
+                        { delay: 0, template: 'profile_complete', subject: 'Your profile is ready!' },
+                        { delay: 24, template: 'goal_setting_tips', subject: 'Setting effective goals' },
+                    ],
+                },
+                goal_created: {
+                    sequence: [
+                        { delay: 0, template: 'goal_confirmation', subject: 'Your goal has been set!' },
+                        { delay: 48, template: 'goal_progress_tips', subject: 'Tips for achieving your goal' },
+                    ],
+                },
+                inactive_user: {
+                    sequence: [
+                        { delay: 0, template: 'come_back', subject: 'We miss you!' },
+                        { delay: 48, template: 'success_stories', subject: 'See what others have achieved' },
+                        { delay: 168, template: 'final_reminder', subject: 'Last chance to continue your journey' },
+                    ],
+                },
+            };
+            const campaign = campaigns[campaignType];
+            if (!campaign) {
+                logger_1.logger.warn('Unknown campaign type', { campaignType, userId });
+                return;
+            }
+            for (const email of campaign.sequence) {
+                await this.scheduleEmail(userId, email, userData);
+            }
+            await this.logCampaignEvent(userId, campaignType, 'triggered');
+            logger_1.logger.info('Email campaign triggered', {
+                userId,
+                campaignType,
+                emailCount: campaign.sequence.length,
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Failed to trigger email campaign', {
+                error,
+                userId,
+                campaignType,
+            });
+        }
+    }
+    async scheduleEmail(userId, emailConfig, userData) {
+        const scheduledAt = new Date(Date.now() + emailConfig.delay * 60 * 60 * 1000);
+        try {
+            await database_1.sequelize.query(`INSERT INTO email_queue
+         (user_id, template, subject, scheduled_at, data, status, created_at)
+         VALUES (:userId, :template, :subject, :scheduledAt, :data, 'pending', NOW())`, {
+                replacements: {
+                    userId,
+                    template: emailConfig.template,
+                    subject: emailConfig.subject,
+                    scheduledAt,
+                    data: JSON.stringify(userData || {}),
+                },
+            });
+            logger_1.logger.debug('Email scheduled', {
+                userId,
+                template: emailConfig.template,
+                scheduledAt,
+                delay: emailConfig.delay,
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Failed to schedule email', {
+                error,
+                userId,
+                template: emailConfig.template,
+            });
+        }
+    }
+    async logCampaignEvent(userId, campaignType, event) {
+        try {
+            await database_1.sequelize.query(`INSERT INTO email_campaign_events
+         (user_id, campaign_type, event, created_at)
+         VALUES (:userId, :campaignType, :event, NOW())`, {
+                replacements: { userId, campaignType, event },
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Failed to log campaign event', {
+                error,
+                userId,
+                campaignType,
+                event,
+            });
+        }
+    }
+    async pauseCampaign(userId, campaignType) {
+        try {
+            await database_1.sequelize.query(`UPDATE email_queue
+         SET status = 'paused', updated_at = NOW()
+         WHERE user_id = :userId
+         AND template LIKE :campaignPattern
+         AND status = 'pending'
+         AND scheduled_at > NOW()`, {
+                replacements: {
+                    userId,
+                    campaignPattern: `${campaignType}%`,
+                },
+            });
+            await this.logCampaignEvent(userId, campaignType, 'paused');
+            logger_1.logger.info('Email campaign paused', { userId, campaignType });
+        }
+        catch (error) {
+            logger_1.logger.error('Failed to pause email campaign', {
+                error,
+                userId,
+                campaignType,
+            });
+        }
+    }
+    async resumeCampaign(userId, campaignType) {
+        try {
+            await database_1.sequelize.query(`UPDATE email_queue
+         SET status = 'pending', updated_at = NOW()
+         WHERE user_id = :userId
+         AND template LIKE :campaignPattern
+         AND status = 'paused'`, {
+                replacements: {
+                    userId,
+                    campaignPattern: `${campaignType}%`,
+                },
+            });
+            await this.logCampaignEvent(userId, campaignType, 'resumed');
+            logger_1.logger.info('Email campaign resumed', { userId, campaignType });
+        }
+        catch (error) {
+            logger_1.logger.error('Failed to resume email campaign', {
+                error,
+                userId,
+                campaignType,
+            });
+        }
+    }
+    async getCampaignStatus(userId) {
+        try {
+            const [campaigns] = await database_1.sequelize.query(`SELECT
+           campaign_type,
+           event,
+           created_at
+         FROM email_campaign_events
+         WHERE user_id = :userId
+         ORDER BY created_at DESC`, {
+                replacements: { userId },
+            });
+            return campaigns;
+        }
+        catch (error) {
+            logger_1.logger.error('Failed to get campaign status', { error, userId });
+            return [];
+        }
+    }
+}
+const emailCampaignService = new OnboardingEmailCampaignService();
 class OnboardingController {
     async completeOnboarding(req, _res) {
         const transaction = await database_1.sequelize.transaction();
@@ -85,6 +253,19 @@ class OnboardingController {
             await userProfile.save({ transaction });
             await transaction.commit();
             this.triggerPostOnboardingActions(Number(userId), onboardingData);
+            await emailCampaignService.triggerCampaign(userId.toString(), 'profile_completed', {
+                name: onboardingData.profile.name,
+                profileCompleteness: '100%',
+                goalsCount: onboardingData.goals.specificGoals.length,
+            });
+            if (onboardingData.goals.specificGoals.length > 0) {
+                await emailCampaignService.triggerCampaign(userId.toString(), 'goal_created', {
+                    name: onboardingData.profile.name,
+                    primaryGoal: onboardingData.goals.primaryGoal,
+                    goalsCount: onboardingData.goals.specificGoals.length,
+                    timeline: onboardingData.goals.timeline,
+                });
+            }
             await AnalyticsService_1.analyticsService.identify({
                 userId: Number(userId),
                 email: user.email,
@@ -258,6 +439,12 @@ class OnboardingController {
     }
     async triggerPostOnboardingActions(userId, data) {
         try {
+            await emailCampaignService.triggerCampaign(userId.toString(), 'user_registered', {
+                name: data.profile.name,
+                goals: data.goals?.map(g => g.title).join(', ') || 'general improvement',
+                coachingStyle: data.preferences?.coachingStyle || 'balanced',
+                commitmentLevel: data.availability?.commitmentLevel || 'moderate',
+            });
             await AIService_1.aiService.createInitialSession(Number(userId), {
                 goals: data.goals,
                 preferences: data.preferences,
@@ -284,6 +471,101 @@ class OnboardingController {
             completedSteps++;
         progress = (completedSteps / steps) * 100;
         return Math.round(progress);
+    }
+    async pauseEmailCampaign(req, _res) {
+        try {
+            const userId = req.user.id;
+            const { campaignType } = req.body;
+            if (!campaignType) {
+                return _res.status(400).json({
+                    success: false,
+                    error: 'Campaign type is required',
+                });
+            }
+            await emailCampaignService.pauseCampaign(userId.toString(), campaignType);
+            _res.json({
+                success: true,
+                message: `${campaignType} campaign paused successfully`,
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Failed to pause email campaign', { error, userId: req.user.id });
+            _res.status(500).json({
+                success: false,
+                error: 'Failed to pause email campaign',
+            });
+        }
+    }
+    async resumeEmailCampaign(req, _res) {
+        try {
+            const userId = req.user.id;
+            const { campaignType } = req.body;
+            if (!campaignType) {
+                return _res.status(400).json({
+                    success: false,
+                    error: 'Campaign type is required',
+                });
+            }
+            await emailCampaignService.resumeCampaign(userId.toString(), campaignType);
+            _res.json({
+                success: true,
+                message: `${campaignType} campaign resumed successfully`,
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Failed to resume email campaign', { error, userId: req.user.id });
+            _res.status(500).json({
+                success: false,
+                error: 'Failed to resume email campaign',
+            });
+        }
+    }
+    async getEmailCampaignStatus(req, _res) {
+        try {
+            const userId = req.user.id;
+            const campaigns = await emailCampaignService.getCampaignStatus(userId.toString());
+            _res.json({
+                success: true,
+                data: { campaigns },
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Failed to get email campaign status', { error, userId: req.user.id });
+            _res.status(500).json({
+                success: false,
+                error: 'Failed to get email campaign status',
+            });
+        }
+    }
+    async triggerReengagementCampaign(req, _res) {
+        try {
+            const userId = req.user.id;
+            const user = await User_1.User.findByPk(userId, {
+                include: [{ model: UserProfile_1.UserProfile, as: 'profile' }],
+            });
+            if (!user) {
+                return _res.status(404).json({
+                    success: false,
+                    error: 'User not found',
+                });
+            }
+            await emailCampaignService.triggerCampaign(userId.toString(), 'inactive_user', {
+                name: user.name,
+                lastActiveDate: user.lastActiveAt?.toLocaleDateString() || 'recently',
+                profileComplete: !!user.profile,
+            });
+            _res.json({
+                success: true,
+                message: 'Re-engagement campaign triggered successfully',
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Failed to trigger re-engagement campaign', { error, userId: req.user.id });
+            _res.status(500).json({
+                success: false,
+                error: 'Failed to trigger re-engagement campaign',
+            });
+        }
     }
 }
 exports.OnboardingController = OnboardingController;

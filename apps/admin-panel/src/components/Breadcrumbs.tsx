@@ -1,6 +1,4 @@
-import { Breadcrumbs as MuiBreadcrumbs, Link, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import { NavigateNext } from '@mui/icons-material';
 
 interface BreadcrumbItem {
   label: string;
@@ -13,44 +11,25 @@ interface BreadcrumbsProps {
 
 export default function Breadcrumbs({ items }: BreadcrumbsProps) {
   return (
-    <MuiBreadcrumbs
-      separator={<NavigateNext fontSize="small" />}
-      aria-label="breadcrumb"
-      sx={{ fontSize: '0.875rem' }}
-    >
-      {items.map((item, index) => {
-        const isLast = index === items.length - 1;
-        
-        if (isLast || !item.path) {
+    <nav aria-label="breadcrumb" className="breadcrumbs">
+      <ol className="breadcrumb-list">
+        {items.map((item, index) => {
+          const isLast = index === items.length - 1;
+
           return (
-            <Typography
-              key={index}
-              color="text.primary"
-              sx={{ fontSize: '0.875rem', fontWeight: 500 }}
-            >
-              {item.label}
-            </Typography>
+            <li key={index} className="breadcrumb-item">
+              {isLast || !item.path ? (
+                <span className="breadcrumb-current">{item.label}</span>
+              ) : (
+                <RouterLink to={item.path} className="breadcrumb-link">
+                  {item.label}
+                </RouterLink>
+              )}
+              {!isLast && <span className="breadcrumb-separator"> / </span>}
+            </li>
           );
-        }
-        
-        return (
-          <Link
-            key={index}
-            component={RouterLink}
-            to={item.path}
-            color="inherit"
-            sx={{ 
-              fontSize: '0.875rem',
-              textDecoration: 'none',
-              '&:hover': {
-                textDecoration: 'underline',
-              },
-            }}
-          >
-            {item.label}
-          </Link>
-        );
-      })}
-    </MuiBreadcrumbs>
+        })}
+      </ol>
+    </nav>
   );
 }

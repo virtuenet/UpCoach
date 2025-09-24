@@ -1,0 +1,1 @@
+{"version":3,"file":"global-error.d.ts","sourceRoot":"","sources":["global-error.tsx"],"names":[],"mappings":"AAEA,MAAM,CAAC,OAAO,UAAU,WAAW,CAAC,EAClC,KAAK,EAAE,MAAM,EACb,KAAK,GACN,EAAE;IACD,KAAK,EAAE,KAAK,GAAG;QAAE,MAAM,CAAC,EAAE,MAAM,CAAA;KAAE,CAAC;IACnC,KAAK,EAAE,MAAM,IAAI,CAAC;CACnB,2CAmBA"}

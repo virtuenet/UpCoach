@@ -13,6 +13,7 @@ const ForumVote_1 = __importDefault(require("../../models/community/ForumVote"))
 const User_1 = require("../../models/User");
 const logger_1 = require("../../utils/logger");
 const UnifiedCacheService_1 = require("../cache/UnifiedCacheService");
+const isomorphic_dompurify_1 = __importDefault(require("isomorphic-dompurify"));
 const ForumCategory = (0, ForumCategory_1.default)(database_1.sequelize);
 const ForumThread = (0, ForumThread_1.default)(database_1.sequelize);
 const ForumPost = (0, ForumPost_1.default)(database_1.sequelize);
@@ -306,10 +307,75 @@ class ForumService {
         await this.updateUserReputation(post.userId, 50);
     }
     sanitizeContent(content) {
-        return content
-            .replace(/<script[^>]*>.*?<\/script>/gi, '')
-            .replace(/<iframe[^>]*>.*?<\/iframe>/gi, '')
-            .trim();
+        if (!content || typeof content !== 'string') {
+            return '';
+        }
+        const cleanConfig = {
+            ALLOWED_TAGS: [
+                'p', 'br', 'strong', 'b', 'em', 'i', 'u', 'strike', 's',
+                'blockquote', 'code', 'pre', 'ul', 'ol', 'li',
+                'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                'a', 'img'
+            ],
+            ALLOWED_ATTR: {
+                'a': ['href', 'title', 'target', 'rel'],
+                'img': ['src', 'alt', 'title', 'width', 'height'],
+                '*': ['class']
+            },
+            ALLOW_DATA_ATTR: false,
+            FORBID_TAGS: ['script', 'object', 'embed', 'iframe', 'form', 'input', 'textarea', 'select', 'button'],
+            FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur', 'style'],
+            KEEP_CONTENT: true,
+            RETURN_DOM: false,
+            RETURN_DOM_FRAGMENT: false,
+            SANITIZE_DOM: true,
+            SANITIZE_NAMED_PROPS: true,
+            WHOLE_DOCUMENT: false,
+            FORCE_BODY: false,
+            RETURN_TRUSTED_TYPE: false,
+            SAFE_FOR_TEMPLATES: true
+        };
+        try {
+            if (content.length > 50000) {
+                content = content.substring(0, 50000);
+            }
+            content = content
+                .replace(/javascript:/gi, 'blocked:')
+                .replace(/data:/gi, 'blocked:')
+                .replace(/vbscript:/gi, 'blocked:')
+                .replace(/on\w+\s*=/gi, '')
+                .replace(/<\s*script[^>]*>.*?<\s*\/\s*script\s*>/gis, '')
+                .replace(/<\s*iframe[^>]*>.*?<\s*\/\s*iframe\s*>/gis, '')
+                .replace(/<\s*object[^>]*>.*?<\s*\/\s*object\s*>/gis, '')
+                .replace(/<\s*embed[^>]*>.*?<\s*\/\s*embed\s*>/gis, '');
+            const sanitized = isomorphic_dompurify_1.default.sanitize(content, cleanConfig);
+            const linkRegex = /<a[^>]+href\s*=\s*["']([^"']+)["'][^>]*>/gi;
+            const processedContent = sanitized.replace(linkRegex, (match, href) => {
+                const allowedProtocols = ['http:', 'https:', 'mailto:'];
+                try {
+                    const url = new URL(href);
+                    if (!allowedProtocols.includes(url.protocol)) {
+                        return match.replace(href, '#blocked-url');
+                    }
+                    if (url.hostname !== 'localhost' && !url.hostname.includes('upcoach')) {
+                        return match.replace('>', ' rel="noopener noreferrer nofollow" target="_blank">');
+                    }
+                    return match;
+                }
+                catch {
+                    return match.replace(/<a[^>]*>/gi, '').replace(/<\/a>/gi, '');
+                }
+            });
+            return processedContent.trim();
+        }
+        catch (error) {
+            logger_1.logger.error('Content sanitization failed', { error, contentLength: content.length });
+            return content
+                .replace(/<[^>]*>/g, '')
+                .replace(/[<>"'&]/g, '')
+                .trim()
+                .substring(0, 10000);
+        }
     }
     async trackActivity(userId, type, targetType, targetId) {
         try {

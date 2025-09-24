@@ -69,10 +69,10 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
         isAuthenticated: true,
       });
 
-      toast.success('Welcome back!');
+      toast('Welcome back!');
     } catch (error) {
       set({ isLoading: false, isAuthenticated: false });
-      toast.error(error instanceof Error ? error.message : 'Login failed');
+      toast(error instanceof Error ? error.message : 'Login failed');
       throw error;
     }
   },
@@ -81,7 +81,7 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
     try {
       await secureAuth.clearSession();
       set({ user: null, isAuthenticated: false });
-      toast.success('Logged out successfully');
+      toast('Logged out successfully');
 
       // Redirect to login page
       window.location.href = '/login';

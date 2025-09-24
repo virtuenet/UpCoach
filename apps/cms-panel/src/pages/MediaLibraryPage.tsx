@@ -72,13 +72,13 @@ export default function MediaLibraryPage() {
     mutationFn: ({ files, options }: { files: FileList | File[]; options: any }) =>
       mediaApi.uploadFiles(files, options),
     onSuccess: () => {
-      toast.success('Files uploaded successfully!');
+      toast('Files uploaded successfully!');
       queryClient.invalidateQueries({ queryKey: ['media'] });
       queryClient.invalidateQueries({ queryKey: ['storage-stats'] });
       setShowUpload(false);
     },
     onError: (error: any) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to upload files');
+      toast(error instanceof Error ? error.message : 'Failed to upload files');
     },
   });
 
@@ -86,13 +86,13 @@ export default function MediaLibraryPage() {
   const deleteMutation = useMutation({
     mutationFn: mediaApi.deleteMedia,
     onSuccess: () => {
-      toast.success('Media deleted successfully');
+      toast('Media deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['media'] });
       queryClient.invalidateQueries({ queryKey: ['storage-stats'] });
       setSelectedItems([]);
     },
     onError: (error: any) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete media');
+      toast(error instanceof Error ? error.message : 'Failed to delete media');
     },
   });
 
@@ -100,12 +100,12 @@ export default function MediaLibraryPage() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => mediaApi.updateMedia(id, data),
     onSuccess: () => {
-      toast.success('Media updated successfully');
+      toast('Media updated successfully');
       queryClient.invalidateQueries({ queryKey: ['media'] });
       setEditingItem(null);
     },
     onError: (error: any) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to update media');
+      toast(error instanceof Error ? error.message : 'Failed to update media');
     },
   });
 
@@ -113,13 +113,13 @@ export default function MediaLibraryPage() {
   const createFolderMutation = useMutation({
     mutationFn: mediaApi.createFolder,
     onSuccess: () => {
-      toast.success('Folder created successfully');
+      toast('Folder created successfully');
       queryClient.invalidateQueries({ queryKey: ['media-folders'] });
       setShowCreateFolder(false);
       setNewFolderName('');
     },
     onError: (error: any) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to create folder');
+      toast(error instanceof Error ? error.message : 'Failed to create folder');
     },
   });
 
@@ -128,13 +128,13 @@ export default function MediaLibraryPage() {
     mutationFn: ({ mediaIds, folder }: { mediaIds: string[]; folder: string | null }) =>
       mediaApi.moveToFolder(mediaIds, folder),
     onSuccess: () => {
-      toast.success('Media moved successfully');
+      toast('Media moved successfully');
       queryClient.invalidateQueries({ queryKey: ['media'] });
       setShowMoveModal(false);
       setSelectedItems([]);
     },
     onError: (error: any) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to move media');
+      toast(error instanceof Error ? error.message : 'Failed to move media');
     },
   });
 
@@ -157,7 +157,7 @@ export default function MediaLibraryPage() {
       });
 
       if (errors.length > 0) {
-        toast.error(`Some files were rejected:\n${errors.join('\n')}`);
+        toast(`Some files were rejected:\n${errors.join('\n')}`);
       }
 
       if (validFiles.length > 0) {

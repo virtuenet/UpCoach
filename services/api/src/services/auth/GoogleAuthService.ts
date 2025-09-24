@@ -24,6 +24,21 @@ interface GoogleSignInResponse {
     expiresIn: number;
   };
   isNewUser: boolean;
+  state?: string;
+}
+
+interface PKCEVerificationParams {
+  codeVerifier: string;
+  codeChallenge: string;
+  codeChallengeMethod: 'S256' | 'plain';
+}
+
+interface OAuthState {
+  state: string;
+  nonce: string;
+  timestamp: number;
+  clientId: string;
+  redirectUri: string;
 }
 
 export class GoogleAuthService {
@@ -130,19 +145,40 @@ export class GoogleAuthService {
   }
 
   /**
-   * Validate token claims for security
+   * Validate token claims for security with enhanced checks
    */
-  private validateTokenClaims(payload: any): void {
+  private validateTokenClaims(payload: any, expectedNonce?: string): void {
     // Check issuer
     const validIssuers = ['accounts.google.com', 'https://accounts.google.com'];
     if (!validIssuers.includes(payload.iss)) {
       throw new ApiError(401, 'Invalid token issuer');
     }
 
-    // Check expiration
+    // Check audience (client ID)
+    const clientIds = [this.CLIENT_ID, this.MOBILE_CLIENT_ID, this.WEB_CLIENT_ID];
+    if (!clientIds.includes(payload.aud)) {
+      throw new ApiError(401, 'Invalid token audience');
+    }
+
+    // Check expiration with clock skew tolerance
     const now = Math.floor(Date.now() / 1000);
-    if (payload.exp && payload.exp < now) {
+    if (payload.exp && payload.exp < (now - 30)) { // 30 second tolerance
       throw new ApiError(401, 'Token has expired');
+    }
+
+    // Check not before claim
+    if (payload.nbf && payload.nbf > (now + 30)) {
+      throw new ApiError(401, 'Token not yet valid');
+    }
+
+    // Check issued at claim (prevent old tokens)
+    if (payload.iat && payload.iat < (now - 3600)) { // 1 hour max age
+      throw new ApiError(401, 'Token too old');
+    }
+
+    // Validate nonce if provided (prevents replay attacks)
+    if (expectedNonce && payload.nonce !== expectedNonce) {
+      throw new ApiError(401, 'Invalid nonce');
     }
 
     // Check if email is present
@@ -150,9 +186,21 @@ export class GoogleAuthService {
       throw new ApiError(400, 'Email not provided in Google token');
     }
 
-    // Optionally check email verification
-    if (process.env.REQUIRE_EMAIL_VERIFICATION === 'true' && !payload.email_verified) {
+    // Check email verification (always required in production)
+    if (process.env.NODE_ENV === 'production' && !payload.email_verified) {
       throw new ApiError(403, 'Email not verified with Google');
+    }
+
+    // Validate hosted domain if configured
+    if (process.env.GOOGLE_HOSTED_DOMAIN) {
+      if (payload.hd !== process.env.GOOGLE_HOSTED_DOMAIN) {
+        throw new ApiError(403, 'Invalid hosted domain');
+      }
+    }
+
+    // Check for suspicious patterns
+    if (payload.email && payload.email.includes('+')) {
+      logger.warn('Email with plus sign detected', { email: payload.email });
     }
   }
 
@@ -599,18 +647,127 @@ export class GoogleAuthService {
   }
 
   /**
-   * Generate OAuth state for CSRF protection
+   * Generate OAuth state with enhanced security
    */
-  generateOAuthState(): string {
+  async generateOAuthState(clientId: string, redirectUri: string): Promise<OAuthState> {
     const crypto = require('crypto');
-    return crypto.randomBytes(32).toString('hex');
+    const state = crypto.randomBytes(32).toString('hex');
+    const nonce = crypto.randomBytes(16).toString('hex');
+    const timestamp = Date.now();
+
+    const oauthState: OAuthState = {
+      state,
+      nonce,
+      timestamp,
+      clientId,
+      redirectUri
+    };
+
+    // Store state in Redis with 10-minute expiry
+    await redis.setEx(
+      `oauth_state:${state}`,
+      600, // 10 minutes
+      JSON.stringify(oauthState)
+    );
+
+    return oauthState;
   }
 
   /**
-   * Validate OAuth state
+   * Validate OAuth state with comprehensive security checks
    */
-  validateOAuthState(state: string, storedState: string): boolean {
-    return state === storedState;
+  async validateOAuthState(
+    state: string,
+    clientId: string,
+    redirectUri: string
+  ): Promise<{ valid: boolean; nonce?: string }> {
+    try {
+      const storedStateData = await redis.get(`oauth_state:${state}`);
+
+      if (!storedStateData) {
+        logger.warn('OAuth state not found or expired', { state });
+        return { valid: false };
+      }
+
+      const oauthState: OAuthState = JSON.parse(storedStateData);
+
+      // Validate state matches
+      if (oauthState.state !== state) {
+        logger.warn('OAuth state mismatch', { expected: state, actual: oauthState.state });
+        return { valid: false };
+      }
+
+      // Validate client ID
+      if (oauthState.clientId !== clientId) {
+        logger.warn('OAuth client ID mismatch', { expected: clientId, actual: oauthState.clientId });
+        return { valid: false };
+      }
+
+      // Validate redirect URI
+      if (oauthState.redirectUri !== redirectUri) {
+        logger.warn('OAuth redirect URI mismatch', { expected: redirectUri, actual: oauthState.redirectUri });
+        return { valid: false };
+      }
+
+      // Validate timestamp (10 minute window)
+      const now = Date.now();
+      if (now - oauthState.timestamp > 600000) {
+        logger.warn('OAuth state expired', { age: now - oauthState.timestamp });
+        return { valid: false };
+      }
+
+      // Remove used state to prevent replay
+      await redis.del(`oauth_state:${state}`);
+
+      return { valid: true, nonce: oauthState.nonce };
+    } catch (error) {
+      logger.error('OAuth state validation error:', error);
+      return { valid: false };
+    }
+  }
+
+  /**
+   * Generate PKCE code verifier and challenge
+   */
+  generatePKCE(): PKCEVerificationParams {
+    const crypto = require('crypto');
+
+    // Generate code verifier (43-128 characters)
+    const codeVerifier = crypto.randomBytes(64).toString('base64url');
+
+    // Generate code challenge using S256 method
+    const codeChallenge = crypto
+      .createHash('sha256')
+      .update(codeVerifier)
+      .digest('base64url');
+
+    return {
+      codeVerifier,
+      codeChallenge,
+      codeChallengeMethod: 'S256'
+    };
+  }
+
+  /**
+   * Verify PKCE code challenge
+   */
+  verifyPKCE(codeVerifier: string, codeChallenge: string): boolean {
+    const crypto = require('crypto');
+
+    try {
+      const computedChallenge = crypto
+        .createHash('sha256')
+        .update(codeVerifier)
+        .digest('base64url');
+
+      return crypto.timingSafeEqual(
+        Buffer.from(computedChallenge),
+        Buffer.from(codeChallenge)
+      );
+    } catch (error) {
+      logger.error('PKCE verification error:', error);
+      return false;
+    }
   }
 
   /**

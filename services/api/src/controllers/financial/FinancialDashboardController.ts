@@ -888,14 +888,14 @@ export class FinancialDashboardController {
       // Add header styling
       const headerStyle = {
         font: { bold: true, color: { argb: 'FFFFFF' } },
-        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: '366EF7' } },
+        fill: { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: '366EF7' } },
         border: {
-          top: { style: 'thin' },
-          left: { style: 'thin' },
-          bottom: { style: 'thin' },
-          right: { style: 'thin' }
+          top: { style: 'thin' as const },
+          left: { style: 'thin' as const },
+          bottom: { style: 'thin' as const },
+          right: { style: 'thin' as const }
         },
-        alignment: { horizontal: 'center', vertical: 'middle' }
+        alignment: { horizontal: 'center' as const, vertical: 'middle' as const }
       };
 
       // Add report title and metadata
@@ -903,20 +903,20 @@ export class FinancialDashboardController {
       worksheet.getCell('A1').value = `${report.name} - Financial Report`;
       worksheet.getCell('A1').style = {
         font: { size: 16, bold: true },
-        alignment: { horizontal: 'center' }
+        alignment: { horizontal: 'center' as const }
       };
 
       worksheet.mergeCells('A2:E2');
       worksheet.getCell('A2').value = `Generated on: ${format(new Date(), 'PPP')}`;
       worksheet.getCell('A2').style = {
         font: { size: 12 },
-        alignment: { horizontal: 'center' }
+        alignment: { horizontal: 'center' as const }
       };
 
       // Add data headers
       const headers = Object.keys(data[0]);
       const headerRow = worksheet.addRow([]);
-      headerRow.getCell(1).row = 4; // Start from row 4
+      // Headers will start from row 4
 
       headers.forEach((header, index) => {
         const cell = worksheet.getCell(4, index + 1);
@@ -975,7 +975,7 @@ export class FinancialDashboardController {
         summaryRow.getCell(1).value = 'Total Revenue:';
         summaryRow.getCell(1).style = { font: { bold: true } };
 
-        const totalRevenue = data.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
+        const totalRevenue = data.reduce((sum: number, row: any) => sum + (parseFloat(row.amount) || 0), 0);
         summaryRow.getCell(2).value = totalRevenue;
         summaryRow.getCell(2).numFmt = '$#,##0.00';
         summaryRow.getCell(2).style = { font: { bold: true } };
@@ -1239,7 +1239,7 @@ export class FinancialDashboardController {
           column.width = Math.min(Math.max(maxLength + 2, 15), 50);
         });
 
-        attachmentBuffer = await workbook.xlsx.writeBuffer() as Buffer;
+        attachmentBuffer = Buffer.from(await workbook.xlsx.writeBuffer());
         filename = `${report.name}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
         contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
@@ -1471,7 +1471,7 @@ export class FinancialDashboardController {
       });
 
       if (cohortSubscriptions.length === 0) {
-        return res.json({
+        res.json({
           cohort: month,
           totalUsers: 0,
           cohortStart: cohortStart.toISOString(),
@@ -1490,6 +1490,7 @@ export class FinancialDashboardController {
             currentChurnRate: 0
           }
         });
+        return;
       }
 
       // Calculate detailed user information
@@ -1572,7 +1573,7 @@ export class FinancialDashboardController {
         return acc;
       }, {} as Record<string, { count: number; revenue: number }>);
 
-      const planDistributionArray = Object.entries(planDistribution).map(([plan, data]) => ({
+      const planDistributionArray = Object.entries(planDistribution).map(([plan, data]: [string, { count: number; revenue: number }]) => ({
         plan,
         users: data.count,
         percentage: Math.round((data.count / cohortSubscriptions.length) * 10000) / 100,

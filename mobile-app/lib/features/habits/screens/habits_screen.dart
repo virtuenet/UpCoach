@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/habit_model.dart';
@@ -392,38 +393,28 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
   }
 
   void _showAnalytics() {
-    // TODO: Navigate to detailed analytics screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Detailed analytics coming soon!')),
-    );
+    // Navigate to detailed analytics screen
+    context.go('/habits/analytics');
   }
 
   void _showAchievements() {
-    // TODO: Navigate to achievements screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Achievements screen coming soon!')),
-    );
+    // Navigate to achievements screen
+    context.go('/habits/achievements');
   }
 
   void _showSettings() {
-    // TODO: Navigate to habit settings screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Habit settings coming soon!')),
-    );
+    // Navigate to habit settings screen
+    context.go('/habits/settings');
   }
 
   void _showHabitDetails(Habit habit) {
-    // TODO: Navigate to habit details screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Details for ${habit.name} coming soon!')),
-    );
+    // Navigate to habit details screen
+    context.go('/habits/${habit.id}/details', extra: habit);
   }
 
   void _editHabit(Habit habit) {
-    // TODO: Navigate to edit habit screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Edit ${habit.name} coming soon!')),
-    );
+    // Navigate to edit habit screen
+    context.go('/habits/${habit.id}/edit', extra: habit);
   }
 
   void _deleteHabit(Habit habit, HabitNotifier habitNotifier) {

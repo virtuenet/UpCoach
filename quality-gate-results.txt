@@ -1,0 +1,7 @@
+Backend Code Coverage: FAILED - 0% is below minimum threshold of 95%
+Admin Panel Code Coverage: FAILED - 0% is below minimum threshold of 90%
+CMS Panel Code Coverage: FAILED - 0% is below minimum threshold of 90%
+Mobile App Code Coverage: FAILED - 0% is below minimum threshold of 85%
+Performance Metrics: WARNING - Performance test results not found
+Security Scan: WARNING - Security scan results not found
+Build Success Rate: FAILED - 0% is below minimum threshold of 100%

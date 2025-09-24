@@ -1,0 +1,1 @@
+{"version":3,"file":"AppStoreBadges.d.ts","sourceRoot":"","sources":["AppStoreBadges.tsx"],"names":[],"mappings":"AAKA,UAAU,mBAAmB;IAC3B,SAAS,CAAC,EAAE,MAAM,CAAC;IACnB,OAAO,CAAC,EAAE,SAAS,GAAG,SAAS,CAAC;IAChC,QAAQ,CAAC,EAAE,OAAO,CAAC;CACpB;AAED,MAAM,CAAC,OAAO,UAAU,cAAc,CAAC,EACrC,SAAc,EACd,OAAmB,EACnB,QAAe,GAChB,EAAE,mBAAmB,2CAgLrB"}

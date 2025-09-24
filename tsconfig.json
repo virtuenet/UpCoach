@@ -52,14 +52,15 @@
     "**/*.spec.ts",
     "**/*.spec.tsx",
     "**/*.test.ts",
-    "**/*.test.tsx"
+    "**/*.test.tsx",
+    "packages/design-system/**/*",
+    "packages/test-utils/**/*",
+    "packages/test-contracts/**/*"
   ],
   "references": [
     { "path": "./packages/types" },
     { "path": "./packages/utils" },
     { "path": "./packages/shared" },
-    { "path": "./packages/ui" },
-    { "path": "./packages/test-utils" },
-    { "path": "./packages/test-contracts" }
+    { "path": "./packages/ui" }
   ]
 }

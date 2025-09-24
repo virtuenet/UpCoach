@@ -266,6 +266,49 @@ class EnterpriseController {
             data: { policies },
         });
     });
+    updatePolicy = (0, catchAsync_1.catchAsync)(async (req, _res) => {
+        const { policyId } = req.params;
+        const { name, type, rules, enforcementLevel, appliesTo } = req.body;
+        const updatedBy = req.user.id;
+        const policy = await this.teamService.updatePolicy(parseInt(policyId), {
+            name,
+            type,
+            rules,
+            enforcementLevel,
+            appliesTo,
+            updatedBy: parseInt(updatedBy),
+        });
+        _res.json({
+            success: true,
+            data: { policy },
+            message: 'Policy updated successfully',
+        });
+    });
+    deletePolicy = (0, catchAsync_1.catchAsync)(async (req, _res) => {
+        const { policyId } = req.params;
+        const deletedBy = req.user.id;
+        await this.teamService.deletePolicy(parseInt(policyId), {
+            deletedBy: parseInt(deletedBy),
+        });
+        _res.json({
+            success: true,
+            message: 'Policy deleted successfully',
+        });
+    });
+    togglePolicy = (0, catchAsync_1.catchAsync)(async (req, _res) => {
+        const { policyId } = req.params;
+        const { enabled } = req.body;
+        const updatedBy = req.user.id;
+        const policy = await this.teamService.togglePolicy(parseInt(policyId), {
+            enabled: enabled !== undefined ? enabled : undefined,
+            updatedBy: parseInt(updatedBy),
+        });
+        _res.json({
+            success: true,
+            data: { policy },
+            message: `Policy ${policy.isActive ? 'enabled' : 'disabled'} successfully`,
+        });
+    });
     getAuditLogs = (0, catchAsync_1.catchAsync)(async (req, _res) => {
         const { organizationId } = req.params;
         const { page, limit, action, userId, startDate, endDate } = req.query;

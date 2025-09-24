@@ -24,9 +24,17 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@shared/*": ["../shared/*"]
+      "@shared/*": ["../shared/*"],
+      "@upcoach/shared": ["../../packages/shared/src"],
+      "@upcoach/shared/*": ["../../packages/shared/src/*"],
+      "@upcoach/types": ["../../packages/types/src"],
+      "@upcoach/types/*": ["../../packages/types/src/*"],
+      "@upcoach/utils": ["../../packages/utils/src"],
+      "@upcoach/utils/*": ["../../packages/utils/src/*"],
+      "@upcoach/ui": ["../../packages/ui/src"],
+      "@upcoach/ui/*": ["../../packages/ui/src/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "../../types/missing-types.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 } 

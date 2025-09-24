@@ -165,7 +165,7 @@ export function useApiMutation<TData = any, TVariables = any>(
     onSuccess: (data, variables, context) => {
       // Show success message
       if (options?.successMessage) {
-        toast.success(options.successMessage);
+        toast(options.successMessage);
       }
 
       // Invalidate related queries
@@ -183,7 +183,7 @@ export function useApiMutation<TData = any, TVariables = any>(
     onError: (error, variables, context) => {
       // Show error message
       const message = options?.errorMessage || error.message || 'An error occurred';
-      toast.error(message);
+      toast(message);
 
       // Log error
       logger.error('Mutation failed', { error, variables });

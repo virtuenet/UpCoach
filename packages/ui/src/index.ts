@@ -14,6 +14,11 @@ export { Badge } from './components/Badge';
 export { RadioGroup } from './components/RadioGroup';
 export { Label } from './components/Label';
 export { Progress } from './components/Progress';
+export { Alert, AlertTitle, AlertDescription } from './components/Alert';
+export { Tabs, TabsList, TabsTrigger, TabsContent } from './components/Tabs';
+export { Checkbox } from './components/Checkbox';
+export { DatePicker } from './components/DatePicker';
+export { Calendar } from './components/Calendar';
 
 // Theme
 export * from './theme';

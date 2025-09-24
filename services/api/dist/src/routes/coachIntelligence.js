@@ -47,5 +47,14 @@ router.get('/reports/weekly/:userId', CoachIntelligenceController_1.coachIntelli
 router.post('/kpi-trackers', CoachIntelligenceController_1.coachIntelligenceValidation.createKpiTracker, coachIntelligenceController.createKpiTracker.bind(coachIntelligenceController));
 router.get('/kpi-trackers/:userId', CoachIntelligenceController_1.coachIntelligenceValidation.getUserKpiTrackers, coachIntelligenceController.getUserKpiTrackers.bind(coachIntelligenceController));
 router.patch('/kpi-trackers/:id/progress', CoachIntelligenceController_1.coachIntelligenceValidation.updateKpiProgress, coachIntelligenceController.updateKpiProgress.bind(coachIntelligenceController));
+router.get('/engagement/:userId', CoachIntelligenceController_1.coachIntelligenceValidation.getEngagementScore, coachIntelligenceController.getEngagementScore.bind(coachIntelligenceController));
+router.get('/missed-sessions/:userId', CoachIntelligenceController_1.coachIntelligenceValidation.getMissedSessions, coachIntelligenceController.getMissedSessions.bind(coachIntelligenceController));
+router.get('/missed-sessions/analytics', coachIntelligenceController.getMissedSessionsAnalytics.bind(coachIntelligenceController));
+router.get('/predict-at-risk-users', coachIntelligenceController.predictAtRiskUsers.bind(coachIntelligenceController));
+router.post('/session-expectations/:userId', CoachIntelligenceController_1.coachIntelligenceValidation.setSessionExpectations, coachIntelligenceController.setSessionExpectations.bind(coachIntelligenceController));
+router.post('/track-kpi/:userId', CoachIntelligenceController_1.coachIntelligenceValidation.trackCustomKPI, coachIntelligenceController.trackCustomKPI.bind(coachIntelligenceController));
+router.get('/kpi-report/:userId', CoachIntelligenceController_1.coachIntelligenceValidation.generateKPIReport, coachIntelligenceController.generateKPIReport.bind(coachIntelligenceController));
+router.get('/predict-success/:userId', CoachIntelligenceController_1.coachIntelligenceValidation.predictUserSuccess, coachIntelligenceController.predictUserSuccess.bind(coachIntelligenceController));
+router.get('/behavior-insights/:userId', CoachIntelligenceController_1.coachIntelligenceValidation.getBehaviorInsights, coachIntelligenceController.getBehaviorInsights.bind(coachIntelligenceController));
 exports.default = router;
 //# sourceMappingURL=coachIntelligence.js.map

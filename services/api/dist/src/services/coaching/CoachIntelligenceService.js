@@ -283,7 +283,7 @@ class CoachIntelligenceService {
                 ? memories.reduce((sum, m) => sum + m.coachingContext.importance * 5, 0) / memories.length
                 : 0,
             streakCount: this.calculateStreakCount(memories),
-            missedSessions: 0,
+            missedSessions: await this.calculateMissedSessions(userId, memories),
             responsiveness: this.calculateResponsiveness(memories),
             participationScore: this.calculateParticipationScore(memories),
             followThroughRate: this.calculateFollowThroughRate(goals),
@@ -626,6 +626,22 @@ Provide deep AI analysis as JSON:`
             return 0;
         }
         return currentStreak;
+    }
+    async calculateMissedSessions(userId, memories) {
+        if (memories.length === 0)
+            return 0;
+        const sortedMemories = memories.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        const firstSession = sortedMemories[0];
+        const lastSession = sortedMemories[sortedMemories.length - 1];
+        const totalDays = Math.ceil((new Date(lastSession.createdAt).getTime() - new Date(firstSession.createdAt).getTime())
+            / (1000 * 60 * 60 * 24));
+        const expectedSessionsPerWeek = 2.5;
+        const weeksActive = Math.max(1, totalDays / 7);
+        const expectedSessions = Math.floor(weeksActive * expectedSessionsPerWeek);
+        const missedSessions = Math.max(0, expectedSessions - memories.length);
+        if (totalDays < 14)
+            return 0;
+        return Math.min(missedSessions, Math.floor(expectedSessions * 0.5));
     }
     calculateResponsiveness(memories) {
         if (memories.length === 0)

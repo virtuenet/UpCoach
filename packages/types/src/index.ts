@@ -187,27 +187,18 @@ export interface FinancialSnapshot {
   totalUsers: number;
 }
 
-// API types
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-  meta?: {
-    page?: number;
-    limit?: number;
-    total?: number;
-    totalPages?: number;
-  };
-}
-
-export interface PaginationParams {
-  page?: number;
-  limit?: number;
-  sort?: string;
-  order?: 'asc' | 'desc';
-  search?: string;
-}
-
-// Export all API types from shared
-export * from './api';
+// Export API types from api module
+export {
+  ApiResponse,
+  ApiMeta,
+  ApiError,
+  ValidationError,
+  PaginationParams,
+  BatchRequest,
+  BatchOperation,
+  BatchResponse,
+  BatchResult,
+  WebSocketMessage,
+  FileUpload,
+  FileResponse
+} from './api';

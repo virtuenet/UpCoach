@@ -28,9 +28,17 @@
       "@/utils/*": ["./src/utils/*"],
       "@/types/*": ["./src/types/*"],
       "@/lib/*": ["./src/lib/*"],
-      "@/services/*": ["./src/services/*"]
+      "@/services/*": ["./src/services/*"],
+      "@upcoach/shared": ["../../packages/shared/src"],
+      "@upcoach/shared/*": ["../../packages/shared/src/*"],
+      "@upcoach/types": ["../../packages/types/src"],
+      "@upcoach/types/*": ["../../packages/types/src/*"],
+      "@upcoach/utils": ["../../packages/utils/src"],
+      "@upcoach/utils/*": ["../../packages/utils/src/*"],
+      "@upcoach/ui": ["../../packages/ui/src"],
+      "@upcoach/ui/*": ["../../packages/ui/src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "../../types/missing-types.d.ts"],
   "exclude": ["node_modules"]
 }

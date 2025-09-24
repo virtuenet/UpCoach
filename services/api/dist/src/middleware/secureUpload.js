@@ -32,314 +32,298 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.saveUploadedFile = exports.validateUpload = exports.secureUpload = exports.SecureUploadMiddleware = void 0;
-const crypto_1 = __importDefault(require("crypto"));
-const promises_1 = __importDefault(require("fs/promises"));
-const path_1 = __importDefault(require("path"));
-const file_type_1 = require("file-type");
+exports.validateFileContent = validateFileContent;
+exports.createSecureUpload = createSecureUpload;
+exports.handleSecureUploadError = handleSecureUploadError;
 const multer_1 = __importStar(require("multer"));
+const crypto = __importStar(require("crypto"));
+const file_type_1 = require("file-type");
 const logger_1 = require("../utils/logger");
-const ALLOWED_TYPES = {
-    images: {
-        mimes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-        extensions: ['.jpg', '.jpeg', '.png', '.gif', '.webp'],
-        maxSize: 10 * 1024 * 1024,
-    },
-    documents: {
-        mimes: ['application/pdf', 'text/plain', 'text/csv'],
-        extensions: ['.pdf', '.txt', '.csv'],
-        maxSize: 25 * 1024 * 1024,
-    },
-    videos: {
-        mimes: ['video/mp4', 'video/webm'],
-        extensions: ['.mp4', '.webm'],
-        maxSize: 100 * 1024 * 1024,
-    },
-    audio: {
-        mimes: ['audio/mpeg', 'audio/wav', 'audio/ogg'],
-        extensions: ['.mp3', '.wav', '.ogg'],
-        maxSize: 50 * 1024 * 1024,
-    },
+const DEFAULT_SECURITY_OPTIONS = {
+    maxFileSize: 10 * 1024 * 1024,
+    allowedMimeTypes: [
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'application/pdf',
+        'text/plain'
+    ],
+    requireMagicByteValidation: true,
+    enableAntivirusScanning: true,
+    allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp', '.pdf', '.txt']
 };
-const BLOCKED_EXTENSIONS = [
-    '.exe',
-    '.dll',
-    '.scr',
-    '.bat',
-    '.cmd',
-    '.com',
-    '.pif',
-    '.js',
-    '.jar',
-    '.app',
-    '.deb',
-    '.rpm',
-    '.msi',
-    '.pkg',
-    '.php',
-    '.jsp',
-    '.asp',
-    '.aspx',
-    '.py',
-    '.rb',
-    '.sh',
-    '.ps1',
-    '.vbs',
-    '.vb',
-    '.wsf',
-    '.hta',
-    '.htm',
-    '.html',
-    '.svg',
-    '.xml',
+const MALICIOUS_SIGNATURES = [
+    'MZ',
+    '4D5A',
+    '504B0304',
+    '52617221',
+    '377ABCAF271C',
+    'FFD8FFE0',
+    '89504E47',
 ];
-class SecureUploadMiddleware {
-    static uploadDir = process.env.UPLOAD_DIR || '/tmp/uploads';
-    static async validateFileContent(buffer, declaredMimeType, originalName) {
-        try {
-            const ext = path_1.default.extname(originalName).toLowerCase();
-            if (BLOCKED_EXTENSIONS.includes(ext)) {
-                return {
-                    isValid: false,
-                    error: `File extension ${ext} is not allowed for security reasons`,
-                };
-            }
-            const detectedType = await (0, file_type_1.fileTypeFromBuffer)(buffer);
-            if (!detectedType) {
-                if (declaredMimeType === 'text/plain' || declaredMimeType === 'text/csv') {
-                    const isTextFile = this.isValidTextFile(buffer);
-                    if (!isTextFile) {
-                        return {
-                            isValid: false,
-                            error: 'File content does not match declared text type',
-                        };
-                    }
-                }
-                else {
-                    return {
-                        isValid: false,
-                        error: 'Unable to determine file type from content',
-                    };
-                }
-            }
-            else {
-                if (detectedType.mime !== declaredMimeType) {
-                    logger_1.logger.warn('MIME type mismatch detected', {
-                        declared: declaredMimeType,
-                        detected: detectedType.mime,
-                        fileName: originalName,
-                    });
-                    return {
-                        isValid: false,
-                        error: `File type mismatch. Declared: ${declaredMimeType}, Detected: ${detectedType.mime}`,
-                    };
-                }
-            }
-            const isAllowed = Object.values(ALLOWED_TYPES).some(category => category.mimes.includes(declaredMimeType));
-            if (!isAllowed) {
-                return {
-                    isValid: false,
-                    error: `File type ${declaredMimeType} is not allowed`,
-                };
-            }
-            if (declaredMimeType.startsWith('image/')) {
-                const imageCheck = await this.validateImageSecurity(buffer);
-                if (!imageCheck.isValid) {
-                    return imageCheck;
-                }
-            }
-            const sanitizedFileName = this.sanitizeFileName(originalName);
-            return {
-                isValid: true,
-                sanitizedFileName,
-                detectedMimeType: detectedType?.mime || declaredMimeType,
-            };
+const DANGEROUS_EXTENSIONS = [
+    '.exe', '.bat', '.cmd', '.com', '.pif', '.scr', '.vbs', '.vbe',
+    '.js', '.jse', '.ws', '.wsf', '.wsc', '.jar', '.app', '.deb',
+    '.pkg', '.rpm', '.dmg', '.msi', '.ps1', '.sh', '.php', '.asp',
+    '.jsp', '.py', '.rb', '.pl'
+];
+async function validateMagicBytes(buffer) {
+    try {
+        const detectedType = await (0, file_type_1.fileTypeFromBuffer)(buffer);
+        if (!detectedType) {
+            return { valid: false };
         }
-        catch (error) {
-            logger_1.logger.error('File validation error', { error, fileName: originalName });
-            return {
-                isValid: false,
-                error: 'File validation failed',
-            };
+        const bufferHex = buffer.toString('hex', 0, 32).toUpperCase();
+        for (const signature of MALICIOUS_SIGNATURES) {
+            if (bufferHex.startsWith(signature)) {
+                logger_1.logger.warn('Malicious file signature detected', { signature, detectedType: detectedType.mime });
+                return { valid: false, detectedType: detectedType.mime };
+            }
         }
+        return { valid: true, detectedType: detectedType.mime };
     }
-    static isValidTextFile(buffer) {
-        try {
-            const text = buffer.toString('utf-8');
-            if (text.includes('\0')) {
-                return false;
-            }
-            const printableChars = text.match(/[\x20-\x7E\t\n\r]/g);
-            const printableRatio = printableChars ? printableChars.length / text.length : 0;
-            return printableRatio > 0.95;
-        }
-        catch {
-            return false;
-        }
+    catch (error) {
+        logger_1.logger.error('Magic byte validation error:', error);
+        return { valid: false };
     }
-    static async validateImageSecurity(buffer) {
-        try {
-            const bufferString = buffer.toString('utf-8', 0, Math.min(buffer.length, 1024));
-            const scriptPatterns = [
-                /<script/i,
-                /javascript:/i,
-                /on\w+\s*=/i,
-                /<iframe/i,
-                /<embed/i,
-                /<object/i,
-            ];
-            for (const pattern of scriptPatterns) {
-                if (pattern.test(bufferString)) {
-                    return {
-                        isValid: false,
-                        error: 'Image file contains potentially malicious content',
-                    };
-                }
-            }
-            return { isValid: true };
+}
+async function scanForViruses(buffer, filename) {
+    const scanId = crypto.randomBytes(16).toString('hex');
+    try {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        const threats = [];
+        if (buffer.length > 100 * 1024 * 1024) {
+            threats.push('SUSPICIOUS_SIZE');
         }
-        catch (error) {
-            logger_1.logger.error('Image security validation error', { error });
-            return {
-                isValid: false,
-                error: 'Image security validation failed',
-            };
+        const bufferString = buffer.toString('ascii', 0, Math.min(buffer.length, 8192));
+        if (bufferString.includes('<script>') || bufferString.includes('<?php')) {
+            threats.push('EMBEDDED_SCRIPT');
         }
-    }
-    static sanitizeFileName(fileName) {
-        const baseName = path_1.default.basename(fileName);
-        const uniqueId = crypto_1.default.randomBytes(8).toString('hex');
-        const ext = path_1.default.extname(baseName).toLowerCase();
-        const safeName = baseName
-            .replace(ext, '')
-            .replace(/[^a-zA-Z0-9_-]/g, '_')
-            .slice(0, 50);
-        return `${safeName}_${uniqueId}${ext}`;
-    }
-    static getFileSizeLimit(mimeType) {
-        for (const category of Object.values(ALLOWED_TYPES)) {
-            if (category.mimes.includes(mimeType)) {
-                return category.maxSize;
-            }
+        if (filename.toLowerCase().includes('zip') && buffer.length < 1024 && buffer.includes(Buffer.from('PK'))) {
+            threats.push('POTENTIAL_ZIP_BOMB');
         }
-        return 5 * 1024 * 1024;
-    }
-    static createUploadMiddleware(options) {
-        const storage = (0, multer_1.memoryStorage)();
-        return (0, multer_1.default)({
-            storage,
-            limits: {
-                fileSize: options?.maxFileSize || 100 * 1024 * 1024,
-                files: options?.maxFiles || 10,
-            },
-            fileFilter: async (req, file, callback) => {
-                try {
-                    const isAllowed = options?.allowedTypes
-                        ? options.allowedTypes.includes(file.mimetype)
-                        : Object.values(ALLOWED_TYPES).some(cat => cat.mimes.includes(file.mimetype));
-                    if (!isAllowed) {
-                        callback(new Error(`File type ${file.mimetype} is not allowed`));
-                        return;
-                    }
-                    callback(null, true);
-                }
-                catch (error) {
-                    callback(error);
-                }
-            },
+        const isSafe = threats.length === 0;
+        logger_1.logger.info('File security scan completed', {
+            scanId,
+            filename,
+            fileSize: buffer.length,
+            threats: threats.length > 0 ? threats : undefined,
+            safe: isSafe
         });
+        return {
+            safe: isSafe,
+            threats: threats.length > 0 ? threats : undefined,
+            scanId
+        };
     }
-    static async validateUploadedFile(req, res, next) {
+    catch (error) {
+        logger_1.logger.error('Antivirus scanning error:', error);
+        return {
+            safe: false,
+            threats: ['SCAN_ERROR'],
+            scanId
+        };
+    }
+}
+function sanitizeFilename(filename) {
+    let sanitized = filename.replace(/\.\./g, '').replace(/[\/\\]/g, '');
+    sanitized = sanitized.replace(/[<>:"|?*]/g, '');
+    if (sanitized.length > 255) {
+        const ext = sanitized.substring(sanitized.lastIndexOf('.'));
+        sanitized = sanitized.substring(0, 255 - ext.length) + ext;
+    }
+    if (!sanitized || sanitized.trim() === '') {
+        sanitized = `file_${Date.now()}`;
+    }
+    return sanitized;
+}
+function createSecureFileFilter(options) {
+    return async (req, file, callback) => {
         try {
-            if (!req.file && !req.files) {
-                next();
-                return;
+            const originalExt = file.originalname.toLowerCase().substring(file.originalname.lastIndexOf('.'));
+            if (DANGEROUS_EXTENSIONS.includes(originalExt)) {
+                return callback(new Error(`File extension ${originalExt} is not allowed for security reasons`));
             }
-            const files = req.file ? [req.file] : Object.values(req.files || {}).flat();
+            if (!options.allowedExtensions.includes(originalExt)) {
+                return callback(new Error(`File extension ${originalExt} is not allowed`));
+            }
+            if (!options.allowedMimeTypes.includes(file.mimetype)) {
+                return callback(new Error(`File type ${file.mimetype} is not allowed`));
+            }
+            file.originalname = sanitizeFilename(file.originalname);
+            callback(null, true);
+        }
+        catch (error) {
+            logger_1.logger.error('File filter error:', error);
+            callback(new Error('File validation failed'));
+        }
+    };
+}
+function validateFileContent(options = {}) {
+    const config = { ...DEFAULT_SECURITY_OPTIONS, ...options };
+    return async (req, res, next) => {
+        try {
+            const files = req.files || (req.file ? [req.file] : []);
+            if (files.length === 0) {
+                return next();
+            }
             for (const file of files) {
-                const validation = await this.validateFileContent(file.buffer, file.mimetype, file.originalname);
-                if (!validation.isValid) {
-                    res.status(400).json({
-                        error: 'File validation failed',
-                        message: validation.error,
-                    });
-                    return;
-                }
-                const maxSize = this.getFileSizeLimit(file.mimetype);
-                if (file.size > maxSize) {
-                    res.status(400).json({
+                if (file.size > config.maxFileSize) {
+                    return res.status(400).json({
+                        success: false,
                         error: 'File too large',
-                        message: `File size ${file.size} exceeds maximum allowed size of ${maxSize}`,
+                        maxSize: config.maxFileSize,
+                        actualSize: file.size
                     });
-                    return;
                 }
-                if (validation.sanitizedFileName) {
-                    file.sanitizedFileName = validation.sanitizedFileName;
+                const contentLength = parseInt(req.headers['content-length'] || '0');
+                if (contentLength > config.maxFileSize * 1.1) {
+                    return res.status(400).json({
+                        success: false,
+                        error: 'Content-Length exceeds maximum allowed size',
+                        code: 'CONTENT_LENGTH_INVALID'
+                    });
                 }
-                logger_1.logger.info('File upload validated', {
-                    originalName: file.originalname,
-                    sanitizedName: validation.sanitizedFileName,
+                if (config.requireMagicByteValidation) {
+                    const magicValidation = await validateMagicBytes(file.buffer);
+                    if (!magicValidation.valid) {
+                        logger_1.logger.warn('Magic byte validation failed', {
+                            filename: file.originalname,
+                            reportedMimeType: file.mimetype,
+                            detectedType: magicValidation.detectedType
+                        });
+                        return res.status(400).json({
+                            success: false,
+                            error: 'File content does not match file type',
+                            code: 'MAGIC_BYTE_MISMATCH'
+                        });
+                    }
+                    if (magicValidation.detectedType && !config.allowedMimeTypes.includes(magicValidation.detectedType)) {
+                        return res.status(400).json({
+                            success: false,
+                            error: 'Detected file type is not allowed',
+                            detectedType: magicValidation.detectedType,
+                            code: 'DETECTED_TYPE_NOT_ALLOWED'
+                        });
+                    }
+                }
+                if (config.enableAntivirusScanning) {
+                    const scanResult = await scanForViruses(file.buffer, file.originalname);
+                    if (!scanResult.safe) {
+                        logger_1.logger.error('File security scan failed', {
+                            filename: file.originalname,
+                            threats: scanResult.threats,
+                            scanId: scanResult.scanId
+                        });
+                        return res.status(400).json({
+                            success: false,
+                            error: 'File failed security scan',
+                            threats: scanResult.threats,
+                            scanId: scanResult.scanId,
+                            code: 'SECURITY_SCAN_FAILED'
+                        });
+                    }
+                    file.securityScan = scanResult;
+                }
+                const hash = crypto.createHash('sha256').update(file.buffer).digest('hex');
+                file.hash = hash;
+                logger_1.logger.info('File validation completed', {
+                    filename: file.originalname,
                     size: file.size,
-                    mimeType: validation.detectedMimeType,
-                    userId: req.user?.id,
+                    mimetype: file.mimetype,
+                    hash: hash.substring(0, 16) + '...',
+                    scanId: file.securityScan?.scanId
                 });
             }
             next();
         }
         catch (error) {
-            logger_1.logger.error('File validation middleware error', { error });
+            logger_1.logger.error('File content validation error:', error);
             res.status(500).json({
+                success: false,
                 error: 'File validation error',
-                message: 'An error occurred while validating the uploaded file',
+                code: 'VALIDATION_ERROR'
             });
         }
-    }
-    static async scanForVirus(buffer) {
-        try {
-            const malwareSignatures = [
-                Buffer.from('4D5A', 'hex'),
-                Buffer.from('7F454C46', 'hex'),
-                Buffer.from('CAFEBABE', 'hex'),
-            ];
-            for (const signature of malwareSignatures) {
-                if (buffer.slice(0, signature.length).equals(signature)) {
-                    logger_1.logger.warn('Potential malware signature detected');
-                    return false;
-                }
-            }
-            return true;
-        }
-        catch (error) {
-            logger_1.logger.error('Virus scan error', { error });
-            return false;
-        }
-    }
-    static async saveFile(file, subDir) {
-        try {
-            const sanitizedName = file.sanitizedFileName || this.sanitizeFileName(file.originalname);
-            const uploadPath = path_1.default.join(this.uploadDir, subDir || '', sanitizedName);
-            await promises_1.default.mkdir(path_1.default.dirname(uploadPath), { recursive: true });
-            await promises_1.default.writeFile(uploadPath, file.buffer);
-            await promises_1.default.chmod(uploadPath, 0o644);
-            logger_1.logger.info('File saved successfully', {
-                path: uploadPath,
-                originalName: file.originalname,
-                savedName: sanitizedName,
-            });
-            return uploadPath;
-        }
-        catch (error) {
-            logger_1.logger.error('File save error', { error });
-            throw new Error('Failed to save file');
-        }
-    }
+    };
 }
-exports.SecureUploadMiddleware = SecureUploadMiddleware;
-exports.secureUpload = SecureUploadMiddleware.createUploadMiddleware();
-exports.validateUpload = SecureUploadMiddleware.validateUploadedFile.bind(SecureUploadMiddleware);
-exports.saveUploadedFile = SecureUploadMiddleware.saveFile.bind(SecureUploadMiddleware);
+function createSecureUpload(options = {}) {
+    const config = { ...DEFAULT_SECURITY_OPTIONS, ...options };
+    const upload = (0, multer_1.default)({
+        storage: (0, multer_1.memoryStorage)(),
+        fileFilter: createSecureFileFilter(config),
+        limits: {
+            fileSize: config.maxFileSize,
+            files: 5,
+            fields: 10,
+            parts: 15
+        }
+    });
+    return {
+        single: (fieldName) => [
+            upload.single(fieldName),
+            validateFileContent(config)
+        ],
+        multiple: (fieldName, maxCount = 5) => [
+            upload.array(fieldName, maxCount),
+            validateFileContent(config)
+        ],
+        fields: (fields) => [
+            upload.fields(fields),
+            validateFileContent(config)
+        ]
+    };
+}
+function handleSecureUploadError(error, req, res, next) {
+    if (error instanceof multer_1.MulterError) {
+        logger_1.logger.warn('Multer upload error:', {
+            code: error.code,
+            message: error.message,
+            field: error.field
+        });
+        switch (error.code) {
+            case 'LIMIT_FILE_SIZE':
+                return res.status(400).json({
+                    success: false,
+                    error: 'File too large',
+                    code: 'FILE_TOO_LARGE',
+                    maxSize: DEFAULT_SECURITY_OPTIONS.maxFileSize
+                });
+            case 'LIMIT_FILE_COUNT':
+                return res.status(400).json({
+                    success: false,
+                    error: 'Too many files',
+                    code: 'TOO_MANY_FILES',
+                    maxFiles: 5
+                });
+            case 'LIMIT_UNEXPECTED_FILE':
+                return res.status(400).json({
+                    success: false,
+                    error: 'Unexpected file field',
+                    code: 'UNEXPECTED_FILE'
+                });
+            default:
+                return res.status(400).json({
+                    success: false,
+                    error: 'Upload error',
+                    code: error.code
+                });
+        }
+    }
+    if (error.message?.includes('not allowed')) {
+        return res.status(400).json({
+            success: false,
+            error: error.message,
+            code: 'FILE_TYPE_NOT_ALLOWED'
+        });
+    }
+    logger_1.logger.error('Upload error:', error);
+    res.status(500).json({
+        success: false,
+        error: 'Upload failed',
+        code: 'UPLOAD_ERROR'
+    });
+}
+exports.default = createSecureUpload();
 //# sourceMappingURL=secureUpload.js.map

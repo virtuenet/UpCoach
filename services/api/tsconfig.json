@@ -4,13 +4,12 @@
     "module": "commonjs",
     "lib": ["es2022", "dom"],
     "skipLibCheck": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
     "outDir": "./dist",
     "rootDir": ".",
     "strict": false,
-    "noImplicitAny": false,
-    "strictNullChecks": false,
     "noImplicitReturns": false,
-    "skipLibCheck": true,
     "useUnknownInCatchVariables": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
@@ -29,7 +28,7 @@
     "declarationMap": false,
     "moduleResolution": "node",
     "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
-    "types": ["jest", "node"],
+    "types": [],
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
@@ -44,7 +43,8 @@
   },
   "include": [
     "src/**/*",
-    "tests/**/*"
+    "tests/**/*",
+    "../../types/missing-types.d.ts"
   ],
   "exclude": [
     "node_modules",

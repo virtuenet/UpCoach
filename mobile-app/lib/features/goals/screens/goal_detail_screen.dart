@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../shared/models/goal_model.dart';
 import '../providers/goal_provider.dart';
+import 'edit_goal_screen.dart';
 
 class GoalDetailScreen extends ConsumerStatefulWidget {
   final GoalModel goal;
@@ -61,6 +64,28 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
       
       _goal = _goal.copyWith(completedMilestones: updatedMilestones);
     });
+  }
+
+  void _editGoal() async {
+    final result = await Navigator.push<GoalModel>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditGoalScreen(goal: _goal),
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _goal = result;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Goal updated successfully'),
+          backgroundColor: AppTheme.successColor,
+        ),
+      );
+    }
   }
 
   Future<void> _deleteGoal() async {
@@ -142,8 +167,9 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
             onSelected: (value) {
               if (value == 'delete') {
                 _deleteGoal();
+              } else if (value == 'edit') {
+                _editGoal();
               }
-              // TODO: Implement edit functionality
             },
           ),
         ],

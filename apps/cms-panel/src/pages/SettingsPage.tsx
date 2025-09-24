@@ -40,10 +40,10 @@ export default function SettingsPage() {
     mutationFn: authApi.updateProfile,
     onSuccess: data => {
       updateProfile(data);
-      toast.success('Profile updated successfully');
+      toast('Profile updated successfully');
     },
     onError: () => {
-      toast.error('Failed to update profile');
+      toast('Failed to update profile');
     },
   });
 

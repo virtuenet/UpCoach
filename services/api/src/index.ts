@@ -129,27 +129,28 @@ app.use(compression());
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
+      // In production, never allow requests with no origin for security
+      if (!origin && config.env === 'production') {
+        return callback(new Error('Origin header required in production'));
+      }
 
-      // Check if origin is in allowed list
-      if (
-        config.corsOrigins.some(allowedOrigin => {
-          if (allowedOrigin.includes('*')) {
-            const pattern = allowedOrigin.replace(/\*/g, '.*');
-            return new RegExp(`^${pattern}$`).test(origin);
-          }
-          return allowedOrigin === origin;
-        })
-      ) {
+      // Allow requests with no origin only in development (like mobile apps or curl requests)
+      if (!origin && config.env !== 'production') {
         return callback(null, true);
       }
 
+      // SECURITY: Only exact match origins, no wildcard patterns
+      if (config.corsOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // Log rejected CORS attempts for security monitoring
+      logger.warn(`CORS rejection: Origin "${origin}" not in allowed list: ${config.corsOrigins.join(', ')}`);
       return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token'],
     exposedHeaders: ['X-Total-Count'],
   })
 );

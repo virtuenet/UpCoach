@@ -13,6 +13,8 @@ class TeamService {
                 replacements: { organizationId: data.organizationId },
                 transaction,
             });
+            const currentTeamCount = teamCount[0].count;
+            await this.checkTeamLimits(data.organizationId, currentTeamCount);
             const team = await Team_1.Team.create({
                 organizationId: data.organizationId,
                 name: data.name,
@@ -75,6 +77,14 @@ class TeamService {
     async addTeamMember(teamId, userId, role, addedBy) {
         const transaction = await models_1.sequelize.transaction();
         try {
+            const [teams] = await models_1.sequelize.query(`SELECT organization_id FROM teams WHERE id = :teamId`, {
+                replacements: { teamId },
+                transaction,
+            });
+            if (teams.length === 0) {
+                throw new errors_1.AppError('Team not found', 404);
+            }
+            const organizationId = teams[0].organization_id;
             const [existing] = await models_1.sequelize.query(`SELECT * FROM team_members WHERE team_id = :teamId AND user_id = :userId`, {
                 replacements: { teamId, userId },
                 transaction,
@@ -88,6 +98,7 @@ class TeamService {
                 });
             }
             else {
+                await this.checkTeamMemberLimits(organizationId, teamId);
                 await models_1.sequelize.query(`INSERT INTO team_members (team_id, user_id, role, invited_by, is_active)
            VALUES (:teamId, :userId, :role, :addedBy, true)`, {
                     replacements: { teamId, userId, role, addedBy },
@@ -174,6 +185,161 @@ class TeamService {
             rules: JSON.parse(policy.rules),
             applies_to: JSON.parse(policy.applies_to),
         }));
+    }
+    async updatePolicy(policyId, data) {
+        const transaction = await models_1.sequelize.transaction();
+        try {
+            const [existingPolicies] = await models_1.sequelize.query(`SELECT * FROM enterprise_policies WHERE id = :policyId AND is_active = true`, {
+                replacements: { policyId },
+                transaction,
+            });
+            if (existingPolicies.length === 0) {
+                throw new errors_1.AppError('Policy not found', 404);
+            }
+            const existingPolicy = existingPolicies[0];
+            const updateFields = [];
+            const replacements = { policyId, updatedBy: data.updatedBy };
+            if (data.name !== undefined) {
+                updateFields.push('name = :name');
+                replacements.name = data.name;
+            }
+            if (data.type !== undefined) {
+                updateFields.push('type = :type');
+                replacements.type = data.type;
+            }
+            if (data.rules !== undefined) {
+                updateFields.push('rules = :rules');
+                replacements.rules = JSON.stringify(data.rules);
+            }
+            if (data.enforcementLevel !== undefined) {
+                updateFields.push('enforcement_level = :enforcementLevel');
+                replacements.enforcementLevel = data.enforcementLevel;
+            }
+            if (data.appliesTo !== undefined) {
+                updateFields.push('applies_to = :appliesTo');
+                replacements.appliesTo = JSON.stringify(data.appliesTo);
+            }
+            updateFields.push('updated_at = NOW()');
+            if (updateFields.length === 1) {
+                throw new errors_1.AppError('No fields to update', 400);
+            }
+            const [result] = await models_1.sequelize.query(`UPDATE enterprise_policies
+         SET ${updateFields.join(', ')}
+         WHERE id = :policyId
+         RETURNING *`, {
+                replacements,
+                transaction,
+            });
+            await this.logAuditEvent(existingPolicy.organization_id, data.updatedBy, 'policy_updated', 'policy', policyId.toString(), {
+                previousValues: {
+                    name: existingPolicy.name,
+                    type: existingPolicy.type,
+                    enforcementLevel: existingPolicy.enforcement_level,
+                },
+                newValues: data,
+            });
+            await transaction.commit();
+            logger_1.logger.info('Policy updated', {
+                policyId,
+                organizationId: existingPolicy.organization_id,
+                updatedBy: data.updatedBy,
+            });
+            const updatedPolicy = result[0];
+            return {
+                ...updatedPolicy,
+                rules: JSON.parse(updatedPolicy.rules),
+                applies_to: JSON.parse(updatedPolicy.applies_to),
+            };
+        }
+        catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
+    }
+    async deletePolicy(policyId, data) {
+        const transaction = await models_1.sequelize.transaction();
+        try {
+            const [existingPolicies] = await models_1.sequelize.query(`SELECT * FROM enterprise_policies WHERE id = :policyId AND is_active = true`, {
+                replacements: { policyId },
+                transaction,
+            });
+            if (existingPolicies.length === 0) {
+                throw new errors_1.AppError('Policy not found', 404);
+            }
+            const existingPolicy = existingPolicies[0];
+            await models_1.sequelize.query(`UPDATE enterprise_policies
+         SET is_active = false,
+             deleted_at = NOW(),
+             updated_at = NOW()
+         WHERE id = :policyId`, {
+                replacements: { policyId },
+                transaction,
+            });
+            await this.logAuditEvent(existingPolicy.organization_id, data.deletedBy, 'policy_deleted', 'policy', policyId.toString(), {
+                policyName: existingPolicy.name,
+                policyType: existingPolicy.type,
+            });
+            await transaction.commit();
+            logger_1.logger.info('Policy deleted', {
+                policyId,
+                organizationId: existingPolicy.organization_id,
+                deletedBy: data.deletedBy,
+            });
+        }
+        catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
+    }
+    async togglePolicy(policyId, data) {
+        const transaction = await models_1.sequelize.transaction();
+        try {
+            const [existingPolicies] = await models_1.sequelize.query(`SELECT * FROM enterprise_policies WHERE id = :policyId AND is_active = true`, {
+                replacements: { policyId },
+                transaction,
+            });
+            if (existingPolicies.length === 0) {
+                throw new errors_1.AppError('Policy not found', 404);
+            }
+            const existingPolicy = existingPolicies[0];
+            const newEnabledState = data.enabled !== undefined
+                ? data.enabled
+                : !existingPolicy.is_enabled;
+            const [result] = await models_1.sequelize.query(`UPDATE enterprise_policies
+         SET is_enabled = :isEnabled,
+             updated_at = NOW()
+         WHERE id = :policyId
+         RETURNING *`, {
+                replacements: {
+                    policyId,
+                    isEnabled: newEnabledState
+                },
+                transaction,
+            });
+            await this.logAuditEvent(existingPolicy.organization_id, data.updatedBy, newEnabledState ? 'policy_enabled' : 'policy_disabled', 'policy', policyId.toString(), {
+                policyName: existingPolicy.name,
+                previousState: existingPolicy.is_enabled,
+                newState: newEnabledState,
+            });
+            await transaction.commit();
+            logger_1.logger.info('Policy toggled', {
+                policyId,
+                organizationId: existingPolicy.organization_id,
+                enabled: newEnabledState,
+                updatedBy: data.updatedBy,
+            });
+            const updatedPolicy = result[0];
+            return {
+                ...updatedPolicy,
+                rules: JSON.parse(updatedPolicy.rules),
+                applies_to: JSON.parse(updatedPolicy.applies_to),
+                isActive: updatedPolicy.is_enabled,
+            };
+        }
+        catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
     }
     async logAuditEvent(organizationId, userId, action, resourceType, resourceId, details, ipAddress, userAgent) {
         await models_1.sequelize.query(`INSERT INTO enterprise_audit_logs 
@@ -266,6 +432,141 @@ class TeamService {
             fullName: user.full_name,
             avatarUrl: user.avatar_url,
         };
+    }
+    async checkTeamLimits(organizationId, currentTeamCount) {
+        try {
+            const [subscriptions] = await models_1.sequelize.query(`SELECT s.plan, s.status, s.amount
+         FROM subscriptions s
+         INNER JOIN users u ON s.user_id = u.id
+         INNER JOIN organization_members om ON u.id = om.user_id
+         WHERE om.organization_id = :organizationId
+         AND s.status = 'active'
+         ORDER BY s.created_at DESC
+         LIMIT 1`, {
+                replacements: { organizationId },
+            });
+            if (subscriptions.length === 0) {
+                await this.enforceTeamLimit(currentTeamCount, 'free');
+                return;
+            }
+            const subscription = subscriptions[0];
+            await this.enforceTeamLimit(currentTeamCount, subscription.plan);
+            logger_1.logger.info('Team limit check performed', {
+                organizationId,
+                currentTeamCount,
+                plan: subscription.plan,
+                status: subscription.status,
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Failed to check team limits', {
+                error,
+                organizationId,
+                currentTeamCount,
+            });
+            throw error;
+        }
+    }
+    async enforceTeamLimit(currentCount, plan) {
+        const teamLimits = {
+            free: 1,
+            basic: 3,
+            pro: 10,
+            team: 25,
+            enterprise: 100,
+        };
+        const limit = teamLimits[plan] || teamLimits.free;
+        if (currentCount >= limit) {
+            throw new errors_1.AppError(`Team limit exceeded. Your ${plan} plan allows up to ${limit} teams. Please upgrade your subscription to create more teams.`, 403);
+        }
+    }
+    async getTeamLimitsInfo(organizationId) {
+        try {
+            const [teamCount] = await models_1.sequelize.query(`SELECT COUNT(*) as count FROM teams WHERE organization_id = :organizationId`, {
+                replacements: { organizationId },
+            });
+            const currentCount = teamCount[0].count;
+            const [subscriptions] = await models_1.sequelize.query(`SELECT s.plan, s.status
+         FROM subscriptions s
+         INNER JOIN users u ON s.user_id = u.id
+         INNER JOIN organization_members om ON u.id = om.user_id
+         WHERE om.organization_id = :organizationId
+         AND s.status = 'active'
+         ORDER BY s.created_at DESC
+         LIMIT 1`, {
+                replacements: { organizationId },
+            });
+            const plan = subscriptions.length > 0 ? subscriptions[0].plan : 'free';
+            const teamLimits = {
+                free: 1,
+                basic: 3,
+                pro: 10,
+                team: 25,
+                enterprise: 100,
+            };
+            const limit = teamLimits[plan] || teamLimits.free;
+            const remaining = Math.max(0, limit - currentCount);
+            const canCreateMore = currentCount < limit;
+            return {
+                currentCount,
+                limit,
+                plan,
+                remaining,
+                canCreateMore,
+            };
+        }
+        catch (error) {
+            logger_1.logger.error('Failed to get team limits info', {
+                error,
+                organizationId,
+            });
+            throw error;
+        }
+    }
+    async checkTeamMemberLimits(organizationId, teamId) {
+        try {
+            const [memberCount] = await models_1.sequelize.query(`SELECT COUNT(*) as count FROM team_members WHERE team_id = :teamId AND is_active = true`, {
+                replacements: { teamId },
+            });
+            const currentMemberCount = memberCount[0].count;
+            const [subscriptions] = await models_1.sequelize.query(`SELECT s.plan, s.status
+         FROM subscriptions s
+         INNER JOIN users u ON s.user_id = u.id
+         INNER JOIN organization_members om ON u.id = om.user_id
+         WHERE om.organization_id = :organizationId
+         AND s.status = 'active'
+         ORDER BY s.created_at DESC
+         LIMIT 1`, {
+                replacements: { organizationId },
+            });
+            const plan = subscriptions.length > 0 ? subscriptions[0].plan : 'free';
+            const memberLimits = {
+                free: 5,
+                basic: 15,
+                pro: 50,
+                team: 100,
+                enterprise: 500,
+            };
+            const limit = memberLimits[plan] || memberLimits.free;
+            if (currentMemberCount >= limit) {
+                throw new errors_1.AppError(`Team member limit exceeded. Your ${plan} plan allows up to ${limit} members per team. Please upgrade your subscription to add more members.`, 403);
+            }
+            logger_1.logger.info('Team member limit check passed', {
+                organizationId,
+                teamId,
+                currentMemberCount,
+                limit,
+                plan,
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Failed to check team member limits', {
+                error,
+                organizationId,
+                teamId,
+            });
+            throw error;
+        }
     }
 }
 exports.TeamService = TeamService;

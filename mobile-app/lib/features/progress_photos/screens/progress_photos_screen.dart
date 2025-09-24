@@ -1130,13 +1130,13 @@ class _StatItem extends StatelessWidget {
   }
 }
 
-class _PhotoDetailScreen extends StatelessWidget {
+class _PhotoDetailScreen extends ConsumerWidget {
   final ProgressPhoto photo;
 
   const _PhotoDetailScreen({required this.photo});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -1147,13 +1147,13 @@ class _PhotoDetailScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.share),
             onPressed: () {
-              // TODO: Implement share functionality
+              _sharePhoto(context, ref, photo);
             },
           ),
           IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () {
-              // TODO: Implement delete functionality
+              _deletePhoto(context, ref, photo);
             },
           ),
         ],
@@ -1230,5 +1230,108 @@ class _PhotoDetailScreen extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year} at ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
+  void _sharePhoto(BuildContext context, WidgetRef ref, ProgressPhoto photo) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Share the photo
+      await ref.read(progressPhotosProvider.notifier).sharePhoto(photo);
+
+      if (context.mounted) {
+        Navigator.of(context).pop(); // Close loading
+        Navigator.of(context).pop(); // Close detail screen
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Photo shared successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.of(context).pop(); // Close loading
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to share photo: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _deletePhoto(BuildContext context, WidgetRef ref, ProgressPhoto photo) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Photo'),
+        content: Text(
+          'Are you sure you want to delete this photo${photo.title != null ? " (${photo.title})" : ""}? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true && context.mounted) {
+      try {
+        // Show loading indicator
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+
+        // Delete the photo
+        await ref.read(progressPhotosProvider.notifier).deletePhoto(photo.id);
+
+        if (context.mounted) {
+          Navigator.of(context).pop(); // Close loading
+          Navigator.of(context).pop(); // Close detail screen
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Photo deleted successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          Navigator.of(context).pop(); // Close loading
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to delete photo: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 } 

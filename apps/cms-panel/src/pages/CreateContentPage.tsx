@@ -64,12 +64,12 @@ export default function CreateContentPage() {
 
   const createMutation = useMutation({
     mutationFn: contentApi.createArticle,
-    onSuccess: data => {
-      toast.success('Article created successfully!');
+    onSuccess: (data: any) => {
+      toast('Article created successfully!', { type: 'success' });
       navigate(`/content/edit/${data.id}`);
     },
     onError: (error: any) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to create article');
+      toast(error instanceof Error ? error.message : 'Failed to create article', { type: 'error' });
     },
   });
 
@@ -286,7 +286,7 @@ export default function CreateContentPage() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-secondary-500 focus:border-secondary-500"
                     >
                       <option value="">Select a category</option>
-                      {categories.map(cat => (
+                      {categories.map((cat: any) => (
                         <option key={cat.id} value={cat.id}>
                           {cat.name}
                         </option>

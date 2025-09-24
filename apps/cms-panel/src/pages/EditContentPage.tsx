@@ -108,47 +108,47 @@ export default function EditContentPage() {
   const updateMutation = useMutation({
     mutationFn: (data: any) => contentApi.updateArticle(id!, data),
     onSuccess: () => {
-      toast.success('Article updated successfully!');
+      toast('Article updated successfully!', { type: 'success' });
       queryClient.invalidateQueries({ queryKey: ['article', id] });
       queryClient.invalidateQueries({ queryKey: ['articles'] });
     },
     onError: (error: any) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to update article');
+      toast(error instanceof Error ? error.message : 'Failed to update article', { type: 'error' });
     },
   });
 
   const publishMutation = useMutation({
     mutationFn: () => contentApi.publishArticle(id!),
     onSuccess: () => {
-      toast.success('Article published successfully!');
+      toast('Article published successfully!', { type: 'success' });
       queryClient.invalidateQueries({ queryKey: ['article', id] });
       queryClient.invalidateQueries({ queryKey: ['articles'] });
     },
     onError: (error: any) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to publish article');
+      toast(error instanceof Error ? error.message : 'Failed to publish article', { type: 'error' });
     },
   });
 
   const archiveMutation = useMutation({
     mutationFn: () => contentApi.archiveArticle(id!),
     onSuccess: () => {
-      toast.success('Article archived successfully!');
+      toast('Article archived successfully!', { type: 'success' });
       queryClient.invalidateQueries({ queryKey: ['article', id] });
       queryClient.invalidateQueries({ queryKey: ['articles'] });
     },
     onError: (error: any) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to archive article');
+      toast(error instanceof Error ? error.message : 'Failed to archive article', { type: 'error' });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: () => contentApi.deleteArticle(id!),
     onSuccess: () => {
-      toast.success('Article deleted successfully!');
+      toast('Article deleted successfully!', { type: 'success' });
       navigate('/content');
     },
     onError: (error: any) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete article');
+      toast(error instanceof Error ? error.message : 'Failed to delete article', { type: 'error' });
     },
   });
 

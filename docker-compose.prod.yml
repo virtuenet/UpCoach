@@ -16,14 +16,6 @@ services:
       - postgres_prod_data:/var/lib/postgresql/data
       - ./services/api/src/database/migrations:/docker-entrypoint-initdb.d
       - ./logs/postgresql:/var/log/postgresql
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-          cpus: '1.0'
-        reservations:
-          memory: 1G
-          cpus: '0.5'
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -41,14 +33,6 @@ services:
       - redis_prod_data:/data
       - ./config/redis.conf:/usr/local/etc/redis/redis.conf:ro
     command: redis-server /usr/local/etc/redis/redis.conf
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: '0.5'
-        reservations:
-          memory: 512M
-          cpus: '0.25'
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -60,7 +44,7 @@ services:
   backend-api:
     build:
       context: ./services/api
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile.production
       args:
         NODE_ENV: production
         BUILD_VERSION: ${BUILD_VERSION:-latest}
@@ -106,7 +90,6 @@ services:
         reservations:
           memory: 1G
           cpus: '0.5'
-      replicas: ${API_REPLICAS:-2}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:1080/api/health"]
@@ -124,7 +107,7 @@ services:
   landing-page:
     build:
       context: ./apps/landing-page
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile.production
       args:
         NODE_ENV: production
         NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_URL}
@@ -161,7 +144,7 @@ services:
   admin-panel:
     build:
       context: .
-      dockerfile: ./apps/admin-panel/Dockerfile.prod
+      dockerfile: ./apps/admin-panel/Dockerfile.production
       args:
         NODE_ENV: production
         VITE_SUPABASE_URL: ${SUPABASE_URL}
@@ -197,7 +180,7 @@ services:
   cms-panel:
     build:
       context: .
-      dockerfile: ./apps/cms-panel/Dockerfile.prod
+      dockerfile: ./apps/cms-panel/Dockerfile.production
       args:
         NODE_ENV: production
         VITE_SUPABASE_URL: ${SUPABASE_URL}

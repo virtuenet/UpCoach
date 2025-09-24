@@ -804,6 +804,54 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
     return '$firstSentence. $keyPoints.'.replaceAll('..', '.');
   }
 
+  // Share audio file
+  Future<void> shareAudioFile(String entryId) async {
+    try {
+      final entry = state.entries.firstWhere((e) => e.id == entryId);
+      await _storageService.shareAudioFile(entry.audioFilePath);
+    } catch (e) {
+      state = state.copyWith(error: 'Failed to share audio: ${e.toString()}');
+      rethrow;
+    }
+  }
+
+  // Share transcription text
+  Future<void> shareTranscription(String entryId) async {
+    try {
+      final entry = state.entries.firstWhere((e) => e.id == entryId);
+      if (!entry.isTranscribed || entry.transcriptionText == null) {
+        throw Exception('No transcription available to share');
+      }
+
+      final shareText = '''
+Voice Journal: ${entry.title}
+Date: ${entry.createdAt.toString()}
+
+${entry.transcriptionText}
+
+---
+Recorded with UpCoach Voice Journal
+Duration: ${Duration(seconds: entry.durationSeconds).toString()}
+      ''';
+
+      await _storageService.shareText(shareText);
+    } catch (e) {
+      state = state.copyWith(error: 'Failed to share transcription: ${e.toString()}');
+      rethrow;
+    }
+  }
+
+  // Export single entry as PDF
+  Future<void> exportEntryAsPDF(String entryId) async {
+    try {
+      final entry = state.entries.firstWhere((e) => e.id == entryId);
+      await _storageService.exportEntryAsPDF(entry);
+    } catch (e) {
+      state = state.copyWith(error: 'Failed to export PDF: ${e.toString()}');
+      rethrow;
+    }
+  }
+
   // Get insights and recommendations
   Map<String, dynamic> getPersonalInsights() {
     final analytics = state.analytics;

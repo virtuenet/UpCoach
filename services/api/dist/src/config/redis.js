@@ -41,7 +41,7 @@ async function cacheGet(key) {
 async function cacheSet(key, value, expirySeconds) {
     const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
     if (expirySeconds) {
-        await redisClient.setEx(key, expirySeconds, stringValue);
+        await redisClient.setex(key, expirySeconds, stringValue);
     }
     else {
         await redisClient.set(key, stringValue);

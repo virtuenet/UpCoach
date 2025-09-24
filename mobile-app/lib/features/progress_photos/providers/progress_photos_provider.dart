@@ -189,9 +189,24 @@ class ProgressPhotosNotifier extends StateNotifier<ProgressPhotosState> {
 
   Future<void> sharePhotos() async {
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       await _progressPhotosService.sharePhotos(state.photos);
+      state = state.copyWith(isLoading: false);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> sharePhoto(ProgressPhoto photo) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      await _progressPhotosService.sharePhoto(photo);
       state = state.copyWith(isLoading: false);
     } catch (e) {
       state = state.copyWith(

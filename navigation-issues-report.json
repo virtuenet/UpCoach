@@ -1,0 +1,148 @@
+[
+  {
+    "platform": "mobile-app",
+    "path": "/habits",
+    "issues": [
+      {
+        "type": "missing_navigation",
+        "severity": "high",
+        "description": "Analytics navigation not implemented",
+        "location": "lib/features/habits/screens/habits_screen.dart:395-398",
+        "currentBehavior": "Shows SnackBar with 'Detailed analytics coming soon!'",
+        "expectedBehavior": "Navigate to /habits/analytics route",
+        "impact": "Users cannot access habit analytics functionality",
+        "recommendation": "Implement /habits/analytics route and HabitAnalyticsScreen component"
+      },
+      {
+        "type": "missing_navigation",
+        "severity": "high",
+        "description": "Achievements navigation not implemented",
+        "location": "lib/features/habits/screens/habits_screen.dart:401-405",
+        "currentBehavior": "Shows SnackBar with 'Achievements screen coming soon!'",
+        "expectedBehavior": "Navigate to /habits/achievements route",
+        "impact": "Users cannot access habit achievements functionality",
+        "recommendation": "Implement /habits/achievements route and HabitAchievementsScreen component"
+      },
+      {
+        "type": "missing_navigation",
+        "severity": "high",
+        "description": "Settings navigation not implemented",
+        "location": "lib/features/habits/screens/habits_screen.dart:408-412",
+        "currentBehavior": "Shows SnackBar with 'Habit settings coming soon!'",
+        "expectedBehavior": "Navigate to /habits/settings route",
+        "impact": "Users cannot access habit-specific settings",
+        "recommendation": "Implement /habits/settings route and HabitSettingsScreen component"
+      },
+      {
+        "type": "missing_navigation",
+        "severity": "high",
+        "description": "Habit details navigation not implemented",
+        "location": "lib/features/habits/screens/habits_screen.dart:415-419",
+        "currentBehavior": "Shows SnackBar with 'Details for {habit.name} coming soon!'",
+        "expectedBehavior": "Navigate to /habits/{habitId}/details route",
+        "impact": "Users cannot view detailed habit information",
+        "recommendation": "Implement /habits/:id/details route and HabitDetailScreen component"
+      },
+      {
+        "type": "missing_navigation",
+        "severity": "high",
+        "description": "Edit habit navigation not implemented",
+        "location": "lib/features/habits/screens/habits_screen.dart:422-426",
+        "currentBehavior": "Shows SnackBar with 'Edit {habit.name} coming soon!'",
+        "expectedBehavior": "Navigate to /habits/{habitId}/edit route",
+        "impact": "Users cannot edit existing habits",
+        "recommendation": "Implement /habits/:id/edit route and EditHabitScreen component"
+      }
+    ]
+  },
+  {
+    "platform": "mobile-app",
+    "path": "/ai-coach",
+    "issues": [
+      {
+        "type": "inconsistent_layout",
+        "severity": "medium",
+        "description": "AI Coach screen included in main navigation but AI sub-features are outside",
+        "location": "lib/core/router/app_router.dart:118-140",
+        "currentBehavior": "AI Coach is in main nav, but AI Insights, Voice Coach outside",
+        "expectedBehavior": "Consistent navigation structure for all AI features",
+        "impact": "Inconsistent user experience for AI feature navigation",
+        "recommendation": "Either move all AI features to main nav or create nested structure"
+      }
+    ]
+  },
+  {
+    "platform": "admin-panel",
+    "path": "/",
+    "issues": [
+      {
+        "type": "missing_breadcrumb_config",
+        "severity": "low",
+        "description": "Breadcrumb generation relies on design system without page-level configs",
+        "location": "apps/admin-panel/src/components/Layout.tsx:298",
+        "currentBehavior": "Breadcrumbs generated from navigation tree only",
+        "expectedBehavior": "Page-level breadcrumb customization available",
+        "impact": "Limited flexibility for custom breadcrumb labels",
+        "recommendation": "Add export const breadcrumb configs to pages for customization"
+      }
+    ]
+  },
+  {
+    "platform": "cms-panel",
+    "path": "/content/categories",
+    "issues": [
+      {
+        "type": "missing_route",
+        "severity": "medium",
+        "description": "Categories route defined in navigation config but not in App.tsx",
+        "location": "packages/design-system/src/config/navigation.ts:42-45 vs apps/cms-panel/src/App.tsx",
+        "currentBehavior": "Navigation link exists but route not implemented",
+        "expectedBehavior": "Functional categories management page",
+        "impact": "Navigation link leads to 404 error",
+        "recommendation": "Implement /content/categories route and CategoriesPage component"
+      }
+    ]
+  },
+  {
+    "platform": "cross-platform",
+    "path": "global",
+    "issues": [
+      {
+        "type": "inconsistent_navigation_patterns",
+        "severity": "medium",
+        "description": "Different navigation patterns across platforms",
+        "location": "mobile-app vs web apps",
+        "currentBehavior": "Mobile uses bottom nav + side nav, web uses only side nav",
+        "expectedBehavior": "Consistent navigation patterns adapted for each platform",
+        "impact": "Users need to learn different navigation patterns",
+        "recommendation": "Standardize navigation hierarchy while maintaining platform-appropriate UI"
+      },
+      {
+        "type": "inconsistent_authentication_redirects",
+        "severity": "low",
+        "description": "Different default landing pages after authentication",
+        "location": "Multiple app routers",
+        "currentBehavior": "Mobile redirects to /home, web apps redirect to /dashboard",
+        "expectedBehavior": "Consistent post-auth routing strategy",
+        "impact": "Inconsistent user experience across platforms",
+        "recommendation": "Align on consistent routing strategy or make differences intentional"
+      }
+    ]
+  },
+  {
+    "platform": "design-system",
+    "path": "/packages/design-system/src/config/navigation.ts",
+    "issues": [
+      {
+        "type": "incomplete_icon_configuration",
+        "severity": "low",
+        "description": "Navigation icons set to null in central config",
+        "location": "packages/design-system/src/config/navigation.ts",
+        "currentBehavior": "Icons provided at app level rather than centrally",
+        "expectedBehavior": "Centralized icon configuration for consistency",
+        "impact": "Manual icon management required in each app",
+        "recommendation": "Define standard icons in navigation config for reuse"
+      }
+    ]
+  }
+]

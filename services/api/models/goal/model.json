@@ -1,0 +1,240 @@
+{
+  "modelTopology": {
+    "class_name": "Sequential",
+    "config": {
+      "name": "goal_success_predictor",
+      "layers": [
+        {
+          "class_name": "Dense",
+          "config": {
+            "units": 256,
+            "activation": "relu",
+            "use_bias": true,
+            "kernel_initializer": {
+              "class_name": "HeNormal"
+            },
+            "bias_initializer": {
+              "class_name": "Zeros"
+            },
+            "kernel_regularizer": {
+              "class_name": "L2",
+              "config": {
+                "l2": 0.001
+              }
+            },
+            "batch_input_shape": [null, 25],
+            "dtype": "float32",
+            "trainable": true,
+            "name": "input_layer"
+          }
+        },
+        {
+          "class_name": "BatchNormalization",
+          "config": {
+            "axis": -1,
+            "momentum": 0.99,
+            "epsilon": 0.001,
+            "trainable": true,
+            "name": "batch_norm_1"
+          }
+        },
+        {
+          "class_name": "Dropout",
+          "config": {
+            "rate": 0.3,
+            "trainable": true,
+            "name": "dropout_1"
+          }
+        },
+        {
+          "class_name": "Dense",
+          "config": {
+            "units": 128,
+            "activation": "relu",
+            "use_bias": true,
+            "kernel_initializer": {
+              "class_name": "HeNormal"
+            },
+            "bias_initializer": {
+              "class_name": "Zeros"
+            },
+            "kernel_regularizer": {
+              "class_name": "L2",
+              "config": {
+                "l2": 0.001
+              }
+            },
+            "trainable": true,
+            "name": "hidden_layer_1"
+          }
+        },
+        {
+          "class_name": "BatchNormalization",
+          "config": {
+            "axis": -1,
+            "momentum": 0.99,
+            "epsilon": 0.001,
+            "trainable": true,
+            "name": "batch_norm_2"
+          }
+        },
+        {
+          "class_name": "Dropout",
+          "config": {
+            "rate": 0.2,
+            "trainable": true,
+            "name": "dropout_2"
+          }
+        },
+        {
+          "class_name": "Dense",
+          "config": {
+            "units": 64,
+            "activation": "relu",
+            "use_bias": true,
+            "kernel_initializer": {
+              "class_name": "HeNormal"
+            },
+            "bias_initializer": {
+              "class_name": "Zeros"
+            },
+            "trainable": true,
+            "name": "hidden_layer_2"
+          }
+        },
+        {
+          "class_name": "Dense",
+          "config": {
+            "units": 32,
+            "activation": "relu",
+            "use_bias": true,
+            "kernel_initializer": {
+              "class_name": "HeNormal"
+            },
+            "bias_initializer": {
+              "class_name": "Zeros"
+            },
+            "trainable": true,
+            "name": "hidden_layer_3"
+          }
+        },
+        {
+          "class_name": "Dense",
+          "config": {
+            "units": 1,
+            "activation": "sigmoid",
+            "use_bias": true,
+            "kernel_initializer": {
+              "class_name": "GlorotUniform"
+            },
+            "bias_initializer": {
+              "class_name": "Zeros"
+            },
+            "trainable": true,
+            "name": "output_layer"
+          }
+        }
+      ]
+    }
+  },
+  "format": "layers-model",
+  "generatedBy": "upcoach-ml-v3",
+  "modelVersion": "1.0.0",
+  "weightsManifest": [
+    {
+      "paths": ["weights.bin"],
+      "weights": [
+        {
+          "name": "input_layer/kernel",
+          "shape": [25, 256],
+          "dtype": "float32"
+        },
+        {
+          "name": "input_layer/bias",
+          "shape": [256],
+          "dtype": "float32"
+        },
+        {
+          "name": "batch_norm_1/gamma",
+          "shape": [256],
+          "dtype": "float32"
+        },
+        {
+          "name": "batch_norm_1/beta",
+          "shape": [256],
+          "dtype": "float32"
+        },
+        {
+          "name": "batch_norm_1/moving_mean",
+          "shape": [256],
+          "dtype": "float32"
+        },
+        {
+          "name": "batch_norm_1/moving_variance",
+          "shape": [256],
+          "dtype": "float32"
+        },
+        {
+          "name": "hidden_layer_1/kernel",
+          "shape": [256, 128],
+          "dtype": "float32"
+        },
+        {
+          "name": "hidden_layer_1/bias",
+          "shape": [128],
+          "dtype": "float32"
+        },
+        {
+          "name": "batch_norm_2/gamma",
+          "shape": [128],
+          "dtype": "float32"
+        },
+        {
+          "name": "batch_norm_2/beta",
+          "shape": [128],
+          "dtype": "float32"
+        },
+        {
+          "name": "batch_norm_2/moving_mean",
+          "shape": [128],
+          "dtype": "float32"
+        },
+        {
+          "name": "batch_norm_2/moving_variance",
+          "shape": [128],
+          "dtype": "float32"
+        },
+        {
+          "name": "hidden_layer_2/kernel",
+          "shape": [128, 64],
+          "dtype": "float32"
+        },
+        {
+          "name": "hidden_layer_2/bias",
+          "shape": [64],
+          "dtype": "float32"
+        },
+        {
+          "name": "hidden_layer_3/kernel",
+          "shape": [64, 32],
+          "dtype": "float32"
+        },
+        {
+          "name": "hidden_layer_3/bias",
+          "shape": [32],
+          "dtype": "float32"
+        },
+        {
+          "name": "output_layer/kernel",
+          "shape": [32, 1],
+          "dtype": "float32"
+        },
+        {
+          "name": "output_layer/bias",
+          "shape": [1],
+          "dtype": "float32"
+        }
+      ]
+    }
+  ]
+}

@@ -4,11 +4,11 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@upcoach/ui';
+import { Badge } from '@upcoach/ui';
+import { Alert, AlertDescription, AlertTitle } from '@upcoach/ui';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@upcoach/ui';
+import { Button } from '@upcoach/ui';
 import { 
   AlertTriangle, 
   CheckCircle, 

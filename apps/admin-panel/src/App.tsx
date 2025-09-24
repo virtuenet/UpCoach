@@ -1,7 +1,5 @@
 import { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
 
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
@@ -28,7 +26,7 @@ import IntegrationsPage from './pages/IntegrationsPage';
 import BackupRecoveryPage from './pages/BackupRecoveryPage';
 import Layout from './components/Layout';
 import SessionWrapper from './components/SessionWrapper';
-import { lightTheme } from '@upcoach/design-system';
+// Basic theme and styling imports removed for compatibility
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
@@ -44,8 +42,7 @@ function App() {
   }, [initializeAuth]);
 
   return (
-    <ThemeProvider theme={lightTheme}>
-      <CssBaseline />
+    <div className="admin-app">
       <SessionWrapper>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
@@ -96,7 +93,7 @@ function App() {
           />
         </Routes>
       </SessionWrapper>
-    </ThemeProvider>
+    </div>
   );
 }
 

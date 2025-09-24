@@ -54,6 +54,20 @@ router.post('/organizations/:organizationId/policies', (0, authorize_1.authorize
     (0, express_validator_1.body)('enforcementLevel').isIn(['soft', 'hard']),
 ], validation_1.validateRequest, enterpriseController.createPolicy);
 router.get('/organizations/:organizationId/policies', (0, authorize_1.authorize)('organization', 'member'), enterpriseController.getPolicies);
+router.put('/policies/:policyId', (0, authorize_1.authorize)('organization', 'admin'), [
+    (0, express_validator_1.body)('name').optional().notEmpty().trim(),
+    (0, express_validator_1.body)('type').optional().isIn(['security', 'data_retention', 'access_control', 'compliance']),
+    (0, express_validator_1.body)('rules').optional().isObject(),
+    (0, express_validator_1.body)('enforcementLevel').optional().isIn(['soft', 'hard']),
+    (0, express_validator_1.body)('appliesTo').optional().isObject(),
+], validation_1.validateRequest, enterpriseController.updatePolicy);
+router.delete('/policies/:policyId', (0, authorize_1.authorize)('organization', 'admin'), [
+    (0, express_validator_1.param)('policyId').isInt({ min: 1 }),
+], validation_1.validateRequest, enterpriseController.deletePolicy);
+router.patch('/policies/:policyId/toggle', (0, authorize_1.authorize)('organization', 'admin'), [
+    (0, express_validator_1.param)('policyId').isInt({ min: 1 }),
+    (0, express_validator_1.body)('enabled').optional().isBoolean(),
+], validation_1.validateRequest, enterpriseController.togglePolicy);
 router.get('/organizations/:organizationId/audit-logs', (0, authorize_1.authorize)('organization', 'admin'), [
     (0, express_validator_1.query)('page').optional().isInt({ min: 1 }),
     (0, express_validator_1.query)('limit').optional().isInt({ min: 1, max: 100 }),

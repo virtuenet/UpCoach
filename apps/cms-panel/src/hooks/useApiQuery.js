@@ -1,0 +1,331 @@
+/**
+ * React Query Hooks for Optimized Data Fetching
+ * Implements caching, prefetching, and optimistic updates
+ */
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery, } from '@tanstack/react-query';
+import { validatedApi } from '../services/api/validatedApiClient';
+import { logger } from '../utils/logger';
+import { toast } from 'react-hot-toast';
+// Query key factory for consistent cache keys
+export const queryKeys = {
+    all: ['api'],
+    // Users
+    users: () => [...queryKeys.all, 'users'],
+    user: (id) => [...queryKeys.users(), id],
+    userList: (filters) => [...queryKeys.users(), 'list', filters],
+    // Content
+    content: () => [...queryKeys.all, 'content'],
+    contentItem: (id) => [...queryKeys.content(), id],
+    contentList: (filters) => [...queryKeys.content(), 'list', filters],
+    contentVersions: (id) => [...queryKeys.content(), id, 'versions'],
+    // Media
+    media: () => [...queryKeys.all, 'media'],
+    mediaItem: (id) => [...queryKeys.media(), id],
+    mediaList: (filters) => [...queryKeys.media(), 'list', filters],
+    // Analytics
+    analytics: () => [...queryKeys.all, 'analytics'],
+    analyticsOverview: (range) => [...queryKeys.analytics(), 'overview', range],
+    analyticsContent: (range) => [...queryKeys.analytics(), 'content', range],
+    // Settings
+    settings: () => [...queryKeys.all, 'settings'],
+    setting: (key) => [...queryKeys.settings(), key],
+};
+// Default query options
+const defaultQueryOptions = {
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+    retry: 3,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: 'always',
+};
+/**
+ * Generic data fetching hook with caching
+ */
+export function useApiQuery(queryKey, queryFn, options) {
+    return useQuery({
+        queryKey,
+        queryFn: async () => {
+            try {
+                logger.debug('Fetching data', { queryKey });
+                const data = await queryFn();
+                logger.debug('Data fetched successfully', { queryKey });
+                return data;
+            }
+            catch (error) {
+                logger.error('Query failed', { queryKey, error });
+                throw error;
+            }
+        },
+        ...defaultQueryOptions,
+        ...options,
+    });
+}
+/**
+ * Paginated data fetching hook
+ */
+export function usePaginatedQuery(queryKey, queryFn, page = 1, options) {
+    return useApiQuery([...queryKey, { page }], () => queryFn(page), options);
+}
+/**
+ * Infinite scrolling hook
+ */
+export function useInfiniteApiQuery(queryKey, queryFn, options) {
+    return useInfiniteQuery({
+        queryKey,
+        queryFn: queryFn,
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextPage : undefined,
+        ...options,
+    });
+}
+/**
+ * Mutation hook with optimistic updates
+ */
+export function useApiMutation(mutationFn, options) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn,
+        onMutate: async (variables) => {
+            // Optimistic update
+            if (options?.optimisticUpdate) {
+                options.optimisticUpdate(queryClient, variables);
+            }
+            // Call original onMutate if provided
+            if (options?.onMutate) {
+                return options.onMutate(variables);
+            }
+        },
+        onSuccess: (data, variables, context) => {
+            // Show success message
+            if (options?.successMessage) {
+                toast(options.successMessage);
+            }
+            // Invalidate related queries
+            if (options?.invalidateQueries) {
+                options.invalidateQueries.forEach(queryKey => {
+                    queryClient.invalidateQueries({ queryKey });
+                });
+            }
+            // Call original onSuccess if provided
+            if (options?.onSuccess) {
+                options.onSuccess(data, variables, context);
+            }
+        },
+        onError: (error, variables, context) => {
+            // Show error message
+            const message = options?.errorMessage || error.message || 'An error occurred';
+            toast(message);
+            // Log error
+            logger.error('Mutation failed', { error, variables });
+            // Call original onError if provided
+            if (options?.onError) {
+                options.onError(error, variables, context);
+            }
+        },
+        ...options,
+    });
+}
+/**
+ * Hook for users data
+ */
+export function useUsers(filters) {
+    return useApiQuery(queryKeys.userList(filters), () => validatedApi.paginated('/users', filters));
+}
+/**
+ * Hook for single user
+ */
+export function useUser(id) {
+    return useApiQuery(queryKeys.user(id), () => validatedApi.get(`/users/${id}`), {
+        enabled: !!id,
+    });
+}
+/**
+ * Hook for content list
+ */
+export function useContent(filters) {
+    return useApiQuery(queryKeys.contentList(filters), () => validatedApi.paginated('/content', filters), {
+        staleTime: 2 * 60 * 1000, // 2 minutes for content
+    });
+}
+/**
+ * Hook for single content item
+ */
+export function useContentItem(id) {
+    return useApiQuery(queryKeys.contentItem(id), () => validatedApi.get(`/content/${id}`), {
+        enabled: !!id,
+    });
+}
+/**
+ * Hook for creating content with optimistic update
+ */
+export function useCreateContent() {
+    return useApiMutation((data) => validatedApi.post('/content', data), {
+        optimisticUpdate: (client, newContent) => {
+            // Add new content to list optimistically
+            client.setQueryData(queryKeys.contentList(), (old) => {
+                if (!old)
+                    return old;
+                return {
+                    ...old,
+                    data: [newContent, ...old.data],
+                    total: old.total + 1,
+                };
+            });
+        },
+        invalidateQueries: [[...queryKeys.content()]],
+        successMessage: 'Content created successfully',
+        errorMessage: 'Failed to create content',
+    });
+}
+/**
+ * Hook for updating content with optimistic update
+ */
+export function useUpdateContent(id) {
+    return useApiMutation((data) => validatedApi.put(`/content/${id}`, data), {
+        optimisticUpdate: (client, updatedContent) => {
+            // Update content in cache optimistically
+            client.setQueryData(queryKeys.contentItem(id), updatedContent);
+            // Update in list if exists
+            client.setQueryData(queryKeys.contentList(), (old) => {
+                if (!old)
+                    return old;
+                return {
+                    ...old,
+                    data: old.data.map((item) => item.id === id ? { ...item, ...updatedContent } : item),
+                };
+            });
+        },
+        invalidateQueries: [[...queryKeys.contentItem(id)], [...queryKeys.contentList()]],
+        successMessage: 'Content updated successfully',
+        errorMessage: 'Failed to update content',
+    });
+}
+/**
+ * Hook for deleting content
+ */
+export function useDeleteContent() {
+    return useApiMutation((id) => validatedApi.delete(`/content/${id}`), {
+        optimisticUpdate: (client, id) => {
+            // Remove from list optimistically
+            client.setQueryData(queryKeys.contentList(), (old) => {
+                if (!old)
+                    return old;
+                return {
+                    ...old,
+                    data: old.data.filter((item) => item.id !== id),
+                    total: old.total - 1,
+                };
+            });
+        },
+        invalidateQueries: [[...queryKeys.content()]],
+        successMessage: 'Content deleted successfully',
+        errorMessage: 'Failed to delete content',
+    });
+}
+/**
+ * Hook for analytics overview
+ */
+export function useAnalyticsOverview(dateRange) {
+    return useApiQuery(queryKeys.analyticsOverview(dateRange), () => validatedApi.get('/analytics/overview', { dateRange }), {
+        staleTime: 10 * 60 * 1000, // 10 minutes for analytics
+    });
+}
+/**
+ * Hook for media with infinite scrolling
+ */
+export function useInfiniteMedia(filters) {
+    return useInfiniteApiQuery(queryKeys.mediaList(filters), async ({ pageParam = 1 }) => {
+        const result = await validatedApi.paginated('/media', {
+            ...filters,
+            page: pageParam,
+            limit: 20,
+        });
+        return {
+            data: result.data,
+            nextPage: pageParam + 1,
+            hasMore: pageParam * 20 < result.pagination.total,
+        };
+    });
+}
+/**
+ * Hook for file upload with progress
+ */
+export function useFileUpload() {
+    return useApiMutation(async ({ file, onProgress }) => {
+        // Create form data
+        const formData = new FormData();
+        formData.append('file', file);
+        // Upload with progress tracking
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.upload.addEventListener('progress', e => {
+                if (e.lengthComputable && onProgress) {
+                    const progress = Math.round((e.loaded / e.total) * 100);
+                    onProgress(progress);
+                }
+            });
+            xhr.addEventListener('load', () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve(JSON.parse(xhr.responseText));
+                }
+                else {
+                    reject(new Error(`Upload failed: ${xhr.statusText}`));
+                }
+            });
+            xhr.addEventListener('error', () => {
+                reject(new Error('Upload failed'));
+            });
+            xhr.open('POST', '/api/media/upload');
+            xhr.send(formData);
+        });
+    }, {
+        invalidateQueries: [[...queryKeys.media()]],
+        successMessage: 'File uploaded successfully',
+        errorMessage: 'Failed to upload file',
+    });
+}
+/**
+ * Prefetch data for better UX
+ */
+export function usePrefetchContent(id) {
+    const queryClient = useQueryClient();
+    return () => {
+        queryClient.prefetchQuery({
+            queryKey: queryKeys.contentItem(id),
+            queryFn: () => validatedApi.get(`/content/${id}`),
+            staleTime: 10 * 60 * 1000,
+        });
+    };
+}
+/**
+ * Hook for real-time data with polling
+ */
+export function useRealtimeData(queryKey, queryFn, pollingInterval = 30000, // 30 seconds default
+enabled = true) {
+    return useApiQuery(queryKey, queryFn, {
+        refetchInterval: enabled ? pollingInterval : false,
+        refetchIntervalInBackground: false,
+    });
+}
+/**
+ * Hook for search with debouncing (handled by component)
+ */
+export function useSearch(query, type) {
+    return useApiQuery([queryKeys.all, 'search', type, query], () => validatedApi.get(`/search/${type}`, { q: query }), {
+        enabled: query.length >= 2, // Only search with 2+ characters
+        staleTime: 60000, // 1 minute
+        placeholderData: previousData => previousData,
+    });
+}
+/**
+ * Hook to invalidate all queries (for logout, etc.)
+ */
+export function useInvalidateAll() {
+    const queryClient = useQueryClient();
+    return () => {
+        queryClient.invalidateQueries({ queryKey: queryKeys.all });
+        queryClient.clear(); // Clear all cache
+    };
+}
+//# sourceMappingURL=useApiQuery.js.map

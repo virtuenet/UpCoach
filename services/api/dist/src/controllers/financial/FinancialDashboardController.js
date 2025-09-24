@@ -695,7 +695,6 @@ class FinancialDashboardController {
             };
             const headers = Object.keys(data[0]);
             const headerRow = worksheet.addRow([]);
-            headerRow.getCell(1).row = 4;
             headers.forEach((header, index) => {
                 const cell = worksheet.getCell(4, index + 1);
                 cell.value = this.formatHeaderName(header);
@@ -877,15 +876,159 @@ class FinancialDashboardController {
     async sendReport(req, res) {
         try {
             const { id } = req.params;
-            const {} = req.body;
+            const { recipients, format = 'pdf', message, subject } = req.body;
+            if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
+                throw new apiError_1.ApiError(400, 'Recipients array is required and must not be empty');
+            }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const invalidEmails = recipients.filter((email) => !emailRegex.test(email));
+            if (invalidEmails.length > 0) {
+                throw new apiError_1.ApiError(400, `Invalid email addresses: ${invalidEmails.join(', ')}`);
+            }
             const report = await models_1.FinancialReport.findByPk(id);
             if (!report) {
                 throw new apiError_1.ApiError(404, 'Report not found');
             }
-            res.status(501).json({ error: 'Not implemented' });
+            if (!['pdf', 'excel', 'csv'].includes(format)) {
+                throw new apiError_1.ApiError(400, 'Invalid format. Supported formats: pdf, excel, csv');
+            }
+            const reportData = await this.getReportData(report.type, report.parameters);
+            if (!reportData || reportData.length === 0) {
+                throw new apiError_1.ApiError(400, 'No data available in report to send');
+            }
+            if (!this.validateDataSize(reportData, format)) {
+                throw new apiError_1.ApiError(413, 'Report data is too large to send via email. Please reduce the date range.');
+            }
+            let attachmentBuffer;
+            let filename;
+            let contentType;
+            if (format === 'pdf') {
+                const browser = await puppeteer_1.default.launch({
+                    headless: true,
+                    args: ['--no-sandbox', '--disable-setuid-sandbox']
+                });
+                const page = await browser.newPage();
+                const htmlContent = this.generatePDFHTML(report, reportData);
+                await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+                attachmentBuffer = await page.pdf({
+                    format: 'A4',
+                    printBackground: true,
+                    margin: { top: '20mm', bottom: '20mm', left: '10mm', right: '10mm' }
+                });
+                await browser.close();
+                filename = `${report.name}_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+                contentType = 'application/pdf';
+            }
+            else if (format === 'excel') {
+                const workbook = new ExcelJS.Workbook();
+                const worksheet = workbook.addWorksheet(`${report.name} Report`);
+                const headers = Object.keys(reportData[0]);
+                worksheet.addRow(headers);
+                reportData.forEach(row => {
+                    const values = headers.map(header => row[header]);
+                    worksheet.addRow(values);
+                });
+                worksheet.columns.forEach(column => {
+                    let maxLength = 0;
+                    column.eachCell({ includeEmpty: true }, (cell) => {
+                        const columnLength = cell.value ? cell.value.toString().length : 10;
+                        if (columnLength > maxLength) {
+                            maxLength = columnLength;
+                        }
+                    });
+                    column.width = Math.min(Math.max(maxLength + 2, 15), 50);
+                });
+                attachmentBuffer = Buffer.from(await workbook.xlsx.writeBuffer());
+                filename = `${report.name}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+                contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+            }
+            else {
+                const csvContent = this.convertToCSV(reportData);
+                attachmentBuffer = Buffer.from(csvContent, 'utf8');
+                filename = `${report.name}_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+                contentType = 'text/csv';
+            }
+            const emailSubject = subject || `Financial Report: ${report.name}`;
+            const emailMessage = message || `Please find attached the ${report.name} financial report generated on ${format(new Date(), 'PPP')}.`;
+            const emailPromises = recipients.map(async (email) => {
+                try {
+                    await UnifiedEmailService_1.default.send({
+                        to: email,
+                        subject: emailSubject,
+                        html: `
+              <div style="font-family: Arial, sans-serif; color: #333;">
+                <h2 style="color: #366EF7;">Financial Report</h2>
+                <p>${emailMessage}</p>
+                <hr style="border: 1px solid #eee; margin: 20px 0;">
+                <p style="font-size: 12px; color: #666;">
+                  This report was generated automatically by UpCoach Financial Dashboard.<br>
+                  Report Type: ${report.type}<br>
+                  Generated: ${format(new Date(), 'PPP pp')}<br>
+                  Format: ${format.toUpperCase()}
+                </p>
+              </div>
+            `,
+                        text: `${emailMessage}\n\nThis report was generated automatically by UpCoach Financial Dashboard.`,
+                        attachments: [{
+                                filename: this.sanitizeFilename(filename),
+                                content: attachmentBuffer,
+                                contentType: contentType
+                            }]
+                    });
+                    logger_1.logger.info('Report sent successfully', {
+                        reportId: id,
+                        recipient: email,
+                        format,
+                        filename,
+                        reportType: report.type
+                    });
+                    return { email, success: true };
+                }
+                catch (emailError) {
+                    logger_1.logger.error('Failed to send report email', {
+                        reportId: id,
+                        recipient: email,
+                        error: emailError.message
+                    });
+                    return { email, success: false, error: emailError.message };
+                }
+            });
+            const results = await Promise.all(emailPromises);
+            const successful = results.filter(r => r.success);
+            const failed = results.filter(r => !r.success);
+            await report.update({
+                status: 'sent',
+                metadata: {
+                    ...report.metadata,
+                    lastSent: new Date().toISOString(),
+                    sentTo: recipients,
+                    sentFormat: format,
+                    sendResults: results
+                }
+            });
+            res.json({
+                success: true,
+                message: `Report sent to ${successful.length} of ${recipients.length} recipients`,
+                results: {
+                    successful: successful.length,
+                    failed: failed.length,
+                    recipients: results
+                },
+                reportId: id,
+                format,
+                filename: this.sanitizeFilename(filename)
+            });
         }
         catch (error) {
-            res.status(error.statusCode || 500).json({ error: error.message });
+            logger_1.logger.error('Report sending failed', {
+                reportId: req.params.id,
+                error: error.message,
+                stack: error.stack
+            });
+            res.status(error.statusCode || 500).json({
+                error: error.message,
+                code: 'SEND_FAILED'
+            });
         }
     }
     async getCohortAnalysis(req, res) {
@@ -964,13 +1107,172 @@ class FinancialDashboardController {
     async getCohortDetails(req, res) {
         try {
             const { month } = req.params;
+            const monthRegex = /^\d{4}-\d{2}$/;
+            if (!monthRegex.test(month)) {
+                throw new apiError_1.ApiError(400, 'Invalid month format. Expected format: YYYY-MM');
+            }
+            const cohortDate = new Date(`${month}-01`);
+            if (isNaN(cohortDate.getTime())) {
+                throw new apiError_1.ApiError(400, 'Invalid month value');
+            }
+            const cohortStart = (0, date_fns_1.startOfMonth)(cohortDate);
+            const cohortEnd = (0, date_fns_1.endOfMonth)(cohortDate);
+            const cohortSubscriptions = await models_1.Subscription.findAll({
+                where: {
+                    createdAt: { [sequelize_1.Op.between]: [cohortStart, cohortEnd] },
+                },
+                attributes: ['id', 'userId', 'createdAt', 'canceledAt', 'plan', 'amount', 'status', 'interval'],
+                order: [['createdAt', 'ASC']],
+            });
+            if (cohortSubscriptions.length === 0) {
+                res.json({
+                    cohort: month,
+                    totalUsers: 0,
+                    cohortStart: cohortStart.toISOString(),
+                    cohortEnd: cohortEnd.toISOString(),
+                    users: [],
+                    retentionAnalysis: {
+                        retentionByMonth: [],
+                        averageRetentionRate: 0,
+                        totalCohortRevenue: 0,
+                        revenuePerUser: 0
+                    },
+                    planDistribution: [],
+                    summary: {
+                        activeUsers: 0,
+                        churnedUsers: 0,
+                        currentChurnRate: 0
+                    }
+                });
+                return;
+            }
+            const usersDetails = await Promise.all(cohortSubscriptions.map(async (subscription) => {
+                const userRevenue = await models_1.Transaction.sum('amount', {
+                    where: {
+                        userId: subscription.userId,
+                        status: 'completed',
+                        createdAt: { [sequelize_1.Op.gte]: cohortStart }
+                    }
+                });
+                const endDate = subscription.canceledAt
+                    ? new Date(subscription.canceledAt)
+                    : new Date();
+                const lifetimeMonths = Math.max(1, Math.ceil((endDate.getTime() - new Date(subscription.createdAt).getTime()) / (30.44 * 24 * 60 * 60 * 1000)));
+                return {
+                    userId: subscription.userId,
+                    subscriptionId: subscription.id,
+                    joinedAt: subscription.createdAt,
+                    canceledAt: subscription.canceledAt,
+                    plan: subscription.plan,
+                    monthlyAmount: subscription.amount,
+                    interval: subscription.interval,
+                    status: subscription.status,
+                    lifetimeMonths,
+                    totalRevenue: userRevenue || 0,
+                    isActive: !subscription.canceledAt || new Date(subscription.canceledAt) > new Date(),
+                    daysActive: Math.ceil((endDate.getTime() - new Date(subscription.createdAt).getTime()) / (24 * 60 * 60 * 1000))
+                };
+            }));
+            const retentionByMonth = [];
+            const currentDate = new Date();
+            const maxMonths = Math.min(24, Math.ceil((currentDate.getTime() - cohortStart.getTime()) / (30.44 * 24 * 60 * 60 * 1000)));
+            for (let monthIndex = 0; monthIndex <= maxMonths; monthIndex++) {
+                const retentionDate = new Date(cohortStart);
+                retentionDate.setMonth(retentionDate.getMonth() + monthIndex);
+                const retentionMonthEnd = (0, date_fns_1.endOfMonth)(retentionDate);
+                const activeUsersInMonth = usersDetails.filter(user => {
+                    const userStart = new Date(user.joinedAt);
+                    const userEnd = user.canceledAt ? new Date(user.canceledAt) : currentDate;
+                    return userStart <= retentionMonthEnd && userEnd >= (0, date_fns_1.startOfMonth)(retentionDate);
+                });
+                const retentionRate = (activeUsersInMonth.length / cohortSubscriptions.length) * 100;
+                retentionByMonth.push({
+                    monthIndex,
+                    month: (0, date_fns_1.format)(retentionDate, 'yyyy-MM'),
+                    activeUsers: activeUsersInMonth.length,
+                    retentionRate: Math.round(retentionRate * 100) / 100,
+                    churnedUsers: cohortSubscriptions.length - activeUsersInMonth.length,
+                    churnRate: Math.round((100 - retentionRate) * 100) / 100
+                });
+            }
+            const planDistribution = cohortSubscriptions.reduce((acc, sub) => {
+                const plan = sub.plan || 'Unknown';
+                if (!acc[plan]) {
+                    acc[plan] = { count: 0, revenue: 0 };
+                }
+                acc[plan].count += 1;
+                acc[plan].revenue += Number(sub.amount) || 0;
+                return acc;
+            }, {});
+            const planDistributionArray = Object.entries(planDistribution).map(([plan, data]) => ({
+                plan,
+                users: data.count,
+                percentage: Math.round((data.count / cohortSubscriptions.length) * 10000) / 100,
+                monthlyRevenue: data.revenue,
+                averageRevenuePerUser: Math.round((data.revenue / data.count) * 100) / 100
+            }));
+            const activeUsers = usersDetails.filter(user => user.isActive).length;
+            const churnedUsers = usersDetails.filter(user => !user.isActive).length;
+            const currentChurnRate = Math.round((churnedUsers / cohortSubscriptions.length) * 10000) / 100;
+            const totalCohortRevenue = usersDetails.reduce((sum, user) => sum + user.totalRevenue, 0);
+            const revenuePerUser = Math.round((totalCohortRevenue / cohortSubscriptions.length) * 100) / 100;
+            const averageLifetimeMonths = Math.round((usersDetails.reduce((sum, user) => sum + user.lifetimeMonths, 0) / usersDetails.length) * 100) / 100;
+            const averageRetentionRate = retentionByMonth.length > 0
+                ? Math.round((retentionByMonth.reduce((sum, month) => sum + month.retentionRate, 0) / retentionByMonth.length) * 100) / 100
+                : 0;
+            const topUsersDetails = usersDetails
+                .sort((a, b) => b.totalRevenue - a.totalRevenue)
+                .slice(0, 10);
             res.json({
                 cohort: month,
-                data: [],
+                totalUsers: cohortSubscriptions.length,
+                cohortStart: cohortStart.toISOString(),
+                cohortEnd: cohortEnd.toISOString(),
+                users: usersDetails.sort((a, b) => new Date(a.joinedAt).getTime() - new Date(b.joinedAt).getTime()),
+                topUsers: topUsersDetails,
+                retentionAnalysis: {
+                    retentionByMonth,
+                    averageRetentionRate,
+                    totalCohortRevenue,
+                    revenuePerUser,
+                    averageLifetimeMonths,
+                    maxRetentionMonths: maxMonths
+                },
+                planDistribution: planDistributionArray,
+                summary: {
+                    activeUsers,
+                    churnedUsers,
+                    currentChurnRate,
+                    cohortSize: cohortSubscriptions.length,
+                    retentionPeriodMonths: maxMonths + 1,
+                    currentMonthRetention: retentionByMonth.length > 0 ? retentionByMonth[retentionByMonth.length - 1].retentionRate : 0
+                },
+                insights: {
+                    bestRetentionMonth: retentionByMonth.length > 1
+                        ? retentionByMonth.reduce((max, month) => month.retentionRate > max.retentionRate ? month : max)
+                        : null,
+                    biggestChurnMonth: retentionByMonth.length > 1
+                        ? retentionByMonth.reduce((max, month) => month.churnRate > max.churnRate ? month : max)
+                        : null,
+                    mostPopularPlan: planDistributionArray.length > 0
+                        ? planDistributionArray.reduce((max, plan) => plan.users > max.users ? plan : max)
+                        : null,
+                    highestValuePlan: planDistributionArray.length > 0
+                        ? planDistributionArray.reduce((max, plan) => plan.averageRevenuePerUser > max.averageRevenuePerUser ? plan : max)
+                        : null
+                }
             });
         }
         catch (error) {
-            res.status(500).json({ error: error.message });
+            logger_1.logger.error('Error getting cohort details', {
+                month: req.params.month,
+                error: error.message,
+                stack: error.stack
+            });
+            res.status(error.statusCode || 500).json({
+                error: error.message,
+                code: 'COHORT_DETAILS_ERROR'
+            });
         }
     }
     async getUnitEconomics(req, res) {

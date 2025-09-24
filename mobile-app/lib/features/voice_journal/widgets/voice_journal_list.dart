@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../providers/voice_journal_provider.dart';
 import '../../../shared/models/voice_journal_entry.dart';
 
@@ -420,11 +422,134 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
     );
   }
 
-  void _shareEntry() {
-    // TODO: Implement sharing functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Share feature coming soon!')),
-    );
+  void _shareEntry() async {
+    try {
+      // Show sharing options
+      showModalBottomSheet(
+        context: context,
+        builder: (context) => Container(
+          padding: const EdgeInsets.all(UIConstants.spacingMD),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Share Voice Journal',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: UIConstants.spacingMD),
+              ListTile(
+                leading: const Icon(Icons.audiotrack),
+                title: const Text('Share Audio File'),
+                subtitle: const Text('Share the original audio recording'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _shareAudioFile();
+                },
+              ),
+              if (widget.entry.isTranscribed)
+                ListTile(
+                  leading: const Icon(Icons.text_snippet),
+                  title: const Text('Share Transcription'),
+                  subtitle: const Text('Share the text transcription'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _shareTranscription();
+                  },
+                ),
+              ListTile(
+                leading: const Icon(Icons.picture_as_pdf),
+                title: const Text('Export as PDF'),
+                subtitle: const Text('Create a PDF report with transcription'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _exportAsPDF();
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to share: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _shareAudioFile() async {
+    try {
+      await ref.read(voiceJournalProvider.notifier).shareAudioFile(widget.entry.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Audio file shared successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to share audio: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _shareTranscription() async {
+    try {
+      await ref.read(voiceJournalProvider.notifier).shareTranscription(widget.entry.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Transcription shared successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to share transcription: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _exportAsPDF() async {
+    try {
+      await ref.read(voiceJournalProvider.notifier).exportEntryAsPDF(widget.entry.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('PDF exported successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to export PDF: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _showDeleteDialog() {

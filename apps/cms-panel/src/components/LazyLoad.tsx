@@ -82,7 +82,7 @@ export function lazyLoad<T extends ComponentType<any>>(
     return (
       <ErrorBoundary
         FallbackComponent={options?.errorFallback || ErrorFallback}
-        onReset={() => window.location.reload()}
+        onError={() => window.location.reload()}
       >
         <Suspense fallback={options?.fallback || <LoadingFallback />}>
           <LazyComponent {...props} />

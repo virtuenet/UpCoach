@@ -4,6 +4,7 @@ import '../../shared/widgets/splash_screen.dart';
 import '../../shared/models/mood_model.dart';
 import '../../shared/models/task_model.dart';
 import '../../shared/models/goal_model.dart';
+import '../../shared/models/habit_model.dart';
 import '../../shared/models/progress_photo_model.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/screens/login_screen.dart';
@@ -33,6 +34,11 @@ import '../../features/goals/screens/create_goal_screen.dart';
 import '../../features/goals/screens/goal_detail_screen.dart';
 import '../../features/habits/screens/create_habit_screen.dart';
 import '../../features/habits/screens/habits_screen.dart';
+import '../../features/habits/screens/habit_analytics_screen.dart';
+import '../../features/habits/screens/habit_achievements_screen.dart';
+import '../../features/habits/screens/habit_settings_screen.dart';
+import '../../features/habits/screens/habit_detail_screen.dart';
+import '../../features/habits/screens/edit_habit_screen.dart';
 import '../../features/progress_photos/screens/progress_photos_screen.dart';
 import '../../features/progress_photos/screens/photo_viewer_screen.dart';
 import '../../features/profile/screens/edit_profile_screen.dart';
@@ -45,24 +51,24 @@ import '../../features/profile/screens/feedback_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
-  
+
   return GoRouter(
     initialLocation: '/',
     redirect: (context, state) {
       final isLoggedIn = authState.isAuthenticated;
-      final isLoggingIn = state.matchedLocation == '/login' || 
+      final isLoggingIn = state.matchedLocation == '/login' ||
                           state.matchedLocation == '/register';
-      
+
       // If not logged in and not on auth pages, redirect to login
       if (!isLoggedIn && !isLoggingIn) {
         return '/login';
       }
-      
+
       // If logged in and on auth pages, redirect to home
       if (isLoggedIn && isLoggingIn) {
         return '/home';
       }
-      
+
       return null;
     },
     routes: [
@@ -71,7 +77,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/',
         builder: (context, state) => const SplashScreen(),
       ),
-      
+
       // Authentication Routes
       GoRoute(
         path: '/login',
@@ -85,7 +91,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
-      
+
       // Main App Navigation
       ShellRoute(
         builder: (context, state, child) => MainNavigation(child: child),
@@ -124,7 +130,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      
+
       // AI Feature Routes (outside main navigation)
       GoRoute(
         path: '/ai/insights',
@@ -138,7 +144,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/ai/recommendations',
         builder: (context, state) => const RecommendationsScreen(),
       ),
-      
+
       // Content Routes
       GoRoute(
         path: '/content/article/:id',
@@ -151,7 +157,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/content/saved',
         builder: (context, state) => const SavedArticlesScreen(),
       ),
-      
+
       // Settings Routes
       GoRoute(
         path: '/settings/biometric',
@@ -161,7 +167,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/settings/widgets',
         builder: (context, state) => const WidgetSettingsScreen(),
       ),
-      
+
       // Mood Routes
       GoRoute(
         path: '/mood/create',
@@ -170,7 +176,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return CreateMoodScreen(existingMood: existingMood);
         },
       ),
-      
+
       // Task Routes
       GoRoute(
         path: '/tasks/create',
@@ -183,7 +189,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return TaskDetailScreen(task: task);
         },
       ),
-      
+
       // Goal Routes
       GoRoute(
         path: '/goals/create',
@@ -196,8 +202,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return GoalDetailScreen(goal: goal);
         },
       ),
-      
-      // Habit Routes
+
+      // Habit Routes - UPDATED WITH NEW NAVIGATION
       GoRoute(
         path: '/habits',
         builder: (context, state) => const HabitsScreen(),
@@ -206,7 +212,33 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/habits/create',
         builder: (context, state) => const CreateHabitScreen(),
       ),
-      
+      GoRoute(
+        path: '/habits/analytics',
+        builder: (context, state) => const HabitAnalyticsScreen(),
+      ),
+      GoRoute(
+        path: '/habits/achievements',
+        builder: (context, state) => const HabitAchievementsScreen(),
+      ),
+      GoRoute(
+        path: '/habits/settings',
+        builder: (context, state) => const HabitSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/habits/:id/details',
+        builder: (context, state) {
+          final habit = state.extra as Habit;
+          return HabitDetailScreen(habit: habit);
+        },
+      ),
+      GoRoute(
+        path: '/habits/:id/edit',
+        builder: (context, state) {
+          final habit = state.extra as Habit;
+          return EditHabitScreen(habit: habit);
+        },
+      ),
+
       // Progress Photos Routes
       GoRoute(
         path: '/progress-photos',
@@ -223,7 +255,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
-      
+
       // Profile Routes
       GoRoute(
         path: '/profile/edit',
@@ -255,4 +287,4 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
-}); 
+});

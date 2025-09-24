@@ -123,22 +123,21 @@ app.use('/webhook/', rateLimiter_1.webhookLimiter);
 app.use((0, compression_1.default)());
 app.use((0, cors_1.default)({
     origin: (origin, callback) => {
-        if (!origin)
-            return callback(null, true);
-        if (environment_1.config.corsOrigins.some(allowedOrigin => {
-            if (allowedOrigin.includes('*')) {
-                const pattern = allowedOrigin.replace(/\*/g, '.*');
-                return new RegExp(`^${pattern}$`).test(origin);
-            }
-            return allowedOrigin === origin;
-        })) {
+        if (!origin && environment_1.config.env === 'production') {
+            return callback(new Error('Origin header required in production'));
+        }
+        if (!origin && environment_1.config.env !== 'production') {
             return callback(null, true);
         }
+        if (environment_1.config.corsOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        logger_1.logger.warn(`CORS rejection: Origin "${origin}" not in allowed list: ${environment_1.config.corsOrigins.join(', ')}`);
         return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token'],
     exposedHeaders: ['X-Total-Count'],
 }));
 app.use((0, express_1.json)({

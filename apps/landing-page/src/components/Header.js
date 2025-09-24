@@ -1,0 +1,8 @@
+'use client';
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
+import Link from 'next/link';
+export default function Header() {
+    return (_jsx("header", { className: "sticky top-0 z-50 bg-white shadow-sm", children: _jsx("div", { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8", children: _jsxs("div", { className: "flex justify-between items-center h-16", children: [_jsxs("div", { className: "flex items-center", children: [_jsx(Link, { href: "/", className: "text-2xl font-bold text-blue-600", children: "UpCoach" }), _jsxs("nav", { className: "ml-10 hidden md:flex space-x-8", children: [_jsx(Link, { href: "/features", className: "text-gray-700 hover:text-blue-600 transition-colors", children: "Features" }), _jsx(Link, { href: "/pricing", className: "text-gray-700 hover:text-blue-600 transition-colors", children: "Pricing" }), _jsx(Link, { href: "/about", className: "text-gray-700 hover:text-blue-600 transition-colors", children: "About" })] })] }), _jsxs("div", { className: "flex items-center space-x-4", children: [_jsxs(SignedOut, { children: [_jsx(SignInButton, { mode: "modal", children: _jsx("button", { className: "text-gray-700 hover:text-blue-600 transition-colors", children: "Sign In" }) }), _jsx(SignUpButton, { mode: "modal", children: _jsx("button", { className: "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors", children: "Get Started" }) })] }), _jsxs(SignedIn, { children: [_jsx(Link, { href: "/dashboard", className: "text-gray-700 hover:text-blue-600 transition-colors", children: "Dashboard" }), _jsx(UserButton, { afterSignOutUrl: "/" })] })] })] }) }) }));
+}
+//# sourceMappingURL=Header.js.map

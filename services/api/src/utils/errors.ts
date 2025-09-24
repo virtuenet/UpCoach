@@ -46,3 +46,6 @@ export class ValidationError extends AppError {
     super(message, 422);
   }
 }
+
+// Alias for backward compatibility
+export { AppError as CustomError };

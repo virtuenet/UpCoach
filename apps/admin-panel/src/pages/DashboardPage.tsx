@@ -16,7 +16,7 @@ import {
   Skeleton,
 } from '@mui/material';
 import { Grid } from '@mui/material';
-import { lazy, Suspense, useMemo, useCallback } from 'react';
+import { lazy, Suspense, useMemo, useCallback, useState } from 'react';
 import {
   TrendingUp,
   TrendingDown,
@@ -291,15 +291,51 @@ function StatsCard({ title, value, subtitle, trend, icon, color }: StatsCardProp
 }
 
 export default function DashboardPage() {
+  // State for dashboard functionality
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Mock dashboard data
+  const dashboardData = {
+    userStats: {
+      totalUsers: 2100,
+      activeUsers: 1680,
+      growth: 12
+    },
+    contentStats: {
+      totalContent: 450,
+      pendingModeration: 23,
+      moderationRate: 97,
+      approvedToday: 12,
+      trend: -3
+    },
+    financialStats: {
+      revenue: 12450,
+      growth: 15
+    },
+    securityStats: {
+      alerts: 5,
+      resolved: 95,
+      trend: 8
+    }
+  };
+
   // Memoize heavy data processing
   const memoizedUserGrowthData = useMemo(() => userGrowthData, []);
   const memoizedContentModerationData = useMemo(() => contentModerationData, []);
   const memoizedRecentActivities = useMemo(() => recentActivities, []);
 
+  // Handler for toggling auto-refresh
+  const handleToggleAutoRefresh = useCallback(() => {
+    setAutoRefresh(prev => !prev);
+  }, []);
+
   // Memoize refresh handler to prevent unnecessary re-renders
   const handleRefresh = useCallback(() => {
+    setIsLoading(true);
     // TODO: Implement actual data refresh
     console.log('Refreshing dashboard data...');
+    setTimeout(() => setIsLoading(false), 1000);
   }, []);
 
   return (

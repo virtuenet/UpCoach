@@ -1,5 +1,4 @@
-import { subDays, startOfDay, endOfDay, format } from 'date-fns';
-import { eachDayOfInterval } from 'date-fns/eachDayOfInterval';
+import { subDays, startOfDay, endOfDay, format, eachDayOfInterval } from 'date-fns';
 import { Request, Response } from 'express';
 
 import { sequelize } from '../database/connection';

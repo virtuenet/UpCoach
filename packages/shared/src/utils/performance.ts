@@ -3,6 +3,18 @@
  * Implements comprehensive performance tracking across all UpCoach applications
  */
 
+// Type definitions for web-vitals when package is not available
+interface WebVitalsMetric {
+  id: string;
+  name: string;
+  value: number;
+  delta?: number;
+  entries?: PerformanceEntry[];
+  navigationType?: string;
+}
+
+type WebVitalsCallback = (metric: WebVitalsMetric) => void;
+
 export interface Metric {
   id: string;
   name: string;
@@ -60,8 +72,8 @@ export function measureWebVitals(callback: (metric: Metric) => void): void {
 
   try {
     // Dynamic import for web-vitals to avoid SSR issues
-    import('web-vitals').then(({ onFCP, onLCP, onCLS, onFID, onTTFB }) => {
-      onFCP((metric) => {
+    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+      getFCP((metric: WebVitalsMetric) => {
         callback({
           id: metric.id,
           name: 'FCP',
@@ -73,7 +85,7 @@ export function measureWebVitals(callback: (metric: Metric) => void): void {
         });
       });
 
-      onLCP((metric) => {
+      getLCP((metric: WebVitalsMetric) => {
         callback({
           id: metric.id,
           name: 'LCP',
@@ -85,7 +97,7 @@ export function measureWebVitals(callback: (metric: Metric) => void): void {
         });
       });
 
-      onCLS((metric) => {
+      getCLS((metric: WebVitalsMetric) => {
         callback({
           id: metric.id,
           name: 'CLS',
@@ -97,7 +109,7 @@ export function measureWebVitals(callback: (metric: Metric) => void): void {
         });
       });
 
-      onFID((metric) => {
+      getFID((metric: WebVitalsMetric) => {
         callback({
           id: metric.id,
           name: 'FID',
@@ -109,7 +121,7 @@ export function measureWebVitals(callback: (metric: Metric) => void): void {
         });
       });
 
-      onTTFB((metric) => {
+      getTTFB((metric: WebVitalsMetric) => {
         callback({
           id: metric.id,
           name: 'TTFB',

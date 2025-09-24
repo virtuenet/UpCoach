@@ -11,6 +11,7 @@ const Content_1 = require("../../models/cms/Content");
 const ContentCategory_1 = require("../../models/cms/ContentCategory");
 const ContentMedia_1 = require("../../models/cms/ContentMedia");
 const ContentTag_1 = require("../../models/cms/ContentTag");
+const models_2 = require("../../models");
 const logger_1 = require("../../utils/logger");
 class ContentController {
     static async getAll(req, _res) {
@@ -266,24 +267,343 @@ class ContentController {
     static async getAnalytics(req, _res) {
         try {
             const { id } = req.params;
-            const {} = req.query;
-            const content = await Content_1.Content.findByPk(id);
+            const { timeframe = '30d', includeDetailed = 'true' } = req.query;
+            const content = await Content_1.Content.findByPk(id, {
+                include: [
+                    { model: models_1.User, as: 'author', attributes: ['id', 'name', 'email'] },
+                    { model: ContentCategory_1.ContentCategory, as: 'category', attributes: ['id', 'name'] },
+                    { model: ContentTag_1.ContentTag, as: 'tags', attributes: ['id', 'name'] },
+                ],
+            });
             if (!content) {
                 return _res.status(404).json({ error: 'Content not found' });
             }
-            const analytics = {
-                totalViews: content.viewCount,
-                totalLikes: content.likeCount,
-                totalShares: content.shareCount,
-                readingTime: content.readingTime,
+            const daysBack = this.parseTimeframe(timeframe);
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - daysBack);
+            const basicAnalytics = {
+                totalViews: content.viewCount || 0,
+                totalLikes: content.likeCount || 0,
+                totalShares: content.shareCount || 0,
+                totalComments: content.commentCount || 0,
+                readingTime: content.readingTime || 0,
                 publishedAt: content.publishedAt,
+                lastUpdated: content.updatedAt,
+                status: content.status,
+                contentInfo: {
+                    title: content.title,
+                    type: content.type,
+                    wordCount: content.wordCount || 0,
+                    author: content.author?.name || 'Unknown',
+                    category: content.category?.name || 'Uncategorized',
+                    tags: content.tags?.map((tag) => tag.name) || [],
+                },
             };
-            _res.json(analytics);
+            let detailedAnalytics = {};
+            if (includeDetailed === 'true') {
+                const viewAnalytics = await this.getViewAnalytics(id, startDate);
+                const engagementAnalytics = await this.getEngagementAnalytics(id, startDate);
+                const performanceAnalytics = await this.getPerformanceAnalytics(id);
+                const demographicsAnalytics = await this.getDemographicsAnalytics(id, startDate);
+                detailedAnalytics = {
+                    viewAnalytics,
+                    engagementAnalytics,
+                    performanceAnalytics,
+                    demographicsAnalytics,
+                    timeframe: {
+                        period: timeframe,
+                        startDate,
+                        endDate: new Date(),
+                        daysAnalyzed: daysBack,
+                    },
+                };
+            }
+            const analytics = {
+                contentId: id,
+                ...basicAnalytics,
+                ...detailedAnalytics,
+                generatedAt: new Date(),
+            };
+            _res.json({
+                success: true,
+                data: analytics,
+            });
         }
         catch (error) {
             logger_1.logger.error('Error fetching content analytics:', error);
-            _res.status(500).json({ error: 'Failed to fetch content analytics' });
+            _res.status(500).json({
+                success: false,
+                error: 'Failed to fetch content analytics',
+            });
         }
+    }
+    static async getAggregatedAnalytics(req, _res) {
+        try {
+            const { timeframe = '30d', authorId, categoryId, contentType, limit = 50, } = req.query;
+            const daysBack = ContentController.parseTimeframe(timeframe);
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - daysBack);
+            let whereClause = 'WHERE c.status = \'published\'';
+            const replacements = { startDate };
+            if (authorId) {
+                whereClause += ' AND c.author_id = :authorId';
+                replacements.authorId = authorId;
+            }
+            if (categoryId) {
+                whereClause += ' AND c.category_id = :categoryId';
+                replacements.categoryId = categoryId;
+            }
+            if (contentType) {
+                whereClause += ' AND c.type = :contentType';
+                replacements.contentType = contentType;
+            }
+            const [topContent] = await models_2.sequelize.query(`SELECT
+           c.id, c.title, c.type, c.view_count, c.like_count, c.share_count,
+           c.published_at, u.name as author_name, cat.name as category_name,
+           (c.view_count + (c.like_count * 5) + (c.share_count * 10)) as engagement_score
+         FROM content c
+         LEFT JOIN users u ON c.author_id = u.id
+         LEFT JOIN content_categories cat ON c.category_id = cat.id
+         ${whereClause}
+         ORDER BY engagement_score DESC
+         LIMIT :limit`, {
+                replacements: { ...replacements, limit: parseInt(limit) },
+                type: sequelize_1.QueryTypes.SELECT,
+            });
+            const [overallStats] = await models_2.sequelize.query(`SELECT
+           COUNT(*) as total_content,
+           SUM(c.view_count) as total_views,
+           SUM(c.like_count) as total_likes,
+           SUM(c.share_count) as total_shares,
+           AVG(c.view_count) as avg_views,
+           AVG(c.reading_time) as avg_reading_time
+         FROM content c
+         ${whereClause}`, {
+                replacements,
+                type: sequelize_1.QueryTypes.SELECT,
+            });
+            const [trendsData] = await models_2.sequelize.query(`SELECT
+           DATE(c.published_at) as date,
+           COUNT(*) as published_count,
+           SUM(c.view_count) as total_views,
+           AVG(c.view_count) as avg_views
+         FROM content c
+         ${whereClause}
+         AND c.published_at >= :startDate
+         GROUP BY DATE(c.published_at)
+         ORDER BY date ASC`, {
+                replacements,
+                type: sequelize_1.QueryTypes.SELECT,
+            });
+            const [typeDistribution] = await models_2.sequelize.query(`SELECT
+           c.type,
+           COUNT(*) as count,
+           SUM(c.view_count) as total_views,
+           AVG(c.view_count) as avg_views
+         FROM content c
+         ${whereClause}
+         GROUP BY c.type
+         ORDER BY total_views DESC`, {
+                replacements,
+                type: sequelize_1.QueryTypes.SELECT,
+            });
+            _res.json({
+                success: true,
+                data: {
+                    timeframe: {
+                        period: timeframe,
+                        startDate,
+                        endDate: new Date(),
+                        daysAnalyzed: daysBack,
+                    },
+                    overallStats: overallStats[0],
+                    topContent,
+                    trends: trendsData,
+                    typeDistribution,
+                    generatedAt: new Date(),
+                },
+            });
+        }
+        catch (error) {
+            logger_1.logger.error('Error fetching aggregated analytics:', error);
+            _res.status(500).json({
+                success: false,
+                error: 'Failed to fetch aggregated analytics',
+            });
+        }
+    }
+    static async getViewAnalytics(contentId, startDate) {
+        try {
+            const [viewsOverTime] = await models_2.sequelize.query(`SELECT
+           DATE(created_at) as date,
+           COUNT(*) as views,
+           COUNT(DISTINCT user_id) as unique_viewers
+         FROM content_views
+         WHERE content_id = :contentId
+         AND created_at >= :startDate
+         GROUP BY DATE(created_at)
+         ORDER BY date ASC`, {
+                replacements: { contentId, startDate },
+                type: sequelize_1.QueryTypes.SELECT,
+            });
+            const [deviceStats] = await models_2.sequelize.query(`SELECT
+           device_type,
+           COUNT(*) as views,
+           COUNT(DISTINCT user_id) as unique_viewers
+         FROM content_views
+         WHERE content_id = :contentId
+         AND created_at >= :startDate
+         GROUP BY device_type`, {
+                replacements: { contentId, startDate },
+                type: sequelize_1.QueryTypes.SELECT,
+            });
+            const [referrerStats] = await models_2.sequelize.query(`SELECT
+           referrer_source,
+           COUNT(*) as views
+         FROM content_views
+         WHERE content_id = :contentId
+         AND created_at >= :startDate
+         AND referrer_source IS NOT NULL
+         GROUP BY referrer_source
+         ORDER BY views DESC
+         LIMIT 10`, {
+                replacements: { contentId, startDate },
+                type: sequelize_1.QueryTypes.SELECT,
+            });
+            return {
+                viewsOverTime,
+                deviceStats,
+                referrerStats,
+            };
+        }
+        catch (error) {
+            logger_1.logger.error('Error fetching view analytics:', error);
+            return { viewsOverTime: [], deviceStats: [], referrerStats: [] };
+        }
+    }
+    static async getEngagementAnalytics(contentId, startDate) {
+        try {
+            const [engagementOverTime] = await models_2.sequelize.query(`SELECT
+           DATE(created_at) as date,
+           SUM(CASE WHEN action_type = 'like' THEN 1 ELSE 0 END) as likes,
+           SUM(CASE WHEN action_type = 'share' THEN 1 ELSE 0 END) as shares,
+           SUM(CASE WHEN action_type = 'comment' THEN 1 ELSE 0 END) as comments,
+           SUM(CASE WHEN action_type = 'bookmark' THEN 1 ELSE 0 END) as bookmarks
+         FROM content_interactions
+         WHERE content_id = :contentId
+         AND created_at >= :startDate
+         GROUP BY DATE(created_at)
+         ORDER BY date ASC`, {
+                replacements: { contentId, startDate },
+                type: sequelize_1.QueryTypes.SELECT,
+            });
+            const [readingBehavior] = await models_2.sequelize.query(`SELECT
+           AVG(time_spent) as avg_time_spent,
+           AVG(scroll_depth) as avg_scroll_depth,
+           COUNT(*) as total_readings
+         FROM content_reading_sessions
+         WHERE content_id = :contentId
+         AND created_at >= :startDate`, {
+                replacements: { contentId, startDate },
+                type: sequelize_1.QueryTypes.SELECT,
+            });
+            return {
+                engagementOverTime,
+                readingBehavior: readingBehavior[0],
+            };
+        }
+        catch (error) {
+            logger_1.logger.error('Error fetching engagement analytics:', error);
+            return { engagementOverTime: [], readingBehavior: {} };
+        }
+    }
+    static async getPerformanceAnalytics(contentId) {
+        try {
+            const content = await Content_1.Content.findByPk(contentId);
+            if (!content)
+                return {};
+            const totalEngagements = (content.likeCount || 0) + (content.shareCount || 0) + (content.commentCount || 0);
+            const engagementRate = content.viewCount > 0 ? (totalEngagements / content.viewCount) * 100 : 0;
+            const [similarContent] = await models_2.sequelize.query(`SELECT
+           AVG(view_count) as avg_views,
+           AVG(like_count) as avg_likes,
+           AVG(share_count) as avg_shares
+         FROM content
+         WHERE type = (SELECT type FROM content WHERE id = :contentId)
+         AND status = 'published'
+         AND id != :contentId`, {
+                replacements: { contentId },
+                type: sequelize_1.QueryTypes.SELECT,
+            });
+            const comparison = similarContent[0];
+            return {
+                engagementRate: Math.round(engagementRate * 100) / 100,
+                performanceVsAverage: {
+                    views: comparison?.avg_views ? Math.round(((content.viewCount || 0) / comparison.avg_views - 1) * 100) : 0,
+                    likes: comparison?.avg_likes ? Math.round(((content.likeCount || 0) / comparison.avg_likes - 1) * 100) : 0,
+                    shares: comparison?.avg_shares ? Math.round(((content.shareCount || 0) / comparison.avg_shares - 1) * 100) : 0,
+                },
+                totalEngagements,
+            };
+        }
+        catch (error) {
+            logger_1.logger.error('Error fetching performance analytics:', error);
+            return {};
+        }
+    }
+    static async getDemographicsAnalytics(contentId, startDate) {
+        try {
+            const [ageGroups] = await models_2.sequelize.query(`SELECT
+           CASE
+             WHEN TIMESTAMPDIFF(YEAR, u.birth_date, CURDATE()) < 25 THEN '18-24'
+             WHEN TIMESTAMPDIFF(YEAR, u.birth_date, CURDATE()) < 35 THEN '25-34'
+             WHEN TIMESTAMPDIFF(YEAR, u.birth_date, CURDATE()) < 45 THEN '35-44'
+             WHEN TIMESTAMPDIFF(YEAR, u.birth_date, CURDATE()) < 55 THEN '45-54'
+             ELSE '55+'
+           END as age_group,
+           COUNT(*) as views
+         FROM content_views cv
+         JOIN users u ON cv.user_id = u.id
+         WHERE cv.content_id = :contentId
+         AND cv.created_at >= :startDate
+         AND u.birth_date IS NOT NULL
+         GROUP BY age_group
+         ORDER BY views DESC`, {
+                replacements: { contentId, startDate },
+                type: sequelize_1.QueryTypes.SELECT,
+            });
+            const [locationStats] = await models_2.sequelize.query(`SELECT
+           u.country,
+           COUNT(*) as views
+         FROM content_views cv
+         JOIN users u ON cv.user_id = u.id
+         WHERE cv.content_id = :contentId
+         AND cv.created_at >= :startDate
+         AND u.country IS NOT NULL
+         GROUP BY u.country
+         ORDER BY views DESC
+         LIMIT 10`, {
+                replacements: { contentId, startDate },
+                type: sequelize_1.QueryTypes.SELECT,
+            });
+            return {
+                ageGroups,
+                topCountries: locationStats,
+            };
+        }
+        catch (error) {
+            logger_1.logger.error('Error fetching demographics analytics:', error);
+            return { ageGroups: [], topCountries: [] };
+        }
+    }
+    static parseTimeframe(timeframe) {
+        const timeframeMap = {
+            '7d': 7,
+            '30d': 30,
+            '90d': 90,
+            '1y': 365,
+        };
+        return timeframeMap[timeframe] || 30;
     }
 }
 exports.ContentController = ContentController;

@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import { render, RenderOptions } from '@testing-library/react';
+import { render, RenderOptions, RenderResult } from '@testing-library/react';
 import { MemoryRouter, MemoryRouterProps } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -38,7 +38,7 @@ const AllTheProviders = ({
   );
 };
 
-const customRender = (ui: ReactElement, options?: CustomRenderOptions) => {
+const customRender = (ui: ReactElement, options?: CustomRenderOptions): RenderResult => {
   const { routerProps, ...renderOptions } = options || {};
 
   return render(ui, {

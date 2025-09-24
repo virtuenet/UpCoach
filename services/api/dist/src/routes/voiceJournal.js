@@ -31,5 +31,15 @@ router.get('/tags', VoiceJournalController_1.voiceJournalController.getTags);
 router.get('/favorites', VoiceJournalController_1.voiceJournalController.getFavorites);
 router.get('/export', VoiceJournalController_1.voiceJournalController.exportEntries);
 router.post('/import', upload_1.default.single('file'), VoiceJournalController_1.voiceJournalController.importEntries);
+router.post('/offline/store', upload_1.default.single('audioFile'), VoiceJournalController_1.voiceJournalController.storeOfflineEntry);
+router.get('/offline/entries', VoiceJournalController_1.voiceJournalController.getOfflineEntries);
+router.post('/offline/sync', VoiceJournalController_1.voiceJournalController.syncOfflineEntries);
+router.post('/local/audio/:entryId', upload_1.default.single('audio'), VoiceJournalController_1.voiceJournalController.storeAudioFileLocal);
+router.get('/local/audio/:entryId', VoiceJournalController_1.voiceJournalController.getAudioFileLocal);
+router.post('/cache/store', VoiceJournalController_1.voiceJournalController.cacheEntriesLocally);
+router.get('/cache/entries', VoiceJournalController_1.voiceJournalController.getCachedEntries);
+router.get('/storage/status', VoiceJournalController_1.voiceJournalController.getLocalStorageStatus);
+router.delete('/storage/purge', VoiceJournalController_1.voiceJournalController.purgeOldData);
+router.post('/sync/advanced', VoiceJournalController_1.voiceJournalController.performAdvancedSync);
 exports.default = router;
 //# sourceMappingURL=voiceJournal.js.map

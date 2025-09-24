@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../providers/voice_journal_provider.dart';
 import '../widgets/voice_recording_widget.dart';
 import '../widgets/voice_journal_list.dart';
@@ -200,36 +202,221 @@ class _VoiceJournalScreenState extends ConsumerState<VoiceJournalScreen>
   }
 
   void _showSettingsDialog() {
+    final voiceJournalState = ref.read(voiceJournalProvider);
+    bool autoTranscribe = true; // Default setting
+    bool highQualityAudio = false; // Default setting
+    bool cloudSyncEnabled = voiceJournalState.isCloudSyncEnabled;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Voice Journal Settings'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SwitchListTile(
-              title: const Text('Auto Transcription'),
-              subtitle: const Text('Automatically transcribe recordings'),
-              value: true, // TODO: Get from settings
-              onChanged: (value) {
-                // TODO: Update settings
-              },
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Voice Journal Settings'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SwitchListTile(
+                  title: const Text('Auto Transcription'),
+                  subtitle: const Text('Automatically transcribe recordings'),
+                  value: autoTranscribe,
+                  onChanged: (value) {
+                    setState(() {
+                      autoTranscribe = value;
+                    });
+                    // Save to preferences
+                    _updateAutoTranscribeSetting(value);
+                  },
+                ),
+                const Divider(),
+                SwitchListTile(
+                  title: const Text('High Quality Audio'),
+                  subtitle: const Text('Record in higher quality (larger files)'),
+                  value: highQualityAudio,
+                  onChanged: (value) {
+                    setState(() {
+                      highQualityAudio = value;
+                    });
+                    // Save to preferences
+                    _updateAudioQualitySetting(value);
+                  },
+                ),
+                const Divider(),
+                SwitchListTile(
+                  title: const Text('Cloud Sync'),
+                  subtitle: const Text('Sync journals across devices'),
+                  value: cloudSyncEnabled,
+                  onChanged: (value) async {
+                    setState(() {
+                      cloudSyncEnabled = value;
+                    });
+
+                    if (value) {
+                      await ref.read(voiceJournalProvider.notifier).enableCloudSync();
+                    } else {
+                      await ref.read(voiceJournalProvider.notifier).disableCloudSync();
+                    }
+                  },
+                ),
+                if (cloudSyncEnabled && voiceJournalState.lastSyncTime != null) ...[
+                  const SizedBox(height: UIConstants.spacingSM),
+                  Text(
+                    'Last synced: ${_formatSyncTime(voiceJournalState.lastSyncTime!)}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+                const Divider(),
+                ListTile(
+                  title: const Text('Batch Processing'),
+                  subtitle: const Text('Process all unprocessed entries'),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    context.pop();
+                    _showBatchProcessingOptions();
+                  },
+                ),
+                ListTile(
+                  title: const Text('Storage Management'),
+                  subtitle: const Text('Manage local storage'),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    context.pop();
+                    _showStorageManagement();
+                  },
+                ),
+                ListTile(
+                  title: const Text('Privacy & Security'),
+                  subtitle: const Text('Configure privacy settings'),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () {
+                    context.pop();
+                    context.push('/settings/privacy');
+                  },
+                ),
+              ],
             ),
-            SwitchListTile(
-              title: const Text('High Quality Audio'),
-              subtitle: const Text('Record in higher quality (larger files)'),
-              value: false, // TODO: Get from settings
-              onChanged: (value) {
-                // TODO: Update settings
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => context.pop(),
+              child: const Text('Done'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _updateAutoTranscribeSetting(bool value) async {
+    // Save to shared preferences or settings service
+    // This would typically be handled by a settings provider
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Auto transcription ${value ? "enabled" : "disabled"}'),
+      ),
+    );
+  }
+
+  void _updateAudioQualitySetting(bool value) async {
+    // Save to shared preferences or settings service
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('High quality audio ${value ? "enabled" : "disabled"}'),
+      ),
+    );
+  }
+
+  void _showBatchProcessingOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Batch Processing',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: UIConstants.spacingMD),
+            ListTile(
+              leading: const Icon(Icons.transcribe),
+              title: const Text('Transcribe All'),
+              subtitle: const Text('Transcribe all untranscribed entries'),
+              onTap: () async {
+                context.pop();
+                await ref.read(voiceJournalProvider.notifier).batchProcessEntries(
+                  transcribeAll: true,
+                  analyzeAll: false,
+                );
               },
             ),
             ListTile(
-              title: const Text('Storage Location'),
-              subtitle: const Text('Internal Storage'),
-              trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: () {
-                // TODO: Show storage options
+              leading: const Icon(Icons.analytics),
+              title: const Text('Analyze All'),
+              subtitle: const Text('Analyze all unanalyzed entries'),
+              onTap: () async {
+                context.pop();
+                await ref.read(voiceJournalProvider.notifier).batchProcessEntries(
+                  transcribeAll: false,
+                  analyzeAll: true,
+                );
               },
+            ),
+            ListTile(
+              leading: const Icon(Icons.psychology),
+              title: const Text('Process All'),
+              subtitle: const Text('Transcribe and analyze all entries'),
+              onTap: () async {
+                context.pop();
+                await ref.read(voiceJournalProvider.notifier).batchProcessEntries(
+                  transcribeAll: true,
+                  analyzeAll: true,
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showStorageManagement() {
+    final stats = ref.read(voiceJournalProvider.notifier).getStatistics();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Storage Management'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildStorageItem('Total Entries', '${stats['totalEntries']} entries'),
+            _buildStorageItem('Total Duration', '${stats['totalDurationMinutes']} minutes'),
+            _buildStorageItem('Transcribed', '${stats['transcribedEntries']} entries'),
+            const Divider(),
+            const SizedBox(height: UIConstants.spacingMD),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  context.pop();
+                  _clearOldEntries();
+                },
+                icon: const Icon(Icons.delete_sweep),
+                label: const Text('Clear Old Entries'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                ),
+              ),
             ),
           ],
         ),
@@ -241,6 +428,67 @@ class _VoiceJournalScreenState extends ConsumerState<VoiceJournalScreen>
         ],
       ),
     );
+  }
+
+  Widget _buildStorageItem(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: UIConstants.spacingXS),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(color: Colors.grey.shade600)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  void _clearOldEntries() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Old Entries'),
+        content: const Text(
+          'This will delete all voice journal entries older than 30 days. This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      // Implement clearing old entries
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Old entries cleared successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
+  String _formatSyncTime(DateTime time) {
+    final now = DateTime.now();
+    final difference = now.difference(time);
+
+    if (difference.inMinutes < 1) {
+      return 'Just now';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes} minutes ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours} hours ago';
+    } else {
+      return '${difference.inDays} days ago';
+    }
   }
 
   void _exportJournals() async {

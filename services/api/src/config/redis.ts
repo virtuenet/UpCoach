@@ -43,7 +43,7 @@ export async function cacheSet(key: string, value: any, expirySeconds?: number):
   const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
 
   if (expirySeconds) {
-    await redisClient.setEx(key, expirySeconds, stringValue);
+    await redisClient.setex(key, expirySeconds, stringValue);
   } else {
     await redisClient.set(key, stringValue);
   }

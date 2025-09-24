@@ -115,20 +115,41 @@ class GoogleAuthService {
             throw new apiError_1.ApiError(401, 'Invalid Google authentication token');
         }
     }
-    validateTokenClaims(payload) {
+    validateTokenClaims(payload, expectedNonce) {
         const validIssuers = ['accounts.google.com', 'https://accounts.google.com'];
         if (!validIssuers.includes(payload.iss)) {
             throw new apiError_1.ApiError(401, 'Invalid token issuer');
         }
+        const clientIds = [this.CLIENT_ID, this.MOBILE_CLIENT_ID, this.WEB_CLIENT_ID];
+        if (!clientIds.includes(payload.aud)) {
+            throw new apiError_1.ApiError(401, 'Invalid token audience');
+        }
         const now = Math.floor(Date.now() / 1000);
-        if (payload.exp && payload.exp < now) {
+        if (payload.exp && payload.exp < (now - 30)) {
             throw new apiError_1.ApiError(401, 'Token has expired');
+        }
+        if (payload.nbf && payload.nbf > (now + 30)) {
+            throw new apiError_1.ApiError(401, 'Token not yet valid');
+        }
+        if (payload.iat && payload.iat < (now - 3600)) {
+            throw new apiError_1.ApiError(401, 'Token too old');
+        }
+        if (expectedNonce && payload.nonce !== expectedNonce) {
+            throw new apiError_1.ApiError(401, 'Invalid nonce');
         }
         if (!payload.email) {
             throw new apiError_1.ApiError(400, 'Email not provided in Google token');
         }
-        if (process.env.REQUIRE_EMAIL_VERIFICATION === 'true' && !payload.email_verified) {
+        if (process.env.NODE_ENV === 'production' && !payload.email_verified) {
             throw new apiError_1.ApiError(403, 'Email not verified with Google');
+        }
+        if (process.env.GOOGLE_HOSTED_DOMAIN) {
+            if (payload.hd !== process.env.GOOGLE_HOSTED_DOMAIN) {
+                throw new apiError_1.ApiError(403, 'Invalid hosted domain');
+            }
+        }
+        if (payload.email && payload.email.includes('+')) {
+            logger_1.logger.warn('Email with plus sign detected', { email: payload.email });
         }
     }
     async signIn(idToken, platform = 'web', deviceInfo) {
@@ -416,12 +437,80 @@ class GoogleAuthService {
             throw new apiError_1.ApiError(401, 'Invalid access token');
         }
     }
-    generateOAuthState() {
+    async generateOAuthState(clientId, redirectUri) {
         const crypto = require('crypto');
-        return crypto.randomBytes(32).toString('hex');
+        const state = crypto.randomBytes(32).toString('hex');
+        const nonce = crypto.randomBytes(16).toString('hex');
+        const timestamp = Date.now();
+        const oauthState = {
+            state,
+            nonce,
+            timestamp,
+            clientId,
+            redirectUri
+        };
+        await redis_1.redis.setEx(`oauth_state:${state}`, 600, JSON.stringify(oauthState));
+        return oauthState;
     }
-    validateOAuthState(state, storedState) {
-        return state === storedState;
+    async validateOAuthState(state, clientId, redirectUri) {
+        try {
+            const storedStateData = await redis_1.redis.get(`oauth_state:${state}`);
+            if (!storedStateData) {
+                logger_1.logger.warn('OAuth state not found or expired', { state });
+                return { valid: false };
+            }
+            const oauthState = JSON.parse(storedStateData);
+            if (oauthState.state !== state) {
+                logger_1.logger.warn('OAuth state mismatch', { expected: state, actual: oauthState.state });
+                return { valid: false };
+            }
+            if (oauthState.clientId !== clientId) {
+                logger_1.logger.warn('OAuth client ID mismatch', { expected: clientId, actual: oauthState.clientId });
+                return { valid: false };
+            }
+            if (oauthState.redirectUri !== redirectUri) {
+                logger_1.logger.warn('OAuth redirect URI mismatch', { expected: redirectUri, actual: oauthState.redirectUri });
+                return { valid: false };
+            }
+            const now = Date.now();
+            if (now - oauthState.timestamp > 600000) {
+                logger_1.logger.warn('OAuth state expired', { age: now - oauthState.timestamp });
+                return { valid: false };
+            }
+            await redis_1.redis.del(`oauth_state:${state}`);
+            return { valid: true, nonce: oauthState.nonce };
+        }
+        catch (error) {
+            logger_1.logger.error('OAuth state validation error:', error);
+            return { valid: false };
+        }
+    }
+    generatePKCE() {
+        const crypto = require('crypto');
+        const codeVerifier = crypto.randomBytes(64).toString('base64url');
+        const codeChallenge = crypto
+            .createHash('sha256')
+            .update(codeVerifier)
+            .digest('base64url');
+        return {
+            codeVerifier,
+            codeChallenge,
+            codeChallengeMethod: 'S256'
+        };
+    }
+    verifyPKCE(codeVerifier, codeChallenge) {
+        const crypto = require('crypto');
+        try {
+            const computedChallenge = crypto
+                .createHash('sha256')
+                .update(codeVerifier)
+                .digest('base64url');
+            return crypto.timingSafeEqual(Buffer.from(computedChallenge), Buffer.from(codeChallenge));
+        }
+        catch (error) {
+            logger_1.logger.error('PKCE verification error:', error);
+            return false;
+        }
     }
     sanitizeUser(user) {
         const { password_hash, ...sanitized } = user;
