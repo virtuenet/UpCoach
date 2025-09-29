@@ -28,6 +28,7 @@ interface FinancialReportAttributes {
   id: string;
   type: ReportType;
   title: string;
+  name?: string;
   description?: string;
   status: ReportStatus;
   format: ReportFormat;
@@ -35,6 +36,7 @@ interface FinancialReportAttributes {
   generatedAt?: Date;
   parameters?: any;
   data?: any;
+  metadata?: any;
   error?: string;
   recipients?: string[];
   fileUrl?: string;
@@ -52,6 +54,7 @@ export class FinancialReport
   public id!: string;
   public type!: ReportType;
   public title!: string;
+  public name?: string;
   public description?: string;
   public status!: ReportStatus;
   public format!: ReportFormat;
@@ -59,6 +62,7 @@ export class FinancialReport
   public generatedAt?: Date;
   public parameters?: any;
   public data?: any;
+  public metadata?: any;
   public error?: string;
   public recipients?: string[];
   public fileUrl?: string;

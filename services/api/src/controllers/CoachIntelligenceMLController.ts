@@ -14,7 +14,9 @@ import { AppError } from '../utils/errors';
 import { authLimiter, createRateLimiter } from '../middleware/rateLimiter';
 
 // Initialize services
-const mlService = new CoachIntelligenceMLServiceComplete();
+// Import the default service instance
+import mlServiceDefault from '../services/coaching/CoachIntelligenceMLServiceComplete';
+const mlService = mlServiceDefault;
 const dataPipeline = MLDataPipeline;
 
 // Rate limiting for ML endpoints
@@ -43,7 +45,8 @@ export class CoachIntelligenceMLController {
       }
 
       // Check user authorization
-      if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+      const isAdmin = req.user?.role === 'admin';
+      if (req.user?.id !== userId && !isAdmin) {
         throw new AppError('Unauthorized access', 403);
       }
 
@@ -78,11 +81,12 @@ export class CoachIntelligenceMLController {
       // Validate input
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        throw new AppError('Validation failed', 400, errors.array());
+        throw new AppError('Validation failed', 400);
       }
 
       // Check authorization
-      if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+      const isAdmin = req.user?.role === 'admin';
+      if (req.user?.id !== userId && !isAdmin) {
         throw new AppError('Unauthorized access', 403);
       }
 
@@ -117,7 +121,8 @@ export class CoachIntelligenceMLController {
       const { limit = 10, offset = 0 } = req.query;
 
       // Check authorization
-      if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+      const isAdmin = req.user?.role === 'admin';
+      if (req.user?.id !== userId && !isAdmin) {
         throw new AppError('Unauthorized access', 403);
       }
 
@@ -147,7 +152,8 @@ export class CoachIntelligenceMLController {
       const { goalId } = req.query;
 
       // Check authorization
-      if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+      const isAdmin = req.user?.role === 'admin';
+      if (req.user?.id !== userId && !isAdmin) {
         throw new AppError('Unauthorized access', 403);
       }
 
@@ -178,7 +184,8 @@ export class CoachIntelligenceMLController {
       const { userId, goalId } = req.params;
 
       // Check authorization
-      if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+      const isAdmin = req.user?.role === 'admin';
+      if (req.user?.id !== userId && !isAdmin) {
         throw new AppError('Unauthorized access', 403);
       }
 
@@ -208,7 +215,8 @@ export class CoachIntelligenceMLController {
       const { userId } = req.params;
 
       // Check authorization
-      if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+      const isAdmin = req.user?.role === 'admin';
+      if (req.user?.id !== userId && !isAdmin) {
         throw new AppError('Unauthorized access', 403);
       }
 
@@ -236,7 +244,8 @@ export class CoachIntelligenceMLController {
       const { userId, context } = req.body;
 
       // Check authorization
-      if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+      const isAdmin = req.user?.role === 'admin';
+      if (req.user?.id !== userId && !isAdmin) {
         throw new AppError('Unauthorized access', 403);
       }
 
@@ -268,7 +277,8 @@ export class CoachIntelligenceMLController {
       const { metrics } = req.query;
 
       // Check authorization
-      if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+      const isAdmin = req.user?.role === 'admin';
+      if (req.user?.id !== userId && !isAdmin) {
         throw new AppError('Unauthorized access', 403);
       }
 
@@ -304,7 +314,8 @@ export class CoachIntelligenceMLController {
       const { userId } = req.params;
 
       // Check authorization
-      if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+      const isAdmin = req.user?.role === 'admin';
+      if (req.user?.id !== userId && !isAdmin) {
         throw new AppError('Unauthorized access', 403);
       }
 
@@ -338,7 +349,8 @@ export class CoachIntelligenceMLController {
       const { userId } = req.params;
 
       // Check authorization
-      if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+      const isAdmin = req.user?.role === 'admin';
+      if (req.user?.id !== userId && !isAdmin) {
         throw new AppError('Unauthorized access', 403);
       }
 
@@ -366,7 +378,8 @@ export class CoachIntelligenceMLController {
       const { coachId } = req.params;
 
       // Check authorization (only admin or the coach themselves)
-      if (req.user?.id !== parseInt(coachId) && !req.user?.isAdmin) {
+      const isAdmin = req.user?.role === 'admin';
+      if (req.user?.id !== coachId && !isAdmin) {
         throw new AppError('Unauthorized access', 403);
       }
 
@@ -397,7 +410,8 @@ export class CoachIntelligenceMLController {
       const { userId, features, useCache = true, validate = true } = req.body;
 
       // Check authorization
-      if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+      const isAdmin = req.user?.role === 'admin';
+      if (req.user?.id !== userId && !isAdmin) {
         throw new AppError('Unauthorized access', 403);
       }
 
@@ -430,7 +444,7 @@ export class CoachIntelligenceMLController {
       const { userIds, batchSize = 10, parallel = true } = req.body;
 
       // Admin only endpoint
-      if (!req.user?.isAdmin) {
+      if (req.user?.role !== 'admin') {
         throw new AppError('Admin access required', 403);
       }
 
@@ -474,7 +488,8 @@ export class CoachIntelligenceMLController {
       const { userId, eventType, eventData } = req.body;
 
       // Check authorization
-      if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+      const isAdmin = req.user?.role === 'admin';
+      if (req.user?.id !== userId && !isAdmin) {
         throw new AppError('Unauthorized access', 403);
       }
 
@@ -506,7 +521,7 @@ export class CoachIntelligenceMLController {
   static getModelStatus = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       // Admin only endpoint
-      if (!req.user?.isAdmin) {
+      if (req.user?.role !== 'admin') {
         throw new AppError('Admin access required', 403);
       }
 
@@ -533,7 +548,7 @@ export class CoachIntelligenceMLController {
   static checkModelDrift = asyncHandler(
     async (req: Request, res: Response, next: NextFunction) => {
       // Admin only endpoint
-      if (!req.user?.isAdmin) {
+      if (req.user?.role !== 'admin') {
         throw new AppError('Admin access required', 403);
       }
 
@@ -572,7 +587,8 @@ export class CoachIntelligenceMLController {
       const { userId } = req.params;
 
       // Check authorization
-      if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+      const isAdmin = req.user?.role === 'admin';
+      if (req.user?.id !== userId && !isAdmin) {
         throw new AppError('Unauthorized access', 403);
       }
 
@@ -605,7 +621,8 @@ export class CoachIntelligenceMLController {
       const consentData = req.body;
 
       // Check authorization
-      if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+      const isAdmin = req.user?.role === 'admin';
+      if (req.user?.id !== userId && !isAdmin) {
         throw new AppError('Unauthorized access', 403);
       }
 
@@ -639,7 +656,8 @@ export class CoachIntelligenceMLController {
       const { userId } = req.params;
 
       // Check authorization
-      if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+      const isAdmin = req.user?.role === 'admin';
+      if (req.user?.id !== userId && !isAdmin) {
         throw new AppError('Unauthorized access', 403);
       }
 
@@ -665,7 +683,8 @@ export class CoachIntelligenceMLController {
       const { userId } = req.params;
 
       // Check authorization
-      if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+      const isAdmin = req.user?.role === 'admin';
+      if (req.user?.id !== userId && !isAdmin) {
         throw new AppError('Unauthorized access', 403);
       }
 

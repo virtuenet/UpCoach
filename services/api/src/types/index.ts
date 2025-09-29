@@ -288,6 +288,11 @@ export interface Content {
   viewCount: number;
   likeCount: number;
   shareCount: number;
+  commentCount: number;
+  wordCount: number;
+  readingTime: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type ContentType = 'article' | 'video' | 'podcast' | 'course' | 'resource';

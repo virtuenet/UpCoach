@@ -28,7 +28,7 @@
     "declarationMap": false,
     "moduleResolution": "node",
     "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
-    "types": [],
+    "types": ["node", "jest"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
@@ -48,8 +48,6 @@
   ],
   "exclude": [
     "node_modules",
-    "dist",
-    "src/**/*.test.ts",
-    "src/**/__tests__/**"
+    "dist"
   ]
 } 

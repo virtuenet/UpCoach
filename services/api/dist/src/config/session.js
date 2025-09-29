@@ -9,11 +9,19 @@ exports.configureSession = configureSession;
 exports.validateSession = validateSession;
 exports.scheduleSessionCleanup = scheduleSessionCleanup;
 const express_session_1 = __importDefault(require("express-session"));
-const connect_redis_1 = __importDefault(require("connect-redis"));
+const redisModule = require('redis');
+const { createClient } = redisModule;
 const redis_1 = require("../services/redis");
 const logger_1 = require("../utils/logger");
 const secrets_1 = require("./secrets");
-const RedisStore = (0, connect_redis_1.default)(express_session_1.default);
+let RedisStore;
+try {
+    const connectRedis = require('connect-redis');
+    RedisStore = connectRedis.default ? connectRedis.default(express_session_1.default) : connectRedis(express_session_1.default);
+}
+catch (error) {
+    logger_1.logger.warn('connect-redis not available, sessions will use memory store');
+}
 function generateSecureSessionId() {
     const crypto = require('crypto');
     return crypto.randomBytes(32).toString('hex');

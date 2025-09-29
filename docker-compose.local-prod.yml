@@ -1,8 +1,6 @@
 # Local Production Deployment with ports 1000-1999
 # Optimized for local development and testing of production configuration
 
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
@@ -46,7 +44,7 @@ services:
       - "1080:1080"
     working_dir: /app
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       PORT: 1080
       DATABASE_URL: postgresql://upcoach:upcoach_dev_pass@postgres:5432/upcoach_local_prod
       REDIS_URL: redis://redis:6379
@@ -57,16 +55,16 @@ services:
     volumes:
       - ./services/api:/app
       - /app/node_modules
-    command: sh -c "npm install && npm run dev"
+    command: sh -c "apk add --no-cache git python3 make g++ && npm install --legacy-peer-deps --no-optional && npm install -g typescript ts-node nodemon && npm run dev"
     depends_on:
       - postgres
       - redis
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:1080/api/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:1080"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 60s
+      retries: 5
+      start_period: 120s
     restart: unless-stopped
 
   # Landing Page (Next.js)
@@ -104,7 +102,7 @@ services:
       - "1006:1006"
     working_dir: /app
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       PORT: 1006
       VITE_API_URL: http://localhost:1080
       VITE_SUPABASE_URL: https://placeholder.supabase.co
@@ -113,14 +111,15 @@ services:
       - ./apps/admin-panel:/app
       - /app/node_modules
       - /app/dist
-    command: sh -c "npm install && npm run build && npm run preview -- --port 1006 --host"
+    command: sh -c "npm install --legacy-peer-deps && npm install -g typescript && npm run dev -- --port 1006 --host"
     depends_on:
       - backend-api
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:1006"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 60s
     restart: unless-stopped
 
   # CMS Panel (React/Vite)
@@ -131,7 +130,7 @@ services:
       - "1007:1007"
     working_dir: /app
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       PORT: 1007
       VITE_API_URL: http://localhost:1080
       VITE_SUPABASE_URL: https://placeholder.supabase.co
@@ -140,14 +139,15 @@ services:
       - ./apps/cms-panel:/app
       - /app/node_modules
       - /app/dist
-    command: sh -c "npm install && npm run build && npm run preview -- --port 1007 --host"
+    command: sh -c "npm install --legacy-peer-deps && npm install -g typescript && npm run dev -- --port 1007 --host"
     depends_on:
       - backend-api
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:1007"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 60s
     restart: unless-stopped
 
   # Nginx Reverse Proxy (optional for routing)

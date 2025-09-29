@@ -5,13 +5,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mlRateLimiter = exports.CoachIntelligenceMLController = void 0;
 const express_validator_1 = require("express-validator");
-const CoachIntelligenceMLServiceComplete_1 = require("../services/coaching/CoachIntelligenceMLServiceComplete");
 const MLDataPipeline_1 = __importDefault(require("../services/ml/MLDataPipeline"));
 const logger_1 = require("../utils/logger");
 const asyncHandler_1 = require("../utils/asyncHandler");
 const errors_1 = require("../utils/errors");
 const rateLimiter_1 = require("../middleware/rateLimiter");
-const mlService = new CoachIntelligenceMLServiceComplete_1.CoachIntelligenceMLServiceComplete();
+const CoachIntelligenceMLServiceComplete_1 = __importDefault(require("../services/coaching/CoachIntelligenceMLServiceComplete"));
+const mlService = CoachIntelligenceMLServiceComplete_1.default;
 const dataPipeline = MLDataPipeline_1.default;
 const mlRateLimiter = (0, rateLimiter_1.createRateLimiter)({
     windowMs: 60 * 1000,
@@ -26,7 +26,8 @@ class CoachIntelligenceMLController {
         if (!userId) {
             throw new errors_1.AppError('User ID is required', 400);
         }
-        if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+        const isAdmin = req.user?.role === 'admin';
+        if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
         const npsResult = await mlService.calculateNPSScore(userId, timeframe);
@@ -44,9 +45,10 @@ class CoachIntelligenceMLController {
         const { userId, skillId, score, context } = req.body;
         const errors = (0, express_validator_1.validationResult)(req);
         if (!errors.isEmpty()) {
-            throw new errors_1.AppError('Validation failed', 400, errors.array());
+            throw new errors_1.AppError('Validation failed', 400);
         }
-        if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+        const isAdmin = req.user?.role === 'admin';
+        if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
         const assessment = await mlService.trackSkillImprovement(userId, skillId, score, context);
@@ -63,7 +65,8 @@ class CoachIntelligenceMLController {
     static getSkillAssessmentHistory = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
         const { userId, skillId } = req.params;
         const { limit = 10, offset = 0 } = req.query;
-        if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+        const isAdmin = req.user?.role === 'admin';
+        if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
         const history = [];
@@ -80,7 +83,8 @@ class CoachIntelligenceMLController {
     static generateGoalInsights = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
         const { userId } = req.params;
         const { goalId } = req.query;
-        if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+        const isAdmin = req.user?.role === 'admin';
+        if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
         const insights = await mlService.generateGoalInsights(userId, goalId);
@@ -95,7 +99,8 @@ class CoachIntelligenceMLController {
     });
     static predictGoalSuccess = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
         const { userId, goalId } = req.params;
-        if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+        const isAdmin = req.user?.role === 'admin';
+        if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
         const prediction = await mlService.predictGoalSuccess(userId, goalId);
@@ -112,7 +117,8 @@ class CoachIntelligenceMLController {
     });
     static analyzeUserPatterns = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
         const { userId } = req.params;
-        if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+        const isAdmin = req.user?.role === 'admin';
+        if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
         const patterns = await mlService.analyzeUserPatterns(userId);
@@ -127,7 +133,8 @@ class CoachIntelligenceMLController {
     });
     static generateCoachingRecommendations = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
         const { userId, context } = req.body;
-        if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+        const isAdmin = req.user?.role === 'admin';
+        if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
         const recommendations = await mlService.generateCoachingRecommendations(userId, context);
@@ -143,7 +150,8 @@ class CoachIntelligenceMLController {
     static calculateUserPercentiles = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
         const { userId } = req.params;
         const { metrics } = req.query;
-        if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+        const isAdmin = req.user?.role === 'admin';
+        if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
         const targetMetrics = metrics
@@ -161,7 +169,8 @@ class CoachIntelligenceMLController {
     });
     static detectBehavioralAnomalies = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
         const { userId } = req.params;
-        if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+        const isAdmin = req.user?.role === 'admin';
+        if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
         const anomalies = await mlService.detectBehavioralAnomalies(userId);
@@ -179,7 +188,8 @@ class CoachIntelligenceMLController {
     });
     static generatePersonalizedInsights = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
         const { userId } = req.params;
-        if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+        const isAdmin = req.user?.role === 'admin';
+        if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
         const insights = await mlService.generatePersonalizedInsights(userId);
@@ -194,7 +204,8 @@ class CoachIntelligenceMLController {
     });
     static generateCoachingEffectivenessReport = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
         const { coachId } = req.params;
-        if (req.user?.id !== parseInt(coachId) && !req.user?.isAdmin) {
+        const isAdmin = req.user?.role === 'admin';
+        if (req.user?.id !== coachId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
         const report = await mlService.generateCoachingEffectivenessReport(coachId);
@@ -208,7 +219,8 @@ class CoachIntelligenceMLController {
     });
     static processUserFeatures = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
         const { userId, features, useCache = true, validate = true } = req.body;
-        if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+        const isAdmin = req.user?.role === 'admin';
+        if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
         const featureVector = await dataPipeline.processUserData(userId, {
@@ -228,7 +240,7 @@ class CoachIntelligenceMLController {
     });
     static batchProcessUsers = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
         const { userIds, batchSize = 10, parallel = true } = req.body;
-        if (!req.user?.isAdmin) {
+        if (req.user?.role !== 'admin') {
             throw new errors_1.AppError('Admin access required', 403);
         }
         if (!Array.isArray(userIds) || userIds.length === 0) {
@@ -257,7 +269,8 @@ class CoachIntelligenceMLController {
     });
     static streamProcessEvent = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
         const { userId, eventType, eventData } = req.body;
-        if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+        const isAdmin = req.user?.role === 'admin';
+        if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
         await dataPipeline.streamProcess(userId, {
@@ -275,7 +288,7 @@ class CoachIntelligenceMLController {
         });
     });
     static getModelStatus = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
-        if (!req.user?.isAdmin) {
+        if (req.user?.role !== 'admin') {
             throw new errors_1.AppError('Admin access required', 403);
         }
         const models = [
@@ -291,7 +304,7 @@ class CoachIntelligenceMLController {
         });
     });
     static checkModelDrift = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
-        if (!req.user?.isAdmin) {
+        if (req.user?.role !== 'admin') {
             throw new errors_1.AppError('Admin access required', 403);
         }
         const driftReports = [
@@ -315,7 +328,8 @@ class CoachIntelligenceMLController {
     });
     static getUserConsent = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
         const { userId } = req.params;
-        if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+        const isAdmin = req.user?.role === 'admin';
+        if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
         const consent = {
@@ -335,7 +349,8 @@ class CoachIntelligenceMLController {
     static updateUserConsent = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
         const { userId } = req.params;
         const consentData = req.body;
-        if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+        const isAdmin = req.user?.role === 'admin';
+        if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
         const updatedConsent = {
@@ -355,7 +370,8 @@ class CoachIntelligenceMLController {
     });
     static deleteUserMLData = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
         const { userId } = req.params;
-        if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+        const isAdmin = req.user?.role === 'admin';
+        if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
         logger_1.logger.warn('User ML data deletion requested', { userId });
@@ -366,7 +382,8 @@ class CoachIntelligenceMLController {
     });
     static getMLDashboard = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
         const { userId } = req.params;
-        if (req.user?.id !== parseInt(userId) && !req.user?.isAdmin) {
+        const isAdmin = req.user?.role === 'admin';
+        if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
         const [npsScore, patterns, insights, percentiles, recommendations,] = await Promise.all([

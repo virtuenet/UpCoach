@@ -38,6 +38,7 @@ export interface TransactionAttributes {
   status: TransactionStatus;
   amount: number;
   currency: string;
+  country?: string;
   paymentMethod: PaymentMethod;
   description?: string;
   metadata?: any;
@@ -57,6 +58,7 @@ export interface TransactionCreationAttributes
     TransactionAttributes,
     | 'id'
     | 'subscriptionId'
+    | 'country'
     | 'description'
     | 'metadata'
     | 'stripeInvoiceId'
@@ -82,6 +84,7 @@ export class Transaction
   public status!: TransactionStatus;
   public amount!: number;
   public currency!: string;
+  public country?: string;
   public paymentMethod!: PaymentMethod;
   public description?: string;
   public metadata?: any;
@@ -176,6 +179,10 @@ Transaction.init(
       type: DataTypes.STRING(3),
       allowNull: false,
       defaultValue: 'usd',
+    },
+    country: {
+      type: DataTypes.STRING(2),
+      allowNull: true,
     },
     paymentMethod: {
       type: DataTypes.ENUM(...Object.values(PaymentMethod)),

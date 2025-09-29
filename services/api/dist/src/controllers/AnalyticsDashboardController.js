@@ -160,17 +160,19 @@ class AnalyticsDashboardController {
                 return res.status(403).json({ error: 'Access denied' });
             }
             const predictions = {};
-            if (predictionTypes === 'all' || predictionTypes.includes('goals')) {
+            const normalizedTypes = Array.isArray(predictionTypes) ? predictionTypes :
+                typeof predictionTypes === 'string' ? [predictionTypes] : ['all'];
+            if (normalizedTypes.includes('all') || normalizedTypes.includes('goals')) {
                 const goals = await this.getUserGoals(userId);
                 predictions.goalSuccess = await Promise.all(goals.map(goal => PredictiveCoachingEngine_1.default.predictGoalSuccess(goal.id, userId)));
             }
-            if (predictionTypes === 'all' || predictionTypes.includes('engagement')) {
+            if (normalizedTypes.includes('all') || normalizedTypes.includes('engagement')) {
                 predictions.engagement = await PredictiveCoachingEngine_1.default.predictEngagement(userId);
             }
-            if (predictionTypes === 'all' || predictionTypes.includes('behavior')) {
+            if (normalizedTypes.includes('all') || normalizedTypes.includes('behavior')) {
                 predictions.behavior = await PredictiveCoachingEngine_1.default.predictBehaviorPatterns(userId);
             }
-            if (predictionTypes === 'all' || predictionTypes.includes('churn')) {
+            if (normalizedTypes.includes('all') || normalizedTypes.includes('churn')) {
                 predictions.churn = await UserBehaviorAnalyticsService_1.default.predictChurnRisk(userId);
             }
             return res.status(200).json({

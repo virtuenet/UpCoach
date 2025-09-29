@@ -892,6 +892,111 @@ Duration: ${Duration(seconds: entry.durationSeconds).toString()}
       'analytics': analytics,
     };
   }
+
+  // Delete old voice journal entries
+  Future<int> deleteOldEntries(DateTime cutoffDate) async {
+    try {
+      int deletedCount = 0;
+      final entriesToDelete = state.entries.where((entry) => entry.createdAt.isBefore(cutoffDate)).toList();
+
+      for (final entry in entriesToDelete) {
+        try {
+          // Delete audio file
+          await _voiceRecordingService.deleteRecording(entry.audioFilePath);
+
+          // Delete from storage
+          await _storageService.deleteEntry(entry.id);
+
+          deletedCount++;
+        } catch (e) {
+          // Log error but continue with other deletions
+          print('Failed to delete entry ${entry.id}: $e');
+        }
+      }
+
+      // Remove deleted entries from state
+      final updatedEntries = state.entries.where((entry) => !entry.createdAt.isBefore(cutoffDate)).toList();
+
+      state = state.copyWith(entries: updatedEntries);
+
+      return deletedCount;
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+      throw Exception('Failed to delete old entries: $e');
+    }
+  }
+
+  // Batch delete multiple entries by IDs
+  Future<int> deleteBatchEntries(List<String> entryIds) async {
+    try {
+      int deletedCount = 0;
+
+      for (final entryId in entryIds) {
+        try {
+          final entryIndex = state.entries.indexWhere((e) => e.id == entryId);
+          if (entryIndex == -1) continue;
+
+          final entry = state.entries[entryIndex];
+
+          // Delete audio file
+          await _voiceRecordingService.deleteRecording(entry.audioFilePath);
+
+          // Delete from storage
+          await _storageService.deleteEntry(entryId);
+
+          deletedCount++;
+        } catch (e) {
+          // Log error but continue with other deletions
+          print('Failed to delete entry $entryId: $e');
+        }
+      }
+
+      // Remove deleted entries from state
+      final updatedEntries = state.entries.where((entry) => !entryIds.contains(entry.id)).toList();
+
+      state = state.copyWith(entries: updatedEntries);
+
+      return deletedCount;
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+      throw Exception('Failed to delete entries: $e');
+    }
+  }
+
+  // Delete entries by filter criteria
+  Future<int> deleteEntriesByFilter({
+    bool? favoriteOnly,
+    bool? transcribedOnly,
+    List<String>? tags,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    try {
+      final entriesToDelete = state.entries.where((entry) {
+        // Apply filters
+        if (favoriteOnly == true && !entry.isFavorite) return false;
+        if (favoriteOnly == false && entry.isFavorite) return false;
+
+        if (transcribedOnly == true && !entry.isTranscribed) return false;
+        if (transcribedOnly == false && entry.isTranscribed) return false;
+
+        if (tags != null && tags.isNotEmpty) {
+          if (!tags.any((tag) => entry.tags.contains(tag))) return false;
+        }
+
+        if (startDate != null && entry.createdAt.isBefore(startDate)) return false;
+        if (endDate != null && entry.createdAt.isAfter(endDate)) return false;
+
+        return true;
+      }).toList();
+
+      final entryIds = entriesToDelete.map((e) => e.id).toList();
+      return await deleteBatchEntries(entryIds);
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+      throw Exception('Failed to delete filtered entries: $e');
+    }
+  }
 }
 
 // Provider

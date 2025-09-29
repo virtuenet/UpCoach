@@ -1117,7 +1117,7 @@ export class FinancialDashboardController {
       status: s.status,
       amount: s.amount,
       currency: s.currency,
-      interval: s.interval,
+      interval: s.billingInterval,
       canceledAt: s.canceledAt ? format(new Date(s.canceledAt), 'yyyy-MM-dd HH:mm:ss') : null,
     }));
   }
@@ -1521,7 +1521,7 @@ export class FinancialDashboardController {
             canceledAt: subscription.canceledAt,
             plan: subscription.plan,
             monthlyAmount: subscription.amount,
-            interval: subscription.interval,
+            interval: subscription.billingInterval,
             status: subscription.status,
             lifetimeMonths,
             totalRevenue: userRevenue || 0,

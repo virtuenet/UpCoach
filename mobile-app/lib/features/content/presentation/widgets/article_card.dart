@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_text_styles.dart';
@@ -10,13 +11,38 @@ class ArticleCard extends StatelessWidget {
   final ContentArticle article;
   final VoidCallback onTap;
   final bool showImage;
+  final bool showActions;
 
   const ArticleCard({
     super.key,
     required this.article,
     required this.onTap,
     this.showImage = true,
+    this.showActions = true,
   });
+
+  Future<void> _shareArticle() async {
+    try {
+      final shareText = '''
+📚 ${article.title}
+
+${article.summary}
+
+Read more in the UpCoach app!
+
+Category: ${article.category.name}
+Author: ${article.author.name}
+''';
+
+      await Share.share(
+        shareText,
+        subject: 'Check out this article: ${article.title}',
+      );
+    } catch (e) {
+      // Handle error silently or with a toast if needed
+      debugPrint('Failed to share article: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -146,6 +172,75 @@ class ArticleCard extends StatelessWidget {
                       ),
                     ],
                   ),
+
+                  // Action buttons
+                  if (showActions) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    const Divider(height: 1),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          InkWell(
+                            onTap: _shareArticle,
+                            borderRadius: BorderRadius.circular(AppSpacing.sm),
+                            child: Padding(
+                              padding: const EdgeInsets.all(AppSpacing.sm),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.share_outlined,
+                                    size: 18,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                  const SizedBox(width: AppSpacing.xs),
+                                  Text(
+                                    'Share',
+                                    style: AppTextStyles.caption.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              // TODO: Implement bookmark functionality
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Bookmark functionality coming soon'),
+                                ),
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(AppSpacing.sm),
+                            child: Padding(
+                              padding: const EdgeInsets.all(AppSpacing.sm),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.bookmark_border,
+                                    size: 18,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                  const SizedBox(width: AppSpacing.xs),
+                                  Text(
+                                    'Save',
+                                    style: AppTextStyles.caption.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

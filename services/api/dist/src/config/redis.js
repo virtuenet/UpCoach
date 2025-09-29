@@ -6,11 +6,12 @@ exports.cacheGet = cacheGet;
 exports.cacheSet = cacheSet;
 exports.cacheDelete = cacheDelete;
 exports.cacheExists = cacheExists;
-const redis_1 = require("redis");
+const redis = require('redis');
+const { createClient } = redis;
 const logger_1 = require("../utils/logger");
 let redisClient;
 async function initializeRedis() {
-    redisClient = (0, redis_1.createClient)({
+    redisClient = createClient({
         url: process.env.REDIS_URL || 'redis://localhost:6379',
     });
     redisClient.on('error', err => {
@@ -41,7 +42,7 @@ async function cacheGet(key) {
 async function cacheSet(key, value, expirySeconds) {
     const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
     if (expirySeconds) {
-        await redisClient.setex(key, expirySeconds, stringValue);
+        await redisClient.setEx(key, expirySeconds, stringValue);
     }
     else {
         await redisClient.set(key, stringValue);

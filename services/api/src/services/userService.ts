@@ -46,6 +46,7 @@ export class UserService {
         password_hash: passwordHash,
         name: userData.name,
         bio: userData.bio || null,
+        role: userData.role || 'user',
         preferences: {},
       });
 

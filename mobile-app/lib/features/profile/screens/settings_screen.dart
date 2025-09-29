@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/profile_provider.dart';
 import '../../../core/services/two_factor_auth_service.dart';
+import '../../../core/services/language_service.dart';
 import '../../auth/screens/two_factor_setup_screen.dart';
 import '../../auth/screens/disable_two_factor_screen.dart';
 
@@ -142,12 +143,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         const Divider(),
         
         _buildSectionHeader('Language'),
-        ListTile(
-          title: const Text('App Language'),
-          subtitle: Text(_language == 'english' ? 'English' : 'Other'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () {
-            // TODO: Show language selection
+        Consumer(
+          builder: (context, ref, child) {
+            final currentLanguageAsync = ref.watch(currentLanguageProvider);
+
+            return currentLanguageAsync.when(
+              data: (currentLangCode) {
+                final currentLanguage = LanguageService.supportedLanguages
+                    .firstWhere((lang) => lang.code == currentLangCode);
+
+                return ListTile(
+                  title: const Text('App Language'),
+                  subtitle: Text('${currentLanguage.flag} ${currentLanguage.nativeName}'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _showLanguageSelection(context, ref, currentLangCode),
+                );
+              },
+              loading: () => ListTile(
+                title: const Text('App Language'),
+                subtitle: const Text('Loading...'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {},
+              ),
+              error: (_, __) => ListTile(
+                title: const Text('App Language'),
+                subtitle: const Text('English'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => _showLanguageSelection(context, ref, 'en'),
+              ),
+            );
           },
         ),
         
@@ -574,6 +598,138 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showLanguageSelection(BuildContext context, WidgetRef ref, String currentLanguageCode) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.8,
+        maxChildSize: 0.9,
+        minChildSize: 0.5,
+        expand: false,
+        builder: (context, scrollController) => Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // Handle bar
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: AppTheme.textSecondary.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+
+              // Header
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close),
+                  ),
+                  const Expanded(
+                    child: Text(
+                      'Select Language',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(width: 48), // Balance the close button
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // Language list
+              Expanded(
+                child: ListView.separated(
+                  controller: scrollController,
+                  itemCount: LanguageService.supportedLanguages.length,
+                  separatorBuilder: (context, index) => const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final language = LanguageService.supportedLanguages[index];
+                    final isSelected = language.code == currentLanguageCode;
+
+                    return ListTile(
+                      leading: Text(
+                        language.flag,
+                        style: const TextStyle(fontSize: 24),
+                      ),
+                      title: Text(
+                        language.nativeName,
+                        style: TextStyle(
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                      subtitle: Text(
+                        language.name,
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                      trailing: isSelected
+                          ? Icon(
+                              Icons.check_circle,
+                              color: AppTheme.primaryColor,
+                            )
+                          : null,
+                      onTap: () async {
+                        if (language.code != currentLanguageCode) {
+                          try {
+                            // Update language in service
+                            final languageService = ref.read(languageServiceProvider);
+                            await languageService.setSelectedLanguage(language.code);
+
+                            // Update UI state
+                            if (ref.read(localeProvider.notifier).mounted) {
+                              await ref.read(localeProvider.notifier).setLanguage(language.code);
+                            }
+
+                            // Refresh the current language provider
+                            ref.refresh(currentLanguageProvider);
+
+                            // Show success feedback
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Language changed to ${language.nativeName}'),
+                                  backgroundColor: AppTheme.successColor,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to change language: $e'),
+                                  backgroundColor: AppTheme.errorColor,
+                                ),
+                              );
+                            }
+                          }
+                        }
+
+                        Navigator.of(context).pop();
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

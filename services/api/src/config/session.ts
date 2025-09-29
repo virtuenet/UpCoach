@@ -1,13 +1,20 @@
 import session from 'express-session';
-import connectRedis from 'connect-redis';
+const redisModule = require('redis');
+const { createClient } = redisModule;
 import { Application } from 'express';
 
 import { redis } from '../services/redis';
 import { logger } from '../utils/logger';
 import { secretManager } from './secrets';
 
-// Create Redis store for sessions
-const RedisStore = connectRedis(session);
+// Import connect-redis properly for newer versions
+let RedisStore: any;
+try {
+  const connectRedis = require('connect-redis');
+  RedisStore = connectRedis.default ? connectRedis.default(session) : connectRedis(session);
+} catch (error) {
+  logger.warn('connect-redis not available, sessions will use memory store');
+}
 
 interface SessionConfig {
   secret: string;

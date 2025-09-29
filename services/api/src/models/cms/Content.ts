@@ -33,6 +33,8 @@ export interface ContentAttributes {
   viewCount: number;
   likeCount: number;
   shareCount: number;
+  commentCount: number;
+  wordCount: number;
   isPremium: boolean;
   order?: number;
   settings?: {
@@ -61,6 +63,8 @@ export interface ContentCreationAttributes
     | 'viewCount'
     | 'likeCount'
     | 'shareCount'
+    | 'commentCount'
+    | 'wordCount'
     | 'order'
     | 'settings'
     | 'createdAt'
@@ -90,6 +94,8 @@ export class Content
   public viewCount!: number;
   public likeCount!: number;
   public shareCount!: number;
+  public commentCount!: number;
+  public wordCount!: number;
   public isPremium!: boolean;
   public order?: number;
   public settings?: {

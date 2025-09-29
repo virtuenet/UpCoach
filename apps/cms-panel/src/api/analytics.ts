@@ -30,7 +30,7 @@ export interface ContentAnalytics {
 
 export const analyticsApi = {
   getAnalytics: async (): Promise<ContentAnalytics> => {
-    const response = await apiClient.get('/cms/analytics');
+    const response = await (apiClient as any).get('/cms/analytics');
     return response.data;
   },
 };

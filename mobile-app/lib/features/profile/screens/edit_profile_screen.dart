@@ -255,12 +255,240 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
   }
 
-  void _scheduleUploadRetry(String localPath, String fileName) {
-    // Schedule background upload retry
-    // This would integrate with a background task scheduler
-    // For now, we'll add it to a retry queue
-    print('Scheduled upload retry for: $fileName');
-    // TODO: Implement background upload retry mechanism
+  void _scheduleUploadRetry(String localPath, String fileName) async {
+    try {
+      // Add to retry queue with persistent storage
+      final prefs = await SharedPreferences.getInstance();
+      final retryQueue = prefs.getStringList('upload_retry_queue') ?? [];
+
+      final retryItem = {
+        'localPath': localPath,
+        'fileName': fileName,
+        'type': 'profile_image',
+        'attempts': 0,
+        'scheduledAt': DateTime.now().toIso8601String(),
+        'userId': 'current_user_id', // Replace with actual user ID
+      };
+
+      retryQueue.add(json.encode(retryItem));
+      await prefs.setStringList('upload_retry_queue', retryQueue);
+
+      // Schedule immediate retry attempt
+      _attemptRetryUpload(retryItem);
+
+      print('Scheduled upload retry for: $fileName');
+    } catch (e) {
+      print('Failed to schedule upload retry: $e');
+    }
+  }
+
+  Future<void> _attemptRetryUpload(Map<String, dynamic> retryItem) async {
+    const maxRetries = 3;
+    const retryDelays = [Duration(seconds: 5), Duration(seconds: 30), Duration(minutes: 5)];
+
+    try {
+      final attempts = retryItem['attempts'] as int;
+      if (attempts >= maxRetries) {
+        await _removeFromRetryQueue(retryItem['fileName']);
+        print('Max retry attempts reached for: ${retryItem['fileName']}');
+        return;
+      }
+
+      // Wait for retry delay
+      if (attempts > 0 && attempts <= retryDelays.length) {
+        await Future.delayed(retryDelays[attempts - 1]);
+      }
+
+      // Attempt upload
+      final localFile = File(retryItem['localPath']);
+      if (!await localFile.exists()) {
+        await _removeFromRetryQueue(retryItem['fileName']);
+        print('Local file no longer exists: ${retryItem['localPath']}');
+        return;
+      }
+
+      final uploadUrl = await _retryCloudUpload(localFile, retryItem['fileName']);
+
+      if (uploadUrl.isNotEmpty) {
+        // Success - remove from retry queue
+        await _removeFromRetryQueue(retryItem['fileName']);
+
+        // Update profile with cloud URL
+        await _updateProfileWithCloudUrl(uploadUrl);
+
+        // Clean up local file
+        try {
+          await localFile.delete();
+        } catch (e) {
+          print('Failed to delete local file: $e');
+        }
+
+        print('Successfully uploaded on retry: ${retryItem['fileName']}');
+
+        // Show success notification if app is in foreground
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Profile image uploaded successfully'),
+              backgroundColor: AppTheme.successColor,
+            ),
+          );
+        }
+      } else {
+        // Failed - increment attempts and reschedule
+        retryItem['attempts'] = attempts + 1;
+        await _updateRetryItem(retryItem);
+
+        // Schedule next retry
+        Future.delayed(const Duration(seconds: 1), () => _attemptRetryUpload(retryItem));
+      }
+
+    } catch (e) {
+      print('Retry upload failed: $e');
+
+      // Increment attempts and reschedule
+      retryItem['attempts'] = (retryItem['attempts'] as int) + 1;
+      await _updateRetryItem(retryItem);
+
+      // Schedule next retry if under max attempts
+      if ((retryItem['attempts'] as int) < maxRetries) {
+        Future.delayed(const Duration(seconds: 1), () => _attemptRetryUpload(retryItem));
+      } else {
+        await _removeFromRetryQueue(retryItem['fileName']);
+      }
+    }
+  }
+
+  Future<String> _retryCloudUpload(File imageFile, String fileName) async {
+    try {
+      final uploadEndpoint = '${const String.fromEnvironment('API_BASE_URL', defaultValue: 'https://api.upcoach.ai')}/upload/profile-image';
+
+      final request = http.MultipartRequest('POST', Uri.parse(uploadEndpoint));
+
+      // Add authentication headers
+      final authToken = await _getAuthToken();
+      if (authToken != null) {
+        request.headers['Authorization'] = 'Bearer $authToken';
+      }
+
+      // Add file to request
+      request.files.add(await http.MultipartFile.fromPath(
+        'file',
+        imageFile.path,
+        filename: fileName,
+      ));
+
+      request.fields['userId'] = 'current_user_id';
+      request.fields['type'] = 'profile_image';
+      request.fields['isRetry'] = 'true';
+
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw TimeoutException('Upload timeout', const Duration(seconds: 30));
+        },
+      );
+
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        return responseData['url'] as String;
+      } else {
+        print('Retry upload failed with status: ${response.statusCode}');
+        return '';
+      }
+
+    } catch (e) {
+      print('Retry cloud upload error: $e');
+      return '';
+    }
+  }
+
+  Future<void> _updateProfileWithCloudUrl(String cloudUrl) async {
+    try {
+      await ref.read(profileProvider.notifier).updateProfile(
+        avatarUrl: cloudUrl,
+      );
+    } catch (e) {
+      print('Failed to update profile with cloud URL: $e');
+    }
+  }
+
+  Future<void> _removeFromRetryQueue(String fileName) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final retryQueue = prefs.getStringList('upload_retry_queue') ?? [];
+
+      retryQueue.removeWhere((item) {
+        final decoded = json.decode(item) as Map<String, dynamic>;
+        return decoded['fileName'] == fileName;
+      });
+
+      await prefs.setStringList('upload_retry_queue', retryQueue);
+    } catch (e) {
+      print('Failed to remove from retry queue: $e');
+    }
+  }
+
+  Future<void> _updateRetryItem(Map<String, dynamic> retryItem) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final retryQueue = prefs.getStringList('upload_retry_queue') ?? [];
+
+      for (int i = 0; i < retryQueue.length; i++) {
+        final decoded = json.decode(retryQueue[i]) as Map<String, dynamic>;
+        if (decoded['fileName'] == retryItem['fileName']) {
+          retryQueue[i] = json.encode(retryItem);
+          break;
+        }
+      }
+
+      await prefs.setStringList('upload_retry_queue', retryQueue);
+    } catch (e) {
+      print('Failed to update retry item: $e');
+    }
+  }
+
+  // Call this method when app starts to process pending uploads
+  static Future<void> processPendingUploads() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final retryQueue = prefs.getStringList('upload_retry_queue') ?? [];
+
+      for (final item in retryQueue) {
+        final retryItem = json.decode(item) as Map<String, dynamic>;
+        final scheduledAt = DateTime.parse(retryItem['scheduledAt']);
+
+        // Only retry if less than 24 hours old
+        if (DateTime.now().difference(scheduledAt).inHours < 24) {
+          // Process in background
+          // Note: In a real app, this would be handled by a background service
+          print('Processing pending upload: ${retryItem['fileName']}');
+        } else {
+          // Remove old items
+          await _removeFromRetryQueueStatic(retryItem['fileName']);
+        }
+      }
+    } catch (e) {
+      print('Failed to process pending uploads: $e');
+    }
+  }
+
+  static Future<void> _removeFromRetryQueueStatic(String fileName) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final retryQueue = prefs.getStringList('upload_retry_queue') ?? [];
+
+      retryQueue.removeWhere((item) {
+        final decoded = json.decode(item) as Map<String, dynamic>;
+        return decoded['fileName'] == fileName;
+      });
+
+      await prefs.setStringList('upload_retry_queue', retryQueue);
+    } catch (e) {
+      print('Failed to remove from retry queue: $e');
+    }
   }
 
   Widget _buildProfilePhoto() {

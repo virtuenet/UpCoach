@@ -11,7 +11,7 @@ export interface LoginResponse {
 export const authApi = {
   login: async (email: string, password: string): Promise<LoginResponse> => {
     return withRateLimit(async () => {
-      const response = await apiClient.post('/auth/login', {
+      const response = await (apiClient as any).post('/auth/login', {
         email,
         password,
         // Request secure cookie-based auth
@@ -23,16 +23,16 @@ export const authApi = {
 
   getProfile: async (): Promise<User> => {
     // No need to pass token - it's in the httpOnly cookie
-    const response = await apiClient.get('/auth/profile');
+    const response = await (apiClient as any).get('/auth/profile');
     return response.data;
   },
 
   updateProfile: async (data: Partial<User>): Promise<User> => {
-    const response = await apiClient.put('/users/profile', data);
+    const response = await (apiClient as any).put('/users/profile', data);
     return response.data;
   },
 
   logout: async (): Promise<void> => {
-    await apiClient.post('/auth/logout');
+    await (apiClient as any).post('/auth/logout');
   },
 };

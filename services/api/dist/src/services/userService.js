@@ -71,6 +71,7 @@ class UserService {
                 password_hash: passwordHash,
                 name: userData.name,
                 bio: userData.bio || null,
+                role: userData.role || 'user',
                 preferences: {},
             });
             logger_1.logger.info('User created successfully:', { userId: user.id, email: user.email });

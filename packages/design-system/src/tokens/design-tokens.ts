@@ -311,7 +311,7 @@ export const transitions = {
 };
 
 // Breakpoints
-export const breakpoints = {
+export const breakpoints: any = {
   values: {
     xs: 0,
     sm: 640,

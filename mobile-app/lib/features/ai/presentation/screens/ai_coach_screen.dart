@@ -151,7 +151,7 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
     );
   }
 
-  Future<String> _processAttachments(List<AttachmentFile> attachments) async {
+  Future<String> _processAttachments(List<dynamic> attachments) async {
     final List<String> analysisResults = [];
 
     for (final attachment in attachments) {
@@ -159,16 +159,16 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
         String analysis = '';
 
         switch (attachment.type) {
-          case AttachmentType.image:
+          case 'image':
             analysis = await _processImageAttachment(attachment);
             break;
-          case AttachmentType.document:
+          case 'document':
             analysis = await _processDocumentAttachment(attachment);
             break;
-          case AttachmentType.audio:
+          case 'audio':
             analysis = await _processAudioAttachment(attachment);
             break;
-          case AttachmentType.video:
+          case 'video':
             analysis = await _processVideoAttachment(attachment);
             break;
           default:
@@ -186,7 +186,7 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
     return analysisResults.join('\n');
   }
 
-  Future<String> _processImageAttachment(AttachmentFile attachment) async {
+  Future<String> _processImageAttachment(dynamic attachment) async {
     try {
       // For image files, we can extract basic metadata and potentially run OCR
       final file = File(attachment.path);
@@ -201,7 +201,7 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
     }
   }
 
-  Future<String> _processDocumentAttachment(AttachmentFile attachment) async {
+  Future<String> _processDocumentAttachment(dynamic attachment) async {
     try {
       // For document files, we could extract text content
       final file = File(attachment.path);
@@ -229,7 +229,7 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
     }
   }
 
-  Future<String> _processAudioAttachment(AttachmentFile attachment) async {
+  Future<String> _processAudioAttachment(dynamic attachment) async {
     try {
       final file = File(attachment.path);
       if (!await file.exists()) {
@@ -243,7 +243,7 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
     }
   }
 
-  Future<String> _processVideoAttachment(AttachmentFile attachment) async {
+  Future<String> _processVideoAttachment(dynamic attachment) async {
     try {
       final file = File(attachment.path);
       if (!await file.exists()) {

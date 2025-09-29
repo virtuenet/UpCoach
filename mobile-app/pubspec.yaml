@@ -48,6 +48,12 @@ dependencies:
   googleapis: ^11.4.0
   googleapis_auth: ^1.4.1
 
+  # Real-time Communication
+  socket_io_client: ^2.0.3+1
+  sse_client: ^0.6.0
+  web_socket_channel: ^2.4.0
+  stream_channel: ^2.1.1
+
   # Local Storage & Database
   sqflite: ^2.3.0
   hive: ^2.2.3

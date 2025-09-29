@@ -22,6 +22,8 @@ class Content extends sequelize_1.Model {
     viewCount;
     likeCount;
     shareCount;
+    commentCount;
+    wordCount;
     isPremium;
     order;
     settings;

@@ -466,13 +466,31 @@ class _VoiceJournalScreenState extends ConsumerState<VoiceJournalScreen>
     );
 
     if (confirm == true) {
-      // Implement clearing old entries
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Old entries cleared successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      try {
+        // Calculate cutoff date (30 days ago)
+        final cutoffDate = DateTime.now().subtract(const Duration(days: 30));
+
+        // Delete old entries through the provider
+        final deletedCount = await ref.read(voiceJournalProvider.notifier).deleteOldEntries(cutoffDate);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Deleted $deletedCount old entries successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to clear old entries: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 

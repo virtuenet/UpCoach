@@ -1,4 +1,5 @@
-import { createClient } from 'redis';
+const redis = require('redis');
+const { createClient } = redis;
 
 import { logger } from '../utils/logger';
 
@@ -43,7 +44,7 @@ export async function cacheSet(key: string, value: any, expirySeconds?: number):
   const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
 
   if (expirySeconds) {
-    await redisClient.setex(key, expirySeconds, stringValue);
+    await redisClient.setEx(key, expirySeconds, stringValue);
   } else {
     await redisClient.set(key, stringValue);
   }

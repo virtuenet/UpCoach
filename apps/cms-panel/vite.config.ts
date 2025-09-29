@@ -26,4 +26,7 @@ export default defineConfig({
     port: 1007,
     host: true,
   },
+  optimizeDeps: {
+    include: ['@vitejs/plugin-react'],
+  },
 });

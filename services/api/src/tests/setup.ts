@@ -1,11 +1,22 @@
-// Test environment setup
-import { jest, afterEach, afterAll } from '@jest/globals';
+// Mock external services - must be at top level
+jest.mock('openai');
+jest.mock('@anthropic-ai/sdk');
+jest.mock('ioredis');
 
-// Make jest available globally for tests
-(global as any).jest = {
-  ...jest,
-  genMockFromModule: jest.fn(),
-};
+// Mock individual model files to prevent initialization
+jest.mock('../models/User');
+jest.mock('../models/Goal');
+jest.mock('../models/Task');
+jest.mock('../models/Mood');
+jest.mock('../models/Chat');
+jest.mock('../models/ChatMessage');
+jest.mock('../models/UserProfile');
+jest.mock('../models/experiments/Experiment');
+jest.mock('../models/experiments/ExperimentAssignment');
+jest.mock('../models/experiments/ExperimentEvent');
+
+// Test environment setup
+import { afterEach, afterAll } from '@jest/globals';
 
 // Set test environment
 process.env.NODE_ENV = 'test';
@@ -28,33 +39,17 @@ const originalConsole = global.console;
 
 // Mock console methods to reduce noise (only if VERBOSE_TESTS is not set)
 if (!process.env.VERBOSE_TESTS) {
+  const mockFn = () => {};
   global.console = {
     ...console,
-    log: jest.fn(),
-    debug: jest.fn(),
-    info: jest.fn(),
+    log: mockFn as any,
+    debug: mockFn as any,
+    info: mockFn as any,
     warn: originalConsole.warn, // Keep warnings and errors
     error: originalConsole.error,
   };
 }
 
-// Mock external services
-jest.mock('openai');
-jest.mock('@anthropic-ai/sdk');
-// jest.mock('stripe'); // Temporarily disabled due to module resolution
-jest.mock('ioredis');
-
-// Mock individual model files to prevent initialization
-jest.mock('../models/User');
-jest.mock('../models/Goal');
-jest.mock('../models/Task');
-jest.mock('../models/Mood');
-jest.mock('../models/Chat');
-jest.mock('../models/ChatMessage');
-jest.mock('../models/UserProfile');
-jest.mock('../models/experiments/Experiment');
-jest.mock('../models/experiments/ExperimentAssignment');
-jest.mock('../models/experiments/ExperimentEvent');
 jest.mock('../services/redis', () => ({
   redis: {
     get: jest.fn(),

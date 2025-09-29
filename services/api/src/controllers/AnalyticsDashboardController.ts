@@ -311,8 +311,12 @@ export class AnalyticsDashboardController {
 
       const predictions: any = {};
 
+      // Normalize predictionTypes to array
+      const normalizedTypes = Array.isArray(predictionTypes) ? predictionTypes :
+                             typeof predictionTypes === 'string' ? [predictionTypes] : ['all'];
+
       // Goal success predictions
-      if (predictionTypes === 'all' || predictionTypes.includes('goals')) {
+      if (normalizedTypes.includes('all') || normalizedTypes.includes('goals')) {
         const goals = await this.getUserGoals(userId);
         predictions.goalSuccess = await Promise.all(
           goals.map(goal =>
@@ -322,17 +326,17 @@ export class AnalyticsDashboardController {
       }
 
       // Engagement predictions
-      if (predictionTypes === 'all' || predictionTypes.includes('engagement')) {
+      if (normalizedTypes.includes('all') || normalizedTypes.includes('engagement')) {
         predictions.engagement = await PredictiveCoachingEngine.predictEngagement(userId);
       }
 
       // Behavior predictions
-      if (predictionTypes === 'all' || predictionTypes.includes('behavior')) {
+      if (normalizedTypes.includes('all') || normalizedTypes.includes('behavior')) {
         predictions.behavior = await PredictiveCoachingEngine.predictBehaviorPatterns(userId);
       }
 
       // Churn risk
-      if (predictionTypes === 'all' || predictionTypes.includes('churn')) {
+      if (normalizedTypes.includes('all') || normalizedTypes.includes('churn')) {
         predictions.churn = await UserBehaviorAnalyticsService.predictChurnRisk(userId);
       }
 

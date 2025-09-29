@@ -9,17 +9,19 @@
     "allowJs": true,
     "checkJs": false,
     "strict": true,
-    "noEmit": false,
+    "noEmit": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "baseUrl": ".",
+    "typeRoots": ["./node_modules/@types", "./types"],
+    "types": [],
     "paths": {
       "@upcoach/shared": ["packages/shared/src"],
       "@upcoach/shared/*": ["packages/shared/src/*"],
@@ -57,10 +59,4 @@
     "packages/test-utils/**/*",
     "packages/test-contracts/**/*"
   ],
-  "references": [
-    { "path": "./packages/types" },
-    { "path": "./packages/utils" },
-    { "path": "./packages/shared" },
-    { "path": "./packages/ui" }
-  ]
 }

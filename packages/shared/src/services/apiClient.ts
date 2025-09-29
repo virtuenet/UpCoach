@@ -18,6 +18,13 @@ export interface ApiClientConfig {
 
 export interface ApiClient extends AxiosInstance {
   setAuthToken: (token: string | null) => void;
+  get<T = any>(url: string, config?: any): Promise<import('axios').AxiosResponse<T>>;
+  delete<T = any>(url: string, config?: any): Promise<import('axios').AxiosResponse<T>>;
+  head<T = any>(url: string, config?: any): Promise<import('axios').AxiosResponse<T>>;
+  options<T = any>(url: string, config?: any): Promise<import('axios').AxiosResponse<T>>;
+  post<T = any>(url: string, data?: any, config?: any): Promise<import('axios').AxiosResponse<T>>;
+  put<T = any>(url: string, data?: any, config?: any): Promise<import('axios').AxiosResponse<T>>;
+  patch<T = any>(url: string, data?: any, config?: any): Promise<import('axios').AxiosResponse<T>>;
 }
 
 /**

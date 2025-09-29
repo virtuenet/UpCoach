@@ -1540,6 +1540,42 @@ class ABTestingEngine {
     }
     return recommendations;
   }
+
+  /**
+   * Generate coaching effectiveness report
+   */
+  async generateCoachingEffectivenessReport(coachId: string): Promise<any> {
+    try {
+      // Mock implementation for now - this would integrate with the full ML pipeline
+      const report = {
+        coachId,
+        period: '30d',
+        metrics: {
+          avgNPS: 8.5,
+          avgGoalCompletion: 78.2,
+          avgEngagement: 85.4,
+          skillImprovement: 12.3,
+          retentionRate: 92.1,
+        },
+        insights: [
+          'High engagement correlation with goal completion',
+          'NPS trending upward over past quarter',
+          'Skill improvement accelerating in last month'
+        ],
+        recommendations: [
+          'Continue current engagement strategies',
+          'Focus on maintaining high retention rates',
+          'Leverage successful patterns across other clients'
+        ],
+      };
+
+      logger.info('Coaching effectiveness report generated', { coachId });
+      return report;
+    } catch (error) {
+      logger.error('Effectiveness report generation failed', { coachId, error });
+      throw error;
+    }
+  }
 }
 
 // Export the service

@@ -8,7 +8,6 @@ export default defineConfig({
     port: 1006,
     host: true,
     headers: {
-      // Security headers - will be loaded from design system at runtime
       'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:*; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' http://localhost:* ws://localhost:*;",
       'X-Frame-Options': 'DENY',
       'X-Content-Type-Options': 'nosniff',
@@ -36,5 +35,8 @@ export default defineConfig({
   },
   define: {
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+  },
+  optimizeDeps: {
+    include: ['@vitejs/plugin-react'],
   },
 });

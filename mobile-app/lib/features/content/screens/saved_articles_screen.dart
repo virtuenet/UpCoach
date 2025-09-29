@@ -10,6 +10,7 @@ import '../../../shared/constants/app_colors.dart';
 import '../../../shared/constants/app_text_styles.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 
 final savedArticlesProvider = FutureProvider<List<ContentArticle>>((ref) async {
   final contentService = ref.read(contentServiceProvider);
@@ -57,6 +58,32 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
     }
     
     return filtered;
+  }
+
+  Future<void> _shareArticle(ContentArticle article) async {
+    try {
+      final shareText = '''
+📚 ${article.title}
+
+${article.summary}
+
+Read more in the UpCoach app!
+
+Category: ${article.category.name}
+Author: ${article.author.name}
+''';
+
+      await Share.share(
+        shareText,
+        subject: 'Check out this article: ${article.title}',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to share article: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _removeFromSaved(ContentArticle article) async {
@@ -384,14 +411,7 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
                                               children: [
                                                 IconButton(
                                                   icon: const Icon(Icons.share_outlined),
-                                                  onPressed: () {
-                                                    // TODO: Implement share functionality
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(
-                                                        content: Text('Share functionality coming soon'),
-                                                      ),
-                                                    );
-                                                  },
+                                                  onPressed: () => _shareArticle(article),
                                                   iconSize: 20,
                                                   color: AppColors.textSecondary,
                                                 ),

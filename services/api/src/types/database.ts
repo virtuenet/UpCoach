@@ -143,6 +143,7 @@ export interface CreateUserDto {
   password: string;
   name: string;
   bio?: string;
+  role?: UserRole;
 }
 
 export interface UpdateUserDto {

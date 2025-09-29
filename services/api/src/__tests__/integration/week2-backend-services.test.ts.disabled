@@ -1,0 +1,718 @@
+import request from 'supertest';
+import { Server } from 'http';
+import { dashboardWebSocketService } from '../../services/websocket/DashboardWebSocketService';
+import { dashboardSSEService } from '../../services/sse/DashboardSSEService';
+import { multiProviderAuthService } from '../../services/auth/MultiProviderAuthService';
+import { cacheService } from '../../services/cache/CacheService';
+import { performanceOptimizationService } from '../../services/performance/PerformanceOptimizationService';
+import { redis } from '../../services/redis';
+import { db } from '../../services/database';
+import { logger } from '../../utils/logger';
+import io from 'socket.io-client';
+
+describe('Week 2 Backend Services Integration Tests', () => {
+  let server: Server;
+  let app: any;
+  let adminToken: string;
+  let userToken: string;
+
+  beforeAll(async () => {
+    // Setup test server
+    app = require('../../index').default;
+    server = app.listen(0); // Random port
+
+    // Create test tokens
+    adminToken = 'test-admin-token';
+    userToken = 'test-user-token';
+
+    // Clear test data
+    await redis.flushdb();
+    await cacheService.resetStats();
+  });
+
+  afterAll(async () => {
+    await dashboardWebSocketService.shutdown();
+    await dashboardSSEService.shutdown();
+    await performanceOptimizationService.shutdown();
+    server.close();
+  });
+
+  describe('Real-time Dashboard Services', () => {
+    describe('Server-Sent Events (SSE)', () => {
+      it('should establish SSE connection with valid authentication', async () => {
+        const response = await request(app)
+          .get('/api/dashboard/realtime/sse')
+          .set('Authorization', `Bearer ${adminToken}`)
+          .expect(200);
+
+        expect(response.headers['content-type']).toBe('text/event-stream');
+        expect(response.headers['cache-control']).toBe('no-cache');
+      });
+
+      it('should reject SSE connection with invalid authentication', async () => {
+        await request(app)
+          .get('/api/dashboard/realtime/sse')
+          .set('Authorization', 'Bearer invalid-token')
+          .expect(401);
+      });
+
+      it('should provide SSE connection info', async () => {
+        const response = await request(app)
+          .get('/api/dashboard/realtime/websocket-info')
+          .set('Authorization', `Bearer ${adminToken}`)
+          .expect(200);
+
+        expect(response.body.success).toBe(true);
+        expect(response.body.data).toHaveProperty('websocketEndpoint');
+        expect(response.body.data.connectionInfo).toHaveProperty('transports');
+      });
+
+      it('should handle SSE pong responses', async () => {
+        const response = await request(app)
+          .post('/api/dashboard/realtime/sse/pong')
+          .set('Authorization', `Bearer ${adminToken}`)
+          .send({ clientId: 'test-client-123' })
+          .expect(200);
+
+        expect(response.body.success).toBe(true);
+        expect(response.body.message).toBe('Pong received');
+      });
+
+      it('should update SSE client filters', async () => {
+        const filters = { dateRange: '7d', metrics: ['users', 'revenue'] };
+
+        const response = await request(app)
+          .post('/api/dashboard/realtime/sse/filters')
+          .set('Authorization', `Bearer ${adminToken}`)
+          .send({ clientId: 'test-client-123', filters })
+          .expect(200);
+
+        expect(response.body.success).toBe(true);
+        expect(response.body.filters).toEqual(filters);
+      });
+    });
+
+    describe('Real-time Broadcasting', () => {
+      it('should broadcast analytics updates', async () => {
+        const analyticsData = {
+          type: 'user_activity',
+          data: { activeUsers: 150, newSignups: 5 },
+          metadata: { source: 'test' },
+        };
+
+        const response = await request(app)
+          .post('/api/dashboard/realtime/broadcast/analytics')
+          .set('Authorization', `Bearer ${adminToken}`)
+          .send(analyticsData)
+          .expect(200);
+
+        expect(response.body.success).toBe(true);
+        expect(response.body.update.type).toBe('user_activity');
+        expect(response.body.update.metadata.manual).toBe(true);
+      });
+
+      it('should broadcast user activity updates', async () => {
+        const activityData = {
+          userId: 'user-123',
+          action: 'goal_completed',
+          details: { goalId: 'goal-456', points: 100 },
+        };
+
+        const response = await request(app)
+          .post('/api/dashboard/realtime/broadcast/user-activity')
+          .set('Authorization', `Bearer ${adminToken}`)
+          .send(activityData)
+          .expect(200);
+
+        expect(response.body.success).toBe(true);
+        expect(response.body.activity.userId).toBe('user-123');
+      });
+
+      it('should broadcast system alerts', async () => {
+        const alertData = {
+          level: 'warning',
+          message: 'High CPU usage detected',
+          source: 'monitoring',
+          metadata: { cpu: 85, threshold: 80 },
+        };
+
+        const response = await request(app)
+          .post('/api/dashboard/realtime/broadcast/system-alert')
+          .set('Authorization', `Bearer ${adminToken}`)
+          .send(alertData)
+          .expect(200);
+
+        expect(response.body.success).toBe(true);
+        expect(response.body.alert.level).toBe('warning');
+        expect(response.body.alert).toHaveProperty('id');
+      });
+    });
+
+    describe('Real-time Service Status', () => {
+      it('should provide service status', async () => {
+        const response = await request(app)
+          .get('/api/dashboard/realtime/status')
+          .set('Authorization', `Bearer ${adminToken}`)
+          .expect(200);
+
+        expect(response.body.success).toBe(true);
+        expect(response.body.data).toHaveProperty('status');
+        expect(response.body.data.services).toHaveProperty('websocket');
+        expect(response.body.data.services).toHaveProperty('sse');
+        expect(response.body.data.services).toHaveProperty('redis');
+        expect(response.body.data.services).toHaveProperty('database');
+      });
+
+      it('should provide real-time metrics', async () => {
+        const response = await request(app)
+          .get('/api/dashboard/realtime/metrics')
+          .set('Authorization', `Bearer ${adminToken}`)
+          .expect(200);
+
+        expect(response.body.success).toBe(true);
+        expect(response.body.data.current).toHaveProperty('activeUsers');
+        expect(response.body.data.current).toHaveProperty('goalCompletions');
+        expect(response.body.data.current).toHaveProperty('systemHealth');
+        expect(response.body.data.connections).toHaveProperty('websocket');
+        expect(response.body.data.connections).toHaveProperty('sse');
+      });
+
+      it('should run connectivity test', async () => {
+        const response = await request(app)
+          .post('/api/dashboard/realtime/test')
+          .set('Authorization', `Bearer ${adminToken}`)
+          .expect(200);
+
+        expect(response.body.success).toBe(true);
+        expect(response.body.testMessage.type).toBe('connectivity_test');
+        expect(response.body.testMessage.data).toHaveProperty('testId');
+      });
+    });
+  });
+
+  describe('Multi-Provider Authentication', () => {
+    describe('Unified Authentication', () => {
+      it('should authenticate with Google', async () => {
+        const mockGoogleAuth = {
+          provider: 'google',
+          platform: 'web',
+          credentials: {
+            idToken: 'mock-google-id-token',
+          },
+          deviceInfo: {
+            deviceName: 'Chrome Browser',
+            platform: 'web',
+            ipAddress: '127.0.0.1',
+          },
+        };
+
+        // Note: This would require mocking the Google auth service
+        // For now, we'll test the endpoint structure
+        const response = await request(app)
+          .post('/api/auth/unified')
+          .send(mockGoogleAuth);
+
+        // Expect either success or controlled failure due to mock token
+        expect([200, 401]).toContain(response.status);
+      });
+
+      it('should get provider capabilities', async () => {
+        const response = await request(app)
+          .get('/api/auth/providers/capabilities')
+          .expect(200);
+
+        expect(response.body).toHaveProperty('google');
+        expect(response.body).toHaveProperty('apple');
+        expect(response.body).toHaveProperty('facebook');
+
+        expect(response.body.google).toHaveProperty('emailVerification');
+        expect(response.body.google).toHaveProperty('securityFeatures');
+        expect(response.body.apple).toHaveProperty('realUserValidation');
+        expect(response.body.facebook).toHaveProperty('webhookSupport');
+      });
+    });
+
+    describe('Account Linking', () => {
+      it('should get user auth status', async () => {
+        const response = await request(app)
+          .get('/api/auth/status')
+          .set('Authorization', `Bearer ${userToken}`)
+          .expect(200);
+
+        expect(response.body).toHaveProperty('userId');
+        expect(response.body).toHaveProperty('linkedProviders');
+        expect(response.body).toHaveProperty('hasPassword');
+        expect(response.body).toHaveProperty('securityScore');
+        expect(response.body).toHaveProperty('recommendations');
+      });
+
+      it('should validate linking requirements', async () => {
+        const linkRequest = {
+          provider: 'apple',
+          credentials: {
+            idToken: 'mock-apple-id-token',
+          },
+          platform: 'mobile',
+        };
+
+        const response = await request(app)
+          .post('/api/auth/link')
+          .set('Authorization', `Bearer ${userToken}`)
+          .send(linkRequest);
+
+        // Expect controlled failure due to mock credentials
+        expect([200, 400, 401]).toContain(response.status);
+      });
+    });
+  });
+
+  describe('Cache Service', () => {
+    it('should perform basic cache operations', async () => {
+      const testKey = 'test-key-' + Date.now();
+      const testValue = { message: 'Hello Cache', timestamp: Date.now() };
+
+      // Set value
+      const setResult = await cacheService.set(testKey, testValue, {
+        ttl: 300,
+        tags: ['test'],
+      });
+      expect(setResult).toBe(true);
+
+      // Get value
+      const getValue = await cacheService.get(testKey);
+      expect(getValue).toEqual(testValue);
+
+      // Check existence
+      const exists = await cacheService.exists(testKey);
+      expect(exists).toBe(true);
+
+      // Delete value
+      const deleteResult = await cacheService.delete(testKey);
+      expect(deleteResult).toBe(true);
+
+      // Verify deletion
+      const deletedValue = await cacheService.get(testKey);
+      expect(deletedValue).toBe(null);
+    });
+
+    it('should handle cache invalidation by tags', async () => {
+      const keys = ['tagged-key-1', 'tagged-key-2', 'tagged-key-3'];
+      const tag = 'test-tag-' + Date.now();
+
+      // Set multiple values with same tag
+      for (const key of keys) {
+        await cacheService.set(key, { value: key }, {
+          ttl: 300,
+          tags: [tag],
+        });
+      }
+
+      // Verify all are cached
+      for (const key of keys) {
+        const value = await cacheService.get(key);
+        expect(value).toBeTruthy();
+      }
+
+      // Invalidate by tag
+      const deletedCount = await cacheService.invalidateByTags([tag]);
+      expect(deletedCount).toBeGreaterThan(0);
+
+      // Verify all are removed
+      for (const key of keys) {
+        const value = await cacheService.get(key);
+        expect(value).toBe(null);
+      }
+    });
+
+    it('should provide cache statistics', async () => {
+      const stats = cacheService.getStats();
+
+      expect(stats).toHaveProperty('hits');
+      expect(stats).toHaveProperty('misses');
+      expect(stats).toHaveProperty('hitRate');
+      expect(stats.operations).toHaveProperty('get');
+      expect(stats.operations).toHaveProperty('set');
+      expect(stats.operations).toHaveProperty('delete');
+    });
+
+    it('should perform cache health check', async () => {
+      const health = await cacheService.healthCheck();
+
+      expect(health).toHaveProperty('status');
+      expect(health).toHaveProperty('latency');
+      expect(health).toHaveProperty('memory');
+      expect(health).toHaveProperty('stats');
+      expect(['healthy', 'unhealthy']).toContain(health.status);
+    });
+  });
+
+  describe('Performance Optimization', () => {
+    it('should collect performance metrics', async () => {
+      const metrics = await performanceOptimizationService.getPerformanceMetrics();
+
+      expect(metrics).toHaveProperty('responseTime');
+      expect(metrics).toHaveProperty('throughput');
+      expect(metrics).toHaveProperty('database');
+      expect(metrics).toHaveProperty('cache');
+      expect(metrics).toHaveProperty('memory');
+      expect(metrics).toHaveProperty('errors');
+
+      expect(metrics.responseTime).toHaveProperty('average');
+      expect(metrics.responseTime).toHaveProperty('p95');
+      expect(metrics.responseTime).toHaveProperty('p99');
+    });
+
+    it('should track endpoint performance', async () => {
+      const endpointPerformance = await performanceOptimizationService.getEndpointPerformance(10);
+
+      expect(Array.isArray(endpointPerformance)).toBe(true);
+
+      if (endpointPerformance.length > 0) {
+        const endpoint = endpointPerformance[0];
+        expect(endpoint).toHaveProperty('endpoint');
+        expect(endpoint).toHaveProperty('method');
+        expect(endpoint).toHaveProperty('averageResponseTime');
+        expect(endpoint).toHaveProperty('requestCount');
+        expect(endpoint).toHaveProperty('errorRate');
+      }
+    });
+
+    it('should perform auto-optimization', async () => {
+      const optimization = await performanceOptimizationService.performAutoOptimization();
+
+      expect(optimization).toHaveProperty('optimizations');
+      expect(optimization).toHaveProperty('improvements');
+      expect(Array.isArray(optimization.optimizations)).toBe(true);
+      expect(Array.isArray(optimization.improvements)).toBe(true);
+    });
+  });
+
+  describe('Integration and Data Flow', () => {
+    it('should handle concurrent real-time updates', async () => {
+      const promises = [];
+
+      // Simulate concurrent analytics updates
+      for (let i = 0; i < 5; i++) {
+        promises.push(
+          request(app)
+            .post('/api/dashboard/realtime/broadcast/analytics')
+            .set('Authorization', `Bearer ${adminToken}`)
+            .send({
+              type: 'concurrent_test',
+              data: { iteration: i, timestamp: Date.now() },
+            })
+        );
+      }
+
+      const responses = await Promise.all(promises);
+
+      responses.forEach((response, index) => {
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.update.data.iteration).toBe(index);
+      });
+    });
+
+    it('should maintain cache consistency during high load', async () => {
+      const testKey = 'load-test-key';
+      const iterations = 20;
+      const promises = [];
+
+      // Concurrent cache operations
+      for (let i = 0; i < iterations; i++) {
+        promises.push(
+          cacheService.set(`${testKey}-${i}`, { value: i, timestamp: Date.now() }, {
+            ttl: 300,
+          })
+        );
+      }
+
+      const results = await Promise.all(promises);
+
+      // All operations should succeed
+      results.forEach(result => {
+        expect(result).toBe(true);
+      });
+
+      // Verify all values are cached
+      const getPromises = [];
+      for (let i = 0; i < iterations; i++) {
+        getPromises.push(cacheService.get(`${testKey}-${i}`));
+      }
+
+      const values = await Promise.all(getPromises);
+      values.forEach((value, index) => {
+        expect(value).toBeTruthy();
+        expect(value.value).toBe(index);
+      });
+    });
+
+    it('should handle authentication provider switching', async () => {
+      // This test would require more complex setup with actual provider mocking
+      // For now, we'll test the capability query
+      const capabilities = multiProviderAuthService.getProviderCapabilities();
+
+      expect(capabilities).toHaveProperty('google');
+      expect(capabilities).toHaveProperty('apple');
+      expect(capabilities).toHaveProperty('facebook');
+
+      // Test specific provider capabilities
+      const googleCaps = multiProviderAuthService.getProviderCapabilities('google');
+      expect(googleCaps.emailVerification).toBe(true);
+      expect(googleCaps.securityFeatures).toContain('PKCE');
+
+      const appleCaps = multiProviderAuthService.getProviderCapabilities('apple');
+      expect(appleCaps.realUserValidation).toBe(true);
+
+      const facebookCaps = multiProviderAuthService.getProviderCapabilities('facebook');
+      expect(facebookCaps.webhookSupport).toBe(true);
+    });
+  });
+
+  describe('Error Handling and Resilience', () => {
+    it('should handle Redis connection failures gracefully', async () => {
+      // Temporarily disconnect Redis to test fallback behavior
+      // Note: This is a conceptual test - actual implementation would need careful handling
+
+      const originalRedis = redis;
+
+      try {
+        // Test cache operations with potential Redis failure
+        const result = await cacheService.get('non-existent-key');
+        expect(result).toBe(null); // Should not throw error
+      } catch (error) {
+        // Cache service should handle Redis errors gracefully
+        expect(error).toBeDefined();
+      }
+    });
+
+    it('should handle malformed real-time data', async () => {
+      const malformedData = {
+        type: '', // Empty type
+        data: null, // Null data
+      };
+
+      const response = await request(app)
+        .post('/api/dashboard/realtime/broadcast/analytics')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send(malformedData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+    });
+
+    it('should validate authentication provider data', async () => {
+      const invalidAuthRequest = {
+        provider: 'invalid-provider',
+        platform: 'web',
+        credentials: {},
+      };
+
+      const response = await request(app)
+        .post('/api/auth/unified')
+        .send(invalidAuthRequest)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+    });
+  });
+
+  describe('Security Validation', () => {
+    it('should enforce authentication on protected endpoints', async () => {
+      // Test protected real-time endpoints
+      await request(app)
+        .get('/api/dashboard/realtime/status')
+        .expect(401);
+
+      await request(app)
+        .post('/api/dashboard/realtime/broadcast/analytics')
+        .send({ type: 'test', data: {} })
+        .expect(401);
+    });
+
+    it('should enforce role-based access control', async () => {
+      // Test admin-only endpoints with user token
+      await request(app)
+        .post('/api/dashboard/realtime/broadcast/system-alert')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({
+          level: 'info',
+          message: 'Test alert',
+          source: 'test',
+        })
+        .expect(403);
+    });
+
+    it('should validate input data and prevent injection', async () => {
+      const maliciousData = {
+        type: '<script>alert("xss")</script>',
+        data: {
+          query: 'DROP TABLE users; --',
+          eval: 'process.exit(1)',
+        },
+      };
+
+      const response = await request(app)
+        .post('/api/dashboard/realtime/broadcast/analytics')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send(maliciousData);
+
+      // Should either reject or sanitize the malicious content
+      expect([400, 200]).toContain(response.status);
+
+      if (response.status === 200) {
+        // If accepted, ensure malicious content is sanitized
+        expect(response.body.update.type).not.toContain('<script>');
+      }
+    });
+  });
+});
+
+describe('Performance and Load Testing', () => {
+  it('should handle burst traffic on real-time endpoints', async () => {
+    const concurrentRequests = 50;
+    const promises = [];
+
+    const startTime = Date.now();
+
+    for (let i = 0; i < concurrentRequests; i++) {
+      promises.push(
+        request(app)
+          .get('/api/dashboard/realtime/metrics')
+          .set('Authorization', `Bearer ${adminToken}`)
+      );
+    }
+
+    const responses = await Promise.all(promises);
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+
+    // All requests should complete within reasonable time
+    expect(duration).toBeLessThan(5000); // 5 seconds
+
+    // All requests should succeed or have controlled failures
+    responses.forEach(response => {
+      expect([200, 429, 503]).toContain(response.status); // Success, rate limited, or temporarily unavailable
+    });
+
+    // At least 80% should succeed
+    const successCount = responses.filter(r => r.status === 200).length;
+    expect(successCount / concurrentRequests).toBeGreaterThan(0.8);
+  });
+
+  it('should maintain performance under cache load', async () => {
+    const operations = 100;
+    const promises = [];
+
+    const startTime = Date.now();
+
+    // Mix of read and write operations
+    for (let i = 0; i < operations; i++) {
+      if (i % 3 === 0) {
+        // Write operation
+        promises.push(
+          cacheService.set(`load-test-${i}`, { data: `value-${i}` }, { ttl: 300 })
+        );
+      } else {
+        // Read operation
+        promises.push(
+          cacheService.get(`load-test-${i % 10}`) // Read from smaller set to create cache hits
+        );
+      }
+    }
+
+    const results = await Promise.all(promises);
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+
+    // Operations should complete quickly
+    expect(duration).toBeLessThan(2000); // 2 seconds
+
+    // Most operations should succeed
+    const successCount = results.filter(r => r === true || r !== null).length;
+    expect(successCount / operations).toBeGreaterThan(0.9);
+  });
+});
+
+describe('Production Readiness Validation', () => {
+  it('should have all required environment variables', () => {
+    const requiredEnvVars = [
+      'NODE_ENV',
+      'REDIS_URL',
+      'DATABASE_URL',
+      'JWT_SECRET',
+    ];
+
+    requiredEnvVars.forEach(envVar => {
+      expect(process.env[envVar]).toBeDefined();
+    });
+  });
+
+  it('should have proper error handling in all services', async () => {
+    // Test error handling in cache service
+    const cacheHealth = await cacheService.healthCheck();
+    expect(['healthy', 'unhealthy']).toContain(cacheHealth.status);
+
+    // Test error handling in performance service
+    const metrics = await performanceOptimizationService.getPerformanceMetrics();
+    expect(metrics).toBeDefined();
+    expect(typeof metrics.responseTime.average).toBe('number');
+  });
+
+  it('should have monitoring and observability features', async () => {
+    // Health check endpoint
+    const healthResponse = await request(app)
+      .get('/health')
+      .expect(200);
+
+    expect(healthResponse.body).toHaveProperty('status');
+    expect(healthResponse.body).toHaveProperty('services');
+    expect(healthResponse.body.services).toHaveProperty('database');
+    expect(healthResponse.body.services).toHaveProperty('redis');
+
+    // Metrics endpoint
+    const metricsResponse = await request(app)
+      .get('/api/dashboard/realtime/metrics')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(200);
+
+    expect(metricsResponse.body.success).toBe(true);
+    expect(metricsResponse.body.data).toHaveProperty('current');
+  });
+
+  it('should handle graceful shutdown', async () => {
+    // Test that services can be shut down cleanly
+    const shutdownPromises = [
+      dashboardWebSocketService.shutdown(),
+      dashboardSSEService.shutdown(),
+      performanceOptimizationService.shutdown(),
+    ];
+
+    // All shutdowns should complete without throwing errors
+    await expect(Promise.all(shutdownPromises)).resolves.not.toThrow();
+  });
+});
+
+// Helper functions for test utilities
+function generateTestToken(userId: string, role: string = 'user'): string {
+  // In a real implementation, this would generate a proper JWT
+  return `test-token-${userId}-${role}`;
+}
+
+function createTestUser(overrides: any = {}): any {
+  return {
+    id: 'test-user-123',
+    email: 'test@example.com',
+    role: 'user',
+    ...overrides,
+  };
+}
+
+function createTestAdmin(overrides: any = {}): any {
+  return {
+    id: 'test-admin-123',
+    email: 'admin@example.com',
+    role: 'admin',
+    ...overrides,
+  };
+}
