@@ -191,7 +191,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           subtitle: const Text('Export your data'),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            // TODO: Implement data export
+            _showDataExportDialog();
           },
         ),
       ],
@@ -732,5 +732,110 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         ),
       ),
     );
+  }
+
+  void _showDataExportDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Export Your Data'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Choose what data you want to export:',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 16),
+            _buildExportOption('Profile Information', Icons.person),
+            _buildExportOption('Goals & Progress', Icons.track_changes),
+            _buildExportOption('Voice Journal Entries', Icons.mic),
+            _buildExportOption('Chat History', Icons.chat),
+            _buildExportOption('Analytics Data', Icons.analytics),
+            const SizedBox(height: 16),
+            const Text(
+              'Your data will be exported as a ZIP file containing JSON and CSV files.',
+              style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await _exportUserData();
+            },
+            child: const Text('Export Data'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExportOption(String title, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: AppTheme.primaryColor),
+          const SizedBox(width: 12),
+          Text(title),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _exportUserData() async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Preparing your data export...'),
+            ],
+          ),
+        ),
+      );
+
+      // Call the profile provider to export data
+      await ref.read(profileProvider.notifier).exportUserData();
+
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Data export completed! Check your downloads folder.'),
+            backgroundColor: AppTheme.successColor,
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to export data: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    }
   }
 } 
