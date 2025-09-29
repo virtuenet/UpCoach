@@ -68,12 +68,24 @@ export class DashboardSSEService {
         return;
       }
 
-      // Set up SSE headers
+      // Set up SSE headers with secure CORS
+      const allowedOrigins = [
+        'http://localhost:1006', // Admin panel dev
+        'http://localhost:1007', // CMS panel dev
+        'http://localhost:1005', // Landing page dev
+        'https://admin.upcoach.ai', // Production admin
+        'https://cms.upcoach.ai', // Production CMS
+        'https://upcoach.ai', // Production landing
+      ];
+
+      const origin = req.headers.origin;
+      const allowedOrigin = allowedOrigins.includes(origin || '') ? origin : allowedOrigins[0];
+
       res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
-        'Access-Control-Allow-Origin': req.headers.origin || '*',
+        'Access-Control-Allow-Origin': allowedOrigin,
         'Access-Control-Allow-Headers': 'Cache-Control, Content-Type, Authorization',
         'Access-Control-Allow-Credentials': 'true',
         'X-Accel-Buffering': 'no', // Disable nginx buffering

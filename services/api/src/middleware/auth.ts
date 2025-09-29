@@ -388,6 +388,25 @@ export const blacklistToken = async (token: string): Promise<void> => {
   }
 };
 
+/**
+ * JWT verification function for WebSocket authentication
+ */
+export const verifyJWT = (token: string): JWTPayload | null => {
+  try {
+    return verify(token, config.jwt.secret, {
+      algorithms: ['HS256'],
+      issuer: 'upcoach-api',
+      audience: 'upcoach-client',
+      clockTolerance: 30,
+      ignoreExpiration: false,
+      ignoreNotBefore: false,
+    }) as JWTPayload;
+  } catch (error) {
+    logger.debug('JWT verification failed:', error);
+    return null;
+  }
+};
+
 // Export aliases for common middleware names
 export const authenticate = authMiddleware;
 export const authorize = adminMiddleware;
