@@ -16,7 +16,7 @@ import {
   Skeleton,
 } from '@mui/material';
 import { Grid } from '@mui/material';
-import { lazy, Suspense, useMemo, useCallback, useState } from 'react';
+import { lazy, Suspense, useMemo, useCallback, useState, useEffect } from 'react';
 import {
   TrendingUp,
   TrendingDown,
@@ -29,6 +29,7 @@ import {
   MoreVert,
   Refresh,
 } from '@mui/icons-material';
+import dashboardService, { DashboardData } from '../services/dashboardService';
 // Lazy load heavy chart components for better performance
 const LazyBarChart = lazy(() => 
   import('recharts').then(module => ({
@@ -294,36 +295,74 @@ export default function DashboardPage() {
   // State for dashboard functionality
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
-  // Mock dashboard data
-  const dashboardData = {
-    userStats: {
-      totalUsers: 2100,
-      activeUsers: 1680,
-      growth: 12
-    },
-    contentStats: {
-      totalContent: 450,
-      pendingModeration: 23,
-      moderationRate: 97,
-      approvedToday: 12,
-      trend: -3
-    },
-    financialStats: {
-      revenue: 12450,
-      growth: 15
-    },
-    securityStats: {
-      alerts: 5,
-      resolved: 95,
-      trend: 8
+  // Fetch dashboard data
+  const fetchDashboardData = useCallback(async (forceRefresh = false) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const data = await dashboardService.getDashboardData(forceRefresh);
+      setDashboardData(data);
+      setLastRefresh(new Date());
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch dashboard data';
+      setError(errorMessage);
+      console.error('Dashboard data fetch error:', err);
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, []);
+
+  // Initial data load
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  // Auto-refresh effect
+  useEffect(() => {
+    if (autoRefresh) {
+      dashboardService.enableAutoRefresh(30000); // 30 seconds
+
+      // Listen for auto-refresh updates
+      const handleDataUpdate = () => {
+        setLastRefresh(new Date());
+        // Optionally trigger a state update
+        fetchDashboardData();
+      };
+
+      window.addEventListener('dashboardDataUpdated', handleDataUpdate);
+
+      return () => {
+        window.removeEventListener('dashboardDataUpdated', handleDataUpdate);
+      };
+    } else {
+      dashboardService.disableAutoRefresh();
+    }
+
+    return () => {
+      dashboardService.disableAutoRefresh();
+    };
+  }, [autoRefresh, fetchDashboardData]);
 
   // Memoize heavy data processing
-  const memoizedUserGrowthData = useMemo(() => userGrowthData, []);
-  const memoizedContentModerationData = useMemo(() => contentModerationData, []);
-  const memoizedRecentActivities = useMemo(() => recentActivities, []);
+  const memoizedUserGrowthData = useMemo(() =>
+    dashboardData?.userGrowth || userGrowthData,
+    [dashboardData?.userGrowth]
+  );
+
+  const memoizedContentModerationData = useMemo(() =>
+    dashboardData?.contentModeration || contentModerationData,
+    [dashboardData?.contentModeration]
+  );
+
+  const memoizedRecentActivities = useMemo(() =>
+    dashboardData?.recentActivities || recentActivities,
+    [dashboardData?.recentActivities]
+  );
 
   // Handler for toggling auto-refresh
   const handleToggleAutoRefresh = useCallback(() => {
@@ -332,25 +371,38 @@ export default function DashboardPage() {
 
   // Memoize refresh handler to prevent unnecessary re-renders
   const handleRefresh = useCallback(() => {
-    setIsLoading(true);
-    // TODO: Implement actual data refresh
-    console.log('Refreshing dashboard data...');
-    setTimeout(() => setIsLoading(false), 1000);
-  }, []);
+    fetchDashboardData(true); // Force refresh
+  }, [fetchDashboardData]);
 
   return (
     <Box role="main" aria-labelledby="dashboard-title">
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-        <Typography 
-          variant="h4" 
-          sx={{ fontWeight: 600 }}
-          id="dashboard-title"
-          component="h1"
-        >
-          System Overview
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Tooltip title={autoRefresh ? 'Disable auto-refresh' : 'Enable auto-refresh'}>
+        <Box>
+          <Typography
+            variant="h4"
+            sx={{ fontWeight: 600 }}
+            id="dashboard-title"
+            component="h1"
+          >
+            System Overview
+          </Typography>
+          {lastRefresh && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              Last updated: {lastRefresh.toLocaleTimeString()}
+            </Typography>
+          )}
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          {error && (
+            <Chip
+              label={`Error: ${error}`}
+              color="error"
+              size="small"
+              variant="outlined"
+              sx={{ maxWidth: 200 }}
+            />
+          )}
+          <Tooltip title={autoRefresh ? 'Disable auto-refresh (30s)' : 'Enable auto-refresh (30s)'}>
             <Chip
               label={autoRefresh ? 'Auto-refresh ON' : 'Auto-refresh OFF'}
               color={autoRefresh ? 'success' : 'default'}
@@ -387,44 +439,60 @@ export default function DashboardPage() {
         {/* Stats Cards */}
         <div style={{ display: 'none' }} id="stats-section">Key Performance Indicators</div>
         <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 45%', md: '1 1 22%' } }}>
-          <StatsCard
-            title="Total Users"
-            value={dashboardData.userStats.totalUsers.toLocaleString()}
-            subtitle={`Active users: ${dashboardData.userStats.activeUsers.toLocaleString()}`}
-            trend={dashboardData.userStats.growth}
-            icon={<People />}
-            color="primary"
-          />
+          {dashboardData ? (
+            <StatsCard
+              title="Total Users"
+              value={dashboardData.stats.userStats.totalUsers.toLocaleString()}
+              subtitle={`Active users: ${dashboardData.stats.userStats.activeUsers.toLocaleString()}`}
+              trend={dashboardData.stats.userStats.growth}
+              icon={<People />}
+              color="primary"
+            />
+          ) : (
+            <StatCardSkeleton />
+          )}
         </Box>
         <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 45%', md: '1 1 22%' } }}>
-          <StatsCard
-            title="Pending Moderation"
-            value={dashboardData.contentStats.pendingModeration.toString()}
-            subtitle="Requires attention"
-            trend={dashboardData.contentStats.moderationRate - 95} // Trend based on moderation rate
-            icon={<Security />}
-            color="warning"
-          />
+          {dashboardData ? (
+            <StatsCard
+              title="Pending Moderation"
+              value={dashboardData.stats.contentStats.pendingModeration.toString()}
+              subtitle="Requires attention"
+              trend={dashboardData.stats.contentStats.moderationRate - 95}
+              icon={<Security />}
+              color="warning"
+            />
+          ) : (
+            <StatCardSkeleton />
+          )}
         </Box>
         <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 45%', md: '1 1 22%' } }}>
-          <StatsCard
-            title="Monthly Revenue"
-            value={`$${dashboardData.financialStats.revenue.toLocaleString()}`}
-            subtitle="vs last month"
-            trend={dashboardData.financialStats.growth}
-            icon={<AttachMoney />}
-            color="success"
-          />
+          {dashboardData ? (
+            <StatsCard
+              title="Monthly Revenue"
+              value={`$${dashboardData.stats.financialStats.revenue.toLocaleString()}`}
+              subtitle="vs last month"
+              trend={dashboardData.stats.financialStats.growth}
+              icon={<AttachMoney />}
+              color="success"
+            />
+          ) : (
+            <StatCardSkeleton />
+          )}
         </Box>
         <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 45%', md: '1 1 22%' } }}>
-          <StatsCard
-            title="Content Items"
-            value={dashboardData.contentStats.totalContent.toLocaleString()}
-            subtitle={`Approved today: ${dashboardData.contentStats.approvedToday}`}
-            trend={Math.round((dashboardData.contentStats.approvedToday / dashboardData.contentStats.totalContent) * 1000) / 10} // Daily approval rate
-            icon={<ContentCopy />}
-            color="info"
-          />
+          {dashboardData ? (
+            <StatsCard
+              title="Content Items"
+              value={dashboardData.stats.contentStats.totalContent.toLocaleString()}
+              subtitle={`Approved today: ${dashboardData.stats.contentStats.approvedToday}`}
+              trend={Math.round((dashboardData.stats.contentStats.approvedToday / dashboardData.stats.contentStats.totalContent) * 1000) / 10}
+              icon={<ContentCopy />}
+              color="info"
+            />
+          ) : (
+            <StatCardSkeleton />
+          )}
         </Box>
 
       <Box 
@@ -545,95 +613,105 @@ export default function DashboardPage() {
                 System Health
               </Typography>
               
-              <Box sx={{ mb: 3 }} role="group" aria-labelledby="api-response-label">
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography 
-                    variant="body2"
-                    id="api-response-label"
-                    component="h3"
-                  >
-                    API Response Time
-                  </Typography>
-                  <Chip
-                    label="Excellent"
-                    color="success"
-                    size="small"
-                    icon={<CheckCircle aria-hidden="true" />}
-                    aria-label="API Response Time status: Excellent"
-                  />
-                </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={95}
-                  sx={{ height: 8, borderRadius: 4 }}
-                  color="success"
-                  aria-label="API Response Time: 95 percent excellent"
-                  role="progressbar"
-                  aria-valuenow={95}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                />
-              </Box>
-              
-              <Box sx={{ mb: 3 }} role="group" aria-labelledby="db-performance-label">
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography 
-                    variant="body2"
-                    id="db-performance-label"
-                    component="h3"
-                  >
-                    Database Performance
-                  </Typography>
-                  <Chip
-                    label="Good"
-                    color="warning"
-                    size="small"
-                    icon={<Warning aria-hidden="true" />}
-                    aria-label="Database Performance status: Good with warnings"
-                  />
-                </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={78}
-                  sx={{ height: 8, borderRadius: 4 }}
-                  color="warning"
-                  aria-label="Database Performance: 78 percent good"
-                  role="progressbar"
-                  aria-valuenow={78}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                />
-              </Box>
-              
-              <Box role="group" aria-labelledby="server-uptime-label">
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography 
-                    variant="body2"
-                    id="server-uptime-label"
-                    component="h3"
-                  >
-                    Server Uptime
-                  </Typography>
-                  <Chip
-                    label="99.9%"
-                    color="success"
-                    size="small"
-                    icon={<CheckCircle aria-hidden="true" />}
-                    aria-label="Server Uptime: 99.9 percent excellent"
-                  />
-                </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={99.9}
-                  sx={{ height: 8, borderRadius: 4 }}
-                  color="success"
-                  aria-label="Server Uptime: 99.9 percent excellent"
-                  role="progressbar"
-                  aria-valuenow={99.9}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                />
-              </Box>
+              {dashboardData?.systemHealth ? (
+                <>
+                  <Box sx={{ mb: 3 }} role="group" aria-labelledby="api-response-label">
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography
+                        variant="body2"
+                        id="api-response-label"
+                        component="h3"
+                      >
+                        API Response Time
+                      </Typography>
+                      <Chip
+                        label={dashboardData.systemHealth.apiResponseTime.status}
+                        color={dashboardData.systemHealth.apiResponseTime.status === 'excellent' ? 'success' : dashboardData.systemHealth.apiResponseTime.status === 'good' ? 'info' : 'warning'}
+                        size="small"
+                        icon={<CheckCircle aria-hidden="true" />}
+                        aria-label={`API Response Time status: ${dashboardData.systemHealth.apiResponseTime.status}`}
+                      />
+                    </Box>
+                    <LinearProgress
+                      variant="determinate"
+                      value={dashboardData.systemHealth.apiResponseTime.value}
+                      sx={{ height: 8, borderRadius: 4 }}
+                      color={dashboardData.systemHealth.apiResponseTime.status === 'excellent' ? 'success' : dashboardData.systemHealth.apiResponseTime.status === 'good' ? 'info' : 'warning'}
+                      aria-label={`API Response Time: ${dashboardData.systemHealth.apiResponseTime.value} percent ${dashboardData.systemHealth.apiResponseTime.status}`}
+                      role="progressbar"
+                      aria-valuenow={dashboardData.systemHealth.apiResponseTime.value}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                    />
+                  </Box>
+
+                  <Box sx={{ mb: 3 }} role="group" aria-labelledby="db-performance-label">
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography
+                        variant="body2"
+                        id="db-performance-label"
+                        component="h3"
+                      >
+                        Database Performance
+                      </Typography>
+                      <Chip
+                        label={dashboardData.systemHealth.databasePerformance.status}
+                        color={dashboardData.systemHealth.databasePerformance.status === 'excellent' ? 'success' : dashboardData.systemHealth.databasePerformance.status === 'good' ? 'warning' : 'error'}
+                        size="small"
+                        icon={dashboardData.systemHealth.databasePerformance.status === 'excellent' ? <CheckCircle aria-hidden="true" /> : <Warning aria-hidden="true" />}
+                        aria-label={`Database Performance status: ${dashboardData.systemHealth.databasePerformance.status}`}
+                      />
+                    </Box>
+                    <LinearProgress
+                      variant="determinate"
+                      value={dashboardData.systemHealth.databasePerformance.value}
+                      sx={{ height: 8, borderRadius: 4 }}
+                      color={dashboardData.systemHealth.databasePerformance.status === 'excellent' ? 'success' : dashboardData.systemHealth.databasePerformance.status === 'good' ? 'warning' : 'error'}
+                      aria-label={`Database Performance: ${dashboardData.systemHealth.databasePerformance.value} percent ${dashboardData.systemHealth.databasePerformance.status}`}
+                      role="progressbar"
+                      aria-valuenow={dashboardData.systemHealth.databasePerformance.value}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                    />
+                  </Box>
+
+                  <Box role="group" aria-labelledby="server-uptime-label">
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography
+                        variant="body2"
+                        id="server-uptime-label"
+                        component="h3"
+                      >
+                        Server Uptime
+                      </Typography>
+                      <Chip
+                        label={`${dashboardData.systemHealth.serverUptime.value}%`}
+                        color="success"
+                        size="small"
+                        icon={<CheckCircle aria-hidden="true" />}
+                        aria-label={`Server Uptime: ${dashboardData.systemHealth.serverUptime.value} percent excellent`}
+                      />
+                    </Box>
+                    <LinearProgress
+                      variant="determinate"
+                      value={dashboardData.systemHealth.serverUptime.value}
+                      sx={{ height: 8, borderRadius: 4 }}
+                      color="success"
+                      aria-label={`Server Uptime: ${dashboardData.systemHealth.serverUptime.value} percent excellent`}
+                      role="progressbar"
+                      aria-valuenow={dashboardData.systemHealth.serverUptime.value}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                    />
+                  </Box>
+                </>
+              ) : (
+                <>
+                  <ChartSkeleton height={80} />
+                  <ChartSkeleton height={80} />
+                  <ChartSkeleton height={80} />
+                </>
+              )}
             </CardContent>
           </Card>
         </Box>
