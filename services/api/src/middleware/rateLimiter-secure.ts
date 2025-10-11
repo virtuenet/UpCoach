@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
-import rateLimit, { RateLimitRequestHandler, Options } from 'express-rate-limit';
+import rateLimit from 'express-rate-limit';
+import type { RateLimitRequestHandler, Options } from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 
 import { logger } from '../utils/logger';

@@ -1311,7 +1311,7 @@ export class FinancialDashboardControllerEnhanced {
       }, {} as Record<string, number>);
 
       // Check budget vs actual for each category
-      for (const [category, actualAmount] of Object.entries(costsByCategory)) {
+      for (const [category, actualAmount] of Object.entries(costsByCategory) as [string, number][]) {
         const budget = await Budget.getBudgetForPeriod(
           category as any,
           currentYear,

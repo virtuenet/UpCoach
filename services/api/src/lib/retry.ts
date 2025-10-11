@@ -1,18 +1,23 @@
 /**
- * Retry configuration using axios-retry
- * Replaces custom RetryMechanism implementation
+ * Retry configuration utility
+ * Simple retry mechanism without external dependencies
  */
 
-import axios, { AxiosInstance } from 'axios';
-import axiosRetry, { IAxiosRetryConfig, isNetworkOrIdempotentRequestError } from 'axios-retry';
-
+import axios, { AxiosInstance, AxiosError } from 'axios';
 import { logger } from '../utils/logger';
 
-export interface RetryOptions extends IAxiosRetryConfig {
+export interface RetryOptions {
   maxRetries?: number;
   baseDelay?: number;
   maxDelay?: number;
   shouldRetry?: (error: any) => boolean;
+}
+
+function isNetworkOrIdempotentRequestError(error: AxiosError): boolean {
+  return !error.response ||
+    error.code === 'ECONNABORTED' ||
+    error.code === 'ETIMEDOUT' ||
+    (error.response?.status >= 500 && error.response?.status < 600);
 }
 
 /**
@@ -24,38 +29,46 @@ export function setupRetry(client: AxiosInstance, options: RetryOptions = {}): v
     baseDelay = 1000,
     maxDelay = 10000,
     shouldRetry,
-    ...axiosRetryOptions
   } = options;
 
-  axiosRetry(client, {
-    retries: maxRetries,
-    retryDelay: retryCount => {
-      // Exponential backoff with jitter
-      const delay = Math.min(baseDelay * Math.pow(2, retryCount - 1), maxDelay);
-      const jitter = delay * 0.1 * Math.random();
-      return delay + jitter;
-    },
-    retryCondition: error => {
-      // Custom retry condition
-      if (shouldRetry) {
-        return shouldRetry(error);
+  client.interceptors.response.use(
+    (response) => response,
+    async (error: AxiosError) => {
+      const config = error.config as any;
+
+      if (!config || config.__retryCount >= maxRetries) {
+        return Promise.reject(error);
       }
 
-      // Default conditions
-      return (
-        isNetworkOrIdempotentRequestError(error) ||
-        error.response?.status === 429 || // Rate limit
-        error.response?.status === 503 || // Service unavailable
-        error.response?.status === 504 // Gateway timeout
-      );
-    },
-    onRetry: (retryCount, error, requestConfig) => {
+      config.__retryCount = config.__retryCount || 0;
+
+      // Check if we should retry
+      const shouldRetryError = shouldRetry ?
+        shouldRetry(error) :
+        (isNetworkOrIdempotentRequestError(error) ||
+         error.response?.status === 429 ||
+         error.response?.status === 503 ||
+         error.response?.status === 504);
+
+      if (!shouldRetryError) {
+        return Promise.reject(error);
+      }
+
+      config.__retryCount++;
+
+      // Calculate delay with exponential backoff
+      const delay = Math.min(baseDelay * Math.pow(2, config.__retryCount - 1), maxDelay);
+      const jitter = delay * 0.1 * Math.random();
+
       logger.info(
-        `Retry attempt ${retryCount} for ${requestConfig.method?.toUpperCase()} ${requestConfig.url}`
+        `Retry attempt ${config.__retryCount} for ${config.method?.toUpperCase()} ${config.url}`
       );
-    },
-    ...axiosRetryOptions,
-  });
+
+      await new Promise(resolve => setTimeout(resolve, delay + jitter));
+
+      return client(config);
+    }
+  );
 }
 
 /**

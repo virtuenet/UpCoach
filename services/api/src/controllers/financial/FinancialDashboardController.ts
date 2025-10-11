@@ -14,6 +14,7 @@ import {
   FinancialReport,
   BillingEvent,
 } from '../../models';
+import { ReportStatus } from '../../models/financial/FinancialReport';
 import emailService from '../../services/email/UnifiedEmailService';
 import { financialService } from '../../services/financial/FinancialService';
 import { reportingService } from '../../services/financial/ReportingService';
@@ -976,7 +977,7 @@ export class FinancialDashboardController {
         summaryRow.getCell(1).value = 'Total Revenue:';
         summaryRow.getCell(1).style = { font: { bold: true } };
 
-        const totalRevenue = data.reduce((sum: number, row: any) => sum + (parseFloat(row.amount) || 0), 0);
+        const totalRevenue = data.reduce((sum: number, row: any) => sum + (parseFloat(String(row.amount)) || 0), 0);
         summaryRow.getCell(2).value = totalRevenue;
         summaryRow.getCell(2).numFmt = '$#,##0.00';
         summaryRow.getCell(2).style = { font: { bold: true } };
@@ -1310,7 +1311,7 @@ export class FinancialDashboardController {
 
       // Update report status to indicate it was sent
       await report.update({
-        status: 'sent',
+        status: ReportStatus.COMPLETED,
         metadata: {
           ...report.metadata,
           lastSent: new Date().toISOString(),
@@ -1942,8 +1943,9 @@ export class FinancialDashboardController {
 
       // Generate suggestions based on analysis
       for (const [category, data] of Object.entries(costsByCategory)) {
-        const avgMonthlyCost = data.total / 3; // 3 months average
-        const recentMonthlyCost = data.recent;
+        const categoryData = data as { total: number; count: number; recent: number };
+        const avgMonthlyCost = categoryData.total / 3; // 3 months average
+        const recentMonthlyCost = categoryData.recent;
 
         // Suggestion 1: High recent costs
         if (recentMonthlyCost > avgMonthlyCost * 1.5) {
@@ -2068,7 +2070,7 @@ export class FinancialDashboardController {
     // Calculate summary statistics if it's a revenue report
     let summaryHTML = '';
     if (report.type === 'revenue') {
-      const totalRevenue = data.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
+      const totalRevenue = data.reduce((sum, row) => sum + (parseFloat(String(row.amount)) || 0), 0);
       const avgTransaction = totalRevenue / data.length;
       const totalTransactions = data.length;
 
@@ -2094,7 +2096,7 @@ export class FinancialDashboardController {
     } else if (report.type === 'subscriptions') {
       const activeSubscriptions = data.filter(row => row.status === 'active').length;
       const canceledSubscriptions = data.filter(row => row.canceledAt).length;
-      const totalRevenue = data.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
+      const totalRevenue = data.reduce((sum, row) => sum + (parseFloat(String(row.amount)) || 0), 0);
 
       summaryHTML = `
         <div class="summary-section">

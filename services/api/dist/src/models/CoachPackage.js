@@ -254,7 +254,7 @@ __decorate([
     sequelize_typescript_1.BeforeCreate,
     sequelize_typescript_1.BeforeUpdate,
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [CoachPackage]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], CoachPackage, "calculateDiscounts", null);
 exports.CoachPackage = CoachPackage = __decorate([
@@ -352,7 +352,7 @@ __decorate([
 ], ClientCoachPackage.prototype, "packageId", void 0);
 __decorate([
     (0, sequelize_typescript_1.BelongsTo)(() => CoachPackage),
-    __metadata("design:type", CoachPackage)
+    __metadata("design:type", Object)
 ], ClientCoachPackage.prototype, "package", void 0);
 __decorate([
     (0, sequelize_typescript_1.ForeignKey)(() => User_1.User),

@@ -1288,5 +1288,6 @@ class ABTestingEngine {
         }
     }
 }
-exports.default = new CoachIntelligenceMLServiceComplete();
+const mlServiceInstance = new CoachIntelligenceMLServiceComplete();
+exports.default = mlServiceInstance;
 //# sourceMappingURL=CoachIntelligenceMLServiceComplete.js.map

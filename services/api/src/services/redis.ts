@@ -204,6 +204,26 @@ class RedisService {
     }
   }
 
+  async lrange(key: string, start: number, stop: number): Promise<string[]> {
+    try {
+      await this.ensureConnected();
+      return await this.client.lRange(key, start, stop);
+    } catch (error) {
+      logger.error(`Redis LRANGE error for key ${key}:`, error);
+      throw error;
+    }
+  }
+
+  async ltrim(key: string, start: number, stop: number): Promise<string> {
+    try {
+      await this.ensureConnected();
+      return await this.client.lTrim(key, start, stop);
+    } catch (error) {
+      logger.error(`Redis LTRIM error for key ${key}:`, error);
+      throw error;
+    }
+  }
+
   // Session management helpers
   async getSession(sessionId: string): Promise<any> {
     try {
@@ -296,6 +316,16 @@ class RedisService {
       return await this.client.ttl(key);
     } catch (error) {
       logger.error(`Redis TTL error for key ${key}:`, error);
+      throw error;
+    }
+  }
+
+  async pipeline(): Promise<any> {
+    try {
+      await this.ensureConnected();
+      return this.client.multi();
+    } catch (error) {
+      logger.error('Redis PIPELINE error:', error);
       throw error;
     }
   }

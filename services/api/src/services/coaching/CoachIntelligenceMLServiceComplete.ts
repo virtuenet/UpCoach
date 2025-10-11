@@ -1933,4 +1933,5 @@ class ABTestingEngine {
 }
 
 // Export the service
-export default new CoachIntelligenceMLServiceComplete();
+const mlServiceInstance = new CoachIntelligenceMLServiceComplete();
+export default mlServiceInstance;

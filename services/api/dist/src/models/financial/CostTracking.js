@@ -277,7 +277,7 @@ __decorate([
 __decorate([
     sequelize_typescript_1.BeforeCreate,
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [CostTracking]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], CostTracking, "calculateUnitCost", null);
 exports.CostTracking = CostTracking = __decorate([

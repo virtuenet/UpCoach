@@ -195,6 +195,26 @@ class RedisService {
             throw error;
         }
     }
+    async lrange(key, start, stop) {
+        try {
+            await this.ensureConnected();
+            return await this.client.lRange(key, start, stop);
+        }
+        catch (error) {
+            logger_1.logger.error(`Redis LRANGE error for key ${key}:`, error);
+            throw error;
+        }
+    }
+    async ltrim(key, start, stop) {
+        try {
+            await this.ensureConnected();
+            return await this.client.lTrim(key, start, stop);
+        }
+        catch (error) {
+            logger_1.logger.error(`Redis LTRIM error for key ${key}:`, error);
+            throw error;
+        }
+    }
     async getSession(sessionId) {
         try {
             const sessionData = await this.get(`session:${sessionId}`);
@@ -285,6 +305,16 @@ class RedisService {
         }
         catch (error) {
             logger_1.logger.error(`Redis TTL error for key ${key}:`, error);
+            throw error;
+        }
+    }
+    async pipeline() {
+        try {
+            await this.ensureConnected();
+            return this.client.multi();
+        }
+        catch (error) {
+            logger_1.logger.error('Redis PIPELINE error:', error);
             throw error;
         }
     }

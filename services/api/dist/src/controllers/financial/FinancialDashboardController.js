@@ -43,6 +43,7 @@ require("../../types/express");
 const ExcelJS = __importStar(require("exceljs"));
 const puppeteer_1 = __importDefault(require("puppeteer"));
 const models_1 = require("../../models");
+const FinancialReport_1 = require("../../models/financial/FinancialReport");
 const UnifiedEmailService_1 = __importDefault(require("../../services/email/UnifiedEmailService"));
 const FinancialService_1 = require("../../services/financial/FinancialService");
 const ReportingService_1 = require("../../services/financial/ReportingService");
@@ -741,7 +742,7 @@ class FinancialDashboardController {
                 const summaryRow = worksheet.addRow([]);
                 summaryRow.getCell(1).value = 'Total Revenue:';
                 summaryRow.getCell(1).style = { font: { bold: true } };
-                const totalRevenue = data.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
+                const totalRevenue = data.reduce((sum, row) => sum + (parseFloat(String(row.amount)) || 0), 0);
                 summaryRow.getCell(2).value = totalRevenue;
                 summaryRow.getCell(2).numFmt = '$#,##0.00';
                 summaryRow.getCell(2).style = { font: { bold: true } };
@@ -998,7 +999,7 @@ class FinancialDashboardController {
             const successful = results.filter(r => r.success);
             const failed = results.filter(r => !r.success);
             await report.update({
-                status: 'sent',
+                status: FinancialReport_1.ReportStatus.COMPLETED,
                 metadata: {
                     ...report.metadata,
                     lastSent: new Date().toISOString(),
@@ -1485,8 +1486,9 @@ class FinancialDashboardController {
                 return acc;
             }, {});
             for (const [category, data] of Object.entries(costsByCategory)) {
-                const avgMonthlyCost = data.total / 3;
-                const recentMonthlyCost = data.recent;
+                const categoryData = data;
+                const avgMonthlyCost = categoryData.total / 3;
+                const recentMonthlyCost = categoryData.recent;
                 if (recentMonthlyCost > avgMonthlyCost * 1.5) {
                     suggestions.push({
                         category,
@@ -1584,7 +1586,7 @@ class FinancialDashboardController {
         const headers = Object.keys(data[0]);
         let summaryHTML = '';
         if (report.type === 'revenue') {
-            const totalRevenue = data.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
+            const totalRevenue = data.reduce((sum, row) => sum + (parseFloat(String(row.amount)) || 0), 0);
             const avgTransaction = totalRevenue / data.length;
             const totalTransactions = data.length;
             summaryHTML = `
@@ -1610,7 +1612,7 @@ class FinancialDashboardController {
         else if (report.type === 'subscriptions') {
             const activeSubscriptions = data.filter(row => row.status === 'active').length;
             const canceledSubscriptions = data.filter(row => row.canceledAt).length;
-            const totalRevenue = data.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
+            const totalRevenue = data.reduce((sum, row) => sum + (parseFloat(String(row.amount)) || 0), 0);
             summaryHTML = `
         <div class="summary-section">
           <h3>Summary Statistics</h3>

@@ -441,7 +441,7 @@ class OnboardingController {
         try {
             await emailCampaignService.triggerCampaign(userId.toString(), 'user_registered', {
                 name: data.profile.name,
-                goals: data.goals?.map(g => g.title).join(', ') || 'general improvement',
+                goals: data.goals?.specificGoals?.join(', ') || data.goals?.primaryGoal || 'general improvement',
                 coachingStyle: data.preferences?.coachingStyle || 'balanced',
                 commitmentLevel: data.availability?.commitmentLevel || 'moderate',
             });
@@ -551,7 +551,7 @@ class OnboardingController {
             }
             await emailCampaignService.triggerCampaign(userId.toString(), 'inactive_user', {
                 name: user.name,
-                lastActiveDate: user.lastActiveAt?.toLocaleDateString() || 'recently',
+                lastActiveDate: user.lastLoginAt?.toLocaleDateString() || 'recently',
                 profileComplete: !!user.profile,
             });
             _res.json({
