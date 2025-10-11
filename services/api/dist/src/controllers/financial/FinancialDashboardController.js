@@ -39,6 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FinancialDashboardController = void 0;
 const date_fns_1 = require("date-fns");
 const sequelize_1 = require("sequelize");
+require("../../types/express");
 const ExcelJS = __importStar(require("exceljs"));
 const puppeteer_1 = __importDefault(require("puppeteer"));
 const models_1 = require("../../models");
@@ -853,7 +854,7 @@ class FinancialDashboardController {
             status: s.status,
             amount: s.amount,
             currency: s.currency,
-            interval: s.interval,
+            interval: s.billingInterval,
             canceledAt: s.canceledAt ? (0, date_fns_1.format)(new Date(s.canceledAt), 'yyyy-MM-dd HH:mm:ss') : null,
         }));
     }
@@ -1165,7 +1166,7 @@ class FinancialDashboardController {
                     canceledAt: subscription.canceledAt,
                     plan: subscription.plan,
                     monthlyAmount: subscription.amount,
-                    interval: subscription.interval,
+                    interval: subscription.billingInterval,
                     status: subscription.status,
                     lifetimeMonths,
                     totalRevenue: userRevenue || 0,

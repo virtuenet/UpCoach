@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authenticateToken = exports.authorize = exports.authenticate = exports.blacklistToken = exports.verifyRefreshToken = exports.generateTokens = exports.requireOwnership = exports.authorizeRoles = exports.requireRole = exports.optionalAuthMiddleware = exports.adminMiddleware = exports.authMiddleware = void 0;
+exports.authenticateToken = exports.authorize = exports.authenticate = exports.verifyJWT = exports.blacklistToken = exports.verifyRefreshToken = exports.generateTokens = exports.requireOwnership = exports.authorizeRoles = exports.requireRole = exports.optionalAuthMiddleware = exports.adminMiddleware = exports.authMiddleware = void 0;
 const jsonwebtoken_1 = require("jsonwebtoken");
 const crypto = __importStar(require("crypto"));
 const environment_1 = require("../config/environment");
@@ -298,6 +298,23 @@ const blacklistToken = async (token) => {
     }
 };
 exports.blacklistToken = blacklistToken;
+const verifyJWT = (token) => {
+    try {
+        return (0, jsonwebtoken_1.verify)(token, environment_1.config.jwt.secret, {
+            algorithms: ['HS256'],
+            issuer: 'upcoach-api',
+            audience: 'upcoach-client',
+            clockTolerance: 30,
+            ignoreExpiration: false,
+            ignoreNotBefore: false,
+        });
+    }
+    catch (error) {
+        logger_1.logger.debug('JWT verification failed:', error);
+        return null;
+    }
+};
+exports.verifyJWT = verifyJWT;
 exports.authenticate = exports.authMiddleware;
 exports.authorize = exports.adminMiddleware;
 exports.authenticateToken = exports.authMiddleware;

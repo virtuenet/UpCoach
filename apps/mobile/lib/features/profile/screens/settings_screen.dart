@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../providers/profile_provider.dart';
 import '../../../core/services/two_factor_auth_service.dart';
+import '../../../core/services/data_export_service.dart';
 import '../../auth/screens/two_factor_setup_screen.dart';
 import '../../auth/screens/disable_two_factor_screen.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   final int initialTab;
@@ -22,6 +26,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TwoFactorAuthService _twoFactorService = TwoFactorAuthService();
+  final DataExportService _dataExportService = DataExportService();
 
   // Notification settings
   bool _pushNotifications = true;
@@ -71,6 +76,107 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  // Language Selection Methods
+  final Map<String, String> _languages = {
+    'english': 'English',
+    'spanish': 'Español',
+    'french': 'Français',
+    'german': 'Deutsch',
+    'italian': 'Italiano',
+    'portuguese': 'Português',
+    'chinese_simplified': '简体中文',
+    'chinese_traditional': '繁體中文',
+    'japanese': '日本語',
+    'korean': '한국어',
+  };
+
+  String _getLanguageDisplayName(String languageCode) {
+    return _languages[languageCode] ?? 'English';
+  }
+
+  Future<void> _showLanguageSelection() async {
+    final selectedLanguage = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Select Language'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: _languages.length,
+              itemBuilder: (context, index) {
+                final entry = _languages.entries.elementAt(index);
+                final languageCode = entry.key;
+                final languageName = entry.value;
+                final isSelected = _language == languageCode;
+
+                return ListTile(
+                  title: Text(languageName),
+                  leading: Radio<String>(
+                    value: languageCode,
+                    groupValue: _language,
+                    onChanged: (value) {
+                      Navigator.of(context).pop(value);
+                    },
+                  ),
+                  onTap: () {
+                    Navigator.of(context).pop(languageCode);
+                  },
+                  trailing: isSelected ? const Icon(Icons.check, color: Colors.green) : null,
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (selectedLanguage != null && selectedLanguage != _language) {
+      await _updateLanguage(selectedLanguage);
+    }
+  }
+
+  Future<void> _updateLanguage(String languageCode) async {
+    try {
+      // Update the language preference in SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('app_language', languageCode);
+
+      setState(() {
+        _language = languageCode;
+      });
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Language changed to ${_getLanguageDisplayName(languageCode)}'),
+            action: SnackBarAction(
+              label: 'Restart App',
+              onPressed: () {
+                // In a real app, you might trigger an app restart here
+                // or use a localization state management solution
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update language: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -144,11 +250,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         _buildSectionHeader('Language'),
         ListTile(
           title: const Text('App Language'),
-          subtitle: Text(_language == 'english' ? 'English' : 'Other'),
+          subtitle: Text(_getLanguageDisplayName(_language)),
           trailing: const Icon(Icons.chevron_right),
-          onTap: () {
-            // TODO: Show language selection
-          },
+          onTap: () => _showLanguageSelection(),
         ),
         
         const Divider(),
@@ -167,7 +271,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           subtitle: const Text('Export your data'),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            // TODO: Implement data export
+            _showDataExportDialog();
           },
         ),
       ],
@@ -576,5 +680,289 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         ],
       ),
     );
+  }
+
+  void _showDataExportDialog() {
+    bool includeVoiceJournals = true;
+    bool includeProgressPhotos = true;
+    bool encryptData = false;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.download, color: AppTheme.primaryColor),
+              SizedBox(width: UIConstants.spacingMD),
+              Text('Export Your Data'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Choose what data to include in your export:',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: UIConstants.spacingMD),
+              CheckboxListTile(
+                title: const Text('Voice Journals'),
+                subtitle: const Text('Include audio transcripts and metadata'),
+                value: includeVoiceJournals,
+                onChanged: (value) {
+                  setState(() {
+                    includeVoiceJournals = value ?? false;
+                  });
+                },
+                controlAffinity: ListTileControlAffinity.leading,
+                contentPadding: EdgeInsets.zero,
+              ),
+              CheckboxListTile(
+                title: const Text('Progress Photos'),
+                subtitle: const Text('Include photo metadata'),
+                value: includeProgressPhotos,
+                onChanged: (value) {
+                  setState(() {
+                    includeProgressPhotos = value ?? false;
+                  });
+                },
+                controlAffinity: ListTileControlAffinity.leading,
+                contentPadding: EdgeInsets.zero,
+              ),
+              CheckboxListTile(
+                title: const Text('Encrypt Export'),
+                subtitle: const Text('Secure your data with encryption'),
+                value: encryptData,
+                onChanged: (value) {
+                  setState(() {
+                    encryptData = value ?? false;
+                  });
+                },
+                controlAffinity: ListTileControlAffinity.leading,
+                contentPadding: EdgeInsets.zero,
+              ),
+              const SizedBox(height: UIConstants.spacingMD),
+              Container(
+                padding: const EdgeInsets.all(UIConstants.spacingSM),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(UIConstants.radiusMD),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline, size: 16, color: AppTheme.primaryColor),
+                    SizedBox(width: UIConstants.spacingSM),
+                    Expanded(
+                      child: Text(
+                        'Your export will include profile, habits, tasks, goals, and mood data in GDPR-compliant JSON format.',
+                        style: TextStyle(fontSize: 12, color: AppTheme.primaryColor),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _performDataExport(
+                  includeVoiceJournals: includeVoiceJournals,
+                  includeProgressPhotos: includeProgressPhotos,
+                  encryptData: encryptData,
+                );
+              },
+              icon: const Icon(Icons.download),
+              label: const Text('Export'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _performDataExport({
+    bool includeVoiceJournals = true,
+    bool includeProgressPhotos = true,
+    bool encryptData = false,
+  }) async {
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const AlertDialog(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: UIConstants.spacingMD),
+            Text('Exporting your data...'),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      final authState = ref.read(authProvider);
+      if (authState.user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final result = await _dataExportService.exportUserData(
+        user: authState.user!,
+        includeVoiceJournals: includeVoiceJournals,
+        includeProgressPhotos: includeProgressPhotos,
+        encryptData: encryptData,
+      );
+
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+
+      if (result.success) {
+        _showExportSuccessDialog(result);
+      } else {
+        _showExportErrorDialog(result.error ?? 'Unknown error occurred');
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+      _showExportErrorDialog(e.toString());
+    }
+  }
+
+  void _showExportSuccessDialog(ExportResult result) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.check_circle, color: AppTheme.successColor),
+            SizedBox(width: UIConstants.spacingMD),
+            Text('Export Complete'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('File: ${result.fileName}'),
+            const SizedBox(height: UIConstants.spacingSM),
+            Text('Size: ${_formatFileSize(result.fileSize ?? 0)}'),
+            const SizedBox(height: UIConstants.spacingSM),
+            if (result.encrypted)
+              const Row(
+                children: [
+                  Icon(Icons.lock, size: 16, color: AppTheme.successColor),
+                  SizedBox(width: UIConstants.spacingSM),
+                  Text('Encrypted', style: TextStyle(color: AppTheme.successColor)),
+                ],
+              ),
+            const SizedBox(height: UIConstants.spacingMD),
+            const Text(
+              'Your data has been exported successfully. You can now share or save the file.',
+              style: TextStyle(fontSize: 14),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Done'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              try {
+                await _dataExportService.shareExportedData(result);
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to share: $e'),
+                      backgroundColor: AppTheme.errorColor,
+                    ),
+                  );
+                }
+              }
+            },
+            icon: const Icon(Icons.share),
+            label: const Text('Share'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryColor,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showExportErrorDialog(String error) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.error, color: AppTheme.errorColor),
+            SizedBox(width: UIConstants.spacingMD),
+            Text('Export Failed'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Failed to export your data:'),
+            const SizedBox(height: UIConstants.spacingSM),
+            Text(
+              error,
+              style: const TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 12,
+                color: AppTheme.errorColor,
+              ),
+            ),
+            const SizedBox(height: UIConstants.spacingMD),
+            const Text(
+              'Please try again. If the problem persists, contact support.',
+              style: TextStyle(fontSize: 14),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _showDataExportDialog(); // Retry
+            },
+            child: const Text('Retry'),
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.primaryColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 } 

@@ -39,8 +39,12 @@ const ioredis_1 = require("ioredis");
 const events_1 = require("events");
 const perf_hooks_1 = require("perf_hooks");
 const crypto = __importStar(require("crypto"));
+const User_1 = require("../../models/User");
 const Goal_1 = require("../../models/Goal");
+const Habit_1 = require("../../models/Habit");
+const CoachMemory_1 = require("../../models/coaching/CoachMemory");
 const UserAnalytics_1 = require("../../models/analytics/UserAnalytics");
+const KpiTracker_1 = require("../../models/analytics/KpiTracker");
 const logger_1 = require("../../utils/logger");
 class CoachIntelligenceMLServiceComplete extends events_1.EventEmitter {
     models;
@@ -782,22 +786,318 @@ class CoachIntelligenceMLServiceComplete extends events_1.EventEmitter {
         return `Skill ${skillId}`;
     }
     async collectBehavioralData(userId) {
-        return {};
+        try {
+            const userAnalytics = await UserAnalytics_1.UserAnalytics.findOne({ where: { userId } });
+            const goals = await Goal_1.Goal.findAll({ where: { userId }, limit: 10 });
+            const habits = await Habit_1.Habit.findAll({ where: { userId }, limit: 20 });
+            const recentMemories = await CoachMemory_1.CoachMemory.findAll({
+                where: { userId },
+                order: [['createdAt', 'DESC']],
+                limit: 50
+            });
+            return {
+                analytics: userAnalytics || {},
+                goals: goals.map(g => ({
+                    id: g.id,
+                    title: g.title,
+                    status: g.status,
+                    progress: g.progress,
+                    createdAt: g.createdAt,
+                    updatedAt: g.updatedAt
+                })),
+                habits: habits.map(h => ({
+                    id: h.id,
+                    name: h.name,
+                    frequency: h.frequency,
+                    completionRate: h.completionRate || 0,
+                    streak: h.currentStreak || 0
+                })),
+                memories: recentMemories.map(m => ({
+                    type: m.type,
+                    content: m.content,
+                    timestamp: m.createdAt,
+                    sentiment: m.sentiment || 'neutral'
+                })),
+                collectedAt: new Date()
+            };
+        }
+        catch (error) {
+            logger_1.logger.error('Failed to collect behavioral data', { userId, error });
+            return {};
+        }
     }
     extractTemporalPatterns(data) {
-        return [];
+        const patterns = [];
+        if (data.habits && data.habits.length > 0) {
+            const habitsWithHighCompletion = data.habits.filter((h) => h.completionRate > 0.8);
+            if (habitsWithHighCompletion.length > 0) {
+                patterns.push({
+                    type: 'temporal',
+                    description: `Consistent high performance in ${habitsWithHighCompletion.length} habits`,
+                    confidence: 0.85,
+                    impact: 'positive',
+                    frequency: 'daily',
+                    triggers: ['morning routine', 'evening routine'],
+                    recommendations: ['Maintain current schedule', 'Consider adding similar habits']
+                });
+            }
+            const longStreaks = data.habits.filter((h) => h.streak > 7);
+            if (longStreaks.length > 0) {
+                patterns.push({
+                    type: 'temporal',
+                    description: `Strong consistency with ${longStreaks.length} habits having 7+ day streaks`,
+                    confidence: 0.9,
+                    impact: 'positive',
+                    frequency: 'weekly',
+                    triggers: ['habit stacking', 'routine adherence'],
+                    recommendations: ['Celebrate achievements', 'Use streak momentum for new habits']
+                });
+            }
+        }
+        return patterns;
     }
     extractActivityPatterns(data) {
-        return [];
+        const patterns = [];
+        if (data.goals && data.goals.length > 0) {
+            const activeGoals = data.goals.filter((g) => g.status === 'active' || g.status === 'in_progress');
+            const completedGoals = data.goals.filter((g) => g.status === 'completed');
+            const highProgressGoals = data.goals.filter((g) => g.progress > 75);
+            if (completedGoals.length > activeGoals.length) {
+                patterns.push({
+                    type: 'activity',
+                    description: 'High goal completion rate - strong execution patterns',
+                    confidence: 0.88,
+                    impact: 'positive',
+                    frequency: 'monthly',
+                    triggers: ['goal setting', 'milestone achievements'],
+                    recommendations: ['Set more ambitious goals', 'Share success strategies with others']
+                });
+            }
+            if (highProgressGoals.length > 0) {
+                patterns.push({
+                    type: 'activity',
+                    description: `${highProgressGoals.length} goals showing strong progress (>75%)`,
+                    confidence: 0.82,
+                    impact: 'positive',
+                    frequency: 'weekly',
+                    triggers: ['consistent action', 'progress tracking'],
+                    recommendations: ['Maintain momentum', 'Plan next phase of goals']
+                });
+            }
+        }
+        if (data.analytics && data.analytics.engagementScore) {
+            const engagement = data.analytics.engagementScore;
+            if (engagement > 0.7) {
+                patterns.push({
+                    type: 'activity',
+                    description: 'High platform engagement indicates strong commitment',
+                    confidence: 0.75,
+                    impact: 'positive',
+                    frequency: 'daily',
+                    triggers: ['app usage', 'feature interaction'],
+                    recommendations: ['Explore advanced features', 'Connect with coaching community']
+                });
+            }
+        }
+        return patterns;
     }
     async extractEmotionalPatterns(userId, data) {
-        return [];
+        const patterns = [];
+        if (data.memories && data.memories.length > 0) {
+            const positiveMoods = data.memories.filter((m) => m.sentiment === 'positive');
+            const negativeMoods = data.memories.filter((m) => m.sentiment === 'negative');
+            const neutralMoods = data.memories.filter((m) => m.sentiment === 'neutral');
+            const positiveRatio = positiveMoods.length / data.memories.length;
+            const negativeRatio = negativeMoods.length / data.memories.length;
+            if (positiveRatio > 0.6) {
+                patterns.push({
+                    type: 'emotional',
+                    description: 'Predominantly positive emotional state in recent interactions',
+                    confidence: 0.8,
+                    impact: 'positive',
+                    frequency: 'daily',
+                    triggers: ['achievement recognition', 'progress milestones'],
+                    recommendations: ['Leverage positive momentum', 'Set stretch goals', 'Share inspiring moments']
+                });
+            }
+            if (negativeRatio > 0.4) {
+                patterns.push({
+                    type: 'emotional',
+                    description: 'Higher than usual negative sentiment detected',
+                    confidence: 0.75,
+                    impact: 'negative',
+                    frequency: 'weekly',
+                    triggers: ['challenges', 'setbacks', 'stress'],
+                    recommendations: ['Focus on small wins', 'Practice self-compassion', 'Seek support if needed']
+                });
+            }
+            if (positiveMoods.length > 0 && negativeMoods.length > 0) {
+                const recent = data.memories.slice(0, 10);
+                const sentimentChanges = recent.filter((m, i) => {
+                    if (i === 0)
+                        return false;
+                    return m.sentiment !== recent[i - 1].sentiment;
+                });
+                if (sentimentChanges.length > 5) {
+                    patterns.push({
+                        type: 'emotional',
+                        description: 'Emotional volatility detected in recent interactions',
+                        confidence: 0.7,
+                        impact: 'neutral',
+                        frequency: 'daily',
+                        triggers: ['stress', 'uncertainty', 'rapid changes'],
+                        recommendations: ['Practice mindfulness', 'Establish consistent routines', 'Focus on stability']
+                    });
+                }
+            }
+        }
+        return patterns;
     }
     async generatePatternRecommendations(pattern) {
-        return ['Recommendation based on pattern'];
+        const recommendations = [];
+        switch (pattern.type) {
+            case 'temporal':
+                if (pattern.impact === 'positive') {
+                    recommendations.push('Continue your current schedule as it\'s working well', 'Consider expanding successful time blocks to other activities', 'Use your peak performance times for most challenging tasks');
+                }
+                else {
+                    recommendations.push('Experiment with different time blocks for better results', 'Try habit stacking to improve consistency', 'Review and adjust your daily routine');
+                }
+                break;
+            case 'activity':
+                if (pattern.impact === 'positive') {
+                    recommendations.push('Celebrate your achievements to maintain motivation', 'Share your success strategies with others', 'Set more ambitious goals to continue growing');
+                }
+                else {
+                    recommendations.push('Break large goals into smaller, manageable steps', 'Focus on process-based goals rather than outcome-based', 'Seek support or guidance for challenging areas');
+                }
+                break;
+            case 'emotional':
+                if (pattern.impact === 'positive') {
+                    recommendations.push('Practice gratitude to maintain positive mindset', 'Use your positive energy to tackle challenging goals', 'Share your positive experiences to inspire others');
+                }
+                else if (pattern.impact === 'negative') {
+                    recommendations.push('Practice self-compassion during difficult times', 'Focus on small, achievable wins to build momentum', 'Consider seeking support from a coach or mentor');
+                }
+                else {
+                    recommendations.push('Practice mindfulness to increase emotional awareness', 'Develop consistent coping strategies for stress', 'Create stability through routine and structure');
+                }
+                break;
+            default:
+                recommendations.push('Continue monitoring your progress', 'Stay consistent with your current approach', 'Adjust strategies based on what you learn');
+        }
+        if (pattern.recommendations && pattern.recommendations.length > 0) {
+            recommendations.push(...pattern.recommendations);
+        }
+        return [...new Set(recommendations)];
     }
     async gatherUserData(userId) {
-        return {};
+        try {
+            const [user, userAnalytics, goals, habits, memories, kpiTrackers] = await Promise.all([
+                User_1.User.findByPk(userId),
+                UserAnalytics_1.UserAnalytics.findOne({ where: { userId } }),
+                Goal_1.Goal.findAll({
+                    where: { userId },
+                    order: [['createdAt', 'DESC']],
+                    limit: 50
+                }),
+                Habit_1.Habit.findAll({
+                    where: { userId },
+                    order: [['createdAt', 'DESC']],
+                    limit: 100
+                }),
+                CoachMemory_1.CoachMemory.findAll({
+                    where: { userId },
+                    order: [['createdAt', 'DESC']],
+                    limit: 100
+                }),
+                KpiTracker_1.KpiTracker.findAll({
+                    where: { userId },
+                    order: [['createdAt', 'DESC']],
+                    limit: 20
+                })
+            ]);
+            const userData = {
+                profile: user ? {
+                    id: user.id,
+                    email: user.email,
+                    createdAt: user.createdAt,
+                    updatedAt: user.updatedAt,
+                    lastLoginAt: user.lastLoginAt || null
+                } : null,
+                analytics: userAnalytics || {},
+                goals: goals.map(g => ({
+                    id: g.id,
+                    title: g.title,
+                    description: g.description,
+                    status: g.status,
+                    progress: g.progress || 0,
+                    priority: g.priority || 'medium',
+                    createdAt: g.createdAt,
+                    updatedAt: g.updatedAt,
+                    dueDate: g.dueDate || null
+                })),
+                habits: habits.map(h => ({
+                    id: h.id,
+                    name: h.name,
+                    description: h.description,
+                    frequency: h.frequency,
+                    completionRate: h.completionRate || 0,
+                    currentStreak: h.currentStreak || 0,
+                    longestStreak: h.longestStreak || 0,
+                    category: h.category || 'general',
+                    createdAt: h.createdAt,
+                    updatedAt: h.updatedAt
+                })),
+                memories: memories.map(m => ({
+                    id: m.id,
+                    type: m.type,
+                    content: m.content,
+                    sentiment: m.sentiment || 'neutral',
+                    importance: m.importance || 'medium',
+                    createdAt: m.createdAt
+                })),
+                kpis: kpiTrackers.map(k => ({
+                    id: k.id,
+                    name: k.name,
+                    value: k.value || 0,
+                    target: k.target || 100,
+                    unit: k.unit || 'count',
+                    createdAt: k.createdAt
+                })),
+                metadata: {
+                    totalGoals: goals.length,
+                    totalHabits: habits.length,
+                    totalMemories: memories.length,
+                    totalKpis: kpiTrackers.length,
+                    accountAge: user ? Math.floor((Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24)) : 0,
+                    lastActivity: user?.lastLoginAt || user?.updatedAt || new Date(),
+                    gatherTimestamp: new Date()
+                }
+            };
+            return userData;
+        }
+        catch (error) {
+            logger_1.logger.error('Failed to gather user data', { userId, error });
+            return {
+                profile: null,
+                analytics: {},
+                goals: [],
+                habits: [],
+                memories: [],
+                kpis: [],
+                metadata: {
+                    totalGoals: 0,
+                    totalHabits: 0,
+                    totalMemories: 0,
+                    totalKpis: 0,
+                    accountAge: 0,
+                    lastActivity: new Date(),
+                    gatherTimestamp: new Date(),
+                    error: 'Data gathering failed'
+                }
+            };
+        }
     }
     async getUserAnalytics(userId) {
         return UserAnalytics_1.UserAnalytics.findOne({ where: { userId } });

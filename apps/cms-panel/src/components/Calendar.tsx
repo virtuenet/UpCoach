@@ -19,21 +19,12 @@ import {
   Grid,
   Chip,
   Tooltip,
-  Menu,
-  MenuItem,
-  Badge,
-  useTheme,
-  useMediaQuery,
-  ButtonGroup,
 } from '@mui/material';
 import {
   ChevronLeft,
   ChevronRight,
   Today,
   Add,
-  MoreVert,
-  Event,
-  Schedule,
 } from '@mui/icons-material';
 
 // Types
@@ -139,12 +130,8 @@ export const Calendar: React.FC<CalendarProps> = ({
   readOnly = false,
   className,
 }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
   const [currentDate, setCurrentDate] = useState(selectedDate);
   const [currentView, setCurrentView] = useState(view);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
   // Navigation handlers
@@ -276,7 +263,7 @@ export const Calendar: React.FC<CalendarProps> = ({
           role="button"
           tabIndex={0}
           aria-label={`${formatDate(date)}${dayEvents.length > 0 ? `, ${dayEvents.length} event${dayEvents.length > 1 ? 's' : ''}` : ''}`}
-          onKeyDown={(e) => {
+          onKeyDown={(e: React.KeyboardEvent) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               handleDateClick(date);
@@ -289,9 +276,8 @@ export const Calendar: React.FC<CalendarProps> = ({
               variant="body2"
               sx={{
                 fontWeight: isDayToday ? 'bold' : 'normal',
-                color: isCurrentMonth ? 'text.primary' : 'text.secondary',
+                color: isDayToday ? 'primary.contrastText' : (isCurrentMonth ? 'text.primary' : 'text.secondary'),
                 backgroundColor: isDayToday ? 'primary.main' : 'transparent',
-                color: isDayToday ? 'primary.contrastText' : undefined,
                 borderRadius: '50%',
                 width: 24,
                 height: 24,
@@ -314,12 +300,12 @@ export const Calendar: React.FC<CalendarProps> = ({
 
           {/* Events */}
           <Box sx={{ flex: 1, overflow: 'hidden' }}>
-            {dayEvents.slice(0, currentView === 'month' ? 3 : 10).map((event, eventIndex) => (
+            {dayEvents.slice(0, currentView === 'month' ? 3 : 10).map((event, _) => (
               <Tooltip key={event.id} title={`${event.title}${event.description ? `: ${event.description}` : ''}`}>
                 <Chip
                   label={event.title}
                   size="small"
-                  onClick={(e) => handleEventClick(event, e)}
+                  onClick={(e: React.MouseEvent) => handleEventClick(event, e)}
                   sx={{
                     mb: 0.25,
                     width: '100%',
@@ -475,7 +461,7 @@ export const Calendar: React.FC<CalendarProps> = ({
                   key={event.id}
                   label={`${event.title}${event.isAllDay ? '' : ` (${formatTime(new Date(event.startDate))})`}`}
                   size="small"
-                  onClick={(e) => handleEventClick(event, e)}
+                  onClick={(e: React.MouseEvent) => handleEventClick(event, e)}
                   sx={{
                     backgroundColor: event.color || 'primary.main',
                     color: 'white',

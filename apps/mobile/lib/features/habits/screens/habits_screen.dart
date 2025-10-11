@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../../../shared/models/habit_model.dart';
 import '../providers/habit_provider.dart';
 import '../widgets/habit_card.dart';
 import '../widgets/habit_stats_overview.dart';
 import '../widgets/daily_habits_view.dart';
 import 'create_habit_screen.dart';
+import 'habit_analytics_screen.dart';
+import 'habit_achievements_screen.dart';
+import 'habit_settings_screen.dart';
 
 class HabitsScreen extends ConsumerStatefulWidget {
   const HabitsScreen({super.key});
@@ -365,7 +369,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                     setState(() {
                       _selectedCategory = selected ? category : null;
                     });
-                    context.pop();
+                    Navigator.of(context).pop();
                   },
                   selectedColor: AppTheme.primaryColor.withOpacity(0.2),
                   checkmarkColor: AppTheme.primaryColor,
@@ -380,7 +384,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                   setState(() {
                     _selectedCategory = null;
                   });
-                  context.pop();
+                  Navigator.of(context).pop();
                 },
                 child: const Text('Clear Filter'),
               ),
@@ -392,37 +396,45 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
   }
 
   void _showAnalytics() {
-    // TODO: Navigate to detailed analytics screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Detailed analytics coming soon!')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const HabitAnalyticsScreen(),
+      ),
     );
   }
 
   void _showAchievements() {
-    // TODO: Navigate to achievements screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Achievements screen coming soon!')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const HabitAchievementsScreen(),
+      ),
     );
   }
 
   void _showSettings() {
-    // TODO: Navigate to habit settings screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Habit settings coming soon!')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const HabitSettingsScreen(),
+      ),
     );
   }
 
   void _showHabitDetails(Habit habit) {
-    // TODO: Navigate to habit details screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Details for ${habit.name} coming soon!')),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => HabitAnalyticsScreen(habit: habit),
+      ),
     );
   }
 
   void _editHabit(Habit habit) {
-    // TODO: Navigate to edit habit screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Edit ${habit.name} coming soon!')),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => CreateHabitScreen(habitToEdit: habit),
+      ),
     );
   }
 
@@ -436,13 +448,13 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
         ),
         actions: [
           TextButton(
-            onPressed: () => context.pop(),
+            onPressed: () => Navigator.of(context).pop(),
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () async {
               final success = await habitNotifier.deleteHabit(habit.id);
-              context.pop();
+              Navigator.of(context).pop();
               
               if (success) {
                 ScaffoldMessenger.of(context).showSnackBar(

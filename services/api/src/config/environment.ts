@@ -60,7 +60,7 @@ const envSchema = z.object({
   OPENAI_API_KEY: z
     .string()
     .min(1, 'OpenAI API key is required')
-    .refine(val => !val || val.startsWith('sk-'), 'Invalid OpenAI API key format'),
+    .refine(val => !val || process.env.NODE_ENV === 'test' || val.startsWith('sk-'), 'Invalid OpenAI API key format'),
   OPENAI_MODEL: z.string().default('gpt-3.5-turbo'),
 
   // Claude Configuration

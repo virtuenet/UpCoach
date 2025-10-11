@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:audio_waveforms/audio_waveforms.dart'; // Removed unused import
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../providers/voice_journal_provider.dart';
 import '../../../core/services/voice_recording_service.dart';
 

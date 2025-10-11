@@ -1,6 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../providers/profile_provider.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
@@ -355,6 +360,119 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       _showSnackBar('Profile photo removed successfully');
     } catch (e) {
       _showSnackBar('Failed to remove profile photo: $e');
+    }
+  }
+
+  // Upload retry mechanism with exponential backoff
+  Future<String> _uploadProfileImage(File imageFile) async {
+    const maxRetries = 3;
+    const baseDelay = Duration(seconds: 1);
+
+    for (int attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        // Simulate network status check
+        if (await _checkNetworkConnection()) {
+          // Upload the image file with timeout
+          final uploadUrl = await _performUpload(imageFile).timeout(
+            const Duration(seconds: 30),
+            onTimeout: () => throw Exception('Upload timeout'),
+          );
+
+          if (uploadUrl.isNotEmpty) {
+            return uploadUrl;
+          }
+        }
+
+        throw Exception('Network unavailable or upload failed');
+      } catch (e) {
+        if (attempt == maxRetries - 1) {
+          // Final attempt failed, add to background queue
+          await _addToUploadQueue(imageFile);
+          throw Exception('Upload failed after $maxRetries attempts. Added to retry queue.');
+        }
+
+        // Exponential backoff delay
+        final delay = Duration(
+          milliseconds: baseDelay.inMilliseconds * (1 << attempt)
+        );
+        await Future.delayed(delay);
+
+        if (mounted) {
+          _showSnackBar('Upload attempt ${attempt + 1} failed, retrying...');
+        }
+      }
+    }
+
+    throw Exception('Upload failed');
+  }
+
+  Future<bool> _checkNetworkConnection() async {
+    try {
+      final result = await InternetAddress.lookup('google.com');
+      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<String> _performUpload(File imageFile) async {
+    // Compress image if needed
+    final compressedFile = await _compressImage(imageFile);
+
+    // TODO: Replace with actual API call to your backend
+    // This simulates an upload to a cloud storage service
+    await Future.delayed(const Duration(seconds: 2)); // Simulate upload time
+
+    // For now, return a mock URL - replace with actual upload logic
+    final fileName = 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    return 'https://api.upcoach.ai/uploads/avatars/$fileName';
+  }
+
+  Future<File> _compressImage(File imageFile) async {
+    try {
+      // TODO: Implement actual image compression using flutter_image_compress
+      // For now, just return the original file
+      return imageFile;
+    } catch (e) {
+      return imageFile;
+    }
+  }
+
+  Future<void> _addToUploadQueue(File imageFile) async {
+    try {
+      // Store failed upload in local queue for background retry
+      final queueData = {
+        'filePath': imageFile.path,
+        'uploadType': 'profile_image',
+        'userId': ref.read(profileProvider).user?.id,
+        'createdAt': DateTime.now().toIso8601String(),
+        'retryCount': 0,
+      };
+
+      // TODO: Save to local storage/database for background processing
+      // This could use SQLite, Hive, or SharedPreferences
+      print('Added to upload queue: $queueData');
+
+      if (mounted) {
+        _showSnackBar('Upload failed. Will retry in background when connection improves.');
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackBar('Failed to queue upload for retry');
+      }
+    }
+  }
+
+  // Background upload processor (call this periodically or on network state change)
+  Future<void> _processUploadQueue() async {
+    try {
+      // TODO: Retrieve queued uploads from local storage
+      // TODO: Attempt to upload each queued item
+      // TODO: Remove successful uploads from queue
+      // TODO: Increment retry count for failed uploads
+      // TODO: Remove items that have exceeded max retry attempts
+    } catch (e) {
+      print('Error processing upload queue: $e');
     }
   }
 

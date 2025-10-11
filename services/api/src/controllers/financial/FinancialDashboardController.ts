@@ -1,6 +1,7 @@
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
 import { Request, Response } from 'express';
 import { Op } from 'sequelize';
+import '../../types/express';
 import * as ExcelJS from 'exceljs';
 // @ts-ignore - Optional dependency for PDF generation
 import puppeteer from 'puppeteer';

@@ -29,6 +29,7 @@ class FinancialReport extends sequelize_1.Model {
     id;
     type;
     title;
+    name;
     description;
     status;
     format;
@@ -36,6 +37,7 @@ class FinancialReport extends sequelize_1.Model {
     generatedAt;
     parameters;
     data;
+    metadata;
     error;
     recipients;
     fileUrl;

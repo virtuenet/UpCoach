@@ -1,3 +1,6 @@
+// Import Jest globals first
+import { jest, afterEach, afterAll } from '@jest/globals';
+
 // Mock external services - must be at top level
 jest.mock('openai');
 jest.mock('@anthropic-ai/sdk');
@@ -14,9 +17,6 @@ jest.mock('../models/UserProfile');
 jest.mock('../models/experiments/Experiment');
 jest.mock('../models/experiments/ExperimentAssignment');
 jest.mock('../models/experiments/ExperimentEvent');
-
-// Test environment setup
-import { afterEach, afterAll } from '@jest/globals';
 
 // Set test environment
 process.env.NODE_ENV = 'test';

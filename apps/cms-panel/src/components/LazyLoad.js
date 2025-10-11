@@ -82,10 +82,10 @@ export const LazyComponents = {
     FileUploader: lazyLoad(() => import('../components/FileUploader')),
     // Data Grid
     DataGrid: lazyLoad(() => import('../components/DataGrid')),
-    // Calendar - TODO: Create calendar component
-    // Calendar: lazyLoad(() => import('../components/ui/calendar')),
-    // Date Picker - TODO: Create date-picker component
-    // DatePicker: lazyLoad(() => import('../components/ui/date-picker')),
+    // Calendar
+    Calendar: lazyLoad(() => import('../components/ui/calendar')),
+    // Date Picker
+    DatePicker: lazyLoad(() => import('../components/ui/date-picker')),
     // Color Picker
     ColorPicker: lazyLoad(() => import('../components/ColorPicker')),
 };

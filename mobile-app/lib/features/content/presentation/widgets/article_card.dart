@@ -6,6 +6,7 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../shared/models/content_article.dart';
 import '../../../../shared/widgets/shimmer_loading.dart';
+import '../../services/bookmark_service.dart';
 
 class ArticleCard extends StatelessWidget {
   final ContentArticle article;
@@ -41,6 +42,46 @@ Author: ${article.author.name}
     } catch (e) {
       // Handle error silently or with a toast if needed
       debugPrint('Failed to share article: $e');
+    }
+  }
+
+  Future<void> _toggleBookmark(BuildContext context) async {
+    try {
+      final bookmarkService = BookmarkService.instance;
+      final success = await bookmarkService.toggleBookmark(article);
+
+      if (context.mounted) {
+        final isBookmarked = bookmarkService.isBookmarked(article.id);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isBookmarked
+                  ? 'Article saved to bookmarks'
+                  : 'Article removed from bookmarks',
+            ),
+            duration: const Duration(seconds: 2),
+            action: success && isBookmarked
+                ? SnackBarAction(
+                    label: 'View',
+                    onPressed: () {
+                      // Navigate to bookmarks page
+                      Navigator.pushNamed(context, '/bookmarks');
+                    },
+                  )
+                : null,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Failed to toggle bookmark: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to update bookmark'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 
@@ -206,36 +247,36 @@ Author: ${article.author.name}
                               ),
                             ),
                           ),
-                          InkWell(
-                            onTap: () {
-                              // TODO: Implement bookmark functionality
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Bookmark functionality coming soon'),
+                          ValueListenableBuilder<Set<String>>(
+                            valueListenable: BookmarkService.instance.bookmarkedArticlesNotifier,
+                            builder: (context, bookmarkedIds, child) {
+                              final isBookmarked = bookmarkedIds.contains(article.id);
+
+                              return InkWell(
+                                onTap: () => _toggleBookmark(context),
+                                borderRadius: BorderRadius.circular(AppSpacing.sm),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(AppSpacing.sm),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                                        size: 18,
+                                        color: isBookmarked ? AppColors.primary : AppColors.textSecondary,
+                                      ),
+                                      const SizedBox(width: AppSpacing.xs),
+                                      Text(
+                                        isBookmarked ? 'Saved' : 'Save',
+                                        style: AppTextStyles.caption.copyWith(
+                                          color: isBookmarked ? AppColors.primary : AppColors.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               );
                             },
-                            borderRadius: BorderRadius.circular(AppSpacing.sm),
-                            child: Padding(
-                              padding: const EdgeInsets.all(AppSpacing.sm),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.bookmark_border,
-                                    size: 18,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                  const SizedBox(width: AppSpacing.xs),
-                                  Text(
-                                    'Save',
-                                    style: AppTextStyles.caption.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
                           ),
                         ],
                       ),

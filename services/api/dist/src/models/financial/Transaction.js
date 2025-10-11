@@ -36,6 +36,7 @@ class Transaction extends sequelize_1.Model {
     status;
     amount;
     currency;
+    country;
     paymentMethod;
     description;
     metadata;
@@ -116,6 +117,10 @@ Transaction.init({
         type: sequelize_1.DataTypes.STRING(3),
         allowNull: false,
         defaultValue: 'usd',
+    },
+    country: {
+        type: sequelize_1.DataTypes.STRING(2),
+        allowNull: true,
     },
     paymentMethod: {
         type: sequelize_1.DataTypes.ENUM(...Object.values(PaymentMethod)),

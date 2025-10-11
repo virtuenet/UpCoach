@@ -344,6 +344,11 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
     }
   }
 
+  // Clear error state
+  void clearError() {
+    state = state.copyWith(error: null);
+  }
+
   // Close storage service
   Future<void> dispose() async {
     await _storageService.close();

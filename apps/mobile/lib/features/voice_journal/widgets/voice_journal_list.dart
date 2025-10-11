@@ -2,17 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/constants/ui_constants.dart';
 import '../providers/voice_journal_provider.dart';
 import '../../../shared/models/voice_journal_entry.dart';
 
 class VoiceJournalList extends ConsumerWidget {
-  const VoiceJournalList({super.key});
+  final List<VoiceJournalEntry>? filteredEntries;
+
+  const VoiceJournalList({
+    super.key,
+    this.filteredEntries,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final voiceJournalState = ref.watch(voiceJournalProvider);
-    
-    if (voiceJournalState.entries.isEmpty) {
+    final entries = filteredEntries ?? voiceJournalState.entries;
+
+    if (entries.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -24,7 +31,7 @@ class VoiceJournalList extends ConsumerWidget {
             ),
             const SizedBox(height: UIConstants.spacingMD),
             Text(
-              'No voice journals yet',
+              filteredEntries != null ? 'No matching journals found' : 'No voice journals yet',
               style: TextStyle(
                 fontSize: 18,
                 color: Colors.grey.shade600,
@@ -33,7 +40,9 @@ class VoiceJournalList extends ConsumerWidget {
             ),
             const SizedBox(height: UIConstants.spacingSM),
             Text(
-              'Tap the Record tab to create your first voice journal',
+              filteredEntries != null
+                  ? 'Try a different search term or check your spelling'
+                  : 'Tap the Record tab to create your first voice journal',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade500,
@@ -47,9 +56,9 @@ class VoiceJournalList extends ConsumerWidget {
 
     return ListView.builder(
       padding: const EdgeInsets.all(UIConstants.spacingMD),
-      itemCount: voiceJournalState.entries.length,
+      itemCount: entries.length,
       itemBuilder: (context, index) {
-        final entry = voiceJournalState.entries[index];
+        final entry = entries[index];
         return VoiceJournalCard(entry: entry);
       },
     );

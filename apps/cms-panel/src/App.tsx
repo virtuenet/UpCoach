@@ -4,18 +4,10 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useAuthStore } from './stores/authStore';
 import LoginPage from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
-import ContentPage from './pages/ContentPage';
-import CreateContentPage from './pages/CreateContentPage';
-import EditContentPage from './pages/EditContentPage';
-import MediaLibraryPage from './pages/MediaLibraryPage';
-import AnalyticsPage from './pages/AnalyticsPage';
-import CoursesPage from './pages/CoursesPage';
-import CreateCoursePage from './pages/CreateCoursePage';
-import SettingsPage from './pages/SettingsPage';
 import Layout from './components/Layout';
 import SessionWrapper from './components/SessionWrapper';
 import theme from './theme';
+import { LazyPages } from './components/LazyLoad';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
@@ -42,16 +34,16 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <Routes>
-                    <Route path="/" element={<DashboardPage />} />
-                    <Route path="/dashboard" element={<DashboardPage />} />
-                    <Route path="/content" element={<ContentPage />} />
-                    <Route path="/content/create" element={<CreateContentPage />} />
-                    <Route path="/content/edit/:id" element={<EditContentPage />} />
-                    <Route path="/courses" element={<CoursesPage />} />
-                    <Route path="/courses/create" element={<CreateCoursePage />} />
-                    <Route path="/media" element={<MediaLibraryPage />} />
-                    <Route path="/analytics" element={<AnalyticsPage />} />
-                    <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="/" element={<LazyPages.Dashboard />} />
+                    <Route path="/dashboard" element={<LazyPages.Dashboard />} />
+                    <Route path="/content" element={<LazyPages.ContentList />} />
+                    <Route path="/content/create" element={<LazyPages.CreateContent />} />
+                    <Route path="/content/edit/:id" element={<LazyPages.ContentEditor />} />
+                    <Route path="/courses" element={<LazyPages.CoachMarketplace />} />
+                    <Route path="/courses/create" element={<LazyPages.CreateContent />} />
+                    <Route path="/media" element={<LazyPages.ContentList />} />
+                    <Route path="/analytics" element={<LazyPages.Analytics />} />
+                    <Route path="/settings" element={<LazyPages.Settings />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </Layout>

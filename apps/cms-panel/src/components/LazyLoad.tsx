@@ -158,11 +158,12 @@ export const LazyComponents = {
   // Data Grid
   DataGrid: lazyLoad(() => import('../components/DataGrid')),
 
-  // Calendar - TODO: Create calendar component
-  // Calendar: lazyLoad(() => import('../components/ui/calendar')),
+  // Calendar component
+  Calendar: lazyLoad(() => import('../components/Calendar')),
 
-  // Date Picker - TODO: Create date-picker component
-  // DatePicker: lazyLoad(() => import('../components/ui/date-picker')),
+  // Date Picker component
+  DatePicker: lazyLoad(() => import('../components/DatePicker').then(m => ({ default: m.DatePicker }))),
+  DateRangePicker: lazyLoad(() => import('../components/DatePicker').then(m => ({ default: m.DateRangePicker }))),
 
   // Color Picker
   ColorPicker: lazyLoad(() => import('../components/ColorPicker')),

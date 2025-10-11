@@ -9,9 +9,10 @@ import '../../shared/models/auth_response.dart';
 class AuthService {
   static final AuthService _instance = AuthService._internal();
   factory AuthService() => _instance;
-  
+
   final Dio _dio = Dio();
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  UserModel? _currentUser;
 
   AuthService._internal() {
     _dio.options.baseUrl = AppConstants.apiUrl;
@@ -198,12 +199,8 @@ class AuthService {
       final authResponse = AuthResponse.fromJson(response.data);
 
       // Store tokens securely
-      if (authResponse.token != null) {
-        await _secureStorage.write(key: 'auth_token', value: authResponse.token);
-      }
-      if (authResponse.refreshToken != null) {
-        await _secureStorage.write(key: 'refresh_token', value: authResponse.refreshToken);
-      }
+      await _secureStorage.write(key: 'access_token', value: authResponse.accessToken);
+      await _secureStorage.write(key: 'refresh_token', value: authResponse.refreshToken);
 
       _currentUser = authResponse.user;
       return authResponse;
@@ -215,13 +212,20 @@ class AuthService {
   }
 
   String? _getServerClientId() {
-    // TODO: Replace with your actual OAuth 2.0 client IDs
     if (Platform.isAndroid) {
-      return 'your-android-client-id.apps.googleusercontent.com';
+      final clientId = AppConstants.googleAndroidClientId;
+      if (clientId.isEmpty) {
+        throw Exception('Google Android Client ID not configured. Please set GOOGLE_ANDROID_CLIENT_ID environment variable.');
+      }
+      return clientId;
     } else if (Platform.isIOS) {
-      return 'your-ios-client-id.apps.googleusercontent.com';
+      final clientId = AppConstants.googleIOSClientId;
+      if (clientId.isEmpty) {
+        throw Exception('Google iOS Client ID not configured. Please set GOOGLE_IOS_CLIENT_ID environment variable.');
+      }
+      return clientId;
     }
-    return null;
+    throw Exception('Unsupported platform for Google Sign In');
   }
 
   Future<void> signOutFromGoogle() async {

@@ -6,7 +6,8 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { validationResult } from 'express-validator';
-import { CoachIntelligenceMLServiceComplete } from '../services/coaching/CoachIntelligenceMLServiceComplete';
+import mlService from '../services/coaching/CoachIntelligenceMLServiceComplete';
+import '../types/express';
 import MLDataPipeline from '../services/ml/MLDataPipeline';
 import { logger } from '../utils/logger';
 import { asyncHandler } from '../utils/asyncHandler';
@@ -14,9 +15,6 @@ import { AppError } from '../utils/errors';
 import { authLimiter, createRateLimiter } from '../middleware/rateLimiter';
 
 // Initialize services
-// Import the default service instance
-import mlServiceDefault from '../services/coaching/CoachIntelligenceMLServiceComplete';
-const mlService = mlServiceDefault;
 const dataPipeline = MLDataPipeline;
 
 // Rate limiting for ML endpoints

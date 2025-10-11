@@ -11,7 +11,7 @@ const userService_1 = require("../../services/userService");
 let testDb;
 async function initializeDatabase() {
     if (!testDb) {
-        testDb = new sequelize_1.Sequelize({
+        testDb = new sequelize_1.Sequelize('sqlite::memory:', {
             dialect: 'sqlite',
             storage: ':memory:',
             logging: false,

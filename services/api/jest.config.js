@@ -52,6 +52,8 @@ module.exports = {
     '^jsonwebtoken$': '<rootDir>/src/tests/__mocks__/jsonwebtoken.js',
     '^@anthropic-ai/sdk$': '<rootDir>/src/tests/__mocks__/anthropic.js',
     '^openai$': '<rootDir>/src/tests/__mocks__/openai.js',
+    '^pg-types$': '<rootDir>/src/tests/__mocks__/pg-types.js',
+    '^pg-connection-string$': '<rootDir>/src/tests/__mocks__/pg-connection-string.js',
   },
 
   // Coverage settings

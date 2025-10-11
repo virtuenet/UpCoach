@@ -1,20 +1,20 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mockAdminUser = exports.mockUser = void 0;
-jest.mock('openai');
-jest.mock('@anthropic-ai/sdk');
-jest.mock('ioredis');
-jest.mock('../models/User');
-jest.mock('../models/Goal');
-jest.mock('../models/Task');
-jest.mock('../models/Mood');
-jest.mock('../models/Chat');
-jest.mock('../models/ChatMessage');
-jest.mock('../models/UserProfile');
-jest.mock('../models/experiments/Experiment');
-jest.mock('../models/experiments/ExperimentAssignment');
-jest.mock('../models/experiments/ExperimentEvent');
 const globals_1 = require("@jest/globals");
+globals_1.jest.mock('openai');
+globals_1.jest.mock('@anthropic-ai/sdk');
+globals_1.jest.mock('ioredis');
+globals_1.jest.mock('../models/User');
+globals_1.jest.mock('../models/Goal');
+globals_1.jest.mock('../models/Task');
+globals_1.jest.mock('../models/Mood');
+globals_1.jest.mock('../models/Chat');
+globals_1.jest.mock('../models/ChatMessage');
+globals_1.jest.mock('../models/UserProfile');
+globals_1.jest.mock('../models/experiments/Experiment');
+globals_1.jest.mock('../models/experiments/ExperimentAssignment');
+globals_1.jest.mock('../models/experiments/ExperimentEvent');
 process.env.NODE_ENV = 'test';
 if (process.env.NODE_ENV === 'test') {
     process.env.JWT_SECRET = 'test-jwt-secret-that-is-long-enough-for-validation';
@@ -39,89 +39,89 @@ if (!process.env.VERBOSE_TESTS) {
         error: originalConsole.error,
     };
 }
-jest.mock('../services/redis', () => ({
+globals_1.jest.mock('../services/redis', () => ({
     redis: {
-        get: jest.fn(),
-        set: jest.fn(),
-        del: jest.fn(),
-        expire: jest.fn(),
-        ttl: jest.fn(),
-        keys: jest.fn(),
-        mget: jest.fn(),
-        mset: jest.fn(),
+        get: globals_1.jest.fn(),
+        set: globals_1.jest.fn(),
+        del: globals_1.jest.fn(),
+        expire: globals_1.jest.fn(),
+        ttl: globals_1.jest.fn(),
+        keys: globals_1.jest.fn(),
+        mget: globals_1.jest.fn(),
+        mset: globals_1.jest.fn(),
     },
 }));
-jest.mock('../config/sequelize', () => ({
+globals_1.jest.mock('../config/sequelize', () => ({
     sequelize: {
-        authenticate: jest.fn(),
-        sync: jest.fn(),
-        getDialect: jest.fn(() => 'postgres'),
-        getDatabaseName: jest.fn(() => 'test_db'),
-        query: jest.fn(),
-        transaction: jest.fn(),
-        close: jest.fn(),
-        define: jest.fn(),
+        authenticate: globals_1.jest.fn(),
+        sync: globals_1.jest.fn(),
+        getDialect: globals_1.jest.fn(() => 'postgres'),
+        getDatabaseName: globals_1.jest.fn(() => 'test_db'),
+        query: globals_1.jest.fn(),
+        transaction: globals_1.jest.fn(),
+        close: globals_1.jest.fn(),
+        define: globals_1.jest.fn(),
     },
 }));
-jest.mock('../config/database', () => ({
+globals_1.jest.mock('../config/database', () => ({
     sequelize: {
-        authenticate: jest.fn(),
-        sync: jest.fn(),
-        getDialect: jest.fn(() => 'postgres'),
-        getDatabaseName: jest.fn(() => 'test_db'),
-        query: jest.fn(),
-        transaction: jest.fn(),
-        close: jest.fn(),
-        define: jest.fn(),
+        authenticate: globals_1.jest.fn(),
+        sync: globals_1.jest.fn(),
+        getDialect: globals_1.jest.fn(() => 'postgres'),
+        getDatabaseName: globals_1.jest.fn(() => 'test_db'),
+        query: globals_1.jest.fn(),
+        transaction: globals_1.jest.fn(),
+        close: globals_1.jest.fn(),
+        define: globals_1.jest.fn(),
     },
-    initializeDatabase: jest.fn(),
-    closeDatabase: jest.fn(),
-    query: jest.fn(),
-    transaction: jest.fn(),
+    initializeDatabase: globals_1.jest.fn(),
+    closeDatabase: globals_1.jest.fn(),
+    query: globals_1.jest.fn(),
+    transaction: globals_1.jest.fn(),
 }));
-jest.mock('../models', () => ({
+globals_1.jest.mock('../models', () => ({
     sequelize: {
-        authenticate: jest.fn(),
-        sync: jest.fn(),
+        authenticate: globals_1.jest.fn(),
+        sync: globals_1.jest.fn(),
     },
     User: {
-        findByPk: jest.fn(),
-        findOne: jest.fn(),
-        findAll: jest.fn(),
-        create: jest.fn(),
-        update: jest.fn(),
-        destroy: jest.fn(),
+        findByPk: globals_1.jest.fn(),
+        findOne: globals_1.jest.fn(),
+        findAll: globals_1.jest.fn(),
+        create: globals_1.jest.fn(),
+        update: globals_1.jest.fn(),
+        destroy: globals_1.jest.fn(),
     },
     UserProfile: {
-        findOne: jest.fn(),
-        create: jest.fn(),
-        update: jest.fn(),
+        findOne: globals_1.jest.fn(),
+        create: globals_1.jest.fn(),
+        update: globals_1.jest.fn(),
     },
     Recommendation: {
-        findAll: jest.fn(),
-        create: jest.fn(),
-        bulkCreate: jest.fn(),
+        findAll: globals_1.jest.fn(),
+        create: globals_1.jest.fn(),
+        bulkCreate: globals_1.jest.fn(),
     },
     ChatMessage: {
-        findAll: jest.fn(),
-        findByPk: jest.fn(),
-        create: jest.fn(),
-        update: jest.fn(),
-        destroy: jest.fn(),
+        findAll: globals_1.jest.fn(),
+        findByPk: globals_1.jest.fn(),
+        create: globals_1.jest.fn(),
+        update: globals_1.jest.fn(),
+        destroy: globals_1.jest.fn(),
     },
     Chat: {
-        findAll: jest.fn(),
-        findByPk: jest.fn(),
-        create: jest.fn(),
-        update: jest.fn(),
-        destroy: jest.fn(),
+        findAll: globals_1.jest.fn(),
+        findByPk: globals_1.jest.fn(),
+        create: globals_1.jest.fn(),
+        update: globals_1.jest.fn(),
+        destroy: globals_1.jest.fn(),
     },
     Goal: {
-        findAll: jest.fn(),
-        findByPk: jest.fn(),
-        create: jest.fn(),
-        update: jest.fn(),
-        destroy: jest.fn(),
+        findAll: globals_1.jest.fn(),
+        findByPk: globals_1.jest.fn(),
+        create: globals_1.jest.fn(),
+        update: globals_1.jest.fn(),
+        destroy: globals_1.jest.fn(),
     },
 }));
 exports.mockUser = {
@@ -141,17 +141,17 @@ exports.mockAdminUser = {
     updatedAt: new Date(),
 };
 (0, globals_1.afterEach)(() => {
-    jest.clearAllMocks();
-    jest.clearAllTimers();
+    globals_1.jest.clearAllMocks();
+    globals_1.jest.clearAllTimers();
 });
 (0, globals_1.afterAll)(async () => {
     if (originalConsole) {
         global.console = originalConsole;
     }
-    jest.clearAllMocks();
-    jest.restoreAllMocks();
-    jest.clearAllTimers();
-    jest.resetModules();
+    globals_1.jest.clearAllMocks();
+    globals_1.jest.restoreAllMocks();
+    globals_1.jest.clearAllTimers();
+    globals_1.jest.resetModules();
     await new Promise(resolve => setImmediate(resolve));
     if (global.gc) {
         global.gc();

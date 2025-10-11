@@ -38,11 +38,21 @@ class DashboardSSEService {
                 res.status(429).json({ error: 'Maximum connections exceeded' });
                 return;
             }
+            const allowedOrigins = [
+                'http://localhost:1006',
+                'http://localhost:1007',
+                'http://localhost:1005',
+                'https://admin.upcoach.ai',
+                'https://cms.upcoach.ai',
+                'https://upcoach.ai',
+            ];
+            const origin = req.headers.origin;
+            const allowedOrigin = allowedOrigins.includes(origin || '') ? origin : allowedOrigins[0];
             res.writeHead(200, {
                 'Content-Type': 'text/event-stream',
                 'Cache-Control': 'no-cache',
                 'Connection': 'keep-alive',
-                'Access-Control-Allow-Origin': req.headers.origin || '*',
+                'Access-Control-Allow-Origin': allowedOrigin,
                 'Access-Control-Allow-Headers': 'Cache-Control, Content-Type, Authorization',
                 'Access-Control-Allow-Credentials': 'true',
                 'X-Accel-Buffering': 'no',

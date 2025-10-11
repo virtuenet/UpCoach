@@ -5,13 +5,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mlRateLimiter = exports.CoachIntelligenceMLController = void 0;
 const express_validator_1 = require("express-validator");
+const CoachIntelligenceMLServiceComplete_1 = __importDefault(require("../services/coaching/CoachIntelligenceMLServiceComplete"));
+require("../types/express");
 const MLDataPipeline_1 = __importDefault(require("../services/ml/MLDataPipeline"));
 const logger_1 = require("../utils/logger");
 const asyncHandler_1 = require("../utils/asyncHandler");
 const errors_1 = require("../utils/errors");
 const rateLimiter_1 = require("../middleware/rateLimiter");
-const CoachIntelligenceMLServiceComplete_1 = __importDefault(require("../services/coaching/CoachIntelligenceMLServiceComplete"));
-const mlService = CoachIntelligenceMLServiceComplete_1.default;
 const dataPipeline = MLDataPipeline_1.default;
 const mlRateLimiter = (0, rateLimiter_1.createRateLimiter)({
     windowMs: 60 * 1000,
@@ -30,7 +30,7 @@ class CoachIntelligenceMLController {
         if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
-        const npsResult = await mlService.calculateNPSScore(userId, timeframe);
+        const npsResult = await CoachIntelligenceMLServiceComplete_1.default.calculateNPSScore(userId, timeframe);
         logger_1.logger.info('NPS score calculated', {
             userId,
             score: npsResult.score,
@@ -51,7 +51,7 @@ class CoachIntelligenceMLController {
         if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
-        const assessment = await mlService.trackSkillImprovement(userId, skillId, score, context);
+        const assessment = await CoachIntelligenceMLServiceComplete_1.default.trackSkillImprovement(userId, skillId, score, context);
         logger_1.logger.info('Skill improvement tracked', {
             userId,
             skillId,
@@ -87,7 +87,7 @@ class CoachIntelligenceMLController {
         if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
-        const insights = await mlService.generateGoalInsights(userId, goalId);
+        const insights = await CoachIntelligenceMLServiceComplete_1.default.generateGoalInsights(userId, goalId);
         logger_1.logger.info('Goal insights generated', {
             userId,
             insightCount: insights.length,
@@ -103,7 +103,7 @@ class CoachIntelligenceMLController {
         if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
-        const prediction = await mlService.predictGoalSuccess(userId, goalId);
+        const prediction = await CoachIntelligenceMLServiceComplete_1.default.predictGoalSuccess(userId, goalId);
         logger_1.logger.info('Goal success predicted', {
             userId,
             goalId,
@@ -121,7 +121,7 @@ class CoachIntelligenceMLController {
         if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
-        const patterns = await mlService.analyzeUserPatterns(userId);
+        const patterns = await CoachIntelligenceMLServiceComplete_1.default.analyzeUserPatterns(userId);
         logger_1.logger.info('User patterns analyzed', {
             userId,
             patternCount: patterns.length,
@@ -137,7 +137,7 @@ class CoachIntelligenceMLController {
         if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
-        const recommendations = await mlService.generateCoachingRecommendations(userId, context);
+        const recommendations = await CoachIntelligenceMLServiceComplete_1.default.generateCoachingRecommendations(userId, context);
         logger_1.logger.info('Coaching recommendations generated', {
             userId,
             recommendationCount: recommendations.length,
@@ -157,7 +157,7 @@ class CoachIntelligenceMLController {
         const targetMetrics = metrics
             ? metrics.split(',')
             : undefined;
-        const percentiles = await mlService.calculateUserPercentiles(userId, targetMetrics);
+        const percentiles = await CoachIntelligenceMLServiceComplete_1.default.calculateUserPercentiles(userId, targetMetrics);
         logger_1.logger.info('User percentiles calculated', {
             userId,
             metricsCount: percentiles.length,
@@ -173,7 +173,7 @@ class CoachIntelligenceMLController {
         if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
-        const anomalies = await mlService.detectBehavioralAnomalies(userId);
+        const anomalies = await CoachIntelligenceMLServiceComplete_1.default.detectBehavioralAnomalies(userId);
         const criticalAnomalies = anomalies.filter((a) => a.severity === 'critical');
         if (criticalAnomalies.length > 0) {
             logger_1.logger.warn('Critical anomalies detected', {
@@ -192,7 +192,7 @@ class CoachIntelligenceMLController {
         if (req.user?.id !== userId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
-        const insights = await mlService.generatePersonalizedInsights(userId);
+        const insights = await CoachIntelligenceMLServiceComplete_1.default.generatePersonalizedInsights(userId);
         logger_1.logger.info('Personalized insights generated', {
             userId,
             insightCount: insights.length,
@@ -208,7 +208,7 @@ class CoachIntelligenceMLController {
         if (req.user?.id !== coachId && !isAdmin) {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
-        const report = await mlService.generateCoachingEffectivenessReport(coachId);
+        const report = await CoachIntelligenceMLServiceComplete_1.default.generateCoachingEffectivenessReport(coachId);
         logger_1.logger.info('Coaching effectiveness report generated', {
             coachId,
         });
@@ -387,11 +387,11 @@ class CoachIntelligenceMLController {
             throw new errors_1.AppError('Unauthorized access', 403);
         }
         const [npsScore, patterns, insights, percentiles, recommendations,] = await Promise.all([
-            mlService.calculateNPSScore(userId),
-            mlService.analyzeUserPatterns(userId),
-            mlService.generatePersonalizedInsights(userId),
-            mlService.calculateUserPercentiles(userId),
-            mlService.generateCoachingRecommendations(userId),
+            CoachIntelligenceMLServiceComplete_1.default.calculateNPSScore(userId),
+            CoachIntelligenceMLServiceComplete_1.default.analyzeUserPatterns(userId),
+            CoachIntelligenceMLServiceComplete_1.default.generatePersonalizedInsights(userId),
+            CoachIntelligenceMLServiceComplete_1.default.calculateUserPercentiles(userId),
+            CoachIntelligenceMLServiceComplete_1.default.generateCoachingRecommendations(userId),
         ]);
         res.json({
             success: true,
