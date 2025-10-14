@@ -24,10 +24,10 @@ jobs:
       fail-fast: false
       matrix:
         package:
-          - api
-          - admin-panel
-          - cms-panel
-          - landing-page
+          - services/api
+          - apps/admin-panel
+          - apps/cms-panel
+          - apps/landing-page
     
     steps:
       - uses: actions/checkout@v4
@@ -41,20 +41,8 @@ jobs:
         run: |
           if [ -f "${{ matrix.package }}/package-lock.json" ]; then
             cd ${{ matrix.package }} && npm ci
-          elif [ -f "packages/${{ matrix.package }}/package-lock.json" ]; then
-            cd packages/${{ matrix.package }} && npm ci
-          elif [ -f "apps/${{ matrix.package }}/package-lock.json" ]; then
-            cd apps/${{ matrix.package }} && npm ci
-          elif [ -f "services/${{ matrix.package }}/package-lock.json" ]; then
-            cd services/${{ matrix.package }} && npm ci
           elif [ -f "${{ matrix.package }}/package.json" ]; then
             cd ${{ matrix.package }} && npm install
-          elif [ -f "packages/${{ matrix.package }}/package.json" ]; then
-            cd packages/${{ matrix.package }} && npm install
-          elif [ -f "apps/${{ matrix.package }}/package.json" ]; then
-            cd apps/${{ matrix.package }} && npm install
-          elif [ -f "services/${{ matrix.package }}/package.json" ]; then
-            cd services/${{ matrix.package }} && npm install
           else
             echo "Warning: No package.json found for ${{ matrix.package }}, skipping"
           fi
@@ -63,20 +51,13 @@ jobs:
         run: |
           if [ -d "${{ matrix.package }}" ]; then
             cd ${{ matrix.package }}
-          elif [ -d "packages/${{ matrix.package }}" ]; then
-            cd packages/${{ matrix.package }}
-          elif [ -d "apps/${{ matrix.package }}" ]; then
-            cd apps/${{ matrix.package }}
-          elif [ -d "services/${{ matrix.package }}" ]; then
-            cd services/${{ matrix.package }}
+            if [ -f "package.json" ]; then
+              npm run test:unit -- --coverage || npm test -- --coverage || npm test || echo "Tests failed or not found"
+            else
+              echo "No package.json found, skipping tests"
+            fi
           else
             echo "Directory not found for ${{ matrix.package }}, skipping"
-            exit 0
-          fi
-          if [ -f "package.json" ]; then
-            npm test -- --coverage || npm run test:unit || echo "Tests failed or not found"
-          else
-            echo "No package.json found, skipping tests"
           fi
         continue-on-error: true
       
@@ -138,11 +119,15 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
           cache-dependency-path: services/api/package-lock.json
       
       - name: Install dependencies
-        run: npm ci
+        run: |
+          if [ -f "package-lock.json" ]; then
+            npm ci
+          else
+            npm install
+          fi
       
       - name: Run database migrations
         run: npm run db:migrate
