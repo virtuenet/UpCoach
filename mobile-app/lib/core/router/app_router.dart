@@ -48,6 +48,8 @@ import '../../features/profile/screens/notifications_screen.dart';
 import '../../features/profile/screens/help_center_screen.dart';
 import '../../features/profile/screens/about_screen.dart';
 import '../../features/profile/screens/feedback_screen.dart';
+import '../../features/voice_journal/screens/voice_journal_screen.dart';
+import '../../features/voice_journal/screens/voice_journal_recording_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -127,6 +129,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/content',
             builder: (context, state) => const ContentLibraryScreen(),
+          ),
+          GoRoute(
+            path: '/voice-journal',
+            builder: (context, state) => const VoiceJournalScreen(),
           ),
         ],
       ),
@@ -284,6 +290,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/feedback',
         builder: (context, state) => const FeedbackScreen(),
+      ),
+
+      // Voice Journal Routes
+      GoRoute(
+        path: '/voice-journal/record',
+        builder: (context, state) => const VoiceJournalRecordingScreen(),
       ),
     ],
   );
