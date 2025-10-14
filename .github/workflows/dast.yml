@@ -3,8 +3,8 @@ name: DAST Security Testing
 on:
   push:
     branches: [main]
-    paths:
-      - '.github/workflows/dast.yml'
+  pull_request:
+    branches: [main]
   schedule:
     # Run DAST weekly on Sundays at 3 AM UTC
     - cron: '0 3 * * 0'
@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Run ZAP Baseline Scan
-        if: github.event.inputs.scan_type == 'baseline' || github.event_name == 'schedule'
+        if: github.event.inputs.scan_type == 'baseline' || github.event.inputs.scan_type == '' || github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'pull_request'
         uses: zaproxy/action-baseline@v0.10.0
         with:
           target: ${{ github.event.inputs.target_url || 'https://staging.upcoach.ai' }}
@@ -52,7 +52,7 @@ jobs:
           artifact_name: 'zap_baseline_report'
       
       - name: Run ZAP Full Scan
-        if: github.event.inputs.scan_type == 'full'
+        if: github.event.inputs.scan_type == 'full' || (github.event_name == 'schedule' && github.event.schedule == '0 3 * * 0')
         uses: zaproxy/action-full-scan@v0.8.0
         with:
           target: ${{ github.event.inputs.target_url }}
@@ -63,7 +63,7 @@ jobs:
           artifact_name: 'zap_full_report'
       
       - name: Run ZAP API Scan
-        if: github.event.inputs.scan_type == 'api'
+        if: github.event.inputs.scan_type == 'api' || github.event_name == 'workflow_dispatch'
         uses: zaproxy/action-api-scan@v0.5.0
         with:
           target: ${{ github.event.inputs.target_url }}

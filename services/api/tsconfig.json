@@ -2,33 +2,50 @@
   "compilerOptions": {
     "target": "es2022",
     "module": "commonjs",
-    "lib": ["es2022", "dom"],
+    "lib": ["es2022"],
     "skipLibCheck": true,
-    "noImplicitAny": false,
-    "strictNullChecks": false,
+
+    // Stricter type checking for production
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strict": true,
+    "noImplicitReturns": true,
+    "useUnknownInCatchVariables": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+
+    // Output configuration
     "outDir": "./dist",
-    "rootDir": ".",
-    "strict": false,
-    "noImplicitReturns": false,
-    "useUnknownInCatchVariables": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "allowUnusedLabels": true,
-    "allowUnreachableCode": true,
+    "rootDir": "./src",
+    "removeComments": true,
+    "importHelpers": true,
+
+    // Module resolution
     "esModuleInterop": true,
     "incremental": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "downlevelIteration": true,
+    "moduleResolution": "node",
+
+    // Decorators
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "sourceMap": true,
+
+    // Source maps (disabled in production)
+    "sourceMap": false,
+    "inlineSourceMap": false,
     "declaration": false,
     "declarationMap": false,
-    "moduleResolution": "node",
-    "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
-    "types": [],
+
+    // Type configuration
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "types": ["node"],
+
+    // Path mapping for better imports
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
@@ -38,21 +55,28 @@
       "@/routes/*": ["src/routes/*"],
       "@/services/*": ["src/services/*"],
       "@/models/*": ["src/models/*"],
-      "@/controllers/*": ["src/controllers/*"]
+      "@/controllers/*": ["src/controllers/*"],
+      "@/config/*": ["src/config/*"],
+      "@/validation/*": ["src/validation/*"]
     }
   },
   "include": [
-    "src/**/*",
-    "tests/**/*",
-    "../../types/missing-types.d.ts"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "src/**/*.test.ts",
-    "src/**/*.spec.ts",
-    "src/__tests__/**/*",
-    "src/tests/**/*",
-    "tests/**/*"
-  ]
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/__tests__/**/*",
+    "tests/**/*",
+    "coverage/**/*",
+    "**/*.d.ts"
+  ],
+
+  // TypeScript project references for better build performance
+  "ts-node": {
+    "esm": false,
+    "experimentalSpecifierResolution": "node"
+  }
 } 

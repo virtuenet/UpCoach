@@ -16,7 +16,7 @@ dotenvConfig({ path: path.resolve(process.cwd(), envFile) });
 export class SecretManager {
   private static instance: SecretManager;
   private secrets: Map<string, string> = new Map();
-  private encryptionKey: Buffer;
+  private encryptionKey: any;
   private readonly algorithm = 'aes-256-gcm';
   private readonly rotationInterval = 90 * 24 * 60 * 60 * 1000; // 90 days
 
@@ -36,7 +36,7 @@ export class SecretManager {
   /**
    * Get or create master encryption key for secrets
    */
-  private getOrCreateEncryptionKey(): Buffer {
+  private getOrCreateEncryptionKey(): any {
     const keyPath = path.join(process.cwd(), '.secrets', 'master.key');
 
     try {

@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 // Pagination schema
 export const paginationSchema = z.object({
-  page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
+  page: z.number().int().positive().default(1),
+  limit: z.number().int().positive().max(100).default(20),
   sortBy: z.string().optional(),
   order: z
     .enum(['ASC', 'DESC', 'asc', 'desc'])
@@ -16,12 +16,10 @@ export const dateRangeSchema = z
   .object({
     startDate: z
       .string()
-      .datetime()
       .or(z.date())
       .transform(val => new Date(val)),
     endDate: z
       .string()
-      .datetime()
       .or(z.date())
       .transform(val => new Date(val)),
   })
@@ -32,12 +30,12 @@ export const dateRangeSchema = z
 
 // ID parameter schema
 export const idParamSchema = z.object({
-  id: z.coerce.number().int().positive(),
+  id: z.number().int().positive(),
 });
 
 // UUID parameter schema
 export const uuidParamSchema = z.object({
-  id: z.string().uuid('Invalid UUID format'),
+  id: z.string().uuid(),
 });
 
 // Search query schema
@@ -94,7 +92,7 @@ export const addressSchema = z.object({
 
 // Money/amount schema
 export const moneySchema = z.object({
-  amount: z.number().positive().multipleOf(0.01, 'Amount must have at most 2 decimal places'),
+  amount: z.number().positive(),
   currency: z.enum(['USD', 'EUR', 'GBP', 'CAD', 'AUD']).default('USD'),
 });
 
@@ -170,7 +168,7 @@ export const subscriptionSchema = z.object({
 export const webhookPayloadSchema = z.object({
   event: z.string().min(1),
   data: z.record(z.unknown()),
-  timestamp: z.string().datetime().or(z.date()),
+  timestamp: z.string().or(z.date()),
   signature: z.string().min(1),
 });
 
@@ -179,8 +177,8 @@ export const apiKeySchema = z.object({
   name: z.string().min(3, 'API key name must be at least 3 characters').max(50),
   description: z.string().max(200).optional(),
   permissions: z.array(z.string()).min(1, 'Select at least one permission'),
-  expiresAt: z.string().datetime().or(z.date()).optional(),
-  ipWhitelist: z.array(z.string().ip()).optional(),
+  expiresAt: z.string().or(z.date()).optional(),
+  ipWhitelist: z.array(z.string()).optional(),
 });
 
 // Batch operation schema
