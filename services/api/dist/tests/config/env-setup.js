@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const tslib_1 = require("tslib");
+const dotenv = tslib_1.__importStar(require("dotenv"));
+const path_1 = tslib_1.__importDefault(require("path"));
+const envPath = path_1.default.resolve(__dirname, '../../../../.env.test');
+dotenv.config({ path: envPath });
+process.env.NODE_ENV = 'test';
+process.env.TESTING = 'true';
+process.env.LOG_LEVEL = 'silent';
+process.env.MOCK_EXTERNAL_SERVICES = 'true';
+process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || 'postgresql://upcoach_test:test_pass@localhost:1433/upcoach_test_db';
+process.env.AI_TESTING_MODE = 'true';
+process.env.MOCK_AI_RESPONSES = 'true';
+process.env.DISABLE_EXTERNAL_CALLS = 'true';
