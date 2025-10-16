@@ -893,19 +893,39 @@ Duration: ${Duration(seconds: entry.durationSeconds).toString()}
     };
   }
 
-  // Delete old voice journal entries
+  // Delete old voice journal entries with authorization
   Future<int> deleteOldEntries(DateTime cutoffDate) async {
     try {
+      // Verify user authentication
+      final currentUser = await _authService.getCurrentUser();
+      if (currentUser == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Show confirmation dialog for bulk deletion
+      final confirmed = await _showBulkDeleteConfirmation(cutoffDate);
+      if (!confirmed) return 0;
+
       int deletedCount = 0;
-      final entriesToDelete = state.entries.where((entry) => entry.createdAt.isBefore(cutoffDate)).toList();
+      final entriesToDelete = state.entries
+          .where((entry) =>
+              entry.createdAt.isBefore(cutoffDate) &&
+              entry.userId == currentUser.id) // Verify ownership
+          .toList();
 
       for (final entry in entriesToDelete) {
         try {
-          // Delete audio file
-          await _voiceRecordingService.deleteRecording(entry.audioFilePath);
+          // Verify user owns this entry
+          if (entry.userId != currentUser.id) {
+            print('Skipping entry ${entry.id}: Access denied');
+            continue;
+          }
 
-          // Delete from storage
-          await _storageService.deleteEntry(entry.id);
+          // Soft delete - mark as deleted instead of permanent deletion
+          await _storageService.softDeleteEntry(entry.id);
+
+          // Log deletion for audit
+          await _auditService.logDeletion(entry.id, 'bulk_delete_old_entries');
 
           deletedCount++;
         } catch (e) {
@@ -915,7 +935,9 @@ Duration: ${Duration(seconds: entry.durationSeconds).toString()}
       }
 
       // Remove deleted entries from state
-      final updatedEntries = state.entries.where((entry) => !entry.createdAt.isBefore(cutoffDate)).toList();
+      final updatedEntries = state.entries
+          .where((entry) => !entry.createdAt.isBefore(cutoffDate) || entry.userId != currentUser.id)
+          .toList();
 
       state = state.copyWith(entries: updatedEntries);
 
@@ -926,9 +948,19 @@ Duration: ${Duration(seconds: entry.durationSeconds).toString()}
     }
   }
 
-  // Batch delete multiple entries by IDs
+  // Batch delete multiple entries by IDs with authorization
   Future<int> deleteBatchEntries(List<String> entryIds) async {
     try {
+      // Verify user authentication
+      final currentUser = await _authService.getCurrentUser();
+      if (currentUser == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Show confirmation dialog for batch deletion
+      final confirmed = await _showBatchDeleteConfirmation(entryIds.length);
+      if (!confirmed) return 0;
+
       int deletedCount = 0;
 
       for (final entryId in entryIds) {
@@ -938,11 +970,17 @@ Duration: ${Duration(seconds: entry.durationSeconds).toString()}
 
           final entry = state.entries[entryIndex];
 
-          // Delete audio file
-          await _voiceRecordingService.deleteRecording(entry.audioFilePath);
+          // Verify user owns this entry
+          if (entry.userId != currentUser.id) {
+            print('Skipping entry $entryId: Access denied');
+            continue;
+          }
 
-          // Delete from storage
-          await _storageService.deleteEntry(entryId);
+          // Soft delete - mark as deleted instead of permanent deletion
+          await _storageService.softDeleteEntry(entryId);
+
+          // Log deletion for audit
+          await _auditService.logDeletion(entryId, 'batch_delete_entries');
 
           deletedCount++;
         } catch (e) {

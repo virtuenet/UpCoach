@@ -192,8 +192,17 @@ services:
   grafana:
     image: grafana/grafana:latest
     environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin_staging}
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+      GF_SECURITY_SECRET_KEY: ${GRAFANA_SECRET_KEY}
+      GF_SECURITY_DISABLE_GRAVATAR: true
+      GF_SECURITY_STRICT_TRANSPORT_SECURITY: true
+      GF_SECURITY_STRICT_TRANSPORT_SECURITY_MAX_AGE_SECONDS: 86400
+      GF_SECURITY_CONTENT_TYPE_OPTIONS: true
+      GF_SECURITY_X_CONTENT_TYPE_OPTIONS: nosniff
+      GF_SECURITY_X_XSS_PROTECTION: true
+      GF_AUTH_ANONYMOUS_ENABLED: false
+      GF_SNAPSHOTS_EXTERNAL_ENABLED: false
       GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
     volumes:
       - grafana_data:/var/lib/grafana

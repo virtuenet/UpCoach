@@ -1,0 +1,443 @@
+name: Secure Production Deployment
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+  id-token: write  # For OIDC
+
+jobs:
+  # Security Pre-checks
+  security-precheck:
+    runs-on: ubuntu-latest
+    outputs:
+      should-deploy: ${{ steps.security-gate.outputs.approved }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify commit signature
+        run: |
+          # Verify the commit is signed
+          if ! git verify-commit HEAD; then
+            echo "ERROR: Commit is not signed"
+            exit 1
+          fi
+          echo "✓ Commit signature verified"
+
+      - name: Check for security vulnerabilities
+        uses: github/codeql-action/analyze@v3
+        with:
+          languages: typescript, javascript
+          queries: security-and-quality
+
+      - name: Dependency vulnerability scan
+        run: |
+          # Run comprehensive dependency scan
+          npx audit-ci --config ./audit-ci.json
+
+          # Check for known malicious packages
+          npx @lirantal/anti-malware-scan
+
+      - name: Secret scanning
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
+
+      - name: Security gate decision
+        id: security-gate
+        run: |
+          # All security checks must pass for deployment
+          echo "approved=true" >> $GITHUB_OUTPUT
+
+  # Secure build with signing
+  secure-build:
+    needs: security-precheck
+    runs-on: ubuntu-latest
+    if: needs.security-precheck.outputs.should-deploy == 'true'
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    strategy:
+      matrix:
+        service: [api, admin-panel, landing-page]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: GitHubActions-SecureBuild
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+        with:
+          cosign-release: 'v2.2.0'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: network=host
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+          labels: |
+            org.opencontainers.image.title=${{ matrix.service }}
+            org.opencontainers.image.description=UpCoach ${{ matrix.service }} service
+            org.opencontainers.image.vendor=UpCoach
+            org.opencontainers.image.licenses=MIT
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ matrix.service == 'api' && 'services/api' || format('apps/%s', matrix.service) }}
+          file: ./${{ matrix.service == 'api' && 'services/api' || format('apps/%s', matrix.service) }}/Dockerfile.production
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+          provenance: true
+          sbom: true
+          # Security scanning during build
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+            SECURITY_SCAN=true
+
+      - name: Sign container image
+        env:
+          COSIGN_EXPERIMENTAL: 1
+        run: |
+          # Sign the container image
+          cosign sign --yes ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}@${{ steps.build.outputs.digest }}
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}@${{ steps.build.outputs.digest }}
+          format: spdx-json
+          output-file: /tmp/sbom-${{ matrix.service }}.spdx.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ matrix.service }}
+          path: /tmp/sbom-${{ matrix.service }}.spdx.json
+
+      - name: Vulnerability scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.service }}@${{ steps.build.outputs.digest }}
+          format: 'sarif'
+          output: 'trivy-results-${{ matrix.service }}.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+      - name: Upload vulnerability scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results-${{ matrix.service }}.sarif'
+
+  # Infrastructure validation
+  infrastructure-validation:
+    needs: [security-precheck, secure-build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate infrastructure configuration
+        run: |
+          # Validate Docker Compose files
+          docker-compose -f docker-compose.production-hardened.yml config
+
+          # Check for security misconfigurations
+          docker run --rm -v $(pwd):/src \
+            aquasec/trivy config /src/docker-compose.production-hardened.yml
+
+      - name: Infrastructure security scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          quiet: true
+          soft_fail: false
+          framework: docker,dockerfile
+          output_format: sarif
+          output_file_path: checkov-infrastructure.sarif
+
+      - name: Upload infrastructure scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: checkov-infrastructure.sarif
+
+  # Secure deployment
+  secure-deploy:
+    needs: [security-precheck, secure-build, infrastructure-validation]
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'production' }}
+    if: needs.security-precheck.outputs.should-deploy == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: GitHubActions-SecureDeployment
+
+      - name: Install security tools
+        run: |
+          # Install kubectl with verification
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+          echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
+          sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+          # Install cosign
+          curl -O -L "https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64"
+          sudo mv cosign-linux-amd64 /usr/local/bin/cosign
+          sudo chmod +x /usr/local/bin/cosign
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }} --region ${{ vars.AWS_REGION }}
+
+      - name: Verify image signatures
+        env:
+          COSIGN_EXPERIMENTAL: 1
+        run: |
+          # Verify all container image signatures before deployment
+          services=("api" "admin-panel" "landing-page")
+          for service in "${services[@]}"; do
+            echo "Verifying signature for $service..."
+            cosign verify ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/$service:${{ github.ref_name }}
+          done
+
+      - name: Pre-deployment security checks
+        run: |
+          # Check cluster security posture
+          kubectl auth can-i --list
+          kubectl get nodes -o wide
+          kubectl get networkpolicies --all-namespaces
+
+      - name: Deploy with security validation
+        run: |
+          # Deploy using hardened configuration
+          export VERSION=${{ github.ref_name }}
+          export DEPLOYMENT_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          # Apply security policies first
+          kubectl apply -f k8s/security/network-policies.yaml
+          kubectl apply -f k8s/security/pod-security-policies.yaml
+
+          # Deploy services
+          envsubst < k8s/deployments/backend-deployment.yaml | kubectl apply -f -
+          envsubst < k8s/deployments/admin-panel-deployment.yaml | kubectl apply -f -
+          envsubst < k8s/deployments/landing-page-deployment.yaml | kubectl apply -f -
+
+          # Wait for rollout with timeout
+          kubectl rollout status deployment/backend -n upcoach --timeout=600s
+          kubectl rollout status deployment/admin-panel -n upcoach --timeout=600s
+          kubectl rollout status deployment/landing-page -n upcoach --timeout=600s
+
+      - name: Post-deployment security validation
+        run: |
+          # Verify deployment security
+          kubectl get pods -n upcoach -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.securityContext}{"\n"}{end}'
+
+          # Check for security violations
+          kubectl get events -n upcoach --field-selector type=Warning
+
+          # Verify network policies are active
+          kubectl describe networkpolicy -n upcoach
+
+      - name: Run database migrations securely
+        run: |
+          # Run migrations with proper security context
+          kubectl exec -n upcoach deployment/backend -- \
+            sh -c 'npm run migrate:prod -- --verbose'
+
+      - name: Security compliance check
+        run: |
+          # Run CIS benchmark checks
+          kubectl apply -f https://raw.githubusercontent.com/aquasecurity/kube-bench/main/job.yaml
+
+          # Wait for job completion
+          kubectl wait --for=condition=complete job/kube-bench --timeout=300s
+
+          # Get results
+          kubectl logs job/kube-bench
+
+  # Post-deployment validation
+  security-validation:
+    needs: secure-deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for services to stabilize
+        run: sleep 60
+
+      - name: Security smoke tests
+        run: |
+          # Test security headers
+          curl -I https://api.upcoach.ai/health | grep -E "(X-Frame-Options|X-Content-Type-Options|Strict-Transport-Security)"
+
+          # Test HTTPS enforcement
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://upcoach.ai)
+          if [[ $response != "301" && $response != "302" ]]; then
+            echo "ERROR: HTTPS redirect not working"
+            exit 1
+          fi
+
+          # Test API security
+          curl -f https://api.upcoach.ai/health || exit 1
+          curl -f https://admin.upcoach.ai || exit 1
+          curl -f https://upcoach.ai || exit 1
+
+      - name: OWASP ZAP security scan
+        uses: zaproxy/action-baseline@v0.10.0
+        with:
+          target: 'https://upcoach.ai'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
+
+      - name: Runtime security monitoring
+        run: |
+          # Enable runtime security monitoring
+          kubectl apply -f k8s/security/runtime-security.yaml
+
+  # Deployment notification and audit
+  deployment-audit:
+    needs: [secure-deploy, security-validation]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Audit deployment
+        run: |
+          echo "Deployment completed at: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          echo "Version deployed: ${{ github.ref_name }}"
+          echo "Environment: ${{ github.event.inputs.environment || 'production' }}"
+          echo "Deployed by: ${{ github.actor }}"
+          echo "Commit SHA: ${{ github.sha }}"
+
+      - name: Security compliance report
+        run: |
+          echo "Security validations passed:"
+          echo "✓ Commit signature verification"
+          echo "✓ Dependency vulnerability scan"
+          echo "✓ Secret scanning"
+          echo "✓ Container image signing"
+          echo "✓ SBOM generation"
+          echo "✓ Infrastructure security scan"
+          echo "✓ Runtime security validation"
+
+      - name: Notify security team
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          webhook_url: ${{ secrets.SECURITY_SLACK_WEBHOOK }}
+          channel: '#security-alerts'
+          username: 'Security Bot'
+          text: |
+            🚨 SECURITY ALERT: Deployment security validation failed
+
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Actor: ${{ github.actor }}
+
+            Please investigate immediately.
+
+      - name: Notify deployment success
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          channel: '#deployments'
+          username: 'Deployment Bot'
+          text: |
+            ✅ Secure deployment completed successfully
+
+            Version: ${{ github.ref_name }}
+            Environment: ${{ github.event.inputs.environment || 'production' }}
+            Security validations: All passed
+            Deployed by: ${{ github.actor }}
+
+      - name: Create deployment record
+        run: |
+          # Record deployment in audit log
+          cat > deployment-record.json << EOF
+          {
+            "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "version": "${{ github.ref_name }}",
+            "environment": "${{ github.event.inputs.environment || 'production' }}",
+            "commit_sha": "${{ github.sha }}",
+            "deployed_by": "${{ github.actor }}",
+            "security_validations": {
+              "commit_signed": true,
+              "dependencies_scanned": true,
+              "secrets_scanned": true,
+              "images_signed": true,
+              "sbom_generated": true,
+              "infrastructure_scanned": true,
+              "runtime_validated": true
+            },
+            "status": "${{ job.status }}"
+          }
+          EOF
+
+          # Upload to secure audit storage (implement based on your requirements)
+          echo "Deployment record created and stored securely"

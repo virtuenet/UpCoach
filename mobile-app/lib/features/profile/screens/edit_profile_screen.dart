@@ -257,29 +257,107 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   void _scheduleUploadRetry(String localPath, String fileName) async {
     try {
-      // Add to retry queue with persistent storage
-      final prefs = await SharedPreferences.getInstance();
-      final retryQueue = prefs.getStringList('upload_retry_queue') ?? [];
+      // Validate and sanitize inputs
+      final sanitizedPath = _validateAndSanitizePath(localPath);
+      final sanitizedFileName = _validateAndSanitizeFileName(fileName);
+
+      if (sanitizedPath == null || sanitizedFileName == null) {
+        throw Exception('Invalid file path or name');
+      }
+
+      // Get authenticated user ID
+      final currentUser = await _authService.getCurrentUser();
+      if (currentUser == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Add to retry queue with encrypted storage
+      final secureStorage = await _getSecureStorage();
+      final retryQueue = await _getEncryptedRetryQueue();
 
       final retryItem = {
-        'localPath': localPath,
-        'fileName': fileName,
+        'localPath': sanitizedPath,
+        'fileName': sanitizedFileName,
         'type': 'profile_image',
         'attempts': 0,
         'scheduledAt': DateTime.now().toIso8601String(),
-        'userId': 'current_user_id', // Replace with actual user ID
+        'userId': currentUser.id,
+        'checksum': await _calculateFileChecksum(sanitizedPath),
       };
 
-      retryQueue.add(json.encode(retryItem));
-      await prefs.setStringList('upload_retry_queue', retryQueue);
+      // Limit retry queue size
+      if (retryQueue.length >= 10) {
+        retryQueue.removeAt(0); // Remove oldest item
+      }
 
-      // Schedule immediate retry attempt
+      retryQueue.add(retryItem);
+      await _saveEncryptedRetryQueue(retryQueue);
+
+      // Schedule immediate retry attempt with authorization
       _attemptRetryUpload(retryItem);
 
-      print('Scheduled upload retry for: $fileName');
+      print('Scheduled upload retry for: $sanitizedFileName');
     } catch (e) {
       print('Failed to schedule upload retry: $e');
     }
+  }
+
+  String? _validateAndSanitizePath(String path) {
+    // Validate path to prevent directory traversal
+    if (path.contains('..') || path.contains('~') || path.startsWith('/')) {
+      return null;
+    }
+
+    // Ensure path is within allowed directories
+    final allowedPrefixes = [
+      '/data/user/0/', // Android app data
+      'file:///var/mobile/', // iOS app data
+    ];
+
+    if (!allowedPrefixes.any((prefix) => path.startsWith(prefix))) {
+      return null;
+    }
+
+    return path;
+  }
+
+  String? _validateAndSanitizeFileName(String fileName) {
+    // Remove dangerous characters
+    final sanitized = fileName.replaceAll(RegExp(r'[^a-zA-Z0-9._-]'), '_');
+
+    // Ensure reasonable length
+    if (sanitized.length > 255 || sanitized.isEmpty) {
+      return null;
+    }
+
+    // Ensure allowed file extension
+    final allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
+    if (!allowedExtensions.any((ext) => sanitized.toLowerCase().endsWith(ext))) {
+      return null;
+    }
+
+    return sanitized;
+  }
+
+  Future<List<Map<String, dynamic>>> _getEncryptedRetryQueue() async {
+    try {
+      final secureStorage = await _getSecureStorage();
+      final encryptedData = await secureStorage.read(key: 'upload_retry_queue');
+      if (encryptedData == null) return [];
+
+      final decryptedData = _decryptData(encryptedData);
+      final List<dynamic> items = json.decode(decryptedData);
+      return items.cast<Map<String, dynamic>>();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<void> _saveEncryptedRetryQueue(List<Map<String, dynamic>> queue) async {
+    final secureStorage = await _getSecureStorage();
+    final jsonData = json.encode(queue);
+    final encryptedData = _encryptData(jsonData);
+    await secureStorage.write(key: 'upload_retry_queue', value: encryptedData);
   }
 
   Future<void> _attemptRetryUpload(Map<String, dynamic> retryItem) async {

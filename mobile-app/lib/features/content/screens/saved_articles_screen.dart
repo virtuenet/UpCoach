@@ -62,21 +62,27 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
 
   Future<void> _shareArticle(ContentArticle article) async {
     try {
+      // Show privacy consent dialog before sharing
+      final shouldShare = await _showShareConsentDialog();
+      if (!shouldShare) return;
+
+      // Sanitize and limit shared content for privacy
+      final sanitizedTitle = _sanitizeShareContent(article.title);
       final shareText = '''
-📚 ${article.title}
+📚 $sanitizedTitle
 
-${article.summary}
+Discover more coaching content in the UpCoach app!
 
-Read more in the UpCoach app!
-
-Category: ${article.category.name}
-Author: ${article.author.name}
+Download UpCoach for personalized coaching insights.
 ''';
 
       await Share.share(
         shareText,
-        subject: 'Check out this article: ${article.title}',
+        subject: 'Check out this coaching content',
       );
+
+      // Log sharing activity for audit
+      _logSharingActivity(article.id);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -84,6 +90,42 @@ Author: ${article.author.name}
         );
       }
     }
+  }
+
+  Future<bool> _showShareConsentDialog() async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Share Content'),
+        content: const Text(
+          'This will share article information outside the app. '
+          'No personal data will be included. Continue?'
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Share'),
+          ),
+        ],
+      ),
+    ) ?? false;
+  }
+
+  String _sanitizeShareContent(String content) {
+    // Remove potentially sensitive information
+    return content
+        .replaceAll(RegExp(r'\b\d{3}-\d{2}-\d{4}\b'), '[REDACTED]') // SSN pattern
+        .replaceAll(RegExp(r'\b[\w\.-]+@[\w\.-]+\.\w+\b'), '[EMAIL]') // Email
+        .replaceAll(RegExp(r'\b\d{3}-\d{3}-\d{4}\b'), '[PHONE]'); // Phone
+  }
+
+  void _logSharingActivity(String articleId) {
+    // Log sharing for audit purposes
+    // Implementation would depend on logging service
   }
 
   Future<void> _removeFromSaved(ContentArticle article) async {

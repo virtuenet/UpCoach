@@ -1,12 +1,15 @@
 import * as dotenv from 'dotenv';
 import { Sequelize } from 'sequelize';
+import { getSecret } from './secrets-manager';
 
 // Load environment variables
 dotenv.config();
 
 // Initialize Sequelize with PostgreSQL connection
+const dbUrl = getSecret('DATABASE_URL', true);
+
 export const sequelize = new Sequelize(
-  process.env.DATABASE_URL || 'postgresql://upcoach:upcoach_secure_pass@localhost:1433/upcoach_db',
+  dbUrl,
   {
     dialect: 'postgres',
     logging: process.env.NODE_ENV === 'development' ? console.log : false,

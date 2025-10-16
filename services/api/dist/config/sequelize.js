@@ -4,8 +4,10 @@ exports.sequelize = void 0;
 const tslib_1 = require("tslib");
 const dotenv = tslib_1.__importStar(require("dotenv"));
 const sequelize_1 = require("sequelize");
+const secrets_manager_1 = require("./secrets-manager");
 dotenv.config();
-exports.sequelize = new sequelize_1.Sequelize(process.env.DATABASE_URL || 'postgresql://upcoach:upcoach_secure_pass@localhost:1433/upcoach_db', {
+const dbUrl = (0, secrets_manager_1.getSecret)('DATABASE_URL', true);
+exports.sequelize = new sequelize_1.Sequelize(dbUrl, {
     dialect: 'postgres',
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
     pool: {
