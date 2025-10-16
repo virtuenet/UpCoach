@@ -262,9 +262,93 @@ router.post(
       id_token: z.string().min(1, 'Google ID token is required'),
     }).parse(req.body);
 
-    // This would require authentication middleware to get current user
-    // For now, return not implemented
-    throw new ApiError(501, 'Account linking not yet implemented');
+    // Get authenticated user from JWT middleware
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      throw new ApiError(401, 'Authentication required');
+    }
+
+    try {
+      // Verify Google token
+      const googleUserInfo = await googleAuthService.getUserInfo({
+        idToken: id_token,
+      });
+
+      if (!googleUserInfo.email || !googleUserInfo.email_verified) {
+        throw new ApiError(400, 'Google account email must be verified');
+      }
+
+      // Get current user
+      const currentUser = await UserService.findById(userId);
+      if (!currentUser) {
+        throw new ApiError(404, 'User not found');
+      }
+
+      // Check if Google account is already linked to another user
+      const existingGoogleUser = await UserService.findByGoogleId(googleUserInfo.sub);
+      if (existingGoogleUser && existingGoogleUser.id !== userId) {
+        throw new ApiError(409, 'Google account is already linked to another user');
+      }
+
+      // Check if email matches current user
+      if (googleUserInfo.email !== currentUser.email) {
+        throw new ApiError(400, 'Google account email must match your current account email');
+      }
+
+      // Link Google account to current user
+      const updateData = {
+        google_id: googleUserInfo.sub,
+        auth_provider: currentUser.authProvider === 'email' ? 'google' : currentUser.authProvider,
+        provider_data: {
+          ...((currentUser as any).providerData || {}),
+          google: {
+            sub: googleUserInfo.sub,
+            email: googleUserInfo.email,
+            name: googleUserInfo.name,
+            picture: googleUserInfo.picture,
+            locale: googleUserInfo.locale,
+            verified_email: googleUserInfo.email_verified,
+            linked_at: new Date(),
+          }
+        },
+        last_provider_sync: new Date(),
+      };
+
+      // Update avatar if user doesn't have one
+      if (!currentUser.avatarUrl && googleUserInfo.picture) {
+        (updateData as any).avatar_url = googleUserInfo.picture;
+      }
+
+      await UserService.update(userId, updateData);
+
+      // Log security event
+      logger.info('Google account linked successfully', {
+        userId,
+        email: currentUser.email,
+        googleSub: googleUserInfo.sub,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+        timestamp: new Date().toISOString()
+      });
+
+      res.json({
+        success: true,
+        message: 'Google account linked successfully',
+        data: {
+          googleEmail: googleUserInfo.email,
+          linkedAt: new Date(),
+        },
+      });
+
+    } catch (error) {
+      logger.error('Google account linking error:', error);
+
+      if (error instanceof ApiError) {
+        throw error;
+      }
+
+      throw new ApiError(500, 'Failed to link Google account');
+    }
   })
 );
 
@@ -276,9 +360,88 @@ router.post(
   '/unlink',
   authLimiter,
   asyncHandler(async (req: Request, res: Response) => {
-    // This would require authentication middleware to get current user
-    // For now, return not implemented
-    throw new ApiError(501, 'Account unlinking not yet implemented');
+    // Get authenticated user from JWT middleware
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      throw new ApiError(401, 'Authentication required');
+    }
+
+    try {
+      // Get current user
+      const currentUser = await UserService.findById(userId);
+      if (!currentUser) {
+        throw new ApiError(404, 'User not found');
+      }
+
+      // Check if user has Google account linked
+      if (!(currentUser as any).googleId) {
+        throw new ApiError(400, 'No Google account is currently linked');
+      }
+
+      // Check if this is the only authentication method
+      const hasPassword = !!(currentUser as any).passwordHash;
+      const hasOtherProviders = currentUser.authProvider &&
+        currentUser.authProvider !== 'google' &&
+        currentUser.authProvider !== 'email';
+
+      if (!hasPassword && !hasOtherProviders) {
+        throw new ApiError(400, 'Cannot unlink Google account as it is your only authentication method. Please set a password first.');
+      }
+
+      // Prepare update data to remove Google linking
+      const updateData = {
+        google_id: null,
+        auth_provider: hasPassword ? 'email' : currentUser.authProvider,
+        provider_data: {
+          ...((currentUser as any).providerData || {}),
+        },
+        last_provider_sync: new Date(),
+      };
+
+      // Remove Google data from provider_data
+      if (updateData.provider_data.google) {
+        delete updateData.provider_data.google;
+      }
+
+      await UserService.update(userId, updateData);
+
+      // Invalidate all Google-related sessions in Redis
+      const googleSessionPattern = `google_session:${userId}:*`;
+      const keys = await redis.keys(googleSessionPattern);
+      if (keys.length > 0) {
+        await redis.del(...keys);
+      }
+
+      // Log security event
+      logger.info('Google account unlinked successfully', {
+        userId,
+        email: currentUser.email,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+        timestamp: new Date().toISOString()
+      });
+
+      res.json({
+        success: true,
+        message: 'Google account unlinked successfully',
+        data: {
+          unlinkedAt: new Date(),
+          remainingAuthMethods: {
+            password: hasPassword,
+            otherProviders: !!hasOtherProviders,
+          },
+        },
+      });
+
+    } catch (error) {
+      logger.error('Google account unlinking error:', error);
+
+      if (error instanceof ApiError) {
+        throw error;
+      }
+
+      throw new ApiError(500, 'Failed to unlink Google account');
+    }
   })
 );
 
