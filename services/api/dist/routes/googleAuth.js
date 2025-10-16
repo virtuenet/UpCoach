@@ -203,9 +203,136 @@ router.post('/link', rateLimiter_1.authLimiter, (0, errorHandler_1.asyncHandler)
     const { id_token } = zod_1.z.object({
         id_token: zod_1.z.string().min(1, 'Google ID token is required'),
     }).parse(req.body);
-    throw new apiError_1.ApiError(501, 'Account linking not yet implemented');
+    const userId = req.user?.id;
+    if (!userId) {
+        throw new apiError_1.ApiError(401, 'Authentication required');
+    }
+    try {
+        const googleUserInfo = await GoogleAuthService_1.googleAuthService.getUserInfo({
+            idToken: id_token,
+        });
+        if (!googleUserInfo.email || !googleUserInfo.email_verified) {
+            throw new apiError_1.ApiError(400, 'Google account email must be verified');
+        }
+        const currentUser = await userService_1.UserService.findById(userId);
+        if (!currentUser) {
+            throw new apiError_1.ApiError(404, 'User not found');
+        }
+        const existingGoogleUser = await userService_1.UserService.findByGoogleId(googleUserInfo.sub);
+        if (existingGoogleUser && existingGoogleUser.id !== userId) {
+            throw new apiError_1.ApiError(409, 'Google account is already linked to another user');
+        }
+        if (googleUserInfo.email !== currentUser.email) {
+            throw new apiError_1.ApiError(400, 'Google account email must match your current account email');
+        }
+        const updateData = {
+            google_id: googleUserInfo.sub,
+            auth_provider: currentUser.authProvider === 'email' ? 'google' : currentUser.authProvider,
+            provider_data: {
+                ...(currentUser.providerData || {}),
+                google: {
+                    sub: googleUserInfo.sub,
+                    email: googleUserInfo.email,
+                    name: googleUserInfo.name,
+                    picture: googleUserInfo.picture,
+                    locale: googleUserInfo.locale,
+                    verified_email: googleUserInfo.email_verified,
+                    linked_at: new Date(),
+                }
+            },
+            last_provider_sync: new Date(),
+        };
+        if (!currentUser.avatarUrl && googleUserInfo.picture) {
+            updateData.avatar_url = googleUserInfo.picture;
+        }
+        await userService_1.UserService.update(userId, updateData);
+        logger_1.logger.info('Google account linked successfully', {
+            userId,
+            email: currentUser.email,
+            googleSub: googleUserInfo.sub,
+            ip: req.ip,
+            userAgent: req.headers['user-agent'],
+            timestamp: new Date().toISOString()
+        });
+        res.json({
+            success: true,
+            message: 'Google account linked successfully',
+            data: {
+                googleEmail: googleUserInfo.email,
+                linkedAt: new Date(),
+            },
+        });
+    }
+    catch (error) {
+        logger_1.logger.error('Google account linking error:', error);
+        if (error instanceof apiError_1.ApiError) {
+            throw error;
+        }
+        throw new apiError_1.ApiError(500, 'Failed to link Google account');
+    }
 }));
 router.post('/unlink', rateLimiter_1.authLimiter, (0, errorHandler_1.asyncHandler)(async (req, res) => {
-    throw new apiError_1.ApiError(501, 'Account unlinking not yet implemented');
+    const userId = req.user?.id;
+    if (!userId) {
+        throw new apiError_1.ApiError(401, 'Authentication required');
+    }
+    try {
+        const currentUser = await userService_1.UserService.findById(userId);
+        if (!currentUser) {
+            throw new apiError_1.ApiError(404, 'User not found');
+        }
+        if (!currentUser.googleId) {
+            throw new apiError_1.ApiError(400, 'No Google account is currently linked');
+        }
+        const hasPassword = !!currentUser.passwordHash;
+        const hasOtherProviders = currentUser.authProvider &&
+            currentUser.authProvider !== 'google' &&
+            currentUser.authProvider !== 'email';
+        if (!hasPassword && !hasOtherProviders) {
+            throw new apiError_1.ApiError(400, 'Cannot unlink Google account as it is your only authentication method. Please set a password first.');
+        }
+        const updateData = {
+            google_id: null,
+            auth_provider: hasPassword ? 'email' : currentUser.authProvider,
+            provider_data: {
+                ...(currentUser.providerData || {}),
+            },
+            last_provider_sync: new Date(),
+        };
+        if (updateData.provider_data.google) {
+            delete updateData.provider_data.google;
+        }
+        await userService_1.UserService.update(userId, updateData);
+        const googleSessionPattern = `google_session:${userId}:*`;
+        const keys = await redis_1.redis.keys(googleSessionPattern);
+        if (keys.length > 0) {
+            await redis_1.redis.del(...keys);
+        }
+        logger_1.logger.info('Google account unlinked successfully', {
+            userId,
+            email: currentUser.email,
+            ip: req.ip,
+            userAgent: req.headers['user-agent'],
+            timestamp: new Date().toISOString()
+        });
+        res.json({
+            success: true,
+            message: 'Google account unlinked successfully',
+            data: {
+                unlinkedAt: new Date(),
+                remainingAuthMethods: {
+                    password: hasPassword,
+                    otherProviders: !!hasOtherProviders,
+                },
+            },
+        });
+    }
+    catch (error) {
+        logger_1.logger.error('Google account unlinking error:', error);
+        if (error instanceof apiError_1.ApiError) {
+            throw error;
+        }
+        throw new apiError_1.ApiError(500, 'Failed to unlink Google account');
+    }
 }));
 exports.default = router;
