@@ -59,10 +59,17 @@ export class FinancialDashboardController {
    */
   async getDashboardMetrics(req: Request, res: Response): Promise<void> {
     try {
+      const userRole = (req as any).user?.role;
+
+      if (!this.canUserAccessMetrics(userRole, 'dashboard')) {
+        this.logSecurityEvent(req, 'UNAUTHORIZED_DASHBOARD_ACCESS');
+        throw new ApiError(403, 'Insufficient permissions to access dashboard metrics');
+      }
+
       const metrics = await financialService.getDashboardMetrics();
       res.json(metrics);
     } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
@@ -71,6 +78,13 @@ export class FinancialDashboardController {
    */
   async getRevenueMetrics(req: Request, res: Response): Promise<void> {
     try {
+      const userRole = (req as any).user?.role;
+
+      if (!this.canUserAccessMetrics(userRole, 'revenue')) {
+        this.logSecurityEvent(req, 'UNAUTHORIZED_REVENUE_ACCESS');
+        throw new ApiError(403, 'Insufficient permissions to access revenue metrics');
+      }
+
       const { startDate, endDate } = req.query;
       const start = startDate ? new Date(startDate as string) : startOfMonth(new Date());
       const end = endDate ? new Date(endDate as string) : endOfMonth(new Date());
@@ -101,7 +115,7 @@ export class FinancialDashboardController {
         arr,
       });
     } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
@@ -148,6 +162,13 @@ export class FinancialDashboardController {
    */
   async getCostMetrics(req: Request, res: Response): Promise<void> {
     try {
+      const userRole = (req as any).user?.role;
+
+      if (!this.canUserAccessMetrics(userRole, 'costs')) {
+        this.logSecurityEvent(req, 'UNAUTHORIZED_COST_ACCESS');
+        throw new ApiError(403, 'Insufficient permissions to access cost metrics');
+      }
+
       const { startDate, endDate } = req.query;
       const start = startDate ? new Date(startDate as string) : startOfMonth(new Date());
       const end = endDate ? new Date(endDate as string) : endOfMonth(new Date());
@@ -180,7 +201,7 @@ export class FinancialDashboardController {
         ),
       });
     } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
@@ -572,10 +593,18 @@ export class FinancialDashboardController {
    */
   async createCost(req: Request, res: Response): Promise<void> {
     try {
+      const userRole = (req as any).user?.role;
+
+      // Only admin and financial_analyst can create cost entries
+      if (!['admin', 'super_admin', 'financial_analyst'].includes(userRole)) {
+        this.logSecurityEvent(req, 'UNAUTHORIZED_COST_CREATE_ATTEMPT');
+        throw new ApiError(403, 'Insufficient permissions to create cost entries');
+      }
+
       const cost = await CostTracking.create(req.body);
       res.status(201).json(cost);
     } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
@@ -584,6 +613,14 @@ export class FinancialDashboardController {
    */
   async updateCost(req: Request, res: Response): Promise<void> {
     try {
+      const userRole = (req as any).user?.role;
+
+      // Only admin and financial_analyst can update cost entries
+      if (!['admin', 'super_admin', 'financial_analyst'].includes(userRole)) {
+        this.logSecurityEvent(req, 'UNAUTHORIZED_COST_UPDATE_ATTEMPT', { costId: req.params.id });
+        throw new ApiError(403, 'Insufficient permissions to update cost entries');
+      }
+
       const { id } = req.params;
       const cost = await CostTracking.findByPk(id);
 
@@ -603,6 +640,14 @@ export class FinancialDashboardController {
    */
   async deleteCost(req: Request, res: Response): Promise<void> {
     try {
+      const userRole = (req as any).user?.role;
+
+      // Only admin can delete cost entries (more restrictive than create/update)
+      if (!['admin', 'super_admin'].includes(userRole)) {
+        this.logSecurityEvent(req, 'UNAUTHORIZED_COST_DELETE_ATTEMPT', { costId: req.params.id });
+        throw new ApiError(403, 'Insufficient permissions to delete cost entries');
+      }
+
       const { id } = req.params;
       const cost = await CostTracking.findByPk(id);
 
@@ -753,10 +798,30 @@ export class FinancialDashboardController {
    */
   async createReport(req: Request, res: Response): Promise<void> {
     try {
-      const report = await FinancialReport.create(req.body);
+      const userRole = (req as any).user?.role;
+      const userId = (req as any).user?.id;
+
+      // Only admin, financial_analyst, and manager can create reports
+      if (!['admin', 'super_admin', 'financial_analyst', 'manager'].includes(userRole)) {
+        this.logSecurityEvent(req, 'UNAUTHORIZED_REPORT_CREATE_ATTEMPT');
+        throw new ApiError(403, 'Insufficient permissions to create reports');
+      }
+
+      // Add creator information to report metadata
+      const reportData = {
+        ...req.body,
+        metadata: {
+          ...req.body.metadata,
+          createdBy: userId,
+          createdByRole: userRole,
+          createdAt: new Date().toISOString()
+        }
+      };
+
+      const report = await FinancialReport.create(reportData);
       res.status(201).json(report);
     } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
+      res.status((error as any).statusCode || 500).json({ error: (error as Error).message });
     }
   }
 
@@ -797,12 +862,13 @@ export class FinancialDashboardController {
         throw new ApiError(404, 'Report not found');
       }
 
-      // Check if user has permission to access this report (placeholder for authorization)
-      // In a real implementation, you'd check user permissions here
-      // const userId = (req as any).user?.id;
-      // if (!this.canUserAccessReport(userId, report)) {
-      //   throw new ApiError(403, 'Insufficient permissions to access this report');
-      // }
+      // Check if user has permission to access this report
+      const userId = (req as any).user?.id;
+      const userRole = (req as any).user?.role;
+
+      if (!this.canUserAccessReport(userId, userRole, report)) {
+        throw new ApiError(403, 'Insufficient permissions to access this report');
+      }
 
       // Log export activity for audit purposes
       logger.info('Report export requested', {
@@ -810,7 +876,11 @@ export class FinancialDashboardController {
         format,
         reportType: report.type,
         requestTime: new Date().toISOString(),
-        // userId: (req as any).user?.id
+        userId: (req as any).user?.id,
+        userRole: (req as any).user?.role,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        event: 'REPORT_EXPORT_REQUESTED'
       });
 
       // Generate report content based on format
@@ -827,7 +897,10 @@ export class FinancialDashboardController {
         reportId: id,
         format,
         reportType: report.type,
-        completionTime: new Date().toISOString()
+        completionTime: new Date().toISOString(),
+        userId: (req as any).user?.id,
+        userRole: (req as any).user?.role,
+        event: 'REPORT_EXPORT_COMPLETED'
       });
 
     } catch (error) {
@@ -835,7 +908,12 @@ export class FinancialDashboardController {
         reportId: req.params.id,
         format: req.query.format,
         error: (error as Error).message,
-        stack: (error as Error).stack
+        stack: (error as Error).stack,
+        userId: (req as any).user?.id,
+        userRole: (req as any).user?.role,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+        event: 'REPORT_EXPORT_FAILED'
       });
 
       res.status((error as any).statusCode || 500).json({
@@ -1798,7 +1876,23 @@ export class FinancialDashboardController {
    */
   async triggerAutomation(req: Request, res: Response): Promise<void> {
     try {
+      const userRole = (req as any).user?.role;
       const { type } = req.params;
+
+      // Only admin and financial_analyst can trigger automation
+      if (!['admin', 'super_admin', 'financial_analyst'].includes(userRole)) {
+        this.logSecurityEvent(req, 'UNAUTHORIZED_AUTOMATION_TRIGGER', { automationType: type });
+        throw new ApiError(403, 'Insufficient permissions to trigger automation');
+      }
+
+      // Log automation trigger for audit
+      logger.info('Manual automation triggered', {
+        type,
+        userId: (req as any).user?.id,
+        userRole,
+        timestamp: new Date().toISOString(),
+        event: 'AUTOMATION_TRIGGERED'
+      });
 
       switch (type) {
         case 'daily-snapshot':
@@ -2416,19 +2510,147 @@ export class FinancialDashboardController {
   }
 
   /**
-   * Check if user has permission to access report (placeholder)
+   * Check if user has permission to access report
    */
-  private canUserAccessReport(userId: string, report: any): boolean {
-    // This is a placeholder for authorization logic
-    // In a real implementation, you would check:
-    // - User role/permissions
-    // - Report visibility settings
-    // - Organization/team membership
-    // - Data access policies
+  private canUserAccessReport(userId: string, userRole: string, report: any): boolean {
+    // Basic validation
+    if (!userId || !userRole) {
+      logger.warn('Authorization failed: Missing user ID or role', { userId, userRole });
+      return false;
+    }
 
-    if (!userId) return false;
+    // Admin users can access all reports
+    if (userRole === 'admin' || userRole === 'super_admin') {
+      return true;
+    }
 
-    // For now, return true (implement proper authorization as needed)
-    return true;
+    // Financial analysts can access financial reports
+    if (userRole === 'financial_analyst' && this.isFinancialReport(report.type)) {
+      return true;
+    }
+
+    // Managers can access reports for their organization
+    if (userRole === 'manager' && this.canManagerAccessReport(userId, report)) {
+      return true;
+    }
+
+    // Regular users can only access their own reports (if report has user-specific data)
+    if (userRole === 'user' && this.isUserOwnReport(userId, report)) {
+      return true;
+    }
+
+    // Default deny
+    logger.warn('Authorization failed: Insufficient permissions', {
+      userId,
+      userRole,
+      reportType: report.type,
+      reportId: report.id
+    });
+
+    return false;
+  }
+
+  /**
+   * Check if report type is considered financial
+   */
+  private isFinancialReport(reportType: string): boolean {
+    const financialReportTypes = [
+      'revenue',
+      'subscriptions',
+      'costs',
+      'profit_loss',
+      'churn_analysis',
+      'cohort_analysis',
+      'financial_summary'
+    ];
+
+    return financialReportTypes.includes(reportType.toLowerCase());
+  }
+
+  /**
+   * Check if manager can access specific report based on organization
+   */
+  private canManagerAccessReport(userId: string, report: any): boolean {
+    // In a real implementation, this would check:
+    // - User's organization/team membership
+    // - Report's organization scope
+    // - Manager's access level within organization
+
+    // For now, allow managers to access general financial reports
+    // but restrict access to user-specific or sensitive reports
+    const restrictedTypes = ['user_activity', 'personal_data', 'payment_details'];
+
+    if (restrictedTypes.includes(report.type?.toLowerCase())) {
+      return false;
+    }
+
+    return this.isFinancialReport(report.type);
+  }
+
+  /**
+   * Check if report belongs to the requesting user
+   */
+  private isUserOwnReport(userId: string, report: any): boolean {
+    // Check if report has user-specific data and belongs to requesting user
+    if (report.parameters?.userId) {
+      return report.parameters.userId === userId;
+    }
+
+    // Check if report metadata indicates user ownership
+    if (report.metadata?.createdBy) {
+      return report.metadata.createdBy === userId;
+    }
+
+    // For general reports, users cannot access them
+    return false;
+  }
+
+  /**
+   * Check if user has permission to send reports via email
+   */
+  private canUserSendReports(userRole: string): boolean {
+    // Only admin, financial_analyst, and manager roles can send reports
+    const allowedRoles = ['admin', 'super_admin', 'financial_analyst', 'manager'];
+    return allowedRoles.includes(userRole);
+  }
+
+  /**
+   * Check if user can access specific dashboard metrics
+   */
+  private canUserAccessMetrics(userRole: string, metricType: string): boolean {
+    // Define role-based access to different metric types
+    const rolePermissions: Record<string, string[]> = {
+      'admin': ['*'], // All metrics
+      'super_admin': ['*'], // All metrics
+      'financial_analyst': ['revenue', 'subscriptions', 'costs', 'mrr', 'arr', 'churn', 'ltv'],
+      'manager': ['revenue', 'subscriptions', 'mrr', 'dashboard'],
+      'user': ['dashboard'] // Only basic dashboard metrics
+    };
+
+    const allowedMetrics = rolePermissions[userRole] || [];
+
+    // Check for wildcard permission
+    if (allowedMetrics.includes('*')) {
+      return true;
+    }
+
+    return allowedMetrics.includes(metricType);
+  }
+
+  /**
+   * Log security event for audit purposes
+   */
+  private logSecurityEvent(req: Request, event: string, details: Record<string, any> = {}): void {
+    logger.warn(`Security Event: ${event}`, {
+      event,
+      userId: (req as any).user?.id,
+      userRole: (req as any).user?.role,
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+      timestamp: new Date().toISOString(),
+      url: req.originalUrl,
+      method: req.method,
+      ...details
+    });
   }
 }

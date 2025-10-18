@@ -938,6 +938,206 @@ class TwoFactorAuthService {
     if (local.length <= 2) return email;
     return local.slice(0, 2) + '*'.repeat(local.length - 4) + local.slice(-2) + '@' + domain;
   }
+
+  /**
+   * Validate TOTP secret strength and quality
+   */
+  validateSecretStrength(secret: string): {
+    isValid: boolean;
+    score: number;
+    issues: string[];
+    recommendations: string[]
+  } {
+    const issues: string[] = [];
+    const recommendations: string[] = [];
+    let score = 0;
+
+    // Check minimum length (Base32 secrets should be at least 16 characters for 80 bits)
+    if (secret.length < 16) {
+      issues.push('Secret is too short (minimum 16 characters required)');
+      recommendations.push('Use a longer secret for better security');
+    } else {
+      score += 20;
+    }
+
+    // Check for sufficient entropy
+    const entropy = this.calculateEntropy(secret);
+    if (entropy < 4.0) {
+      issues.push('Secret has low entropy (randomness)');
+      recommendations.push('Use a more random secret with better character distribution');
+    } else if (entropy >= 4.0 && entropy < 4.5) {
+      score += 15;
+      recommendations.push('Consider using a secret with higher entropy for maximum security');
+    } else {
+      score += 25;
+    }
+
+    // Check character set diversity (Base32: A-Z, 2-7)
+    const base32Pattern = /^[A-Z2-7]+$/;
+    if (!base32Pattern.test(secret)) {
+      issues.push('Secret contains invalid characters (must be Base32: A-Z, 2-7)');
+      recommendations.push('Ensure secret uses only valid Base32 characters');
+    } else {
+      score += 15;
+    }
+
+    // Check for repeated patterns
+    if (this.hasRepeatedPatterns(secret)) {
+      issues.push('Secret contains repeated patterns');
+      recommendations.push('Use a secret without obvious patterns or repetitions');
+    } else {
+      score += 20;
+    }
+
+    // Check for common weak patterns
+    const weakPatterns = ['AAAA', 'BBBB', '2222', '3333', '4444', '5555', '6666', '7777'];
+    const hasWeakPattern = weakPatterns.some(pattern => secret.includes(pattern));
+    if (hasWeakPattern) {
+      issues.push('Secret contains weak patterns');
+      recommendations.push('Avoid repeated characters or predictable sequences');
+    } else {
+      score += 10;
+    }
+
+    // Check for adequate length for high security (32+ characters recommended)
+    if (secret.length >= 32) {
+      score += 10;
+    } else if (secret.length >= 24) {
+      score += 5;
+      recommendations.push('Consider using a 32+ character secret for maximum security');
+    }
+
+    const isValid = issues.length === 0 && score >= 70;
+
+    // Add general recommendations based on score
+    if (score < 50) {
+      recommendations.push('Generate a new secret using a cryptographically secure random generator');
+    } else if (score < 80) {
+      recommendations.push('Your secret is acceptable but could be improved');
+    }
+
+    return {
+      isValid,
+      score,
+      issues,
+      recommendations
+    };
+  }
+
+  /**
+   * Calculate Shannon entropy of a string
+   */
+  private calculateEntropy(str: string): number {
+    const frequencies: { [key: string]: number } = {};
+
+    // Count character frequencies
+    for (const char of str) {
+      frequencies[char] = (frequencies[char] || 0) + 1;
+    }
+
+    // Calculate entropy
+    let entropy = 0;
+    const length = str.length;
+
+    for (const freq of Object.values(frequencies)) {
+      const probability = freq / length;
+      entropy -= probability * Math.log2(probability);
+    }
+
+    return entropy;
+  }
+
+  /**
+   * Check for repeated patterns in secret
+   */
+  private hasRepeatedPatterns(secret: string): boolean {
+    // Check for repeated 2-character patterns
+    for (let i = 0; i < secret.length - 3; i++) {
+      const pattern = secret.substring(i, i + 2);
+      if (secret.substring(i + 2, i + 4) === pattern) {
+        return true;
+      }
+    }
+
+    // Check for repeated 3-character patterns
+    for (let i = 0; i < secret.length - 5; i++) {
+      const pattern = secret.substring(i, i + 3);
+      if (secret.substring(i + 3, i + 6) === pattern) {
+        return true;
+      }
+    }
+
+    // Check for runs of identical characters (4 or more)
+    for (let i = 0; i < secret.length - 3; i++) {
+      if (secret[i] === secret[i + 1] &&
+          secret[i] === secret[i + 2] &&
+          secret[i] === secret[i + 3]) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Generate a cryptographically secure TOTP secret
+   */
+  generateSecureSecret(length: number = 32): string {
+    const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    let secret = '';
+
+    // Use crypto.randomBytes for cryptographically secure randomness
+    const randomBytes = crypto.randomBytes(length);
+
+    for (let i = 0; i < length; i++) {
+      secret += base32Chars[randomBytes[i] % base32Chars.length];
+    }
+
+    return secret;
+  }
+
+  /**
+   * Validate and potentially regenerate a secret if it's weak
+   */
+  async validateAndRegenerateSecret(secret?: string): Promise<{
+    secret: string;
+    validation: ReturnType<typeof this.validateSecretStrength>;
+    regenerated: boolean;
+  }> {
+    // If no secret provided, generate one
+    if (!secret) {
+      const newSecret = this.generateSecureSecret();
+      return {
+        secret: newSecret,
+        validation: this.validateSecretStrength(newSecret),
+        regenerated: true
+      };
+    }
+
+    // Validate existing secret
+    const validation = this.validateSecretStrength(secret);
+
+    // If secret is weak, regenerate
+    if (!validation.isValid || validation.score < 70) {
+      logger.warn('Weak TOTP secret detected, regenerating', {
+        score: validation.score,
+        issues: validation.issues
+      });
+
+      const newSecret = this.generateSecureSecret();
+      return {
+        secret: newSecret,
+        validation: this.validateSecretStrength(newSecret),
+        regenerated: true
+      };
+    }
+
+    return {
+      secret,
+      validation,
+      regenerated: false
+    };
+  }
 }
 
 // Export class and singleton instance

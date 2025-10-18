@@ -10,6 +10,7 @@ const FinancialDashboardControllerEnhanced_1 = require("../controllers/financial
 const ReportDeliveryService_1 = require("../services/financial/ReportDeliveryService");
 const auth_1 = require("../middleware/auth");
 const validation_1 = require("../middleware/validation");
+const authorization_1 = require("../middleware/authorization");
 const StripeWebhookService_1 = require("../services/financial/StripeWebhookService");
 const logger_1 = require("../utils/logger");
 const router = (0, express_1.Router)();
@@ -72,11 +73,12 @@ router.post('/webhook/stripe', (0, express_1.raw)({ type: 'application/json' }),
     }
 });
 router.use(auth_1.authMiddleware);
-router.get('/dashboard', financialController.getDashboardMetrics);
-router.get('/dashboard/revenue', financialController.getRevenueMetrics);
-router.get('/dashboard/subscriptions', financialController.getSubscriptionMetrics);
-router.get('/dashboard/costs', financialController.getCostMetrics);
-router.get('/dashboard/enhanced', async (req, res) => {
+router.use((0, authorization_1.validateFinancialContext)());
+router.get('/dashboard', (0, authorization_1.requireFinancialAccess)(), financialController.getDashboardMetrics);
+router.get('/dashboard/revenue', (0, authorization_1.requireFinancialAccess)(), financialController.getRevenueMetrics);
+router.get('/dashboard/subscriptions', (0, authorization_1.requireFinancialAccess)(), financialController.getSubscriptionMetrics);
+router.get('/dashboard/costs', (0, authorization_1.requireFinancialAccess)(), financialController.getCostMetrics);
+router.get('/dashboard/enhanced', (0, authorization_1.requireFinancialAccess)(), async (req, res) => {
     try {
         await FinancialDashboardControllerEnhanced_1.financialDashboardControllerEnhanced.getEnhancedDashboardMetrics(req, res);
     }
@@ -85,7 +87,7 @@ router.get('/dashboard/enhanced', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-router.get('/analytics/kpis', async (req, res) => {
+router.get('/analytics/kpis', (0, authorization_1.requireFinancialAccess)(), async (req, res) => {
     try {
         const kpis = await FinancialDashboardControllerEnhanced_1.financialDashboardControllerEnhanced.calculateFinancialKPIs();
         res.json({
@@ -98,7 +100,7 @@ router.get('/analytics/kpis', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch financial KPIs' });
     }
 });
-router.get('/analytics/alerts', async (req, res) => {
+router.get('/analytics/alerts', (0, authorization_1.requireFinancialAccess)(), async (req, res) => {
     try {
         await FinancialDashboardControllerEnhanced_1.financialDashboardControllerEnhanced.getFinancialAlerts(req, res);
     }
@@ -107,7 +109,7 @@ router.get('/analytics/alerts', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch financial alerts' });
     }
 });
-router.get('/analytics/forecast', async (req, res) => {
+router.get('/analytics/forecast', (0, authorization_1.requireFinancialAccess)(), async (req, res) => {
     try {
         const forecast = await FinancialDashboardControllerEnhanced_1.financialDashboardControllerEnhanced.generateRevenueForecasts();
         res.json({
@@ -120,7 +122,7 @@ router.get('/analytics/forecast', async (req, res) => {
         res.status(500).json({ error: 'Failed to generate revenue forecast' });
     }
 });
-router.get('/analytics/optimization', async (req, res) => {
+router.get('/analytics/optimization', (0, authorization_1.requireFinancialAccess)(), async (req, res) => {
     try {
         const optimization = await FinancialDashboardControllerEnhanced_1.financialDashboardControllerEnhanced.calculateCostOptimization();
         res.json({
@@ -133,32 +135,32 @@ router.get('/analytics/optimization', async (req, res) => {
         res.status(500).json({ error: 'Failed to calculate cost optimization' });
     }
 });
-router.get('/pnl', financialController.getProfitLossStatement);
-router.get('/pnl/:period', financialController.getProfitLossStatement);
-router.get('/revenue/mrr', financialController.getMRRMetrics);
-router.get('/revenue/arr', financialController.getARRMetrics);
-router.get('/revenue/by-plan', financialController.getRevenueByPlan);
-router.get('/revenue/by-country', financialController.getRevenueByCountry);
-router.get('/revenue/forecast', financialController.getRevenueForecast);
-router.get('/subscriptions', financialController.getSubscriptions);
-router.get('/subscriptions/active', financialController.getActiveSubscriptions);
-router.get('/subscriptions/churn', financialController.getChurnAnalytics);
-router.get('/subscriptions/ltv', financialController.getLTVAnalytics);
-router.get('/costs', financialController.getCosts);
-router.post('/costs', financialController.createCost);
-router.put('/costs/:id', financialController.updateCost);
-router.delete('/costs/:id', financialController.deleteCost);
-router.get('/costs/by-category', financialController.getCostsByCategory);
-router.get('/costs/optimization', financialController.getCostOptimizationSuggestions);
-router.get('/snapshots', financialController.getSnapshots);
-router.post('/snapshots/generate', financialController.generateSnapshot);
-router.get('/snapshots/latest', financialController.getLatestSnapshot);
-router.get('/reports', financialController.getReports);
-router.post('/reports', financialController.createReport);
-router.get('/reports/:id', financialController.getReport);
-router.get('/reports/:id/download', financialController.downloadReport);
-router.post('/reports/:id/send', financialController.sendReport);
-router.post('/reports/send', (0, validation_1.validateRequest)([
+router.get('/pnl', (0, authorization_1.requireFinancialAccess)(), financialController.getProfitLossStatement);
+router.get('/pnl/:period', (0, authorization_1.requireFinancialAccess)(), financialController.getProfitLossStatement);
+router.get('/revenue/mrr', (0, authorization_1.requireFinancialAccess)(), financialController.getMRRMetrics);
+router.get('/revenue/arr', (0, authorization_1.requireFinancialAccess)(), financialController.getARRMetrics);
+router.get('/revenue/by-plan', (0, authorization_1.requireFinancialAccess)(), financialController.getRevenueByPlan);
+router.get('/revenue/by-country', (0, authorization_1.requireFinancialAccess)(), financialController.getRevenueByCountry);
+router.get('/revenue/forecast', (0, authorization_1.requireFinancialAccess)(), financialController.getRevenueForecast);
+router.get('/subscriptions', (0, authorization_1.requireFinancialAccess)(), financialController.getSubscriptions);
+router.get('/subscriptions/active', (0, authorization_1.requireFinancialAccess)(), financialController.getActiveSubscriptions);
+router.get('/subscriptions/churn', (0, authorization_1.requireFinancialAccess)(), financialController.getChurnAnalytics);
+router.get('/subscriptions/ltv', (0, authorization_1.requireFinancialAccess)(), financialController.getLTVAnalytics);
+router.get('/costs', (0, authorization_1.requireFinancialAccess)(), financialController.getCosts);
+router.post('/costs', (0, authorization_1.requireFinancialModifyAccess)(), (0, authorization_1.rateLimitSensitiveOperations)(), financialController.createCost);
+router.put('/costs/:id', (0, authorization_1.requireFinancialModifyAccess)(), (0, authorization_1.rateLimitSensitiveOperations)(), financialController.updateCost);
+router.delete('/costs/:id', (0, authorization_1.requireDeleteAccess)(), (0, authorization_1.rateLimitSensitiveOperations)(), financialController.deleteCost);
+router.get('/costs/by-category', (0, authorization_1.requireFinancialAccess)(), financialController.getCostsByCategory);
+router.get('/costs/optimization', (0, authorization_1.requireFinancialAccess)(), financialController.getCostOptimizationSuggestions);
+router.get('/snapshots', (0, authorization_1.requireFinancialAccess)(), financialController.getSnapshots);
+router.post('/snapshots/generate', (0, authorization_1.requireFinancialModifyAccess)(), (0, authorization_1.rateLimitSensitiveOperations)(), financialController.generateSnapshot);
+router.get('/snapshots/latest', (0, authorization_1.requireFinancialAccess)(), financialController.getLatestSnapshot);
+router.get('/reports', (0, authorization_1.requireFinancialAccess)(), financialController.getReports);
+router.post('/reports', (0, authorization_1.requireFinancialModifyAccess)(), (0, authorization_1.rateLimitSensitiveOperations)(), financialController.createReport);
+router.get('/reports/:id', (0, authorization_1.requireFinancialAccess)(), financialController.getReport);
+router.get('/reports/:id/download', (0, authorization_1.requireFinancialAccess)(), financialController.downloadReport);
+router.post('/reports/:id/send', (0, authorization_1.requireReportSendAccess)(), (0, authorization_1.rateLimitSensitiveOperations)(), financialController.sendReport);
+router.post('/reports/send', (0, authorization_1.requireReportSendAccess)(), (0, authorization_1.rateLimitSensitiveOperations)(), (0, validation_1.validateRequest)([
     (0, express_validator_1.body)('recipients').isArray().withMessage('Recipients must be an array'),
     (0, express_validator_1.body)('recipients.*').isEmail().withMessage('Invalid email address'),
     (0, express_validator_1.body)('reportType').isIn(['DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY', 'CUSTOM']).withMessage('Invalid report type'),
@@ -197,7 +199,7 @@ router.post('/reports/send', (0, validation_1.validateRequest)([
         res.status(500).json({ error: 'Failed to send financial report' });
     }
 });
-router.post('/reports/schedule', (0, validation_1.validateRequest)([
+router.post('/reports/schedule', (0, authorization_1.requireReportSendAccess)(), (0, authorization_1.rateLimitSensitiveOperations)(), (0, validation_1.validateRequest)([
     (0, express_validator_1.body)('name').isString().withMessage('Schedule name is required'),
     (0, express_validator_1.body)('recipients').isArray().withMessage('Recipients must be an array'),
     (0, express_validator_1.body)('recipients.*').isEmail().withMessage('Invalid email address'),
@@ -227,7 +229,7 @@ router.post('/reports/schedule', (0, validation_1.validateRequest)([
         res.status(500).json({ error: 'Failed to schedule financial report' });
     }
 });
-router.get('/reports/comprehensive', (0, validation_1.validateRequest)([
+router.get('/reports/comprehensive', (0, authorization_1.requireFinancialAccess)(), (0, validation_1.validateRequest)([
     (0, express_validator_1.query)('period').optional().isString().withMessage('Invalid period'),
     (0, express_validator_1.query)('format').optional().isIn(['json', 'pdf', 'csv']).withMessage('Invalid format')
 ]), async (req, res) => {
@@ -239,9 +241,9 @@ router.get('/reports/comprehensive', (0, validation_1.validateRequest)([
         res.status(500).json({ error: 'Failed to generate comprehensive report' });
     }
 });
-router.get('/cohorts', financialController.getCohortAnalysis);
-router.get('/cohorts/:month', financialController.getCohortDetails);
-router.get('/cohorts/analysis/enhanced', (0, validation_1.validateRequest)([
+router.get('/cohorts', (0, authorization_1.requireFinancialAccess)(), financialController.getCohortAnalysis);
+router.get('/cohorts/:month', (0, authorization_1.requireFinancialAccess)(), financialController.getCohortDetails);
+router.get('/cohorts/analysis/enhanced', (0, authorization_1.requireFinancialAccess)(), (0, validation_1.validateRequest)([
     (0, express_validator_1.query)('cohortMonth').optional().isISO8601().withMessage('Invalid cohort month format')
 ]), async (req, res) => {
     try {
@@ -254,7 +256,7 @@ router.get('/cohorts/analysis/enhanced', (0, validation_1.validateRequest)([
         res.status(500).json({ error: 'Failed to fetch enhanced cohort analysis' });
     }
 });
-router.get('/cohorts/analysis/:cohortMonth', async (req, res) => {
+router.get('/cohorts/analysis/:cohortMonth', (0, authorization_1.requireFinancialAccess)(), async (req, res) => {
     try {
         await FinancialDashboardControllerEnhanced_1.financialDashboardControllerEnhanced.getCohortAnalysis(req, res);
     }
@@ -263,15 +265,15 @@ router.get('/cohorts/analysis/:cohortMonth', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch cohort analysis' });
     }
 });
-router.get('/unit-economics', financialController.getUnitEconomics);
-router.get('/unit-economics/cac', financialController.getCAC);
-router.get('/unit-economics/ltv-cac', financialController.getLTVtoCACRatio);
-router.get('/billing-events', financialController.getBillingEvents);
-router.get('/billing-events/:id', financialController.getBillingEvent);
-router.get('/automation/status', financialController.getAutomationStatus);
-router.post('/automation/trigger/:type', financialController.triggerAutomation);
-router.post('/automation/test-email', financialController.sendTestEmail);
-router.get('/scheduler/jobs', financialController.getScheduledJobs);
-router.post('/scheduler/jobs/:name/start', financialController.startJob);
-router.post('/scheduler/jobs/:name/stop', financialController.stopJob);
+router.get('/unit-economics', (0, authorization_1.requireFinancialAccess)(), financialController.getUnitEconomics);
+router.get('/unit-economics/cac', (0, authorization_1.requireFinancialAccess)(), financialController.getCAC);
+router.get('/unit-economics/ltv-cac', (0, authorization_1.requireFinancialAccess)(), financialController.getLTVtoCACRatio);
+router.get('/billing-events', (0, authorization_1.requireFinancialAccess)(), financialController.getBillingEvents);
+router.get('/billing-events/:id', (0, authorization_1.requireFinancialAccess)(), financialController.getBillingEvent);
+router.get('/automation/status', (0, authorization_1.requireAutomationAccess)(), financialController.getAutomationStatus);
+router.post('/automation/trigger/:type', (0, authorization_1.requireAutomationAccess)(), (0, authorization_1.rateLimitSensitiveOperations)(), financialController.triggerAutomation);
+router.post('/automation/test-email', (0, authorization_1.requireAutomationAccess)(), (0, authorization_1.rateLimitSensitiveOperations)(), financialController.sendTestEmail);
+router.get('/scheduler/jobs', (0, authorization_1.requireAutomationAccess)(), financialController.getScheduledJobs);
+router.post('/scheduler/jobs/:name/start', (0, authorization_1.requireAutomationAccess)(), (0, authorization_1.rateLimitSensitiveOperations)(), financialController.startJob);
+router.post('/scheduler/jobs/:name/stop', (0, authorization_1.requireAutomationAccess)(), (0, authorization_1.rateLimitSensitiveOperations)(), financialController.stopJob);
 exports.default = router;

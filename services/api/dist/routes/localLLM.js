@@ -6,4 +6,7 @@ const LocalLLMController_1 = tslib_1.__importDefault(require("../controllers/ai/
 const router = (0, express_1.Router)();
 router.post('/query', LocalLLMController_1.default.processQuery);
 router.get('/status', LocalLLMController_1.default.getStatus);
+router.get('/health', LocalLLMController_1.default.healthCheck);
+router.post('/load', LocalLLMController_1.default.loadModel);
+router.post('/unload', LocalLLMController_1.default.unloadModel);
 exports.default = router;

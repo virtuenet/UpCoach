@@ -108,6 +108,7 @@ export const LazyPages = {
 
   // Content Management
   ContentList: lazyLoad(() => import('../pages/ContentPage')),
+  Categories: lazyLoad(() => import('../pages/CategoriesPage')),
   ContentEditor: lazyLoad(() => import('../pages/EditContentPage')),
   CreateContent: lazyLoad(() => import('../pages/CreateContentPage')),
 

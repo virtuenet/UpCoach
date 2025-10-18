@@ -37,6 +37,7 @@ function App() {
                     <Route path="/" element={<LazyPages.Dashboard />} />
                     <Route path="/dashboard" element={<LazyPages.Dashboard />} />
                     <Route path="/content" element={<LazyPages.ContentList />} />
+                    <Route path="/content/categories" element={<LazyPages.Categories />} />
                     <Route path="/content/create" element={<LazyPages.CreateContent />} />
                     <Route path="/content/edit/:id" element={<LazyPages.ContentEditor />} />
                     <Route path="/courses" element={<LazyPages.CoachMarketplace />} />

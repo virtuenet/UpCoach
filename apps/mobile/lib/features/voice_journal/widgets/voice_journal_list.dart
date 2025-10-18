@@ -438,7 +438,7 @@ ${widget.entry.title}
 Recorded on: ${_formatDate(widget.entry.createdAt)}
 Duration: ${_formatDuration(widget.entry.durationSeconds)}
 
-${widget.entry.transcription?.isNotEmpty == true ? 'Transcription:\n${widget.entry.transcription!}' : 'Voice journal entry from UpCoach'}
+${widget.entry.transcriptionText?.isNotEmpty == true ? 'Transcription:\n${widget.entry.transcriptionText!}' : 'Voice journal entry from UpCoach'}
 
 ---
 Created with UpCoach - Your AI-powered coaching companion 🎯

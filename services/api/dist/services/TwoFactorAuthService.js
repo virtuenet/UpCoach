@@ -593,6 +593,146 @@ class TwoFactorAuthService {
             return email;
         return local.slice(0, 2) + '*'.repeat(local.length - 4) + local.slice(-2) + '@' + domain;
     }
+    validateSecretStrength(secret) {
+        const issues = [];
+        const recommendations = [];
+        let score = 0;
+        if (secret.length < 16) {
+            issues.push('Secret is too short (minimum 16 characters required)');
+            recommendations.push('Use a longer secret for better security');
+        }
+        else {
+            score += 20;
+        }
+        const entropy = this.calculateEntropy(secret);
+        if (entropy < 4.0) {
+            issues.push('Secret has low entropy (randomness)');
+            recommendations.push('Use a more random secret with better character distribution');
+        }
+        else if (entropy >= 4.0 && entropy < 4.5) {
+            score += 15;
+            recommendations.push('Consider using a secret with higher entropy for maximum security');
+        }
+        else {
+            score += 25;
+        }
+        const base32Pattern = /^[A-Z2-7]+$/;
+        if (!base32Pattern.test(secret)) {
+            issues.push('Secret contains invalid characters (must be Base32: A-Z, 2-7)');
+            recommendations.push('Ensure secret uses only valid Base32 characters');
+        }
+        else {
+            score += 15;
+        }
+        if (this.hasRepeatedPatterns(secret)) {
+            issues.push('Secret contains repeated patterns');
+            recommendations.push('Use a secret without obvious patterns or repetitions');
+        }
+        else {
+            score += 20;
+        }
+        const weakPatterns = ['AAAA', 'BBBB', '2222', '3333', '4444', '5555', '6666', '7777'];
+        const hasWeakPattern = weakPatterns.some(pattern => secret.includes(pattern));
+        if (hasWeakPattern) {
+            issues.push('Secret contains weak patterns');
+            recommendations.push('Avoid repeated characters or predictable sequences');
+        }
+        else {
+            score += 10;
+        }
+        if (secret.length >= 32) {
+            score += 10;
+        }
+        else if (secret.length >= 24) {
+            score += 5;
+            recommendations.push('Consider using a 32+ character secret for maximum security');
+        }
+        const isValid = issues.length === 0 && score >= 70;
+        if (score < 50) {
+            recommendations.push('Generate a new secret using a cryptographically secure random generator');
+        }
+        else if (score < 80) {
+            recommendations.push('Your secret is acceptable but could be improved');
+        }
+        return {
+            isValid,
+            score,
+            issues,
+            recommendations
+        };
+    }
+    calculateEntropy(str) {
+        const frequencies = {};
+        for (const char of str) {
+            frequencies[char] = (frequencies[char] || 0) + 1;
+        }
+        let entropy = 0;
+        const length = str.length;
+        for (const freq of Object.values(frequencies)) {
+            const probability = freq / length;
+            entropy -= probability * Math.log2(probability);
+        }
+        return entropy;
+    }
+    hasRepeatedPatterns(secret) {
+        for (let i = 0; i < secret.length - 3; i++) {
+            const pattern = secret.substring(i, i + 2);
+            if (secret.substring(i + 2, i + 4) === pattern) {
+                return true;
+            }
+        }
+        for (let i = 0; i < secret.length - 5; i++) {
+            const pattern = secret.substring(i, i + 3);
+            if (secret.substring(i + 3, i + 6) === pattern) {
+                return true;
+            }
+        }
+        for (let i = 0; i < secret.length - 3; i++) {
+            if (secret[i] === secret[i + 1] &&
+                secret[i] === secret[i + 2] &&
+                secret[i] === secret[i + 3]) {
+                return true;
+            }
+        }
+        return false;
+    }
+    generateSecureSecret(length = 32) {
+        const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        let secret = '';
+        const randomBytes = crypto_1.default.randomBytes(length);
+        for (let i = 0; i < length; i++) {
+            secret += base32Chars[randomBytes[i] % base32Chars.length];
+        }
+        return secret;
+    }
+    async validateAndRegenerateSecret(secret) {
+        if (!secret) {
+            const newSecret = this.generateSecureSecret();
+            return {
+                secret: newSecret,
+                validation: this.validateSecretStrength(newSecret),
+                regenerated: true
+            };
+        }
+        const validation = this.validateSecretStrength(secret);
+        if (!validation.isValid || validation.score < 70) {
+            logger_1.logger.warn('Weak TOTP secret detected, regenerating', {
+                score: validation.score,
+                issues: validation.issues
+            });
+            const newSecret = this.generateSecureSecret();
+            return {
+                secret: newSecret,
+                validation: this.validateSecretStrength(newSecret),
+                regenerated: true
+            };
+        }
+        return {
+            secret,
+            validation,
+            regenerated: false
+        };
+    }
 }
 exports.TwoFactorAuthService = TwoFactorAuthService;
 exports.twoFactorAuthService = TwoFactorAuthService.getInstance();

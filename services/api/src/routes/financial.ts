@@ -8,6 +8,15 @@ import { financialDashboardControllerEnhanced } from '../controllers/financial/F
 import { reportDeliveryService } from '../services/financial/ReportDeliveryService';
 import { authMiddleware } from '../middleware/auth';
 import { validateRequest } from '../middleware/validation';
+import {
+  requireFinancialAccess,
+  requireFinancialModifyAccess,
+  requireDeleteAccess,
+  requireReportSendAccess,
+  requireAutomationAccess,
+  validateFinancialContext,
+  rateLimitSensitiveOperations
+} from '../middleware/authorization';
 import { stripeWebhookService } from '../services/financial/StripeWebhookService';
 import { logger } from '../utils/logger';
 
@@ -95,17 +104,18 @@ router.post(
   }
 );
 
-// Protected routes (require admin auth)
+// Protected routes (require admin auth and financial context validation)
 router.use(authMiddleware);
+router.use(validateFinancialContext());
 
-// Dashboard metrics (existing)
-router.get('/dashboard', financialController.getDashboardMetrics);
-router.get('/dashboard/revenue', financialController.getRevenueMetrics);
-router.get('/dashboard/subscriptions', financialController.getSubscriptionMetrics);
-router.get('/dashboard/costs', financialController.getCostMetrics);
+// Dashboard metrics (existing) - require financial access
+router.get('/dashboard', requireFinancialAccess(), financialController.getDashboardMetrics);
+router.get('/dashboard/revenue', requireFinancialAccess(), financialController.getRevenueMetrics);
+router.get('/dashboard/subscriptions', requireFinancialAccess(), financialController.getSubscriptionMetrics);
+router.get('/dashboard/costs', requireFinancialAccess(), financialController.getCostMetrics);
 
 // Enhanced Dashboard with Forecasting and AI Insights
-router.get('/dashboard/enhanced', async (req: Request, res: Response) => {
+router.get('/dashboard/enhanced', requireFinancialAccess(), async (req: Request, res: Response) => {
   try {
     await financialDashboardControllerEnhanced.getEnhancedDashboardMetrics(req, res);
   } catch (error) {
@@ -115,7 +125,7 @@ router.get('/dashboard/enhanced', async (req: Request, res: Response) => {
 });
 
 // Enhanced Analytics Endpoints
-router.get('/analytics/kpis', async (req: Request, res: Response) => {
+router.get('/analytics/kpis', requireFinancialAccess(), async (req: Request, res: Response) => {
   try {
     const kpis = await financialDashboardControllerEnhanced.calculateFinancialKPIs();
     res.json({
@@ -128,7 +138,7 @@ router.get('/analytics/kpis', async (req: Request, res: Response) => {
   }
 });
 
-router.get('/analytics/alerts', async (req: Request, res: Response) => {
+router.get('/analytics/alerts', requireFinancialAccess(), async (req: Request, res: Response) => {
   try {
     await financialDashboardControllerEnhanced.getFinancialAlerts(req, res);
   } catch (error) {
@@ -137,7 +147,7 @@ router.get('/analytics/alerts', async (req: Request, res: Response) => {
   }
 });
 
-router.get('/analytics/forecast', async (req: Request, res: Response) => {
+router.get('/analytics/forecast', requireFinancialAccess(), async (req: Request, res: Response) => {
   try {
     const forecast = await financialDashboardControllerEnhanced.generateRevenueForecasts();
     res.json({
@@ -150,7 +160,7 @@ router.get('/analytics/forecast', async (req: Request, res: Response) => {
   }
 });
 
-router.get('/analytics/optimization', async (req: Request, res: Response) => {
+router.get('/analytics/optimization', requireFinancialAccess(), async (req: Request, res: Response) => {
   try {
     const optimization = await financialDashboardControllerEnhanced.calculateCostOptimization();
     res.json({
@@ -163,45 +173,47 @@ router.get('/analytics/optimization', async (req: Request, res: Response) => {
   }
 });
 
-// P&L Statement
-router.get('/pnl', financialController.getProfitLossStatement);
-router.get('/pnl/:period', financialController.getProfitLossStatement);
+// P&L Statement - require financial access
+router.get('/pnl', requireFinancialAccess(), financialController.getProfitLossStatement);
+router.get('/pnl/:period', requireFinancialAccess(), financialController.getProfitLossStatement);
 
-// Revenue analytics
-router.get('/revenue/mrr', financialController.getMRRMetrics);
-router.get('/revenue/arr', financialController.getARRMetrics);
-router.get('/revenue/by-plan', financialController.getRevenueByPlan);
-router.get('/revenue/by-country', financialController.getRevenueByCountry);
-router.get('/revenue/forecast', financialController.getRevenueForecast);
+// Revenue analytics - require financial access
+router.get('/revenue/mrr', requireFinancialAccess(), financialController.getMRRMetrics);
+router.get('/revenue/arr', requireFinancialAccess(), financialController.getARRMetrics);
+router.get('/revenue/by-plan', requireFinancialAccess(), financialController.getRevenueByPlan);
+router.get('/revenue/by-country', requireFinancialAccess(), financialController.getRevenueByCountry);
+router.get('/revenue/forecast', requireFinancialAccess(), financialController.getRevenueForecast);
 
-// Subscription analytics
-router.get('/subscriptions', financialController.getSubscriptions);
-router.get('/subscriptions/active', financialController.getActiveSubscriptions);
-router.get('/subscriptions/churn', financialController.getChurnAnalytics);
-router.get('/subscriptions/ltv', financialController.getLTVAnalytics);
+// Subscription analytics - require financial access
+router.get('/subscriptions', requireFinancialAccess(), financialController.getSubscriptions);
+router.get('/subscriptions/active', requireFinancialAccess(), financialController.getActiveSubscriptions);
+router.get('/subscriptions/churn', requireFinancialAccess(), financialController.getChurnAnalytics);
+router.get('/subscriptions/ltv', requireFinancialAccess(), financialController.getLTVAnalytics);
 
-// Cost tracking
-router.get('/costs', financialController.getCosts);
-router.post('/costs', financialController.createCost);
-router.put('/costs/:id', financialController.updateCost);
-router.delete('/costs/:id', financialController.deleteCost);
-router.get('/costs/by-category', financialController.getCostsByCategory);
-router.get('/costs/optimization', financialController.getCostOptimizationSuggestions);
+// Cost tracking - varying permission levels
+router.get('/costs', requireFinancialAccess(), financialController.getCosts);
+router.post('/costs', requireFinancialModifyAccess(), rateLimitSensitiveOperations(), financialController.createCost);
+router.put('/costs/:id', requireFinancialModifyAccess(), rateLimitSensitiveOperations(), financialController.updateCost);
+router.delete('/costs/:id', requireDeleteAccess(), rateLimitSensitiveOperations(), financialController.deleteCost);
+router.get('/costs/by-category', requireFinancialAccess(), financialController.getCostsByCategory);
+router.get('/costs/optimization', requireFinancialAccess(), financialController.getCostOptimizationSuggestions);
 
 // Financial snapshots
-router.get('/snapshots', financialController.getSnapshots);
-router.post('/snapshots/generate', financialController.generateSnapshot);
-router.get('/snapshots/latest', financialController.getLatestSnapshot);
+router.get('/snapshots', requireFinancialAccess(), financialController.getSnapshots);
+router.post('/snapshots/generate', requireFinancialModifyAccess(), rateLimitSensitiveOperations(), financialController.generateSnapshot);
+router.get('/snapshots/latest', requireFinancialAccess(), financialController.getLatestSnapshot);
 
-// Reports (existing)
-router.get('/reports', financialController.getReports);
-router.post('/reports', financialController.createReport);
-router.get('/reports/:id', financialController.getReport);
-router.get('/reports/:id/download', financialController.downloadReport);
-router.post('/reports/:id/send', financialController.sendReport);
+// Reports (existing) - require appropriate permissions
+router.get('/reports', requireFinancialAccess(), financialController.getReports);
+router.post('/reports', requireFinancialModifyAccess(), rateLimitSensitiveOperations(), financialController.createReport);
+router.get('/reports/:id', requireFinancialAccess(), financialController.getReport);
+router.get('/reports/:id/download', requireFinancialAccess(), financialController.downloadReport);
+router.post('/reports/:id/send', requireReportSendAccess(), rateLimitSensitiveOperations(), financialController.sendReport);
 
 // Enhanced Reports with Email Delivery
 router.post('/reports/send',
+  requireReportSendAccess(),
+  rateLimitSensitiveOperations(),
   validateRequest([
     body('recipients').isArray().withMessage('Recipients must be an array'),
     body('recipients.*').isEmail().withMessage('Invalid email address'),
@@ -253,6 +265,8 @@ router.post('/reports/send',
 );
 
 router.post('/reports/schedule',
+  requireReportSendAccess(),
+  rateLimitSensitiveOperations(),
   validateRequest([
     body('name').isString().withMessage('Schedule name is required'),
     body('recipients').isArray().withMessage('Recipients must be an array'),
@@ -295,6 +309,7 @@ router.post('/reports/schedule',
 );
 
 router.get('/reports/comprehensive',
+  requireFinancialAccess(),
   validateRequest([
     query('period').optional().isString().withMessage('Invalid period'),
     query('format').optional().isIn(['json', 'pdf', 'csv']).withMessage('Invalid format')
@@ -309,12 +324,13 @@ router.get('/reports/comprehensive',
   }
 );
 
-// Cohort analysis (existing)
-router.get('/cohorts', financialController.getCohortAnalysis);
-router.get('/cohorts/:month', financialController.getCohortDetails);
+// Cohort analysis (existing) - require financial access
+router.get('/cohorts', requireFinancialAccess(), financialController.getCohortAnalysis);
+router.get('/cohorts/:month', requireFinancialAccess(), financialController.getCohortDetails);
 
 // Enhanced Cohort Analysis
 router.get('/cohorts/analysis/enhanced',
+  requireFinancialAccess(),
   validateRequest([
     query('cohortMonth').optional().isISO8601().withMessage('Invalid cohort month format')
   ]),
@@ -330,7 +346,7 @@ router.get('/cohorts/analysis/enhanced',
   }
 );
 
-router.get('/cohorts/analysis/:cohortMonth', async (req: Request, res: Response) => {
+router.get('/cohorts/analysis/:cohortMonth', requireFinancialAccess(), async (req: Request, res: Response) => {
   try {
     await financialDashboardControllerEnhanced.getCohortAnalysis(req, res);
   } catch (error) {
@@ -339,23 +355,23 @@ router.get('/cohorts/analysis/:cohortMonth', async (req: Request, res: Response)
   }
 });
 
-// Unit economics
-router.get('/unit-economics', financialController.getUnitEconomics);
-router.get('/unit-economics/cac', financialController.getCAC);
-router.get('/unit-economics/ltv-cac', financialController.getLTVtoCACRatio);
+// Unit economics - require financial access
+router.get('/unit-economics', requireFinancialAccess(), financialController.getUnitEconomics);
+router.get('/unit-economics/cac', requireFinancialAccess(), financialController.getCAC);
+router.get('/unit-economics/ltv-cac', requireFinancialAccess(), financialController.getLTVtoCACRatio);
 
-// Billing events
-router.get('/billing-events', financialController.getBillingEvents);
-router.get('/billing-events/:id', financialController.getBillingEvent);
+// Billing events - require financial access
+router.get('/billing-events', requireFinancialAccess(), financialController.getBillingEvents);
+router.get('/billing-events/:id', requireFinancialAccess(), financialController.getBillingEvent);
 
-// Automation endpoints
-router.get('/automation/status', financialController.getAutomationStatus);
-router.post('/automation/trigger/:type', financialController.triggerAutomation);
-router.post('/automation/test-email', financialController.sendTestEmail);
+// Automation endpoints - require admin access
+router.get('/automation/status', requireAutomationAccess(), financialController.getAutomationStatus);
+router.post('/automation/trigger/:type', requireAutomationAccess(), rateLimitSensitiveOperations(), financialController.triggerAutomation);
+router.post('/automation/test-email', requireAutomationAccess(), rateLimitSensitiveOperations(), financialController.sendTestEmail);
 
-// Scheduler management
-router.get('/scheduler/jobs', financialController.getScheduledJobs);
-router.post('/scheduler/jobs/:name/start', financialController.startJob);
-router.post('/scheduler/jobs/:name/stop', financialController.stopJob);
+// Scheduler management - require admin access
+router.get('/scheduler/jobs', requireAutomationAccess(), financialController.getScheduledJobs);
+router.post('/scheduler/jobs/:name/start', requireAutomationAccess(), rateLimitSensitiveOperations(), financialController.startJob);
+router.post('/scheduler/jobs/:name/stop', requireAutomationAccess(), rateLimitSensitiveOperations(), financialController.stopJob);
 
 export default router;
