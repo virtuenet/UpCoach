@@ -13,7 +13,7 @@ on:
     types: [opened, synchronize, reopened]
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
   FLUTTER_VERSION: '3.16.0'
   PYTHON_VERSION: '3.11'
 

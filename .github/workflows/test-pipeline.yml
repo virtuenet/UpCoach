@@ -10,7 +10,7 @@ on:
     - cron: '0 2 * * *'
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
   FLUTTER_VERSION: '3.16.0'
   PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
   DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
