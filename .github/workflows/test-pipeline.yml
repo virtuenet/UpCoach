@@ -28,32 +28,43 @@ jobs:
           - apps/admin-panel
           - apps/cms-panel
           - apps/landing-page
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      
-      - name: Install dependencies
+
+      - name: Install root dependencies (npm workspace)
         run: |
+          # Install from root first for npm workspace setup
+          if [ -f "package-lock.json" ]; then
+            echo "Found root package-lock.json — installing workspace dependencies"
+            npm ci
+          else
+            echo "No root package-lock.json — skipping workspace install"
+          fi
+
+      - name: Install package-specific dependencies (if not workspace)
+        run: |
+          # For packages not in workspace or with their own lockfiles
           if [ -d "${{ matrix.package }}" ]; then
             cd "${{ matrix.package }}"
             if [ -f "package-lock.json" ]; then
               echo "Found package-lock.json in $PWD — running npm ci"
               npm ci
-            elif [ -f "package.json" ]; then
-              echo "No package-lock.json found in $PWD — running npm install"
+            elif [ -f "package.json" ] && [ ! -f "../package-lock.json" ] && [ ! -f "../../package-lock.json" ]; then
+              echo "No lockfile found and not in workspace — running npm install"
               npm install
             else
-              echo "Warning: No package.json found in ${{ matrix.package }}, skipping"
+              echo "Package is part of workspace, dependencies already installed from root"
             fi
           else
             echo "Directory not found for ${{ matrix.package }}, skipping"
           fi
-      
+
       - name: Run unit tests for ${{ matrix.package }}
         run: |
           if [ -d "${{ matrix.package }}" ]; then
@@ -67,14 +78,14 @@ jobs:
             echo "Directory not found for ${{ matrix.package }}, skipping"
           fi
         continue-on-error: true
-      
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
           files: ./**/coverage/lcov.info
           flags: ${{ matrix.package }}
           name: ${{ matrix.package }}-coverage
-      
+
       - name: Check coverage thresholds
         run: |
           COVERAGE=$(cat coverage/coverage-summary.json | jq '.total.lines.pct')
@@ -107,7 +118,7 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-      
+
       redis:
         image: redis:7
         options: >-
@@ -117,17 +128,17 @@ jobs:
           --health-retries 5
         ports:
           - 6379:6379
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: services/api/package-lock.json
-      
+
       - name: Install dependencies
         run: |
           if [ -f "package-lock.json" ]; then
@@ -135,12 +146,12 @@ jobs:
           else
             npm install
           fi
-      
+
       - name: Run database migrations
         run: npm run db:migrate
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/upcoach_test
-      
+
       - name: Run integration tests
         run: npm run test:integration || npm test || echo "No integration tests found"
         env:
@@ -154,12 +165,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      
+
       - name: Check and run contract tests
         run: |
           if [ -d "packages/test-contracts" ] && [ -f "packages/test-contracts/package.json" ]; then
@@ -173,7 +184,7 @@ jobs:
           else
             echo "test-contracts package not found, skipping"
           fi
-      
+
       - name: Publish pacts
         if: github.ref == 'refs/heads/main'
         run: |
@@ -196,15 +207,24 @@ jobs:
           - webkit
           - mobile-chrome
           - mobile-safari
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      
+
+      - name: Install root dependencies (npm workspace)
+        run: |
+          if [ -f "package-lock.json" ]; then
+            echo "Found root package-lock.json — installing workspace dependencies"
+            npm ci
+          else
+            echo "No root package-lock.json — skipping workspace install"
+          fi
+
       - name: Install Playwright dependencies
         run: |
           npm install -D @playwright/test
@@ -216,10 +236,10 @@ jobs:
               npm install || echo "No package.json in visual-tests"
             fi
           fi
-      
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps ${{ matrix.project }}
-      
+
       - name: Start services
         run: |
           cp env.example .env || true
@@ -229,10 +249,10 @@ jobs:
           wait-on http://localhost:8006 -t 60000 || echo "Admin panel health check failed"
           wait-on http://localhost:8007 -t 60000 || echo "CMS panel health check failed"
           wait-on http://localhost:8005 -t 60000 || echo "Landing page health check failed"
-      
+
       - name: Run E2E tests
         run: npx playwright test --project=${{ matrix.project }}
-      
+
       - name: Upload test artifacts
         if: failure()
         uses: actions/upload-artifact@v4
@@ -247,15 +267,24 @@ jobs:
     name: Visual Regression Tests
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      
+
+      - name: Install root dependencies (npm workspace)
+        run: |
+          if [ -f "package-lock.json" ]; then
+            echo "Found root package-lock.json — installing workspace dependencies"
+            npm ci
+          else
+            echo "No root package-lock.json — skipping workspace install"
+          fi
+
       - name: Install dependencies
         run: |
           npm install -D @percy/cli
@@ -267,7 +296,7 @@ jobs:
               npm install || echo "No package.json in visual-tests"
             fi
           fi
-      
+
       - name: Start services
         run: |
           docker-compose up -d
@@ -275,7 +304,7 @@ jobs:
           wait-on http://localhost:8006 -t 60000 || true
           wait-on http://localhost:8007 -t 60000 || true
           wait-on http://localhost:8005 -t 60000 || true
-      
+
       - name: Run Percy snapshots
         run: |
           if [ -f "visual-tests/package.json" ]; then
@@ -286,7 +315,7 @@ jobs:
           fi
         env:
           PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}
-      
+
       - name: Comment PR with Percy results
         uses: percy/percy-comment@v1
         with:
@@ -305,16 +334,16 @@ jobs:
             platform: android
           - os: macos-latest
             platform: ios
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
-      
+
       - name: Install dependencies
         run: |
           cd mobile-app
@@ -331,7 +360,7 @@ jobs:
           cd mobile-app
           flutter test --update-goldens || echo "Golden tests failed"
         continue-on-error: true
-      
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
@@ -343,36 +372,36 @@ jobs:
     name: Performance Tests
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
-      
+
       - name: Install Artillery
         run: npm install -g artillery
-      
+
       - name: Start backend services
         run: |
           docker-compose up -d backend postgres redis
           npm run wait-on http://localhost:8080/health
-      
+
       - name: Run performance tests
         run: |
           cd performance
           artillery run artillery-config.yml --environment local
-      
+
       - name: Upload performance results
         uses: actions/upload-artifact@v4
         with:
           name: performance-results
           path: performance/artillery-report.json
-      
+
       - name: Check performance thresholds
         run: |
           cd performance
@@ -382,10 +411,10 @@ jobs:
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Run Trivy security scan
         uses: aquasecurity/trivy-action@master
         with:
@@ -394,12 +423,12 @@ jobs:
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
-      
+
       - name: Upload Trivy results to GitHub Security
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: 'trivy-results.sarif'
-      
+
       - name: Run npm audit
         run: |
           for dir in backend admin-panel cms-panel landing-page; do
@@ -411,7 +440,7 @@ jobs:
             fi
           done
         continue-on-error: true
-      
+
       - name: Run OWASP dependency check
         uses: dependency-check/Dependency-Check_Action@main
         with:
@@ -423,18 +452,18 @@ jobs:
   accessibility-tests:
     name: Accessibility Tests
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      
+
       - name: Install dependencies
         run: npm install -g pa11y-ci
-      
+
       - name: Start services
         run: |
           docker-compose up -d
@@ -442,7 +471,7 @@ jobs:
           wait-on http://localhost:8005 -t 60000 || true
           wait-on http://localhost:8006 -t 60000 || true
           wait-on http://localhost:8007 -t 60000 || true
-      
+
       - name: Run accessibility tests
         run: |
           if [ -f ".pa11yci.json" ]; then
@@ -463,23 +492,23 @@ jobs:
       - flutter-tests
       - performance-tests
     if: always()
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
-      
+
       - name: Generate test report
         run: |
           node scripts/generate-test-report.js
-      
+
       - name: Upload test report
         uses: actions/upload-artifact@v4
         with:
           name: test-report
           path: test-report.html
-      
+
       - name: Comment PR with test results
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v6
@@ -493,7 +522,7 @@ jobs:
               repo: context.repo.repo,
               body: report
             });
-      
+
       - name: Send metrics to Datadog
         if: github.ref == 'refs/heads/main'
         run: |
