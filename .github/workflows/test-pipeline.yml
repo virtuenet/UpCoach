@@ -150,11 +150,15 @@ jobs:
       - name: Run database migrations
         run: npm run db:migrate
         env:
+          NODE_ENV: test
+          TEST_DATABASE_URL: postgresql://test:test@localhost:5432/upcoach_test
           DATABASE_URL: postgresql://test:test@localhost:5432/upcoach_test
 
       - name: Run integration tests
         run: npm run test:integration || npm test || echo "No integration tests found"
         env:
+          NODE_ENV: test
+          TEST_DATABASE_URL: postgresql://test:test@localhost:5432/upcoach_test
           DATABASE_URL: postgresql://test:test@localhost:5432/upcoach_test
           REDIS_URL: redis://localhost:6379
           JWT_SECRET: test-secret
