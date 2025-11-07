@@ -39,12 +39,19 @@ jobs:
       
       - name: Install dependencies
         run: |
-          if [ -f "${{ matrix.package }}/package-lock.json" ]; then
-            cd ${{ matrix.package }} && npm ci
-          elif [ -f "${{ matrix.package }}/package.json" ]; then
-            cd ${{ matrix.package }} && npm install
+          if [ -d "${{ matrix.package }}" ]; then
+            cd "${{ matrix.package }}"
+            if [ -f "package-lock.json" ]; then
+              echo "Found package-lock.json in $PWD — running npm ci"
+              npm ci
+            elif [ -f "package.json" ]; then
+              echo "No package-lock.json found in $PWD — running npm install"
+              npm install
+            else
+              echo "Warning: No package.json found in ${{ matrix.package }}, skipping"
+            fi
           else
-            echo "Warning: No package.json found for ${{ matrix.package }}, skipping"
+            echo "Directory not found for ${{ matrix.package }}, skipping"
           fi
       
       - name: Run unit tests for ${{ matrix.package }}
@@ -201,8 +208,13 @@ jobs:
       - name: Install Playwright dependencies
         run: |
           npm install -D @playwright/test
-          if [ -f "visual-tests/package-lock.json" ]; then
-            cd visual-tests && npm ci
+          if [ -d "visual-tests" ]; then
+            cd visual-tests
+            if [ -f "package-lock.json" ]; then
+              npm ci
+            else
+              npm install || echo "No package.json in visual-tests"
+            fi
           fi
       
       - name: Install Playwright browsers
@@ -247,8 +259,13 @@ jobs:
       - name: Install dependencies
         run: |
           npm install -D @percy/cli
-          if [ -f "visual-tests/package-lock.json" ]; then
-            cd visual-tests && npm ci
+          if [ -d "visual-tests" ]; then
+            cd visual-tests
+            if [ -f "package-lock.json" ]; then
+              npm ci
+            else
+              npm install || echo "No package.json in visual-tests"
+            fi
           fi
       
       - name: Start services

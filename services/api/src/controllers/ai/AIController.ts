@@ -14,18 +14,51 @@ import { AIInteraction } from '../../models/AIInteraction';
 
 // Type assertion for model static methods
 type ModelStatic = typeof AIInteraction & {
-  create: (values: any) => Promise<AIInteraction>;
-  findByPk: (id: any) => Promise<AIInteraction | null>;
-  findAll: (options?: any) => Promise<AIInteraction[]>;
-  findOne: (options?: any) => Promise<AIInteraction | null>;
+  create: (values: unknown) => Promise<AIInteraction>;
+  findByPk: (id: unknown) => Promise<AIInteraction | null>;
+  findAll: (options?: unknown) => Promise<AIInteraction[]>;
+  findOne: (options?: unknown) => Promise<AIInteraction | null>;
 };
 import { logger } from '../../utils/logger';
 
 export class AIController {
+  constructor() {
+    // Bind all methods to preserve `this` context when passed to Express routes
+    this.getRecommendations = this.getRecommendations.bind(this);
+    this.getOptimalTiming = this.getOptimalTiming.bind(this);
+    this.getAdaptiveSchedule = this.getAdaptiveSchedule.bind(this);
+    this.processMessage = this.processMessage.bind(this);
+    this.generateSmartResponse = this.generateSmartResponse.bind(this);
+    this.createLearningPath = this.createLearningPath.bind(this);
+    this.getLearningPaths = this.getLearningPaths.bind(this);
+    this.trackLearningProgress = this.trackLearningProgress.bind(this);
+    this.getNextModule = this.getNextModule.bind(this);
+    this.analyzeVoice = this.analyzeVoice.bind(this);
+    this.getVoiceCoaching = this.getVoiceCoaching.bind(this);
+    this.getVoiceInsights = this.getVoiceInsights.bind(this);
+    this.compareVoiceSessions = this.compareVoiceSessions.bind(this);
+    this.getActiveInsights = this.getActiveInsights.bind(this);
+    this.dismissInsight = this.dismissInsight.bind(this);
+    this.getInsightReport = this.getInsightReport.bind(this);
+    this.predictGoalCompletion = this.predictGoalCompletion.bind(this);
+    this.getBehaviorPatterns = this.getBehaviorPatterns.bind(this);
+    this.getEngagementMetrics = this.getEngagementMetrics.bind(this);
+    this.getPredictions = this.getPredictions.bind(this);
+    this.getSuccessFactors = this.getSuccessFactors.bind(this);
+    this.getInterventionPlan = this.getInterventionPlan.bind(this);
+    this.getCoachingStrategy = this.getCoachingStrategy.bind(this);
+    this.getPersonalizedContent = this.getPersonalizedContent.bind(this);
+    this.updatePersonalization = this.updatePersonalization.bind(this);
+    this.getPersonalizationPreferences = this.getPersonalizationPreferences.bind(this);
+    this.hybridGenerate = this.hybridGenerate.bind(this);
+    this.getRoutingDecision = this.getRoutingDecision.bind(this);
+    this.trackAnalyticsEvent = this.trackAnalyticsEvent.bind(this);
+  }
+
   // Recommendations
   async getRecommendations(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '' || req.params.userId;
+      const userId = req.user?.id || '' || req.params.userId;
       const { types, limit } = req.query;
 
       const recommendations = await recommendationEngine.generateRecommendations(
@@ -47,7 +80,7 @@ export class AIController {
 
   async getOptimalTiming(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
       const { activityType } = req.params;
 
       const timing = await recommendationEngine.getOptimalTiming(userId, activityType);
@@ -64,7 +97,7 @@ export class AIController {
 
   async getAdaptiveSchedule(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
       const { date } = req.query;
 
       const schedule = await recommendationEngine.generateAdaptiveSchedule(
@@ -85,7 +118,7 @@ export class AIController {
   // Conversational AI
   async processMessage(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
       const { message, conversationId, context } = req.body;
 
       const result = await conversationalAI.processConversation(
@@ -107,7 +140,7 @@ export class AIController {
 
   async generateSmartResponse(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
       const { message, options } = req.body;
 
       const response = await conversationalAI.generateSmartResponse(userId, message, options);
@@ -125,7 +158,7 @@ export class AIController {
   // Predictive Analytics
   async getPredictions(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '' || req.params.userId;
+      const userId = req.user?.id || '' || req.params.userId;
 
       const [successPrediction, churnRisk, behaviorPatterns] = await Promise.all([
         predictiveAnalytics.predictUserSuccess(userId),
@@ -165,10 +198,10 @@ export class AIController {
 
   async getInterventionPlan(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
       const { riskType } = req.params;
 
-      const plan = await predictiveAnalytics.generateInterventionPlan(userId, riskType as any);
+      const plan = await predictiveAnalytics.generateInterventionPlan(userId, riskType as unknown);
 
       _res.json({
         success: true,
@@ -183,7 +216,7 @@ export class AIController {
   // Adaptive Learning
   async createLearningPath(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
       const { goalId, options } = req.body;
 
       const path = await adaptiveLearning.createPersonalizedLearningPath(userId, goalId, options);
@@ -200,7 +233,7 @@ export class AIController {
 
   async getLearningPaths(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
 
       const paths = await adaptiveLearning.getLearningPaths(userId);
 
@@ -216,7 +249,7 @@ export class AIController {
 
   async trackLearningProgress(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
       const { pathId, moduleId } = req.params;
       const { progress } = req.body;
 
@@ -234,7 +267,7 @@ export class AIController {
 
   async getNextModule(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
       const { pathId } = req.params;
 
       const module = await adaptiveLearning.getRecommendedNextModule(userId, pathId);
@@ -252,7 +285,7 @@ export class AIController {
   // Voice AI
   async analyzeVoice(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
       const audioBuffer = req.file?.buffer;
 
       if (!audioBuffer) {
@@ -278,7 +311,7 @@ export class AIController {
 
   async getVoiceCoaching(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
       const { voiceAnalysis, options } = req.body;
 
       const coaching = await voiceAI.generateVoiceCoaching(userId, voiceAnalysis, options);
@@ -295,7 +328,7 @@ export class AIController {
 
   async getVoiceInsights(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
       const { days } = req.query;
 
       const insights = await voiceAI.getVoiceInsightSummary(
@@ -315,7 +348,7 @@ export class AIController {
 
   async compareVoiceSessions(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
       const { sessionId1, sessionId2 } = req.params;
 
       const comparison = await voiceAI.compareVoiceSessions(userId, sessionId1, sessionId2);
@@ -333,7 +366,7 @@ export class AIController {
   // Insights
   async getInsightReport(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '' || req.params.userId;
+      const userId = req.user?.id || '' || req.params.userId;
       const { days, startDate, endDate } = req.query;
 
       const report = await insightGenerator.generateInsightReport(userId, {
@@ -354,7 +387,7 @@ export class AIController {
 
   async getActiveInsights(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
 
       const insights = await insightGenerator.getActiveInsights(userId);
 
@@ -370,7 +403,7 @@ export class AIController {
 
   async dismissInsight(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
       const { insightId } = req.params;
 
       await insightGenerator.dismissInsight(userId, insightId);
@@ -388,7 +421,7 @@ export class AIController {
   // Hybrid AI Methods
   async hybridGenerate(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id;
+      const userId = req.user?.id;
       const { messages, options = {} } = req.body;
 
       const startTime = Date.now();
@@ -407,7 +440,7 @@ export class AIController {
 
       // Record interaction
       if (userId) {
-        await (AIInteraction as any).create({
+        await (AIInteraction as unknown).create({
           userId,
           type: 'conversation',
           model: result.response.model,
@@ -438,7 +471,7 @@ export class AIController {
 
   async getRoutingDecision(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id;
+      const userId = req.user?.id;
       const { messages, options = {} } = req.body;
 
       const decision = await hybridDecisionEngine.routeRequest(messages, options, {
@@ -459,7 +492,7 @@ export class AIController {
   // Personalization Methods
   async getPersonalizationPreferences(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
 
       const preferences = await personalizationEngine.getUserPreferences(userId);
 
@@ -475,7 +508,7 @@ export class AIController {
 
   async updatePersonalization(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
       const { preferences, behavior, context } = req.body;
 
       await personalizationEngine.updateUserProfile(userId, {
@@ -496,7 +529,7 @@ export class AIController {
 
   async getPersonalizedContent(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
       const { contentType, limit = 10 } = req.query;
 
       const recommendations = await personalizationEngine.getPersonalizedContent(
@@ -517,7 +550,7 @@ export class AIController {
 
   async getCoachingStrategy(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
 
       const strategy = await personalizationEngine.generateCoachingStrategy(userId);
 
@@ -534,7 +567,7 @@ export class AIController {
   // Advanced Analytics Methods
   async getBehaviorPatterns(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
       const { days = 30 } = req.query;
 
       const patterns = await analyticsEngine.analyzeBehaviorPatterns(
@@ -554,7 +587,7 @@ export class AIController {
 
   async getEngagementMetrics(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
       const { startDate, endDate } = req.query;
 
       const metrics = await analyticsEngine.getEngagementMetrics(userId, {
@@ -574,7 +607,7 @@ export class AIController {
 
   async getSuccessFactors(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
 
       const factors = await analyticsEngine.identifySuccessFactors(userId);
 
@@ -590,7 +623,7 @@ export class AIController {
 
   async trackAnalyticsEvent(req: Request, _res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id || '';
+      const userId = req.user?.id || '';
       const { eventType, eventData, metadata } = req.body;
 
       await analyticsEngine.trackEvent(userId, {
@@ -611,4 +644,15 @@ export class AIController {
   }
 }
 
-export const aiController = new AIController();
+// Lazy instantiation to allow Jest mocks to be applied before instantiation
+let _aiController: AIController | null = null;
+
+export const aiController = new Proxy({} as AIController, {
+  get(_target, prop) {
+    if (!_aiController) {
+      _aiController = new AIController();
+    }
+    const value = (_aiController as any)[prop];
+    return typeof value === 'function' ? value.bind(_aiController) : value;
+  },
+});

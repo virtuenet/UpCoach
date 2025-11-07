@@ -1,17 +1,14 @@
 import { Op } from 'sequelize';
 import {
-  Table,
-  Column,
   Model,
-  DataType,
+  DataTypes,
+  InferAttributes,
+  InferCreationAttributes,
+  CreationOptional,
   ForeignKey,
-  BelongsTo,
-  HasMany,
-  CreatedAt,
-  UpdatedAt,
-  BeforeCreate,
-  BeforeUpdate,
-} from 'sequelize-typescript';
+  NonAttribute,
+} from 'sequelize';
+import { sequelize } from '../config/database';
 
 import { CoachPackage } from './CoachPackage';
 import type { CoachReview } from './CoachReview';
@@ -36,248 +33,64 @@ interface Certification {
   verificationUrl?: string;
 }
 
-@Table({
-  tableName: 'coach_profiles',
-  timestamps: true,
-})
-export class CoachProfile extends Model {
-  @Column({
-    type: DataType.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  })
-  declare id: number;
+export class CoachProfile extends Model<
+  InferAttributes<CoachProfile>,
+  InferCreationAttributes<CoachProfile>
+> {
+  declare id: CreationOptional<number>;
+  declare userId: ForeignKey<number>;
 
-  @ForeignKey(() => User as any)
-  @Column({
-    type: DataType.INTEGER,
-    unique: true,
-    allowNull: false,
-  })
-  userId!: number;
-
-  @BelongsTo(() => User as any)
-  user!: IUser;
-
-  @Column({
-    type: DataType.STRING(255),
-    allowNull: false,
-  })
-  displayName!: string;
-
-  @Column({
-    type: DataType.STRING(255),
-  })
-  title?: string;
-
-  @Column({
-    type: DataType.TEXT,
-  })
-  bio?: string;
-
-  @Column({
-    type: DataType.ARRAY(DataType.TEXT),
-    defaultValue: [],
-  })
-  specializations!: string[];
-
-  @Column({
-    type: DataType.JSONB,
-    defaultValue: [],
-  })
-  certifications!: Certification[];
-
-  @Column({
-    type: DataType.INTEGER,
-    defaultValue: 0,
-  })
-  experienceYears!: number;
-
-  @Column({
-    type: DataType.ARRAY(DataType.STRING(10)),
-    defaultValue: ['en'],
-  })
-  languages!: string[];
-
-  @Column({
-    type: DataType.STRING(50),
-    defaultValue: 'UTC',
-  })
-  timezone!: string;
+  declare displayName: string;
+  declare title: string | null;
+  declare bio: string | null;
+  declare specializations: string[];
+  declare certifications: Certification[];
+  declare experienceYears: number;
+  declare languages: string[];
+  declare timezone: string;
 
   // Availability & Booking
-  @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: true,
-  })
-  isAvailable!: boolean;
-
-  @Column({
-    type: DataType.DECIMAL(10, 2),
-  })
-  hourlyRate?: number;
-
-  @Column({
-    type: DataType.STRING(3),
-    defaultValue: 'USD',
-  })
-  currency!: string;
-
-  @Column({
-    type: DataType.DECIMAL(3, 1),
-    defaultValue: 1.0,
-  })
-  minBookingHours!: number;
-
-  @Column({
-    type: DataType.DECIMAL(3, 1),
-    defaultValue: 4.0,
-  })
-  maxBookingHours!: number;
-
-  @Column({
-    type: DataType.JSONB,
-    defaultValue: {},
-  })
-  availabilitySchedule!: AvailabilitySchedule;
-
-  @Column({
-    type: DataType.INTEGER,
-    defaultValue: 24,
-  })
-  bookingBufferHours!: number;
+  declare isAvailable: boolean;
+  declare hourlyRate: number | null;
+  declare currency: string;
+  declare minBookingHours: number;
+  declare maxBookingHours: number;
+  declare availabilitySchedule: AvailabilitySchedule;
+  declare bookingBufferHours: number;
 
   // Profile Media
-  @Column({
-    type: DataType.TEXT,
-  })
-  profileImageUrl?: string;
-
-  @Column({
-    type: DataType.TEXT,
-  })
-  coverImageUrl?: string;
-
-  @Column({
-    type: DataType.TEXT,
-  })
-  introVideoUrl?: string;
-
-  @Column({
-    type: DataType.JSONB,
-    defaultValue: [],
-  })
-  galleryImages!: string[];
+  declare profileImageUrl: string | null;
+  declare coverImageUrl: string | null;
+  declare introVideoUrl: string | null;
+  declare galleryImages: string[];
 
   // Stats & Rating
-  @Column({
-    type: DataType.INTEGER,
-    defaultValue: 0,
-  })
-  totalSessions!: number;
-
-  @Column({
-    type: DataType.INTEGER,
-    defaultValue: 0,
-  })
-  totalClients!: number;
-
-  @Column({
-    type: DataType.DECIMAL(3, 2),
-    defaultValue: 0.0,
-  })
-  averageRating!: number;
-
-  @Column({
-    type: DataType.INTEGER,
-    defaultValue: 0,
-  })
-  ratingCount!: number;
-
-  @Column({
-    type: DataType.DECIMAL(5, 2),
-  })
-  responseTimeHours?: number;
+  declare totalSessions: number;
+  declare totalClients: number;
+  declare averageRating: number;
+  declare ratingCount: number;
+  declare responseTimeHours: number | null;
 
   // Settings
-  @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false,
-  })
-  isVerified!: boolean;
-
-  @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false,
-  })
-  isFeatured!: boolean;
-
-  @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: true,
-  })
-  isActive!: boolean;
-
-  @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false,
-  })
-  acceptsInsurance!: boolean;
-
-  @Column({
-    type: DataType.JSONB,
-    defaultValue: ['card'],
-  })
-  acceptedPaymentMethods!: string[];
+  declare isVerified: boolean;
+  declare isFeatured: boolean;
+  declare isActive: boolean;
+  declare acceptsInsurance: boolean;
+  declare acceptedPaymentMethods: string[];
 
   // Metadata
-  @Column({
-    type: DataType.ARRAY(DataType.TEXT),
-    defaultValue: [],
-  })
-  tags!: string[];
+  declare tags: string[];
+  declare seoSlug: string | null;
+  declare metadata: unknown;
 
-  @Column({
-    type: DataType.STRING(255),
-    unique: true,
-  })
-  seoSlug?: string;
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
 
-  @Column({
-    type: DataType.JSONB,
-    defaultValue: {},
-  })
-  metadata!: any;
-
-  @HasMany(() => require('./CoachSession').CoachSession)
-  sessions!: CoachSession[];
-
-  @HasMany(() => require('./CoachReview').CoachReview)
-  reviews!: CoachReview[];
-
-  @HasMany(() => CoachPackage)
-  packages!: CoachPackage[];
-
-  @CreatedAt
-  declare createdAt: Date;
-
-  @UpdatedAt
-  declare updatedAt: Date;
-
-  // Hooks
-  @BeforeCreate
-  @BeforeUpdate
-  static generateSeoSlug(instance: CoachProfile) {
-    if (!instance.seoSlug && instance.displayName) {
-      instance.seoSlug = instance.displayName
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-
-      // Add random suffix to ensure uniqueness
-      instance.seoSlug += '-' + Math.random().toString(36).substr(2, 5);
-    }
-  }
+  // Associations
+  declare user?: NonAttribute<IUser>;
+  declare sessions?: NonAttribute<CoachSession[]>;
+  declare reviews?: NonAttribute<CoachReview[]>;
+  declare packages?: NonAttribute<CoachPackage[]>;
 
   // Helper methods
   isAvailableAt(date: Date): boolean {
@@ -365,7 +178,7 @@ export class CoachProfile extends Model {
     }
 
     if (filters.search) {
-      where[Op.or as any] = [
+      where[Op.or] = [
         { displayName: { [Op.iLike]: `%${filters.search}%` } },
         { bio: { [Op.iLike]: `%${filters.search}%` } },
         { title: { [Op.iLike]: `%${filters.search}%` } },
@@ -376,7 +189,7 @@ export class CoachProfile extends Model {
       where,
       include: [
         {
-          model: User as any,
+          model: User,
           attributes: ['id', 'name', 'email'],
         },
       ],
@@ -388,3 +201,226 @@ export class CoachProfile extends Model {
     });
   }
 }
+
+// Initialize model
+// Initialize model - skip in test environment to prevent "No Sequelize instance passed" errors
+// Jest mocks will handle model initialization in tests
+if (process.env.NODE_ENV !== 'test') {
+CoachProfile.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      unique: true,
+      allowNull: false,
+      references: {
+        model: 'users',
+        key: 'id',
+      },
+    },
+    displayName: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+    },
+    title: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    bio: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    specializations: {
+      type: DataTypes.ARRAY(DataTypes.TEXT),
+      defaultValue: [],
+    },
+    certifications: {
+      type: DataTypes.JSONB,
+      defaultValue: [],
+    },
+    experienceYears: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    languages: {
+      type: DataTypes.ARRAY(DataTypes.STRING(10)),
+      defaultValue: ['en'],
+    },
+    timezone: {
+      type: DataTypes.STRING(50),
+      defaultValue: 'UTC',
+    },
+    // Availability & Booking
+    isAvailable: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
+    hourlyRate: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+    },
+    currency: {
+      type: DataTypes.STRING(3),
+      defaultValue: 'USD',
+    },
+    minBookingHours: {
+      type: DataTypes.DECIMAL(3, 1),
+      defaultValue: 1.0,
+    },
+    maxBookingHours: {
+      type: DataTypes.DECIMAL(3, 1),
+      defaultValue: 4.0,
+    },
+    availabilitySchedule: {
+      type: DataTypes.JSONB,
+      defaultValue: {},
+    },
+    bookingBufferHours: {
+      type: DataTypes.INTEGER,
+      defaultValue: 24,
+    },
+    // Profile Media
+    profileImageUrl: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    coverImageUrl: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    introVideoUrl: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    galleryImages: {
+      type: DataTypes.JSONB,
+      defaultValue: [],
+    },
+    // Stats & Rating
+    totalSessions: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    totalClients: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    averageRating: {
+      type: DataTypes.DECIMAL(3, 2),
+      defaultValue: 0.0,
+    },
+    ratingCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    responseTimeHours: {
+      type: DataTypes.DECIMAL(5, 2),
+      allowNull: true,
+    },
+    // Settings
+    isVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    isFeatured: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
+    acceptsInsurance: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    acceptedPaymentMethods: {
+      type: DataTypes.JSONB,
+      defaultValue: ['card'],
+    },
+    // Metadata
+    tags: {
+      type: DataTypes.ARRAY(DataTypes.TEXT),
+      defaultValue: [],
+    },
+    seoSlug: {
+      type: DataTypes.STRING(255),
+      unique: true,
+      allowNull: true,
+    },
+    metadata: {
+      type: DataTypes.JSONB,
+      defaultValue: {},
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+  },
+  {
+    sequelize,
+    modelName: 'CoachProfile',
+    tableName: 'coach_profiles',
+    timestamps: true,
+    hooks: {
+      beforeCreate: (instance: CoachProfile) => {
+        if (!instance.seoSlug && instance.displayName) {
+          instance.seoSlug = instance.displayName
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+
+          // Add random suffix to ensure uniqueness
+          instance.seoSlug += '-' + Math.random().toString(36).substr(2, 5);
+        }
+      },
+      beforeUpdate: (instance: CoachProfile) => {
+        if (!instance.seoSlug && instance.displayName) {
+          instance.seoSlug = instance.displayName
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+
+          // Add random suffix to ensure uniqueness
+          instance.seoSlug += '-' + Math.random().toString(36).substr(2, 5);
+        }
+      },
+    },
+  }
+);
+}
+
+// Define associations - skip in test environment
+if (process.env.NODE_ENV !== 'test') {
+CoachProfile.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user',
+});
+
+CoachProfile.hasMany(require('./CoachSession').CoachSession, {
+  foreignKey: 'coachId',
+  as: 'sessions',
+});
+
+CoachProfile.hasMany(require('./CoachReview').CoachReview, {
+  foreignKey: 'coachId',
+  as: 'reviews',
+});
+
+CoachProfile.hasMany(CoachPackage, {
+  foreignKey: 'coachId',
+  as: 'packages',
+});
+}
+
+export default CoachProfile;

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { aiController } from '../controllers/ai/AIController';
+import { aiController } from '../controllers/ai';
 import { userProfilingController } from '../controllers/ai/UserProfilingController';
 import { localLLMController } from '../controllers/ai/LocalLLMController';
 import { authenticate } from '../middleware/auth';

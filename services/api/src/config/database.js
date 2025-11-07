@@ -2,21 +2,29 @@ require('dotenv').config();
 
 module.exports = {
   development: {
-    url: process.env.DATABASE_URL || (() => {
-      throw new Error('DATABASE_URL environment variable is required for development');
-    })(),
+    get url() {
+      if (!process.env.DATABASE_URL) {
+        throw new Error('DATABASE_URL environment variable is required for development');
+      }
+      return process.env.DATABASE_URL;
+    },
     dialect: 'postgres',
     logging: console.log,
   },
   test: {
-    url: process.env.TEST_DATABASE_URL || (() => {
-      throw new Error('TEST_DATABASE_URL environment variable is required for testing');
-    })(),
+    get url() {
+      if (!process.env.TEST_DATABASE_URL) {
+        throw new Error('TEST_DATABASE_URL environment variable is required for testing');
+      }
+      return process.env.TEST_DATABASE_URL;
+    },
     dialect: 'postgres',
     logging: false,
   },
   production: {
-    url: process.env.DATABASE_URL,
+    get url() {
+      return process.env.DATABASE_URL;
+    },
     dialect: 'postgres',
     logging: false,
   }

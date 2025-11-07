@@ -1,4 +1,11 @@
-import { Table, Column, Model, DataType, CreatedAt, UpdatedAt, Index } from 'sequelize-typescript';
+import {
+  Model,
+  DataTypes,
+  InferAttributes,
+  InferCreationAttributes,
+  CreationOptional,
+} from 'sequelize';
+import { sequelize } from '../../config/database';
 
 export enum SnapshotPeriod {
   DAILY = 'daily',
@@ -8,358 +15,76 @@ export enum SnapshotPeriod {
   YEARLY = 'yearly',
 }
 
-@Table({
-  tableName: 'financial_snapshots',
-  timestamps: true,
-  indexes: [
-    {
-      unique: true,
-      fields: ['date', 'period'],
-    },
-  ],
-})
-export class FinancialSnapshot extends Model<FinancialSnapshot> {
-  @Column({
-    type: DataType.UUID,
-    defaultValue: DataType.UUIDV4,
-    primaryKey: true,
-  })
-  declare id: string;
-
-  @Column({
-    type: DataType.DATEONLY,
-    allowNull: false,
-  })
-  @Index
-  date!: Date;
-
-  @Column({
-    type: DataType.ENUM(...Object.values(SnapshotPeriod)),
-    allowNull: false,
-  })
-  @Index
-  period!: SnapshotPeriod;
+export class FinancialSnapshot extends Model<
+  InferAttributes<FinancialSnapshot>,
+  InferCreationAttributes<FinancialSnapshot>
+> {
+  declare id: CreationOptional<string>;
+  declare date: Date;
+  declare period: SnapshotPeriod;
 
   // Revenue Metrics
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  revenue!: number;
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  recurringRevenue!: number;
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  oneTimeRevenue!: number;
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  mrr!: number; // Monthly Recurring Revenue
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  arr!: number; // Annual Recurring Revenue
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  newMrr!: number;
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  expansionMrr!: number;
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  contractionMrr!: number;
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  churnedMrr!: number;
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  netMrrGrowth!: number;
+  declare revenue: number;
+  declare recurringRevenue: number;
+  declare oneTimeRevenue: number;
+  declare mrr: number;
+  declare arr: number;
+  declare newMrr: number;
+  declare expansionMrr: number;
+  declare contractionMrr: number;
+  declare churnedMrr: number;
+  declare netMrrGrowth: number;
 
   // Cost Metrics
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  totalCosts!: number;
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  infrastructureCosts!: number;
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  apiCosts!: number;
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  personnelCosts!: number;
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  marketingCosts!: number;
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  operationalCosts!: number;
+  declare totalCosts: number;
+  declare infrastructureCosts: number;
+  declare apiCosts: number;
+  declare personnelCosts: number;
+  declare marketingCosts: number;
+  declare operationalCosts: number;
 
   // Profit Metrics
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  grossProfit!: number;
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  netProfit!: number;
-
-  @Column({
-    type: DataType.DECIMAL(5, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  grossMargin!: number;
-
-  @Column({
-    type: DataType.DECIMAL(5, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  netMargin!: number;
+  declare grossProfit: number;
+  declare netProfit: number;
+  declare grossMargin: number;
+  declare netMargin: number;
 
   // Customer Metrics
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  })
-  totalCustomers!: number;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  })
-  activeCustomers!: number;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  })
-  newCustomers!: number;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  })
-  churnedCustomers!: number;
-
-  @Column({
-    type: DataType.DECIMAL(5, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  churnRate!: number;
-
-  @Column({
-    type: DataType.DECIMAL(10, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  avgRevenuePerUser!: number;
-
-  @Column({
-    type: DataType.DECIMAL(10, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  customerAcquisitionCost!: number;
-
-  @Column({
-    type: DataType.DECIMAL(10, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  customerLifetimeValue!: number;
+  declare totalCustomers: number;
+  declare activeCustomers: number;
+  declare newCustomers: number;
+  declare churnedCustomers: number;
+  declare churnRate: number;
+  declare avgRevenuePerUser: number;
+  declare customerAcquisitionCost: number;
+  declare customerLifetimeValue: number;
 
   // Subscription Metrics
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  })
-  totalSubscriptions!: number;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  })
-  newSubscriptions!: number;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  })
-  canceledSubscriptions!: number;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  })
-  trialSubscriptions!: number;
-
-  @Column({
-    type: DataType.DECIMAL(5, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  trialConversionRate!: number;
+  declare totalSubscriptions: number;
+  declare newSubscriptions: number;
+  declare canceledSubscriptions: number;
+  declare trialSubscriptions: number;
+  declare trialConversionRate: number;
 
   // Transaction Metrics
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  })
-  totalTransactions!: number;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  })
-  successfulTransactions!: number;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  })
-  failedTransactions!: number;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  })
-  refundedTransactions!: number;
-
-  @Column({
-    type: DataType.DECIMAL(12, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  refundAmount!: number;
+  declare totalTransactions: number;
+  declare successfulTransactions: number;
+  declare failedTransactions: number;
+  declare refundedTransactions: number;
+  declare refundAmount: number;
 
   // Unit Economics
-  @Column({
-    type: DataType.DECIMAL(10, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  costPerUser!: number;
-
-  @Column({
-    type: DataType.DECIMAL(10, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  revenuePerUser!: number;
-
-  @Column({
-    type: DataType.DECIMAL(10, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  profitPerUser!: number;
-
-  @Column({
-    type: DataType.DECIMAL(5, 2),
-    allowNull: false,
-    defaultValue: 0,
-  })
-  ltvToCacRatio!: number;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  })
-  paybackPeriodDays!: number;
+  declare costPerUser: number;
+  declare revenuePerUser: number;
+  declare profitPerUser: number;
+  declare ltvToCacRatio: number;
+  declare paybackPeriodDays: number;
 
   // Metadata
-  @Column({
-    type: DataType.JSONB,
-    allowNull: true,
-  })
-  metadata?: any;
+  declare metadata: unknown;
 
-  @CreatedAt
-  declare createdAt: Date;
-
-  @UpdatedAt
-  declare updatedAt: Date;
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
 
   // Calculated properties
   get mrrGrowthRate(): number {
@@ -376,3 +101,292 @@ export class FinancialSnapshot extends Model<FinancialSnapshot> {
     return this.netProfit > 0 && this.churnRate < 10 && this.ltvToCacRatio > 3;
   }
 }
+
+// Initialize model
+// Initialize model - skip in test environment to prevent "No Sequelize instance passed" errors
+// Jest mocks will handle model initialization in tests
+if (process.env.NODE_ENV !== 'test') {
+FinancialSnapshot.init(
+  {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
+    date: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+    },
+    period: {
+      type: DataTypes.ENUM(...Object.values(SnapshotPeriod)),
+      allowNull: false,
+    },
+
+    // Revenue Metrics
+    revenue: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    recurringRevenue: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    oneTimeRevenue: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    mrr: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    arr: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    newMrr: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    expansionMrr: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    contractionMrr: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    churnedMrr: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    netMrrGrowth: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+
+    // Cost Metrics
+    totalCosts: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    infrastructureCosts: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    apiCosts: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    personnelCosts: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    marketingCosts: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    operationalCosts: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+
+    // Profit Metrics
+    grossProfit: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    netProfit: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    grossMargin: {
+      type: DataTypes.DECIMAL(5, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    netMargin: {
+      type: DataTypes.DECIMAL(5, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+
+    // Customer Metrics
+    totalCustomers: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    activeCustomers: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    newCustomers: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    churnedCustomers: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    churnRate: {
+      type: DataTypes.DECIMAL(5, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    avgRevenuePerUser: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    customerAcquisitionCost: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    customerLifetimeValue: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+
+    // Subscription Metrics
+    totalSubscriptions: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    newSubscriptions: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    canceledSubscriptions: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    trialSubscriptions: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    trialConversionRate: {
+      type: DataTypes.DECIMAL(5, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+
+    // Transaction Metrics
+    totalTransactions: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    successfulTransactions: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    failedTransactions: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    refundedTransactions: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    refundAmount: {
+      type: DataTypes.DECIMAL(12, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+
+    // Unit Economics
+    costPerUser: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    revenuePerUser: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    profitPerUser: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    ltvToCacRatio: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
+    },
+    paybackPeriodDays: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+
+    // Metadata
+    metadata: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+    },
+
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+  },
+  {
+    sequelize,
+    modelName: 'FinancialSnapshot',
+    tableName: 'financial_snapshots',
+    timestamps: true,
+    indexes: [
+      {
+        unique: true,
+        fields: ['date', 'period'],
+      },
+      {
+        fields: ['date'],
+      },
+      {
+        fields: ['period'],
+      },
+    ],
+  }
+);
+}
+
+export default FinancialSnapshot;

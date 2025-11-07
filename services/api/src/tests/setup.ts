@@ -6,6 +6,42 @@ jest.mock('openai');
 jest.mock('@anthropic-ai/sdk');
 jest.mock('ioredis');
 
+// Mock AIController to prevent model imports at module load time
+const mockFn = () => Promise.resolve({ success: true });
+jest.mock('../controllers/ai/AIController', () => ({
+  aiController: {
+    getRecommendations: mockFn,
+    getOptimalTiming: mockFn,
+    getAdaptiveSchedule: mockFn,
+    processMessage: mockFn,
+    generateSmartResponse: mockFn,
+    createLearningPath: mockFn,
+    getLearningPaths: mockFn,
+    trackLearningProgress: mockFn,
+    getNextModule: mockFn,
+    analyzeVoice: mockFn,
+    getVoiceCoaching: mockFn,
+    getVoiceInsights: mockFn,
+    compareVoiceSessions: mockFn,
+    getActiveInsights: mockFn,
+    dismissInsight: mockFn,
+    getInsightReport: mockFn,
+    predictGoalCompletion: mockFn,
+    getBehaviorPatterns: mockFn,
+    getEngagementMetrics: mockFn,
+    getPredictions: mockFn,
+    getSuccessFactors: mockFn,
+    getInterventionPlan: mockFn,
+    getCoachingStrategy: mockFn,
+    getPersonalizedContent: mockFn,
+    updatePersonalization: mockFn,
+    getPersonalizationPreferences: mockFn,
+    hybridGenerate: mockFn,
+    getRoutingDecision: mockFn,
+    trackAnalyticsEvent: mockFn,
+  },
+}));
+
 // Mock individual model files to prevent initialization
 jest.mock('../models/User');
 jest.mock('../models/Goal');
@@ -17,6 +53,16 @@ jest.mock('../models/UserProfile');
 jest.mock('../models/experiments/Experiment');
 jest.mock('../models/experiments/ExperimentAssignment');
 jest.mock('../models/experiments/ExperimentEvent');
+// Mock converted Model.init() models
+jest.mock('../models/AIInteraction');
+jest.mock('../models/AIFeedback');
+jest.mock('../models/CoachSession');
+jest.mock('../models/CoachProfile');
+jest.mock('../models/CoachPackage');
+jest.mock('../models/CoachReview');
+jest.mock('../models/financial/RevenueAnalytics');
+jest.mock('../models/financial/CostTracking');
+jest.mock('../models/financial/FinancialSnapshot');
 
 // Set test environment
 process.env.NODE_ENV = 'test';
@@ -42,9 +88,9 @@ if (!process.env.VERBOSE_TESTS) {
   const mockFn = () => {};
   global.console = {
     ...console,
-    log: mockFn as any,
-    debug: mockFn as any,
-    info: mockFn as any,
+    log: mockFn as unknown,
+    debug: mockFn as unknown,
+    info: mockFn as unknown,
     warn: originalConsole.warn, // Keep warnings and errors
     error: originalConsole.error,
   };
