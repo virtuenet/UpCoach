@@ -160,6 +160,7 @@ jobs:
           DATABASE_URL: postgresql://test:test@localhost:5432/upcoach_test
 
       - name: Run integration tests
+        working-directory: ./services/api
         run: npm run test:integration || npm test || echo "No integration tests found"
         env:
           NODE_ENV: test
