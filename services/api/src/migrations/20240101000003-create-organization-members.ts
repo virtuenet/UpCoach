@@ -18,7 +18,7 @@ export async function up(queryInterface: QueryInterface): Promise<void> {
       onDelete: 'CASCADE',
     },
     user_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: 'users',
@@ -46,7 +46,7 @@ export async function up(queryInterface: QueryInterface): Promise<void> {
       allowNull: true,
     },
     invited_by: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: true,
       references: {
         model: 'users',
