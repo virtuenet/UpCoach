@@ -147,7 +147,12 @@ jobs:
             npm install
           fi
 
+      - name: Build TypeScript
+        working-directory: ./services/api
+        run: npm run build || echo "Build script not found"
+
       - name: Run database migrations
+        working-directory: ./services/api
         run: npm run db:migrate
         env:
           NODE_ENV: test
