@@ -22,10 +22,7 @@ export default {
       subscriptionId: {
         type: DataTypes.UUID,
         allowNull: true,
-        references: {
-          model: 'subscriptions',
-          key: 'id',
-        },
+        // FK constraint added after subscriptions table creation
       },
       type: {
         type: DataTypes.ENUM('payment', 'refund', 'chargeback', 'adjustment', 'credit', 'debit'),
@@ -830,10 +827,7 @@ export default {
       subscriptionId: {
         type: DataTypes.UUID,
         allowNull: true,
-        references: {
-          model: 'subscriptions',
-          key: 'id',
-        },
+        // FK constraint added after subscriptions table creation
       },
       transactionId: {
         type: DataTypes.UUID,
