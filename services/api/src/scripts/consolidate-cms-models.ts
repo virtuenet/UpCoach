@@ -5,7 +5,6 @@
  * Migrates data from old models to UnifiedContent model
  */
 
-
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -84,7 +83,7 @@ const migrateModels = async () => {
       SELECT * FROM articles WHERE deleted_at IS NULL
     `);
 
-    for (const article of articles as any[]) {
+    for (const article of articles as unknown[]) {
       await sequelize.query(
         `
         INSERT INTO unified_contents (
@@ -127,7 +126,7 @@ const migrateModels = async () => {
         }
       );
     }
-    logger.info(`✅ Migrated ${(articles as any[]).length} articles`);
+    logger.info(`✅ Migrated ${(articles as unknown[]).length} articles`);
 
     // Migrate Contents
     logger.info('\n📄 Migrating contents...');
@@ -135,7 +134,7 @@ const migrateModels = async () => {
       SELECT * FROM contents
     `);
 
-    for (const content of contents as any[]) {
+    for (const content of contents as unknown[]) {
       await sequelize.query(
         `
         INSERT INTO unified_contents (
@@ -184,7 +183,7 @@ const migrateModels = async () => {
         }
       );
     }
-    logger.info(`✅ Migrated ${(contents as any[]).length} contents`);
+    logger.info(`✅ Migrated ${(contents as unknown[]).length} contents`);
 
     // Migrate Courses
     logger.info('\n🎓 Migrating courses...');
@@ -192,7 +191,7 @@ const migrateModels = async () => {
       SELECT * FROM courses
     `);
 
-    for (const course of courses as any[]) {
+    for (const course of courses as unknown[]) {
       await sequelize.query(
         `
         INSERT INTO unified_contents (
@@ -235,7 +234,7 @@ const migrateModels = async () => {
         }
       );
     }
-    logger.info(`✅ Migrated ${(courses as any[]).length} courses`);
+    logger.info(`✅ Migrated ${(courses as unknown[]).length} courses`);
 
     // Migrate Templates
     logger.info('\n📋 Migrating templates...');
@@ -243,7 +242,7 @@ const migrateModels = async () => {
       SELECT * FROM templates
     `);
 
-    for (const template of templates as any[]) {
+    for (const template of templates as unknown[]) {
       await sequelize.query(
         `
         INSERT INTO unified_contents (
@@ -278,7 +277,7 @@ const migrateModels = async () => {
         }
       );
     }
-    logger.info(`✅ Migrated ${(templates as any[]).length} templates`);
+    logger.info(`✅ Migrated ${(templates as unknown[]).length} templates`);
 
     // Create indexes
     logger.info('\n📊 Creating indexes...');
