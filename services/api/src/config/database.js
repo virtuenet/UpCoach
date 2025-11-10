@@ -7,7 +7,7 @@ module.exports = {
     logging: console.log,
   },
   test: {
-    use_env_variable: 'TEST_DATABASE_URL',
+    use_env_variable: 'DATABASE_URL',
     dialect: 'postgres',
     logging: false,
   },
@@ -15,5 +15,5 @@ module.exports = {
     use_env_variable: 'DATABASE_URL',
     dialect: 'postgres',
     logging: false,
-  }
+  },
 };
