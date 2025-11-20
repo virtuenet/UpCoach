@@ -1,0 +1,483 @@
+name: Mobile App - Build & Test
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'upcoach-project/apps/mobile/**'
+      - '.github/workflows/mobile-build.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'upcoach-project/apps/mobile/**'
+
+env:
+  FLUTTER_VERSION: '3.16.0'
+  JAVA_VERSION: '17'
+  XCODE_VERSION: '15.0'
+  WORKING_DIRECTORY: './upcoach-project/apps/mobile'
+
+jobs:
+  # ========================================
+  # ANALYZE & TEST
+  # ========================================
+  analyze:
+    name: Flutter Analyze
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Run Flutter analyze
+        run: flutter analyze
+
+      - name: Check for outdated dependencies
+        run: flutter pub outdated
+        continue-on-error: true
+
+  test-unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Run unit tests with coverage
+        run: flutter test --coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ${{ env.WORKING_DIRECTORY }}/coverage/lcov.info
+          flags: mobile
+          name: mobile-coverage
+
+  test-widget:
+    name: Widget Tests
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Run widget tests
+        run: flutter test test/widget_test
+
+  test-integration:
+    name: Integration Tests
+    runs-on: macos-latest
+
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Run iOS Simulator
+        run: |
+          xcrun simctl boot "iPhone 15 Pro" || true
+
+      - name: Run integration tests
+        run: flutter test integration_test
+        continue-on-error: true
+
+  # ========================================
+  # BUILD ANDROID
+  # ========================================
+  build-android:
+    name: Build Android APK/AAB
+    runs-on: ubuntu-latest
+    needs: [analyze, test-unit, test-widget]
+
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Decode keystore
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo $KEYSTORE_BASE64 | base64 -d > android/app/upload-keystore.jks
+
+      - name: Create key.properties
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        run: |
+          cat > android/key.properties <<EOF
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=upload-keystore.jks
+          EOF
+
+      - name: Build APK (Debug)
+        if: github.event_name == 'pull_request'
+        run: flutter build apk --debug
+
+      - name: Build AAB (Release)
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        run: flutter build appbundle --release
+
+      - name: Upload APK artifact
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug.apk
+          path: ${{ env.WORKING_DIRECTORY }}/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 7
+
+      - name: Upload AAB artifact
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release.aab
+          path: ${{ env.WORKING_DIRECTORY }}/build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+  # ========================================
+  # BUILD iOS
+  # ========================================
+  build-ios:
+    name: Build iOS IPA
+    runs-on: macos-latest
+    needs: [analyze, test-unit, test-widget]
+
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install
+
+      - name: Build iOS (Debug)
+        if: github.event_name == 'pull_request'
+        run: flutter build ios --debug --no-codesign
+
+      - name: Setup provisioning profile
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        env:
+          PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          P12_BASE64: ${{ secrets.IOS_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.IOS_P12_PASSWORD }}
+        run: |
+          # Decode provisioning profile
+          echo $PROVISIONING_PROFILE_BASE64 | base64 -d > ios/Runner.mobileprovision
+
+          # Decode P12 certificate
+          echo $P12_BASE64 | base64 -d > ios/Certificates.p12
+
+          # Create keychain
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security set-keychain-settings -t 3600 -u build.keychain
+
+          # Import certificate to keychain
+          security import ios/Certificates.p12 -k build.keychain -P $P12_PASSWORD -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+
+          # Install provisioning profile
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp ios/Runner.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+
+      - name: Build iOS (Release)
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        run: |
+          flutter build ios --release --no-codesign
+          cd ios
+          xcodebuild -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -archivePath $PWD/build/Runner.xcarchive \
+            archive
+
+      - name: Export IPA
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        run: |
+          cd ios
+          xcodebuild -exportArchive \
+            -archivePath $PWD/build/Runner.xcarchive \
+            -exportOptionsPlist exportOptions.plist \
+            -exportPath $PWD/build
+
+      - name: Upload IPA artifact
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release.ipa
+          path: ${{ env.WORKING_DIRECTORY }}/ios/build/*.ipa
+          retention-days: 30
+
+  # ========================================
+  # DEPLOY TO FIREBASE APP DISTRIBUTION (Beta)
+  # ========================================
+  deploy-android-beta:
+    name: Deploy Android to Firebase (Beta)
+    runs-on: ubuntu-latest
+    needs: build-android
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download AAB artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-release.aab
+
+      - name: Upload to Firebase App Distribution
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_ANDROID_APP_ID }}
+          token: ${{ secrets.FIREBASE_TOKEN }}
+          groups: beta-testers
+          file: app-release.aab
+          releaseNotes: |
+            Automated beta build from develop branch
+            Commit: ${{ github.sha }}
+
+  deploy-ios-beta:
+    name: Deploy iOS to TestFlight (Beta)
+    runs-on: macos-latest
+    needs: build-ios
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download IPA artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-release.ipa
+
+      - name: Upload to TestFlight
+        env:
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: |
+          xcrun altool --upload-app \
+            --type ios \
+            --file *.ipa \
+            --apiKey ${{ secrets.APP_STORE_CONNECT_KEY_ID }} \
+            --apiIssuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+
+  # ========================================
+  # DEPLOY TO PRODUCTION STORES
+  # ========================================
+  deploy-android-production:
+    name: Deploy Android to Google Play
+    runs-on: ubuntu-latest
+    needs: build-android
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production-android
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download AAB artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-release.aab
+
+      - name: Decode service account JSON
+        env:
+          SERVICE_ACCOUNT_JSON_BASE64: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64 }}
+        run: echo $SERVICE_ACCOUNT_JSON_BASE64 | base64 -d > service-account.json
+
+      - name: Upload to Google Play (Internal Testing)
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJson: service-account.json
+          packageName: com.upcoach.mobile
+          releaseFiles: app-release.aab
+          track: internal
+          status: completed
+          whatsNewDirectory: ${{ env.WORKING_DIRECTORY }}/metadata/android/en-US/changelogs
+
+      - name: Send Slack notification
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          text: 'Android app uploaded to Google Play Internal Testing'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  deploy-ios-production:
+    name: Deploy iOS to App Store
+    runs-on: macos-latest
+    needs: build-ios
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production-ios
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download IPA artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-release.ipa
+
+      - name: Upload to App Store Connect
+        env:
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: |
+          xcrun altool --upload-app \
+            --type ios \
+            --file *.ipa \
+            --apiKey ${{ secrets.APP_STORE_CONNECT_KEY_ID }} \
+            --apiIssuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+
+      - name: Send Slack notification
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          text: 'iOS app uploaded to App Store Connect for review'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  # ========================================
+  # AUTOMATED VERSION BUMP
+  # ========================================
+  version-bump:
+    name: Bump Version Number
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Bump version
+        run: |
+          # Get current version from pubspec.yaml
+          current_version=$(grep "version:" pubspec.yaml | cut -d " " -f 2)
+          echo "Current version: $current_version"
+
+          # Increment build number
+          version_name=$(echo $current_version | cut -d "+" -f 1)
+          build_number=$(echo $current_version | cut -d "+" -f 2)
+          new_build_number=$((build_number + 1))
+          new_version="$version_name+$new_build_number"
+
+          echo "New version: $new_version"
+
+          # Update pubspec.yaml
+          sed -i '' "s/version: $current_version/version: $new_version/" pubspec.yaml
+
+      - name: Commit version bump
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add pubspec.yaml
+          git commit -m "chore: bump version [skip ci]"
+          git push

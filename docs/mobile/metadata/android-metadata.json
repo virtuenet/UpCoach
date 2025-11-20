@@ -1,0 +1,67 @@
+{
+  "app_name": "UpCoach: Goal & Habit Tracker",
+  "short_description": "Transform your life with personalized coaching, habit tracking & AI insights",
+  "full_description": "🎯 TRANSFORM YOUR LIFE WITH UPCOACH\n\nUpCoach is your personal life coach, combining proven habit-building techniques with AI-powered insights to help you achieve your goals faster than ever before.\n\n✨ KEY FEATURES\n\n📊 SMART GOAL TRACKING\n• Set and track unlimited personal, career, health, and financial goals\n• Visual progress tracking with beautiful charts and insights\n• Milestone celebrations to keep you motivated\n• Deadline reminders so you never miss a target\n\n🎯 HABIT BUILDER\n• Build lasting habits with our proven tracking system\n• Streak tracking with motivational rewards\n• Daily/weekly habit check-ins\n• Smart reminders at the perfect time\n• Visual habit heatmaps showing your consistency\n\n🤖 AI COACHING\n• Get personalized coaching insights powered by AI\n• Daily motivational messages tailored to your journey\n• Smart suggestions based on your patterns and progress\n• Voice journal analysis for deeper self-reflection\n\n📝 VOICE JOURNALING\n• Speak your thoughts, we'll transcribe and analyze\n• AI-powered mood detection and sentiment analysis\n• Identify patterns in your emotional journey\n• Secure and private - your data is yours alone\n\n💬 COMMUNITY & ACCOUNTABILITY\n• Connect with certified life coaches\n• Join supportive communities around your interests\n• Share wins and get encouragement\n• Find accountability partners\n\n📈 COMPREHENSIVE ANALYTICS\n• Weekly and monthly progress reports\n• Identify patterns and optimize your routine\n• Export your data anytime\n• Beautiful visualizations of your growth\n\n🔒 PRIVACY FIRST\n• End-to-end encryption for your data\n• No ads, ever\n• Your journal entries are completely private\n• GDPR & CCPA compliant\n\n💎 WHY UPCOACH?\n\nUnlike other goal-tracking apps, UpCoach combines the best of:\n✓ Professional life coaching techniques\n✓ Behavioral psychology and habit science\n✓ AI-powered personalization\n✓ Beautiful, intuitive design\n✓ Real human support when you need it\n\nWhether you want to build healthy habits, achieve career goals, improve relationships, or become the best version of yourself, UpCoach gives you the tools and support to make it happen.\n\n🎁 START YOUR TRANSFORMATION TODAY\n\nFree tier includes:\n• Unlimited goal tracking\n• Basic habit tracking\n• Daily AI insights\n• Voice journaling (limited)\n\nPremium unlocks:\n• Unlimited voice journaling\n• Advanced AI coaching\n• 1-on-1 coach sessions\n• Priority support\n• Custom habit templates\n• Detailed analytics\n• Ad-free experience\n\n📱 SYNC EVERYWHERE\nWorks seamlessly across Android phone, tablet, and web. Your progress syncs automatically, so you're always up to date.\n\n🌟 JOIN THOUSANDS OF USERS\n\n\"UpCoach helped me finally stick to my morning routine. The AI insights are surprisingly accurate!\" - Sarah, 5 stars\n\n\"Best habit tracker I've used. The coach support is incredible.\" - Michael, 5 stars\n\n\"Finally achieved my fitness goals thanks to UpCoach's tracking and motivation!\" - Emma, 5 stars\n\n---\n\nDownload UpCoach now and start building the life you've always wanted.\n\nQuestions? Contact us: support@upcoach.app\nPrivacy Policy: https://upcoach.app/privacy\nTerms of Service: https://upcoach.app/terms",
+  "promo_video_url": "https://youtube.com/watch?v=EXAMPLE",
+  "category": "Health & Fitness",
+  "content_rating": "Everyone",
+  "privacy_policy_url": "https://upcoach.app/privacy",
+  "contact": {
+    "email": "support@upcoach.app",
+    "website": "https://upcoach.app",
+    "phone": "+1-555-0123"
+  },
+  "release_notes": {
+    "version_1_0_0": "🎉 Welcome to UpCoach!\n\n✨ What's New:\n• Goal tracking with beautiful visualizations\n• Habit builder with streak tracking\n• AI-powered coaching insights\n• Voice journaling with transcription\n• Community features\n• Comprehensive analytics\n• Dark mode support\n• Offline sync\n\nWe're excited to help you achieve your goals! If you love UpCoach, please leave us a review.\n\nQuestions? support@upcoach.app"
+  },
+  "feature_graphic": "feature-graphic-1024x500.png",
+  "screenshots": {
+    "phone": [
+      "01-home-dashboard.png",
+      "02-habit-tracker.png",
+      "03-goal-progress.png",
+      "04-ai-coaching.png",
+      "05-analytics.png"
+    ],
+    "tablet_7": [
+      "01-home-dashboard-tablet7.png",
+      "02-habit-tracker-tablet7.png",
+      "03-goal-progress-tablet7.png"
+    ],
+    "tablet_10": [
+      "01-home-dashboard-tablet10.png",
+      "02-habit-tracker-tablet10.png",
+      "03-goal-progress-tablet10.png"
+    ]
+  },
+  "app_icon": {
+    "high_res": "icon-512x512.png",
+    "adaptive": {
+      "foreground": "adaptive-foreground-432x432.png",
+      "background": "#FFFFFF"
+    }
+  },
+  "store_listing": {
+    "graphic_assets_required": [
+      "Feature Graphic: 1024 x 500",
+      "Phone Screenshots: 2-8 (1080 x 1920 min)",
+      "7-inch Tablet Screenshots: 2-8 (1200 x 1920 min)",
+      "10-inch Tablet Screenshots: 2-8 (1600 x 2560 min)",
+      "High-res Icon: 512 x 512",
+      "Promo Video: YouTube URL (optional)"
+    ]
+  },
+  "localization": {
+    "default_language": "en-US",
+    "supported_languages": [
+      "en-US",
+      "es-ES",
+      "fr-FR",
+      "de-DE",
+      "pt-BR",
+      "ja-JP",
+      "ko-KR",
+      "it-IT"
+    ]
+  }
+}

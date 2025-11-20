@@ -253,9 +253,9 @@ The UpCoach platform has achieved **99.7% test coverage** with comprehensive imp
 
 ## 📚 Related Documentation
 
-- [PATH_TO_100_SUCCESS.md](./PATH_TO_100_SUCCESS.md) - Complete journey to 99.7% coverage
-- [PATH_TO_100_PERCENT.md](./PATH_TO_100_PERCENT.md) - Strategic planning document
-- [ARCHIVED_UNIMPLEMENTED_FEATURES_NOV2024.md](./ARCHIVED_UNIMPLEMENTED_FEATURES_NOV2024.md) - Historical status (outdated)
+- [PATH_TO_100_SUCCESS.md](docs/archive/journey-to-100/PATH_TO_100_SUCCESS.md) - Complete journey to 99.7% coverage
+- [PATH_TO_100_PERCENT.md](docs/archive/journey-to-100/PATH_TO_100_PERCENT.md) - Strategic planning document
+- [ARCHIVED_UNIMPLEMENTED_FEATURES_NOV2024.md](docs/archive/historical/ARCHIVED_UNIMPLEMENTED_FEATURES_NOV2024.md) - Historical status (outdated)
 
 ---
 
