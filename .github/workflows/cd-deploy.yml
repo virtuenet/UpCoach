@@ -1,0 +1,86 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - release/**
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Override deploy target (api-staging, api-prod, web-staging, web-prod)"
+        required: false
+
+jobs:
+  deploy-api-staging:
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment:
+      name: api-staging
+      url: https://staging-api.upcoach.ai/health
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+      - name: Configure kubeconfig
+        run: |
+          echo "${{ secrets.STAGING_KUBECONFIG }}" > kubeconfig
+          chmod 600 kubeconfig
+      - name: Deploy API to staging
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          kubectl --kubeconfig=kubeconfig set image deployment/api api=registry.upcoach.ai/api:${IMAGE_TAG} --record
+          kubectl --kubeconfig=kubeconfig rollout status deployment/api
+
+  deploy-api-prod:
+    if: startsWith(github.ref, 'refs/heads/release/') || github.event.inputs.target == 'api-prod'
+    runs-on: ubuntu-latest
+    environment:
+      name: api-production
+      url: https://api.upcoach.ai/health
+    needs: deploy-api-staging
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+      - name: Configure kubeconfig
+        run: |
+          echo "${{ secrets.PROD_KUBECONFIG }}" > kubeconfig
+          chmod 600 kubeconfig
+      - name: Deploy API to production (canary)
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          kubectl --kubeconfig=kubeconfig set image deployment/api api=registry.upcoach.ai/api:${IMAGE_TAG} --record
+          kubectl --kubeconfig=kubeconfig rollout status deployment/api --timeout=180s
+
+  deploy-web:
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment:
+      name: web
+      url: https://app.upcoach.ai
+    needs: deploy-api-staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.11.1"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build landing page
+        run: pnpm turbo run build --filter=apps/landing-page
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          pnpm dlx vercel deploy --prebuilt --prod --token=${VERCEL_TOKEN}
+

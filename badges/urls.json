@@ -1,0 +1,18 @@
+{
+  "landing_lines_coverage": "https://github.com/USERNAME/REPO/raw/main/badges/landing-lines-coverage.svg",
+  "landing_branches_coverage": "https://github.com/USERNAME/REPO/raw/main/badges/landing-branches-coverage.svg",
+  "landing_functions_coverage": "https://github.com/USERNAME/REPO/raw/main/badges/landing-functions-coverage.svg",
+  "landing_statements_coverage": "https://github.com/USERNAME/REPO/raw/main/badges/landing-statements-coverage.svg",
+  "backend_lines_coverage": "https://github.com/USERNAME/REPO/raw/main/badges/backend-lines-coverage.svg",
+  "backend_branches_coverage": "https://github.com/USERNAME/REPO/raw/main/badges/backend-branches-coverage.svg",
+  "backend_functions_coverage": "https://github.com/USERNAME/REPO/raw/main/badges/backend-functions-coverage.svg",
+  "backend_statements_coverage": "https://github.com/USERNAME/REPO/raw/main/badges/backend-statements-coverage.svg",
+  "landing_tests_status": "https://github.com/USERNAME/REPO/raw/main/badges/landing-tests-status.svg",
+  "landing_tests_count": "https://github.com/USERNAME/REPO/raw/main/badges/landing-tests-count.svg",
+  "backend_tests_status": "https://github.com/USERNAME/REPO/raw/main/badges/backend-tests-status.svg",
+  "backend_tests_count": "https://github.com/USERNAME/REPO/raw/main/badges/backend-tests-count.svg",
+  "build_status": "https://github.com/USERNAME/REPO/raw/main/badges/build-status.svg",
+  "hero_render_performance": "https://github.com/USERNAME/REPO/raw/main/badges/hero-render-performance.svg",
+  "page_load_performance": "https://github.com/USERNAME/REPO/raw/main/badges/page-load-performance.svg",
+  "ai_response_performance": "https://github.com/USERNAME/REPO/raw/main/badges/ai-response-performance.svg"
+}

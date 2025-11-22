@@ -1,27 +1,28 @@
 # App Store Submission Checklist
 
 **Purpose:** Complete checklist for submitting UpCoach to Apple App Store and Google Play Store
-**Timeline:** Week 4 of Phase 5
-**Goal:** Get both apps approved and published
+**Timeline:** Week 4 of Phase 5 **Goal:** Get both apps approved and published
 
 ---
 
 ## Overview
 
-This checklist ensures you've completed all requirements before submitting to app stores. Both Apple and Google have strict review processes that can take 1-7 days.
+This checklist ensures you've completed all requirements before submitting to app stores. Both Apple
+and Google have strict review processes that can take 1-7 days.
 
 ### Timeline Expectations
 
-| Store | Initial Review | Updates | Approval Rate |
-|-------|---------------|---------|---------------|
-| Apple App Store | 24-48 hours | 24 hours | ~80% first try |
-| Google Play Store | 1-7 days | 1-3 days | ~90% first try |
+| Store             | Initial Review | Updates  | Approval Rate  |
+| ----------------- | -------------- | -------- | -------------- |
+| Apple App Store   | 24-48 hours    | 24 hours | ~80% first try |
+| Google Play Store | 1-7 days       | 1-3 days | ~90% first try |
 
 ---
 
 ## Pre-Submission Requirements (Both Platforms)
 
 ### ✅ App Completeness
+
 - [ ] All features implemented and tested
 - [ ] No placeholder content or "Lorem ipsum"
 - [ ] No "Coming soon" features
@@ -29,6 +30,7 @@ This checklist ensures you've completed all requirements before submitting to ap
 - [ ] No broken features or dead ends
 
 ### ✅ Testing Complete
+
 - [ ] Beta testing complete (2-3 weeks minimum)
 - [ ] Crash rate <1%
 - [ ] All critical bugs fixed
@@ -36,6 +38,7 @@ This checklist ensures you've completed all requirements before submitting to ap
 - [ ] Tested on 10+ real devices
 
 ### ✅ Legal & Compliance
+
 - [ ] Privacy policy published and accessible
 - [ ] Terms of service published
 - [ ] GDPR compliance (if serving EU users)
@@ -44,6 +47,7 @@ This checklist ensures you've completed all requirements before submitting to ap
 - [ ] Age rating obtained
 
 ### ✅ Content & Assets
+
 - [ ] App icon (all required sizes)
 - [ ] Screenshots (all required sizes/devices)
 - [ ] App preview videos (optional but recommended)
@@ -53,6 +57,7 @@ This checklist ensures you've completed all requirements before submitting to ap
 - [ ] Keywords researched (iOS)
 
 ### ✅ Monetization (if applicable)
+
 - [ ] In-app purchases tested
 - [ ] Subscription flows tested
 - [ ] Payment processing works
@@ -77,6 +82,7 @@ This checklist ensures you've completed all requirements before submitting to ap
 ```
 
 **Checklist:**
+
 - [ ] Version follows semantic versioning (1.0.0)
 - [ ] Build number incremented from last TestFlight build
 - [ ] No beta indicators in version name
@@ -84,6 +90,7 @@ This checklist ensures you've completed all requirements before submitting to ap
 #### 1.2 App Icon
 
 **Required sizes:**
+
 - 1024x1024 (App Store)
 - 180x180 (iPhone)
 - 167x167 (iPad Pro)
@@ -99,6 +106,7 @@ This checklist ensures you've completed all requirements before submitting to ap
 - 20x20 (All)
 
 **Checklist:**
+
 - [ ] All sizes provided
 - [ ] No alpha channel
 - [ ] No rounded corners (iOS adds automatically)
@@ -107,15 +115,18 @@ This checklist ensures you've completed all requirements before submitting to ap
 #### 1.3 Screenshots
 
 **Required:**
+
 - 6.7" iPhone (1290 x 2796) - iPhone 14 Pro Max, 15 Pro Max
 - 6.5" iPhone (1242 x 2688) - iPhone 11 Pro Max, XS Max
 - 5.5" iPhone (1242 x 2208) - iPhone 8 Plus
 
 **Optional but recommended:**
+
 - iPad Pro 12.9" (2048 x 2732)
 - iPad Pro 11" (1668 x 2388)
 
 **Checklist:**
+
 - [ ] 2-10 screenshots per size
 - [ ] Show key features
 - [ ] No text overlay obscuring UI (if possible)
@@ -126,12 +137,14 @@ This checklist ensures you've completed all requirements before submitting to ap
 #### 1.4 App Preview Video (Optional)
 
 **Specs:**
+
 - Format: .mov, .mp4, or .m4v
 - Length: 15-30 seconds
 - Resolution: Same as screenshot sizes
 - File size: <500 MB
 
 **Checklist:**
+
 - [ ] Shows app in action
 - [ ] No narration required
 - [ ] Captures actual app (no mockups)
@@ -141,19 +154,19 @@ This checklist ensures you've completed all requirements before submitting to ap
 
 #### 2.1 Basic Information
 
-**App Name:** UpCoach: Goal & Habit Tracker
-(Max 30 characters, shows in App Store)
+**App Name:** UpCoach: Goal & Habit Tracker (Max 30 characters, shows in App Store)
 
-**Subtitle:** Build Better Habits & Achieve Goals
-(Max 30 characters, shows below name)
+**Subtitle:** Build Better Habits & Achieve Goals (Max 30 characters, shows below name)
 
 **Promotional Text:** (Max 170 characters, can update anytime)
+
 ```
 🎉 NEW: AI-powered coaching insights! Get personalized recommendations
 based on your habits and goals. Download now!
 ```
 
 **Checklist:**
+
 - [ ] Name is unique and searchable
 - [ ] Subtitle describes value proposition
 - [ ] Promotional text highlights latest feature
@@ -165,6 +178,7 @@ based on your habits and goals. Download now!
 Use from Phase 2 metadata: `docs/mobile/metadata/ios-metadata.json`
 
 **Checklist:**
+
 - [ ] Engaging opening paragraph
 - [ ] Clear feature list
 - [ ] Benefits highlighted
@@ -178,6 +192,7 @@ Use from Phase 2 metadata: `docs/mobile/metadata/ios-metadata.json`
 **Max:** 100 characters (comma-separated)
 
 From Phase 2 metadata:
+
 ```
 goal tracker,habit tracker,life coach,personal growth,productivity,
 self improvement,habits,goals,coaching,mindfulness,journaling,
@@ -185,6 +200,7 @@ motivation,wellness,fitness tracker,routine builder
 ```
 
 **Checklist:**
+
 - [ ] Researched with App Store search
 - [ ] No app name repetition
 - [ ] No competitor names
@@ -198,6 +214,7 @@ motivation,wellness,fitness tracker,routine builder
 - **Privacy Policy URL:** https://upcoach.app/privacy
 
 **Checklist:**
+
 - [ ] All URLs accessible
 - [ ] HTTPS enabled
 - [ ] Content is relevant
@@ -209,12 +226,14 @@ motivation,wellness,fitness tracker,routine builder
 - **Secondary:** Productivity (optional)
 
 **Checklist:**
+
 - [ ] Category matches app purpose
 - [ ] Helps discoverability
 
 #### 2.6 Age Rating
 
 Answer questionnaire honestly:
+
 - Unrestricted Web Access: No
 - Gambling: No
 - Violence: No
@@ -225,6 +244,7 @@ Answer questionnaire honestly:
 **Expected Rating:** 4+
 
 **Checklist:**
+
 - [ ] Questionnaire completed
 - [ ] Rating appropriate
 - [ ] Matches Google Play rating
@@ -232,6 +252,7 @@ Answer questionnaire honestly:
 ### Step 3: Pricing & Availability
 
 **Checklist:**
+
 - [ ] Price: Free (with optional in-app purchases)
 - [ ] Availability: All countries (or select specific)
 - [ ] Pre-order: No (for 1.0 launch)
@@ -239,16 +260,19 @@ Answer questionnaire honestly:
 ### Step 4: App Review Information
 
 **Contact Information:**
+
 - First name: [Your name]
 - Last name: [Your name]
 - Phone: +1-555-0123
 - Email: support@upcoach.app
 
 **Demo Account (if app requires login):**
+
 - Username: demo@upcoach.app
 - Password: [provide test password]
 
 **Notes for Reviewer:**
+
 ```
 Thank you for reviewing UpCoach!
 
@@ -268,6 +292,7 @@ Please let us know if you have any questions!
 ```
 
 **Checklist:**
+
 - [ ] Contact info current
 - [ ] Demo account works
 - [ ] Notes are helpful and concise
@@ -276,6 +301,7 @@ Please let us know if you have any questions!
 ### Step 5: Version Release
 
 **Release Options:**
+
 1. **Manually release this version** (Recommended for 1.0)
    - You control exact release time
    - Can do final checks
@@ -286,12 +312,14 @@ Please let us know if you have any questions!
    - Less control
 
 **Checklist:**
+
 - [ ] Release option selected
 - [ ] Team notified of expected release time
 
 ### Step 6: Submit for Review
 
 **Final Checks:**
+
 - [ ] All required fields completed
 - [ ] Screenshots uploaded
 - [ ] App icon uploaded
@@ -300,11 +328,13 @@ Please let us know if you have any questions!
 - [ ] Content rights confirmed
 
 **Submit:**
+
 1. Click "Add for Review"
 2. Click "Submit to App Review"
 3. Confirm submission
 
 **Post-Submission:**
+
 - [ ] Confirmation email received
 - [ ] Status: "Waiting for Review"
 - [ ] Monitor status daily
@@ -326,6 +356,7 @@ versionName "1.0.0"  // User-facing version
 ```
 
 **Checklist:**
+
 - [ ] versionCode higher than any previous upload
 - [ ] versionName follows semantic versioning
 - [ ] No beta indicators
@@ -333,12 +364,14 @@ versionName "1.0.0"  // User-facing version
 #### 1.2 App Icon
 
 **Required:**
+
 - High-res icon: 512 x 512 PNG
 - Adaptive icon (if targeting Android 8+):
   - Foreground: 432 x 432 PNG
   - Background: Color or 432 x 432 PNG
 
 **Checklist:**
+
 - [ ] 512x512 icon provided
 - [ ] Adaptive icon layers provided
 - [ ] No transparency in high-res icon
@@ -347,11 +380,13 @@ versionName "1.0.0"  // User-facing version
 #### 1.3 Feature Graphic
 
 **Required:**
+
 - Size: 1024 x 500 pixels
 - Format: PNG or JPEG
 - No transparency
 
 **Checklist:**
+
 - [ ] Feature graphic created
 - [ ] Shows app name/logo
 - [ ] Visually appealing
@@ -360,17 +395,21 @@ versionName "1.0.0"  // User-facing version
 #### 1.4 Screenshots
 
 **Phone (Required):**
+
 - Minimum: 2
 - Recommended: 4-8
 - Size: 1080 x 1920 (minimum)
 
 **Tablet 7" (Optional):**
+
 - Size: 1200 x 1920 (minimum)
 
 **Tablet 10" (Optional):**
+
 - Size: 1600 x 2560 (minimum)
 
 **Checklist:**
+
 - [ ] All required screenshots uploaded
 - [ ] Show key features
 - [ ] Actual app screenshots
@@ -379,6 +418,7 @@ versionName "1.0.0"  // User-facing version
 #### 1.5 Promo Video (Optional)
 
 **Checklist:**
+
 - [ ] YouTube video URL
 - [ ] 30-120 seconds
 - [ ] Shows app features
@@ -388,10 +428,10 @@ versionName "1.0.0"  // User-facing version
 
 #### 2.1 App Details
 
-**App name:** UpCoach: Goal & Habit Tracker
-(Max 50 characters)
+**App name:** UpCoach: Goal & Habit Tracker (Max 50 characters)
 
 **Short description:** (Max 80 characters)
+
 ```
 Build better habits, achieve goals with AI-powered coaching & tracking
 ```
@@ -401,6 +441,7 @@ Build better habits, achieve goals with AI-powered coaching & tracking
 Use from Phase 2 metadata: `docs/mobile/metadata/android-metadata.json`
 
 **Checklist:**
+
 - [ ] Name optimized for search
 - [ ] Short description compelling
 - [ ] Full description comprehensive
@@ -409,8 +450,8 @@ Use from Phase 2 metadata: `docs/mobile/metadata/android-metadata.json`
 
 #### 2.2 Categorization
 
-**Category:** Health & Fitness
-**Tags:** (Select up to 5)
+**Category:** Health & Fitness **Tags:** (Select up to 5)
+
 - Habits
 - Goals
 - Productivity
@@ -418,6 +459,7 @@ Use from Phase 2 metadata: `docs/mobile/metadata/android-metadata.json`
 - Coaching
 
 **Checklist:**
+
 - [ ] Category matches app purpose
 - [ ] Tags relevant
 - [ ] Helps discoverability
@@ -430,6 +472,7 @@ Use from Phase 2 metadata: `docs/mobile/metadata/android-metadata.json`
 - **Privacy Policy:** https://upcoach.app/privacy
 
 **Checklist:**
+
 - [ ] All URLs accessible
 - [ ] Email monitored
 - [ ] Privacy policy published
@@ -439,6 +482,7 @@ Use from Phase 2 metadata: `docs/mobile/metadata/android-metadata.json`
 Complete IARC questionnaire:
 
 **Checklist:**
+
 - [ ] Violence: None or mild
 - [ ] Sexual content: None
 - [ ] Profanity: None
@@ -452,25 +496,30 @@ Complete IARC questionnaire:
 ### Step 4: Data Safety
 
 **Data Collection:**
+
 - [ ] Personal info (name, email)
 - [ ] App activity (interactions, generated content)
 - [ ] App info (crash logs, diagnostics)
 
 **Data Usage:**
+
 - [ ] App functionality
 - [ ] Analytics
 - [ ] Personalization
 
 **Data Sharing:**
+
 - [ ] Not shared with third parties (or specify if using analytics)
 
 **Security:**
+
 - [ ] Data encrypted in transit
 - [ ] Data encrypted at rest
 - [ ] Users can request deletion
 - [ ] Users can opt out
 
 **Checklist:**
+
 - [ ] All data types disclosed
 - [ ] Usage purposes clear
 - [ ] Security practices accurate
@@ -479,21 +528,25 @@ Complete IARC questionnaire:
 ### Step 5: Pricing & Distribution
 
 **Pricing:**
+
 - [ ] Free
 - [ ] Contains ads: No (unless you have ads)
 - [ ] In-app purchases: Yes (if applicable)
 
 **Countries:**
+
 - [ ] All countries (or select specific)
 - [ ] Exclude countries if needed
 
 **Device Categories:**
+
 - [ ] Phone
 - [ ] Tablet
 - [ ] Wear OS (if supported)
 - [ ] TV (if supported)
 
 **Checklist:**
+
 - [ ] Pricing correct
 - [ ] Distribution countries selected
 - [ ] Device compatibility set
@@ -501,19 +554,24 @@ Complete IARC questionnaire:
 ### Step 6: App Content
 
 **Target Audience:**
+
 - [ ] Age group: 13 years and older (or adjust)
 - [ ] Not designed for children
 
 **Ads Declaration:**
+
 - [ ] Contains ads: No (unless applicable)
 
 **News App:**
+
 - [ ] Is a news app: No
 
 **COVID-19:**
+
 - [ ] COVID-19 contact tracing/status app: No
 
 **Checklist:**
+
 - [ ] All declarations accurate
 - [ ] Complies with policies
 
@@ -522,10 +580,12 @@ Complete IARC questionnaire:
 #### 7.1 Select Release Track
 
 **Production:**
+
 - Full release to all users
 - Requires review
 
 **Checklist:**
+
 - [ ] Production track selected
 - [ ] Release name entered
 - [ ] Release notes written
@@ -552,6 +612,7 @@ Questions? support@upcoach.app
 ```
 
 **Checklist:**
+
 - [ ] Release notes engaging
 - [ ] Features highlighted
 - [ ] Contact info included
@@ -559,6 +620,7 @@ Questions? support@upcoach.app
 #### 7.3 Upload App Bundle
 
 **Checklist:**
+
 - [ ] AAB file uploaded
 - [ ] Processing complete
 - [ ] No errors or warnings
@@ -566,17 +628,20 @@ Questions? support@upcoach.app
 #### 7.4 Review and Rollout
 
 **Checklist:**
+
 - [ ] All sections complete (green checkmarks)
 - [ ] No policy warnings
 - [ ] Ready to publish
 
 **Submit:**
+
 1. Click "Review release"
 2. Review all details
 3. Click "Start rollout to Production"
 4. Confirm rollout
 
 **Post-Submission:**
+
 - [ ] Confirmation shown
 - [ ] Status: "Pending publication"
 - [ ] Review typically 1-7 days
@@ -589,44 +654,54 @@ Questions? support@upcoach.app
 ### iOS Rejections
 
 **1. Crashes or Bugs**
+
 - **Avoid:** Test thoroughly, fix all known bugs
 - **Response:** If rejected, fix and resubmit within 24h
 
 **2. Missing Functionality**
+
 - **Avoid:** All features working, no placeholders
 - **Response:** Complete features and resubmit
 
 **3. Privacy Violations**
+
 - **Avoid:** Clear privacy policy, proper permissions
 - **Response:** Update privacy policy, explain data usage
 
 **4. Design Issues**
+
 - **Avoid:** Follow iOS Human Interface Guidelines
 - **Response:** Update UI to match guidelines
 
 **5. Performance Issues**
+
 - **Avoid:** Optimize performance, <3s launch time
 - **Response:** Optimize and resubmit
 
 ### Google Play Rejections
 
 **1. Policy Violations**
+
 - **Avoid:** Read and follow all Google Play policies
 - **Response:** Fix violation, provide explanation
 
 **2. Misleading Content**
+
 - **Avoid:** Accurate description, no false claims
 - **Response:** Update description, be truthful
 
 **3. Permissions Abuse**
+
 - **Avoid:** Only request necessary permissions
 - **Response:** Remove unnecessary permissions
 
 **4. Intellectual Property**
+
 - **Avoid:** No copyrighted content without permission
 - **Response:** Remove infringing content
 
 **5. Security Vulnerabilities**
+
 - **Avoid:** Security audit, no known vulnerabilities
 - **Response:** Fix security issues, resubmit
 
@@ -637,6 +712,7 @@ Questions? support@upcoach.app
 ### iOS App Review Status
 
 **Statuses:**
+
 1. **Waiting for Review** - In queue
 2. **In Review** - Being reviewed (24-48 hours)
 3. **Pending Developer Release** - Approved, waiting for your release
@@ -644,6 +720,7 @@ Questions? support@upcoach.app
 5. **Rejected** - Not approved, review feedback
 
 **Monitor:**
+
 - App Store Connect daily
 - Email for status updates
 - Respond to questions within 24h
@@ -651,6 +728,7 @@ Questions? support@upcoach.app
 ### Google Play Review Status
 
 **Statuses:**
+
 1. **Pending publication** - In review queue
 2. **In review** - Being reviewed (1-7 days)
 3. **Approved** - Can be released
@@ -658,6 +736,7 @@ Questions? support@upcoach.app
 5. **Rejected** - Not approved, review reason provided
 
 **Monitor:**
+
 - Google Play Console daily
 - Email for status updates
 - Address issues promptly
@@ -679,12 +758,14 @@ Questions? support@upcoach.app
 ### Launch Day
 
 **Morning:**
+
 - [ ] Verify apps are live
 - [ ] Test download links
 - [ ] Check app store listings
 - [ ] Monitor initial downloads
 
 **Announce:**
+
 - [ ] Send email newsletter
 - [ ] Post on social media
 - [ ] Publish blog post
@@ -692,6 +773,7 @@ Questions? support@upcoach.app
 - [ ] Notify beta testers
 
 **Monitor:**
+
 - [ ] Watch crash reports (target: <1%)
 - [ ] Monitor reviews
 - [ ] Track downloads
@@ -701,6 +783,7 @@ Questions? support@upcoach.app
 ### Post-Launch (First Week)
 
 **Daily:**
+
 - [ ] Check crash rate (<1% target)
 - [ ] Read and respond to reviews
 - [ ] Monitor support emails
@@ -708,6 +791,7 @@ Questions? support@upcoach.app
 - [ ] Fix critical bugs immediately
 
 **Weekly:**
+
 - [ ] Analyze user feedback
 - [ ] Plan updates
 - [ ] Review metrics
@@ -719,6 +803,7 @@ Questions? support@upcoach.app
 ## Success Metrics
 
 **Week 1 Targets:**
+
 - 1,000+ downloads
 - 4.0+ star rating
 - <1% crash rate
@@ -726,6 +811,7 @@ Questions? support@upcoach.app
 - 50+ reviews
 
 **Month 1 Targets:**
+
 - 10,000+ downloads
 - 4.5+ star rating
 - <0.5% crash rate
@@ -737,11 +823,13 @@ Questions? support@upcoach.app
 ## Resources
 
 **iOS:**
+
 - [App Store Review Guidelines](https://developer.apple.com/app-store/review/guidelines/)
 - [App Store Connect Help](https://help.apple.com/app-store-connect/)
 - [Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/)
 
 **Android:**
+
 - [Google Play Policies](https://play.google.com/about/developer-content-policy/)
 - [Launch Checklist](https://developer.android.com/distribute/best-practices/launch/launch-checklist)
 - [Google Play Console Help](https://support.google.com/googleplay/android-developer/)
@@ -750,4 +838,5 @@ Questions? support@upcoach.app
 
 **Ready to Submit!** 🚀
 
-Follow this checklist carefully and you'll have the best chance of approval on the first try. Good luck! 🎉
+Follow this checklist carefully and you'll have the best chance of approval on the first try. Good
+luck! 🎉

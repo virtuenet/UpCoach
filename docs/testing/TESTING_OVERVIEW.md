@@ -1,30 +1,31 @@
 # Testing Overview
 
-Comprehensive overview of the UpCoach platform's test infrastructure and 99.7% test coverage achievement.
+Comprehensive overview of the UpCoach platform's test infrastructure and 99.7% test coverage
+achievement.
 
 ## Current Test Metrics
 
 ### Overall Statistics
 
-| Metric | Value |
-|--------|-------|
-| **Total Tests** | 1026 |
-| **Passing Tests** | 1023 |
-| **Failing Tests** | 0 |
-| **Skipped Tests** | 3 (justified) |
-| **Test Coverage** | 99.7% |
-| **Test Suites** | 54/55 passing (98.2%) |
+| Metric             | Value                   |
+| ------------------ | ----------------------- |
+| **Total Tests**    | 1026                    |
+| **Passing Tests**  | 1023                    |
+| **Failing Tests**  | 0                       |
+| **Skipped Tests**  | 3 (justified)           |
+| **Test Coverage**  | 99.7%                   |
+| **Test Suites**    | 54/55 passing (98.2%)   |
 | **Execution Time** | ~4 minutes (full suite) |
 
 ### Test Coverage by Type
 
-| Test Type | Passing | Total | Coverage |
-|-----------|---------|-------|----------|
-| **Unit Tests** | 687 | 687 | 100% |
-| **Integration Tests** | 182 | 182 | 100% |
-| **E2E Journey Tests** | 158 | 158 | 100% |
-| **API Contract Tests** | 40 | 43 | 93% |
-| **Service Tests** | 156 | 156 | 100% |
+| Test Type              | Passing | Total | Coverage |
+| ---------------------- | ------- | ----- | -------- |
+| **Unit Tests**         | 687     | 687   | 100%     |
+| **Integration Tests**  | 182     | 182   | 100%     |
+| **E2E Journey Tests**  | 158     | 158   | 100%     |
+| **API Contract Tests** | 40      | 43    | 93%      |
+| **Service Tests**      | 156     | 156   | 100%     |
 
 ## Test Infrastructure
 
@@ -40,13 +41,16 @@ Comprehensive overview of the UpCoach platform's test infrastructure and 99.7% t
 Comprehensive mocking infrastructure includes:
 
 **External Services:**
-- **Stripe SDK** - Complete payment lifecycle (customers, payments, subscriptions, refunds, transfers)
+
+- **Stripe SDK** - Complete payment lifecycle (customers, payments, subscriptions, refunds,
+  transfers)
 - **OpenAI SDK** - AI coaching features (PersonalityEngine, ContextManager, PromptEngineering)
 - **Redis** - Full command set with TTL tracking
 - **Email Services** - Nodemailer and SMTP mocking
 - **Database** - Transaction support and query mocking
 
 **Authentication:**
+
 - **JWT** - Token generation and validation
 - **bcrypt** - Password hashing
 - **OAuth Providers** - Google, Apple, Facebook
@@ -89,12 +93,14 @@ services/api/src/__tests__/
 **Purpose:** Test complete user flows from start to finish using in-memory mocks.
 
 **Key Features:**
+
 - In-memory mock databases (arrays/objects)
 - `beforeAll` for journey state persistence
 - Business logic testing (not HTTP layer)
 - Realistic data flows
 
 **Example:**
+
 ```typescript
 describe('User Registration Journey', () => {
   // In-memory databases
@@ -133,6 +139,7 @@ describe('User Registration Journey', () => {
 **Problem Solved:** GDPRService blocker and similar module conflicts.
 
 **Implementation:**
+
 ```typescript
 let service: any;
 
@@ -153,6 +160,7 @@ test('should export user data', async () => {
 **Purpose:** Fix multiple independent test files simultaneously for maximum efficiency.
 
 **Approach:**
+
 1. Deploy 3-4 agents on independent files
 2. Each agent applies established patterns
 3. Zero merge conflicts due to file independence
@@ -165,6 +173,7 @@ test('should export user data', async () => {
 **Purpose:** Standardize API response formats across all endpoints.
 
 **Pattern:**
+
 ```typescript
 // Success response
 {
@@ -221,11 +230,13 @@ xdg-open coverage/lcov-report/index.html  # Linux
 ### CI/CD Integration
 
 Tests run automatically on:
+
 - Every push to feature branches
 - Pull request creation
 - Merge to main branch
 
 **Pipeline Steps:**
+
 1. Lint and type check
 2. Run test suite (1023 tests)
 3. Check coverage threshold (95%+)
@@ -239,6 +250,7 @@ Tests run automatically on:
 **File:** `src/tests/integration/api.test.ts`
 
 **Tests:**
+
 - `should establish WebSocket connection with authentication`
 - `should reject unauthenticated WebSocket connections`
 
@@ -268,16 +280,19 @@ Tests run automatically on:
 ### Key Milestones
 
 **Week 1 (Nov 11-15):**
+
 - Established E2E journey pattern
 - Fixed mock infrastructure
 - Created comprehensive test helpers
 
 **Week 2 (Nov 16-17):**
+
 - Parallel agent deployment (116 tests in one session)
 - Converted 5 E2E journey files
 - Zero regressions introduced
 
 **Path to 100% (Nov 17-19):**
+
 - Fixed api.test.ts (40/43 passing)
 - Completed coach-revenue-journey (15/15)
 - Fixed auth middleware regression
@@ -289,7 +304,7 @@ Tests run automatically on:
 
 ### 1. Habits Route Bug (CRITICAL)
 
-**File:** `upcoach-project/services/api/src/routes/habits.ts`
+**File:** `services/api/src/routes/habits.ts`
 
 **Issue:** Used `req.user.userId` instead of `req.user.id`
 
@@ -299,7 +314,7 @@ Tests run automatically on:
 
 ### 2. Auth Middleware Inconsistency
 
-**File:** `upcoach-project/services/api/src/middleware/auth.ts`
+**File:** `services/api/src/middleware/auth.ts`
 
 **Issue:** Mixed `error` and `message` fields in responses
 
@@ -327,12 +342,13 @@ Tests run automatically on:
    - Clean up in `afterEach`/`afterAll`
 
 4. **Descriptive Test Names**
+
    ```typescript
    // Good
-   test('should create user with valid email and password', () => {})
+   test('should create user with valid email and password', () => {});
 
    // Bad
-   test('user creation', () => {})
+   test('user creation', () => {});
    ```
 
 5. **Assertions**
@@ -407,4 +423,5 @@ npm test
 
 ---
 
-**99.7% Test Coverage** | **1023/1026 Tests Passing** | **Zero Failing Tests** | **Production Ready**
+**99.7% Test Coverage** | **1023/1026 Tests Passing** | **Zero Failing Tests** | **Production
+Ready**

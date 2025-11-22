@@ -1,8 +1,7 @@
 # Firebase Production Setup Guide
 
-**Purpose:** Complete guide to setting up Firebase for UpCoach production environment
-**Platforms:** iOS, Android, Web
-**Services:** Authentication, Cloud Messaging, Analytics, Crashlytics
+**Purpose:** Complete guide to setting up Firebase for UpCoach production environment **Platforms:**
+iOS, Android, Web **Services:** Authentication, Cloud Messaging, Analytics, Crashlytics
 **Environment:** Production
 
 ---
@@ -43,6 +42,7 @@
    - Alert at $100/month
 
 **Expected Costs:**
+
 - Free tier covers most small-scale usage
 - Estimated: $50-100/month for moderate traffic
 - Scales with usage
@@ -65,8 +65,9 @@
 
 1. Download `GoogleService-Info.plist`
 2. Save to:
+
    ```
-   /upcoach-project/apps/mobile/ios/Runner/GoogleService-Info.plist
+   /apps/mobile/ios/Runner/GoogleService-Info.plist
    ```
 
 3. **Important:** Add to `.gitignore`:
@@ -78,7 +79,7 @@
 
 ### 2.3 Configure Xcode Project
 
-1. Open `upcoach-project/apps/mobile/ios/Runner.xcworkspace` in Xcode
+1. Open `apps/mobile/ios/Runner.xcworkspace` in Xcode
 2. Drag `GoogleService-Info.plist` into Runner folder
 3. Ensure **"Copy items if needed"** is checked
 4. Ensure it's added to Runner target
@@ -141,8 +142,9 @@
 
 1. Download `google-services.json`
 2. Save to:
+
    ```
-   /upcoach-project/apps/mobile/android/app/google-services.json
+   /apps/mobile/android/app/google-services.json
    ```
 
 3. Verify location is correct (should be in `android/app/` folder)
@@ -172,6 +174,7 @@ buildscript {
 File: `android/app/build.gradle`
 
 Add at the bottom:
+
 ```gradle
 apply plugin: 'com.google.gms.google-services'  // Add this
 apply plugin: 'com.google.firebase.crashlytics'  // Add this
@@ -203,19 +206,19 @@ You'll see a configuration object like:
 
 ```javascript
 const firebaseConfig = {
-  apiKey: "AIza...",
-  authDomain: "upcoach-production.firebaseapp.com",
-  projectId: "upcoach-production",
-  storageBucket: "upcoach-production.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abc123",
-  measurementId: "G-XXXXXXXXXX"
+  apiKey: 'AIza...',
+  authDomain: 'upcoach-production.firebaseapp.com',
+  projectId: 'upcoach-production',
+  storageBucket: 'upcoach-production.appspot.com',
+  messagingSenderId: '123456789',
+  appId: '1:123456789:web:abc123',
+  measurementId: 'G-XXXXXXXXXX',
 };
 ```
 
 ### 4.3 Save Web Configuration
 
-Create file: `/upcoach-project/apps/web/.env.production`
+Create file: `/apps/web/.env.production`
 
 ```bash
 VITE_FIREBASE_API_KEY=AIza...
@@ -228,6 +231,7 @@ VITE_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
 ```
 
 **Important:** Add to `.gitignore`:
+
 ```
 .env.production
 .env.local
@@ -268,7 +272,7 @@ VITE_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
    - ✅ Android Server Key generated
    - ✅ Web push certificates configured
 
-2. **Create notification channels** (for better organization):
+3. **Create notification channels** (for better organization):
    - Go to Cloud Messaging → Notification channels
    - Create channels:
      - `habits_reminders` - Habit reminders
@@ -347,6 +351,7 @@ service cloud.firestore {
 ```
 
 Deploy rules:
+
 ```bash
 firebase deploy --only firestore:rules
 ```
@@ -477,6 +482,7 @@ FIREBASE_SERVICE_ACCOUNT_PATH=./config/firebase-admin-key.json
 ### 8.2 Mobile App Configuration
 
 Already configured in:
+
 - iOS: `GoogleService-Info.plist`
 - Android: `google-services.json`
 
@@ -485,6 +491,7 @@ No additional env vars needed (Firebase SDK reads from config files)
 ### 8.3 Web App Configuration
 
 Already configured in:
+
 - `/apps/web/.env.production`
 
 ---
@@ -538,6 +545,7 @@ Already configured in:
 Before going live, verify:
 
 ### Firebase Configuration
+
 - [ ] Production project created
 - [ ] Blaze plan enabled with budget alerts
 - [ ] iOS app registered with correct bundle ID
@@ -546,12 +554,14 @@ Before going live, verify:
 - [ ] All config files downloaded and placed correctly
 
 ### Push Notifications
+
 - [ ] APNs certificate uploaded (iOS)
 - [ ] FCM configured (Android)
 - [ ] Test notifications sent successfully
 - [ ] Backend can send notifications via Admin SDK
 
 ### Authentication
+
 - [ ] Email/Password enabled
 - [ ] Google Sign-In configured
 - [ ] Apple Sign-In configured
@@ -559,18 +569,21 @@ Before going live, verify:
 - [ ] Test sign-in on all platforms
 
 ### Security
+
 - [ ] Firestore rules configured (if using)
 - [ ] Storage rules configured (if using)
 - [ ] Service account key secured
 - [ ] `.gitignore` updated with all sensitive files
 
 ### Monitoring
+
 - [ ] Analytics enabled and receiving events
 - [ ] Crashlytics enabled and tested
 - [ ] Performance monitoring enabled
 - [ ] Alerts configured for crashes and errors
 
 ### Backend Integration
+
 - [ ] Admin SDK installed
 - [ ] Service account configured
 - [ ] Push notification sending tested
@@ -581,27 +594,32 @@ Before going live, verify:
 ## Troubleshooting
 
 ### iOS: "No APNs certificate uploaded"
+
 - Verify APNs key/certificate is uploaded in Firebase Console
 - Check Team ID and Key ID are correct
 - Ensure bundle ID matches Firebase configuration
 
 ### Android: "google-services.json not found"
+
 - Verify file is in `android/app/` folder
 - Check package name in `google-services.json` matches `build.gradle`
 - Run `flutter clean` and rebuild
 
 ### Push notifications not received
+
 - Verify device has internet connection
 - Check FCM token is being generated
 - Verify user granted notification permissions
 - Check Firebase Cloud Messaging quotas
 
 ### Crashlytics not reporting crashes
+
 - Ensure app was restarted after crash
 - Verify Crashlytics is initialized in `main.dart`
 - Check debug mode vs release mode (Crashlytics works in both)
 
 ### Analytics events not appearing
+
 - Wait 24-48 hours for initial events
 - Verify Analytics is enabled in Firebase Console
 - Check event names follow naming conventions (lowercase, underscores)
@@ -660,4 +678,5 @@ After Firebase setup:
 
 **Setup Complete!** 🎉
 
-Firebase is now configured for UpCoach production environment. Proceed to device testing and beta deployment.
+Firebase is now configured for UpCoach production environment. Proceed to device testing and beta
+deployment.

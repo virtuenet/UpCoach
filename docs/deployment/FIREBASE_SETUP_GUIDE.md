@@ -1,6 +1,7 @@
 ## Firebase Setup Guide
 
-Comprehensive guide for setting up Firebase services for the UpCoach platform, including Push Notifications, Analytics, and Crashlytics.
+Comprehensive guide for setting up Firebase services for the UpCoach platform, including Push
+Notifications, Analytics, and Crashlytics.
 
 ## Table of Contents
 
@@ -46,6 +47,7 @@ Comprehensive guide for setting up Firebase services for the UpCoach platform, i
    - Click "Add project"
 
 2. **Project Details:**
+
    ```
    Project Name: UpCoach Production
    Project ID: upcoach-prod (or auto-generated)
@@ -113,9 +115,10 @@ In Firebase Console, enable:
 2. **Download `GoogleService-Info.plist`**
 
 3. **Add to Xcode Project:**
+
    ```bash
    # Place file in:
-   upcoach-project/apps/mobile/ios/Runner/
+   apps/mobile/ios/Runner/
 
    # Important: Do NOT add to version control!
    # Add to .gitignore
@@ -136,6 +139,7 @@ In Firebase Console, enable:
    - Save
 
 2. **Create APNs Key:**
+
    ```
    1. Keys → Create new key
    2. Name: "UpCoach APNs Key"
@@ -229,6 +233,7 @@ end
 ```
 
 **Install Pods:**
+
 ```bash
 cd ios
 pod install
@@ -248,6 +253,7 @@ cd ..
    - Debug signing certificate SHA-1: (get from debug keystore)
 
 2. **Get Debug SHA-1:**
+
    ```bash
    cd android
    ./gradlew signingReport
@@ -257,9 +263,10 @@ cd ..
 3. **Download `google-services.json`**
 
 4. **Add to Android Project:**
+
    ```bash
    # Place file in:
-   upcoach-project/apps/mobile/android/app/
+   apps/mobile/android/app/
 
    # Important: Do NOT add to version control!
    # Add to .gitignore
@@ -528,7 +535,7 @@ export async function requestNotificationPermission() {
 
 // Handle foreground messages
 export function setupMessageListener(callback: (payload: any) => void) {
-  onMessage(messaging, (payload) => {
+  onMessage(messaging, payload => {
     console.log('Message received:', payload);
     callback(payload);
   });
@@ -554,6 +561,7 @@ npm install firebase-admin
    - Save as `firebase-service-account.json`
 
 2. **Store Securely:**
+
    ```bash
    # DO NOT commit to git!
    # Store in secure location
@@ -561,6 +569,7 @@ npm install firebase-admin
    ```
 
 3. **Set Environment Variable:**
+
    ```bash
    # .env.production
    FIREBASE_SERVICE_ACCOUNT_PATH=/path/to/firebase-service-account.json
@@ -588,10 +597,9 @@ export function initializeFirebase() {
 
   // Check for base64 encoded credentials (for cloud deployment)
   if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
-    const decoded = Buffer.from(
-      process.env.FIREBASE_SERVICE_ACCOUNT_BASE64,
-      'base64'
-    ).toString('utf-8');
+    const decoded = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString(
+      'utf-8'
+    );
     serviceAccount = JSON.parse(decoded);
   } else if (process.env.FIREBASE_SERVICE_ACCOUNT_PATH) {
     // Load from file (for local development)
@@ -984,6 +992,7 @@ try {
    - Send test message with FCM token
 
 2. **From Backend:**
+
 ```bash
 curl -X POST https://fcm.googleapis.com/fcm/send \
   -H "Authorization: key=YOUR_SERVER_KEY" \
@@ -1041,7 +1050,6 @@ curl -X POST https://fcm.googleapis.com/fcm/send \
 
 ---
 
-**Last Updated:** November 19, 2025
-**Version:** 1.0
+**Last Updated:** November 19, 2025 **Version:** 1.0
 
 For support: support@upcoach.app

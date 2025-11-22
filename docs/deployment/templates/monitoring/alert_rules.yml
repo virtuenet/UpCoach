@@ -1,0 +1,194 @@
+# Prometheus Alert Rules for UpCoach Production
+# These rules define when alerts should be triggered
+
+groups:
+  # Application alerts
+  - name: upcoach_application_alerts
+    rules:
+      - alert: UpCoachApiDown
+        expr: up == 0
+        for: 5m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: "UpCoach API is down"
+          description: "UpCoach API has been down for more than 5 minutes."
+          runbook_url: "https://docs.upcoach.ai/runbooks/api-down"
+
+      - alert: UpCoachApiHighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "High error rate on UpCoach API"
+          description: "Error rate is {{ $value | printf \"%.2f\" }}% over the last 5 minutes."
+          runbook_url: "https://docs.upcoach.ai/runbooks/high-error-rate"
+
+      - alert: UpCoachApiHighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "High latency on UpCoach API"
+          description: "95th percentile latency is {{ $value | printf \"%.2f\" }}s over the last 5 minutes."
+          runbook_url: "https://docs.upcoach.ai/runbooks/high-latency"
+
+      - alert: UpCoachApiHighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "High memory usage on UpCoach API server"
+          description: "Memory usage is {{ $value | printf \"%.1f\" }}%."
+          runbook_url: "https://docs.upcoach.ai/runbooks/high-memory"
+
+      - alert: UpCoachApiHighCPUUsage
+        expr: (1 - rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "High CPU usage on UpCoach API server"
+          description: "CPU usage is {{ $value | printf \"%.1f\" }}%."
+          runbook_url: "https://docs.upcoach.ai/runbooks/high-cpu"
+
+  # Database alerts
+  - name: upcoach_database_alerts
+    rules:
+      - alert: PostgresDown
+        expr: pg_up == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: database
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL has been down for more than 2 minutes."
+          runbook_url: "https://docs.upcoach.ai/runbooks/postgres-down"
+
+      - alert: PostgresHighConnectionCount
+        expr: pg_stat_activity_count > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "High PostgreSQL connection count"
+          description: "PostgreSQL has {{ $value }} active connections."
+          runbook_url: "https://docs.upcoach.ai/runbooks/postgres-connections"
+
+      - alert: PostgresSlowQueries
+        expr: increase(pg_stat_statements_total_time_seconds[5m]) / increase(pg_stat_statements_calls[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "Slow PostgreSQL queries detected"
+          description: "Average query time is {{ $value | printf \"%.2f\" }} seconds."
+          runbook_url: "https://docs.upcoach.ai/runbooks/slow-queries"
+
+      - alert: PostgresHighDeadTuples
+        expr: pg_stat_user_tables_n_dead_tup > 10000
+        for: 10m
+        labels:
+          severity: info
+          service: database
+        annotations:
+          summary: "High dead tuples in PostgreSQL"
+          description: "Table has {{ $value }} dead tuples, consider vacuuming."
+          runbook_url: "https://docs.upcoach.ai/runbooks/postgres-maintenance"
+
+  # Redis alerts
+  - name: upcoach_redis_alerts
+    rules:
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Redis is down"
+          description: "Redis has been down for more than 2 minutes."
+          runbook_url: "https://docs.upcoach.ai/runbooks/redis-down"
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "High Redis memory usage"
+          description: "Redis memory usage is {{ $value | printf \"%.1f\" }}%."
+          runbook_url: "https://docs.upcoach.ai/runbooks/redis-memory"
+
+      - alert: RedisHighConnectionCount
+        expr: redis_connected_clients > 100
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "High Redis connection count"
+          description: "Redis has {{ $value }} connected clients."
+          runbook_url: "https://docs.upcoach.ai/runbooks/redis-connections"
+
+  # External service alerts
+  - name: upcoach_external_alerts
+    rules:
+      - alert: ExternalServiceDown
+        expr: probe_success == 0
+        for: 5m
+        labels:
+          severity: critical
+          service: external
+        annotations:
+          summary: "External service is down"
+          description: "{{ $labels.instance }} is not responding."
+          runbook_url: "https://docs.upcoach.ai/runbooks/external-service-down"
+
+      - alert: ExternalServiceSlow
+        expr: probe_duration_seconds > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: external
+        annotations:
+          summary: "External service is slow"
+          description: "{{ $labels.instance }} response time is {{ $value | printf \"%.2f\" }} seconds."
+          runbook_url: "https://docs.upcoach.ai/runbooks/external-service-slow"
+
+  # Infrastructure alerts
+  - name: upcoach_infrastructure_alerts
+    rules:
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 10
+        for: 5m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space is below 10% on {{ $labels.instance }}."
+          runbook_url: "https://docs.upcoach.ai/runbooks/low-disk-space"
+
+      - alert: HighNetworkTraffic
+        expr: rate(node_network_receive_bytes_total[5m]) > 100000000
+        for: 10m
+        labels:
+          severity: info
+          service: infrastructure
+        annotations:
+          summary: "High network traffic"
+          description: "Network receive rate is {{ $value | printf \"%.1f\" }} MB/s."
+          runbook_url: "https://docs.upcoach.ai/runbooks/high-network-traffic"

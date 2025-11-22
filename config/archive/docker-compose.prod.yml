@@ -1,0 +1,298 @@
+# Production-specific Docker Compose overrides for UpCoach
+# This file extends the base docker-compose.yml with production optimizations
+
+services:
+  # PostgreSQL with production optimizations
+  postgres:
+    environment:
+      POSTGRES_USER: ${DB_USER:-upcoach}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-upcoach_production}
+      # Production PostgreSQL tuning
+      POSTGRES_SHARED_PRELOAD_LIBRARIES: pg_stat_statements
+      POSTGRES_LOG_STATEMENT: all
+      POSTGRES_LOG_MIN_DURATION_STATEMENT: 1000
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+      - ./services/api/src/database/migrations:/docker-entrypoint-initdb.d
+      - ./logs/postgresql:/var/log/postgresql
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # Redis with production configuration
+  redis:
+    environment:
+      REDIS_DATABASES: 16
+      REDIS_MAXMEMORY: 1gb
+      REDIS_MAXMEMORY_POLICY: allkeys-lru
+    volumes:
+      - redis_prod_data:/data
+      - ./config/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: redis-server /usr/local/etc/redis/redis.conf
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  # Backend API with production settings
+  backend-api:
+    build:
+      context: ./services/api
+      dockerfile: Dockerfile.production
+      args:
+        NODE_ENV: production
+        BUILD_VERSION: ${BUILD_VERSION:-latest}
+    environment:
+      NODE_ENV: production
+      PORT: 1080
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
+      # AI Services
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      CLAUDE_API_KEY: ${CLAUDE_API_KEY}
+      # Authentication
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      # Payment processing
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      # Security
+      BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-14}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-100}
+      # Monitoring
+      SENTRY_DSN: ${SENTRY_DSN}
+      DATADOG_API_KEY: ${DATADOG_API_KEY}
+      # Performance
+      CLUSTER_MODE: ${CLUSTER_MODE:-false}
+      WORKER_PROCESSES: ${WORKER_PROCESSES:-2}
+    volumes:
+      - ./logs/api:/app/logs
+      - ./uploads:/app/uploads
+      - api_cache:/app/cache
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+  # Landing Page with production build
+  landing-page:
+    build:
+      context: ./apps/landing-page
+      dockerfile: Dockerfile.production
+      args:
+        NODE_ENV: production
+        NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_API_URL: ${API_URL:-https://api.upcoach.ai}
+        NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+    environment:
+      NODE_ENV: production
+      PORT: 1005
+    volumes:
+      - ./logs/landing:/app/logs
+      - landing_cache:/app/.next/cache
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1005/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # Admin Panel with production build
+  admin-panel:
+    build:
+      context: .
+      dockerfile: ./apps/admin-panel/Dockerfile.production
+      args:
+        NODE_ENV: production
+        VITE_SUPABASE_URL: ${SUPABASE_URL}
+        VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+        VITE_API_URL: ${API_URL:-https://api.upcoach.ai}
+    environment:
+      NODE_ENV: production
+      PORT: 1006
+    volumes:
+      - ./logs/admin:/app/logs
+      - admin_cache:/app/cache
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # CMS Panel with production build
+  cms-panel:
+    build:
+      context: .
+      dockerfile: ./apps/cms-panel/Dockerfile.production
+      args:
+        NODE_ENV: production
+        VITE_SUPABASE_URL: ${SUPABASE_URL}
+        VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+        VITE_API_URL: ${API_URL:-https://api.upcoach.ai}
+    environment:
+      NODE_ENV: production
+      PORT: 1007
+    volumes:
+      - ./logs/cms:/app/logs
+      - cms_cache:/app/cache
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # Nginx reverse proxy for production
+  nginx:
+    image: nginx:alpine
+    container_name: upcoach-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - backend-api
+      - landing-page
+      - admin-panel
+      - cms-panel
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # File storage service (optional)
+  minio:
+    image: minio/minio:latest
+    container_name: upcoach-storage
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-upcoach}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BROWSER_REDIRECT_URL: ${MINIO_BROWSER_REDIRECT_URL}
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - storage
+
+volumes:
+  postgres_prod_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/upcoach/postgres
+  redis_prod_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/upcoach/redis
+  minio_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/upcoach/storage
+  api_cache:
+  landing_cache:
+  admin_cache:
+  cms_cache:
+
+networks:
+  default:
+    name: upcoach-production
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16

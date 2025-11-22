@@ -1,0 +1,52 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "clean": {
+      "cache": false
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**", "build/**", "*.tsbuildinfo"],
+      "env": ["NODE_ENV"]
+    },
+    "verify:build": {
+      "dependsOn": ["build"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "outputs": [],
+      "inputs": ["src/**/*.{ts,tsx,js,jsx}", "*.{js,ts,json}"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**", "test-results/**"],
+      "inputs": ["src/**/*.{ts,tsx,js,jsx}", "test/**/*", "**/*.test.{ts,tsx,js,jsx}"]
+    },
+    "test:unit": {
+      "outputs": ["coverage/**"],
+      "inputs": ["src/**/*.{ts,tsx,js,jsx}", "**/*.test.{ts,tsx,js,jsx}"]
+    },
+    "test:e2e": {
+      "dependsOn": ["build"],
+      "outputs": ["test-results/**", "playwright-report/**"]
+    },
+    "test:integration": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    },
+    "type-check": {
+      "dependsOn": ["^build"],
+      "outputs": ["*.tsbuildinfo"],
+      "inputs": ["src/**/*.{ts,tsx}", "*.{ts,json}"]
+    },
+    "format": {
+      "outputs": [],
+      "inputs": ["src/**/*.{ts,tsx,js,jsx,json,md}"]
+    }
+  },
+  "globalDependencies": ["package.json", "turbo.json"],
+  "globalEnv": ["NODE_ENV", "VERCEL_ENV"]
+}

@@ -1,0 +1,10 @@
+# UpCoach Docker Compose Configuration
+# This is the main docker-compose file that includes the base configuration
+# For environment-specific configurations, use the scripts in config/scripts/
+
+include:
+  - config/docker/docker-compose.base.yml
+  - config/docker/docker-compose.development.yml
+
+# Local development overrides
+# Create docker-compose.override.yml for your local customizations

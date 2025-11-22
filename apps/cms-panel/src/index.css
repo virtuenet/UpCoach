@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}
+
+/* Custom styles for rich text editor */
+.tiptap-editor {
+  @apply prose prose-lg max-w-none;
+  @apply p-4 min-h-[300px] bg-white rounded-lg border border-gray-300;
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+}
+
+.tiptap-editor h1 {
+  @apply text-3xl font-bold mt-6 mb-4;
+}
+
+.tiptap-editor h2 {
+  @apply text-2xl font-semibold mt-5 mb-3;
+}
+
+.tiptap-editor h3 {
+  @apply text-xl font-medium mt-4 mb-2;
+}
+
+.tiptap-editor p {
+  @apply mb-4;
+}
+
+.tiptap-editor ul {
+  @apply list-disc ml-6 mb-4;
+}
+
+.tiptap-editor ol {
+  @apply list-decimal ml-6 mb-4;
+}
+
+.tiptap-editor blockquote {
+  @apply border-l-4 border-gray-300 pl-4 italic my-4;
+} 

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>UpCoach</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>upcoach_mobile</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(FLUTTER_BUILD_NAME)</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	
+	<!-- Google Sign-In Configuration -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- Replace with your REVERSED_CLIENT_ID from GoogleService-Info.plist -->
+				<string>com.googleusercontent.apps.YOUR_REVERSED_CLIENT_ID</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- Custom URL scheme for deep linking -->
+				<string>upcoach</string>
+			</array>
+		</dict>
+	</array>
+	
+	<!-- Permissions -->
+	<key>NSCameraUsageDescription</key>
+	<string>UpCoach needs camera access to take progress photos and scan documents</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>UpCoach needs microphone access for voice journaling and coaching sessions</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>UpCoach needs photo library access to select progress photos</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>UpCoach needs permission to save progress photos to your library</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>UpCoach uses speech recognition for voice journaling</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>UpCoach uses Face ID for secure authentication</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>UpCoach uses your location to find nearby coaching services</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>UpCoach uses your location to track workout activities</string>
+	<key>NSMotionUsageDescription</key>
+	<string>UpCoach uses motion data to track your fitness activities</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>UpCoach reads health data to provide personalized coaching</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>UpCoach writes workout data to Health app</string>
+	
+	<!-- App Transport Security for development -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>localhost</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
+	
+	<!-- UI Configuration -->
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
+	<key>UIStatusBarHidden</key>
+	<false/>
+	
+	<!-- Background Modes -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+		<string>fetch</string>
+		<string>processing</string>
+		<string>remote-notification</string>
+	</array>
+	
+	<!-- iOS 14+ App Tracking Transparency -->
+	<key>NSUserTrackingUsageDescription</key>
+	<string>UpCoach uses tracking to provide personalized coaching recommendations</string>
+	
+	<!-- Capability Queries -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>https</string>
+		<string>http</string>
+		<string>mailto</string>
+		<string>tel</string>
+		<string>sms</string>
+	</array>
+</dict>
+</plist>

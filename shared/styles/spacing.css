@@ -1,0 +1,122 @@
+/**
+ * Unified Spacing System
+ * Base unit: 8px
+ */
+
+:root {
+  /* Spacing Scale */
+  --space-xs: 4px;    /* 0.5 unit */
+  --space-sm: 8px;    /* 1 unit */
+  --space-md: 16px;   /* 2 units */
+  --space-lg: 24px;   /* 3 units */
+  --space-xl: 32px;   /* 4 units */
+  --space-2xl: 48px;  /* 6 units */
+  --space-3xl: 64px;  /* 8 units */
+  --space-4xl: 96px;  /* 12 units */
+  --space-5xl: 128px; /* 16 units */
+  
+  /* Component Spacing */
+  --spacing-button-x: var(--space-md);
+  --spacing-button-y: var(--space-sm);
+  --spacing-input-x: var(--space-md);
+  --spacing-input-y: var(--space-sm);
+  --spacing-card: var(--space-lg);
+  --spacing-section: var(--space-3xl);
+  --spacing-modal: var(--space-xl);
+  
+  /* Grid Gaps */
+  --gap-xs: var(--space-xs);
+  --gap-sm: var(--space-sm);
+  --gap-md: var(--space-md);
+  --gap-lg: var(--space-lg);
+  --gap-xl: var(--space-xl);
+  
+  /* Stack Spacing (Vertical spacing between elements) */
+  --stack-xs: var(--space-xs);
+  --stack-sm: var(--space-sm);
+  --stack-md: var(--space-md);
+  --stack-lg: var(--space-lg);
+  --stack-xl: var(--space-xl);
+  
+  /* Inline Spacing (Horizontal spacing between elements) */
+  --inline-xs: var(--space-xs);
+  --inline-sm: var(--space-sm);
+  --inline-md: var(--space-md);
+  --inline-lg: var(--space-lg);
+  --inline-xl: var(--space-xl);
+  
+  /* Container Padding */
+  --container-padding-mobile: var(--space-md);
+  --container-padding-tablet: var(--space-lg);
+  --container-padding-desktop: var(--space-xl);
+}
+
+/* Utility Classes */
+.p-xs { padding: var(--space-xs); }
+.p-sm { padding: var(--space-sm); }
+.p-md { padding: var(--space-md); }
+.p-lg { padding: var(--space-lg); }
+.p-xl { padding: var(--space-xl); }
+.p-2xl { padding: var(--space-2xl); }
+.p-3xl { padding: var(--space-3xl); }
+
+.px-xs { padding-left: var(--space-xs); padding-right: var(--space-xs); }
+.px-sm { padding-left: var(--space-sm); padding-right: var(--space-sm); }
+.px-md { padding-left: var(--space-md); padding-right: var(--space-md); }
+.px-lg { padding-left: var(--space-lg); padding-right: var(--space-lg); }
+.px-xl { padding-left: var(--space-xl); padding-right: var(--space-xl); }
+
+.py-xs { padding-top: var(--space-xs); padding-bottom: var(--space-xs); }
+.py-sm { padding-top: var(--space-sm); padding-bottom: var(--space-sm); }
+.py-md { padding-top: var(--space-md); padding-bottom: var(--space-md); }
+.py-lg { padding-top: var(--space-lg); padding-bottom: var(--space-lg); }
+.py-xl { padding-top: var(--space-xl); padding-bottom: var(--space-xl); }
+
+.m-xs { margin: var(--space-xs); }
+.m-sm { margin: var(--space-sm); }
+.m-md { margin: var(--space-md); }
+.m-lg { margin: var(--space-lg); }
+.m-xl { margin: var(--space-xl); }
+.m-2xl { margin: var(--space-2xl); }
+.m-3xl { margin: var(--space-3xl); }
+
+.mx-xs { margin-left: var(--space-xs); margin-right: var(--space-xs); }
+.mx-sm { margin-left: var(--space-sm); margin-right: var(--space-sm); }
+.mx-md { margin-left: var(--space-md); margin-right: var(--space-md); }
+.mx-lg { margin-left: var(--space-lg); margin-right: var(--space-lg); }
+.mx-xl { margin-left: var(--space-xl); margin-right: var(--space-xl); }
+
+.my-xs { margin-top: var(--space-xs); margin-bottom: var(--space-xs); }
+.my-sm { margin-top: var(--space-sm); margin-bottom: var(--space-sm); }
+.my-md { margin-top: var(--space-md); margin-bottom: var(--space-md); }
+.my-lg { margin-top: var(--space-lg); margin-bottom: var(--space-lg); }
+.my-xl { margin-top: var(--space-xl); margin-bottom: var(--space-xl); }
+
+/* Gap utilities for flexbox/grid */
+.gap-xs { gap: var(--space-xs); }
+.gap-sm { gap: var(--space-sm); }
+.gap-md { gap: var(--space-md); }
+.gap-lg { gap: var(--space-lg); }
+.gap-xl { gap: var(--space-xl); }
+
+/* Stack (vertical spacing) */
+.stack > * + * {
+  margin-top: var(--stack-md);
+}
+
+.stack-xs > * + * { margin-top: var(--stack-xs); }
+.stack-sm > * + * { margin-top: var(--stack-sm); }
+.stack-md > * + * { margin-top: var(--stack-md); }
+.stack-lg > * + * { margin-top: var(--stack-lg); }
+.stack-xl > * + * { margin-top: var(--stack-xl); }
+
+/* Inline (horizontal spacing) */
+.inline > * + * {
+  margin-left: var(--inline-md);
+}
+
+.inline-xs > * + * { margin-left: var(--inline-xs); }
+.inline-sm > * + * { margin-left: var(--inline-sm); }
+.inline-md > * + * { margin-left: var(--inline-md); }
+.inline-lg > * + * { margin-left: var(--inline-lg); }
+.inline-xl > * + * { margin-left: var(--inline-xl); }

@@ -1,9 +1,7 @@
 # TestFlight Setup Guide - iOS Beta Testing
 
-**Purpose:** Complete guide to setting up TestFlight for UpCoach iOS beta testing
-**Timeline:** Week 2 of Phase 5
-**Testers:** 50-100 beta users
-**Platform:** iOS (iPhone & iPad)
+**Purpose:** Complete guide to setting up TestFlight for UpCoach iOS beta testing **Timeline:** Week
+2 of Phase 5 **Testers:** 50-100 beta users **Platform:** iOS (iPhone & iPad)
 
 ---
 
@@ -20,6 +18,7 @@
 ## Overview
 
 TestFlight is Apple's beta testing platform that allows you to:
+
 - Distribute pre-release builds to up to 10,000 external testers
 - Collect feedback and crash reports
 - Test In-App Purchases
@@ -36,12 +35,9 @@ TestFlight is Apple's beta testing platform that allows you to:
 3. Click **"+"** → **"New App"**
 4. Fill in app information:
 
-   **Platforms:** iOS
-   **Name:** UpCoach: Goal & Habit Tracker
-   **Primary Language:** English (U.S.)
-   **Bundle ID:** com.upcoach.app (select from dropdown)
-   **SKU:** upcoach-ios-001 (unique identifier)
-   **User Access:** Full Access
+   **Platforms:** iOS **Name:** UpCoach: Goal & Habit Tracker **Primary Language:** English (U.S.)
+   **Bundle ID:** com.upcoach.app (select from dropdown) **SKU:** upcoach-ios-001 (unique
+   identifier) **User Access:** Full Access
 
 5. Click **"Create"**
 
@@ -81,6 +77,7 @@ TestFlight is Apple's beta testing platform that allows you to:
 ```
 
 Or in Xcode:
+
 1. Select Runner project
 2. Select Runner target
 3. General tab → Identity
@@ -101,6 +98,7 @@ Or in Xcode:
 ### 2.3 Add Required Capabilities
 
 In Xcode → Runner target → **Signing & Capabilities**:
+
 - **Push Notifications** (if using)
 - **Sign in with Apple** (if using)
 - **Background Modes** (check "Remote notifications" if using push)
@@ -109,6 +107,7 @@ In Xcode → Runner target → **Signing & Capabilities**:
 ### 2.4 Update Deployment Target
 
 Ensure minimum iOS version is set:
+
 1. Runner target → **General** → **Deployment Info**
 2. **Deployment Target:** iOS 15.0 (or higher)
 
@@ -119,7 +118,7 @@ Ensure minimum iOS version is set:
 ### 3.1 Clean and Build
 
 ```bash
-cd upcoach-project/apps/mobile
+cd apps/mobile
 
 # Clean previous builds
 flutter clean
@@ -144,6 +143,7 @@ open ios/Runner.xcworkspace
 ### 3.3 Select Destination
 
 In Xcode:
+
 1. Product menu → Destination
 2. Select **"Any iOS Device (arm64)"** (NOT a simulator)
 
@@ -154,6 +154,7 @@ In Xcode:
 3. When complete, Organizer window opens automatically
 
 **Troubleshooting:**
+
 - If "Archive" is grayed out, ensure device target is selected (not simulator)
 - If build fails, check error messages in Issue Navigator
 
@@ -164,6 +165,7 @@ In Xcode:
 ### 4.1 Validate Archive
 
 In Xcode Organizer:
+
 1. Select your archive
 2. Click **"Validate App"**
 3. Select distribution method: **"App Store Connect"**
@@ -175,6 +177,7 @@ In Xcode Organizer:
 7. Wait for validation (2-5 minutes)
 
 **Common Validation Errors:**
+
 - Missing icons → Add all required icon sizes
 - Missing privacy descriptions → Add to Info.plist
 - Invalid entitlements → Check capabilities settings
@@ -182,6 +185,7 @@ In Xcode Organizer:
 ### 4.2 Distribute App
 
 Once validation succeeds:
+
 1. Click **"Distribute App"**
 2. Select **"App Store Connect"**
 3. Select **"Upload"** (not "Export")
@@ -205,12 +209,12 @@ Close Organizer.
 2. Select **"TestFlight"** tab
 3. Wait for build to process (typically 10-30 minutes)
 
-**You'll receive an email when ready:**
-"The build for UpCoach 1.0.0 (1) has completed processing"
+**You'll receive an email when ready:** "The build for UpCoach 1.0.0 (1) has completed processing"
 
 ### 5.2 Export Compliance
 
 When build appears in TestFlight:
+
 1. Click on the build (e.g., "1.0.0 (1)")
 2. Answer **Export Compliance** questions:
 
@@ -261,6 +265,7 @@ When build appears in TestFlight:
 **Required for External Testing:**
 
 1. **What to Test:**
+
    ```
    Welcome to UpCoach Beta!
 
@@ -297,6 +302,7 @@ When build appears in TestFlight:
 3. Wait for Apple review (typically 24-48 hours)
 
 **Review Process:**
+
 - Apple reviews first beta build
 - Subsequent builds (minor changes) don't require review
 - Major changes may trigger another review
@@ -334,6 +340,7 @@ When build appears in TestFlight:
 ### 7.3 Invitation Email
 
 Testers receive an email from Apple:
+
 - **Subject:** "You're invited to test UpCoach"
 - **Content:** Instructions to download TestFlight app
 - **Action:** "View in TestFlight" button
@@ -347,15 +354,18 @@ Testers receive an email from Apple:
 In App Store Connect → TestFlight:
 
 **Installs:**
+
 - Number of testers who installed
 - Install rate (% of invites)
 
 **Sessions:**
+
 - Total app launches
 - Crashes per session
 - Average session duration
 
 **Crashes:**
+
 - Crash rate
 - Crash logs
 - Device types affected
@@ -368,6 +378,7 @@ In App Store Connect → TestFlight:
 4. Download symbolicated logs
 
 **To symbolicate manually:**
+
 ```bash
 # If not auto-symbolicated
 # Use Xcode Organizer → Crashes
@@ -376,11 +387,13 @@ In App Store Connect → TestFlight:
 ### 8.3 Feedback Collection
 
 **TestFlight Built-in Feedback:**
+
 - Testers can shake device to send feedback
 - Screenshots attached automatically
 - Feedback appears in TestFlight dashboard
 
 **External Feedback:**
+
 - Set up email: beta@upcoach.app
 - Create feedback form: Google Forms, Typeform
 - Use bug tracking: GitHub Issues, Jira
@@ -411,6 +424,7 @@ In App Store Connect → TestFlight:
 ### 9.3 Create and Upload New Archive
 
 Repeat Steps 3-4:
+
 1. Flutter build ios --release
 2. Open Xcode, create archive
 3. Upload to App Store Connect
@@ -432,14 +446,15 @@ Repeat Steps 3-4:
 
 ### 10.1 Communication with Testers
 
-**Announcement:**
-Use TestFlight to notify all testers:
+**Announcement:** Use TestFlight to notify all testers:
+
 1. Select testing group
 2. Click **"Notifications"**
 3. Compose message
 4. Send
 
 **Example:**
+
 ```
 🎉 New Beta Build Available!
 
@@ -455,6 +470,7 @@ Thank you!
 ### 10.2 Remove Inactive Testers
 
 If testers aren't testing:
+
 1. View tester list
 2. Sort by "Last Session"
 3. Remove inactive testers
@@ -463,6 +479,7 @@ If testers aren't testing:
 ### 10.3 Extend Testing Period
 
 Beta builds expire after 90 days:
+
 - Upload new build before expiry
 - Testers auto-update to new build
 
@@ -473,6 +490,7 @@ Beta builds expire after 90 days:
 ### 11.1 Beta Success Criteria
 
 Before submitting to App Store:
+
 - [ ] 70%+ tester engagement
 - [ ] <5% crash rate
 - [ ] No critical bugs reported
@@ -498,6 +516,7 @@ Before submitting to App Store:
 ## Best Practices
 
 ### DO ✅
+
 - Test internally before external beta
 - Respond to tester feedback quickly
 - Keep testers engaged with updates
@@ -505,6 +524,7 @@ Before submitting to App Store:
 - Thank beta testers publicly
 
 ### DON'T ❌
+
 - Rush to production without sufficient testing
 - Ignore feedback from multiple testers
 - Upload builds with known critical bugs
@@ -516,24 +536,28 @@ Before submitting to App Store:
 ## Troubleshooting
 
 ### Build not appearing in TestFlight
+
 - Wait 10-30 minutes for processing
 - Check email for rejection notice
 - Verify export compliance was answered
 - Ensure build uploaded successfully
 
 ### Testers can't install app
+
 - Verify they have TestFlight app installed
 - Check they accepted invitation
 - Ensure iOS version compatible
 - Verify build hasn't expired
 
 ### High crash rate
+
 - Download crash logs from TestFlight
 - Symbolicate logs in Xcode
 - Identify common crash patterns
 - Fix and upload new build
 
 ### Beta review rejection
+
 - Review rejection reasons carefully
 - Fix issues mentioned
 - Resubmit for review
@@ -543,14 +567,14 @@ Before submitting to App Store:
 
 ## TestFlight Limits
 
-| Item | Limit |
-|------|-------|
-| Internal testers | 100 |
-| External testers | 10,000 |
-| Builds per day | Unlimited |
-| Build expiry | 90 days |
-| App size | 4 GB (recommended <200 MB) |
-| Review time | 24-48 hours (first build) |
+| Item             | Limit                      |
+| ---------------- | -------------------------- |
+| Internal testers | 100                        |
+| External testers | 10,000                     |
+| Builds per day   | Unlimited                  |
+| Build expiry     | 90 days                    |
+| App size         | 4 GB (recommended <200 MB) |
+| Review time      | 24-48 hours (first build)  |
 
 ---
 
@@ -565,6 +589,7 @@ Before submitting to App Store:
 ## Checklist
 
 Before starting TestFlight:
+
 - [ ] Apple Developer account active
 - [ ] App record created in App Store Connect
 - [ ] iOS app tested and stable
@@ -573,6 +598,7 @@ Before starting TestFlight:
 - [ ] Support email set up (beta@upcoach.app)
 
 During beta testing:
+
 - [ ] Monitor TestFlight metrics daily
 - [ ] Respond to feedback within 24 hours
 - [ ] Upload fixes weekly (or as needed)
@@ -580,6 +606,7 @@ During beta testing:
 - [ ] Document all feedback and bugs
 
 Before production launch:
+
 - [ ] Beta tested for 2-3 weeks minimum
 - [ ] Crash rate <1%
 - [ ] Major bugs resolved
@@ -591,6 +618,7 @@ Before production launch:
 ## Timeline
 
 **Week 1:**
+
 - Day 1: Set up App Store Connect
 - Day 2: Create and upload first build
 - Day 3: Submit for beta review
@@ -599,12 +627,14 @@ Before production launch:
 - Day 7: Monitor initial feedback
 
 **Week 2:**
+
 - Day 8-9: Fix critical bugs
 - Day 10: Upload build 2
 - Day 11-12: Invite more testers (50+)
 - Day 13-14: Collect comprehensive feedback
 
 **Week 3:**
+
 - Day 15-16: Final bug fixes
 - Day 17: Upload final beta build
 - Day 18-21: Stability testing

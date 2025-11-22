@@ -1,0 +1,150 @@
+name: CD - Main
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  STAGING_API_URL: https://staging-api.upcoach.ai/health
+  STAGING_WEB_URL: https://staging.upcoach.ai
+
+jobs:
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 40
+    outputs:
+      api_run: ${{ steps.collect.outputs.api_run }}
+      web_run: ${{ steps.collect.outputs.web_run }}
+      mobile_run: ${{ steps.collect.outputs.mobile_run }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Collect CI workflow run IDs
+        id: collect
+        uses: actions/github-script@v7
+        with:
+          retries: 3
+          script: |
+            const workflows = [
+              { file: 'ci-api.yml', key: 'api_run' },
+              { file: 'ci-web.yml', key: 'web_run' },
+              { file: 'ci-mobile.yml', key: 'mobile_run' },
+            ];
+            for (const wf of workflows) {
+              const { data } = await github.rest.actions.listWorkflowRuns({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: wf.file,
+                event: 'push',
+                per_page: 20,
+              });
+              const match = data.workflow_runs.find(run => run.head_sha === context.sha);
+              if (!match) {
+                core.setFailed(`No workflow run found for ${wf.file} @ ${context.sha}. Wait for CI to finish and rerun.`);
+                return;
+              }
+              if (match.conclusion !== 'success') {
+                core.setFailed(`Workflow ${wf.file} did not succeed (status: ${match.conclusion}).`);
+                return;
+              }
+              core.setOutput(wf.key, match.id.toString());
+            }
+
+      - name: Download API artefacts
+        uses: actions/download-artifact@v4
+        with:
+          name: api-build-${{ github.sha }}
+          path: staging-artifacts/api
+          run-id: ${{ steps.collect.outputs.api_run }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download Web artefacts
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build-${{ github.sha }}
+          path: staging-artifacts/web
+          run-id: ${{ steps.collect.outputs.web_run }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download Mobile artefacts
+        uses: actions/download-artifact@v4
+        with:
+          name: mobile-debug-apk-${{ github.sha }}
+          path: staging-artifacts/mobile
+          run-id: ${{ steps.collect.outputs.mobile_run }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Deploy API to staging
+        run: |
+          echo "Deploying API container from ghcr.io/${{ github.repository }}/api:${{ github.sha }} to staging"
+          echo "TODO: replace with helm upgrade or render deploy command"
+
+      - name: Deploy Web to staging
+        run: |
+          echo "Uploading landing page build to staging CDN"
+          echo "Build location:"
+          ls -R staging-artifacts/web || true
+
+      - name: Publish Mobile build to internal track
+        run: |
+          if [ -d staging-artifacts/mobile ]; then
+            echo "Publishing debug APK to internal testing track"
+          else
+            echo "No APK artefact found (mobile pipeline optional)."
+          fi
+
+      - name: Run smoke tests
+        run: |
+          echo "Hitting ${STAGING_API_URL}"
+          curl -fsSL "${STAGING_API_URL}"
+          echo "Checking ${STAGING_WEB_URL}"
+          curl -I "${STAGING_WEB_URL}"
+
+  deploy-production:
+    name: Deploy to Production
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://app.upcoach.ai
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download API artefacts
+        uses: actions/download-artifact@v4
+        with:
+          name: api-build-${{ github.sha }}
+          path: prod-artifacts/api
+          run-id: ${{ needs.deploy-staging.outputs.api_run }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download Web artefacts
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build-${{ github.sha }}
+          path: prod-artifacts/web
+          run-id: ${{ needs.deploy-staging.outputs.web_run }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy API to production
+        run: |
+          echo "Deploying API image ghcr.io/${{ github.repository }}/api:${{ github.sha }} to production environment"
+
+      - name: Deploy Web to production
+        run: |
+          echo "Pushing Next.js static artefacts to production CDN"
+
+      - name: Notify Release Complete
+        if: success()
+        run: |
+          echo "Deployment complete for ${{ github.sha }}"
+
+

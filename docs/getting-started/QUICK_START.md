@@ -12,6 +12,7 @@ Before you begin, ensure you have:
 - **Git** ([Download](https://git-scm.com/downloads))
 
 Optional (for mobile development):
+
 - **Flutter 3.7+** ([Install Guide](https://docs.flutter.dev/get-started/install))
 
 ## 5-Minute Setup
@@ -20,7 +21,7 @@ Optional (for mobile development):
 
 ```bash
 git clone https://github.com/virtuenet/UpCoach.git
-cd UpCoach/upcoach-project
+cd UpCoach
 ```
 
 ### 2. Install Dependencies
@@ -42,6 +43,7 @@ nano .env
 ```
 
 **Minimum required environment variables:**
+
 ```env
 # Database
 DATABASE_URL="postgresql://localhost:5432/upcoach_dev"
@@ -77,7 +79,7 @@ npm run seed
 npm run dev
 ```
 
-The API server will start at `http://localhost:3000`
+The API server will start at `http://localhost:3001`
 
 ## Verify Installation
 
@@ -85,7 +87,7 @@ The API server will start at `http://localhost:3000`
 
 ```bash
 # In a new terminal, test the health endpoint
-curl http://localhost:3000/api/health
+curl http://localhost:3001/health
 
 # Expected response:
 # {"status":"ok","timestamp":"2025-11-19T..."}
@@ -115,6 +117,7 @@ Now that you're up and running:
 **Problem:** `Error: connect ECONNREFUSED`
 
 **Solution:**
+
 ```bash
 # Check if PostgreSQL is running
 pg_isready
@@ -132,6 +135,7 @@ sudo systemctl start postgresql
 **Problem:** `Error: Redis connection failed`
 
 **Solution:**
+
 ```bash
 # Check if Redis is running
 redis-cli ping
@@ -149,6 +153,7 @@ sudo systemctl start redis
 **Problem:** `Error: Port 3000 is already in use`
 
 **Solution:**
+
 ```bash
 # Find and kill the process using port 3000
 lsof -ti:3000 | xargs kill -9
@@ -181,9 +186,9 @@ npm start                # Start production server
 
 ## Getting Help
 
-- **Documentation**: [docs/INDEX.md](../INDEX.md)
-- **Architecture**: [../setup/Project_Structure.md](../setup/Project_Structure.md)
-- **Testing**: [../testing/TESTING_OVERVIEW.md](../testing/TESTING_OVERVIEW.md)
+- **Documentation**: [Documentation Index](../INDEX.md)
+- **Architecture**: [Project Structure](../setup/Project_Structure.md)
+- **Testing**: [Testing Overview](../testing/TESTING_OVERVIEW.md)
 - **Current Status**: [../../CURRENT_STATUS.md](../../CURRENT_STATUS.md)
 
 ---

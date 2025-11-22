@@ -51,6 +51,7 @@ This document guides you through setting up Firebase for push notifications in t
 
 1. Open `/mobile-app/android/app/build.gradle`
 2. Confirm these lines exist:
+
    ```gradle
    apply plugin: 'com.google.gms.google-services'
 
@@ -59,6 +60,7 @@ This document guides you through setting up Firebase for push notifications in t
        implementation 'com.google.firebase:firebase-messaging'
    }
    ```
+
 3. Open `/mobile-app/android/build.gradle`
 4. Confirm this line exists in dependencies:
    ```gradle
@@ -142,10 +144,11 @@ This document guides you through setting up Firebase for push notifications in t
 
 1. Rename the downloaded file to `firebase-service-account.json`
 2. Move it to a secure location:
+
    ```bash
    # Option 1: Project config directory
-   mkdir -p /Users/ardisetiadharma/CURSOR\ Repository/UpCoach/upcoach-project/services/api/config
-   mv ~/Downloads/upcoach-firebase-adminsdk-*.json /Users/ardisetiadharma/CURSOR\ Repository/UpCoach/upcoach-project/services/api/config/firebase-service-account.json
+   mkdir -p /Users/ardisetiadharma/CURSOR\ Repository/UpCoach/services/api/config
+   mv ~/Downloads/upcoach-firebase-adminsdk-*.json /Users/ardisetiadharma/CURSOR\ Repository/UpCoach/services/api/config/firebase-service-account.json
 
    # Option 2: System-wide config (more secure)
    sudo mkdir -p /etc/upcoach
@@ -156,25 +159,26 @@ This document guides you through setting up Firebase for push notifications in t
 3. **CRITICAL:** Ensure the file is in `.gitignore`:
    ```bash
    # Add to root .gitignore
-   echo "/upcoach-project/services/api/config/firebase-service-account.json" >> .gitignore
+   echo "/services/api/config/firebase-service-account.json" >> .gitignore
    echo "/etc/upcoach/firebase-service-account.json" >> .gitignore
    ```
 
 #### 4.3 Configure Environment Variables
 
-1. Open `/upcoach-project/services/api/.env`
+1. Open `/services/api/.env`
 2. Add Firebase configuration:
    ```bash
    # Firebase Push Notifications
-   FIREBASE_SERVICE_ACCOUNT_PATH=/Users/ardisetiadharma/CURSOR Repository/UpCoach/upcoach-project/services/api/config/firebase-service-account.json
+   FIREBASE_SERVICE_ACCOUNT_PATH=/Users/ardisetiadharma/CURSOR Repository/UpCoach/services/api/config/firebase-service-account.json
    FIREBASE_DATABASE_URL=https://YOUR-PROJECT-ID.firebaseio.com
    ```
-3. Replace `YOUR-PROJECT-ID` with your actual Firebase project ID (found in Firebase Console > Project Settings)
+3. Replace `YOUR-PROJECT-ID` with your actual Firebase project ID (found in Firebase Console >
+   Project Settings)
 
 #### 4.4 Install Dependencies
 
 ```bash
-cd /Users/ardisetiadharma/CURSOR\ Repository/UpCoach/upcoach-project/services/api
+cd /Users/ardisetiadharma/CURSOR\ Repository/UpCoach/services/api
 npm install firebase-admin node-cron
 npm install --save-dev @types/node-cron
 ```
@@ -182,22 +186,26 @@ npm install --save-dev @types/node-cron
 #### 4.5 Test Backend Setup
 
 1. Start the API server:
+
    ```bash
    npm run dev
    ```
 
 2. Check logs for successful initialization:
+
    ```
    ✓ Firebase Admin SDK initialized successfully
    ✓ Notification Scheduler initialized
    ```
 
 3. Test status endpoint:
+
    ```bash
    curl http://localhost:8080/api/notifications/status
    ```
 
    Expected response:
+
    ```json
    {
      "success": true,
@@ -233,6 +241,7 @@ npm install --save-dev @types/node-cron
 #### Test Notification Flow
 
 1. **Build and run mobile app:**
+
    ```bash
    cd mobile-app
    flutter run
@@ -241,6 +250,7 @@ npm install --save-dev @types/node-cron
 2. **Register device token** (mobile app should do this automatically on launch)
 
 3. **Send test notification** via API:
+
    ```bash
    curl -X POST http://localhost:8080/api/notifications/send \
      -H "Content-Type: application/json" \
@@ -262,6 +272,7 @@ npm install --save-dev @types/node-cron
 ### Error: "Firebase Admin SDK initialization failed"
 
 **Solution:**
+
 - Verify `FIREBASE_SERVICE_ACCOUNT_PATH` in `.env` points to correct file
 - Check file exists: `ls -la /path/to/firebase-service-account.json`
 - Verify file has read permissions: `chmod 600 firebase-service-account.json`
@@ -270,6 +281,7 @@ npm install --save-dev @types/node-cron
 ### Error: "google-services.json not found" (Android)
 
 **Solution:**
+
 - Confirm file exists at `/mobile-app/android/app/google-services.json`
 - Run `flutter clean` then `flutter pub get`
 - Rebuild app: `cd android && ./gradlew clean && cd .. && flutter run`
@@ -277,6 +289,7 @@ npm install --save-dev @types/node-cron
 ### Error: "GoogleService-Info.plist not found" (iOS)
 
 **Solution:**
+
 - Open Xcode and verify file is in Runner folder
 - Check file is included in "Copy Bundle Resources" build phase
 - Clean build folder: Product > Clean Build Folder
@@ -285,6 +298,7 @@ npm install --save-dev @types/node-cron
 ### iOS: Notifications not received
 
 **Solutions:**
+
 1. Check APNs key is uploaded to Firebase
 2. Verify Push Notifications capability is enabled in Xcode
 3. Ensure app has notification permissions
@@ -293,6 +307,7 @@ npm install --save-dev @types/node-cron
 ### Android: Notifications not received
 
 **Solutions:**
+
 1. Check `google-services.json` is correct and in right location
 2. Verify internet permissions in `AndroidManifest.xml`
 3. Check device is not in battery saver mode
@@ -301,12 +316,14 @@ npm install --save-dev @types/node-cron
 ## Security Reminders
 
 🔴 **NEVER commit these files to git:**
+
 - `firebase-service-account.json`
 - `google-services.json`
 - `GoogleService-Info.plist`
 - `.p8` APNs key file
 
 🟢 **DO commit:**
+
 - `.example` template files
 - Documentation
 - Code that uses the services
@@ -324,6 +341,7 @@ npm install --save-dev @types/node-cron
 ---
 
 **Need Help?**
+
 - [Firebase Console](https://console.firebase.google.com/)
 - [Firebase Documentation](https://firebase.google.com/docs)
 - [APNs Setup Guide](https://developer.apple.com/documentation/usernotifications)

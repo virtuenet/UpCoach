@@ -1,0 +1,101 @@
+Testing files with high pass rates...
+
+Testing: basic.test.ts
+  Tests:       3 passed, 3 total
+
+Testing: minimal.test.ts
+  Tests:       2 failed, 15 passed, 17 total
+
+Testing: controllers/health.minimal.test.ts
+  Tests:       2 passed, 2 total
+
+Testing: services/UserService.minimal.test.ts
+  Tests:       3 passed, 3 total
+
+Testing: routes/health.test.ts
+  Tests:       7 passed, 7 total
+
+Testing: services/SchedulerService.test.ts
+  Tests:       2 failed, 22 passed, 24 total
+
+Testing: services/TwoFactorAuthService.test.ts
+  Tests:       3 failed, 22 passed, 25 total
+
+Testing: services/GamificationService.test.ts
+  Tests:       18 passed, 18 total
+
+Testing: models/User.test.ts
+  Tests:       27 passed, 27 total
+
+Testing: models/User.unit.test.ts
+  Tests:       19 passed, 19 total
+
+Testing: service-integration/ABTestingService.test.ts
+  Tests:       12 passed, 12 total
+
+Testing: service-integration/CoachingSessionService.test.ts
+  Tests:       15 passed, 15 total
+
+Testing: service-integration/GoalManagementService.test.ts
+  Tests:       14 passed, 14 total
+
+Testing: service-integration/ReferralService.test.ts
+  Tests:       12 passed, 12 total
+
+Testing: service-integration/PaymentManagementService.test.ts
+  Tests:       14 passed, 14 total
+
+Testing: service-integration/UserRegistrationService.test.ts
+  Tests:       12 passed, 12 total
+
+Testing: contracts/auth-api.contract.test.ts
+  Tests:       19 passed, 19 total
+
+Testing: contracts/coaching-api.contract.test.ts
+  Tests:       11 passed, 11 total
+
+Testing: contracts/financial-api.contract.test.ts
+  Tests:       21 passed, 21 total
+
+Testing: contracts/referral-api.contract.test.ts
+  Tests:       28 passed, 28 total
+
+Testing: contracts/goals-api.contract.test.ts
+  Tests:       23 passed, 23 total
+
+Testing: validation/auth.validation.test.ts
+  Tests:       19 passed, 19 total
+
+Testing: security/auth-authorization.test.ts
+  Tests:       20 passed, 20 total
+
+Testing: security/input-validation.test.ts
+  Tests:       16 passed, 16 total
+
+Testing: performance/memory-leaks.test.ts
+  Tests:       10 passed, 10 total
+
+Testing: performance/critical-endpoints.test.ts
+  Tests:       13 passed, 13 total
+
+Testing: services/UserService.test.ts
+  Tests:       31 passed, 31 total
+
+Testing: utils/security.test.ts
+  Tests:       20 passed, 20 total
+
+Testing: utils/logger.minimal.test.ts
+  Tests:       2 failed, 1 passed, 3 total
+
+Testing: services/WebAuthnService.test.ts
+  Tests:       19 failed, 11 passed, 30 total
+
+Testing: services/RedisService.simple.test.ts
+  Tests:       3 failed, 1 passed, 4 total
+
+Testing: auth/auth-routes.test.ts
+  Tests:       19 failed, 6 passed, 25 total
+
+Testing: middleware/auth.test.ts
+  Tests:       15 failed, 3 passed, 18 total
+

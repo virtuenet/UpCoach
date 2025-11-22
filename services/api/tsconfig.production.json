@@ -1,0 +1,99 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Production-optimized compiler options
+    "target": "es2022",
+    "module": "commonjs",
+    "lib": ["es2022"],
+
+    // Strict type checking for production reliability
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "useUnknownInCatchVariables": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+
+    // Production build optimizations
+    "skipLibCheck": true,
+    "removeComments": true,
+    "importHelpers": true,
+    "importsNotUsedAsValues": "remove",
+
+    // Output configuration for production
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "inlineSourceMap": false,
+    "inlineSources": false,
+
+    // Performance optimizations
+    "incremental": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo-production",
+
+    // Module resolution
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+
+    // Decorators
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    // Type configuration
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "types": ["node"],
+
+    // Path mapping for production builds
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@/types/*": ["src/types/*"],
+      "@/utils/*": ["src/utils/*"],
+      "@/middleware/*": ["src/middleware/*"],
+      "@/routes/*": ["src/routes/*"],
+      "@/services/*": ["src/services/*"],
+      "@/models/*": ["src/models/*"],
+      "@/controllers/*": ["src/controllers/*"],
+      "@/config/*": ["src/config/*"],
+      "@/validation/*": ["src/validation/*"],
+      "@/security/*": ["src/security/*"]
+    }
+  },
+
+  "include": [
+    "src/**/*"
+  ],
+
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/__tests__/**/*",
+    "tests/**/*",
+    "coverage/**/*",
+    "**/*.d.ts",
+    "**/*.debug.ts",
+    "**/*.dev.ts"
+  ],
+
+  // Production-specific TypeScript Node configuration
+  "ts-node": {
+    "esm": false,
+    "experimentalSpecifierResolution": "node",
+    "transpileOnly": true,
+    "files": false
+  }
+}

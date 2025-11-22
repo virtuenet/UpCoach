@@ -27,6 +27,7 @@ The UpCoach platform consists of multiple deployable components:
 - **Mobile App** - Flutter application (iOS + Android)
 
 **Recommended Architecture:**
+
 ```
 Production Environment
 ├── Backend API (AWS ECS / DigitalOcean / Railway)
@@ -118,46 +119,44 @@ aws elasticache create-cache-cluster \
 ```yaml
 # task-definition.json
 {
-  "family": "upcoach-api",
-  "networkMode": "awsvpc",
-  "requiresCompatibilities": ["FARGATE"],
-  "cpu": "1024",
-  "memory": "2048",
-  "containerDefinitions": [
-    {
-      "name": "upcoach-api",
-      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/upcoach-api:latest",
-      "portMappings": [
-        {
-          "containerPort": 8080,
-          "protocol": "tcp"
-        }
-      ],
-      "environment": [
-        { "name": "NODE_ENV", "value": "production" },
-        { "name": "PORT", "value": "8080" }
-      ],
-      "secrets": [
-        { "name": "DATABASE_URL", "valueFrom": "arn:aws:secretsmanager:..." },
-        { "name": "REDIS_URL", "valueFrom": "arn:aws:secretsmanager:..." },
-        { "name": "JWT_SECRET", "valueFrom": "arn:aws:secretsmanager:..." }
-      ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "/ecs/upcoach-api",
-          "awslogs-region": "<REGION>",
-          "awslogs-stream-prefix": "ecs"
-        }
+  'family': 'upcoach-api',
+  'networkMode': 'awsvpc',
+  'requiresCompatibilities': ['FARGATE'],
+  'cpu': '1024',
+  'memory': '2048',
+  'containerDefinitions':
+    [
+      {
+        'name': 'upcoach-api',
+        'image': '<AWS_ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/upcoach-api:latest',
+        'portMappings': [{ 'containerPort': 8080, 'protocol': 'tcp' }],
+        'environment':
+          [{ 'name': 'NODE_ENV', 'value': 'production' }, { 'name': 'PORT', 'value': '8080' }],
+        'secrets':
+          [
+            { 'name': 'DATABASE_URL', 'valueFrom': 'arn:aws:secretsmanager:...' },
+            { 'name': 'REDIS_URL', 'valueFrom': 'arn:aws:secretsmanager:...' },
+            { 'name': 'JWT_SECRET', 'valueFrom': 'arn:aws:secretsmanager:...' },
+          ],
+        'logConfiguration':
+          {
+            'logDriver': 'awslogs',
+            'options':
+              {
+                'awslogs-group': '/ecs/upcoach-api',
+                'awslogs-region': '<REGION>',
+                'awslogs-stream-prefix': 'ecs',
+              },
+          },
+        'healthCheck':
+          {
+            'command': ['CMD-SHELL', 'curl -f http://localhost:8080/health || exit 1'],
+            'interval': 30,
+            'timeout': 5,
+            'retries': 3,
+          },
       },
-      "healthCheck": {
-        "command": ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"],
-        "interval": 30,
-        "timeout": 5,
-        "retries": 3
-      }
-    }
-  ]
+    ],
 }
 ```
 
@@ -202,10 +201,11 @@ doctl compute droplet create upcoach-api-prod \
 ### Option 3: Railway Deployment (Simplest)
 
 1. **Connect GitHub Repository:**
+
    ```bash
    # Visit https://railway.app
    # Click "New Project" > "Deploy from GitHub repo"
-   # Select upcoach-project/services/api
+   # Select services/api
    ```
 
 2. **Add PostgreSQL:**
@@ -248,7 +248,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 ### 2. Run Migrations
 
 ```bash
-cd upcoach-project/services/api
+cd services/api
 
 # Set production database URL
 export DATABASE_URL="postgresql://upcoach_app:<PASSWORD>@<DB_HOST>:5432/upcoach_production?sslmode=require"
@@ -356,7 +356,7 @@ npm install -g pm2
 # 4. Clone repository
 cd /opt
 git clone https://github.com/your-org/upcoach.git
-cd upcoach/upcoach-project/services/api
+cd upcoach/services/api
 
 # 5. Install dependencies
 npm ci --production
@@ -384,6 +384,7 @@ pm2 logs upcoach-api
 #### Using Docker (Recommended)
 
 **Dockerfile:**
+
 ```dockerfile
 # Build stage
 FROM node:20-alpine AS builder
@@ -407,6 +408,7 @@ CMD ["dumb-init", "node", "dist/server.js"]
 ```
 
 **Build and push:**
+
 ```bash
 # Build image
 docker build -t upcoach-api:latest .
@@ -499,6 +501,7 @@ server {
 ```
 
 **Enable site:**
+
 ```bash
 ln -s /etc/nginx/sites-available/upcoach-api /etc/nginx/sites-enabled/
 nginx -t
@@ -525,7 +528,7 @@ certbot renew --dry-run
 ### Admin Panel (Vercel)
 
 ```bash
-cd upcoach-project/apps/admin-panel
+cd apps/admin-panel
 
 # Install Vercel CLI
 npm i -g vercel
@@ -541,6 +544,7 @@ vercel domains add admin.upcoach.com
 ```
 
 **Environment Variables (Vercel Dashboard):**
+
 ```
 NEXT_PUBLIC_API_URL=https://api.upcoach.com
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_xxxxx
@@ -550,7 +554,7 @@ NEXT_PUBLIC_FIREBASE_CONFIG={"apiKey":"..."}
 ### CMS Panel (Vercel)
 
 ```bash
-cd upcoach-project/apps/cms-panel
+cd apps/cms-panel
 vercel --prod
 vercel domains add cms.upcoach.com
 ```
@@ -558,7 +562,7 @@ vercel domains add cms.upcoach.com
 ### Landing Page (Vercel)
 
 ```bash
-cd upcoach-project/apps/landing-page
+cd apps/landing-page
 vercel --prod
 vercel domains add upcoach.com
 vercel domains add www.upcoach.com
@@ -567,6 +571,7 @@ vercel domains add www.upcoach.com
 ## Mobile App Deployment
 
 See dedicated guides:
+
 - [iOS App Store Deployment](./IOS_DEPLOYMENT_GUIDE.md)
 - [Android Play Store Deployment](./ANDROID_DEPLOYMENT_GUIDE.md)
 
@@ -625,6 +630,7 @@ curl -vI https://api.upcoach.com 2>&1 | grep "SSL certificate"
 
 1. Create account at https://datadoghq.com
 2. Install DataDog agent:
+
 ```bash
 DD_AGENT_MAJOR_VERSION=7 DD_API_KEY=<API_KEY> DD_SITE="datadoghq.com" bash -c "$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script.sh)"
 ```
@@ -632,12 +638,14 @@ DD_AGENT_MAJOR_VERSION=7 DD_API_KEY=<API_KEY> DD_SITE="datadoghq.com" bash -c "$
 ### Log Management
 
 **PM2 Logs:**
+
 ```bash
 pm2 logs upcoach-api --lines 100
 pm2 logs upcoach-api --err  # Errors only
 ```
 
 **Nginx Logs:**
+
 ```bash
 tail -f /var/log/nginx/upcoach-api.access.log
 tail -f /var/log/nginx/upcoach-api.error.log
@@ -646,11 +654,13 @@ tail -f /var/log/nginx/upcoach-api.error.log
 ### Database Backups
 
 **Automated Backups (AWS RDS):**
+
 - Daily automated backups (configured during setup)
 - 7-day retention period
 - Point-in-time recovery enabled
 
 **Manual Backup:**
+
 ```bash
 pg_dump -h <DB_HOST> -U upcoach_admin upcoach_production > backup_$(date +%Y%m%d).sql
 
@@ -678,7 +688,7 @@ LIMIT 10;"
 
 ```bash
 # Restore previous deployment
-cd /opt/upcoach/upcoach-project/services/api
+cd /opt/upcoach/services/api
 git checkout <PREVIOUS_COMMIT>
 npm ci --production
 npm run build
@@ -705,7 +715,7 @@ docker run -d --name upcoach-api-container \
 
 ```bash
 # Rollback last migration
-cd upcoach-project/services/api
+cd services/api
 npx sequelize-cli db:migrate:undo
 
 # Rollback to specific migration
@@ -727,6 +737,7 @@ vercel promote <DEPLOYMENT_URL>
 ### Issue: API Not Responding
 
 **Check if process is running:**
+
 ```bash
 pm2 status
 # or
@@ -734,11 +745,13 @@ docker ps
 ```
 
 **Check logs:**
+
 ```bash
 pm2 logs upcoach-api --err
 ```
 
 **Restart service:**
+
 ```bash
 pm2 restart upcoach-api
 ```
@@ -746,17 +759,20 @@ pm2 restart upcoach-api
 ### Issue: Database Connection Errors
 
 **Check database status:**
+
 ```bash
 psql -h <DB_HOST> -U upcoach_admin -d upcoach_production -c "SELECT 1;"
 ```
 
 **Verify DATABASE_URL:**
+
 ```bash
 echo $DATABASE_URL
 # Should include sslmode=require for managed databases
 ```
 
 **Check connection limit:**
+
 ```sql
 SELECT count(*) FROM pg_stat_activity;
 SELECT max_connections FROM pg_settings;
@@ -765,12 +781,14 @@ SELECT max_connections FROM pg_settings;
 ### Issue: High Memory Usage
 
 **Check memory:**
+
 ```bash
 pm2 status
 free -h
 ```
 
 **Restart with memory limit:**
+
 ```bash
 pm2 restart upcoach-api --max-memory-restart 1G
 ```
@@ -778,6 +796,7 @@ pm2 restart upcoach-api --max-memory-restart 1G
 ### Issue: SSL Certificate Renewal Failed
 
 **Manually renew:**
+
 ```bash
 certbot renew --force-renewal
 systemctl reload nginx
@@ -786,11 +805,13 @@ systemctl reload nginx
 ### Issue: 502 Bad Gateway
 
 **Causes:**
+
 1. API process crashed → Check `pm2 logs`
 2. Wrong port in Nginx config → Check `proxy_pass` port
 3. Firewall blocking → Check `ufw status`
 
 **Fix:**
+
 ```bash
 pm2 restart upcoach-api
 nginx -t && systemctl reload nginx
@@ -817,22 +838,26 @@ nginx -t && systemctl reload nginx
 ## Maintenance Schedule
 
 **Daily:**
+
 - Monitor error rates (Sentry)
 - Check disk space
 - Review logs for anomalies
 
 **Weekly:**
+
 - Review database performance
 - Check backup success
 - Update dependencies (security patches)
 
 **Monthly:**
+
 - Rotate API keys
 - Review access logs
 - Performance optimization
 - Cost optimization review
 
 **Quarterly:**
+
 - Security audit
 - Dependency updates (major versions)
 - Load testing
@@ -840,8 +865,6 @@ nginx -t && systemctl reload nginx
 
 ---
 
-**Last Updated:** November 19, 2025
-**Version:** 1.0
-**Maintained By:** DevOps Team
+**Last Updated:** November 19, 2025 **Version:** 1.0 **Maintained By:** DevOps Team
 
 For deployment assistance, contact: devops@upcoach.com

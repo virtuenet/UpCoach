@@ -1,0 +1,57 @@
+name: CMS Governance
+
+on:
+  pull_request:
+    paths:
+      - 'services/api/src/controllers/cms/**'
+      - 'services/api/src/controllers/public/**'
+      - 'services/api/src/services/cms/**'
+      - 'services/api/src/routes/public/**'
+      - 'apps/cms-panel/**'
+      - 'apps/landing-page/**'
+      - 'docs/cms/**'
+      - '.github/workflows/cms-governance.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'services/api/src/controllers/cms/**'
+      - 'services/api/src/controllers/public/**'
+      - 'services/api/src/services/cms/**'
+      - 'services/api/src/routes/public/**'
+      - 'apps/cms-panel/**'
+      - 'apps/landing-page/**'
+      - 'docs/cms/**'
+      - '.github/workflows/cms-governance.yml'
+
+env:
+  NODE_VERSION: 20
+
+jobs:
+  compatibility:
+    name: CMS Contract Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint API CMS modules
+        run: cd services/api && npm run lint
+
+      - name: Lint landing page
+        run: cd apps/landing-page && npm run lint
+
+      - name: Lint CMS panel
+        run: cd apps/cms-panel && npm run lint
+

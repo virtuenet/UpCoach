@@ -1,0 +1,175 @@
+# Local Production Deployment with ports 1000-1999
+# Optimized for local development and testing of production configuration
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: upcoach-postgres
+    ports:
+      - "1001:5432"
+    environment:
+      POSTGRES_USER: upcoach
+      POSTGRES_PASSWORD: upcoach_dev_pass
+      POSTGRES_DB: upcoach_local_prod
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U upcoach"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: upcoach-redis
+    ports:
+      - "1002:6379"
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Backend API
+  backend-api:
+    image: node:20-alpine
+    container_name: upcoach-api
+    ports:
+      - "1080:1080"
+    working_dir: /app
+    environment:
+      NODE_ENV: development
+      PORT: 1080
+      DATABASE_URL: postgresql://upcoach:upcoach_dev_pass@postgres:5432/upcoach_local_prod
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: local-dev-jwt-secret-key-very-secure
+      JWT_EXPIRES_IN: 15m
+      JWT_REFRESH_SECRET: local-dev-refresh-jwt-secret
+      JWT_REFRESH_EXPIRES_IN: 7d
+    volumes:
+      - ./services/api:/app
+      - /app/node_modules
+    command: sh -c "apk add --no-cache git python3 make g++ && npm install --legacy-peer-deps --no-optional && npm install -g typescript ts-node nodemon && npm run dev"
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:1080"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    restart: unless-stopped
+
+  # Landing Page (Next.js)
+  landing-page:
+    image: node:20-alpine
+    container_name: upcoach-landing
+    ports:
+      - "1005:1005"
+    working_dir: /app
+    environment:
+      NODE_ENV: production
+      PORT: 1005
+      NEXT_PUBLIC_API_URL: http://localhost:1080
+      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-key
+    volumes:
+      - ./apps/landing-page:/app
+      - /app/node_modules
+      - /app/.next
+    command: sh -c "npm install && npm run build && npm start"
+    depends_on:
+      - backend-api
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:1005/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Admin Panel (React/Vite)
+  admin-panel:
+    image: node:20-alpine
+    container_name: upcoach-admin
+    ports:
+      - "1006:1006"
+    working_dir: /app
+    environment:
+      NODE_ENV: development
+      PORT: 1006
+      VITE_API_URL: http://localhost:1080
+      VITE_SUPABASE_URL: https://placeholder.supabase.co
+      VITE_SUPABASE_ANON_KEY: placeholder-key
+    volumes:
+      - ./apps/admin-panel:/app
+      - /app/node_modules
+      - /app/dist
+    command: sh -c "npm install --legacy-peer-deps && npm install -g typescript && npm run dev -- --port 1006 --host"
+    depends_on:
+      - backend-api
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:1006"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
+  # CMS Panel (React/Vite)
+  cms-panel:
+    image: node:20-alpine
+    container_name: upcoach-cms
+    ports:
+      - "1007:1007"
+    working_dir: /app
+    environment:
+      NODE_ENV: development
+      PORT: 1007
+      VITE_API_URL: http://localhost:1080
+      VITE_SUPABASE_URL: https://placeholder.supabase.co
+      VITE_SUPABASE_ANON_KEY: placeholder-key
+    volumes:
+      - ./apps/cms-panel:/app
+      - /app/node_modules
+      - /app/dist
+    command: sh -c "npm install --legacy-peer-deps && npm install -g typescript && npm run dev -- --port 1007 --host"
+    depends_on:
+      - backend-api
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:1007"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy (optional for routing)
+  nginx:
+    image: nginx:alpine
+    container_name: upcoach-nginx
+    ports:
+      - "1000:80"
+    volumes:
+      - ./config/nginx/local-prod.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend-api
+      - landing-page
+      - admin-panel
+      - cms-panel
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  default:
+    name: upcoach-local-prod
+    driver: bridge

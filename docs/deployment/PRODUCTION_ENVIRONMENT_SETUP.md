@@ -1,6 +1,7 @@
 ## Production Environment Setup Guide
 
-Comprehensive guide for setting up and configuring the complete production environment for the UpCoach platform.
+Comprehensive guide for setting up and configuring the complete production environment for the
+UpCoach platform.
 
 ## Table of Contents
 
@@ -47,11 +48,11 @@ Comprehensive guide for setting up and configuring the complete production envir
 
 ### Environments
 
-| Environment | Purpose | URL | Auto-Deploy |
-|-------------|---------|-----|-------------|
-| Development | Local dev | http://localhost:3000 | No |
-| Staging | Pre-production testing | https://staging.upcoach.app | Yes (dev branch) |
-| Production | Live users | https://upcoach.app | Yes (main branch) |
+| Environment | Purpose                | URL                         | Auto-Deploy       |
+| ----------- | ---------------------- | --------------------------- | ----------------- |
+| Development | Local dev              | http://localhost:3000       | No                |
+| Staging     | Pre-production testing | https://staging.upcoach.app | Yes (dev branch)  |
+| Production  | Live users             | https://upcoach.app         | Yes (main branch) |
 
 ---
 
@@ -60,29 +61,34 @@ Comprehensive guide for setting up and configuring the complete production envir
 ### Minimum Production Requirements
 
 **API Service (Railway):**
+
 - Memory: 512MB minimum, 1GB recommended
 - CPU: 0.5 vCPU minimum, 1 vCPU recommended
 - Storage: 10GB
 - Instances: 2+ (for high availability)
 
 **Database (Supabase):**
+
 - Plan: Pro ($25/month minimum)
 - Connection pooling: Enabled
 - Point-in-time recovery: Enabled
 - Daily backups: Enabled
 
 **Redis (Upstash):**
+
 - Plan: Pro ($10/month minimum)
 - Max connections: 1000
 - Max database size: 1GB
 - TLS: Enabled
 
 **Frontend (Vercel):**
+
 - Plan: Pro ($20/month)
 - Edge functions: Enabled
 - Analytics: Enabled
 
 **CDN (Cloudflare):**
+
 - Plan: Pro ($20/month)
 - DDoS protection: Enabled
 - WAF: Enabled
@@ -315,11 +321,13 @@ NEXT_PUBLIC_ENVIRONMENT=production
 ### PostgreSQL (Supabase)
 
 **Connection String Format:**
+
 ```
 postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
 ```
 
 **Connection Pooling:**
+
 ```typescript
 // Use Supabase connection pooler for production
 const poolConfig = {
@@ -331,6 +339,7 @@ const poolConfig = {
 ```
 
 **SSL Configuration:**
+
 ```typescript
 const sslConfig = {
   rejectUnauthorized: true,
@@ -358,6 +367,7 @@ npm run db:seed:production
 ### Upstash Redis
 
 **Connection:**
+
 ```typescript
 import { Redis } from '@upstash/redis';
 
@@ -368,6 +378,7 @@ const redis = new Redis({
 ```
 
 **Session Configuration:**
+
 ```typescript
 import RedisStore from 'connect-redis';
 
@@ -385,6 +396,7 @@ const store = new RedisStore({
 ### Railway Deployment
 
 **railway.json:**
+
 ```json
 {
   "$schema": "https://railway.app/railway.schema.json",
@@ -409,11 +421,13 @@ const store = new RedisStore({
 **Deployment Steps:**
 
 1. **Connect Repository:**
+
    ```bash
    railway link
    ```
 
 2. **Set Environment Variables:**
+
    ```bash
    railway variables set NODE_ENV=production
    railway variables set DATABASE_URL="postgresql://..."
@@ -421,6 +435,7 @@ const store = new RedisStore({
    ```
 
 3. **Deploy:**
+
    ```bash
    railway up
    ```
@@ -437,6 +452,7 @@ const store = new RedisStore({
 ### Vercel Deployment
 
 **vercel.json:**
+
 ```json
 {
   "framework": "nextjs",
@@ -479,6 +495,7 @@ const store = new RedisStore({
 ```
 
 **Deployment:**
+
 ```bash
 # Install Vercel CLI
 npm i -g vercel
@@ -497,6 +514,7 @@ vercel --prod
 ### iOS Production Build
 
 **fastlane/Fastfile:**
+
 ```ruby
 default_platform(:ios)
 
@@ -569,6 +587,7 @@ apksigner sign --ks upload-keystore.jks --out app-release.apk app-release-unsign
 ### Automatic SSL (Recommended)
 
 Both Railway and Vercel provide automatic SSL:
+
 - Certificates auto-renewed via Let's Encrypt
 - HTTPS enforced automatically
 - HTTP → HTTPS redirect enabled
@@ -591,6 +610,7 @@ openssl req -new -newkey rsa:2048 -nodes \
 ### DNS Records
 
 **upcoach.app (Root domain):**
+
 ```
 Type: A
 Name: @
@@ -604,6 +624,7 @@ TTL: 3600
 ```
 
 **api.upcoach.app (API subdomain):**
+
 ```
 Type: CNAME
 Name: api
@@ -612,6 +633,7 @@ TTL: 3600
 ```
 
 **admin.upcoach.app (Admin panel):**
+
 ```
 Type: CNAME
 Name: admin
@@ -637,6 +659,7 @@ TTL: 3600
 ### API Health Endpoint
 
 **File: `src/routes/health.ts`**
+
 ```typescript
 import { Router } from 'express';
 import { pool } from '../db';
@@ -716,6 +739,7 @@ tracer.init({
 ## Pre-Launch Checklist
 
 ### Infrastructure
+
 - [ ] Railway API service deployed
 - [ ] Vercel frontend deployed
 - [ ] Database configured with backups
@@ -726,6 +750,7 @@ tracer.init({
 - [ ] CDN configured (Cloudflare)
 
 ### Security
+
 - [ ] HTTPS enforced
 - [ ] CORS configured correctly
 - [ ] Rate limiting enabled
@@ -736,6 +761,7 @@ tracer.init({
 - [ ] Backups tested
 
 ### Monitoring
+
 - [ ] Sentry configured
 - [ ] DataDog/monitoring active
 - [ ] Health checks passing
@@ -744,6 +770,7 @@ tracer.init({
 - [ ] Uptime monitoring enabled
 
 ### Testing
+
 - [ ] All integration tests passing
 - [ ] Load testing completed
 - [ ] Security audit completed
@@ -753,7 +780,6 @@ tracer.init({
 
 ---
 
-**Last Updated:** November 19, 2025
-**Version:** 1.0
+**Last Updated:** November 19, 2025 **Version:** 1.0
 
 For support: devops@upcoach.app

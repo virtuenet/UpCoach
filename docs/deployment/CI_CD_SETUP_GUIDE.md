@@ -1,6 +1,7 @@
 # CI/CD Setup Guide
 
-Complete guide for setting up automated continuous integration and deployment workflows for the UpCoach platform.
+Complete guide for setting up automated continuous integration and deployment workflows for the
+UpCoach platform.
 
 ## Table of Contents
 
@@ -48,11 +49,13 @@ The UpCoach platform uses GitHub Actions for automated CI/CD with three main wor
 **File:** `.github/workflows/api-deploy.yml`
 
 **Triggers:**
+
 - Push to `main` or `develop` branches
 - Pull requests to `main` or `develop`
-- Only runs when files in `upcoach-project/services/api/**` change
+- Only runs when files in `services/api/**` change
 
 **Jobs:**
+
 1. **Lint & Type Check** - ESLint and TypeScript validation
 2. **Unit Tests** - Run with coverage, upload to Codecov
 3. **Integration Tests** - Test API endpoints with PostgreSQL/Redis
@@ -63,6 +66,7 @@ The UpCoach platform uses GitHub Actions for automated CI/CD with three main wor
 8. **Deploy to Production** - Auto-deploy `main` to production
 
 **Health Checks:**
+
 - POST-deployment health endpoint verification
 - Database migration execution
 - Smoke tests
@@ -74,19 +78,22 @@ The UpCoach platform uses GitHub Actions for automated CI/CD with three main wor
 **File:** `.github/workflows/frontend-deploy.yml`
 
 **Triggers:**
+
 - Push to `main` or `develop` branches
 - Pull requests to `main` or `develop`
-- Only runs when files in `upcoach-project/apps/**` change
+- Only runs when files in `apps/**` change
 
 **Jobs:**
 
 **For each app (admin-panel, cms-panel, landing-page):**
+
 1. **Build & Test** - Lint, type check, Next.js build
 2. **Deploy to Staging** - Auto-deploy `develop` to Vercel
 3. **Deploy to Production** - Auto-deploy `main` to Vercel
 4. **Preview Deployments** - Deploy PRs to preview URLs
 
 **Additional:**
+
 - Lighthouse CI performance checks on staging
 - Automatic PR comments with preview URLs
 - Slack notifications on production deploys
@@ -96,11 +103,13 @@ The UpCoach platform uses GitHub Actions for automated CI/CD with three main wor
 **File:** `.github/workflows/mobile-build.yml`
 
 **Triggers:**
+
 - Push to `main` or `develop` branches
 - Pull requests to `main` or `develop`
-- Only runs when files in `upcoach-project/apps/mobile/**` change
+- Only runs when files in `apps/mobile/**` change
 
 **Jobs:**
+
 1. **Analyze** - Flutter format and analyze
 2. **Unit Tests** - Run with coverage
 3. **Widget Tests** - Test Flutter widgets
@@ -119,7 +128,8 @@ The UpCoach platform uses GitHub Actions for automated CI/CD with three main wor
 
 ### Required Secrets
 
-Navigate to your GitHub repository → Settings → Secrets and variables → Actions → New repository secret
+Navigate to your GitHub repository → Settings → Secrets and variables → Actions → New repository
+secret
 
 #### Backend API Secrets
 
@@ -201,7 +211,7 @@ vercel login
 For each frontend app (admin-panel, cms-panel, landing-page):
 
 ```bash
-cd upcoach-project/apps/admin-panel
+cd apps/admin-panel
 vercel link
 # Follow prompts to link to existing project or create new one
 ```
@@ -225,6 +235,7 @@ vercel projects ls
 ### 5. Add Secrets to GitHub
 
 Add the following secrets to your GitHub repository:
+
 - `VERCEL_TOKEN`
 - `VERCEL_ORG_ID`
 - `VERCEL_PROJECT_ID_ADMIN`
@@ -234,6 +245,7 @@ Add the following secrets to your GitHub repository:
 ### 6. Configure Environment Variables in Vercel
 
 For each project in Vercel dashboard:
+
 1. Go to project Settings → Environment Variables
 2. Add:
    - `NEXT_PUBLIC_API_URL` (production, preview, development)
@@ -251,12 +263,14 @@ Visit [railway.app](https://railway.app) and sign up.
 ### 2. Create Projects
 
 Create two projects:
+
 1. `upcoach-api-staging` - For staging environment
 2. `upcoach-api-production` - For production environment
 
 ### 3. Add PostgreSQL and Redis
 
 For each project:
+
 1. Click "New" → "Database" → "Add PostgreSQL"
 2. Click "New" → "Database" → "Add Redis"
 
@@ -293,6 +307,7 @@ railway tokens
 ```
 
 Add tokens to GitHub secrets:
+
 - `RAILWAY_TOKEN_STAGING`
 - `RAILWAY_TOKEN_PRODUCTION`
 
@@ -305,7 +320,7 @@ In your Railway project settings, note the service name. Update the workflow fil
   uses: bervProject/railway-deploy@main
   with:
     railway_token: ${{ secrets.RAILWAY_TOKEN_PRODUCTION }}
-    service: upcoach-api-production  # Match your Railway service name
+    service: upcoach-api-production # Match your Railway service name
 ```
 
 ---
@@ -392,6 +407,7 @@ base64 -i YourProfile.mobileprovision -o profile-base64.txt
 ```
 
 Add to GitHub secrets:
+
 - `IOS_P12_BASE64`
 - `IOS_P12_PASSWORD`
 - `IOS_PROVISIONING_PROFILE_BASE64`
@@ -404,13 +420,14 @@ Add to GitHub secrets:
 4. Download the private key (.p8 file)
 
 Add to GitHub secrets:
+
 - `APP_STORE_CONNECT_API_KEY` (contents of .p8 file)
 - `APP_STORE_CONNECT_KEY_ID` (Key ID shown in portal)
 - `APP_STORE_CONNECT_ISSUER_ID` (Issuer ID at top of Keys page)
 
 #### 5. Create exportOptions.plist
 
-Create `upcoach-project/apps/mobile/ios/exportOptions.plist`:
+Create `apps/mobile/ios/exportOptions.plist`:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -455,6 +472,7 @@ Copy the token and add to GitHub secrets as `FIREBASE_TOKEN`.
 4. Copy "App ID" for Android and iOS apps
 
 Add to GitHub secrets:
+
 - `FIREBASE_ANDROID_APP_ID`
 - `FIREBASE_IOS_APP_ID`
 
@@ -494,6 +512,7 @@ Add to GitHub secrets:
 4. Add to GitHub secrets as `SLACK_WEBHOOK`
 
 Notifications will be sent for:
+
 - Production deployments
 - Failed deployments
 - Rollback executions
@@ -501,6 +520,7 @@ Notifications will be sent for:
 ### Lighthouse CI (Performance)
 
 Lighthouse CI automatically runs on staging deployments and provides:
+
 - Performance metrics
 - Accessibility scores
 - Best practices validation
@@ -519,6 +539,7 @@ Results are uploaded to temporary public storage and linked in workflow logs.
 **Problem:** Workflow doesn't run after push
 
 **Solutions:**
+
 - Check if files changed match the `paths` filter
 - Ensure branch name matches trigger (`main` or `develop`)
 - Check GitHub Actions is enabled in repository settings
@@ -528,9 +549,10 @@ Results are uploaded to temporary public storage and linked in workflow logs.
 **Problem:** TypeScript or build errors
 
 **Solutions:**
+
 ```bash
 # Test locally first
-cd upcoach-project/services/api
+cd services/api
 npm ci
 npm run build
 npm test
@@ -544,6 +566,7 @@ npx tsc --noEmit
 **Problem:** Tests pass locally but fail in CI
 
 **Solutions:**
+
 - Check database connection (PostgreSQL/Redis services)
 - Verify environment variables are set correctly
 - Check test timeouts (CI may be slower)
@@ -554,6 +577,7 @@ npx tsc --noEmit
 **Problem:** Deployment succeeds but health check fails
 
 **Solutions:**
+
 - Check Railway/Vercel logs
 - Verify environment variables in deployment platform
 - Test health endpoint manually: `curl https://api.upcoach.com/health`
@@ -566,24 +590,26 @@ npx tsc --noEmit
 **Solutions:**
 
 **Android:**
+
 ```bash
 # Verify keystore locally
 keytool -list -v -keystore upload-keystore.jks
 
 # Test build
-cd upcoach-project/apps/mobile
+cd apps/mobile
 flutter clean
 flutter pub get
 flutter build appbundle --release
 ```
 
 **iOS:**
+
 ```bash
 # Verify certificate
 security find-identity -v -p codesigning
 
 # Test build
-cd upcoach-project/apps/mobile
+cd apps/mobile
 flutter clean
 flutter pub get
 flutter build ios --release
@@ -594,6 +620,7 @@ flutter build ios --release
 **Problem:** Base64 secrets fail to decode
 
 **Solutions:**
+
 ```bash
 # Verify encoding (should produce valid output)
 echo $ANDROID_KEYSTORE_BASE64 | base64 -d > test.jks
@@ -607,6 +634,7 @@ base64 -i original-file.jks | tr -d '\n' > encoded.txt
 **Problem:** GitHub Actions cannot push commits (version bump)
 
 **Solutions:**
+
 - Use a Personal Access Token (PAT) instead of `GITHUB_TOKEN`
 - Go to Settings → Developer settings → Personal access tokens
 - Create token with `repo` scope
@@ -625,6 +653,7 @@ base64 -i original-file.jks | tr -d '\n' > encoded.txt
 #### Enable Debug Logging
 
 Add repository secrets:
+
 - `ACTIONS_STEP_DEBUG` = `true`
 - `ACTIONS_RUNNER_DEBUG` = `true`
 
@@ -636,7 +665,7 @@ Add to workflow file:
 
 ```yaml
 on:
-  workflow_dispatch:  # Enables manual trigger
+  workflow_dispatch: # Enables manual trigger
 ```
 
 Then trigger manually from Actions tab → Select workflow → Run workflow.
@@ -648,7 +677,7 @@ Add step to workflow:
 ```yaml
 - name: Setup tmate session
   uses: mxschmitt/action-tmate@v3
-  if: failure()  # Only on failure
+  if: failure() # Only on failure
 ```
 
 This provides SSH access to debug the runner environment.
@@ -766,11 +795,10 @@ jobs:
 
 ---
 
-**Last Updated:** November 19, 2025
-**Workflows Version:** 1.0
-**Maintained by:** DevOps Team
+**Last Updated:** November 19, 2025 **Workflows Version:** 1.0 **Maintained by:** DevOps Team
 
 For issues or questions, refer to:
+
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [Railway Documentation](https://docs.railway.app)
 - [Vercel Documentation](https://vercel.com/docs)

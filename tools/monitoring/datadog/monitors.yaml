@@ -1,0 +1,233 @@
+# Datadog Monitors Configuration for UpCoach Production
+
+monitors:
+  - name: "API Response Time"
+    type: metric alert
+    query: "avg(last_5m):avg:trace.express.request.duration{env:production,service:upcoach-api} > 500"
+    message: |
+      API response time is above 500ms
+      
+      Current value: {{value}}ms
+      Threshold: {{threshold}}ms
+      
+      @slack-upcoach-alerts
+    tags:
+      - env:production
+      - service:api
+      - team:backend
+    thresholds:
+      critical: 500
+      warning: 300
+      
+  - name: "Error Rate"
+    type: metric alert
+    query: "avg(last_5m):sum:trace.express.request.errors{env:production,service:upcoach-api}.as_rate() > 0.05"
+    message: |
+      Error rate is above 5%
+      
+      Current error rate: {{value}}
+      
+      Check logs: https://app.datadoghq.com/logs
+      
+      @slack-upcoach-alerts @pagerduty
+    tags:
+      - env:production
+      - service:api
+      - severity:critical
+    thresholds:
+      critical: 0.05
+      warning: 0.02
+      
+  - name: "Database Connection Pool"
+    type: metric alert
+    query: "avg(last_5m):avg:postgresql.connections.active{env:production} / avg:postgresql.connections.max{env:production} > 0.8"
+    message: |
+      Database connection pool usage is above 80%
+      
+      Active connections: {{value}}
+      
+      Consider scaling the connection pool or optimizing queries
+      
+      @slack-upcoach-alerts
+    tags:
+      - env:production
+      - service:database
+      - team:backend
+    thresholds:
+      critical: 0.8
+      warning: 0.6
+      
+  - name: "Memory Usage"
+    type: metric alert
+    query: "avg(last_5m):avg:kubernetes.memory.usage{cluster:upcoach-prod,namespace:upcoach} / avg:kubernetes.memory.limits{cluster:upcoach-prod,namespace:upcoach} > 0.85"
+    message: |
+      Pod memory usage is above 85% of limit
+      
+      Current usage: {{value}}
+      
+      Pod may be OOM killed. Consider increasing memory limits.
+      
+      @slack-upcoach-alerts
+    tags:
+      - env:production
+      - infrastructure:kubernetes
+    thresholds:
+      critical: 0.85
+      warning: 0.75
+      
+  - name: "Failed Login Attempts"
+    type: log alert
+    query: "logs(\"status:error @http.status_code:401 service:upcoach-api @http.url_path:/api/auth/login\").rollup(\"count\").last(\"5m\") > 50"
+    message: |
+      High number of failed login attempts detected
+      
+      Failed attempts in last 5 minutes: {{value}}
+      
+      Possible brute force attack. Check source IPs.
+      
+      @slack-upcoach-security @pagerduty
+    tags:
+      - env:production
+      - security:auth
+      - severity:high
+      
+  - name: "Stripe Webhook Failures"
+    type: log alert
+    query: "logs(\"service:upcoach-api @logger.name:StripeWebhook status:error\").rollup(\"count\").last(\"10m\") > 5"
+    message: |
+      Stripe webhook processing failures detected
+      
+      Failed webhooks: {{value}}
+      
+      Check webhook signature and Stripe dashboard
+      
+      @slack-upcoach-alerts @slack-upcoach-billing
+    tags:
+      - env:production
+      - service:billing
+      - integration:stripe
+      
+  - name: "SSL Certificate Expiry"
+    type: metric alert
+    query: "min(last_5m):min:http.ssl.days_left{domain:upcoach.ai OR domain:api.upcoach.ai OR domain:admin.upcoach.ai} < 30"
+    message: |
+      SSL certificate expiring soon
+      
+      Days remaining: {{value}}
+      Domain: {{domain.name}}
+      
+      Renew certificate to avoid service disruption
+      
+      @slack-upcoach-alerts
+    tags:
+      - env:production
+      - infrastructure:ssl
+    thresholds:
+      critical: 7
+      warning: 30
+      
+  - name: "Queue Processing Delay"
+    type: metric alert
+    query: "avg(last_5m):avg:redis.queue.lag{env:production,queue:email} > 60000"
+    message: |
+      Email queue processing is delayed
+      
+      Current lag: {{value}}ms
+      
+      Check worker health and queue size
+      
+      @slack-upcoach-alerts
+    tags:
+      - env:production
+      - service:queue
+      - worker:email
+    thresholds:
+      critical: 60000
+      warning: 30000
+      
+  - name: "Mobile App Crash Rate"
+    type: metric alert
+    query: "avg(last_1h):avg:mobile.crash_rate{app:upcoach,env:production} > 0.01"
+    message: |
+      Mobile app crash rate is above 1%
+      
+      Current crash rate: {{value}}
+      Platform: {{platform.name}}
+      
+      Check Sentry for crash reports
+      
+      @slack-upcoach-mobile
+    tags:
+      - env:production
+      - platform:mobile
+    thresholds:
+      critical: 0.01
+      warning: 0.005
+
+dashboards:
+  - name: "UpCoach Production Overview"
+    description: "Main production monitoring dashboard"
+    widgets:
+      - title: "API Request Rate"
+        type: timeseries
+        query: "sum:trace.express.request.hits{env:production,service:upcoach-api}.as_rate()"
+        
+      - title: "Response Time by Endpoint"
+        type: toplist
+        query: "avg:trace.express.request.duration{env:production,service:upcoach-api} by {http.url_path}"
+        
+      - title: "Error Rate"
+        type: timeseries
+        query: "sum:trace.express.request.errors{env:production,service:upcoach-api}.as_rate()"
+        
+      - title: "Active Users"
+        type: query_value
+        query: "sum:business.users.active{env:production}"
+        
+      - title: "Database Performance"
+        type: timeseries
+        queries:
+          - "avg:postgresql.queries.duration{env:production}"
+          - "sum:postgresql.queries.count{env:production}.as_rate()"
+          
+      - title: "Infrastructure Health"
+        type: hostmap
+        query: "avg:system.cpu.user{cluster:upcoach-prod} by {host}"
+
+synthetic_tests:
+  - name: "API Health Check"
+    type: api
+    request:
+      url: "https://api.upcoach.ai/health"
+      method: GET
+    assertions:
+      - type: statusCode
+        operator: is
+        target: 200
+      - type: responseTime
+        operator: lessThan
+        target: 1000
+    locations:
+      - aws:us-east-1
+      - aws:eu-west-1
+      - aws:ap-southeast-1
+    schedule: "*/5 * * * *"
+    
+  - name: "User Login Flow"
+    type: browser
+    steps:
+      - type: goToUrl
+        url: "https://upcoach.ai/login"
+      - type: typeText
+        selector: "#email"
+        text: "{{SYNTHETIC_TEST_EMAIL}}"
+      - type: typeText
+        selector: "#password"
+        text: "{{SYNTHETIC_TEST_PASSWORD}}"
+      - type: click
+        selector: "#login-button"
+      - type: waitForElement
+        selector: "#dashboard"
+    locations:
+      - aws:us-east-1
+    schedule: "*/15 * * * *"

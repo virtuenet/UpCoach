@@ -1,6 +1,7 @@
 ## Offline Sync & Conflict Resolution Guide
 
-Comprehensive guide for implementing and using offline sync with conflict resolution in the UpCoach mobile app.
+Comprehensive guide for implementing and using offline sync with conflict resolution in the UpCoach
+mobile app.
 
 ## Table of Contents
 
@@ -17,7 +18,9 @@ Comprehensive guide for implementing and using offline sync with conflict resolu
 
 ## Overview
 
-The UpCoach mobile app includes a robust offline sync system that allows users to continue working without an internet connection. Changes are queued locally and automatically synchronized when connectivity is restored.
+The UpCoach mobile app includes a robust offline sync system that allows users to continue working
+without an internet connection. Changes are queued locally and automatically synchronized when
+connectivity is restored.
 
 ### Features
 
@@ -33,6 +36,7 @@ The UpCoach mobile app includes a robust offline sync system that allows users t
 ### Supported Entities
 
 All major data types support offline sync:
+
 - Habits (create, update, delete, check-in)
 - Goals (create, update, delete, progress updates)
 - Tasks (create, update, delete, completion)
@@ -105,11 +109,13 @@ All major data types support offline sync:
 ### 1. Keep Local (Client Wins)
 
 **When to use:**
+
 - User explicitly trusts their local changes
 - Server data is known to be outdated
 - Simple overwrite scenarios
 
 **Example:**
+
 ```dart
 ConflictResolution.keepLocal
 ```
@@ -119,11 +125,13 @@ ConflictResolution.keepLocal
 ### 2. Keep Server (Server Wins)
 
 **When to use:**
+
 - Server is authoritative source
 - Local changes were experimental
 - Data corruption suspected locally
 
 **Example:**
+
 ```dart
 ConflictResolution.keepServer
 ```
@@ -133,16 +141,19 @@ ConflictResolution.keepServer
 ### 3. Newer Wins (Timestamp-based)
 
 **When to use:**
+
 - Default automatic resolution
 - Most recent edit should prevail
 - Timestamps are reliable
 
 **Example:**
+
 ```dart
 ConflictResolution.newerWins
 ```
 
 **Logic:**
+
 ```dart
 final resolution = conflict.localTimestamp.isAfter(conflict.serverTimestamp)
     ? conflict.localData
@@ -152,16 +163,19 @@ final resolution = conflict.localTimestamp.isAfter(conflict.serverTimestamp)
 ### 4. Higher Version Wins
 
 **When to use:**
+
 - Version numbers accurately track changes
 - Protecting against stale updates
 - API supports versioning
 
 **Example:**
+
 ```dart
 ConflictResolution.higherVersionWins
 ```
 
 **Logic:**
+
 ```dart
 final resolution = conflict.localVersion > conflict.serverVersion
     ? conflict.localData
@@ -171,16 +185,19 @@ final resolution = conflict.localVersion > conflict.serverVersion
 ### 5. Merge (Field-level)
 
 **When to use:**
+
 - Both versions have valuable data
 - Different fields were edited
 - Preserving maximum information
 
 **Example:**
+
 ```dart
 ConflictResolution.merge
 ```
 
 **Logic:**
+
 ```dart
 // Start with server data
 final merged = Map.from(serverData);
@@ -203,11 +220,13 @@ localData.forEach((key, value) {
 ### 6. Manual Resolution
 
 **When to use:**
+
 - Conflict requires user judgment
 - Data is critical (e.g., financial, medical)
 - Automated strategies insufficient
 
 **Example:**
+
 ```dart
 ConflictResolution.manual
 // Shows ConflictResolutionDialog to user
@@ -650,6 +669,7 @@ Extended Controls > Cellular > Data Status: Denied
 #### 2. Charles Proxy (Throttling)
 
 Configure Charles to simulate slow/unreliable connections:
+
 - Throttle Settings: 3G, Edge, GPRS
 - Random connection drops
 
@@ -807,6 +827,7 @@ await _syncManager.sync(); // Single sync call
 **Problem:** Queue has items but they don't sync
 
 **Solutions:**
+
 ```dart
 // Check connectivity
 print('Is online: ${syncManager.isOnline}');
@@ -827,6 +848,7 @@ await syncManager.sync(force: true);
 **Problem:** Every sync creates conflicts
 
 **Solutions:**
+
 ```dart
 // Use automatic resolution
 syncManager.onConflictDetected = (conflict) async {
@@ -845,6 +867,7 @@ habit.version = habit.version + 1;
 **Problem:** Local changes disappear
 
 **Solutions:**
+
 ```dart
 // Always queue before server call
 await _syncManager.queueOperation(operation);
@@ -865,6 +888,7 @@ await _localDb.transaction((txn) async {
 **Problem:** Thousands of pending operations
 
 **Solutions:**
+
 ```dart
 // Batch similar operations
 // Deduplicate by entity ID
@@ -931,10 +955,10 @@ void callbackDispatcher() {
 
 ---
 
-**Last Updated:** November 19, 2025
-**Version:** 1.0
-**Dependencies:** connectivity_plus, shared_preferences
+**Last Updated:** November 19, 2025 **Version:** 1.0 **Dependencies:** connectivity_plus,
+shared_preferences
 
 For issues or questions, refer to:
+
 - [Flutter Offline Sync Patterns](https://flutter.dev/docs/cookbook/persistence/sqlite)
 - [Conflict-Free Replicated Data Types (CRDT)](https://crdt.tech/)

@@ -99,6 +99,7 @@ sudo gem install fastlane
 ### 1. Update App Icons
 
 **Required sizes for iOS:**
+
 ```
 Icon.png sizes (in pixels):
 - 20x20 (@2x, @3x) - Notifications
@@ -111,6 +112,7 @@ Icon.png sizes (in pixels):
 ```
 
 **Generate icons:**
+
 ```bash
 cd mobile-app
 
@@ -123,16 +125,18 @@ flutter pub run flutter_launcher_icons:main
 ```
 
 **pubspec.yaml configuration:**
+
 ```yaml
 flutter_launcher_icons:
   ios: true
-  image_path: "assets/icons/app_icon.png"
+  image_path: 'assets/icons/app_icon.png'
   remove_alpha_ios: true
 ```
 
 ### 2. Update App Metadata
 
 **Edit `ios/Runner/Info.plist`:**
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -194,6 +198,7 @@ open Runner.xcworkspace  # NOT Runner.xcodeproj
 1. Select **Runner** project in navigator
 2. Select **Runner** target
 3. **General** tab:
+
    ```
    Display Name: UpCoach
    Bundle Identifier: com.upcoach.mobile
@@ -228,9 +233,11 @@ open Runner.xcworkspace  # NOT Runner.xcodeproj
 **For each new submission, increment the build number:**
 
 Option A - Manually in Xcode:
+
 1. General tab → Build: 2 (increment)
 
 Option B - Command line:
+
 ```bash
 cd mobile-app/ios
 agvtool next-version -all  # Increments build number
@@ -239,6 +246,7 @@ agvtool next-version -all  # Increments build number
 ### 4. Configure Release Build
 
 **Edit `ios/Flutter/Release.xcconfig`:**
+
 ```
 #include "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
 #include "Generated.xcconfig"
@@ -257,6 +265,7 @@ ENABLE_BITCODE=NO
 ### 1. Create Distribution Certificate
 
 **Option A - Xcode (Automatic):**
+
 1. Xcode → Preferences → Accounts
 2. Select your Apple ID
 3. Click "Manage Certificates"
@@ -264,6 +273,7 @@ ENABLE_BITCODE=NO
 5. Xcode creates certificate automatically
 
 **Option B - Manual:**
+
 1. Go to https://developer.apple.com/account/resources/certificates/list
 2. Click "+" → "Apple Distribution"
 3. Upload CSR (Certificate Signing Request)
@@ -335,12 +345,14 @@ flutter build ipa --release
 ### Method 3: Fastlane (Automated)
 
 **Install Fastlane:**
+
 ```bash
 cd mobile-app/ios
 fastlane init
 ```
 
 **Create `Fastfile`:**
+
 ```ruby
 default_platform(:ios)
 
@@ -380,6 +392,7 @@ end
 ```
 
 **Run Fastlane:**
+
 ```bash
 cd mobile-app/ios
 fastlane release
@@ -389,8 +402,7 @@ fastlane release
 
 ### 1. Prepare App Information
 
-**Navigate to App Store Connect:**
-https://appstoreconnect.apple.com/apps
+**Navigate to App Store Connect:** https://appstoreconnect.apple.com/apps
 
 **Click on UpCoach app → App Information:**
 
@@ -417,17 +429,20 @@ Pre-orders: No
 ### 3. Prepare Screenshots
 
 **Required screenshot sizes:**
+
 - **6.7" Display (iPhone 14 Pro Max):** 1290 x 2796 pixels (3 required)
 - **6.5" Display (iPhone 11 Pro Max):** 1242 x 2688 pixels (3 required)
 - **5.5" Display (iPhone 8 Plus):** 1242 x 2208 pixels (3 required)
 - **12.9" iPad Pro:** 2048 x 2732 pixels (3 required)
 
 **Recommended tools:**
+
 - Figma/Sketch for design
 - `flutter screenshot` package
 - Fastlane `snapshot` (automated)
 
 **Screenshot guidelines:**
+
 - Showcase key features
 - Use device frames
 - Add descriptive text overlays
@@ -497,6 +512,7 @@ Support: support@upcoach.com
 ```
 
 **Keywords:**
+
 ```
 goal tracking, habit tracker, personal development, ai coach, productivity, wellness, self improvement, mindfulness, motivation, life coach
 ```
@@ -509,28 +525,31 @@ goal tracking, habit tracker, personal development, ai coach, productivity, well
 2. Answer questions about data collection:
 
 **Contact Info:**
+
 - [x] Name
 - [x] Email Address
 - [x] Phone Number
 - Purpose: Account creation, support
 
 **Health & Fitness:**
+
 - [x] Fitness (goals, habits)
 - [x] Other Health Data (mood tracking)
 - Purpose: App functionality, analytics
 
 **Usage Data:**
+
 - [x] Product Interaction
 - [x] Crash Data
 - [x] Performance Data
 - Purpose: Analytics, app functionality
 
 **Identifiers:**
+
 - [x] User ID
 - Purpose: Account management
 
-**Data Linked to User:** All above
-**Data Not Linked to User:** None (if using analytics)
+**Data Linked to User:** All above **Data Not Linked to User:** None (if using analytics)
 
 ## Upload to App Store
 
@@ -578,6 +597,7 @@ xcrun altool --upload-app \
 ```
 
 **Generate app-specific password:**
+
 1. https://appleid.apple.com
 2. Security → App-Specific Passwords
 3. Generate new password
@@ -599,12 +619,14 @@ xcrun altool --upload-app \
 2. **Click "+ Version or Platform" → iOS**
 
 3. **Fill in Version Information:**
+
    ```
    Version: 1.0.0
    Copyright: 2025 UpCoach Inc.
    ```
 
 4. **What's New in This Version:**
+
    ```
    🎉 Welcome to UpCoach 1.0!
 
@@ -618,11 +640,13 @@ xcrun altool --upload-app \
    ```
 
 5. **Promotional Text (optional):**
+
    ```
    Transform your life with AI-powered coaching. Download free today!
    ```
 
 6. **App Review Information:**
+
    ```
    First Name: [Your name]
    Last Name: [Your last name]
@@ -652,28 +676,33 @@ xcrun altool --upload-app \
 - **Expedited Review:** Request only if critical bug fix
 
 **Track Status:**
+
 - App Store Connect → My Apps → UpCoach → App Store tab
 - Statuses: Waiting for Review → In Review → Pending Developer Release / Ready for Sale
 
 ### 4. Common Rejection Reasons
 
 **Performance Issues:**
+
 - App crashes on launch
 - Incomplete features
 - Broken links or buttons
 
 **Guideline Violations:**
+
 - Misleading app description
 - Inaccurate screenshots
 - Missing privacy policy
 - Improper use of Apple APIs
 
 **Privacy Issues:**
+
 - Not explaining data collection
 - Missing privacy descriptions
 - Requesting unnecessary permissions
 
 **Design Issues:**
+
 - UI doesn't match iOS guidelines
 - Confusing navigation
 - Poor user experience
@@ -689,6 +718,7 @@ xcrun altool --upload-app \
 ### 2. Analytics
 
 **App Analytics (built into App Store Connect):**
+
 - Impressions
 - Downloads
 - Sessions
@@ -696,6 +726,7 @@ xcrun altool --upload-app \
 - Retention
 
 **Third-party Analytics:**
+
 - Firebase Analytics
 - Mixpanel
 - Amplitude
@@ -703,6 +734,7 @@ xcrun altool --upload-app \
 ### 3. Update Strategy
 
 **Version Numbering:**
+
 ```
 X.Y.Z
 X = Major version (breaking changes)
@@ -717,6 +749,7 @@ Examples:
 ```
 
 **Update Frequency:**
+
 - Bug fixes: As needed
 - Minor updates: Every 2-4 weeks
 - Major updates: Every 3-6 months
@@ -728,6 +761,7 @@ Examples:
 **Error:** "Unable to archive"
 
 **Solutions:**
+
 1. Clean build folder: Product → Clean Build Folder
 2. Delete derived data:
    ```bash
@@ -745,6 +779,7 @@ Examples:
 **Error:** "No profiles for 'com.upcoach.mobile' were found"
 
 **Solutions:**
+
 1. Xcode → Preferences → Accounts → Download Manual Profiles
 2. Create new provisioning profile in Apple Developer Portal
 3. Verify Bundle ID matches exactly
@@ -754,6 +789,7 @@ Examples:
 **Error:** "The bundle is invalid"
 
 **Solutions:**
+
 1. Ensure version/build numbers are incremented
 2. Check for missing required icons
 3. Verify all required architectures included
@@ -762,8 +798,8 @@ Examples:
 
 **Error:** "Missing export compliance"
 
-**Solution:**
-Add to `Info.plist`:
+**Solution:** Add to `Info.plist`:
+
 ```xml
 <key>ITSAppUsesNonExemptEncryption</key>
 <false/>
@@ -772,11 +808,13 @@ Add to `Info.plist`:
 ### Issue: App Rejected - Guideline 2.1 (Performance)
 
 **Common causes:**
+
 - Crashes on specific iOS version
 - Incomplete features
 - Debug code left in production
 
 **Solutions:**
+
 1. Test on multiple devices/iOS versions
 2. Remove all debug code
 3. Complete all features or remove from description
@@ -793,11 +831,10 @@ Add to `Info.plist`:
 ## Support
 
 For deployment assistance:
+
 - Email: mobile@upcoach.com
 - Slack: #ios-deployment
 
 ---
 
-**Last Updated:** November 19, 2025
-**Version:** 1.0
-**Next Review:** Before v1.1.0 release
+**Last Updated:** November 19, 2025 **Version:** 1.0 **Next Review:** Before v1.1.0 release

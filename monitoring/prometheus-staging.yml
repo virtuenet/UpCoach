@@ -1,0 +1,79 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    environment: 'staging'
+    service: 'upcoach'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# Load rules
+rule_files:
+  - '/etc/prometheus/alerts/*.yml'
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Backend API metrics
+  - job_name: 'backend'
+    metrics_path: '/api/health'
+    static_configs:
+      - targets: ['backend:8080']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '([^:]+):.*'
+        replacement: '${1}'
+
+  # PostgreSQL health check
+  - job_name: 'postgres'
+    metrics_path: '/probe'
+    params:
+      module: [tcp_connect]
+    static_configs:
+      - targets: ['postgres:5432']
+
+  # Redis health check  
+  - job_name: 'redis'
+    metrics_path: '/probe'
+    params:
+      module: [tcp_connect]
+    static_configs:
+      - targets: ['redis:6379']
+
+  # Application endpoint monitoring
+  - job_name: 'upcoach-staging'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - http://backend:8080/health
+          - http://admin-panel:80
+          - http://landing-page:3000
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: localhost:9090
+
+  # Docker containers health
+  - job_name: 'docker-staging'
+    static_configs:
+      - targets: 
+          - backend:8080
+          - admin-panel:80
+          - landing-page:3000
+    metrics_path: /health
+    scrape_interval: 30s

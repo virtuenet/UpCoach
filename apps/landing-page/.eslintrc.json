@@ -1,0 +1,10 @@
+{
+  "root": false,
+  "ignorePatterns": [".next", "out", "node_modules"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "warn",
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "@typescript-eslint/no-non-null-assertion": "warn",
+    "import/no-unresolved": "off"
+  }
+}

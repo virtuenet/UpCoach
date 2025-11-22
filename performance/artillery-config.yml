@@ -1,0 +1,187 @@
+config:
+  target: "http://localhost:8080"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm up"
+    - duration: 120
+      arrivalRate: 10
+      rampTo: 50
+      name: "Ramp up load"
+    - duration: 300
+      arrivalRate: 50
+      name: "Sustained load"
+    - duration: 60
+      arrivalRate: 10
+      name: "Cool down"
+  
+  payload:
+    path: "./test-data.csv"
+    fields:
+      - "email"
+      - "password"
+      - "userId"
+  
+  variables:
+    baseUrl: "{{ $processEnvironment.API_URL }}"
+  
+  processor: "./hooks/performance-hooks.js"
+  
+  plugins:
+    expect: {}
+    metrics-by-endpoint: {}
+    publish-metrics:
+      - type: datadog
+        apiKey: "{{ $processEnvironment.DATADOG_API_KEY }}"
+        appKey: "{{ $processEnvironment.DATADOG_APP_KEY }}"
+  
+  ensure:
+    thresholds:
+      - http.response_time.p95: 500
+      - http.response_time.p99: 1000
+      - http.codes.200: 95
+      - http.request_rate: 100
+
+scenarios:
+  - name: "User Authentication Flow"
+    weight: 30
+    flow:
+      - post:
+          url: "/auth/login"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+            - contentType: json
+            - hasProperty: token
+      
+      - get:
+          url: "/users/me"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+            - responseTime: 200
+  
+  - name: "Dashboard Load"
+    weight: 40
+    flow:
+      - function: "generateAuthToken"
+      
+      - get:
+          url: "/financial/dashboard"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+            - responseTime: 500
+      
+      - get:
+          url: "/analytics/overview"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+            - responseTime: 300
+      
+      - get:
+          url: "/subscriptions/active"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+            - responseTime: 200
+  
+  - name: "AI Chat Interaction"
+    weight: 20
+    flow:
+      - function: "generateAuthToken"
+      
+      - post:
+          url: "/chat/messages"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            message: "What are my goals for this week?"
+            sessionId: "{{ $randomUUID() }}"
+          expect:
+            - statusCode: 200
+            - responseTime: 2000
+            - hasProperty: response
+      
+      - think: 5
+      
+      - post:
+          url: "/chat/messages"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            message: "Can you help me create a new workout plan?"
+            sessionId: "{{ $randomUUID() }}"
+          expect:
+            - statusCode: 200
+            - responseTime: 3000
+  
+  - name: "Content Creation"
+    weight: 10
+    flow:
+      - function: "generateAdminToken"
+      
+      - post:
+          url: "/content"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          json:
+            title: "Performance Test Article {{ $randomNumber(1, 10000) }}"
+            content: "This is a test article created during performance testing."
+            type: "article"
+            status: "draft"
+          capture:
+            - json: "$.id"
+              as: "contentId"
+          expect:
+            - statusCode: 201
+            - responseTime: 300
+      
+      - put:
+          url: "/content/{{ contentId }}"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          json:
+            status: "published"
+          expect:
+            - statusCode: 200
+            - responseTime: 200
+      
+      - get:
+          url: "/content/{{ contentId }}"
+          expect:
+            - statusCode: 200
+            - responseTime: 100
+
+environments:
+  local:
+    target: "http://localhost:8080"
+    phases:
+      - duration: 30
+        arrivalRate: 2
+  
+  staging:
+    target: "https://staging-api.upcoach.ai"
+    phases:
+      - duration: 60
+        arrivalRate: 10
+      - duration: 120
+        arrivalRate: 20
+  
+  production:
+    target: "https://api.upcoach.ai"
+    phases:
+      - duration: 60
+        arrivalRate: 5
+      - duration: 300
+        arrivalRate: 10

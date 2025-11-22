@@ -1,0 +1,158 @@
+/**
+ * Skeleton Loader Shimmer Effect Styles
+ */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.skeleton-base {
+  position: relative;
+  overflow: hidden;
+  background-color: #e5e7eb; /* gray-200 */
+}
+
+.dark .skeleton-base {
+  background-color: #374151; /* gray-700 */
+}
+
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 20%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0.2) 80%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.dark .skeleton-shimmer::after {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 20%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 80%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+/* Alternative pulse animation */
+.skeleton-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Staggered animation for multiple skeletons */
+.skeleton-stagger-1 { animation-delay: 0.1s; }
+.skeleton-stagger-2 { animation-delay: 0.2s; }
+.skeleton-stagger-3 { animation-delay: 0.3s; }
+.skeleton-stagger-4 { animation-delay: 0.4s; }
+.skeleton-stagger-5 { animation-delay: 0.5s; }
+
+/* Wave effect for loading lists */
+.skeleton-wave {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-wave::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: wave 1.5s infinite;
+}
+
+@keyframes wave {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Skeleton specific styles */
+.skeleton-text {
+  border-radius: 0.25rem;
+  height: 1rem;
+}
+
+.skeleton-title {
+  border-radius: 0.25rem;
+  height: 1.5rem;
+  width: 60%;
+}
+
+.skeleton-paragraph {
+  border-radius: 0.25rem;
+}
+
+.skeleton-paragraph > div {
+  height: 0.875rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.skeleton-paragraph > div:last-child {
+  width: 80%;
+}
+
+.skeleton-avatar {
+  border-radius: 50%;
+}
+
+.skeleton-thumbnail {
+  border-radius: 0.5rem;
+  aspect-ratio: 16 / 9;
+}
+
+.skeleton-card {
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Accessibility - reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer::after,
+  .skeleton-wave::before {
+    animation: none;
+  }
+  
+  .skeleton-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    animation-duration: 4s;
+  }
+}

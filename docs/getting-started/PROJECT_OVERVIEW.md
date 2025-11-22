@@ -4,7 +4,8 @@ High-level overview of the UpCoach platform architecture, features, and design p
 
 ## What is UpCoach?
 
-UpCoach is an enterprise-grade AI-powered coaching platform that helps users achieve their personal and professional goals through:
+UpCoach is an enterprise-grade AI-powered coaching platform that helps users achieve their personal
+and professional goals through:
 
 - **Intelligent Habit Tracking** - AI-powered habit formation and progress tracking
 - **Goal Management** - SMART goal setting with personalized insights
@@ -53,7 +54,7 @@ UpCoach is an enterprise-grade AI-powered coaching platform that helps users ach
 The project uses a monorepo architecture to manage multiple applications:
 
 ```
-upcoach-project/
+UpCoach/
 ├── apps/                          # Frontend applications
 │   ├── admin-panel/              # Admin dashboard
 │   │   ├── src/                  # React components
@@ -96,6 +97,7 @@ upcoach-project/
 **Purpose:** Central backend service handling all business logic
 
 **Key Features:**
+
 - RESTful API with 48+ route files
 - 76 Prisma database models
 - JWT authentication with refresh tokens
@@ -103,6 +105,7 @@ upcoach-project/
 - 99.7% test coverage (1023/1026 tests)
 
 **Technology:**
+
 - Node.js 20+ with TypeScript
 - Express.js framework
 - Prisma ORM for database
@@ -114,6 +117,7 @@ upcoach-project/
 **Purpose:** iOS and Android apps for end users
 
 **Key Features:**
+
 - 183 Dart files across 20 feature modules
 - Offline-first architecture with local storage
 - Real-time sync with Socket.io
@@ -121,6 +125,7 @@ upcoach-project/
 - Voice journal recording
 
 **Technology:**
+
 - Flutter 3.7+
 - Riverpod for state management
 - Hive & SQLite for local storage
@@ -131,6 +136,7 @@ upcoach-project/
 **Purpose:** Administrative dashboard for platform management
 
 **Key Features:**
+
 - 46 React components
 - 119+ pages
 - User management
@@ -139,6 +145,7 @@ upcoach-project/
 - Financial reporting
 
 **Technology:**
+
 - React 18 with TypeScript
 - Vite build tool
 - Zustand for state management
@@ -149,6 +156,7 @@ upcoach-project/
 **Purpose:** Content management for articles, courses, and media
 
 **Key Features:**
+
 - 42 React components
 - 70+ pages
 - Content creation and editing
@@ -157,6 +165,7 @@ upcoach-project/
 - Version control
 
 **Technology:**
+
 - React 18 with TypeScript
 - Vite build tool
 - React Query for data fetching
@@ -167,6 +176,7 @@ upcoach-project/
 **Purpose:** Marketing website for user acquisition
 
 **Key Features:**
+
 - Server-side rendering (SSR)
 - SEO optimization
 - Lead generation forms
@@ -174,6 +184,7 @@ upcoach-project/
 - App download sections
 
 **Technology:**
+
 - Next.js 15 with App Router
 - TypeScript
 - Tailwind CSS
@@ -225,9 +236,11 @@ upcoach-project/
 
 ### 1. Monorepo Architecture
 
-**Why:** Share code, dependencies, and configurations across multiple apps while maintaining independent deployment.
+**Why:** Share code, dependencies, and configurations across multiple apps while maintaining
+independent deployment.
 
 **Benefits:**
+
 - Shared TypeScript types between frontend and backend
 - Consistent tooling and linting
 - Easier refactoring across applications
@@ -238,6 +251,7 @@ upcoach-project/
 **Why:** Achieve production-ready quality with comprehensive test coverage.
 
 **Approach:**
+
 - 99.7% test coverage (1023/1026 tests)
 - Unit, integration, and E2E journey tests
 - Established testing patterns for consistency
@@ -250,6 +264,7 @@ upcoach-project/
 **Why:** Prepare for future scalability while maintaining monolithic simplicity for now.
 
 **Strategy:**
+
 - Services separated by domain (auth, coaching, payments)
 - Clear service boundaries
 - Stateless API design
@@ -260,6 +275,7 @@ upcoach-project/
 **Why:** Leverage AI to provide personalized coaching at scale.
 
 **Implementation:**
+
 - OpenAI GPT-4 for conversational AI
 - Anthropic Claude for advanced reasoning
 - Hugging Face for specialized ML models
@@ -367,19 +383,19 @@ Monitor & Alert
 
 ## Tech Stack Summary
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Mobile** | Flutter 3.7+ | iOS & Android apps |
-| **Web Frontend** | React 18, Next.js 15 | Admin, CMS, Landing |
-| **Backend** | Node.js 20, Express, TypeScript | API server |
-| **Database** | PostgreSQL 14+ | Primary data store |
-| **Cache** | Redis 7+ | Sessions & caching |
-| **ORM** | Prisma | Database access |
-| **Auth** | JWT, OAuth2, WebAuthn | Authentication |
-| **AI** | OpenAI, Claude, Hugging Face | AI coaching |
-| **Payments** | Stripe | Payment processing |
-| **Testing** | Jest, Vitest, Playwright | Comprehensive testing |
-| **CI/CD** | GitHub Actions | Automation |
+| Layer            | Technology                      | Purpose               |
+| ---------------- | ------------------------------- | --------------------- |
+| **Mobile**       | Flutter 3.7+                    | iOS & Android apps    |
+| **Web Frontend** | React 18, Next.js 15            | Admin, CMS, Landing   |
+| **Backend**      | Node.js 20, Express, TypeScript | API server            |
+| **Database**     | PostgreSQL 14+                  | Primary data store    |
+| **Cache**        | Redis 7+                        | Sessions & caching    |
+| **ORM**          | Prisma                          | Database access       |
+| **Auth**         | JWT, OAuth2, WebAuthn           | Authentication        |
+| **AI**           | OpenAI, Claude, Hugging Face    | AI coaching           |
+| **Payments**     | Stripe                          | Payment processing    |
+| **Testing**      | Jest, Vitest, Playwright        | Comprehensive testing |
+| **CI/CD**        | GitHub Actions                  | Automation            |
 
 ## What's Next?
 
@@ -391,4 +407,5 @@ Now that you understand the architecture:
 
 ---
 
-**Previous:** [← Quick Start](QUICK_START.md) | **Next:** [Development Setup →](DEVELOPMENT_SETUP.md)
+**Previous:** [← Quick Start](QUICK_START.md) | **Next:**
+[Development Setup →](DEVELOPMENT_SETUP.md)

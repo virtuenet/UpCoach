@@ -1,15 +1,15 @@
 # Pre-Launch Testing Checklist
 
-**Purpose:** Comprehensive testing checklist before beta and production launch
-**Scope:** iOS, Android, Web platforms
-**Timeline:** Week 1-2 of Phase 5
-**Target:** Zero critical bugs before beta launch
+**Purpose:** Comprehensive testing checklist before beta and production launch **Scope:** iOS,
+Android, Web platforms **Timeline:** Week 1-2 of Phase 5 **Target:** Zero critical bugs before beta
+launch
 
 ---
 
 ## Overview
 
-This checklist ensures all critical functionality works correctly across all platforms before releasing to beta testers and production users.
+This checklist ensures all critical functionality works correctly across all platforms before
+releasing to beta testers and production users.
 
 ### Testing Phases
 
@@ -28,7 +28,7 @@ This checklist ensures all critical functionality works correctly across all pla
 
 ```bash
 # Mobile (Flutter)
-cd upcoach-project/apps/mobile
+cd apps/mobile
 flutter test
 
 # Expected: All tests passing
@@ -36,6 +36,7 @@ flutter test
 ```
 
 **Checklist:**
+
 - [ ] All unit tests passing
 - [ ] Code coverage >80%
 - [ ] No skipped tests
@@ -45,15 +46,16 @@ flutter test
 
 ```bash
 # Mobile Integration Tests
-cd upcoach-project/apps/mobile
+cd apps/mobile
 flutter test integration_test/
 
 # API Integration Tests
-cd upcoach-project/services/api
+cd services/api
 npm run test:integration
 ```
 
 **Checklist:**
+
 - [ ] Offline sync tests passing (30+ tests)
 - [ ] Push notification tests passing (40+ tests)
 - [ ] API integration tests passing
@@ -64,11 +66,12 @@ npm run test:integration
 
 ```bash
 # Mobile Widget Tests
-cd upcoach-project/apps/mobile
+cd apps/mobile
 flutter test test/widgets/
 ```
 
 **Checklist:**
+
 - [ ] All UI components render correctly
 - [ ] User interactions work as expected
 - [ ] State updates propagate correctly
@@ -78,11 +81,12 @@ flutter test test/widgets/
 
 ```bash
 # Run E2E tests (if implemented)
-cd upcoach-project/apps/mobile
+cd apps/mobile
 flutter drive --target=test_driver/app.dart
 ```
 
 **Checklist:**
+
 - [ ] Complete user flows tested
 - [ ] Critical paths verified
 - [ ] Cross-screen navigation works
@@ -96,23 +100,25 @@ flutter drive --target=test_driver/app.dart
 
 #### Test Devices (Minimum)
 
-| Device | OS Version | Screen Size | Status |
-|--------|-----------|-------------|--------|
-| iPhone 15 Pro | iOS 17 | 6.1" | [ ] |
-| iPhone 14 | iOS 16-17 | 6.1" | [ ] |
-| iPhone SE (3rd) | iOS 15-17 | 4.7" | [ ] |
-| iPad Pro 12.9" | iPadOS 17 | 12.9" | [ ] |
-| iPad Air | iPadOS 16 | 10.9" | [ ] |
+| Device          | OS Version | Screen Size | Status |
+| --------------- | ---------- | ----------- | ------ |
+| iPhone 15 Pro   | iOS 17     | 6.1"        | [ ]    |
+| iPhone 14       | iOS 16-17  | 6.1"        | [ ]    |
+| iPhone SE (3rd) | iOS 15-17  | 4.7"        | [ ]    |
+| iPad Pro 12.9"  | iPadOS 17  | 12.9"       | [ ]    |
+| iPad Air        | iPadOS 16  | 10.9"       | [ ]    |
 
 #### Test Scenarios (Per Device)
 
 **Installation & Launch:**
+
 - [ ] Fresh install from TestFlight
 - [ ] App launches without crash
 - [ ] Splash screen displays correctly
 - [ ] First-time onboarding appears
 
 **Authentication:**
+
 - [ ] Email/password sign up
 - [ ] Email/password login
 - [ ] Google Sign-In
@@ -122,6 +128,7 @@ flutter drive --target=test_driver/app.dart
 - [ ] Logout and re-login
 
 **Core Features:**
+
 - [ ] Create habit
 - [ ] Mark habit complete
 - [ ] Create goal
@@ -133,6 +140,7 @@ flutter drive --target=test_driver/app.dart
 - [ ] AI coaching interaction
 
 **Push Notifications:**
+
 - [ ] Foreground notification received
 - [ ] Background notification received
 - [ ] Notification tap navigation works
@@ -140,6 +148,7 @@ flutter drive --target=test_driver/app.dart
 - [ ] Badge count updates
 
 **Offline Functionality:**
+
 - [ ] Enable airplane mode
 - [ ] Create habit offline
 - [ ] Update goal offline
@@ -150,6 +159,7 @@ flutter drive --target=test_driver/app.dart
 - [ ] Resolve conflicts if any
 
 **Performance:**
+
 - [ ] App launches in <3 seconds
 - [ ] Screens load instantly
 - [ ] Animations smooth (60 FPS)
@@ -158,6 +168,7 @@ flutter drive --target=test_driver/app.dart
 - [ ] Battery drain normal
 
 **Orientation & Display:**
+
 - [ ] Portrait mode works
 - [ ] Landscape mode works (iPad)
 - [ ] Safe areas respected (notch, home indicator)
@@ -169,19 +180,20 @@ flutter drive --target=test_driver/app.dart
 
 #### Test Devices (Minimum)
 
-| Device | OS Version | Screen Size | Status |
-|--------|-----------|-------------|--------|
-| Pixel 8 | Android 14 | 6.2" | [ ] |
-| Pixel 6 | Android 13-14 | 6.4" | [ ] |
-| Samsung S23 | Android 13-14 | 6.1" | [ ] |
-| Budget Device | Android 12 | 5.5" | [ ] |
-| Tablet 10" | Android 13 | 10.1" | [ ] |
+| Device        | OS Version    | Screen Size | Status |
+| ------------- | ------------- | ----------- | ------ |
+| Pixel 8       | Android 14    | 6.2"        | [ ]    |
+| Pixel 6       | Android 13-14 | 6.4"        | [ ]    |
+| Samsung S23   | Android 13-14 | 6.1"        | [ ]    |
+| Budget Device | Android 12    | 5.5"        | [ ]    |
+| Tablet 10"    | Android 13    | 10.1"       | [ ]    |
 
 #### Test Scenarios (Per Device)
 
 Same as iOS testing scenarios, plus:
 
 **Android-Specific:**
+
 - [ ] Back button navigation works
 - [ ] App drawer integration
 - [ ] Notification channels work
@@ -193,29 +205,32 @@ Same as iOS testing scenarios, plus:
 
 #### Test Browsers
 
-| Browser | Version | OS | Status |
-|---------|---------|-----|--------|
-| Chrome | Latest | macOS | [ ] |
-| Chrome | Latest | Windows | [ ] |
-| Firefox | Latest | macOS | [ ] |
-| Firefox | Latest | Windows | [ ] |
-| Safari | Latest | macOS | [ ] |
-| Edge | Latest | Windows | [ ] |
+| Browser | Version | OS      | Status |
+| ------- | ------- | ------- | ------ |
+| Chrome  | Latest  | macOS   | [ ]    |
+| Chrome  | Latest  | Windows | [ ]    |
+| Firefox | Latest  | macOS   | [ ]    |
+| Firefox | Latest  | Windows | [ ]    |
+| Safari  | Latest  | macOS   | [ ]    |
+| Edge    | Latest  | Windows | [ ]    |
 
 #### Test Scenarios
 
 **Installation:**
+
 - [ ] PWA install prompt appears
 - [ ] PWA installs correctly
 - [ ] PWA launches from home screen
 
 **Functionality:**
+
 - [ ] All core features work (same as mobile)
 - [ ] File uploads work
 - [ ] Downloads work
 - [ ] Web push notifications work
 
 **Responsive Design:**
+
 - [ ] Desktop (1920x1080)
 - [ ] Laptop (1366x768)
 - [ ] Tablet (768x1024)
@@ -231,16 +246,17 @@ Test under various network conditions:
 
 **Test Matrix:**
 
-| Condition | Download | Upload | Latency | Packet Loss | Status |
-|-----------|----------|--------|---------|-------------|--------|
-| 5G/WiFi | 100+ Mbps | 50+ Mbps | <20ms | 0% | [ ] |
-| 4G | 10 Mbps | 5 Mbps | 50ms | 0% | [ ] |
-| 3G | 1 Mbps | 500 Kbps | 100ms | 0% | [ ] |
-| 2G | 250 Kbps | 50 Kbps | 300ms | 0% | [ ] |
-| Poor | 500 Kbps | 100 Kbps | 500ms | 2% | [ ] |
-| Offline | 0 | 0 | N/A | 100% | [ ] |
+| Condition | Download  | Upload   | Latency | Packet Loss | Status |
+| --------- | --------- | -------- | ------- | ----------- | ------ |
+| 5G/WiFi   | 100+ Mbps | 50+ Mbps | <20ms   | 0%          | [ ]    |
+| 4G        | 10 Mbps   | 5 Mbps   | 50ms    | 0%          | [ ]    |
+| 3G        | 1 Mbps    | 500 Kbps | 100ms   | 0%          | [ ]    |
+| 2G        | 250 Kbps  | 50 Kbps  | 300ms   | 0%          | [ ]    |
+| Poor      | 500 Kbps  | 100 Kbps | 500ms   | 2%          | [ ]    |
+| Offline   | 0         | 0        | N/A     | 100%        | [ ]    |
 
 **Use network throttling tools:**
+
 - Chrome DevTools Network Throttling
 - Charles Proxy
 - Network Link Conditioner (Mac)
@@ -271,17 +287,20 @@ For each condition above:
 ### 4.1 App Performance Metrics
 
 **Launch Performance:**
+
 - [ ] Cold start: <3 seconds
 - [ ] Warm start: <1 second
 - [ ] Hot start: <500ms
 
 **Runtime Performance:**
+
 - [ ] Frame rate: 60 FPS sustained
 - [ ] Memory usage: <200MB (mobile), <500MB (web)
 - [ ] CPU usage: <50% average
 - [ ] Battery drain: <5% per hour
 
 **Network Performance:**
+
 - [ ] API response time: <200ms (p95)
 - [ ] Image loading: <1s per image
 - [ ] Asset caching works
@@ -290,12 +309,14 @@ For each condition above:
 ### 4.2 Performance Profiling
 
 **Tools:**
+
 - Flutter DevTools Performance tab
 - Chrome DevTools Performance tab
 - Android Studio Profiler
 - Xcode Instruments
 
 **Profiling Checklist:**
+
 - [ ] No memory leaks detected
 - [ ] No jank in animations
 - [ ] No layout thrashing
@@ -305,6 +326,7 @@ For each condition above:
 ### 4.3 Load Testing
 
 **Simulate heavy usage:**
+
 - [ ] 1,000 habits created
 - [ ] 500 goals tracked
 - [ ] 10,000 voice journal entries
@@ -312,6 +334,7 @@ For each condition above:
 - [ ] Large sync queue (1,000+ operations)
 
 **Verify:**
+
 - [ ] Performance remains acceptable
 - [ ] No crashes or freezes
 - [ ] Database queries optimized
@@ -361,11 +384,13 @@ For each condition above:
 ### 5.5 Penetration Testing
 
 **Tools:**
+
 - OWASP ZAP
 - Burp Suite
 - Mobile Security Framework (MobSF)
 
 **Test For:**
+
 - [ ] Man-in-the-middle attacks
 - [ ] API fuzzing
 - [ ] Authentication bypass
@@ -412,6 +437,7 @@ For each condition above:
 ### 6.5 User Feedback
 
 **Collect feedback from 5-10 non-technical users:**
+
 - [ ] Can they complete key tasks?
 - [ ] What's confusing?
 - [ ] What do they like?
@@ -448,6 +474,7 @@ For each condition above:
 ### 8.1 Core Features Verification
 
 **Habits:**
+
 - [ ] Create habit
 - [ ] Edit habit
 - [ ] Delete habit
@@ -458,6 +485,7 @@ For each condition above:
 - [ ] Habit analytics
 
 **Goals:**
+
 - [ ] Create goal
 - [ ] Set milestones
 - [ ] Update progress
@@ -467,6 +495,7 @@ For each condition above:
 - [ ] Deadline tracking
 
 **Tasks:**
+
 - [ ] Create task
 - [ ] Set priority
 - [ ] Set due date
@@ -475,6 +504,7 @@ For each condition above:
 - [ ] Task search
 
 **Voice Journaling:**
+
 - [ ] Record audio
 - [ ] Play audio
 - [ ] Transcription
@@ -483,6 +513,7 @@ For each condition above:
 - [ ] Search transcripts
 
 **AI Coaching:**
+
 - [ ] Ask question
 - [ ] Receive response
 - [ ] View coaching history
@@ -490,6 +521,7 @@ For each condition above:
 - [ ] Personalized recommendations
 
 **Profile & Settings:**
+
 - [ ] Edit profile
 - [ ] Upload avatar
 - [ ] Change password
@@ -526,30 +558,35 @@ After each bug fix or new feature:
 Before releasing to beta testers:
 
 **Code Quality:**
+
 - [ ] All linters passing
 - [ ] No compiler warnings
 - [ ] Code reviewed
 - [ ] Documentation updated
 
 **Testing:**
+
 - [ ] All automated tests passing
 - [ ] Device testing complete on 10+ devices
 - [ ] Performance benchmarks met
 - [ ] Security audit complete
 
 **Configuration:**
+
 - [ ] Production Firebase configured
 - [ ] Analytics tracking verified
 - [ ] Crash reporting active
 - [ ] Push notifications working
 
 **Build:**
+
 - [ ] Release builds created
 - [ ] Signed with production certificates
 - [ ] Version numbers correct
 - [ ] Build uploaded to TestFlight/Internal Testing
 
 **Documentation:**
+
 - [ ] Beta tester guide created
 - [ ] Known issues documented
 - [ ] FAQ prepared
@@ -569,7 +606,7 @@ echo "🧪 Running all tests..."
 
 # Mobile unit tests
 echo "📱 Mobile Unit Tests"
-cd upcoach-project/apps/mobile
+cd apps/mobile
 flutter test || exit 1
 
 # Mobile integration tests
@@ -604,6 +641,7 @@ flutter test performance/
 ### Device Testing Matrix
 
 Create a spreadsheet or use a tool like:
+
 - TestRail
 - Zephyr
 - Google Sheets with checkboxes
@@ -620,8 +658,7 @@ Before proceeding to beta:
 - [ ] **Security:** Audit complete
 - [ ] **DevOps:** Builds verified
 
-**Signed off by:** ___________________
-**Date:** ___________________
+**Signed off by:** ********\_\_\_******** **Date:** ********\_\_\_********
 
 ---
 

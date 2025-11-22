@@ -1,0 +1,37 @@
+# Build stage for UpCoach monorepo
+FROM node:20-alpine as base
+
+# Set working directory
+WORKDIR /app
+
+# Copy package management files
+COPY package*.json ./
+COPY turbo.json ./
+
+# Install global dependencies
+RUN npm install -g npm@10.8.2 turbo
+
+# Install project dependencies
+RUN npm install --legacy-peer-deps
+
+# Copy entire project
+COPY . .
+
+# Build all services and apps
+RUN npm run build:services && npm run build:apps
+
+# Final stage for production
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy built artifacts from build stage
+COPY --from=base /app/services/api/dist ./services/api/dist
+COPY --from=base /app/apps/admin-panel/dist ./apps/admin-panel/dist
+COPY --from=base /app/apps/cms-panel/dist ./apps/cms-panel/dist
+
+# Expose necessary ports
+EXPOSE 1080 1006 1007
+
+# Default command
+CMD ["npm", "run", "start:test:parallel"]

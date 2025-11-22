@@ -1,0 +1,24 @@
+{
+  "name": "upcoach-e2e-tests",
+  "version": "1.0.0",
+  "description": "End-to-end tests for UpCoach dashboard applications",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:admin": "playwright test --grep 'Admin Panel'",
+    "test:cms": "playwright test --grep 'CMS Panel'",
+    "test:accessibility": "playwright test --grep 'Accessibility'",
+    "test:security": "playwright test --grep 'Security'",
+    "report": "playwright show-report",
+    "install-browsers": "playwright install"
+  },
+  "dependencies": {
+    "@axe-core/playwright": "^4.8.0",
+    "@playwright/test": "^1.55.0",
+    "playwright": "^1.55.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}

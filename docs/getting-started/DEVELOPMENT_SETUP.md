@@ -98,7 +98,7 @@ git clone https://github.com/virtuenet/UpCoach.git
 cd UpCoach
 
 # Navigate to main project
-cd upcoach-project
+cd UpCoach
 ```
 
 ### 2. Install Dependencies
@@ -505,6 +505,7 @@ npm run test:e2e            # E2E tests only
 **Problem:** `Error: connect ECONNREFUSED 127.0.0.1:5432`
 
 **Solutions:**
+
 ```bash
 # Check if PostgreSQL is running
 pg_isready
@@ -526,6 +527,7 @@ psql -U upcoach_user -d upcoach_dev -h localhost
 **Problem:** `Error: Redis connection failed`
 
 **Solutions:**
+
 ```bash
 # Check if Redis is running
 redis-cli ping
@@ -544,6 +546,7 @@ sudo journalctl -u redis              # Linux
 **Problem:** `Error: listen EADDRINUSE: address already in use :::3000`
 
 **Solutions:**
+
 ```bash
 # Find process using port 3000
 lsof -ti:3000
@@ -560,6 +563,7 @@ PORT=3001
 **Problem:** `Error: Migration failed`
 
 **Solutions:**
+
 ```bash
 # Reset database (WARNING: deletes all data)
 npx prisma migrate reset
@@ -575,6 +579,7 @@ npx prisma migrate deploy
 **Problem:** `Error: Cannot find module`
 
 **Solutions:**
+
 ```bash
 # Clear npm cache
 npm cache clean --force
@@ -592,6 +597,7 @@ npm ci
 **Problem:** Tests failing on first run
 
 **Solutions:**
+
 ```bash
 # Ensure test database exists
 createdb upcoach_test
@@ -624,4 +630,5 @@ Now that your environment is set up:
 
 ---
 
-**Previous:** [← Project Overview](PROJECT_OVERVIEW.md) | **Next:** [Development Guide →](../development/DEVELOPMENT_GUIDE.md)
+**Previous:** [← Project Overview](PROJECT_OVERVIEW.md) | **Next:**
+[Development Guide →](../development/DEVELOPMENT_GUIDE.md)

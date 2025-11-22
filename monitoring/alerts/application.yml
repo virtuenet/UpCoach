@@ -1,0 +1,122 @@
+groups:
+  - name: application
+    interval: 30s
+    rules:
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_request_duration_seconds_count{status=~"5.."}[5m]))
+            /
+            sum(rate(http_request_duration_seconds_count[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} for the last 5 minutes"
+          runbook_url: "https://wiki.upcoach.ai/runbooks/high-error-rate"
+
+      # API Latency
+      - alert: HighAPILatency
+        expr: |
+          histogram_quantile(0.95, 
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, route)
+          ) > 1
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High API latency on {{ $labels.route }}"
+          description: "95th percentile latency is {{ $value }}s for route {{ $labels.route }}"
+
+      # Database Connection Pool
+      - alert: DatabaseConnectionPoolExhausted
+        expr: |
+          (
+            pg_stat_database_numbackends{datname="upcoach_prod"}
+            /
+            pg_settings_max_connections
+          ) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Database connection pool nearly exhausted"
+          description: "{{ $value | humanizePercentage }} of connections are in use"
+
+      # Redis Memory Usage
+      - alert: RedisMemoryHigh
+        expr: |
+          (
+            redis_memory_used_bytes
+            /
+            redis_memory_max_bytes
+          ) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Redis memory usage is high"
+          description: "Redis is using {{ $value | humanizePercentage }} of available memory"
+
+      # Payment Failures
+      - alert: HighPaymentFailureRate
+        expr: |
+          (
+            sum(rate(stripe_payment_failed_total[15m]))
+            /
+            sum(rate(stripe_payment_total[15m]))
+          ) > 0.1
+        for: 15m
+        labels:
+          severity: critical
+          team: billing
+        annotations:
+          summary: "High payment failure rate"
+          description: "{{ $value | humanizePercentage }} of payments are failing"
+
+      # AI Service Errors
+      - alert: AIServiceErrors
+        expr: |
+          sum(rate(ai_request_errors_total[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+          team: ai
+        annotations:
+          summary: "AI service experiencing errors"
+          description: "{{ $value }} errors per second in AI service"
+
+      # Background Job Queue
+      - alert: BackgroundJobQueueHigh
+        expr: |
+          sidekiq_queue_size{queue="default"} > 1000
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Background job queue is growing"
+          description: "{{ $value }} jobs in queue {{ $labels.queue }}"
+
+      # User Registration Rate Drop
+      - alert: UserRegistrationDropped
+        expr: |
+          (
+            sum(rate(user_registrations_total[1h]))
+            < 
+            sum(rate(user_registrations_total[1h] offset 1d)) * 0.5
+          )
+        for: 2h
+        labels:
+          severity: warning
+          team: growth
+        annotations:
+          summary: "User registration rate has dropped significantly"
+          description: "Registration rate is down by more than 50% compared to yesterday"

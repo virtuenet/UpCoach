@@ -1,0 +1,108 @@
+{
+  "name": "upcoach-enhancement-testing",
+  "version": "1.0.0",
+  "description": "Comprehensive testing setup for UpCoach enhancement features",
+  "scripts": {
+    "test": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "test:unit": "jest --config=jest.config.js --selectProjects 'Backend API' 'Financial Services' 'Admin Panel' 'CMS Panel'",
+    "test:integration": "jest --config=jest.config.js --selectProjects 'Database Integration' --runInBand",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:mobile": "cd ../mobile-app && flutter test",
+    "test:mobile:integration": "cd ../mobile-app && flutter test integration_test/",
+    "test:api": "jest --config=jest.config.js --selectProjects 'Backend API'",
+    "test:financial": "jest --config=jest.config.js --selectProjects 'Financial Services'",
+    "test:voice": "jest --config=jest.config.js --selectProjects 'Voice Journaling'",
+    "test:habits": "jest --config=jest.config.js --selectProjects 'Habit Tracking'",
+    "test:offline": "jest --config=jest.config.js --selectProjects 'Offline Sync'",
+    "test:admin": "jest --config=jest.config.js --selectProjects 'Admin Panel'",
+    "test:cms": "jest --config=jest.config.js --selectProjects 'CMS Panel'",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:performance": "artillery run performance/load-test.yml",
+    "test:security": "npm audit && npm run test:security:zap",
+    "test:security:zap": "zap-baseline.py -t http://localhost:3000",
+    "test:accessibility": "playwright test --grep='@accessibility'",
+    "install:browsers": "npx playwright install --with-deps",
+    "install:flutter": "cd ../mobile-app && flutter pub get",
+    "setup:test-env": "npm run db:setup:test && npm run test:seed",
+    "db:setup:test": "NODE_ENV=test npx sequelize-cli db:create && npx sequelize-cli db:migrate",
+    "db:reset:test": "NODE_ENV=test npx sequelize-cli db:drop && npm run db:setup:test",
+    "test:seed": "NODE_ENV=test node ../testing/seeds/run-seeds.js",
+    "report:generate": "allure generate test-results/allure-results -o test-results/allure-report --clean",
+    "report:open": "allure open test-results/allure-report",
+    "clean:test": "rm -rf test-results coverage playwright-report",
+    "validate:setup": "node scripts/validate-test-setup.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@jest/globals": "^29.7.0",
+    "@types/jest": "^29.5.8",
+    "@types/node": "^20.9.0",
+    "@types/supertest": "^2.0.16",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jest-environment-node": "^29.7.0",
+    "jest-html-reporters": "^3.1.5",
+    "jest-junit": "^16.0.0",
+    "jest-watch-typeahead": "^2.2.2",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.2.2",
+    
+    "supertest": "^6.3.3",
+    "nock": "^13.4.0",
+    "msw": "^2.0.8",
+    "faker": "^5.5.3",
+    "@faker-js/faker": "^8.3.1",
+    
+    "artillery": "^2.0.3",
+    "artillery-plugin-metrics-by-endpoint": "^1.2.0",
+    "artillery-plugin-cloudwatch": "^2.1.0",
+    
+    "allure-playwright": "^2.9.2",
+    "allure-commandline": "^2.25.0",
+    "allure-js-commons": "^2.9.2",
+    
+    "@axe-core/playwright": "^4.8.2",
+    "pa11y": "^6.2.3",
+    "lighthouse": "^11.3.0",
+    
+    "selenium-webdriver": "^4.15.0",
+    "webdriverio": "^8.24.12",
+    "appium": "^2.2.1",
+    "@wdio/cli": "^8.24.12",
+    
+    "identity-obj-proxy": "^3.0.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/jest-dom": "^6.1.4",
+    "@testing-library/user-event": "^14.5.1",
+    
+    "eslint-plugin-jest": "^27.6.0",
+    "eslint-plugin-testing-library": "^6.2.0",
+    
+    "sharp": "^0.32.6",
+    "canvas": "^2.11.2",
+    
+    "wait-on": "^7.2.0",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "sequelize": "^6.35.0",
+    "pg": "^8.11.3",
+    "redis": "^4.6.10",
+    "axios": "^1.6.2",
+    "form-data": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
+  },
+  "jest": {
+    "preset": "./jest.config.js"
+  },
+  "playwright": {
+    "config": "./playwright.config.ts"
+  }
+} 

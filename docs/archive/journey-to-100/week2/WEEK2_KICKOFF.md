@@ -1,18 +1,19 @@
 # Week 2: Accelerate to 70% Test Coverage 🚀
 
-**Start Date:** November 15, 2025
-**Starting Point:** 61.3% (573/934 tests)
-**Target:** 70% (655/934 tests)
-**Tests Needed:** +82 tests
+**Start Date:** November 15, 2025 **Starting Point:** 61.3% (573/934 tests) **Target:** 70% (655/934
+tests) **Tests Needed:** +82 tests
 
 ---
 
 ## Week 2 Strategy
 
 ### Core Philosophy
-Build on Week 1's momentum by targeting **high-impact, systematic fixes** that unlock large test suites.
+
+Build on Week 1's momentum by targeting **high-impact, systematic fixes** that unlock large test
+suites.
 
 ### Success Metrics
+
 - **Primary Goal:** 70% pass rate (655/934 tests)
 - **Stretch Goal:** 75% pass rate (701/934 tests)
 - **Test Suites:** 40+/55 passing (72%+)
@@ -23,6 +24,7 @@ Build on Week 1's momentum by targeting **high-impact, systematic fixes** that u
 ## High-Impact Targets (Ranked)
 
 ### Tier 1: AI Services Stack (68 tests total)
+
 **Estimated Impact:** +60-68 tests | **Difficulty:** Medium | **Priority:** 🔥 HIGHEST
 
 1. **AIService.test.ts** - 0/40 passing
@@ -38,6 +40,7 @@ Build on Week 1's momentum by targeting **high-impact, systematic fixes** that u
    - **Value:** User-facing API coverage
 
 **Strategy:**
+
 - Create comprehensive OpenAI SDK mock
 - Mock streaming responses with async iterators
 - Apply WebAuthn success pattern (systematic mock → test alignment)
@@ -45,6 +48,7 @@ Build on Week 1's momentum by targeting **high-impact, systematic fixes** that u
 ---
 
 ### Tier 2: Redis Infrastructure (33 tests)
+
 **Estimated Impact:** +25-33 tests | **Difficulty:** High | **Priority:** 🔥 HIGH
 
 3. **RedisService.test.ts** - 0/33 passing
@@ -54,6 +58,7 @@ Build on Week 1's momentum by targeting **high-impact, systematic fixes** that u
    - **Blocker:** Deferred in Week 1 due to complexity
 
 **Strategy:**
+
 - Implement dependency injection for testability
 - OR: Create factory pattern for test instances
 - Leverage enhanced Redis mock from Week 1
@@ -62,6 +67,7 @@ Build on Week 1's momentum by targeting **high-impact, systematic fixes** that u
 ---
 
 ### Tier 3: Middleware Completion (14 tests)
+
 **Estimated Impact:** +10-14 tests | **Difficulty:** Medium | **Priority:** MEDIUM
 
 4. **middleware/auth.test.ts** - 4/18 passing
@@ -71,6 +77,7 @@ Build on Week 1's momentum by targeting **high-impact, systematic fixes** that u
    - **Value:** Critical security layer coverage
 
 **Strategy:**
+
 - Build on Week 1 JWT fixes
 - Add comprehensive request mocking
 - Test all middleware error paths
@@ -78,6 +85,7 @@ Build on Week 1's momentum by targeting **high-impact, systematic fixes** that u
 ---
 
 ### Tier 4: E2E User Journeys (50-75 tests)
+
 **Estimated Impact:** +30-50 tests | **Difficulty:** High | **Priority:** MEDIUM
 
 5. **E2E Journey Tests** - Multiple files, all failing
@@ -89,6 +97,7 @@ Build on Week 1's momentum by targeting **high-impact, systematic fixes** that u
    - payment-flow.test.ts
 
 **Strategy:**
+
 - Create shared E2E test fixtures
 - Mock external services (Stripe, SendGrid, etc.)
 - Focus on happy paths first
@@ -97,6 +106,7 @@ Build on Week 1's momentum by targeting **high-impact, systematic fixes** that u
 ---
 
 ### Tier 5: Smaller Opportunities (20-30 tests)
+
 **Estimated Impact:** +15-25 tests | **Difficulty:** Low-Medium | **Priority:** LOW
 
 6. **controllers/CoachController.test.ts** - Unknown pass rate
@@ -110,39 +120,44 @@ Build on Week 1's momentum by targeting **high-impact, systematic fixes** that u
 ## Week 2 Session Plan
 
 ### Session 1: AI Services Foundation (TODAY)
-**Goal:** Fix AIService.test.ts - target 30/40 tests passing
-**Approach:**
+
+**Goal:** Fix AIService.test.ts - target 30/40 tests passing **Approach:**
+
 - Create OpenAI SDK mock with all required methods
 - Mock streaming responses using async generators
 - Fix configuration and API key mocking
 - **Expected Gain:** +25-30 tests
 
 ### Session 2: AI Stack Completion
-**Goal:** Complete AIService + AIController.test.ts
-**Approach:**
+
+**Goal:** Complete AIService + AIController.test.ts **Approach:**
+
 - Finish remaining AIService tests
 - Apply AIService mock to AIController tests
 - Fix controller endpoint testing
 - **Expected Gain:** +35-40 tests | **Cumulative:** ~610-615 tests (65-66%)
 
 ### Session 3: Redis Service Deep Dive
-**Goal:** Fix RedisService.test.ts - target 25/33 tests passing
-**Approach:**
+
+**Goal:** Fix RedisService.test.ts - target 25/33 tests passing **Approach:**
+
 - Implement dependency injection OR factory pattern
 - Leverage manual Redis mock
 - Fix singleton test challenges
 - **Expected Gain:** +20-25 tests | **Cumulative:** ~635-640 tests (68%)
 
 ### Session 4: Middleware & Quick Wins
-**Goal:** Complete auth middleware + small test files
-**Approach:**
+
+**Goal:** Complete auth middleware + small test files **Approach:**
+
 - Fix remaining 14 middleware/auth tests
 - Knock out 2-3 small service test files
 - **Expected Gain:** +20-25 tests | **Cumulative:** ~655-665 tests (70%+)
 
 ### Session 5+: E2E & Stretch Goals
-**Goal:** E2E journey tests + push toward 75%
-**Approach:**
+
+**Goal:** E2E journey tests + push toward 75% **Approach:**
+
 - Create E2E test infrastructure
 - Fix highest-value journey tests
 - Continue small file wins
@@ -155,6 +170,7 @@ Build on Week 1's momentum by targeting **high-impact, systematic fixes** that u
 ### Mocks to Create
 
 1. **OpenAI SDK Mock** (Priority 1)
+
    ```javascript
    // src/tests/__mocks__/openai.js
    - ChatCompletion API
@@ -164,6 +180,7 @@ Build on Week 1's momentum by targeting **high-impact, systematic fixes** that u
    ```
 
 2. **Stripe SDK Mock** (Priority 2)
+
    ```javascript
    // src/tests/__mocks__/stripe.js
    - Payment intents
@@ -204,12 +221,14 @@ Build on Week 1's momentum by targeting **high-impact, systematic fixes** that u
 ## Success Criteria
 
 ### Minimum Success (70%)
+
 - ✅ 655/934 tests passing (70.1%)
 - ✅ AIService fully working (40/40)
 - ✅ AIController fully working (28/28)
 - ✅ 2-3 additional test files at 100%
 
 ### Target Success (72-73%)
+
 - ✅ 675/934 tests passing (72.3%)
 - ✅ AI stack complete (68 tests)
 - ✅ RedisService mostly working (25/33)
@@ -217,6 +236,7 @@ Build on Week 1's momentum by targeting **high-impact, systematic fixes** that u
 - ✅ 5+ test files at 100%
 
 ### Stretch Success (75%)
+
 - ✅ 701/934 tests passing (75%)
 - ✅ All Tier 1-3 targets complete
 - ✅ 2-3 E2E journeys working
@@ -247,6 +267,7 @@ Build on Week 1's momentum by targeting **high-impact, systematic fixes** that u
 ### Contingency Plans
 
 If targets prove too difficult:
+
 - **Fallback 1:** Focus on smaller service files (EmailService, GDPRService)
 - **Fallback 2:** Improve existing partial-pass files (middleware/auth, CoachController)
 - **Fallback 3:** Create more model mocks (Goal, Task, Mood) for +15-20 tests
@@ -256,6 +277,7 @@ If targets prove too difficult:
 ## Week 1 Lessons Applied
 
 ### What Worked ✅
+
 1. **Parallel agent execution** - Use for independent test files
 2. **Infrastructure-first fixes** - Mock quality > quantity
 3. **Real vs mocked dependencies** - Sometimes real is better (JWT)
@@ -263,6 +285,7 @@ If targets prove too difficult:
 5. **Quick wins first** - Build momentum with high-pass-rate files
 
 ### What to Improve 🔧
+
 1. **Earlier agent deployment** - Start parallel work sooner
 2. **Mock planning** - Create comprehensive mocks before fixing tests
 3. **Test file analysis** - Understand all failures before starting
@@ -274,22 +297,27 @@ If targets prove too difficult:
 ## Daily Targets
 
 ### Day 1 (Today): AI Services
+
 - Target: +30 tests → 603/934 (64.5%)
 - Focus: AIService.test.ts
 
 ### Day 2: AI Stack Complete
+
 - Target: +38 tests → 641/934 (68.6%)
 - Focus: AIService + AIController
 
 ### Day 3: Redis Deep Dive
+
 - Target: +25 tests → 666/934 (71.3%)
 - Focus: RedisService.test.ts
 
 ### Day 4: Middleware & Quick Wins
+
 - Target: +20 tests → 686/934 (73.4%)
 - Focus: auth middleware + small files
 
 ### Day 5: E2E & Polish
+
 - Target: +15 tests → 701/934 (75%)
 - Focus: E2E journeys + final cleanup
 
@@ -298,6 +326,7 @@ If targets prove too difficult:
 ## Tracking & Metrics
 
 ### Daily Check-in Questions
+
 1. What was today's pass rate improvement?
 2. Which patterns emerged from successful fixes?
 3. What blockers were encountered?
@@ -305,14 +334,15 @@ If targets prove too difficult:
 5. Are we on track for 70%?
 
 ### Progress Dashboard
-| Day | Tests Passing | Pass Rate | Daily Gain | Cumulative Gain |
-|-----|---------------|-----------|------------|-----------------|
-| W1 End | 573 | 61.3% | - | Baseline |
-| D1 | TBD | TBD | TBD | TBD |
-| D2 | TBD | TBD | TBD | TBD |
-| D3 | TBD | TBD | TBD | TBD |
-| D4 | TBD | TBD | TBD | TBD |
-| D5 | TBD | TBD | TBD | TBD |
+
+| Day    | Tests Passing | Pass Rate | Daily Gain | Cumulative Gain |
+| ------ | ------------- | --------- | ---------- | --------------- |
+| W1 End | 573           | 61.3%     | -          | Baseline        |
+| D1     | TBD           | TBD       | TBD        | TBD             |
+| D2     | TBD           | TBD       | TBD        | TBD             |
+| D3     | TBD           | TBD       | TBD        | TBD             |
+| D4     | TBD           | TBD       | TBD        | TBD             |
+| D5     | TBD           | TBD       | TBD        | TBD             |
 
 ---
 
@@ -326,5 +356,4 @@ If targets prove too difficult:
 
 ---
 
-*Week 2 Kickoff - November 15, 2025*
-*Starting: 573/934 (61.3%) → Target: 655/934 (70%)*
+_Week 2 Kickoff - November 15, 2025_ _Starting: 573/934 (61.3%) → Target: 655/934 (70%)_

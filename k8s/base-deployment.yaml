@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: upcoach-base-deployment
+  labels:
+    app: upcoach
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  selector:
+    matchLabels:
+      app: upcoach
+  template:
+    metadata:
+      labels:
+        app: upcoach
+    spec:
+      containers:
+      - name: upcoach-service
+        image: upcoach-service:latest
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 45
+          periodSeconds: 20
+        envFrom:
+        - configMapRef:
+            name: upcoach-config
+        - secretRef:
+            name: upcoach-secrets
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: upcoach-config
+data:
+  NODE_ENV: production
+  LOG_LEVEL: info
+  CORS_ORIGIN: https://upcoach.ai
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: upcoach-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: upcoach

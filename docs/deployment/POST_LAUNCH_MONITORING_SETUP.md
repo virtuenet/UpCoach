@@ -1,14 +1,14 @@
 # Post-Launch Monitoring & Analytics Setup
 
-**Purpose:** Complete guide for monitoring UpCoach after production launch
-**Timeline:** Week 5-6 of Phase 5 and ongoing
-**Goal:** Ensure app stability, user satisfaction, and continuous improvement
+**Purpose:** Complete guide for monitoring UpCoach after production launch **Timeline:** Week 5-6 of
+Phase 5 and ongoing **Goal:** Ensure app stability, user satisfaction, and continuous improvement
 
 ---
 
 ## Overview
 
 After launching to production, continuous monitoring is critical for:
+
 - Detecting and fixing issues quickly
 - Understanding user behavior
 - Measuring success metrics
@@ -20,21 +20,25 @@ After launching to production, continuous monitoring is critical for:
 ## Monitoring Stack
 
 ### Infrastructure & Performance
+
 1. **Railway** - API server monitoring
 2. **Vercel** - Frontend monitoring
 3. **Uptime Robot** or **Pingdom** - Uptime monitoring
 
 ### Application Monitoring
+
 4. **Firebase Crashlytics** - Mobile crash reporting
 5. **Sentry** - Error tracking (backend & frontend)
 6. **DataDog** or **New Relic** - APM (Application Performance Monitoring)
 
 ### Analytics
+
 7. **Firebase Analytics** - Mobile app analytics
 8. **Google Analytics 4** - Web analytics
 9. **Mixpanel** or **Amplitude** - Product analytics
 
 ### User Feedback
+
 10. **App Store Reviews** - iOS feedback
 11. **Google Play Reviews** - Android feedback
 12. **In-app feedback** - Direct user feedback
@@ -51,24 +55,27 @@ After launching to production, continuous monitoring is critical for:
 **Dashboard:** [Firebase Console](https://console.firebase.google.com) → Crashlytics
 
 **Key Metrics:**
+
 - Crash-free users %
 - Crash-free sessions %
 - Top crashes
 - Affected devices
 
-**Alerts:**
-Set up email alerts for:
+**Alerts:** Set up email alerts for:
+
 - Crash rate >1%
 - New crash type appears
 - Crash affects >5% of users
 
 **Daily Checklist:**
+
 - [ ] Check crash-free rate (target: >99%)
 - [ ] Review new crashes
 - [ ] Prioritize crashes by impact
 - [ ] Create bug tickets for critical crashes
 
 **Weekly Report:**
+
 - Crash trends (improving or worsening)
 - Most affected OS versions
 - Most affected devices
@@ -95,17 +102,20 @@ Sentry.init({
 **Dashboard:** https://sentry.io
 
 **Key Metrics:**
+
 - Error rate
 - Response time
 - Error frequency
 - Affected users
 
 **Alerts:**
+
 - New error type
 - Error spike (>100 in 1 hour)
 - Error affecting >10 users
 
 **Integration:**
+
 - Slack/Discord notifications
 - GitHub issue creation
 - Email alerts
@@ -130,6 +140,7 @@ Sentry.init({
    - Communicate with affected users
 
 **Hotfix Process:**
+
 1. Create hotfix branch
 2. Fix the issue
 3. Test on multiple devices
@@ -144,18 +155,21 @@ Sentry.init({
 ### 2.1 API Performance (Railway + DataDog)
 
 **Railway Dashboard:**
+
 - CPU usage
 - Memory usage
 - Request count
 - Response times
 
 **Target Metrics:**
+
 - CPU: <70% average
 - Memory: <80% of allocated
 - Response time (p95): <200ms
 - Error rate: <0.1%
 
 **Alerts:**
+
 - CPU >90% for 5 minutes
 - Memory >90% for 5 minutes
 - Response time >500ms (p95)
@@ -183,6 +197,7 @@ app.use((req, res, next) => {
 **Dashboard:** https://app.datadoghq.com
 
 **Monitors:**
+
 - API latency
 - Database query performance
 - Cache hit rate
@@ -191,6 +206,7 @@ app.use((req, res, next) => {
 ### 2.2 Frontend Performance (Vercel)
 
 **Vercel Analytics:**
+
 - Automatically enabled for all deployments
 - Real user metrics (Core Web Vitals)
 - Geographic performance data
@@ -198,12 +214,14 @@ app.use((req, res, next) => {
 **Dashboard:** Vercel → Your Project → Analytics
 
 **Key Metrics:**
+
 - **LCP** (Largest Contentful Paint): <2.5s
 - **FID** (First Input Delay): <100ms
 - **CLS** (Cumulative Layout Shift): <0.1
 - **TTFB** (Time to First Byte): <600ms
 
 **Alerts:**
+
 - LCP >4s
 - FID >300ms
 - CLS >0.25
@@ -217,6 +235,7 @@ Already configured in Phase 4.
 **Dashboard:** Firebase Console → Performance
 
 **Key Metrics:**
+
 - App start time: <3s (cold), <1s (warm)
 - Screen rendering: 60 FPS
 - Network requests: <500ms average
@@ -234,6 +253,7 @@ await trace.stop();
 ```
 
 **Monitor:**
+
 - Habit creation time
 - Goal update time
 - Voice journal upload time
@@ -252,15 +272,18 @@ await trace.stop();
 **Key Events to Track:**
 
 **User Acquisition:**
+
 - `first_open` - First app launch
 - `app_remove` - App uninstalled
 
 **Engagement:**
+
 - `screen_view` - Screen views
 - `session_start` - Session start
 - `user_engagement` - Time in app
 
 **Custom Events:**
+
 - `habit_created`
 - `habit_completed`
 - `goal_created`
@@ -271,16 +294,19 @@ await trace.stop();
 - `premium_upgrade`
 
 **User Properties:**
+
 - `user_type` (free, premium)
 - `signup_method` (email, google, apple)
 - `onboarding_completed`
 
 **Funnels:**
+
 1. Onboarding → Habit Created → First Completion
 2. Free User → Premium Preview → Upgrade
 3. Goal Set → Milestone Reached → Goal Achieved
 
 **Retention:**
+
 - Day 1: >70%
 - Day 7: >40%
 - Day 30: >20%
@@ -294,7 +320,9 @@ await trace.stop();
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
+  function gtag() {
+    dataLayer.push(arguments);
+  }
   gtag('js', new Date());
   gtag('config', 'G-XXXXXXXXXX');
 </script>
@@ -303,28 +331,30 @@ await trace.stop();
 **Dashboard:** https://analytics.google.com
 
 **Key Reports:**
+
 - User acquisition
 - Engagement
 - Retention
 - Conversions
 
-**Events:**
-Same as Firebase Analytics for consistency.
+**Events:** Same as Firebase Analytics for consistency.
 
 ### 3.3 Cohort Analysis
 
-**Weekly Cohorts:**
-Track users who signed up in the same week:
+**Weekly Cohorts:** Track users who signed up in the same week:
+
 - How many are still active?
 - What features do they use?
 - When do they churn?
 
 **Tools:**
+
 - Firebase Analytics → Retention
 - Mixpanel → Cohorts
 - Custom SQL queries on user database
 
 **Target:**
+
 - Week 1 retention: >70%
 - Week 4 retention: >40%
 - Week 12 retention: >30%
@@ -338,12 +368,14 @@ Track users who signed up in the same week:
 **iOS App Store:**
 
 **Monitor:**
+
 - App Store Connect → App Analytics → Ratings and Reviews
 - Email alerts for new reviews
 
 **Response Time:** <48 hours for all reviews
 
 **Process:**
+
 1. Read review carefully
 2. Thank user
 3. Address concern
@@ -351,6 +383,7 @@ Track users who signed up in the same week:
 5. Update app if bug mentioned
 
 **Example Response:**
+
 ```
 Hi [Username],
 
@@ -369,9 +402,11 @@ Thanks for using UpCoach!
 Same process as iOS.
 
 **Monitor:**
+
 - Google Play Console → Quality → Ratings and reviews
 
 **Tools:**
+
 - [AppFollow](https://appfollow.io) - Review monitoring
 - [App Annie](https://www.appannie.com) - ASO & reviews
 
@@ -396,6 +431,7 @@ BetterFeedback.of(context).show((feedback) {
 ```
 
 **Collect:**
+
 - Screenshot
 - User description
 - Device info
@@ -403,6 +439,7 @@ BetterFeedback.of(context).show((feedback) {
 - User ID (if logged in)
 
 **Storage:**
+
 - Save to database
 - Send to support email
 - Create GitHub issue (optional)
@@ -410,14 +447,17 @@ BetterFeedback.of(context).show((feedback) {
 ### 4.3 Support Email Monitoring
 
 **Setup:**
+
 - Email: support@upcoach.app
 - Tool: Gmail, Help Scout, Zendesk, or Intercom
 
 **Response Time:**
+
 - <24 hours (weekdays)
 - <48 hours (weekends)
 
 **Categorize:**
+
 - Bug reports
 - Feature requests
 - How-to questions
@@ -425,6 +465,7 @@ BetterFeedback.of(context).show((feedback) {
 - Other
 
 **Weekly Summary:**
+
 - Total emails
 - Common issues
 - Feature requests
@@ -450,9 +491,11 @@ BetterFeedback.of(context).show((feedback) {
    - Slack/Discord webhook
 
 **Target:**
+
 - 99.9% uptime (less than 43 minutes downtime per month)
 
 **Incident Response:**
+
 - <5 minutes: Investigate
 - <15 minutes: Identify root cause
 - <30 minutes: Implement fix
@@ -461,16 +504,19 @@ BetterFeedback.of(context).show((feedback) {
 ### 5.2 Status Page
 
 **Create status page:**
+
 - https://status.upcoach.app
 - Tool: [Status.io](https://status.io), [Statuspage.io](https://statuspage.io)
 
 **Show:**
+
 - API status
 - Web app status
 - Mobile app services status
 - Scheduled maintenance
 
 **Update during incidents:**
+
 1. Investigating
 2. Identified
 3. Monitoring
@@ -485,22 +531,26 @@ BetterFeedback.of(context).show((feedback) {
 **Create unified dashboard showing:**
 
 **Health:**
+
 - API uptime
 - Database connection pool
 - Cache hit rate
 - Background job queue size
 
 **Performance:**
+
 - API response time (p50, p95, p99)
 - Frontend load time
 - Mobile app start time
 
 **Users:**
+
 - Active users (last hour)
 - New signups (today)
 - Active sessions
 
 **Errors:**
+
 - Error rate (last hour)
 - Crash rate (last hour)
 - Failed requests
@@ -512,24 +562,28 @@ BetterFeedback.of(context).show((feedback) {
 **Weekly metrics for stakeholders:**
 
 **Growth:**
+
 - New users
 - Total active users
 - User retention
 - App store ratings
 
 **Engagement:**
+
 - Habits created
 - Goals achieved
 - Voice journals recorded
 - Average session duration
 
 **Quality:**
+
 - Crash-free rate
 - App store rating
 - Support tickets resolved
 - Feature adoption
 
 **Revenue (if applicable):**
+
 - Premium upgrades
 - MRR (Monthly Recurring Revenue)
 - Churn rate
@@ -541,45 +595,45 @@ BetterFeedback.of(context).show((feedback) {
 ### Critical Alerts (Immediate Action)
 
 **Triggers:**
+
 - API down (no response for 5 min)
 - Crash rate >5%
 - Error rate >10%
 - Database connection lost
 
-**Channel:** SMS + Phone call
-**Response Time:** <15 minutes
+**Channel:** SMS + Phone call **Response Time:** <15 minutes
 
 ### High Priority Alerts (Action within 1 hour)
 
 **Triggers:**
+
 - API response time >1s (p95)
 - Crash rate >2%
 - Error rate >5%
 - User signups dropped >50%
 
-**Channel:** Slack + Email
-**Response Time:** <1 hour
+**Channel:** Slack + Email **Response Time:** <1 hour
 
 ### Medium Priority Alerts (Action within 24 hours)
 
 **Triggers:**
+
 - App store rating drops below 4.5
 - Negative review
 - Support ticket unresolved >24h
 - Performance degradation
 
-**Channel:** Email
-**Response Time:** <24 hours
+**Channel:** Email **Response Time:** <24 hours
 
 ### Low Priority Alerts (Weekly review)
 
 **Triggers:**
+
 - Feature adoption <10%
 - Retention drop <5%
 - Non-critical bugs
 
-**Channel:** Dashboard
-**Response Time:** Next sprint
+**Channel:** Dashboard **Response Time:** Next sprint
 
 ---
 
@@ -616,6 +670,7 @@ BetterFeedback.of(context).show((feedback) {
 ### Severity Levels
 
 **SEV-1: Critical**
+
 - App completely down
 - Data loss risk
 - Security breach
@@ -623,6 +678,7 @@ BetterFeedback.of(context).show((feedback) {
 **Response:** Immediately, 24/7
 
 **SEV-2: High**
+
 - Major feature broken
 - High crash rate
 - Performance severely degraded
@@ -630,12 +686,14 @@ BetterFeedback.of(context).show((feedback) {
 **Response:** Within 1 hour, business hours
 
 **SEV-3: Medium**
+
 - Minor feature broken
 - Moderate performance issue
 
 **Response:** Within 24 hours
 
 **SEV-4: Low**
+
 - Cosmetic issue
 - Enhancement request
 
@@ -654,6 +712,7 @@ BetterFeedback.of(context).show((feedback) {
 ### Communication Template
 
 **Status Page Update:**
+
 ```
 [Investigating]
 We're currently investigating reports of slow response times
@@ -679,6 +738,7 @@ We apologize for any inconvenience.
 ### A/B Testing
 
 **Test variations of:**
+
 - Onboarding flow
 - Feature placements
 - Call-to-action buttons
@@ -686,11 +746,13 @@ We apologize for any inconvenience.
 - Push notification copy
 
 **Tools:**
+
 - Firebase Remote Config
 - Optimizely
 - LaunchDarkly
 
 **Process:**
+
 1. Hypothesize improvement
 2. Design variation
 3. Run test (minimum 1000 users per variant)
@@ -700,6 +762,7 @@ We apologize for any inconvenience.
 ### Feature Flags
 
 **Use for:**
+
 - Gradual rollouts
 - A/B tests
 - Kill switches
@@ -724,12 +787,14 @@ if (featureFlags.newAIModel) {
 ### User Research
 
 **Monthly:**
+
 - Interview 5-10 users
 - Ask about pain points
 - Test new features
 - Validate assumptions
 
 **Quarterly:**
+
 - Survey all users
 - Net Promoter Score (NPS)
 - Feature prioritization
@@ -739,16 +804,17 @@ if (featureFlags.newAIModel) {
 
 ## Monitoring Costs (Estimated)
 
-| Service | Plan | Cost/Month |
-|---------|------|------------|
-| Sentry | Team | $26 |
-| DataDog | Pro | $15/host ($15-30) |
-| Uptime Robot | Pro | $7 |
-| Mixpanel | Growth | $25 (optional) |
-| Status Page | Hobby | $29 (optional) |
-| **Total** | | **~$50-100/month** |
+| Service      | Plan   | Cost/Month         |
+| ------------ | ------ | ------------------ |
+| Sentry       | Team   | $26                |
+| DataDog      | Pro    | $15/host ($15-30)  |
+| Uptime Robot | Pro    | $7                 |
+| Mixpanel     | Growth | $25 (optional)     |
+| Status Page  | Hobby  | $29 (optional)     |
+| **Total**    |        | **~$50-100/month** |
 
 **Free tiers available for:**
+
 - Firebase (generous free tier)
 - Google Analytics 4 (free)
 - Vercel Analytics (included)
@@ -759,18 +825,21 @@ if (featureFlags.newAIModel) {
 ## Success Criteria
 
 **Week 1:**
+
 - [ ] All monitoring tools configured
 - [ ] Alerts set up and tested
 - [ ] Dashboards created
 - [ ] Team trained on response process
 
 **Month 1:**
+
 - [ ] <1% crash rate maintained
 - [ ] 99.9% uptime achieved
 - [ ] <24h support response time
 - [ ] All critical bugs fixed
 
 **Month 3:**
+
 - [ ] Established monitoring routine
 - [ ] Data-driven decisions
 - [ ] Continuous improvement process
@@ -802,4 +871,5 @@ if (featureFlags.newAIModel) {
 
 **Monitoring Setup Complete!** 📊
 
-With proper monitoring in place, you can confidently maintain and improve UpCoach. Remember: what gets measured gets improved! 🚀
+With proper monitoring in place, you can confidently maintain and improve UpCoach. Remember: what
+gets measured gets improved! 🚀

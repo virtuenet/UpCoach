@@ -1,6 +1,7 @@
 ## Mobile Performance Optimization Guide
 
-Comprehensive guide for optimizing the UpCoach Flutter mobile app for maximum performance, smooth animations, and minimal battery usage.
+Comprehensive guide for optimizing the UpCoach Flutter mobile app for maximum performance, smooth
+animations, and minimal battery usage.
 
 ## Table of Contents
 
@@ -24,15 +25,15 @@ Comprehensive guide for optimizing the UpCoach Flutter mobile app for maximum pe
 
 ### Performance Targets
 
-| Metric | Target | Critical Threshold |
-|--------|--------|-------------------|
-| Frame Rate | 60 FPS | < 55 FPS |
-| Frame Build Time | < 8ms | > 16ms |
-| Memory Usage | < 150MB | > 200MB |
-| App Start Time | < 2s | > 3s |
-| Route Navigation | < 300ms | > 500ms |
-| Bundle Size (iOS) | < 25MB | > 30MB |
-| Bundle Size (Android) | < 20MB | > 25MB |
+| Metric                | Target  | Critical Threshold |
+| --------------------- | ------- | ------------------ |
+| Frame Rate            | 60 FPS  | < 55 FPS           |
+| Frame Build Time      | < 8ms   | > 16ms             |
+| Memory Usage          | < 150MB | > 200MB            |
+| App Start Time        | < 2s    | > 3s               |
+| Route Navigation      | < 300ms | > 500ms            |
+| Bundle Size (iOS)     | < 25MB  | > 30MB             |
+| Bundle Size (Android) | < 20MB  | > 25MB             |
 
 ### Quick Wins
 
@@ -293,8 +294,7 @@ CustomScrollView(
 
 ```yaml
 # flutter build configuration
-flutter build apk --split-per-abi
-flutter build appbundle
+flutter build apk --split-per-abi flutter build appbundle
 ```
 
 ### Tree Shaking
@@ -880,6 +880,7 @@ flutter run --profile --trace-skia
 ### Issue 1: Jank During Scrolling
 
 **Symptoms:**
+
 - Dropped frames during list scrolling
 - FPS drops below 60
 
@@ -917,6 +918,7 @@ ListView.builder(
 ### Issue 2: High Memory Usage
 
 **Symptoms:**
+
 - App crashes on older devices
 - Memory warnings in DevTools
 
@@ -949,6 +951,7 @@ ListView.builder(
 ### Issue 3: Slow App Startup
 
 **Symptoms:**
+
 - White screen for > 2 seconds
 - Slow initial load
 
@@ -985,6 +988,7 @@ heavy.showFeature();
 ### Issue 4: Large Bundle Size
 
 **Symptoms:**
+
 - APK/IPA > 30MB
 - Long download times
 
@@ -1041,11 +1045,11 @@ flutter pub run flutter_launcher_icons:remove
 
 ---
 
-**Last Updated:** November 19, 2025
-**Version:** 1.0
-**Dependencies:** cached_network_image, flutter_devtools
+**Last Updated:** November 19, 2025 **Version:** 1.0 **Dependencies:** cached_network_image,
+flutter_devtools
 
 For more information:
+
 - [Flutter Performance Best Practices](https://flutter.dev/docs/perf/best-practices)
 - [Flutter Performance Profiling](https://flutter.dev/docs/perf/rendering/ui-performance)
 - [DevTools Documentation](https://flutter.dev/docs/development/tools/devtools)

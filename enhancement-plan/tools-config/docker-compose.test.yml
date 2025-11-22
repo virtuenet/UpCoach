@@ -1,0 +1,226 @@
+version: '3.8'
+
+services:
+  # Test Database
+  postgres-test:
+    image: postgres:14-alpine
+    container_name: upcoach-postgres-test
+    environment:
+      POSTGRES_DB: upcoach_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+      - ./test-fixtures/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Test Redis
+  redis-test:
+    image: redis:7-alpine
+    container_name: upcoach-redis-test
+    ports:
+      - "6380:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_test_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Backend API for Testing
+  backend-test:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile.test
+    container_name: upcoach-backend-test
+    environment:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@postgres-test:5432/upcoach_test
+      REDIS_URL: redis://redis-test:6379
+      JWT_SECRET: test-jwt-secret-key
+      STRIPE_SECRET_KEY: sk_test_test
+      OPENAI_API_KEY: test-openai-key
+      AWS_ACCESS_KEY_ID: test-aws-key
+      AWS_SECRET_ACCESS_KEY: test-aws-secret
+      AWS_REGION: us-east-1
+      S3_BUCKET: upcoach-test-bucket
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+    volumes:
+      - ../backend:/app
+      - /app/node_modules
+      - ./test-fixtures/backend:/app/test-fixtures
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Admin Panel for Testing
+  admin-panel-test:
+    build:
+      context: ../admin-panel
+      dockerfile: Dockerfile.test
+    container_name: upcoach-admin-test
+    environment:
+      NODE_ENV: test
+      REACT_APP_API_URL: http://backend-test:3001/api
+      REACT_APP_ENV: test
+    ports:
+      - "8007:3000"
+    depends_on:
+      - backend-test
+    volumes:
+      - ../admin-panel:/app
+      - /app/node_modules
+
+  # CMS Panel for Testing
+  cms-panel-test:
+    build:
+      context: ../cms-panel
+      dockerfile: Dockerfile.test
+    container_name: upcoach-cms-test
+    environment:
+      NODE_ENV: test
+      NEXT_PUBLIC_API_URL: http://backend-test:3001/api
+      NEXT_PUBLIC_ENV: test
+    ports:
+      - "3003:3000"
+    depends_on:
+      - backend-test
+    volumes:
+      - ../cms-panel:/app
+      - /app/node_modules
+
+  # Landing Page for Testing
+  landing-page-test:
+    build:
+      context: ../landing-page
+      dockerfile: Dockerfile.test
+    container_name: upcoach-landing-test
+    environment:
+      NODE_ENV: test
+      NEXT_PUBLIC_API_URL: http://backend-test:3001/api
+    ports:
+      - "8008:3000"
+    volumes:
+      - ../landing-page:/app
+      - /app/node_modules
+
+  # Test Runner Service
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.test-runner
+    container_name: upcoach-test-runner
+    environment:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@postgres-test:5432/upcoach_test
+      REDIS_URL: redis://redis-test:6379
+      API_URL: http://backend-test:3001
+      ADMIN_PANEL_URL: http://admin-panel-test:3000
+      CMS_PANEL_URL: http://cms-panel-test:3000
+      LANDING_PAGE_URL: http://landing-page-test:3000
+    depends_on:
+      - postgres-test
+      - redis-test
+      - backend-test
+      - admin-panel-test
+      - cms-panel-test
+      - landing-page-test
+    volumes:
+      - ../:/workspace
+      - /workspace/node_modules
+      - ./test-results:/workspace/test-results
+      - ./test-fixtures:/workspace/test-fixtures
+    working_dir: /workspace/enhancement-plan
+    command: ["./scripts/run-all-tests.sh"]
+
+  # Mock External Services
+  mock-services:
+    image: wiremock/wiremock:latest
+    container_name: upcoach-mock-services
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./test-fixtures/wiremock:/home/wiremock
+    command: --global-response-templating --verbose
+
+  # Performance Testing
+  artillery-runner:
+    image: artilleryio/artillery:latest
+    container_name: upcoach-artillery
+    volumes:
+      - ./:/tests
+      - ./test-results:/results
+    working_dir: /tests
+    command: run artillery-load-test.yml
+    depends_on:
+      - backend-test
+    profiles:
+      - performance
+
+  # Security Testing
+  zap-scanner:
+    image: owasp/zap2docker-stable
+    container_name: upcoach-zap-scanner
+    volumes:
+      - ./test-results:/zap/wrk
+    command: zap-baseline.py -t http://backend-test:3001 -J zap-report.json
+    depends_on:
+      - backend-test
+    profiles:
+      - security
+
+  # Test Database Admin (for debugging)
+  pgadmin-test:
+    image: dpage/pgadmin4:latest
+    container_name: upcoach-pgadmin-test
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@test.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_LISTEN_PORT: 80
+    ports:
+      - "8081:80"
+    depends_on:
+      - postgres-test
+    profiles:
+      - debug
+
+  # Redis Admin (for debugging)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: upcoach-redis-commander
+    environment:
+      REDIS_HOSTS: local:redis-test:6379
+    ports:
+      - "8082:8081"
+    depends_on:
+      - redis-test
+    profiles:
+      - debug
+
+volumes:
+  postgres_test_data:
+    driver: local
+  redis_test_data:
+    driver: local
+
+networks:
+  default:
+    name: upcoach-test-network
+    driver: bridge 

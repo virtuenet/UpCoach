@@ -1,0 +1,803 @@
+[
+  {
+    "platform": "mobile-app",
+    "x": "Authentication",
+    "y": null,
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/login",
+        "x": "Authentication",
+        "y": "Login",
+        "metadata": {
+          "requiresAuth": false,
+          "layout": "auth",
+          "component": "LoginScreen"
+        }
+      },
+      {
+        "path": "/register",
+        "x": "Authentication",
+        "y": "Register",
+        "metadata": {
+          "requiresAuth": false,
+          "layout": "auth",
+          "component": "RegisterScreen"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "mobile-app",
+    "x": "Main",
+    "y": "Home",
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/home",
+        "x": "Main",
+        "y": "Home",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "main_navigation",
+          "sidebarVisible": true,
+          "bottomNavIndex": 0,
+          "component": "HomeScreen"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "mobile-app",
+    "x": "Main",
+    "y": "Chat",
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/chat",
+        "x": "Main",
+        "y": "Chat",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "main_navigation",
+          "sidebarVisible": true,
+          "bottomNavIndex": 1,
+          "component": "ChatScreen"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "mobile-app",
+    "x": "Main",
+    "y": "Tasks",
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/tasks",
+        "x": "Main",
+        "y": "Tasks",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "main_navigation",
+          "sidebarVisible": true,
+          "bottomNavIndex": 2,
+          "component": "TasksScreen"
+        }
+      },
+      {
+        "path": "/tasks/create",
+        "x": "Main",
+        "y": "Tasks",
+        "z": "Create",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "standard",
+          "parent": "/tasks",
+          "component": "CreateTaskScreen"
+        }
+      },
+      {
+        "path": "/tasks/:id",
+        "x": "Main",
+        "y": "Tasks",
+        "z": "Detail",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "standard",
+          "parent": "/tasks",
+          "component": "TaskDetailScreen"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "mobile-app",
+    "x": "Main",
+    "y": "Goals",
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/goals",
+        "x": "Main",
+        "y": "Goals",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "main_navigation",
+          "sidebarVisible": true,
+          "bottomNavIndex": 3,
+          "component": "GoalsScreen"
+        }
+      },
+      {
+        "path": "/goals/create",
+        "x": "Main",
+        "y": "Goals",
+        "z": "Create",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "standard",
+          "parent": "/goals",
+          "component": "CreateGoalScreen"
+        }
+      },
+      {
+        "path": "/goals/:id",
+        "x": "Main",
+        "y": "Goals",
+        "z": "Detail",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "standard",
+          "parent": "/goals",
+          "component": "GoalDetailScreen"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "mobile-app",
+    "x": "Main",
+    "y": "Mood",
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/mood",
+        "x": "Main",
+        "y": "Mood",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "main_navigation",
+          "sidebarVisible": true,
+          "bottomNavIndex": 4,
+          "component": "MoodScreen"
+        }
+      },
+      {
+        "path": "/mood/create",
+        "x": "Main",
+        "y": "Mood",
+        "z": "Create",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "standard",
+          "parent": "/mood",
+          "component": "CreateMoodScreen"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "mobile-app",
+    "x": "Main",
+    "y": "Profile",
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/profile",
+        "x": "Main",
+        "y": "Profile",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "main_navigation",
+          "sidebarVisible": true,
+          "bottomNavIndex": 5,
+          "component": "ProfileScreen"
+        }
+      },
+      {
+        "path": "/profile/edit",
+        "x": "Main",
+        "y": "Profile",
+        "z": "Edit",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "standard",
+          "parent": "/profile",
+          "component": "EditProfileScreen"
+        }
+      },
+      {
+        "path": "/profile/settings",
+        "x": "Main",
+        "y": "Profile",
+        "z": "Settings",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "standard",
+          "parent": "/profile",
+          "component": "SettingsScreen"
+        }
+      },
+      {
+        "path": "/profile/privacy",
+        "x": "Main",
+        "y": "Profile",
+        "z": "Privacy",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "standard",
+          "parent": "/profile",
+          "component": "PrivacySecurityScreen"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "mobile-app",
+    "x": "Features",
+    "y": "Habits",
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/habits",
+        "x": "Features",
+        "y": "Habits",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "standard",
+          "component": "HabitsScreen",
+          "issues": [
+            "Missing navigation for analytics - shows placeholder SnackBar",
+            "Missing navigation for achievements - shows placeholder SnackBar",
+            "Missing navigation for settings - shows placeholder SnackBar",
+            "Missing navigation for habit details - shows placeholder SnackBar",
+            "Missing navigation for edit habit - shows placeholder SnackBar"
+          ]
+        }
+      },
+      {
+        "path": "/habits/create",
+        "x": "Features",
+        "y": "Habits",
+        "z": "Create",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "standard",
+          "parent": "/habits",
+          "component": "CreateHabitScreen"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "mobile-app",
+    "x": "Features",
+    "y": "AI",
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/ai-coach",
+        "x": "Features",
+        "y": "AI",
+        "z": "Coach",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "main_navigation",
+          "component": "AICoachScreen"
+        }
+      },
+      {
+        "path": "/ai/insights",
+        "x": "Features",
+        "y": "AI",
+        "z": "Insights",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "standard",
+          "component": "AIInsightsScreen"
+        }
+      },
+      {
+        "path": "/ai/voice-coach",
+        "x": "Features",
+        "y": "AI",
+        "z": "Voice Coach",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "standard",
+          "component": "VoiceCoachScreen"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "mobile-app",
+    "x": "Features",
+    "y": "Content",
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/content",
+        "x": "Features",
+        "y": "Content",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "main_navigation",
+          "component": "ContentLibraryScreen"
+        }
+      },
+      {
+        "path": "/content/article/:id",
+        "x": "Features",
+        "y": "Content",
+        "z": "Article",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "standard",
+          "parent": "/content",
+          "component": "ArticleDetailScreen"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "admin-panel",
+    "x": "Dashboard",
+    "y": null,
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/",
+        "x": "Dashboard",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "admin_layout",
+          "sidebarVisible": true,
+          "component": "DashboardPage"
+        }
+      },
+      {
+        "path": "/dashboard",
+        "x": "Dashboard",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "admin_layout",
+          "sidebarVisible": true,
+          "component": "DashboardPage"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "admin-panel",
+    "x": "User Management",
+    "y": "Users",
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/users",
+        "x": "User Management",
+        "y": "Users",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "admin_layout",
+          "sidebarVisible": true,
+          "component": "UsersPage"
+        }
+      },
+      {
+        "path": "/users/roles",
+        "x": "User Management",
+        "y": "Users",
+        "z": "Roles",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "admin_layout",
+          "sidebarVisible": true,
+          "component": "UserRolesPage"
+        }
+      },
+      {
+        "path": "/users/activity",
+        "x": "User Management",
+        "y": "Users",
+        "z": "Activity",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "admin_layout",
+          "sidebarVisible": true,
+          "component": "UserActivityPage"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "admin-panel",
+    "x": "Content Moderation",
+    "y": "Moderation",
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/moderation",
+        "x": "Content Moderation",
+        "y": "Moderation",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "admin_layout",
+          "sidebarVisible": true,
+          "component": "ModerationPage"
+        }
+      },
+      {
+        "path": "/moderation/pending",
+        "x": "Content Moderation",
+        "y": "Moderation",
+        "z": "Pending",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "admin_layout",
+          "sidebarVisible": true,
+          "component": "PendingModerationPage"
+        }
+      },
+      {
+        "path": "/moderation/flagged",
+        "x": "Content Moderation",
+        "y": "Moderation",
+        "z": "Flagged",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "admin_layout",
+          "sidebarVisible": true,
+          "component": "FlaggedContentPage"
+        }
+      },
+      {
+        "path": "/moderation/reports",
+        "x": "Content Moderation",
+        "y": "Moderation",
+        "z": "Reports",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "admin_layout",
+          "sidebarVisible": true,
+          "component": "UserReportsPage"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "admin-panel",
+    "x": "Analytics",
+    "y": null,
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/analytics",
+        "x": "Analytics",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "admin_layout",
+          "sidebarVisible": true,
+          "component": "AnalyticsPage"
+        }
+      },
+      {
+        "path": "/analytics/users",
+        "x": "Analytics",
+        "y": "Users",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "admin_layout",
+          "sidebarVisible": true,
+          "component": "UserMetricsPage"
+        }
+      },
+      {
+        "path": "/analytics/content",
+        "x": "Analytics",
+        "y": "Content",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "admin_layout",
+          "sidebarVisible": true,
+          "component": "ContentPerformancePage"
+        }
+      },
+      {
+        "path": "/analytics/system",
+        "x": "Analytics",
+        "y": "System",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "admin_layout",
+          "sidebarVisible": true,
+          "component": "SystemHealthPage"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "admin-panel",
+    "x": "Financial",
+    "y": null,
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/financial",
+        "x": "Financial",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "admin_layout",
+          "sidebarVisible": true,
+          "component": "FinancialPage"
+        }
+      },
+      {
+        "path": "/financial/revenue",
+        "x": "Financial",
+        "y": "Revenue",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "admin_layout",
+          "sidebarVisible": true,
+          "component": "RevenuePage"
+        }
+      },
+      {
+        "path": "/financial/subscriptions",
+        "x": "Financial",
+        "y": "Subscriptions",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "admin_layout",
+          "sidebarVisible": true,
+          "component": "SubscriptionsPage"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "admin-panel",
+    "x": "System",
+    "y": null,
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/system",
+        "x": "System",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "admin_layout",
+          "sidebarVisible": true,
+          "component": "SystemConfigPage"
+        }
+      },
+      {
+        "path": "/system/security",
+        "x": "System",
+        "y": "Security",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "admin_layout",
+          "sidebarVisible": true,
+          "component": "SecuritySettingsPage"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "cms-panel",
+    "x": "Dashboard",
+    "y": null,
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/",
+        "x": "Dashboard",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "cms_layout",
+          "sidebarVisible": true,
+          "component": "DashboardPage"
+        }
+      },
+      {
+        "path": "/dashboard",
+        "x": "Dashboard",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "cms_layout",
+          "sidebarVisible": true,
+          "component": "DashboardPage"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "cms-panel",
+    "x": "Content",
+    "y": null,
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/content",
+        "x": "Content",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "cms_layout",
+          "sidebarVisible": true,
+          "component": "ContentPage"
+        }
+      },
+      {
+        "path": "/content/create",
+        "x": "Content",
+        "y": "Create",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "cms_layout",
+          "sidebarVisible": true,
+          "component": "CreateContentPage"
+        }
+      },
+      {
+        "path": "/content/edit/:id",
+        "x": "Content",
+        "y": "Edit",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "cms_layout",
+          "sidebarVisible": true,
+          "component": "EditContentPage"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "cms-panel",
+    "x": "Courses",
+    "y": null,
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/courses",
+        "x": "Courses",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "cms_layout",
+          "sidebarVisible": true,
+          "component": "CoursesPage"
+        }
+      },
+      {
+        "path": "/courses/create",
+        "x": "Courses",
+        "y": "Create",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "cms_layout",
+          "sidebarVisible": true,
+          "component": "CreateCoursePage"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "cms-panel",
+    "x": "Media",
+    "y": null,
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/media",
+        "x": "Media",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "cms_layout",
+          "sidebarVisible": true,
+          "component": "MediaLibraryPage"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "cms-panel",
+    "x": "Analytics",
+    "y": null,
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/analytics",
+        "x": "Analytics",
+        "metadata": {
+          "requiresAuth": true,
+          "layout": "cms_layout",
+          "sidebarVisible": true,
+          "component": "AnalyticsPage"
+        }
+      }
+    ]
+  },
+  {
+    "platform": "landing-page",
+    "x": "Public",
+    "y": null,
+    "z": null,
+    "w": null,
+    "paths": [
+      {
+        "path": "/",
+        "x": "Public",
+        "y": "Home",
+        "metadata": {
+          "requiresAuth": false,
+          "layout": "landing_layout",
+          "component": "HomePage"
+        }
+      },
+      {
+        "path": "/features",
+        "x": "Public",
+        "y": "Features",
+        "metadata": {
+          "requiresAuth": false,
+          "layout": "landing_layout",
+          "component": "FeaturesPage"
+        }
+      },
+      {
+        "path": "/pricing",
+        "x": "Public",
+        "y": "Pricing",
+        "metadata": {
+          "requiresAuth": false,
+          "layout": "landing_layout",
+          "component": "PricingPage"
+        }
+      },
+      {
+        "path": "/about",
+        "x": "Public",
+        "y": "About",
+        "metadata": {
+          "requiresAuth": false,
+          "layout": "landing_layout",
+          "component": "AboutPage"
+        }
+      }
+    ]
+  }
+]

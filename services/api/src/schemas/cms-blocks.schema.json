@@ -1,0 +1,204 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://upcoach.app/schemas/cms-blocks.schema.json",
+  "title": "UpCoach CMS Blocks",
+  "type": "object",
+  "definitions": {
+    "LocalizedText": {
+      "type": "string",
+      "minLength": 1
+    },
+    "Metric": {
+      "type": "object",
+      "properties": {
+        "label": { "type": "string" },
+        "value": { "type": "string" },
+        "icon": { "type": "string" }
+      },
+      "required": ["label", "value"],
+      "additionalProperties": false
+    },
+    "FeatureHighlight": {
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" },
+        "included": { "type": "boolean" }
+      },
+      "required": ["text"],
+      "additionalProperties": false
+    },
+    "LandingSectionContent": {
+      "type": "object",
+      "properties": {
+        "headline": { "type": "string" },
+        "subheading": { "type": "string" },
+        "body": { "type": "string" },
+        "media": {
+          "type": "object",
+          "properties": {
+            "imageUrl": { "type": "string" },
+            "videoUrl": { "type": "string" },
+            "alt": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "highlights": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["headline"],
+      "additionalProperties": true
+    },
+    "CtaBlockContent": {
+      "type": "object",
+      "properties": {
+        "badge": { "type": "string" },
+        "headline": { "type": "string" },
+        "highlight": { "type": "string" },
+        "description": { "type": "string" },
+        "primaryCta": { "type": "string" },
+        "secondaryCta": { "type": "string" },
+        "metrics": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Metric" }
+        }
+      },
+      "required": ["headline", "description"],
+      "additionalProperties": true
+    },
+    "PricingTierContent": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "icon": { "type": "string" },
+        "price": { "type": "string" },
+        "originalPrice": { "type": "string" },
+        "period": { "type": "string" },
+        "description": { "type": "string" },
+        "features": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/FeatureHighlight" },
+          "minItems": 1
+        },
+        "cta": { "type": "string" },
+        "ctaAction": { "type": "string" },
+        "color": { "type": "string" },
+        "savings": { "type": "string" },
+        "billingInterval": {
+          "type": "string",
+          "enum": ["monthly", "annual", "both"]
+        }
+      },
+      "required": ["name", "price", "period", "features", "cta"],
+      "additionalProperties": true
+    },
+    "TestimonialContent": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "company": { "type": "string" },
+        "avatar": { "type": "string" },
+        "avatarBg": { "type": "string" },
+        "content": { "type": "string" },
+        "rating": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "feature": { "type": "string" }
+      },
+      "required": ["name", "role", "content"],
+      "additionalProperties": true
+    },
+    "BlogCardContent": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "summary": { "type": "string" },
+        "author": { "type": "string" },
+        "publishDate": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "coverImage": { "type": "string" },
+        "ctaLabel": { "type": "string" },
+        "ctaUrl": { "type": "string" }
+      },
+      "required": ["title", "summary", "ctaLabel", "ctaUrl"],
+      "additionalProperties": true
+    },
+    "FeatureComparisonContent": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "subtitle": { "type": "string" },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "highlighted": { "type": "boolean" },
+              "badge": { "type": "string" }
+            },
+            "required": ["label"],
+            "additionalProperties": false
+          },
+          "minItems": 2
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "feature": { "type": "string" },
+              "values": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "value": { "type": "string" },
+                    "icon": { "type": "string" }
+                  },
+                  "required": ["value"],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": ["feature", "values"],
+            "additionalProperties": false
+          }
+        },
+        "ctaLabel": { "type": "string" },
+        "ctaUrl": { "type": "string" }
+      },
+      "required": ["title", "columns", "features"],
+      "additionalProperties": true
+    },
+    "RemoteCopyEntry": {
+      "type": "object",
+      "properties": {
+        "namespace": { "type": "string", "minLength": 1 },
+        "key": { "type": "string", "minLength": 1 },
+        "locale": { "type": "string", "minLength": 2 },
+        "variant": { "type": "string" },
+        "platform": {
+          "type": "string",
+          "enum": ["mobile", "web", "shared"]
+        },
+        "value": { "type": "string" },
+        "richValue": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": ["namespace", "key", "locale", "value"],
+      "additionalProperties": true
+    }
+  }
+}
+

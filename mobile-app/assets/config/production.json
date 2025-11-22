@@ -1,0 +1,20 @@
+{
+  "environment": "production",
+  "apiBaseUrl": "https://api.upcoach.ai",
+  "supabaseUrl": "${SUPABASE_PROD_URL}",
+  "supabaseAnonKey": "${SUPABASE_PROD_ANON_KEY}",
+  "googleWebClientId": "${GOOGLE_WEB_CLIENT_ID_PROD}",
+  "googleServerClientId": "${GOOGLE_SERVER_CLIENT_ID_PROD}",
+  "features": {
+    "enableDebugMode": false,
+    "enableAnalytics": true,
+    "enableCrashReporting": true,
+    "enablePerformanceMonitoring": true
+  },
+  "security": {
+    "enableCertificatePinning": true,
+    "enforceHttps": true,
+    "validateHostnames": true,
+    "requireBiometrics": false
+  }
+}

@@ -1,9 +1,8 @@
 # Google Play Internal Testing Guide - Android Beta
 
 **Purpose:** Complete guide to setting up Google Play Internal Testing for UpCoach Android beta
-**Timeline:** Week 2 of Phase 5
-**Testers:** Up to 100 internal testers (can expand to open/closed testing)
-**Platform:** Android (phones & tablets)
+**Timeline:** Week 2 of Phase 5 **Testers:** Up to 100 internal testers (can expand to open/closed
+testing) **Platform:** Android (phones & tablets)
 
 ---
 
@@ -20,6 +19,7 @@
 ## Overview
 
 Google Play offers three testing tracks:
+
 1. **Internal Testing** - Up to 100 testers, fast (hours), minimal review
 2. **Closed Testing** - Unlimited testers in specific groups, moderate review
 3. **Open Testing** - Public beta, full review process
@@ -46,10 +46,8 @@ Google Play offers three testing tracks:
 1. Click **"Create app"**
 2. Fill in app details:
 
-   **App name:** UpCoach: Goal & Habit Tracker
-   **Default language:** English (United States)
-   **App or game:** App
-   **Free or paid:** Free
+   **App name:** UpCoach: Goal & Habit Tracker **Default language:** English (United States) **App
+   or game:** App **Free or paid:** Free
 
    **Declarations:**
    - [ ] App follows Google Play policies
@@ -66,11 +64,13 @@ Google Play offers three testing tracks:
 
 1. **App name:** UpCoach: Goal & Habit Tracker
 2. **Short description:** (80 characters max)
+
    ```
    Build better habits, achieve goals with AI-powered coaching & tracking
    ```
 
 3. **Full description:** (4000 characters max) - Use from Phase 2 metadata
+
    ```
    🎯 TRANSFORM YOUR LIFE WITH UPCOACH
 
@@ -240,6 +240,7 @@ storeFile=/Users/yourname/upcoach-release-key.jks
 ```
 
 **Add to .gitignore:**
+
 ```
 android/key.properties
 *.jks
@@ -286,7 +287,7 @@ android {
 ### 4.1 Clean Build
 
 ```bash
-cd upcoach-project/apps/mobile
+cd apps/mobile
 
 # Clean
 flutter clean
@@ -305,6 +306,7 @@ flutter build appbundle --release
 **Output:** `build/app/outputs/bundle/release/app-release.aab`
 
 **Why AAB?**
+
 - Smaller download size for users
 - Automatic optimization for different devices
 - Required for new apps on Google Play (since August 2021)
@@ -346,6 +348,7 @@ ls -lh build/app/outputs/bundle/release/app-release.aab
 4. Google Play automatically processes and signs the AAB
 
 **Processing:**
+
 - Generates optimized APKs
 - Signs with Google Play signing key
 - Creates device-specific builds
@@ -353,6 +356,7 @@ ls -lh build/app/outputs/bundle/release/app-release.aab
 ### 5.3 Release Name
 
 Enter release name (optional):
+
 ```
 Beta 1.0.0 (1) - Initial Internal Test
 ```
@@ -424,6 +428,7 @@ Click **"Rollout"**
 3. Send to testers via email
 
 **Example email:**
+
 ```
 Subject: Join UpCoach Beta Testing
 
@@ -464,6 +469,7 @@ Thanks for your help!
 ### 7.3 Leave Test Program
 
 If tester wants to leave:
+
 1. Open opt-in URL again
 2. Click **"Leave the program"**
 3. Uninstall app
@@ -478,6 +484,7 @@ If tester wants to leave:
 Google Play Console → Internal testing:
 
 **Metrics:**
+
 - Testers invited
 - Testers installed
 - Active testers (last 7 days)
@@ -555,6 +562,7 @@ Please test these fixes and report any issues!
 ### 10.1 When to Expand
 
 After 1-2 weeks of successful internal testing:
+
 - < 2% crash rate
 - Positive feedback
 - Major bugs fixed
@@ -571,11 +579,13 @@ After 1-2 weeks of successful internal testing:
 ### 10.3 Add More Testers
 
 **Closed testing allows:**
+
 - Unlimited testers
 - Multiple countries/regions
 - Public opt-in URL
 
 **Create tester lists:**
+
 - Email lists (like internal)
 - Google Groups
 - Public opt-in (anyone can join)
@@ -583,6 +593,7 @@ After 1-2 weeks of successful internal testing:
 ### 10.4 Review Process
 
 **Note:** Closed testing requires app review (similar to production):
+
 - First release: 1-3 days
 - Updates: 1-2 days
 - Less strict than production review
@@ -592,6 +603,7 @@ After 1-2 weeks of successful internal testing:
 ## Best Practices
 
 ### DO ✅
+
 - Start with small group (10-20 testers)
 - Fix critical bugs before expanding
 - Update weekly or as needed
@@ -599,6 +611,7 @@ After 1-2 weeks of successful internal testing:
 - Monitor crash rates daily
 
 ### DON'T ❌
+
 - Skip internal testing and go straight to production
 - Ignore crash reports
 - Upload builds with known critical bugs
@@ -610,24 +623,28 @@ After 1-2 weeks of successful internal testing:
 ## Troubleshooting
 
 ### Build upload fails
+
 - Verify signing configuration
 - Check version code is higher than previous
 - Ensure AAB is valid (not corrupted)
 - Try uploading APK instead (for testing)
 
 ### Testers can't see app in Play Store
+
 - Wait 1-2 hours after rollout
 - Verify they accepted invitation
 - Check they're using correct Google account
 - Ensure app is available in their country
 
 ### High crash rate
+
 - Download crash reports
 - Use Android Studio to analyze stack traces
 - Reproduce crashes locally
 - Fix and upload new build
 
 ### Version code conflict
+
 - Error: "Version code 1 has already been used"
 - Solution: Increment version code to 2, 3, etc.
 
@@ -635,13 +652,13 @@ After 1-2 weeks of successful internal testing:
 
 ## Testing Tracks Comparison
 
-| Feature | Internal | Closed | Open |
-|---------|----------|--------|------|
-| Max testers | 100 | Unlimited | Unlimited |
-| Review time | None | 1-3 days | 1-7 days |
-| Public opt-in | No | Yes (optional) | Yes |
-| Google Groups | No | Yes | Yes |
-| Best for | Team testing | Beta program | Public beta |
+| Feature       | Internal     | Closed         | Open        |
+| ------------- | ------------ | -------------- | ----------- |
+| Max testers   | 100          | Unlimited      | Unlimited   |
+| Review time   | None         | 1-3 days       | 1-7 days    |
+| Public opt-in | No           | Yes (optional) | Yes         |
+| Google Groups | No           | Yes            | Yes         |
+| Best for      | Team testing | Beta program   | Public beta |
 
 ---
 
@@ -656,6 +673,7 @@ After 1-2 weeks of successful internal testing:
 ## Checklist
 
 Before starting internal testing:
+
 - [ ] Google Play Developer account active
 - [ ] App listing created
 - [ ] All required assets uploaded
@@ -665,6 +683,7 @@ Before starting internal testing:
 - [ ] Signing key created and backed up
 
 During internal testing:
+
 - [ ] 10-20 testers added
 - [ ] Build uploaded and rolled out
 - [ ] Monitoring crashes daily
@@ -672,6 +691,7 @@ During internal testing:
 - [ ] Fixing critical bugs weekly
 
 Before expanding to closed testing:
+
 - [ ] Internal testing successful (2+ weeks)
 - [ ] Crash rate <2%
 - [ ] Major bugs resolved
@@ -682,6 +702,7 @@ Before expanding to closed testing:
 ## Timeline
 
 **Week 1:**
+
 - Day 1-2: Set up Google Play Console
 - Day 3: Build and upload first AAB
 - Day 4: Roll out to internal testing
@@ -689,11 +710,13 @@ Before expanding to closed testing:
 - Day 6-7: Monitor and collect feedback
 
 **Week 2:**
+
 - Day 8-9: Fix critical bugs
 - Day 10: Upload build 2
 - Day 11-14: Continue testing and iteration
 
 **Week 3:**
+
 - Day 15: Expand to closed testing (optional)
 - Day 16-21: Broader beta testing
 - Day 22+: Prepare for production

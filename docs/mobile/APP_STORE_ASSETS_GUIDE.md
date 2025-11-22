@@ -1,6 +1,7 @@
 ## App Store Assets & Marketing Guide
 
-Comprehensive guide for preparing all assets, screenshots, metadata, and marketing materials for iOS App Store and Google Play Store submissions.
+Comprehensive guide for preparing all assets, screenshots, metadata, and marketing materials for iOS
+App Store and Google Play Store submissions.
 
 ## Table of Contents
 
@@ -20,10 +21,10 @@ Comprehensive guide for preparing all assets, screenshots, metadata, and marketi
 
 ### Platforms
 
-| Platform | Requirements | Review Time | Update Frequency |
-|----------|-------------|-------------|------------------|
-| iOS App Store | Strict review process | 24-48 hours | Bi-weekly recommended |
-| Google Play Store | Automated + manual review | 2-7 days | Weekly recommended |
+| Platform          | Requirements              | Review Time | Update Frequency      |
+| ----------------- | ------------------------- | ----------- | --------------------- |
+| iOS App Store     | Strict review process     | 24-48 hours | Bi-weekly recommended |
+| Google Play Store | Automated + manual review | 2-7 days    | Weekly recommended    |
 
 ### Quality Standards
 
@@ -40,6 +41,7 @@ Comprehensive guide for preparing all assets, screenshots, metadata, and marketi
 ### App Name
 
 **Requirements:**
+
 - iOS: Max 30 characters
 - Android: Max 50 characters
 
@@ -50,6 +52,7 @@ UpCoach: Goal & Habit Tracker
 ```
 
 **Alternatives:**
+
 - UpCoach - Life Coaching App
 - UpCoach: Personal Growth
 - UpCoach Goal Tracker
@@ -57,6 +60,7 @@ UpCoach: Goal & Habit Tracker
 ### Subtitle (iOS only)
 
 **Requirements:**
+
 - Max 30 characters
 - Highlights key value proposition
 
@@ -69,6 +73,7 @@ Build Better Habits & Achieve Goals
 ### Short Description (Android only)
 
 **Requirements:**
+
 - Max 80 characters
 - Promotional text
 
@@ -81,6 +86,7 @@ Transform your life with personalized coaching, habit tracking & AI insights
 ### Full Description
 
 **Requirements:**
+
 - iOS: Max 4,000 characters
 - Android: Max 4,000 characters
 
@@ -89,87 +95,60 @@ Transform your life with personalized coaching, habit tracking & AI insights
 ```markdown
 🎯 TRANSFORM YOUR LIFE WITH UPCOACH
 
-UpCoach is your personal life coach, combining proven habit-building techniques with AI-powered insights to help you achieve your goals faster than ever before.
+UpCoach is your personal life coach, combining proven habit-building techniques with AI-powered
+insights to help you achieve your goals faster than ever before.
 
 ✨ KEY FEATURES
 
-📊 SMART GOAL TRACKING
-• Set and track unlimited personal, career, health, and financial goals
-• Visual progress tracking with beautiful charts and insights
-• Milestone celebrations to keep you motivated
-• Deadline reminders so you never miss a target
+📊 SMART GOAL TRACKING • Set and track unlimited personal, career, health, and financial goals •
+Visual progress tracking with beautiful charts and insights • Milestone celebrations to keep you
+motivated • Deadline reminders so you never miss a target
 
-🎯 HABIT BUILDER
-• Build lasting habits with our proven tracking system
-• Streak tracking with motivational rewards
-• Daily/weekly habit check-ins
-• Smart reminders at the perfect time
-• Visual habit heatmaps showing your consistency
+🎯 HABIT BUILDER • Build lasting habits with our proven tracking system • Streak tracking with
+motivational rewards • Daily/weekly habit check-ins • Smart reminders at the perfect time • Visual
+habit heatmaps showing your consistency
 
-🤖 AI COACHING
-• Get personalized coaching insights powered by AI
-• Daily motivational messages tailored to your journey
-• Smart suggestions based on your patterns and progress
-• Voice journal analysis for deeper self-reflection
+🤖 AI COACHING • Get personalized coaching insights powered by AI • Daily motivational messages
+tailored to your journey • Smart suggestions based on your patterns and progress • Voice journal
+analysis for deeper self-reflection
 
-📝 VOICE JOURNALING
-• Speak your thoughts, we'll transcribe and analyze
-• AI-powered mood detection and sentiment analysis
-• Identify patterns in your emotional journey
-• Secure and private - your data is yours alone
+📝 VOICE JOURNALING • Speak your thoughts, we'll transcribe and analyze • AI-powered mood detection
+and sentiment analysis • Identify patterns in your emotional journey • Secure and private - your
+data is yours alone
 
-💬 COMMUNITY & ACCOUNTABILITY
-• Connect with certified life coaches
-• Join supportive communities around your interests
-• Share wins and get encouragement
-• Find accountability partners
+💬 COMMUNITY & ACCOUNTABILITY • Connect with certified life coaches • Join supportive communities
+around your interests • Share wins and get encouragement • Find accountability partners
 
-📈 COMPREHENSIVE ANALYTICS
-• Weekly and monthly progress reports
-• Identify patterns and optimize your routine
-• Export your data anytime
-• Beautiful visualizations of your growth
+📈 COMPREHENSIVE ANALYTICS • Weekly and monthly progress reports • Identify patterns and optimize
+your routine • Export your data anytime • Beautiful visualizations of your growth
 
-🔒 PRIVACY FIRST
-• End-to-end encryption for your data
-• No ads, ever
-• Your journal entries are completely private
-• GDPR & CCPA compliant
+🔒 PRIVACY FIRST • End-to-end encryption for your data • No ads, ever • Your journal entries are
+completely private • GDPR & CCPA compliant
 
 💎 WHY UPCOACH?
 
-Unlike other goal-tracking apps, UpCoach combines the best of:
-✓ Professional life coaching techniques
-✓ Behavioral psychology and habit science
-✓ AI-powered personalization
-✓ Beautiful, intuitive design
-✓ Real human support when you need it
+Unlike other goal-tracking apps, UpCoach combines the best of: ✓ Professional life coaching
+techniques ✓ Behavioral psychology and habit science ✓ AI-powered personalization ✓ Beautiful,
+intuitive design ✓ Real human support when you need it
 
-Whether you want to build healthy habits, achieve career goals, improve relationships, or become the best version of yourself, UpCoach gives you the tools and support to make it happen.
+Whether you want to build healthy habits, achieve career goals, improve relationships, or become the
+best version of yourself, UpCoach gives you the tools and support to make it happen.
 
 🎁 START YOUR TRANSFORMATION TODAY
 
-Free tier includes:
-• Unlimited goal tracking
-• Basic habit tracking
-• Daily AI insights
-• Voice journaling (limited)
+Free tier includes: • Unlimited goal tracking • Basic habit tracking • Daily AI insights • Voice
+journaling (limited)
 
-Premium unlocks:
-• Unlimited voice journaling
-• Advanced AI coaching
-• 1-on-1 coach sessions
-• Priority support
-• Custom habit templates
-• Detailed analytics
-• Ad-free experience
+Premium unlocks: • Unlimited voice journaling • Advanced AI coaching • 1-on-1 coach sessions •
+Priority support • Custom habit templates • Detailed analytics • Ad-free experience
 
-📱 SYNC EVERYWHERE
-Works seamlessly across iPhone, iPad, and web. Your progress syncs automatically, so you're always up to date.
+📱 SYNC EVERYWHERE Works seamlessly across iPhone, iPad, and web. Your progress syncs automatically,
+so you're always up to date.
 
 🌟 JOIN THOUSANDS OF USERS
 
-"UpCoach helped me finally stick to my morning routine. The AI insights are surprisingly accurate!" - Sarah, 5 stars
+"UpCoach helped me finally stick to my morning routine. The AI insights are surprisingly
+accurate!" - Sarah, 5 stars
 
 "Best habit tracker I've used. The coach support is incredible." - Michael, 5 stars
 
@@ -179,14 +158,14 @@ Works seamlessly across iPhone, iPad, and web. Your progress syncs automatically
 
 Download UpCoach now and start building the life you've always wanted.
 
-Questions? Contact us: support@upcoach.app
-Privacy Policy: https://upcoach.app/privacy
-Terms of Service: https://upcoach.app/terms
+Questions? Contact us: support@upcoach.app Privacy Policy: https://upcoach.app/privacy Terms of
+Service: https://upcoach.app/terms
 ```
 
 ### Keywords (iOS)
 
 **Requirements:**
+
 - Max 100 characters
 - Comma-separated
 - No spaces after commas
@@ -201,6 +180,7 @@ goal tracker,habit tracker,life coach,personal growth,productivity,self improvem
 ### Promotional Text (iOS)
 
 **Requirements:**
+
 - Max 170 characters
 - Can update without new version
 
@@ -213,20 +193,24 @@ goal tracker,habit tracker,life coach,personal growth,productivity,self improvem
 ### Category
 
 **Primary:**
+
 - iOS: Health & Fitness
 - Android: Health & Fitness
 
 **Secondary:**
+
 - iOS: Productivity
 - Android: Lifestyle
 
 ### Age Rating
 
 **Content Rating:**
+
 - iOS: 4+
 - Android: Everyone
 
 **Justifications:**
+
 - No objectionable content
 - No user-generated content displayed to other users
 - Moderated coach interactions
@@ -239,12 +223,12 @@ goal tracker,habit tracker,life coach,personal growth,productivity,self improvem
 
 **Required Sizes:**
 
-| Device | Size (pixels) | Orientation | Quantity |
-|--------|---------------|-------------|----------|
-| iPhone 6.7" | 1290 x 2796 | Portrait | 3-10 |
-| iPhone 6.5" | 1242 x 2688 | Portrait | 3-10 |
-| iPhone 5.5" | 1242 x 2208 | Portrait | 3-10 |
-| iPad Pro 12.9" | 2048 x 2732 | Portrait | 3-10 |
+| Device         | Size (pixels) | Orientation | Quantity |
+| -------------- | ------------- | ----------- | -------- |
+| iPhone 6.7"    | 1290 x 2796   | Portrait    | 3-10     |
+| iPhone 6.5"    | 1242 x 2688   | Portrait    | 3-10     |
+| iPhone 5.5"    | 1242 x 2208   | Portrait    | 3-10     |
+| iPad Pro 12.9" | 2048 x 2732   | Portrait    | 3-10     |
 
 **Recommended: 5 screenshots per size**
 
@@ -252,37 +236,42 @@ goal tracker,habit tracker,life coach,personal growth,productivity,self improvem
 
 **Required Sizes:**
 
-| Type | Size (pixels) | Quantity |
-|------|---------------|----------|
-| Phone | 1080 x 1920 (min) | 2-8 |
-| 7" Tablet | 1200 x 1920 | 2-8 (optional) |
-| 10" Tablet | 1600 x 2560 | 2-8 (optional) |
+| Type       | Size (pixels)     | Quantity       |
+| ---------- | ----------------- | -------------- |
+| Phone      | 1080 x 1920 (min) | 2-8            |
+| 7" Tablet  | 1200 x 1920       | 2-8 (optional) |
+| 10" Tablet | 1600 x 2560       | 2-8 (optional) |
 
 **Recommended: 5 screenshots for phone**
 
 ### Screenshot Content Strategy
 
 **Screenshot 1: Hero/Main Dashboard**
+
 - Title: "Your Personal Growth Dashboard"
 - Show: Home screen with stats, habits, goals
 - Highlight: Clean interface, key metrics
 
 **Screenshot 2: Habit Tracking**
+
 - Title: "Build Lasting Habits"
 - Show: Habit list with streaks
 - Highlight: Streak badges, completion status
 
 **Screenshot 3: Goal Setting**
+
 - Title: "Achieve Your Goals"
 - Show: Goal creation or goal detail with progress
 - Highlight: Visual progress bars, milestones
 
 **Screenshot 4: AI Coaching**
+
 - Title: "AI-Powered Insights"
 - Show: AI coach conversation or insights
 - Highlight: Personalized recommendations
 
 **Screenshot 5: Analytics**
+
 - Title: "Track Your Progress"
 - Show: Charts and analytics dashboard
 - Highlight: Beautiful visualizations
@@ -317,12 +306,14 @@ Phone bezel: Optional but recommended
 ### Screenshot Tools
 
 **Design Tools:**
+
 - Figma (recommended)
 - Adobe XD
 - Sketch
 - Canva
 
 **Screenshot Generators:**
+
 - [https://www.appstorescreenshot.com/](https://www.appstorescreenshot.com/)
 - [https://screenshots.pro/](https://screenshots.pro/)
 - [https://shotbot.io/](https://shotbot.io/)
@@ -365,6 +356,7 @@ void main() {
 ### iOS App Preview
 
 **Requirements:**
+
 - Length: 15-30 seconds
 - Format: .mov, .m4v, or .mp4
 - Resolution: Match screenshot sizes
@@ -372,6 +364,7 @@ void main() {
 - No audio required (but recommended)
 
 **Recommended Sizes:**
+
 - iPhone 6.7": 886 × 1920 or 1080 × 1920
 - iPhone 6.5": 886 × 1920 or 1080 × 1920
 - iPad Pro: 1200 × 1600
@@ -379,6 +372,7 @@ void main() {
 ### Android Promo Video
 
 **Requirements:**
+
 - Length: 30 seconds to 2 minutes
 - Format: YouTube video URL
 - Aspect ratio: 16:9
@@ -413,16 +407,19 @@ App icon + Download buttons
 ### Video Production Tools
 
 **Screen Recording:**
+
 - iOS: Built-in screen recording
 - Android: AZ Screen Recorder
 - Desktop: OBS Studio, QuickTime
 
 **Editing:**
+
 - Free: iMovie, DaVinci Resolve
 - Paid: Adobe Premiere, Final Cut Pro
 - Online: Kapwing, Clipchamp
 
 **Tips:**
+
 1. Use actual app footage (no simulations)
 2. Show finger taps/interactions
 3. Add subtle background music
@@ -438,39 +435,42 @@ App icon + Download buttons
 
 **Required:**
 
-| Size | Usage | Pixels |
-|------|-------|--------|
+| Size      | Usage     | Pixels      |
+| --------- | --------- | ----------- |
 | 1024x1024 | App Store | 1024 x 1024 |
-| 180x180 | iPhone 3x | 180 x 180 |
-| 120x120 | iPhone 2x | 120 x 120 |
-| 167x167 | iPad Pro | 167 x 167 |
-| 152x152 | iPad 2x | 152 x 152 |
-| 76x76 | iPad 1x | 76 x 76 |
+| 180x180   | iPhone 3x | 180 x 180   |
+| 120x120   | iPhone 2x | 120 x 120   |
+| 167x167   | iPad Pro  | 167 x 167   |
+| 152x152   | iPad 2x   | 152 x 152   |
+| 76x76     | iPad 1x   | 76 x 76     |
 
 ### Android Icon Sizes
 
 **Required:**
 
-| Density | Size | Pixels |
-|---------|------|--------|
-| xxxhdpi | 4x | 192 x 192 |
-| xxhdpi | 3x | 144 x 144 |
-| xhdpi | 2x | 96 x 96 |
-| hdpi | 1.5x | 72 x 72 |
-| mdpi | 1x | 48 x 48 |
+| Density | Size | Pixels    |
+| ------- | ---- | --------- |
+| xxxhdpi | 4x   | 192 x 192 |
+| xxhdpi  | 3x   | 144 x 144 |
+| xhdpi   | 2x   | 96 x 96   |
+| hdpi    | 1.5x | 72 x 72   |
+| mdpi    | 1x   | 48 x 48   |
 
 **Google Play:**
+
 - High-res icon: 512 x 512 (PNG, 32-bit)
 
 ### Icon Design Guidelines
 
 **iOS:**
+
 - No transparency
 - Square with rounded corners (system applies)
 - 1024x1024 for submission
 - Simple, recognizable at small sizes
 
 **Android:**
+
 - Adaptive icon: Foreground + Background layers
 - Foreground: 108 x 108 dp (within 66dp safe zone)
 - Background: 108 x 108 dp
@@ -519,11 +519,13 @@ flutter pub run flutter_launcher_icons
 ### Feature Graphic (Android)
 
 **Requirements:**
+
 - Size: 1024 x 500 pixels
 - Format: PNG or JPEG
 - File size: Max 1MB
 
 **Content:**
+
 - App name/logo
 - Key tagline
 - Compelling visual
@@ -547,17 +549,20 @@ flutter pub run flutter_launcher_icons
 ### Promotional Assets
 
 **Social Media:**
+
 - Instagram: 1080 x 1080 (square)
 - Facebook: 1200 x 628 (landscape)
 - Twitter: 1200 x 675 (landscape)
 - LinkedIn: 1200 x 627 (landscape)
 
 **Website:**
+
 - Hero banner: 1920 x 1080
 - Product screenshots: As per app store
 - Mockups: High-quality device mockups
 
 **Press Kit:**
+
 - App icon (high-res)
 - Screenshots (all devices)
 - Feature graphic
@@ -592,6 +597,7 @@ Long-tail Keywords:
 ```
 
 **Tools:**
+
 - App Annie
 - Sensor Tower
 - Mobile Action
@@ -629,18 +635,15 @@ Long-tail Keywords:
 ### Priority Languages
 
 **Tier 1 (High Priority):**
+
 1. English (US) - Primary
 2. Spanish (ES, MX)
 3. French (FR)
 4. German (DE)
 5. Portuguese (BR)
 
-**Tier 2 (Medium Priority):**
-6. Japanese (JP)
-7. Korean (KR)
-8. Italian (IT)
-9. Dutch (NL)
-10. Russian (RU)
+**Tier 2 (Medium Priority):** 6. Japanese (JP) 7. Korean (KR) 8. Italian (IT) 9. Dutch (NL) 10.
+Russian (RU)
 
 ### Localization Requirements
 
@@ -680,14 +683,17 @@ Long-tail Keywords:
 ### Cultural Considerations
 
 **Colors:**
+
 - Red: Lucky in China, danger in Western cultures
 - White: Purity in West, mourning in East Asia
 
 **Icons:**
+
 - Thumbs up: Offensive in some Middle Eastern countries
 - Hand gestures: Research before using
 
 **Text:**
+
 - Right-to-left languages (Arabic, Hebrew): UI must mirror
 - Text expansion: German ~30% longer than English
 - Date formats: MM/DD/YYYY vs DD/MM/YYYY
@@ -752,12 +758,14 @@ Long-tail Keywords:
 ### Design Tools
 
 **Free:**
+
 - Figma Community (templates)
 - Canva (graphics)
 - GIMP (image editing)
 - Inkscape (vector graphics)
 
 **Paid:**
+
 - Adobe Creative Cloud
 - Sketch
 - Affinity Designer
@@ -835,8 +843,6 @@ Long-tail Keywords:
 
 ---
 
-**Last Updated:** November 19, 2025
-**Version:** 1.0
-**Contact:** design@upcoach.app
+**Last Updated:** November 19, 2025 **Version:** 1.0 **Contact:** design@upcoach.app
 
 For questions or asset review, contact the design team.

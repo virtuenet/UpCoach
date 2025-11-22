@@ -15,7 +15,8 @@ Established testing patterns and best practices for the UpCoach platform.
 
 ### Overview
 
-The E2E Journey Pattern tests complete user workflows from start to finish using in-memory mocks instead of HTTP requests.
+The E2E Journey Pattern tests complete user workflows from start to finish using in-memory mocks
+instead of HTTP requests.
 
 **Success Rate:** 158/158 tests (100%)
 
@@ -323,7 +324,7 @@ const mockDatabase = {
   users: [] as MockUser[],
   goals: [] as MockGoal[],
 
-  createUser(data: {email: string}): MockUser {
+  createUser(data: { email: string }): MockUser {
     const user = {
       id: `user_${this.users.length + 1}`,
       email: data.email,
@@ -332,7 +333,7 @@ const mockDatabase = {
     return user;
   },
 
-  createGoal(data: {userId: string; title: string}): MockGoal {
+  createGoal(data: { userId: string; title: string }): MockGoal {
     const goal = {
       id: `goal_${this.goals.length + 1}`,
       userId: data.userId,
@@ -408,8 +409,7 @@ describe('API Response Format', () => {
   });
 
   test('should return error response', async () => {
-    const response = await request(app)
-      .get('/api/v1/users/invalid-id');
+    const response = await request(app).get('/api/v1/users/invalid-id');
 
     expect(response.status).toBe(404);
     expect(response.body).toMatchObject({
@@ -587,6 +587,7 @@ const user = registerUserLogic({ email, password });
 ---
 
 **Related Documentation:**
+
 - [Testing Overview](TESTING_OVERVIEW.md)
 - [Session Summary](SESSION_SUMMARY.md)
 - [Journey to 100%](../archive/journey-to-100/)

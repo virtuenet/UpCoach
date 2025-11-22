@@ -1,0 +1,1 @@
+{"version":3,"file":"RichTextEditor.d.ts","sourceRoot":"","sources":["RichTextEditor.tsx"],"names":[],"mappings":"AAqBA,UAAU,mBAAmB;IAC3B,OAAO,EAAE,MAAM,CAAC;IAChB,QAAQ,EAAE,CAAC,OAAO,EAAE,MAAM,KAAK,IAAI,CAAC;CACrC;AAED,MAAM,CAAC,OAAO,UAAU,cAAc,CAAC,EAAE,OAAO,EAAE,QAAQ,EAAE,EAAE,mBAAmB,kDAmLhF"}

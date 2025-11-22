@@ -1,0 +1,287 @@
+config:
+  target: 'http://localhost:3001'
+  phases:
+    # Warm-up phase
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm-up"
+    
+    # Steady load phase
+    - duration: 300
+      arrivalRate: 20
+      name: "Sustained load"
+    
+    # Peak load phase
+    - duration: 180
+      arrivalRate: 50
+      name: "Peak load"
+    
+    # Stress test phase
+    - duration: 120
+      arrivalRate: 100
+      name: "Stress test"
+  
+  plugins:
+    metrics-by-endpoint:
+      useOnlyRequestNames: true
+    expect:
+      outputFormat: 'json'
+  
+  environments:
+    staging:
+      target: 'https://staging-api.upcoach.com'
+    production:
+      target: 'https://api.upcoach.com'
+  
+  variables:
+    # User credentials for testing
+    adminEmail: "admin@upcoach.com"
+    adminPassword: "TestPassword123!"
+    testUserEmail: "test{{ $randomInt(1, 10000) }}@upcoach.com"
+    testUserPassword: "TestPassword123!"
+  
+  processor: "./load-test-processor.js"
+
+before:
+  flow:
+    - log: "Starting UpCoach load test"
+    - think: 2
+
+scenarios:
+  # Authentication flow testing
+  - name: "Authentication Flow"
+    weight: 15
+    flow:
+      - post:
+          url: "/api/auth/register"
+          name: "User Registration"
+          json:
+            email: "{{ testUserEmail }}"
+            password: "{{ testUserPassword }}"
+            fullName: "Test User {{ $randomString() }}"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+            - json: "$.user.id"
+              as: "userId"
+          expect:
+            - statusCode: 201
+            - hasProperty: "token"
+      
+      - post:
+          url: "/api/auth/login"
+          name: "User Login"
+          json:
+            email: "{{ testUserEmail }}"
+            password: "{{ testUserPassword }}"
+          expect:
+            - statusCode: 200
+            - hasProperty: "token"
+
+  # Core user journey
+  - name: "User Core Journey"
+    weight: 40
+    flow:
+      # Login
+      - post:
+          url: "/api/auth/login"
+          name: "Login"
+          json:
+            email: "{{ testUserEmail }}"
+            password: "{{ testUserPassword }}"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+            - json: "$.user.id"
+              as: "userId"
+      
+      # Get dashboard
+      - get:
+          url: "/api/user/dashboard"
+          name: "Load Dashboard"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+            - contentType: json
+      
+      # Create habit
+      - post:
+          url: "/api/habits"
+          name: "Create Habit"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            name: "Daily Exercise {{ $randomString() }}"
+            frequency: "daily"
+            description: "30 minutes of exercise"
+          capture:
+            - json: "$.id"
+              as: "habitId"
+          expect:
+            - statusCode: 201
+      
+      # Mark habit complete
+      - post:
+          url: "/api/habits/{{ habitId }}/complete"
+          name: "Complete Habit"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+      
+      # Get habit analytics
+      - get:
+          url: "/api/habits/{{ habitId }}/analytics"
+          name: "Habit Analytics"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+
+  # Voice journaling flow
+  - name: "Voice Journaling"
+    weight: 20
+    flow:
+      # Login
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ testUserEmail }}"
+            password: "{{ testUserPassword }}"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      
+      # Upload voice journal
+      - post:
+          url: "/api/voice-journal"
+          name: "Upload Voice Journal"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          formData:
+            audio: "@test-assets/sample-audio.wav"
+            metadata: '{"duration": 30, "language": "en"}'
+          expect:
+            - statusCode: 201
+      
+      # Get transcription
+      - get:
+          url: "/api/voice-journal/latest/transcription"
+          name: "Get Transcription"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+
+  # Admin operations flow
+  - name: "Admin Operations"
+    weight: 15
+    flow:
+      # Admin login
+      - post:
+          url: "/api/auth/login"
+          name: "Admin Login"
+          json:
+            email: "{{ adminEmail }}"
+            password: "{{ adminPassword }}"
+          capture:
+            - json: "$.token"
+              as: "adminToken"
+      
+      # Financial dashboard
+      - get:
+          url: "/api/admin/finance/dashboard"
+          name: "Financial Dashboard"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+            - hasProperty: "mrr"
+            - hasProperty: "churnRate"
+      
+      # Cost analytics
+      - get:
+          url: "/api/admin/finance/costs"
+          name: "Cost Analytics"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+      
+      # User analytics
+      - get:
+          url: "/api/admin/analytics/users"
+          name: "User Analytics"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+          expect:
+            - statusCode: 200
+
+  # Real-time features
+  - name: "Real-time Features"
+    weight: 10
+    flow:
+      # Login
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ testUserEmail }}"
+            password: "{{ testUserPassword }}"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      
+      # WebSocket connection simulation
+      - get:
+          url: "/api/notifications/stream"
+          name: "Notification Stream"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+            Connection: "upgrade"
+            Upgrade: "websocket"
+          expect:
+            - statusCode: 101
+      
+      # Real-time analytics
+      - get:
+          url: "/api/analytics/realtime"
+          name: "Real-time Analytics"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+
+# Performance expectations
+expect:
+  # Response time expectations
+  - statusCode: 200
+  - responseTime: 500  # 500ms max response time
+  
+  # Specific endpoint expectations
+  - name: "Login"
+    statusCode: 200
+    responseTime: 300
+  
+  - name: "Load Dashboard"
+    statusCode: 200
+    responseTime: 800
+  
+  - name: "Financial Dashboard"
+    statusCode: 200
+    responseTime: 1000  # Financial calculations may take longer
+  
+  - name: "Upload Voice Journal"
+    statusCode: 201
+    responseTime: 2000  # File upload takes longer
+
+# Custom metrics
+metrics:
+  - name: "authentication_success_rate"
+    unit: "percent"
+  - name: "habit_creation_latency"
+    unit: "ms"
+  - name: "voice_upload_success_rate"
+    unit: "percent"
+  - name: "financial_dashboard_load_time"
+    unit: "ms" 

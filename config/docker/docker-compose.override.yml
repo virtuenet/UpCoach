@@ -1,0 +1,59 @@
+# UpCoach Docker Compose Override Configuration
+# Use this file for local development overrides
+# This file is typically git-ignored and used for developer-specific settings
+
+services:
+  # Local development overrides
+  backend-api:
+    volumes:
+      - ./services/api:/app
+      - /app/node_modules
+    environment:
+      LOG_LEVEL: debug
+      ENABLE_HOT_RELOAD: true
+
+  landing-page:
+    volumes:
+      - ./apps/landing-page:/app
+      - /app/node_modules
+      - /app/.next
+
+  admin-panel:
+    volumes:
+      - ./apps/admin-panel:/app
+      - /app/node_modules
+      - /app/dist
+
+  cms-panel:
+    volumes:
+      - ./apps/cms-panel:/app
+      - /app/node_modules
+      - /app/dist
+
+  # Additional development tools
+  adminer:
+    image: adminer
+    container_name: upcoach-adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+
+  # Development Proxy (optional)
+  traefik:
+    image: traefik:v3.0
+    container_name: upcoach-traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8081:8080"  # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    profiles:
+      - proxy

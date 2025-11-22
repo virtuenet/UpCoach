@@ -1,0 +1,106 @@
+name: CI - Mobile
+
+on:
+  pull_request:
+    paths:
+      - "mobile-app/**"
+      - ".github/workflows/ci-mobile.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "mobile-app/**"
+      - ".github/workflows/ci-mobile.yml"
+  workflow_dispatch:
+
+jobs:
+  mobile:
+    name: Flutter Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install Flutter dependencies
+        run: cd mobile-app && flutter pub get
+
+      - name: Format check
+        run: cd mobile-app && flutter format --set-exit-if-changed .
+
+      - name: Analyze
+        run: cd mobile-app && flutter analyze
+
+      - name: Unit & widget tests
+        run: cd mobile-app && flutter test
+
+      - name: Build debug APK
+        run: cd mobile-app && flutter build apk --debug
+
+      - name: Upload APK artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-debug-apk-${{ github.sha }}
+          path: mobile-app/build/app/outputs/apk/debug/*.apk
+name: Mobile CI
+
+on:
+  push:
+    paths:
+      - "mobile-app/**"
+      - ".github/workflows/ci-mobile.yml"
+  pull_request:
+    paths:
+      - "mobile-app/**"
+      - ".github/workflows/ci-mobile.yml"
+
+jobs:
+  build:
+    runs-on: macos-latest
+    env:
+      FLUTTER_VERSION: "3.24.3"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+      - name: Install dependencies
+        run: flutter pub get
+        working-directory: mobile-app
+      - name: Format & Analyze
+        run: |
+          flutter format --set-exit-if-changed .
+          flutter analyze
+        working-directory: mobile-app
+      - name: Unit Tests
+        run: flutter test
+        working-directory: mobile-app
+      - name: Build Android Bundle
+        run: flutter build appbundle --flavor=prod
+        working-directory: mobile-app
+      - name: Build iOS Archive
+        run: flutter build ipa --flavor=prod --no-codesign
+        working-directory: mobile-app
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-artifacts
+          path: |
+            mobile-app/build/app/outputs/**/*.aab
+            mobile-app/build/ios/**/*.ipa
+

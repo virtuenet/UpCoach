@@ -1,0 +1,82 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "commonjs",
+    "lib": ["es2022"],
+    "skipLibCheck": true,
+
+    // Stricter type checking for production
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strict": true,
+    "noImplicitReturns": true,
+    "useUnknownInCatchVariables": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+
+    // Output configuration
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "removeComments": true,
+    "importHelpers": true,
+
+    // Module resolution
+    "esModuleInterop": true,
+    "incremental": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+
+    // Decorators
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    // Source maps (disabled in production)
+    "sourceMap": false,
+    "inlineSourceMap": false,
+    "declaration": false,
+    "declarationMap": false,
+
+    // Type configuration
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "types": ["node"],
+
+    // Path mapping for better imports
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@/types/*": ["src/types/*"],
+      "@/utils/*": ["src/utils/*"],
+      "@/middleware/*": ["src/middleware/*"],
+      "@/routes/*": ["src/routes/*"],
+      "@/services/*": ["src/services/*"],
+      "@/models/*": ["src/models/*"],
+      "@/controllers/*": ["src/controllers/*"],
+      "@/config/*": ["src/config/*"],
+      "@/validation/*": ["src/validation/*"]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/__tests__/**/*",
+    "tests/**/*",
+    "coverage/**/*",
+    "**/*.d.ts"
+  ],
+
+  // TypeScript project references for better build performance
+  "ts-node": {
+    "esm": false,
+    "experimentalSpecifierResolution": "node"
+  }
+} 

@@ -1,0 +1,338 @@
+{
+  "dashboard": {
+    "title": "UpCoach Test Automation Dashboard",
+    "description": "Comprehensive test metrics and monitoring",
+    "version": "1.0.0",
+    "refresh": "30s",
+    "timezone": "UTC"
+  },
+  "panels": [
+    {
+      "id": "coverage-overview",
+      "title": "Test Coverage Overview",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "metric": "test.coverage.overall",
+          "aggregation": "last"
+        }
+      ],
+      "thresholds": {
+        "steps": [
+          { "value": 0, "color": "red" },
+          { "value": 70, "color": "yellow" },
+          { "value": 80, "color": "green" }
+        ]
+      }
+    },
+    {
+      "id": "test-pass-rate",
+      "title": "Test Pass Rate",
+      "type": "gauge",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "metric": "test.pass_rate",
+          "aggregation": "avg",
+          "period": "1h"
+        }
+      ],
+      "thresholds": {
+        "steps": [
+          { "value": 0, "color": "red" },
+          { "value": 90, "color": "yellow" },
+          { "value": 95, "color": "green" }
+        ]
+      }
+    },
+    {
+      "id": "test-execution-time",
+      "title": "Test Execution Time Trend",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 4 },
+      "targets": [
+        {
+          "metric": "test.execution_time",
+          "aggregation": "avg",
+          "groupBy": ["test_suite"]
+        }
+      ],
+      "fieldConfig": {
+        "unit": "seconds",
+        "decimals": 2
+      }
+    },
+    {
+      "id": "coverage-by-package",
+      "title": "Coverage by Package",
+      "type": "bar",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "metric": "test.coverage.by_package",
+          "aggregation": "last"
+        }
+      ],
+      "fieldConfig": {
+        "unit": "percent",
+        "min": 0,
+        "max": 100
+      }
+    },
+    {
+      "id": "flaky-tests",
+      "title": "Flaky Tests",
+      "type": "table",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "metric": "test.flaky_tests",
+          "query": "SELECT test_name, failure_rate, last_failure FROM flaky_tests WHERE failure_rate > 0.05 ORDER BY failure_rate DESC LIMIT 10"
+        }
+      ],
+      "columns": [
+        { "field": "test_name", "title": "Test Name", "width": 300 },
+        { "field": "failure_rate", "title": "Flakiness %", "width": 100, "unit": "percent" },
+        { "field": "last_failure", "title": "Last Failure", "width": 150 }
+      ]
+    },
+    {
+      "id": "test-types-distribution",
+      "title": "Test Types Distribution",
+      "type": "piechart",
+      "gridPos": { "x": 0, "y": 10, "w": 8, "h": 6 },
+      "targets": [
+        {
+          "metric": "test.count.by_type",
+          "aggregation": "sum"
+        }
+      ],
+      "legend": {
+        "position": "right",
+        "showLegend": true
+      }
+    },
+    {
+      "id": "performance-metrics",
+      "title": "Performance Test Metrics",
+      "type": "stat-panel",
+      "gridPos": { "x": 8, "y": 10, "w": 8, "h": 6 },
+      "targets": [
+        {
+          "metric": "performance.p95_response_time",
+          "title": "P95 Response Time",
+          "unit": "ms"
+        },
+        {
+          "metric": "performance.throughput",
+          "title": "Throughput",
+          "unit": "req/s"
+        },
+        {
+          "metric": "performance.error_rate",
+          "title": "Error Rate",
+          "unit": "percent"
+        }
+      ]
+    },
+    {
+      "id": "visual-regression-changes",
+      "title": "Visual Regression Changes",
+      "type": "stat",
+      "gridPos": { "x": 16, "y": 10, "w": 8, "h": 6 },
+      "targets": [
+        {
+          "metric": "visual.changes_detected",
+          "aggregation": "sum",
+          "period": "24h"
+        }
+      ],
+      "thresholds": {
+        "steps": [
+          { "value": 0, "color": "green" },
+          { "value": 1, "color": "yellow" },
+          { "value": 5, "color": "red" }
+        ]
+      }
+    },
+    {
+      "id": "contract-test-status",
+      "title": "Contract Test Status",
+      "type": "table",
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "metric": "contract.test_status",
+          "query": "SELECT consumer, provider, status, last_verified FROM contract_tests ORDER BY last_verified DESC"
+        }
+      ],
+      "columns": [
+        { "field": "consumer", "title": "Consumer", "width": 150 },
+        { "field": "provider", "title": "Provider", "width": 150 },
+        { "field": "status", "title": "Status", "width": 100 },
+        { "field": "last_verified", "title": "Last Verified", "width": 200 }
+      ]
+    },
+    {
+      "id": "test-failures-heatmap",
+      "title": "Test Failures Heatmap",
+      "type": "heatmap",
+      "gridPos": { "x": 12, "y": 16, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "metric": "test.failures",
+          "aggregation": "count",
+          "groupBy": ["hour", "test_suite"]
+        }
+      ],
+      "fieldConfig": {
+        "color": {
+          "mode": "spectrum",
+          "scheme": "RdYlGn",
+          "reverse": true
+        }
+      }
+    },
+    {
+      "id": "mobile-test-coverage",
+      "title": "Mobile App Test Coverage",
+      "type": "bar-gauge",
+      "gridPos": { "x": 0, "y": 22, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "metric": "flutter.coverage",
+          "labels": {
+            "platform": ["ios", "android"]
+          }
+        }
+      ],
+      "thresholds": {
+        "steps": [
+          { "value": 0, "color": "red" },
+          { "value": 60, "color": "yellow" },
+          { "value": 70, "color": "green" }
+        ]
+      }
+    },
+    {
+      "id": "security-scan-results",
+      "title": "Security Scan Results",
+      "type": "stat-panel",
+      "gridPos": { "x": 8, "y": 22, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "metric": "security.vulnerabilities.critical",
+          "title": "Critical",
+          "color": "red"
+        },
+        {
+          "metric": "security.vulnerabilities.high",
+          "title": "High",
+          "color": "orange"
+        },
+        {
+          "metric": "security.vulnerabilities.medium",
+          "title": "Medium",
+          "color": "yellow"
+        }
+      ]
+    },
+    {
+      "id": "accessibility-score",
+      "title": "Accessibility Score",
+      "type": "gauge",
+      "gridPos": { "x": 16, "y": 22, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "metric": "accessibility.score",
+          "aggregation": "avg"
+        }
+      ],
+      "thresholds": {
+        "steps": [
+          { "value": 0, "color": "red" },
+          { "value": 70, "color": "yellow" },
+          { "value": 90, "color": "green" }
+        ]
+      }
+    }
+  ],
+  "alerts": [
+    {
+      "id": "coverage-drop",
+      "name": "Test Coverage Drop Alert",
+      "condition": {
+        "metric": "test.coverage.overall",
+        "operator": "<",
+        "threshold": 70
+      },
+      "severity": "warning",
+      "notification": {
+        "channels": ["slack", "email"],
+        "message": "Test coverage has dropped below 70%"
+      }
+    },
+    {
+      "id": "high-flakiness",
+      "name": "High Test Flakiness Alert",
+      "condition": {
+        "metric": "test.flaky_rate",
+        "operator": ">",
+        "threshold": 10
+      },
+      "severity": "warning",
+      "notification": {
+        "channels": ["slack"],
+        "message": "Test flakiness rate exceeds 10%"
+      }
+    },
+    {
+      "id": "performance-regression",
+      "name": "Performance Regression Alert",
+      "condition": {
+        "metric": "performance.p95_response_time",
+        "operator": ">",
+        "threshold": 500
+      },
+      "severity": "critical",
+      "notification": {
+        "channels": ["slack", "pagerduty"],
+        "message": "P95 response time exceeds 500ms threshold"
+      }
+    },
+    {
+      "id": "security-vulnerabilities",
+      "name": "Critical Security Vulnerabilities",
+      "condition": {
+        "metric": "security.vulnerabilities.critical",
+        "operator": ">",
+        "threshold": 0
+      },
+      "severity": "critical",
+      "notification": {
+        "channels": ["slack", "email", "pagerduty"],
+        "message": "Critical security vulnerabilities detected"
+      }
+    }
+  ],
+  "datasources": [
+    {
+      "name": "prometheus",
+      "type": "prometheus",
+      "url": "http://prometheus:9090",
+      "default": true
+    },
+    {
+      "name": "elasticsearch",
+      "type": "elasticsearch",
+      "url": "http://elasticsearch:9200",
+      "index": "test-metrics-*"
+    },
+    {
+      "name": "postgres",
+      "type": "postgres",
+      "url": "postgresql://monitoring:password@postgres:5432/metrics"
+    }
+  ]
+}

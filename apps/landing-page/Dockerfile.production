@@ -1,0 +1,51 @@
+# Landing Page Production Dockerfile
+FROM node:20-alpine AS base
+WORKDIR /app
+
+# Install system dependencies
+RUN apk add --no-cache curl
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies for build
+RUN npm install --legacy-peer-deps
+
+# Build stage
+FROM base AS build
+WORKDIR /app
+COPY . .
+
+# Set build args
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_APP_ENV=production
+
+# Build the application
+RUN npm run build
+
+# Production stage
+FROM node:20-alpine AS production
+WORKDIR /app
+
+# Install curl for health checks
+RUN apk add --no-cache curl
+
+# Copy built application
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.next/static ./.next/static
+COPY --from=build /app/public ./public
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:3000/api/health || exit 1
+
+EXPOSE 3000
+ENV PORT 3000
+ENV NODE_ENV production
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+USER nextjs
+
+CMD ["node", "server.js"]

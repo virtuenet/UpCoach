@@ -1,0 +1,128 @@
+{
+  "name": "@upcoach/monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "UpCoach Platform - Comprehensive Testing and Quality Assurance",
+  "scripts": {
+    "install:all": "npm ci && npm run install:mobile && npm run install:apps && npm run install:services",
+    "install:mobile": "cd mobile-app && flutter pub get",
+    "install:apps": "cd apps/admin-panel && npm ci && cd ../cms-panel && npm ci && cd ../landing-page && npm ci",
+    "install:services": "cd services/api && npm ci",
+    "build": "npm run build:services && npm run build:apps && npm run build:mobile",
+    "build:services": "cd services/api && npm run build",
+    "build:apps": "cd apps/admin-panel && npm run build && cd ../cms-panel && npm run build && cd ../landing-page && npm run build",
+    "build:mobile": "cd mobile-app && flutter build apk --release",
+    "test": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "test:unit": "npm run test:unit:backend && npm run test:unit:frontend && npm run test:unit:mobile",
+    "test:unit:backend": "cd services/api && npm run test:coverage",
+    "test:unit:frontend": "npm run test:unit:admin && npm run test:unit:cms",
+    "test:unit:admin": "cd apps/admin-panel && npm run test:coverage",
+    "test:unit:cms": "cd apps/cms-panel && npm run test:coverage",
+    "test:unit:mobile": "cd mobile-app && flutter test --coverage",
+    "test:integration": "npm run test:integration:backend && npm run test:integration:contracts",
+    "test:integration:backend": "cd services/api && npm run test:integration",
+    "test:integration:contracts": "cd services/api && npm run test:contracts",
+    "test:e2e": "cd tests/e2e && npm ci && npx playwright test",
+    "test:visual": "cd visual-tests && npm ci && npx playwright test",
+    "test:performance": "npm run test:performance:api && npm run test:performance:frontend",
+    "test:performance:api": "k6 run tests/performance/load-test.js",
+    "test:performance:frontend": "lighthouse --output=json --output-path=test-results/lighthouse/lighthouse-report.json http://localhost:3000",
+    "test:security": "npm run test:security:scan && npm run test:security:dependencies",
+    "test:security:scan": "node tests/security/security-test-suite.js",
+    "test:security:dependencies": "npm audit --audit-level=high && cd services/api && npm audit --audit-level=high",
+    "test:accessibility": "cd apps/admin-panel && npm run test:a11y && cd ../cms-panel && npm run test:a11y",
+    "lint": "npm run lint:backend && npm run lint:frontend && npm run lint:mobile",
+    "lint:backend": "cd services/api && npm run lint",
+    "lint:frontend": "cd apps/admin-panel && npm run lint && cd ../cms-panel && npm run lint",
+    "lint:mobile": "cd mobile-app && flutter analyze",
+    "lint:fix": "npm run lint:fix:backend && npm run lint:fix:frontend",
+    "lint:fix:backend": "cd services/api && npm run lint:fix",
+    "lint:fix:frontend": "cd apps/admin-panel && npm run lint:fix && cd ../cms-panel && npm run lint:fix",
+    "format": "npm run format:backend && npm run format:frontend && npm run format:mobile",
+    "format:backend": "cd services/api && npm run format",
+    "format:frontend": "cd apps/admin-panel && npm run format && cd ../cms-panel && npm run format",
+    "format:mobile": "cd mobile-app && dart format .",
+    "quality:assess": "node tools/scripts/quality-gates.js",
+    "quality:check": "npm run lint && npm run test && npm run quality:assess",
+    "coverage:combine": "node tools/scripts/combine-coverage.js",
+    "coverage:report": "npm run coverage:combine && npx nyc report --reporter=html --reporter=text",
+    "report:quality": "node tools/scripts/generate-test-report.js",
+    "report:coverage": "npm run coverage:report",
+    "report:security": "node tests/security/security-test-suite.js && open tests/security/security-report.html",
+    "badges:update": "node tools/scripts/update-badges.js",
+    "start:dev": "concurrently \"npm run start:api\" \"npm run start:admin\" \"npm run start:cms\"",
+    "start:api": "cd services/api && npm run dev",
+    "start:admin": "cd apps/admin-panel && npm run dev",
+    "start:cms": "cd apps/cms-panel && npm run dev",
+    "start:test:parallel": "concurrently \"npm run start:api\" \"npm run start:admin\" \"npm run start:cms\" \"npm run start:landing\"",
+    "start:landing": "cd apps/landing-page && npm run dev",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:test": "docker-compose -f docker-compose.test.yml up --abort-on-container-exit",
+    "deploy:staging": "npm run quality:check && npm run deploy:staging:only",
+    "deploy:staging:only": "node scripts/deploy-staging.js",
+    "deploy:production": "npm run quality:check && npm run deploy:production:only",
+    "deploy:production:only": "node scripts/deploy-production.js",
+    "setup:dev": "npm run install:all && npm run build && npm run test:unit",
+    "setup:ci": "npm run install:all && npm run lint && npm run test && npm run quality:assess",
+    "clean": "npm run clean:deps && npm run clean:build && npm run clean:test",
+    "clean:deps": "rm -rf node_modules apps/*/node_modules services/*/node_modules",
+    "clean:build": "rm -rf apps/*/dist services/*/dist mobile-app/build",
+    "clean:test": "rm -rf test-results coverage apps/*/coverage services/*/coverage mobile-app/coverage",
+    "precommit": "lint-staged"
+  },
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "overrides": {
+    "esbuild": "^0.25.9"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "concurrently": "^8.2.2",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "nyc": "^15.1.0",
+    "typescript": "^5.3.0"
+  },
+  "lint-staged": {
+    "apps/**/*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "services/**/*.{ts,js}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "mobile-app/**/*.dart": [
+      "dart format",
+      "flutter analyze"
+    ]
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/upcoach/upcoach-platform.git"
+  },
+  "keywords": [
+    "coaching",
+    "habits",
+    "goals",
+    "ai",
+    "mobile",
+    "web",
+    "testing",
+    "quality-assurance"
+  ],
+  "author": "UpCoach Team",
+  "license": "UNLICENSED"
+}

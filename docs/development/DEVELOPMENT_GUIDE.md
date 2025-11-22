@@ -1,10 +1,11 @@
-# CLAUDE.md
+# Development Guide
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Complete development workflows, commands, and best practices for the UpCoach platform.
 
 ## Project Overview
 
 UpCoach is an AI-powered coaching platform with:
+
 - **Mobile App**: Flutter app for iOS/Android coaching experience
 - **Admin Panel**: React/Vite dashboard for platform management (port 1006)
 - **Backend API**: Express/TypeScript API service (port 1080)
@@ -14,6 +15,7 @@ UpCoach is an AI-powered coaching platform with:
 ## Development Environment Setup
 
 ### Prerequisites
+
 - Node.js 18+ (LTS recommended)
 - Docker Desktop 4.20+
 - Flutter 3.16+ with Dart 3.2+
@@ -22,10 +24,11 @@ UpCoach is an AI-powered coaching platform with:
 - Git 2.30+
 
 ### Initial Setup
+
 ```bash
 # Clone repository
 git clone <repository-url>
-cd upcoach-project
+cd UpCoach
 
 # Copy environment variables
 cp .env.example .env
@@ -45,6 +48,7 @@ make db-seed  # Optional: Load test data
 ```
 
 ### IDE Configuration
+
 - **VS Code**: Install recommended extensions from `.vscode/extensions.json`
 - **WebStorm/IntelliJ**: Import project settings from `.idea/`
 - **Cursor**: Claude Code integration works out of the box
@@ -52,12 +56,14 @@ make db-seed  # Optional: Load test data
 ## Essential Commands
 
 ### Quick Development Start
+
 ```bash
 make dev              # Start all services with hot-reload
 make logs             # Monitor service logs in real-time
 ```
 
 ### Testing Commands
+
 ```bash
 # Run tests before committing
 make test             # All tests
@@ -73,6 +79,7 @@ cd admin-panel && npm run test:unit
 ```
 
 ### Code Quality
+
 ```bash
 make lint             # Run all linters
 make format           # Auto-format all code
@@ -83,6 +90,7 @@ cd backend && npm run build  # Will fail on type errors
 ```
 
 ### Database Operations
+
 ```bash
 make db-migrate       # Apply pending migrations
 make db-console       # Direct PostgreSQL access
@@ -91,6 +99,7 @@ make db-backup        # Create backup
 ```
 
 ### Building & Deployment
+
 ```bash
 make build            # Build all Docker containers
 make up               # Start all services
@@ -100,6 +109,7 @@ make clean            # Clean Docker volumes and cache
 ```
 
 ### Security & Monitoring
+
 ```bash
 # Security scanning
 make security-scan    # Run security audit
@@ -115,6 +125,7 @@ make logs-tail        # Tail logs with filters
 ## Architecture & Key Patterns
 
 ### Backend API Structure
+
 - **Controllers**: Request handling and validation in `backend/src/controllers/`
   - `TwoFactorAuthController.ts`: 2FA and WebAuthn management
 - **Services**: Business logic in `backend/src/services/`
@@ -128,18 +139,21 @@ make logs-tail        # Tail logs with filters
 - **Database**: PostgreSQL with migrations in `backend/src/database/migrations/`
 
 ### Frontend Architecture
+
 - **Admin Panel**: React with TypeScript, Material-UI components
 - **State Management**: React hooks and context
 - **API Integration**: Axios with interceptors in `src/services/api.ts`
 - **Charts**: Recharts library for data visualization
 
 ### Mobile App Structure
+
 - **Feature-based**: Organized by features in `lib/features/`
 - **Services**: Core services in `lib/core/services/`
 - **Models**: Freezed models in `lib/shared/models/`
 - **State**: Riverpod for state management
 
 ### Database Schema Key Tables
+
 - `users`: User accounts with roles (user/admin/coach)
 - `subscriptions`: Stripe subscription tracking
 - `transactions`: Financial transaction records
@@ -147,6 +161,7 @@ make logs-tail        # Tail logs with filters
 - `billing_events`: Comprehensive audit trail
 
 ### Authentication & Security
+
 - Supabase for mobile and web authentication
 - JWT tokens for API authentication
 - Role-based access control (RBAC)
@@ -159,6 +174,7 @@ make logs-tail        # Tail logs with filters
 ## Development Workflow
 
 ### Feature Development
+
 1. Create feature branch from `main`
 2. Make changes with hot-reload active
 3. Run relevant tests locally
@@ -168,6 +184,7 @@ make logs-tail        # Tail logs with filters
 ### Common Development Tasks
 
 #### Adding a New API Endpoint
+
 1. Create controller method in `backend/src/controllers/`
 2. Add service logic in `backend/src/services/`
 3. Update routes in `backend/src/routes/`
@@ -175,12 +192,14 @@ make logs-tail        # Tail logs with filters
 5. Write tests in `backend/src/tests/`
 
 #### Modifying Database Schema
+
 1. Create migration file: `backend/src/database/migrations/XXX_description.sql`
 2. Update Sequelize models in `backend/src/models/`
 3. Run `make db-migrate` to apply
 4. Update TypeScript interfaces if needed
 
 #### Adding Admin Panel Feature
+
 1. Create component in `admin-panel/src/components/`
 2. Add page in `admin-panel/src/pages/`
 3. Update routing in `admin-panel/src/App.tsx`
@@ -188,6 +207,7 @@ make logs-tail        # Tail logs with filters
 5. Write tests in `admin-panel/src/tests/`
 
 #### Mobile App Development
+
 1. Create feature module in `mobile-app/lib/features/`
 2. Add models with Freezed in `mobile-app/lib/shared/models/`
 3. Implement services in `mobile-app/lib/core/services/`
@@ -197,18 +217,22 @@ make logs-tail        # Tail logs with filters
 ## Critical Paths & Dependencies
 
 ### Service Dependencies
+
 - Backend depends on PostgreSQL and Redis
 - Admin Panel depends on Backend API
 - Mobile App uses Supabase directly + Backend API
 - All services use environment variables from `.env`
 
 ### Build Order
+
 1. Database (PostgreSQL) must be running first
 2. Backend API needs database migrations applied
 3. Frontend apps can start after Backend is healthy
 
 ### Environment Variables
+
 Critical variables that must be set:
+
 - `DATABASE_URL`: PostgreSQL connection
 - `SUPABASE_URL` & `SUPABASE_ANON_KEY`: Authentication
 - `STRIPE_SECRET_KEY` & `STRIPE_WEBHOOK_SECRET`: Payments
@@ -217,6 +241,7 @@ Critical variables that must be set:
 ## Security & Compliance
 
 ### Security Features
+
 - **Two-Factor Authentication**: TOTP and SMS-based 2FA
 - **WebAuthn**: Passwordless authentication with biometrics
 - **Security Headers**: Comprehensive CSP and HSTS policies
@@ -225,18 +250,21 @@ Critical variables that must be set:
 - **Encryption**: TLS 1.3 for transport, AES-256 for storage
 
 ### Compliance
+
 - **GDPR**: Data protection and privacy controls
 - **CCPA**: California privacy compliance
 - **SOC 2**: Security controls and audit trails
 - **PCI DSS**: Payment card data protection (via Stripe)
 
 ### Security Testing
+
 - **SAST**: Static application security testing in CI
 - **DAST**: Dynamic security testing with OWASP ZAP
 - **Dependency Scanning**: Automated vulnerability checks
 - **Penetration Testing**: Quarterly security audits
 
 For detailed security implementation, see:
+
 - `/docs/SECURITY_TESTING.md`
 - `/docs/TWO_FACTOR_AUTH.md`
 - `/docs/MONITORING_SECURITY.md`
@@ -246,6 +274,7 @@ For detailed security implementation, see:
 ### GitHub Actions Workflows
 
 #### Core Pipelines
+
 - **`ci.yml`**: Main CI pipeline for all services
 - **`backend-tests.yml`**: Backend unit and integration tests
 - **`visual-tests.yml`**: Playwright visual regression testing
@@ -254,6 +283,7 @@ For detailed security implementation, see:
 - **`production-deploy.yml`**: Production deployment pipeline
 
 #### Deployment Process
+
 ```bash
 # Development
 git push origin feature/branch  # Triggers CI checks
@@ -267,6 +297,7 @@ git push origin v1.2.3         # Triggers production deploy
 ```
 
 ### Rollback Procedures
+
 ```bash
 # Immediate rollback
 make rollback VERSION=v1.2.2
@@ -281,6 +312,7 @@ make feature-toggle FEATURE=new-ui ENABLED=false
 ## Monitoring & Observability
 
 ### Application Monitoring
+
 - **Health Checks**: `/api/health` endpoints for all services
 - **Metrics Collection**: Prometheus metrics at `/metrics`
 - **Error Tracking**: Sentry integration for error reporting
@@ -288,12 +320,14 @@ make feature-toggle FEATURE=new-ui ENABLED=false
 - **Log Aggregation**: Centralized logging with structured logs
 
 ### Dashboards & Alerts
+
 - **Grafana Dashboards**: Real-time metrics visualization
 - **Alert Rules**: PagerDuty integration for critical issues
 - **SLA Monitoring**: 99.9% uptime tracking
 - **Cost Monitoring**: Cloud spend and resource usage
 
 ### Monitoring Commands
+
 ```bash
 # View real-time metrics
 make metrics-dashboard
@@ -313,27 +347,32 @@ For monitoring setup, see `/docs/MONITORING_SECURITY.md`
 ## Testing Strategy
 
 ### Unit Tests
+
 - Backend: Jest with Supertest for API testing
 - Admin Panel: Vitest for React components
 - Mobile: Flutter test framework
 
 ### E2E Tests
+
 - Playwright for all web interfaces
 - Multi-browser testing (Chrome, Firefox, Safari)
 - Mobile viewport testing included
 
 ### Test Data
+
 - Use `make db-seed` for consistent test data
 - Test users: admin@upcoach.ai, coach@upcoach.ai, user@upcoach.ai
 - All test users password: `testpass123`
 
 ### Security Testing
+
 - **SAST**: CodeQL analysis on every PR
 - **DAST**: OWASP ZAP scanning in staging
 - **Dependency Audit**: Daily vulnerability checks
 - **Penetration Testing**: Quarterly assessments
 
 ### Performance Testing
+
 - **Load Testing**: k6 scripts for API endpoints
 - **Stress Testing**: Identify breaking points
 - **Browser Performance**: Lighthouse CI integration
@@ -342,6 +381,7 @@ For monitoring setup, see `/docs/MONITORING_SECURITY.md`
 ## Current Implementation Status
 
 ### Completed (Stage 3)
+
 - Financial dashboard with real-time metrics
 - Stripe payment integration
 - Automated reporting system
@@ -349,6 +389,7 @@ For monitoring setup, see `/docs/MONITORING_SECURITY.md`
 - Alert and notification system
 
 ### In Progress
+
 - Mobile app feature enhancements
 - Advanced AI coaching capabilities
 - Performance optimization
@@ -356,6 +397,7 @@ For monitoring setup, see `/docs/MONITORING_SECURITY.md`
 ## Common Issues & Solutions
 
 ### Docker Services Not Starting
+
 ```bash
 make down
 make build
@@ -363,16 +405,19 @@ make up
 ```
 
 ### Database Connection Issues
+
 - Check `.env` has correct `DATABASE_URL`
 - Ensure PostgreSQL container is healthy: `docker ps`
 - Try `make db-reset` for clean slate
 
 ### TypeScript Errors
+
 - Admin Panel: `cd admin-panel && npm run type-check`
 - Backend: `cd backend && npm run build`
 - Fix type errors before committing
 
 ### Flutter Build Issues
+
 ```bash
 cd mobile-app
 flutter clean
@@ -383,16 +428,19 @@ flutter pub run build_runner build --delete-conflicting-outputs
 ## Performance Considerations
 
 ### Database
+
 - Indexes on foreign keys and frequently queried columns
 - Use database views for complex aggregations
 - Connection pooling configured in Sequelize
 
 ### Frontend
+
 - Lazy loading for route components
 - Memoization for expensive calculations
 - Debounced API calls for search/filter operations
 
 ### API
+
 - Response caching with Redis
 - Pagination for list endpoints
 - Rate limiting on public endpoints
@@ -401,9 +449,11 @@ flutter pub run build_runner build --delete-conflicting-outputs
 
 ### Design System
 
-The project follows S-Tier SaaS design standards inspired by Stripe, Airbnb, and Linear. All UI development must adhere to:
+The project follows S-Tier SaaS design standards inspired by Stripe, Airbnb, and Linear. All UI
+development must adhere to:
 
-- **Design Principles**: `/context/design-principles.md` - Comprehensive checklist for world-class UI
+- **Design Principles**: `/context/design-principles.md` - Comprehensive checklist for world-class
+  UI
 - **Component Library**: NextUI with custom Tailwind configuration
 
 ### Quick Visual Check
@@ -411,11 +461,13 @@ The project follows S-Tier SaaS design standards inspired by Stripe, Airbnb, and
 **IMMEDIATELY after implementing any front-end change:**
 
 1. **Identify what changed** - Review the modified components/pages
-2. **Navigate to affected pages** - Use `mcp__playwright__browser_navigate` to visit each changed view
+2. **Navigate to affected pages** - Use `mcp__playwright__browser_navigate` to visit each changed
+   view
 3. **Verify design compliance** - Compare against `/context/design-principles.md`
 4. **Validate feature implementation** - Ensure the change fulfills the user's specific request
 5. **Check acceptance criteria** - Review any provided context files or requirements
-6. **Capture evidence** - Take full page screenshot at desktop viewport (1440px) of each changed view
+6. **Capture evidence** - Take full page screenshot at desktop viewport (1440px) of each changed
+   view
 7. **Check for errors** - Run `mcp__playwright__browser_console_messages` ⚠️
 
 This verification ensures changes meet design standards and user requirements.
@@ -449,25 +501,17 @@ The design review agent will:
 // Navigation & Screenshots
 mcp__playwright__browser_navigate(url); // Navigate to page
 mcp__playwright__browser_take_screenshot(); // Capture visual evidence
-mcp__playwright__browser_resize(
-  width,
-  height
-); // Test responsiveness
+mcp__playwright__browser_resize(width, height); // Test responsiveness
 
 // Interaction Testing
 mcp__playwright__browser_click(element); // Test clicks
-mcp__playwright__browser_type(
-  element,
-  text
-); // Test input
+mcp__playwright__browser_type(element, text); // Test input
 mcp__playwright__browser_hover(element); // Test hover states
 
 // Validation
 mcp__playwright__browser_console_messages(); // Check for errors
 mcp__playwright__browser_snapshot(); // Accessibility check
-mcp__playwright__browser_wait_for(
-  text / element
-); // Ensure loading
+mcp__playwright__browser_wait_for(text / element); // Ensure loading
 ```
 
 ### Design Compliance Checklist
@@ -512,16 +556,20 @@ When implementing UI features, verify:
 
 ### Available Specialized Agents
 
-Claude Code provides specialized agents to help with specific development tasks. Use these agents proactively when their expertise matches your task:
+Claude Code provides specialized agents to help with specific development tasks. Use these agents
+proactively when their expertise matches your task:
 
 #### Code Quality & Review
+
 - **`code-reviewer`**: Automated code review after writing code
+
   ```bash
   # Automatically triggered after significant code changes
   # Reviews for best practices, performance, security
   ```
 
 - **`code-review-expert`**: Deep code analysis and feedback
+
   ```bash
   # Use for comprehensive code review before commits
   # Provides actionable improvement suggestions
@@ -534,7 +582,9 @@ Claude Code provides specialized agents to help with specific development tasks.
   ```
 
 #### Testing & QA
+
 - **`qa-test-automation-lead`**: Comprehensive test planning
+
   ```bash
   # Use after feature implementation
   # Creates test plans across Flutter, React Native, PWA
@@ -547,7 +597,9 @@ Claude Code provides specialized agents to help with specific development tasks.
   ```
 
 #### TypeScript & Development
+
 - **`typescript-error-fixer`**: Systematic TS error resolution
+
   ```bash
   # Use when TypeScript build fails
   # Iteratively fixes errors until 95% resolved
@@ -560,7 +612,9 @@ Claude Code provides specialized agents to help with specific development tasks.
   ```
 
 #### Security & Compliance
+
 - **`security-audit-expert`**: Security vulnerability analysis
+
   ```bash
   # Use after implementing auth features
   # Reviews for OWASP Top 10 vulnerabilities
@@ -573,7 +627,9 @@ Claude Code provides specialized agents to help with specific development tasks.
   ```
 
 #### UI/UX & Design
+
 - **`design-review`**: Comprehensive design review
+
   ```bash
   # Use command: /design-review
   # Tests responsiveness, accessibility, visual consistency
@@ -586,6 +642,7 @@ Claude Code provides specialized agents to help with specific development tasks.
   ```
 
 #### Documentation
+
 - **`docs-dx-engineer`**: Technical documentation
   ```bash
   # Use after API changes
@@ -622,6 +679,7 @@ Claude Code provides specialized agents to help with specific development tasks.
 ## Code Review Standards
 
 ### PR Requirements
+
 1. All tests must pass
 2. TypeScript build must succeed
 3. Security scan must pass
@@ -630,6 +688,7 @@ Claude Code provides specialized agents to help with specific development tasks.
 6. Design review for UI changes
 
 ### Review Checklist
+
 - [ ] Code follows project conventions
 - [ ] Tests cover new functionality
 - [ ] Documentation updated
@@ -642,12 +701,14 @@ Claude Code provides specialized agents to help with specific development tasks.
 ## Release Process
 
 ### Version Management
+
 - Semantic versioning (MAJOR.MINOR.PATCH)
 - Changelog maintenance in CHANGELOG.md
 - Git tags for all releases
 - Release notes in GitHub Releases
 
 ### Release Checklist
+
 1. [ ] All tests passing
 2. [ ] Security scan completed
 3. [ ] Performance benchmarks met
@@ -658,6 +719,7 @@ Claude Code provides specialized agents to help with specific development tasks.
 8. [ ] Feature flags configured
 
 ### Deployment Stages
+
 ```bash
 # 1. Development
 make test-all           # Run all tests
@@ -677,31 +739,37 @@ make verify-prod            # Post-deployment checks
 
 ### 🔧 **Latest Production-Ready Implementations**
 
-**All Critical Systems Completed:**
-✅ **Security Testing Pipeline** - Comprehensive SAST, DAST, container, and mobile security scans
-✅ **CI/CD Pipeline** - Full continuous integration for all services with enhanced error handling
-✅ **API Service** - Production-ready with robust type definitions, configuration, and validation
-✅ **Frontend Applications** - Admin Panel, CMS, and Landing Page with optimized builds
-✅ **Mobile App** - Flutter app with comprehensive testing and security validation
-✅ **Production Deployment** - Quality gates, validation, and automated deployment pipeline
+**All Critical Systems Completed:** ✅ **Security Testing Pipeline** - Comprehensive SAST, DAST,
+container, and mobile security scans ✅ **CI/CD Pipeline** - Full continuous integration for all
+services with enhanced error handling ✅ **API Service** - Production-ready with robust type
+definitions, configuration, and validation ✅ **Frontend Applications** - Admin Panel, CMS, and
+Landing Page with optimized builds ✅ **Mobile App** - Flutter app with comprehensive testing and
+security validation ✅ **Production Deployment** - Quality gates, validation, and automated
+deployment pipeline
 
 **Key Features Implemented:**
-- **Advanced Security**: OWASP ZAP scanning, CodeQL analysis, container security, dependency auditing
+
+- **Advanced Security**: OWASP ZAP scanning, CodeQL analysis, container security, dependency
+  auditing
 - **Comprehensive Testing**: Unit, integration, E2E, visual regression, and performance testing
-- **Production Configuration**: Environment validation, secrets management, and monitoring integration
+- **Production Configuration**: Environment validation, secrets management, and monitoring
+  integration
 - **Type Safety**: Complete TypeScript definitions with strict mode enabled for production builds
 - **Error Handling**: Graceful failures and comprehensive logging throughout all services
 
 ### 🛡️ **Security & Compliance**
 
 **Enhanced Security Implementation:**
-- **Secret Management**: Advanced encryption and rotation system in `services/api/src/config/secrets.ts`
+
+- **Secret Management**: Advanced encryption and rotation system in
+  `services/api/src/config/secrets.ts`
 - **Environment Validation**: Comprehensive schema validation with production-grade requirements
 - **API Security**: Complete validation schemas for all endpoints with input sanitization
 - **Container Security**: Multi-layer security scanning with Trivy and Docker Scout integration
 - **Mobile Security**: Flutter security testing with APK analysis and secret scanning
 
 **Compliance Standards Met:**
+
 - SOC 2 Type II controls implemented
 - GDPR data protection and privacy controls
 - CCPA compliance with data export capabilities
@@ -711,12 +779,14 @@ make verify-prod            # Post-deployment checks
 ### 📊 **Performance Optimizations**
 
 **Build Performance:**
+
 - TypeScript incremental compilation with optimized `tsconfig.json`
 - Turbo monorepo build caching and parallelization
 - Webpack bundle optimization for frontend applications
 - Docker multi-stage builds for optimized container images
 
 **Runtime Performance:**
+
 - API response caching with Redis
 - Database query optimization with proper indexing
 - CDN integration for static asset delivery
@@ -725,6 +795,7 @@ make verify-prod            # Post-deployment checks
 ### 🚀 **CI/CD Pipeline Status**
 
 **All Pipelines Operational:**
+
 - ✅ **Main CI Pipeline**: Tests all services (Mobile, Admin Panel, CMS, Landing Page, API)
 - ✅ **Security Testing**: Comprehensive security validation across all components
 - ✅ **Production Deployment**: Quality gates with automated validation
@@ -732,6 +803,7 @@ make verify-prod            # Post-deployment checks
 - ✅ **Performance Testing**: Load testing and performance benchmarking
 
 **Quality Gates Implemented:**
+
 - Type checking with strict TypeScript configuration
 - Security auditing with multiple scan types
 - Code quality validation with ESLint and Prettier
@@ -741,6 +813,7 @@ make verify-prod            # Post-deployment checks
 ## Additional Context
 
 ### Documentation
+
 - Design review agent configuration: `/.claude/agents/design-review-agent.md`
 - Design principles checklist: `/context/design-principles.md`
 - Security documentation: `/docs/SECURITY_TESTING.md`
@@ -748,6 +821,7 @@ make verify-prod            # Post-deployment checks
 - Monitoring setup: `/docs/MONITORING_SECURITY.md`
 
 ### Configuration Files
+
 - Claude Code settings: `/.claude/settings.local.json`
 - GitHub Actions: `/.github/workflows/`
 - Security policies: `/.github/codeql/`

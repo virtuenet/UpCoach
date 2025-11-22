@@ -1,0 +1,76 @@
+# Optimized Frontend Dockerfile for React/Vite apps
+ARG NODE_VERSION=20-alpine
+
+# Stage 1: Dependencies
+FROM node:${NODE_VERSION} AS deps
+WORKDIR /app
+
+# Copy package files
+COPY apps/admin-panel/package*.json ./apps/admin-panel/
+COPY packages/*/package*.json ./packages/
+COPY package*.json turbo.json ./
+
+# Install dependencies with cache
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
+
+# Stage 2: Builder
+FROM node:${NODE_VERSION} AS builder
+WORKDIR /app
+
+# Copy dependencies
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages ./packages
+
+# Copy source code
+COPY apps/admin-panel ./apps/admin-panel
+COPY packages ./packages
+COPY package*.json turbo.json ./
+
+# Build arguments for environment variables
+ARG VITE_API_URL
+ARG VITE_APP_NAME
+ARG VITE_PUBLIC_URL
+
+# Build the application
+RUN npm run build --workspace=@upcoach/admin-panel
+
+# Stage 3: Production
+FROM nginx:alpine AS runner
+
+# Install nginx modules
+RUN apk add --no-cache nginx-mod-http-headers-more nginx-mod-http-brotli
+
+# Copy custom nginx config
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY docker/security-headers.conf /etc/nginx/conf.d/security-headers.conf
+
+# Copy built application
+COPY --from=builder /app/apps/admin-panel/dist /usr/share/nginx/html
+
+# Add non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 && \
+    chown -R nodejs:nodejs /usr/share/nginx/html && \
+    chown -R nodejs:nodejs /var/cache/nginx && \
+    chown -R nodejs:nodejs /var/log/nginx && \
+    touch /var/run/nginx.pid && \
+    chown -R nodejs:nodejs /var/run/nginx.pid
+
+# Create cache directories
+RUN mkdir -p /var/cache/nginx/client_temp && \
+    mkdir -p /var/cache/nginx/proxy_temp && \
+    mkdir -p /var/cache/nginx/fastcgi_temp && \
+    mkdir -p /var/cache/nginx/uwsgi_temp && \
+    mkdir -p /var/cache/nginx/scgi_temp && \
+    chown -R nodejs:nodejs /var/cache/nginx
+
+USER nodejs
+
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]

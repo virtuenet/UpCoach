@@ -65,6 +65,7 @@ java --version  # Should be 11 or higher
 1. Go to Play Console: https://play.google.com/console
 2. Click **"Create app"**
 3. Fill in app details:
+
    ```
    App name: UpCoach
    Default language: English (United States)
@@ -75,12 +76,14 @@ java --version  # Should be 11 or higher
    [✓] App follows Play Policies
    [✓] App complies with US export laws
    ```
+
 4. Click **"Create app"**
 
 ### 3. Set Up App Categories
 
 1. Navigate to **App content** → **Store listing**
 2. Fill in:
+
    ```
    Category: Health & Fitness
    Tags: Personal development, Habits, Goals, Productivity
@@ -97,6 +100,7 @@ java --version  # Should be 11 or higher
 ### 1. Update App Icons
 
 **Required Android icons:**
+
 - mdpi: 48x48 px
 - hdpi: 72x72 px
 - xhdpi: 96x96 px
@@ -105,6 +109,7 @@ java --version  # Should be 11 or higher
 - Play Store: 512x512 px
 
 **Generate icons:**
+
 ```bash
 cd mobile-app
 
@@ -116,12 +121,13 @@ flutter pub run flutter_launcher_icons:main
 ```
 
 **pubspec.yaml configuration:**
+
 ```yaml
 flutter_launcher_icons:
   android: true
-  image_path: "assets/icons/app_icon.png"
-  adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"
+  image_path: 'assets/icons/app_icon.png'
+  adaptive_icon_background: '#FFFFFF'
+  adaptive_icon_foreground: 'assets/icons/app_icon_foreground.png'
 ```
 
 ### 2. Update AndroidManifest.xml
@@ -205,6 +211,7 @@ Follow [FIREBASE_SETUP.md](../../FIREBASE_SETUP.md) guide:
 3. Add to `.gitignore`
 
 **Verify `android/app/build.gradle`:**
+
 ```gradle
 apply plugin: 'com.google.gms.google-services'
 
@@ -215,6 +222,7 @@ dependencies {
 ```
 
 **Verify `android/build.gradle`:**
+
 ```gradle
 dependencies {
     classpath 'com.google.gms:google-services:4.4.0'
@@ -329,6 +337,7 @@ apply plugin: 'com.google.gms.google-services'
 ### 2. ProGuard Configuration
 
 **Create `android/app/proguard-rules.pro`:**
+
 ```proguard
 # Flutter
 -keep class io.flutter.app.** { *; }
@@ -389,6 +398,7 @@ keytool -genkey -v \
 ```
 
 **Important:** Store the keystore file and passwords securely!
+
 - **DO NOT** commit to git
 - Store in password manager
 - Keep backup in secure location
@@ -396,6 +406,7 @@ keytool -genkey -v \
 ### 2. Create keystore.properties
 
 **Create `android/keystore.properties`:**
+
 ```properties
 storePassword=<YOUR_KEYSTORE_PASSWORD>
 keyPassword=<YOUR_KEY_PASSWORD>
@@ -404,6 +415,7 @@ storeFile=upload-keystore.jks
 ```
 
 **Add to .gitignore:**
+
 ```bash
 echo "android/keystore.properties" >> .gitignore
 echo "android/app/upload-keystore.jks" >> .gitignore
@@ -430,7 +442,8 @@ echo "android/app/upload-keystore.jks" >> .gitignore
 
 ### Option 1: Build AAB (Recommended)
 
-**Android App Bundle (AAB)** is the recommended format. Google Play generates optimized APKs for each device.
+**Android App Bundle (AAB)** is the recommended format. Google Play generates optimized APKs for
+each device.
 
 ```bash
 cd mobile-app
@@ -484,31 +497,38 @@ bundletool build-apks \
 ### 1. Store Listing Assets
 
 #### App Icon
+
 - **Size:** 512 x 512 px
 - **Format:** PNG (32-bit)
 - **Max size:** 1 MB
 
 #### Feature Graphic
+
 - **Size:** 1024 x 500 px
 - **Format:** PNG or JPG
 - **Required for featured placement**
 
 #### Screenshots
+
 **Phone screenshots (required):**
+
 - **Minimum:** 2 screenshots
 - **Maximum:** 8 screenshots
 - **Size:** 16:9 or 9:16 aspect ratio
 - **Dimensions:** Between 320px and 3840px
 
 **Recommended sizes:**
+
 - 1080 x 1920 px (portrait)
 - 1920 x 1080 px (landscape)
 
 **Tablet screenshots (optional but recommended):**
+
 - 7-inch and 10-inch tablets
 - **Size:** 1600 x 2560 px or 2560 x 1600 px
 
 **Tools for screenshots:**
+
 - Android Studio Device Frame
 - Fastlane `screengrab`
 - Figma/Sketch mockups
@@ -518,11 +538,13 @@ bundletool build-apks \
 **Navigate to Play Console → Store presence → Store listing:**
 
 **Short description (80 characters max):**
+
 ```
 AI-powered personal coaching for goals, habits, and self-improvement.
 ```
 
 **Full description (4000 characters max):**
+
 ```
 Transform Your Life with UpCoach - AI-Powered Personal Development
 
@@ -631,6 +653,7 @@ Download UpCoach today and start your transformation journey!
 ```
 
 **Promotional graphic (optional):**
+
 - Size: 180 x 120 px
 - Shows in search results
 
@@ -674,6 +697,7 @@ Tags: Personal development, Productivity, Habits, Goals, Coaching, Wellness
 **Navigate to App content → Data safety:**
 
 **Data types collected:**
+
 - [ ] Personal info (name, email)
 - [ ] Financial info (payment info)
 - [ ] Health and fitness (goals, habits, mood)
@@ -684,15 +708,18 @@ Tags: Personal development, Productivity, Habits, Goals, Coaching, Wellness
 - [ ] Device or other IDs
 
 **Data usage:**
+
 - App functionality
 - Analytics
 - Personalization
 - Account management
 
 **Data sharing:**
+
 - No data shared with third parties
 
 **Data security:**
+
 - Data encrypted in transit
 - Data encrypted at rest
 - Users can request data deletion
@@ -710,6 +737,7 @@ Tags: Personal development, Productivity, Habits, Goals, Coaching, Wellness
 4. **Release name:** `1.0.0` (matches versionName)
 
 5. **Release notes:**
+
    ```
    🎉 Welcome to UpCoach 1.0!
 
@@ -730,16 +758,19 @@ Tags: Personal development, Productivity, Habits, Goals, Coaching, Wellness
 **Options:**
 
 **A. Full Rollout (100%)**
+
 - All users get update immediately
 - Recommended for first release
 
 **B. Staged Rollout**
+
 - Start with 20% of users
 - Monitor for crashes/issues
 - Increase to 50% → 100%
 - Safer for major updates
 
 **C. Closed Testing (Internal/Beta)**
+
 - Test with limited users first
 - Get feedback before public release
 
@@ -766,6 +797,7 @@ Before submitting, ensure:
 3. **Confirm rollout**
 
 **Review Timeline:**
+
 - Usually 1-3 days
 - Can be up to 7 days
 - You'll receive email updates
@@ -775,11 +807,13 @@ Before submitting, ensure:
 ### 1. Monitor Release
 
 **Play Console Dashboard:**
+
 - **Statistics:** Downloads, ratings, crashes
 - **ANR & crashes:** Monitor app stability
 - **User reviews:** Respond to feedback
 
 **Set up alerts:**
+
 1. Play Console → Settings → Email preferences
 2. Enable:
    - App review alerts
@@ -789,6 +823,7 @@ Before submitting, ensure:
 ### 2. Respond to Reviews
 
 **Best practices:**
+
 - Respond within 24-48 hours
 - Be professional and helpful
 - Thank users for positive reviews
@@ -796,6 +831,7 @@ Before submitting, ensure:
 - Direct to support for complex issues
 
 **Example responses:**
+
 ```
 Positive review:
 "Thank you for the kind words! We're thrilled UpCoach is helping you achieve your goals. 🎯"
@@ -807,6 +843,7 @@ Negative review:
 ### 3. Update Strategy
 
 **Version numbering:**
+
 ```
 X.Y.Z (Build number)
 X = Major version
@@ -821,6 +858,7 @@ Examples:
 ```
 
 **Update process:**
+
 1. Increment version in `pubspec.yaml`
 2. Update `versionCode` in `build.gradle`
 3. Build new AAB
@@ -829,6 +867,7 @@ Examples:
 6. Submit for review
 
 **Update frequency:**
+
 - Bug fixes: Within 24-48 hours of discovery
 - Minor updates: Every 2-4 weeks
 - Major updates: Every 3-6 months
@@ -836,17 +875,20 @@ Examples:
 ### 4. Analytics & Monitoring
 
 **Google Play Console Analytics:**
+
 - User acquisition
 - Retention
 - Financial stats
 - Technical performance
 
 **Third-party tools:**
+
 - Firebase Analytics
 - Firebase Crashlytics
 - Google Analytics for Firebase
 
 **Setup Crashlytics:**
+
 ```dart
 // In main.dart
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -868,6 +910,7 @@ void main() async {
 **Error:** "Gradle build failed"
 
 **Solutions:**
+
 ```bash
 # Clean and rebuild
 cd android
@@ -890,6 +933,7 @@ rm -rf ~/.gradle/caches/
 **Error:** "Failed to sign APK"
 
 **Solutions:**
+
 1. Verify keystore.properties exists and has correct paths
 2. Check keystore password is correct
 3. Ensure keystore file exists at specified location
@@ -899,7 +943,9 @@ rm -rf ~/.gradle/caches/
 **Error:** "Upload certificate has not been registered"
 
 **Solution:**
-1. Export certificate: `keytool -export -rfc -keystore upload-keystore.jks -alias upload -file upload_cert.pem`
+
+1. Export certificate:
+   `keytool -export -rfc -keystore upload-keystore.jks -alias upload -file upload_cert.pem`
 2. Upload to Play Console → App integrity → Upload key certificate
 
 ### Issue: App Rejected
@@ -907,20 +953,25 @@ rm -rf ~/.gradle/caches/
 **Common rejection reasons:**
 
 **1. Policy violations**
+
 - Solution: Review Play Policies, update content
 
 **2. Broken functionality**
+
 - Solution: Test thoroughly before submission
 
 **3. Misleading content**
+
 - Solution: Ensure description matches app features
 
 **4. Privacy policy issues**
+
 - Solution: Add/update privacy policy URL
 
 ### Issue: High APK Size
 
 **Solutions:**
+
 ```bash
 # Use App Bundle instead of APK
 flutter build appbundle --release
@@ -936,6 +987,7 @@ flutter build appbundle --analyze-size
 ### Issue: Crashes on Specific Devices
 
 **Solutions:**
+
 1. Check Play Console → Android vitals
 2. Review crash reports
 3. Test on problematic devices (Firebase Test Lab)
@@ -952,11 +1004,10 @@ flutter build appbundle --analyze-size
 ## Support
 
 For deployment assistance:
+
 - Email: mobile@upcoach.com
 - Slack: #android-deployment
 
 ---
 
-**Last Updated:** November 19, 2025
-**Version:** 1.0
-**Next Review:** Before v1.1.0 release
+**Last Updated:** November 19, 2025 **Version:** 1.0 **Next Review:** Before v1.1.0 release

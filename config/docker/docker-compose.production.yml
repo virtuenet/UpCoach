@@ -1,0 +1,132 @@
+# UpCoach Production Docker Compose Configuration
+# Production-optimized configuration with security and performance focus
+
+services:
+  # Production Frontend Applications
+  landing-page:
+    build:
+      context: ./apps/landing-page
+      dockerfile: Dockerfile.prod
+      args:
+        NODE_ENV: production
+    container_name: upcoach-landing-prod
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${API_URL}
+      NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    depends_on:
+      - backend-api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  admin-panel:
+    build:
+      context: ./apps/admin-panel
+      dockerfile: Dockerfile.prod
+      args:
+        NODE_ENV: production
+    container_name: upcoach-admin-prod
+    environment:
+      NODE_ENV: production
+      VITE_API_URL: ${API_URL}
+      VITE_SUPABASE_URL: ${SUPABASE_URL}
+      VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+    depends_on:
+      - backend-api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  cms-panel:
+    build:
+      context: ./apps/cms-panel
+      dockerfile: Dockerfile.prod
+      args:
+        NODE_ENV: production
+    container_name: upcoach-cms-prod
+    environment:
+      NODE_ENV: production
+      VITE_API_URL: ${API_URL}
+      VITE_SUPABASE_URL: ${SUPABASE_URL}
+      VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+    ports:
+      - "3002:3002"
+    restart: unless-stopped
+    depends_on:
+      - backend-api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Production Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: upcoach-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/sites-enabled:/etc/nginx/sites-enabled:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - landing-page
+      - admin-panel
+      - cms-panel
+      - backend-api
+    restart: unless-stopped
+
+  # Production Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: upcoach-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: upcoach-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/monitoring/grafana:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+volumes:
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local

@@ -1,0 +1,10 @@
+{
+  "deployment_date": "20250831_214950",
+  "services": [
+    {"name": "api", "path": "./api"},
+    {"name": "admin-panel", "path": "./admin-panel"},
+    {"name": "cms-panel", "path": "./cms-panel"},
+    {"name": "landing-page", "path": "./landing-page"}
+  ],
+  "environment": "production"
+}

@@ -1,0 +1,29 @@
+# Android build artifacts
+/build/
+/app/build/
+/.gradle/
+/local.properties
+
+# Keystore files - CRITICAL: Never commit these!
+key/
+*.keystore
+*.jks
+
+# Signing configuration - CRITICAL: Never commit passwords!
+keystore.properties
+signing.properties
+
+# IDE files
+/.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log

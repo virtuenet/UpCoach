@@ -1,0 +1,51 @@
+file,passed,failed,total,pass_rate
+basic.test.ts,3,0,3,100.0
+minimal.test.ts,Tests:       2 failed, 15 passed, 17 total,2,7,
+utils/logger.minimal.test.ts,Tests:       2 failed, 1 passed, 3 total,2,3,
+controllers/health.minimal.test.ts,2,0,2,100.0
+services/UserService.minimal.test.ts,3,0,3,100.0
+auth/auth-routes.test.ts,Tests:       19 failed, 6 passed, 25 total,19,5,
+contracts/auth-api.contract.test.ts,19,0,9,211.1
+contracts/coaching-api.contract.test.ts,11,0,1,1100.0
+contracts/financial-api.contract.test.ts,21,0,1,2100.0
+contracts/referral-api.contract.test.ts,28,0,8,350.0
+contracts/goals-api.contract.test.ts,23,0,3,766.6
+controllers/CoachController.test.ts,Tests:       0 total,0,0,0
+controllers/FinancialDashboardController.test.ts,Tests:       31 failed, 2 passed, 33 total,31,3,
+e2e-critical/coach-revenue-journey.test.ts,Tests:       15 failed, 15 total,15,5,
+e2e-critical/subscription-monetization-journey.test.ts,Tests:       13 failed, 13 total,13,3,
+e2e-critical/user-onboarding-journey.test.ts,Tests:       9 failed, 9 total,9,9,
+e2e/complete-user-journeys.test.ts,Tests:       5 failed, 5 total,5,5,
+integration/goal-management-flow.test.ts,Tests:       25 failed, 25 total,25,5,
+integration/coaching-session-flow.test.ts,Tests:       20 failed, 20 total,20,0,0
+integration/payment-flow.test.ts,Tests:       28 failed, 28 total,28,8,
+integration/user-registration-flow.test.ts,Tests:       24 failed, 1 passed, 25 total,24,5,
+middleware/auth.test.ts,Tests:       15 failed, 3 passed, 18 total,15,8,
+routes/health.test.ts,7,0,7,100.0
+service-integration/ABTestingService.test.ts,12,0,2,600.0
+service-integration/CoachingSessionService.test.ts,15,0,5,300.0
+service-integration/GoalManagementService.test.ts,14,0,4,350.0
+service-integration/ReferralService.test.ts,12,0,2,600.0
+service-integration/PaymentManagementService.test.ts,14,0,4,350.0
+service-integration/UserRegistrationService.test.ts,12,0,2,600.0
+services/CoachIntelligenceService.test.ts,Tests:       21 failed, 3 passed, 24 total,21,4,
+services/AIService.test.ts,Tests:       13 failed, 13 total,13,3,
+services/EmailService.test.ts,Tests:       0 total,0,0,0
+services/GDPRService.test.ts,Tests:       37 failed, 37 total,37,7,
+services/RedisService.simple.test.ts,Tests:       3 failed, 1 passed, 4 total,3,4,
+services/GamificationService.test.ts,18,0,8,225.0
+services/SchedulerService.test.ts,Tests:       2 failed, 22 passed, 24 total,2,4,
+services/StripeWebhookService.test.ts,Tests:       15 failed, 2 passed, 17 total,15,7,
+services/TwoFactorAuthService.test.ts,Tests:       3 failed, 22 passed, 25 total,3,5,
+services/WebAuthnService.test.ts,Tests:       19 failed, 11 passed, 30 total,19,0,0
+validation/auth.validation.test.ts,19,0,9,211.1
+security/auth-authorization.test.ts,20,0,0,0
+security/input-validation.test.ts,16,0,6,266.6
+performance/memory-leaks.test.ts,10,0,0,0
+performance/critical-endpoints.test.ts,13,0,3,433.3
+controllers/AIController.test.ts,Tests:       28 failed, 28 total,28,8,
+models/User.test.ts,27,0,7,385.7
+models/User.unit.test.ts,19,0,9,211.1
+services/RedisService.test.ts,Tests:       33 failed, 33 total,33,3,
+services/UserService.test.ts,31,0,1,3100.0
+utils/security.test.ts,20,0,0,0

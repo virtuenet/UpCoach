@@ -1,0 +1,101 @@
+# UpCoach Development Docker Compose Configuration
+# Extends base configuration with development-specific services
+
+services:
+  # Frontend Applications (Development with hot reload)
+  landing-page:
+    build:
+      context: ./apps/landing-page
+      dockerfile: Dockerfile.dev
+    container_name: upcoach-landing-dev
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost:8080}
+      NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/landing-page:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend-api
+
+  admin-panel:
+    build:
+      context: ./apps/admin-panel
+      dockerfile: Dockerfile.dev
+    container_name: upcoach-admin-dev
+    environment:
+      NODE_ENV: development
+      VITE_API_URL: ${API_URL:-http://localhost:8080}
+      VITE_SUPABASE_URL: ${SUPABASE_URL}
+      VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./apps/admin-panel:/app
+      - /app/node_modules
+    depends_on:
+      - backend-api
+
+  cms-panel:
+    build:
+      context: ./apps/cms-panel
+      dockerfile: Dockerfile.dev
+    container_name: upcoach-cms-dev
+    environment:
+      NODE_ENV: development
+      VITE_API_URL: ${API_URL:-http://localhost:8080}
+      VITE_SUPABASE_URL: ${SUPABASE_URL}
+      VITE_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./apps/cms-panel:/app
+      - /app/node_modules
+    depends_on:
+      - backend-api
+
+  # Development Tools
+  mailhog:
+    image: mailhog/mailhog
+    container_name: upcoach-mailhog
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: upcoach-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@upcoach.ai}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  # Development Database Seeder
+  db-seed:
+    build:
+      context: ./services/api
+      dockerfile: Dockerfile.seed
+    container_name: upcoach-db-seed
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-upcoach}:${DB_PASSWORD:-upcoach_secure_pass}@postgres:5432/${DB_NAME:-upcoach_db}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - seed
+
+volumes:
+  pgadmin_data:
+    driver: local

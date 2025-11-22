@@ -1,6 +1,7 @@
 ## Screenshot Templates for App Stores
 
-Templates and guidelines for creating consistent, high-quality screenshots for iOS App Store and Google Play Store.
+Templates and guidelines for creating consistent, high-quality screenshots for iOS App Store and
+Google Play Store.
 
 ---
 
@@ -11,6 +12,7 @@ Templates and guidelines for creating consistent, high-quality screenshots for i
 **Title:** "Your Personal Growth Dashboard"
 
 **Content:**
+
 - Home screen showing stats summary
 - Active goals (2-3 visible)
 - Today's habits (3-4 visible)
@@ -18,11 +20,13 @@ Templates and guidelines for creating consistent, high-quality screenshots for i
 - Current streak badge
 
 **Key Elements to Highlight:**
+
 - Clean, organized interface
 - Key metrics at a glance
 - Visual progress indicators
 
 **Text Overlay:**
+
 ```
 Your Personal Growth Dashboard
 Track goals, build habits, and achieve more
@@ -35,6 +39,7 @@ Track goals, build habits, and achieve more
 **Title:** "Build Lasting Habits"
 
 **Content:**
+
 - Habit list with various streaks
 - Mix of completed and pending habits
 - Streak badges (7-day, 30-day milestones)
@@ -42,11 +47,13 @@ Track goals, build habits, and achieve more
 - Add habit button visible
 
 **Key Elements to Highlight:**
+
 - Streak tracking
 - Visual completion status
 - Easy habit creation
 
 **Text Overlay:**
+
 ```
 Build Lasting Habits
 Track daily routines and celebrate streaks
@@ -59,6 +66,7 @@ Track daily routines and celebrate streaks
 **Title:** "Achieve Your Goals"
 
 **Content:**
+
 - Goal detail page or goal creation screen
 - Progress bar showing 60-70% completion
 - Milestones with checkmarks
@@ -66,11 +74,13 @@ Track daily routines and celebrate streaks
 - Notes/description
 
 **Key Elements to Highlight:**
+
 - Visual progress tracking
 - Milestone achievements
 - Goal categories
 
 **Text Overlay:**
+
 ```
 Achieve Your Goals
 Set targets, track progress, celebrate wins
@@ -83,6 +93,7 @@ Set targets, track progress, celebrate wins
 **Title:** "AI-Powered Insights"
 
 **Content:**
+
 - AI coach interface with conversation
 - 2-3 personalized insights
 - Motivational message
@@ -90,11 +101,13 @@ Set targets, track progress, celebrate wins
 - Coach avatar/icon
 
 **Key Elements to Highlight:**
+
 - Personalized recommendations
 - Conversational interface
 - Actionable insights
 
 **Text Overlay:**
+
 ```
 AI-Powered Insights
 Get personalized coaching tailored to you
@@ -107,6 +120,7 @@ Get personalized coaching tailored to you
 **Title:** "Track Your Progress"
 
 **Content:**
+
 - Weekly/monthly analytics dashboard
 - Chart showing progress over time
 - Habit completion heatmap
@@ -114,11 +128,13 @@ Get personalized coaching tailored to you
 - Export button visible
 
 **Key Elements to Highlight:**
+
 - Beautiful visualizations
 - Detailed analytics
 - Progress trends
 
 **Text Overlay:**
+
 ```
 Track Your Progress
 Beautiful insights into your growth journey
@@ -131,6 +147,7 @@ Beautiful insights into your growth journey
 ### Background
 
 **Option 1: Gradient**
+
 ```
 Top: #667eea (Purple)
 Bottom: #764ba2 (Darker Purple)
@@ -138,12 +155,14 @@ Opacity: 100%
 ```
 
 **Option 2: Solid Color**
+
 ```
 Background: #FFFFFF (White)
 Use for light, clean look
 ```
 
 **Option 3: Brand Gradient**
+
 ```
 Top: Brand Primary Color
 Bottom: Brand Secondary Color
@@ -152,6 +171,7 @@ Bottom: Brand Secondary Color
 ### Text Styling
 
 **Title Text:**
+
 - Font: SF Pro Display (iOS) / Roboto (Android)
 - Size: 48px
 - Weight: Bold (700)
@@ -159,6 +179,7 @@ Bottom: Brand Secondary Color
 - Letter Spacing: -0.5px
 
 **Subtitle Text:**
+
 - Font: SF Pro Text (iOS) / Roboto (Android)
 - Size: 24px
 - Weight: Medium (500)
@@ -168,11 +189,13 @@ Bottom: Brand Secondary Color
 ### Device Frame
 
 **Recommended:**
+
 - Use clean, minimal device frame
 - Match target device (iPhone 14 Pro, Pixel 7, etc.)
 - Shadow: 0px 20px 40px rgba(0,0,0,0.2)
 
 **Frame Color:**
+
 - Black device frame for dark UI screenshots
 - White device frame for light UI screenshots
 - Or: Use frameless (screenshot only)
@@ -213,24 +236,28 @@ Bottom: Brand Secondary Color
 ### For iOS
 
 **iPhone 6.7" (iPhone 14 Pro Max, 15 Pro Max):**
+
 - Resolution: 1290 x 2796 pixels
 - Format: PNG
 - Color Profile: sRGB
 - DPI: 72
 
 **iPhone 6.5" (iPhone 11 Pro Max, XS Max):**
+
 - Resolution: 1242 x 2688 pixels
 - Format: PNG
 - Color Profile: sRGB
 - DPI: 72
 
 **iPhone 5.5" (iPhone 8 Plus):**
+
 - Resolution: 1242 x 2208 pixels
 - Format: PNG
 - Color Profile: sRGB
 - DPI: 72
 
 **iPad Pro 12.9":**
+
 - Resolution: 2048 x 2732 pixels
 - Format: PNG
 - Color Profile: sRGB
@@ -239,17 +266,20 @@ Bottom: Brand Secondary Color
 ### For Android
 
 **Phone (Standard):**
+
 - Resolution: 1080 x 1920 pixels (minimum)
 - Recommended: 1440 x 2560 pixels
 - Format: PNG or JPEG
 - Quality: 90% (if JPEG)
 
 **7" Tablet:**
+
 - Resolution: 1200 x 1920 pixels (minimum)
 - Format: PNG or JPEG
 - Quality: 90% (if JPEG)
 
 **10" Tablet:**
+
 - Resolution: 1600 x 2560 pixels (minimum)
 - Format: PNG or JPEG
 - Quality: 90% (if JPEG)
@@ -287,6 +317,7 @@ UpCoach Screenshots
 ### Components
 
 Create reusable components for:
+
 - Background gradient
 - Text styles (Title, Subtitle)
 - Device frames
@@ -355,6 +386,7 @@ void main() {
 ```
 
 **Run:**
+
 ```bash
 flutter drive \
   --driver=test_driver/integration_test.dart \
@@ -408,27 +440,32 @@ Before uploading screenshots:
 After initial launch, consider testing:
 
 **Variation 1: Feature-Focused**
+
 - Emphasize specific features in each screenshot
 - Use detailed descriptions
 - Show UI in context
 
 **Variation 2: Benefit-Focused**
+
 - Lead with user benefits
 - Use testimonial quotes
 - Show results/outcomes
 
 **Variation 3: Minimal**
+
 - Clean, simple designs
 - Less text overlay
 - Focus on beautiful UI
 
 **Track Metrics:**
+
 - App page views
 - Install conversion rate
 - Screenshot scroll-through rate
 - Which screenshots users view most
 
 **Tools:**
+
 - App Store Connect Analytics
 - Google Play Console Experiments
 - Third-party ASO tools
@@ -438,16 +475,19 @@ After initial launch, consider testing:
 ## Maintenance Schedule
 
 **Monthly:**
+
 - [ ] Review screenshot performance
 - [ ] Check for outdated UI (after app updates)
 - [ ] Update seasonal promotions
 
 **Quarterly:**
+
 - [ ] A/B test new screenshot variations
 - [ ] Update feature callouts based on user feedback
 - [ ] Refresh testimonials
 
 **Per Major Release:**
+
 - [ ] Update screenshots to reflect new UI
 - [ ] Add screenshots for new features
 - [ ] Re-capture all sizes
@@ -456,6 +496,7 @@ After initial launch, consider testing:
 ---
 
 **Template Files:**
+
 - Figma: [Link to Figma template]
 - PSD: [Link to Photoshop template]
 - Sketch: [Link to Sketch template]

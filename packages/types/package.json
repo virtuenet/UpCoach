@@ -1,0 +1,19 @@
+{
+  "name": "@upcoach/types",
+  "version": "1.0.0",
+  "description": "TypeScript type definitions for UpCoach",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "node build.js",
+    "dev": "tsc --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "@types/react-router-dom": "^5.3.3"
+  }
+}

@@ -1,0 +1,119 @@
+# Alertmanager Configuration for UpCoach Production
+# This configuration defines how alerts are routed and handled
+
+global:
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'alerts@upcoach.ai'
+  smtp_auth_username: 'alerts@upcoach.ai'
+  smtp_auth_password: 'your-smtp-password'
+
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+route:
+  group_by: ['alertname', 'service']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'team-email'
+
+  routes:
+    # Critical alerts - immediate notification
+    - match:
+        severity: critical
+      receiver: 'critical-pager'
+      continue: true
+
+    # Database alerts - immediate notification
+    - match:
+        service: database
+      receiver: 'database-team'
+      continue: true
+
+    # API alerts - immediate notification
+    - match:
+        service: api
+      receiver: 'api-team'
+      continue: true
+
+receivers:
+  - name: 'team-email'
+    email_configs:
+      - to: 'team@upcoach.ai'
+        subject: '{{ .GroupLabels.alertname }} - {{ .CommonLabels.severity | title }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Severity: {{ .Labels.severity }}
+          Service: {{ .Labels.service }}
+          Time: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ if .Annotations.runbook_url }}
+          Runbook: {{ .Annotations.runbook_url }}
+          {{ end }}
+          ---
+          {{ end }}
+
+  - name: 'critical-pager'
+    email_configs:
+      - to: 'oncall@upcoach.ai'
+        subject: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+        body: |
+          🚨 CRITICAL ALERT 🚨
+
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Time: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ if .Annotations.runbook_url }}
+          Runbook: {{ .Annotations.runbook_url }}
+          {{ end }}
+          ---
+          {{ end }}
+
+          Immediate action required!
+
+    # Optional: Add SMS/pager integration
+    # pagerduty_configs:
+    #   - service_key: 'your-pagerduty-service-key'
+
+  - name: 'database-team'
+    email_configs:
+      - to: 'database@upcoach.ai'
+        subject: 'Database Alert: {{ .GroupLabels.alertname }} - {{ .CommonLabels.severity | title }}'
+
+  - name: 'api-team'
+    email_configs:
+      - to: 'api@upcoach.ai'
+        subject: 'API Alert: {{ .GroupLabels.alertname }} - {{ .CommonLabels.severity | title }}'
+
+  # Optional: Slack integration
+  # - name: 'slack-notifications'
+  #   slack_configs:
+  #     - api_url: 'your-slack-webhook-url'
+  #       channel: '#alerts'
+  #       title: '{{ .GroupLabels.alertname }}'
+  #       text: |
+  #         {{ range .Alerts }}
+  #         *{{ .Annotations.summary }}*
+  #         {{ .Annotations.description }}
+  #         Severity: {{ .Labels.severity }}
+  #         {{ if .Annotations.runbook_url }}
+  #         <{{ .Annotations.runbook_url }}|Runbook>
+  #         {{ end }}
+  #         {{ end }}
+
+# Inhibition rules - suppress less critical alerts when critical ones are firing
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'service']
+
+  # Don't send database warnings if database is down
+  - source_match:
+      alertname: 'PostgresDown'
+    target_match_re:
+      alertname: 'Postgres.*'
+    equal: ['service']

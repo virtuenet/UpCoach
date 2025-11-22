@@ -1,0 +1,20 @@
+{
+  "environment": "staging",
+  "apiBaseUrl": "https://api-staging.upcoach.ai",
+  "supabaseUrl": "${SUPABASE_STAGING_URL}",
+  "supabaseAnonKey": "${SUPABASE_STAGING_ANON_KEY}",
+  "googleWebClientId": "${GOOGLE_WEB_CLIENT_ID_STAGING}",
+  "googleServerClientId": "${GOOGLE_SERVER_CLIENT_ID_STAGING}",
+  "features": {
+    "enableDebugMode": true,
+    "enableAnalytics": true,
+    "enableCrashReporting": true,
+    "enablePerformanceMonitoring": true
+  },
+  "security": {
+    "enableCertificatePinning": false,
+    "enforceHttps": true,
+    "validateHostnames": true,
+    "requireBiometrics": false
+  }
+}
