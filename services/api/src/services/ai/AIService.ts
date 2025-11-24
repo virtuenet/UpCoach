@@ -12,6 +12,7 @@ import { ContextManager } from './ContextManager';
 import { PersonalityEngine } from './PersonalityEngine';
 import { PromptEngineering } from './PromptEngineering';
 import { RetryMechanism } from './RetryMechanism';
+import { localPhi3Service } from './local/LocalPhi3Service';
 
 
 export interface AIMessage {
@@ -31,7 +32,7 @@ export interface AIResponse {
   };
   model: string;
   finishReason?: string;
-  provider?: 'openai' | 'claude';
+  provider?: 'openai' | 'claude' | 'local';
   securityMetadata?: {
     inputValidated: boolean;
     outputValidated: boolean;
@@ -44,7 +45,7 @@ export interface AIOptions {
   model?: string;
   temperature?: number;
   maxTokens?: number;
-  provider?: 'openai' | 'claude';
+  provider?: 'openai' | 'claude' | 'local';
   personality?: string;
   context?: unknown;
   useCache?: boolean;
@@ -178,33 +179,51 @@ export class AIService {
       const secureMessages = this.createSecurePromptStructure(optimizedMessages, systemPrompt);
 
       // Execute with circuit breaker and retry
-      const response = await this.circuitBreaker.execute(async () => {
-        return await this.retry.execute(
-          async () => {
-            if (provider === 'openai') {
-              return await this.generateOpenAIResponse(secureMessages, {
-                model,
-                temperature,
-                maxTokens,
-              });
-            } else {
-              return await this.generateClaudeResponse(secureMessages, {
-                model,
-                temperature,
-                maxTokens,
-              });
-            }
-          },
-          {
-            maxRetries: 3,
-            onRetry: (error, attempt) => {
-              // SECURITY: Sanitize error messages in logs
-              const sanitizedError = secureCredentialManager.createSecureErrorMessage(error, 'AI API call');
-              logger.warn(`AI request retry attempt ${attempt}:`, sanitizedError.message);
+      let response: AIResponse | null = null;
+
+      const shouldAttemptLocal =
+        provider === 'local' ||
+        this.shouldAttemptLocalProvider(provider, maxTokens, secureMessages);
+
+      if (shouldAttemptLocal) {
+        response = await this.tryLocalResponse(secureMessages, { temperature, maxTokens });
+      }
+
+      const remoteProvider = provider === 'local' ? 'openai' : provider;
+
+      if (!response) {
+        response = await this.circuitBreaker.execute(async () => {
+          return await this.retry.execute(
+            async () => {
+              if (remoteProvider === 'openai') {
+                return await this.generateOpenAIResponse(secureMessages, {
+                  model,
+                  temperature,
+                  maxTokens,
+                });
+              } else {
+                return await this.generateClaudeResponse(secureMessages, {
+                  model,
+                  temperature,
+                  maxTokens,
+                });
+              }
             },
-          }
-        );
-      });
+            {
+              maxRetries: 3,
+              onRetry: (error, attempt) => {
+                // SECURITY: Sanitize error messages in logs
+                const sanitizedError = secureCredentialManager.createSecureErrorMessage(error, 'AI API call');
+                logger.warn(`AI request retry attempt ${attempt}:`, sanitizedError.message);
+              },
+            }
+          );
+        });
+      }
+
+      if (!response) {
+        throw new Error('AI provider failed to return a response');
+      }
 
       // SECURITY: Validate AI response before processing
       const validatedResponse = this.validateAIResponse(response);
@@ -235,6 +254,69 @@ export class AIService {
       });
       throw secureError;
     }
+  }
+
+  private shouldAttemptLocalProvider(
+    provider: 'openai' | 'claude' | 'local',
+    maxTokens: number,
+    messages: AIMessage[]
+  ): boolean {
+    if (!config.localLLM.enabled) {
+      return false;
+    }
+    if (provider === 'claude') {
+      return false;
+    }
+    if (maxTokens > config.localLLM.maxTokens) {
+      return false;
+    }
+    const estimatedTokens = this.estimateTokenLength(messages);
+    return estimatedTokens <= config.localLLM.contextWindow;
+  }
+
+  private async tryLocalResponse(
+    messages: AIMessage[],
+    options: { temperature: number; maxTokens: number }
+  ): Promise<AIResponse | null> {
+    try {
+      if (!(await localPhi3Service.isReady())) {
+        return null;
+      }
+
+      const serializedPrompt = this.serializeMessages(messages);
+      const localResult = await localPhi3Service.generate(serializedPrompt, options);
+
+      if (!localResult.text || localResult.text.trim().length === 0) {
+        return null;
+      }
+
+      return {
+        id: `local-${Date.now()}`,
+        content: localResult.text,
+        usage: {
+          promptTokens: localResult.promptTokens,
+          completionTokens: localResult.completionTokens,
+          totalTokens: localResult.totalTokens,
+        },
+        model: 'phi-3.5-mini-instruct',
+        provider: 'local',
+      };
+    } catch (error) {
+      logger.warn('Local LLM generation failed, falling back to cloud provider', {
+        error: (error as Error).message,
+      });
+      return null;
+    }
+  }
+
+  private serializeMessages(messages: AIMessage[]): string {
+    return messages
+      .map(msg => `${msg.role.toUpperCase()}: ${msg.content}`)
+      .join('\n');
+  }
+
+  private estimateTokenLength(messages: AIMessage[]): number {
+    return messages.reduce((total, msg) => total + Math.ceil(msg.content.length / 4), 0);
   }
 
   private async generateOpenAIResponse(
