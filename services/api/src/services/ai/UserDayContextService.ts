@@ -2,7 +2,7 @@ import { Op } from 'sequelize';
 
 import { analyticsInsightsService } from '../analytics/AnalyticsInsightsService';
 import { Task } from '../../models/Task';
-import { Mood } from '../../models/Mood';
+import { db } from '../database';
 
 export interface GoalOverview {
   totalGoals: number;
@@ -92,19 +92,30 @@ class UserDayContextService {
   }
 
   private async getTodaysMood(userId: string): Promise<DailyUserContext['todaysMood']> {
-    const mood = await Mood.findOne({
-      where: { userId },
-      order: [['createdAt', 'DESC']],
-    });
+    const result = await db.query<{
+      mood: string;
+      intensity: number;
+      recordedAt: Date;
+    }>(
+      `
+        SELECT mood, intensity, "recordedAt"
+        FROM mood_entries
+        WHERE "userId" = $1
+        ORDER BY "recordedAt" DESC
+        LIMIT 1
+      `,
+      [userId]
+    );
 
-    if (!mood) {
+    if (result.rows.length === 0) {
       return null;
     }
 
+    const mood = result.rows[0];
     return {
       label: mood.mood,
-      score: mood.moodScore,
-      loggedAt: mood.createdAt?.toISOString() ?? new Date().toISOString(),
+      score: mood.intensity,
+      loggedAt: mood.recordedAt.toISOString(),
     };
   }
 }
