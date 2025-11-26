@@ -1,61 +1,49 @@
-import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
-import '../constants/app_constants.dart';
 import '../../shared/models/chat_message.dart';
 import '../../shared/models/conversation.dart';
+import 'api_service.dart';
 
 class ChatService {
-  static final ChatService _instance = ChatService._internal();
-  factory ChatService() => _instance;
-  
-  final Dio _dio = Dio();
+  ChatService(this._api);
+
+  final ApiService _api;
   final Uuid _uuid = const Uuid();
 
-  ChatService._internal() {
-    _dio.options.baseUrl = AppConstants.apiUrl;
-    _dio.options.connectTimeout = const Duration(seconds: AppConstants.requestTimeoutSeconds);
-    _dio.options.receiveTimeout = const Duration(seconds: AppConstants.requestTimeoutSeconds);
-  }
-
   Future<List<Conversation>> getConversations() async {
-    try {
-      final response = await _dio.get('/chats');
-      final List<dynamic> conversationsJson = response.data['conversations'] ?? [];
-      
-      return conversationsJson
-          .map((json) => Conversation.fromJson(json as Map<String, dynamic>))
-          .toList();
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
+    final history = await _api.get('/api/ai/companion/history');
+    final messages = (history.data['data'] as List<dynamic>? ?? [])
+        .map((json) => _messageFromJson(json as Map<String, dynamic>))
+        .toList();
+
+    final now = DateTime.now();
+    final conversation = Conversation(
+      id: 'companion',
+      title: 'Companion',
+      userId: 'companion',
+      messages: messages,
+      createdAt: now,
+      updatedAt: now,
+      metadata: const {'type': 'companion'},
+    );
+
+    return [conversation];
   }
 
   Future<Conversation> createConversation({
     String? title,
     String? initialMessage,
   }) async {
-    try {
-      final response = await _dio.post(
-        '/chats',
-        data: {
-          'title': title ?? 'New Conversation',
-          if (initialMessage != null) 'initial_message': initialMessage,
-        },
-      );
-
-      return Conversation.fromJson(response.data);
-    } on DioException catch (e) {
-      throw _handleError(e);
+    await _api.delete('/api/ai/companion/history');
+    if (initialMessage != null) {
+      await sendCompanionMessage(initialMessage);
     }
+    final conversations = await getConversations();
+    return conversations.first;
   }
 
   Future<Conversation> getConversation(String conversationId) async {
-    try {
-      final response = await _dio.get('/chats/$conversationId');
-      return Conversation.fromJson(response.data);
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
+    final conversations = await getConversations();
+    return conversations.firstWhere((conv) => conv.id == conversationId, orElse: () => conversations.first);
   }
 
   Future<ChatMessage> sendMessage({
@@ -63,61 +51,28 @@ class ChatService {
     required String content,
     MessageType type = MessageType.user,
   }) async {
-    try {
-      final response = await _dio.post(
-        '/chats/$conversationId/messages',
-        data: {
-          'content': content,
-          'type': type.name,
-        },
-      );
-
-      return ChatMessage.fromJson(response.data['message']);
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
+    final result = await sendCompanionMessage(content);
+    return result['user']!;
   }
 
   Future<ChatMessage> getAIResponse({
     required String conversationId,
     required String userMessage,
   }) async {
-    try {
-      final response = await _dio.post(
-        '/chats/$conversationId/ai-response',
-        data: {
-          'message': userMessage,
-        },
-      );
-
-      return ChatMessage.fromJson(response.data['response']);
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
+    final result = await sendCompanionMessage(userMessage);
+    return result['assistant']!;
   }
 
   Future<void> deleteConversation(String conversationId) async {
-    try {
-      await _dio.delete('/chats/$conversationId');
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
+    await _api.delete('/api/ai/companion/history');
   }
 
   Future<Conversation> updateConversationTitle({
     required String conversationId,
     required String title,
   }) async {
-    try {
-      final response = await _dio.patch(
-        '/chats/$conversationId',
-        data: {'title': title},
-      );
-
-      return Conversation.fromJson(response.data);
-    } on DioException catch (e) {
-      throw _handleError(e);
-    }
+    final conversation = await getConversation(conversationId);
+    return conversation.copyWith(title: title);
   }
 
   // Create a temporary message for optimistic UI updates
@@ -155,21 +110,27 @@ class ChatService {
     await Future.delayed(Duration(milliseconds: milliseconds));
   }
 
-  String _handleError(DioException error) {
-    if (error.response != null) {
-      final data = error.response!.data;
-      if (data is Map<String, dynamic> && data.containsKey('message')) {
-        return data['message'] as String;
-      }
-      return 'Request failed with status: ${error.response!.statusCode}';
-    } else if (error.type == DioExceptionType.connectionTimeout) {
-      return 'Connection timeout';
-    } else if (error.type == DioExceptionType.receiveTimeout) {
-      return 'Receive timeout';
-    } else if (error.type == DioExceptionType.connectionError) {
-      return 'Connection error';
-    } else {
-      return 'An unexpected error occurred';
-    }
+  Future<Map<String, ChatMessage>> sendCompanionMessage(String content) async {
+    final response = await _api.post(
+      '/api/ai/companion/message',
+      data: {'message': content},
+    );
+
+    final data = response.data['data'] as Map<String, dynamic>;
+    return {
+      'user': _messageFromJson(data['user'] as Map<String, dynamic>),
+      'assistant': _messageFromJson(data['assistant'] as Map<String, dynamic>),
+    };
+  }
+
+  ChatMessage _messageFromJson(Map<String, dynamic> json) {
+    return ChatMessage(
+      id: json['id'] as String? ?? _uuid.v4(),
+      content: json['content'] as String? ?? '',
+      type: json['role'] == 'assistant' ? MessageType.assistant : MessageType.user,
+      status: MessageStatus.sent,
+      timestamp: DateTime.tryParse(json['timestamp'] as String? ?? '') ?? DateTime.now(),
+      metadata: json,
+    );
   }
 } 

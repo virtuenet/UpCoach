@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../shared/constants/ui_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +14,17 @@ import '../../../features/tasks/providers/task_provider.dart';
 import '../../../features/goals/providers/goal_provider.dart';
 import '../../../features/mood/providers/mood_provider.dart';
 import '../../../core/services/remote_copy_service.dart';
+import '../providers/daily_pulse_provider.dart';
+import '../providers/micro_challenge_provider.dart';
+import '../providers/streak_guardian_provider.dart';
+import '../providers/progress_highlight_provider.dart';
+import '../models/daily_pulse.dart';
+import '../models/micro_challenge.dart';
+import '../models/streak_guardian.dart';
+import '../models/progress_highlight.dart';
+import '../services/micro_challenge_service.dart';
+import '../services/streak_guardian_service.dart';
+import '../services/progress_highlight_service.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -33,6 +45,11 @@ class HomeScreen extends ConsumerWidget {
       orElse: () => const <String, String>{},
     );
     
+    final dailyPulseAsync = ref.watch(dailyPulseProvider);
+    final microChallengesAsync = ref.watch(microChallengesProvider);
+    final guardiansAsync = ref.watch(streakGuardiansProvider);
+    final highlightsAsync = ref.watch(progressHighlightsProvider);
+
     final user = authState.user;
     final todaysMood = moodState.todaysMood;
 
@@ -43,6 +60,8 @@ class HomeScreen extends ConsumerWidget {
             ref.read(taskProvider.notifier).loadTasks(),
             ref.read(goalProvider.notifier).loadGoals(),
             ref.read(moodProvider.notifier).loadMoodEntries(),
+            ref.refresh(dailyPulseProvider.future),
+            ref.refresh(microChallengesProvider.future),
           ]);
         },
         child: CustomScrollView(
@@ -105,6 +124,22 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
+                  
+                  const SizedBox(height: UIConstants.spacingMD),
+
+                  _buildDailyPulseSection(context, ref, dailyPulseAsync),
+                  
+                  const SizedBox(height: UIConstants.spacingMD),
+                  
+                  _buildMicroChallengesSection(context, ref, microChallengesAsync),
+                  
+                  const SizedBox(height: UIConstants.spacingMD),
+                  
+                  _buildGuardianSection(context, ref, guardiansAsync),
+                  
+                  const SizedBox(height: UIConstants.spacingMD),
+
+                  _buildHighlightsSection(context, ref, highlightsAsync),
                   
                   const SizedBox(height: UIConstants.spacingMD),
                   
@@ -340,6 +375,293 @@ class HomeScreen extends ConsumerWidget {
     }
   }
 
+  Widget _buildDailyPulseSection(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<DailyPulse> pulseAsync,
+  ) {
+    return pulseAsync.when(
+      data: (pulse) => _DailyPulseCard(pulse: pulse, onRefresh: () => ref.refresh(dailyPulseProvider)),
+      loading: () => const _DailyPulseSkeleton(),
+      error: (error, stack) => Card(
+        color: Colors.red.withOpacity(0.05),
+        child: ListTile(
+          leading: const Icon(Icons.warning, color: Colors.red),
+          title: const Text('Unable to load your daily pulse'),
+          subtitle: Text(error.toString()),
+          trailing: IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => ref.refresh(dailyPulseProvider),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMicroChallengesSection(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<List<MicroChallenge>> challengesAsync,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Micro-challenges for you',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        const SizedBox(height: UIConstants.spacingSM),
+        SizedBox(
+          height: 190,
+          child: challengesAsync.when(
+            data: (challenges) {
+              if (challenges.isEmpty) {
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(UIConstants.spacingMD),
+                    child: Text(
+                      'New mini challenges are on the way—check back soon.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                );
+              }
+
+              return ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: challenges.length,
+                separatorBuilder: (_, __) => const SizedBox(width: UIConstants.spacingMD),
+                itemBuilder: (context, index) {
+                  final challenge = challenges[index];
+                  return SizedBox(
+                    width: 260,
+                    child: _MicroChallengeCard(
+                      challenge: challenge,
+                      onComplete: () async {
+                        await _handleCompleteChallenge(context, ref, challenge.id);
+                      },
+                    ),
+                  );
+                },
+              );
+            },
+            loading: () => const _MicroChallengeSkeleton(),
+            error: (error, _) => Card(
+              color: Colors.red.withOpacity(0.05),
+              child: ListTile(
+                leading: const Icon(Icons.warning, color: Colors.red),
+                title: const Text('Couldn’t load challenges'),
+                subtitle: Text(error.toString()),
+                trailing: IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () => ref.refresh(microChallengesProvider),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _handleCompleteChallenge(
+    BuildContext context,
+    WidgetRef ref,
+    String challengeId,
+  ) async {
+    final scaffold = ScaffoldMessenger.of(context);
+    try {
+      await ref.read(microChallengeServiceProvider).completeChallenge(challengeId);
+      ref.invalidate(microChallengesProvider);
+      scaffold.showSnackBar(
+        const SnackBar(content: Text('Nice! Challenge marked complete.')),
+      );
+    } catch (error) {
+      scaffold.showSnackBar(
+        SnackBar(content: Text('Unable to complete challenge: $error')),
+      );
+    }
+  }
+
+  Widget _buildGuardianSection(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<List<StreakGuardian>> guardiansAsync,
+  ) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
+        child: guardiansAsync.when(
+          data: (guardians) {
+            if (guardians.isEmpty) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Streak guardians',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: UIConstants.spacingXS),
+                  Text(
+                    'Invite a friend or teammate to receive accountability nudges when your streak is at risk.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              );
+            }
+
+            final guardian = guardians.first;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Streak guardians',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: UIConstants.spacingXS),
+                Text(
+                  guardian.isAccepted
+                      ? '${guardian.partnerName} is watching your streak.'
+                      : '${guardian.partnerName} has not accepted yet.',
+                ),
+                const SizedBox(height: UIConstants.spacingSM),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      guardian.isAccepted
+                          ? 'Send a cheer or encouragement.'
+                          : 'Waiting for acceptance…',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    TextButton(
+                      onPressed: guardian.isAccepted
+                          ? () => _handleSendCheer(context, ref, guardian.id)
+                          : null,
+                      child: const Text('Send cheer'),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+          loading: () => const _GuardianSkeleton(),
+          error: (error, _) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Streak guardians',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: UIConstants.spacingXS),
+              Text(error.toString(), style: const TextStyle(color: Colors.red)),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => ref.refresh(streakGuardiansProvider),
+                  child: const Text('Retry'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleSendCheer(
+    BuildContext context,
+    WidgetRef ref,
+    String linkId,
+  ) async {
+    final scaffold = ScaffoldMessenger.of(context);
+    try {
+      await ref
+          .read(streakGuardianServiceProvider)
+          .sendCheer(linkId, 'You’ve got this—cheering you on!');
+      scaffold.showSnackBar(
+        const SnackBar(content: Text('Cheer sent!')),
+      );
+    } catch (error) {
+      scaffold.showSnackBar(
+        SnackBar(content: Text('Unable to send cheer: $error')),
+      );
+    }
+  }
+
+  Widget _buildHighlightsSection(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<List<ProgressHighlight>> highlightsAsync,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Progress highlights',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: UIConstants.spacingSM),
+        SizedBox(
+          height: 200,
+          child: highlightsAsync.when(
+            data: (highlights) {
+              if (highlights.isEmpty) {
+                return const Center(child: Text('No highlights yet'));
+              }
+              return ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: highlights.length,
+                separatorBuilder: (_, __) => const SizedBox(width: UIConstants.spacingMD),
+                itemBuilder: (context, index) {
+                  final highlight = highlights[index];
+                  return SizedBox(
+                    width: 260,
+                    child: _HighlightCard(
+                      highlight: highlight,
+                      onShare: () => _handleShareHighlight(context, highlight),
+                    ),
+                  );
+                },
+              );
+            },
+            loading: () => const _HighlightSkeleton(),
+            error: (error, _) => Card(
+              child: Padding(
+                padding: const EdgeInsets.all(UIConstants.spacingMD),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Unable to load highlights',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Text(error.toString()),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () => ref.refresh(progressHighlightsProvider),
+                        child: const Text('Retry'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _handleShareHighlight(BuildContext context, ProgressHighlight highlight) {
+    final scaffold = ScaffoldMessenger.of(context);
+    Clipboard.setData(ClipboardData(text: highlight.sharePrompt));
+    scaffold.showSnackBar(const SnackBar(content: Text('Share prompt copied!')));
+  }
+
   Widget _buildTasksSummary(BuildContext context, TaskState taskState) {
     final pendingTasks = taskState.tasks.where((t) => !t.isCompleted).length;
     final completedToday = taskState.tasks.where((t) => 
@@ -478,6 +800,549 @@ class HomeScreen extends ConsumerWidget {
   Color _getMoodColor(level) {
     // This would map to MoodLevel enum values
     return Colors.amber; // Simplified for now
+  }
+}
+
+class _DailyPulseCard extends StatelessWidget {
+  const _DailyPulseCard({required this.pulse, this.onRefresh});
+
+  final DailyPulse pulse;
+  final VoidCallback? onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    final isMorning = pulse.period == 'morning';
+    final icon = isMorning ? Icons.wb_sunny : Icons.nightlight_round;
+
+    return Card(
+      elevation: 1,
+      child: Padding(
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: CircleAvatar(
+                backgroundColor: (isMorning ? Colors.orange : Colors.indigo).withOpacity(0.15),
+                child: Icon(
+                  icon,
+                  color: isMorning ? Colors.orange : Colors.indigo,
+                ),
+              ),
+              title: Text(
+                pulse.headline,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+              subtitle: Text(
+                pulse.summary,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+            const SizedBox(height: UIConstants.spacingSM),
+            Text(
+              pulse.encouragement,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontStyle: FontStyle.italic,
+                  ),
+            ),
+            const SizedBox(height: UIConstants.spacingMD),
+            if (pulse.recommendedActions.isNotEmpty) ...[
+              Text(
+                'Recommended actions',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: UIConstants.spacingSM),
+              Column(
+                children: pulse.recommendedActions
+                    .take(3)
+                    .map(
+                      (action) => ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(
+                          Icons.bolt,
+                          color: AppTheme.primaryColor,
+                        ),
+                        title: Text(action.title),
+                        subtitle: Text(action.description),
+                        trailing: Chip(
+                          label: Text(action.timeframe),
+                          backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+              const SizedBox(height: UIConstants.spacingSM),
+            ],
+            Wrap(
+              spacing: UIConstants.spacingSM,
+              runSpacing: UIConstants.spacingSM,
+              children: [
+                _MetricChip(
+                  label: 'Tasks',
+                  value: '${pulse.metrics['tasksDueToday'] ?? 0} due',
+                ),
+                _MetricChip(
+                  label: 'Goals',
+                  value: '${pulse.metrics['completedGoals'] ?? 0}/${pulse.metrics['activeGoals'] ?? 0}',
+                ),
+                _MetricChip(
+                  label: 'Habits',
+                  value:
+                      '${((pulse.metrics['averageHabitScore'] ?? 0) * 100).toStringAsFixed(0)}% streak',
+                ),
+                if (pulse.metrics['moodTrend'] != null)
+                  _MetricChip(
+                    label: 'Mood',
+                    value: pulse.metrics['moodTrend'].toString(),
+                  ),
+              ],
+            ),
+            if (pulse.gratitudePrompt != null) ...[
+              const SizedBox(height: UIConstants.spacingSM),
+              Text(
+                pulse.gratitudePrompt!,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppTheme.textSecondary,
+                    ),
+              ),
+            ],
+            const SizedBox(height: UIConstants.spacingSM),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Updated ${TimeOfDay.fromDateTime(pulse.generatedAt).format(context)}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppTheme.textSecondary,
+                      ),
+                ),
+                TextButton.icon(
+                  onPressed: onRefresh,
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text('Refresh'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MetricChip extends StatelessWidget {
+  const _MetricChip({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Chip(
+      labelPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      backgroundColor: AppTheme.primaryColor.withOpacity(0.08),
+      label: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppTheme.textSecondary,
+                ),
+          ),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DailyPulseSkeleton extends StatelessWidget {
+  const _DailyPulseSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 16,
+              width: 180,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            const SizedBox(height: UIConstants.spacingSM),
+            Container(
+              height: 14,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            const SizedBox(height: UIConstants.spacingSM),
+            Container(
+              height: 14,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            const SizedBox(height: UIConstants.spacingSM),
+            Row(
+              children: List.generate(
+                3,
+                (index) => Expanded(
+                  child: Container(
+                    margin: EdgeInsets.only(right: index == 2 ? 0 : UIConstants.spacingSM),
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MicroChallengeCard extends StatelessWidget {
+  const _MicroChallengeCard({required this.challenge, this.onComplete});
+
+  final MicroChallenge challenge;
+  final VoidCallback? onComplete;
+
+  @override
+  Widget build(BuildContext context) {
+    final isCompleted = challenge.status == 'completed';
+    return Card(
+      elevation: 1,
+      child: Padding(
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              challenge.title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            const SizedBox(height: UIConstants.spacingXS),
+            Text(
+              challenge.microCopy,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const Spacer(),
+            Text(
+              challenge.reason,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppTheme.textSecondary,
+                  ),
+            ),
+            const SizedBox(height: UIConstants.spacingSM),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Chip(
+                  avatar: const Icon(Icons.timer, size: 16),
+                  label: Text('${challenge.durationMinutes} min'),
+                ),
+                Chip(
+                  avatar: const Icon(Icons.emoji_events, size: 16),
+                  label: Text('+${challenge.rewardXp} XP'),
+                ),
+              ],
+            ),
+            const SizedBox(height: UIConstants.spacingSM),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                icon: Icon(isCompleted ? Icons.check : Icons.play_arrow),
+                label: Text(isCompleted ? 'Completed' : 'Start'),
+                onPressed: isCompleted ? null : onComplete,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MicroChallengeSkeleton extends StatelessWidget {
+  const _MicroChallengeSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      scrollDirection: Axis.horizontal,
+      itemBuilder: (_, __) => SizedBox(
+        width: 240,
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(UIConstants.spacingMD),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 16,
+                  width: 160,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                const SizedBox(height: UIConstants.spacingSM),
+                Container(
+                  height: 12,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                const Spacer(),
+                Row(
+                  children: [
+                    Container(
+                      height: 28,
+                      width: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    const SizedBox(width: UIConstants.spacingSM),
+                    Container(
+                      height: 28,
+                      width: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: UIConstants.spacingSM),
+                Container(
+                  height: 36,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      separatorBuilder: (_, __) => const SizedBox(width: UIConstants.spacingMD),
+      itemCount: 3,
+    );
+  }
+}
+
+class _GuardianSkeleton extends StatelessWidget {
+  const _GuardianSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          height: 16,
+          width: 140,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade300,
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        const SizedBox(height: UIConstants.spacingXS),
+        Container(
+          height: 12,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        const SizedBox(height: UIConstants.spacingSM),
+        Container(
+          height: 36,
+          width: 140,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HighlightCard extends StatelessWidget {
+  const _HighlightCard({required this.highlight, this.onShare});
+
+  final ProgressHighlight highlight;
+  final VoidCallback? onShare;
+
+  Color _accentColor() {
+    switch (highlight.sentiment) {
+      case 'win':
+        return Colors.green;
+      case 'recovery':
+        return Colors.orange;
+      default:
+        return AppTheme.primaryColor;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _accentColor();
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(UIConstants.spacingMD),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Chip(
+              backgroundColor: color.withOpacity(0.12),
+              label: Text(
+                highlight.title,
+                style: TextStyle(color: color, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: UIConstants.spacingSM),
+            Text(
+              highlight.summary,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      highlight.metricLabel,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    Text(
+                      highlight.metricValue,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                IconButton(
+                  icon: const Icon(Icons.ios_share),
+                  onPressed: onShare,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HighlightSkeleton extends StatelessWidget {
+  const _HighlightSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      scrollDirection: Axis.horizontal,
+      itemCount: 2,
+      separatorBuilder: (_, __) => const SizedBox(width: UIConstants.spacingMD),
+      itemBuilder: (_, __) => SizedBox(
+        width: 240,
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(UIConstants.spacingMD),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 80,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                const SizedBox(height: UIConstants.spacingSM),
+                Container(
+                  height: 12,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                const SizedBox(height: UIConstants.spacingSM),
+                Container(
+                  height: 12,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  height: 14,
+                  width: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                const SizedBox(height: UIConstants.spacingXS),
+                Container(
+                  height: 20,
+                  width: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

@@ -11,6 +11,8 @@ import '../../auth/screens/disable_two_factor_screen.dart';
 import '../../auth/providers/auth_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../../core/ondevice/on_device_llm_manager.dart';
+import '../../../core/ondevice/on_device_llm_state.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   final int initialTab;
@@ -210,6 +212,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   }
 
   Widget _buildGeneralSettings() {
+    final onDeviceState = ref.watch(onDeviceLlmManagerProvider);
+    final onDeviceManager = ref.read(onDeviceLlmManagerProvider.notifier);
+
     return ListView(
       children: [
         _buildSectionHeader('Appearance'),
@@ -292,6 +297,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             _triggerWeeklyReport('sheets');
           },
         ),
+
+        const Divider(),
+
+        _buildSectionHeader('On-device AI'),
+        SwitchListTile(
+          title: const Text('Use on-device mini model'),
+          subtitle: const Text('Route quick prompts through the local 1–2B model'),
+          value: onDeviceState.enabled,
+          onChanged: (value) {
+            onDeviceManager.setEnabled(value);
+          },
+        ),
+        ListTile(
+          title: Text(onDeviceState.activeModel.name),
+          subtitle: Text(_formatOnDeviceStatus(onDeviceState)),
+          trailing: _buildOnDeviceTrailing(onDeviceState),
+          onTap: () => _showOnDeviceActionsSheet(onDeviceManager, onDeviceState),
+        ),
       ],
     );
   }
@@ -373,6 +396,84 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           },
         ),
       ],
+    );
+  }
+
+  String _formatOnDeviceStatus(OnDeviceLlmState state) {
+    switch (state.status) {
+      case OnDeviceModelStatus.ready:
+        final freshness = state.lastUpdated != null
+            ? 'Updated ${state.lastUpdated}'
+            : 'Ready for offline prompts';
+        return '${state.activeModel.sizeMB} MB cached • $freshness';
+      case OnDeviceModelStatus.downloading:
+        final percent = (state.downloadProgress * 100).clamp(0, 100).toStringAsFixed(0);
+        return 'Downloading… $percent%';
+      case OnDeviceModelStatus.error:
+        return 'Error: ${state.lastError ?? 'unknown'}';
+      case OnDeviceModelStatus.notInstalled:
+      default:
+        return '${state.activeModel.sizeMB} MB download required';
+    }
+  }
+
+  Widget _buildOnDeviceTrailing(OnDeviceLlmState state) {
+    if (state.status == OnDeviceModelStatus.downloading) {
+      return SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(
+          value: state.downloadProgress == 0 ? null : state.downloadProgress,
+          strokeWidth: 2,
+        ),
+      );
+    }
+    return const Icon(Icons.chevron_right);
+  }
+
+  Future<void> _showOnDeviceActionsSheet(
+    OnDeviceLlmManager manager,
+    OnDeviceLlmState state,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.download),
+                title: Text(state.status == OnDeviceModelStatus.ready ? 'Refresh model' : 'Download model'),
+                subtitle: Text('${state.activeModel.sizeMB} MB • ${state.activeModel.backend}'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  manager.downloadActiveModel();
+                },
+              ),
+              if (state.status == OnDeviceModelStatus.downloading)
+                ListTile(
+                  leading: const Icon(Icons.stop),
+                  title: const Text('Cancel download'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    manager.cancelDownload();
+                  },
+                ),
+              if (state.modelPath.isNotEmpty)
+                ListTile(
+                  leading: const Icon(Icons.delete_outline),
+                  title: const Text('Remove local model'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    manager.removeModel();
+                  },
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 

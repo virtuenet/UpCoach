@@ -1,11 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/ondevice/on_device_llm_manager.dart';
 import '../../../core/services/chat_service.dart';
+import '../../../core/services/api_service.dart';
 import '../../../shared/models/chat_message.dart';
 import '../../../shared/models/conversation.dart';
 
 // Chat Service Provider
 final chatServiceProvider = Provider<ChatService>((ref) {
-  return ChatService();
+  final api = ref.watch(apiServiceProvider);
+  return ChatService(api);
 });
 
 // Chat State
@@ -44,8 +47,9 @@ class ChatState {
 // Chat Provider
 class ChatNotifier extends StateNotifier<ChatState> {
   final ChatService _chatService;
+  final Ref _ref;
 
-  ChatNotifier(this._chatService) : super(const ChatState()) {
+  ChatNotifier(this._chatService, this._ref) : super(const ChatState()) {
     loadConversations();
   }
 
@@ -56,6 +60,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
       final conversations = await _chatService.getConversations();
       state = state.copyWith(
         conversations: conversations,
+        currentConversation: conversations.isNotEmpty ? conversations.first : null,
         isLoading: false,
       );
     } catch (e) {
@@ -138,33 +143,35 @@ class ChatNotifier extends StateNotifier<ChatState> {
       // Add user message to current conversation
       _addMessageToCurrentConversation(userMessage);
 
-      // Send user message to server
-      final sentUserMessage = await _chatService.sendMessage(
-        conversationId: conversationId,
-        content: content.trim(),
-        type: MessageType.user,
-      );
-
-      // Update the temporary message with server response
-      _updateMessageInCurrentConversation(userMessage.id, sentUserMessage);
-
-      // Create AI response placeholder
       final aiPlaceholder = _chatService.createAIResponsePlaceholder(
         conversationId: conversationId,
       );
       _addMessageToCurrentConversation(aiPlaceholder);
 
-      // Simulate typing delay for better UX
-      await _chatService.simulateTypingDelay(800);
+      final onDeviceManager = _ref.read(onDeviceLlmManagerProvider.notifier);
+      final localReply = await onDeviceManager.maybeGenerate(content.trim());
+      if (localReply != null) {
+        _updateMessageInCurrentConversation(
+          userMessage.id,
+          userMessage.copyWith(status: MessageStatus.sent, timestamp: DateTime.now()),
+        );
+        _updateMessageInCurrentConversation(
+          aiPlaceholder.id,
+          aiPlaceholder.copyWith(
+            content: localReply,
+            status: MessageStatus.sent,
+            timestamp: DateTime.now(),
+          ),
+        );
+        state = state.copyWith(isSending: false);
+        return;
+      }
 
-      // Get AI response
-      final aiResponse = await _chatService.getAIResponse(
-        conversationId: conversationId,
-        userMessage: content.trim(),
-      );
+      final response = await _chatService.sendCompanionMessage(content.trim());
+      await _chatService.simulateTypingDelay(600);
 
-      // Update placeholder with actual AI response
-      _updateMessageInCurrentConversation(aiPlaceholder.id, aiResponse);
+      _updateMessageInCurrentConversation(userMessage.id, response['user']!);
+      _updateMessageInCurrentConversation(aiPlaceholder.id, response['assistant']!);
 
       state = state.copyWith(isSending: false);
     } catch (e) {
@@ -264,5 +271,5 @@ class ChatNotifier extends StateNotifier<ChatState> {
 
 final chatProvider = StateNotifierProvider<ChatNotifier, ChatState>((ref) {
   final chatService = ref.watch(chatServiceProvider);
-  return ChatNotifier(chatService);
-}); 
+  return ChatNotifier(chatService, ref);
+});
