@@ -18,6 +18,15 @@ import CoachProfile from './CoachProfile';
 // CMS models
 import ContentVersion from './cms/ContentVersion';
 import ContentArticle from './cms/ContentArticle';
+import {
+  LandingSection,
+  LandingCtaBlock,
+  LandingPricingTier,
+  LandingTestimonialCard,
+  LandingBlogCard,
+  LandingComparisonTable,
+  RemoteCopyEntry,
+} from './cms/LandingBlocks';
 
 // Financial models
 import CostTracking from './financial/CostTracking';
@@ -61,6 +70,13 @@ export async function initializeAllModels(sequelize: Sequelize): Promise<void> {
     // CMS models
     ContentVersion,
     ContentArticle,
+    LandingSection,
+    LandingCtaBlock,
+    LandingPricingTier,
+    LandingTestimonialCard,
+    LandingBlogCard,
+    LandingComparisonTable,
+    RemoteCopyEntry,
 
     // Financial models
     CostTracking,
