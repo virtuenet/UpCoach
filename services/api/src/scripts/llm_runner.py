@@ -34,6 +34,8 @@ class LocalLLMRunner:
         self.model_path = model_path
         self.backend = backend
         self.model = None
+        self.tokenizer = None
+        self._ort_genai = None
 
     def load_model(self) -> bool:
         """Load the specified model"""
@@ -42,6 +44,8 @@ class LocalLLMRunner:
                 return self._load_llama_cpp()
             elif self.backend == 'transformers':
                 return self._load_transformers()
+            elif self.backend == 'onnx':
+                return self._load_onnxruntime()
             else:
                 logger.error(f"Unsupported backend: {self.backend}")
                 return False
@@ -100,6 +104,8 @@ class LocalLLMRunner:
                 return self._generate_llama_cpp(prompt, max_tokens, temperature)
             elif self.backend == 'transformers':
                 return self._generate_transformers(prompt, max_tokens, temperature)
+            elif self.backend == 'onnx':
+                return self._generate_onnxruntime(prompt, max_tokens, temperature)
         except Exception as e:
             logger.error(f"Generation failed: {e}")
             return None
@@ -157,6 +163,58 @@ class LocalLLMRunner:
             total_tokens=prompt_length + len(generated_tokens)
         )
 
+    def _load_onnxruntime(self) -> bool:
+        """Load ONNX Runtime GenAI model"""
+        try:
+            import onnxruntime_genai as ort_genai  # type: ignore
+        except ImportError:
+            logger.error("onnxruntime-genai not installed. Install with: pip install onnxruntime-genai")
+            return False
+
+        try:
+            model_path = self.model_path
+            if os.path.isdir(model_path):
+                self.model = ort_genai.Model(model_path)
+            else:
+                self.model = ort_genai.Model(model_path)
+            self._ort_genai = ort_genai
+            self.tokenizer = ort_genai.Tokenizer(self.model)
+            return True
+        except Exception as e:
+            logger.error(f"Failed to load ONNX Runtime model: {e}")
+            return False
+
+    def _generate_onnxruntime(self, prompt: str, max_tokens: int, temperature: float) -> LLMResponse:
+        """Generate text using onnxruntime-genai"""
+        ort_genai = getattr(self, '_ort_genai', None)
+        if ort_genai is None or self.model is None or self.tokenizer is None:
+            raise RuntimeError('ONNX Runtime model not initialized')
+
+        generation_config = ort_genai.GenerationConfig()
+        generation_config.max_length = max_tokens
+        generation_config.temperature = float(temperature)
+        generation_config.top_p = 0.9
+
+        generator = ort_genai.Generator(self.model, self.tokenizer, generation_config)
+        generator.append_prompt(prompt)
+
+        while not generator.is_done():
+            generator.compute_logits()
+            generator.generate_next_token()
+
+        generated_text = generator.get_sequence(0)
+
+        prompt_tokens = int(len(prompt.split()) * 1.3)
+        completion_tokens = int(len(generated_text.split()) * 1.3)
+
+        return LLMResponse(
+            text=generated_text,
+            finish_reason='stop',
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            total_tokens=prompt_tokens + completion_tokens
+        )
+
 def main():
     """Main entry point for the LLM runner"""
     parser = argparse.ArgumentParser(description='Local LLM Runner')
@@ -164,7 +222,7 @@ def main():
     parser.add_argument('--prompt', required=True, help='Input prompt')
     parser.add_argument('--max-tokens', type=int, default=256, help='Maximum tokens to generate')
     parser.add_argument('--temperature', type=float, default=0.7, help='Sampling temperature')
-    parser.add_argument('--backend', default='llama.cpp', choices=['llama.cpp', 'transformers'],
+    parser.add_argument('--backend', default='llama.cpp', choices=['llama.cpp', 'transformers', 'onnx'],
                        help='Backend to use for model inference')
 
     args = parser.parse_args()
