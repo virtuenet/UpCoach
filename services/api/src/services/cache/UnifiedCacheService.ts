@@ -8,8 +8,6 @@ import { promisify } from 'util';
 import * as zlib from 'zlib';
 
 import Redis from 'ioredis';
-import { LRUCache } from 'lru-cache';
-
 import { logger } from '../../utils/logger';
 
 const gzip = promisify(zlib.gzip);
@@ -80,6 +78,8 @@ export class UnifiedCacheService {
     this.defaultPrefix = options.defaultPrefix || 'cache:';
 
     // Initialize LRU cache with automatic eviction
+    // Load LRUCache dynamically to avoid ts-node module-level import issues
+    const { LRUCache } = require('lru-cache');
     this.inMemoryCache = new LRUCache<string, MemoryCacheEntry>({
       max: this.memoryMaxSize,
       maxSize: this.memoryMaxSize * 1000, // Set maxSize when using sizeCalculation

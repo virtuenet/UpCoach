@@ -22,8 +22,16 @@ export class UserService {
 
   static async findByEmail(email: string): Promise<User | null> {
     try {
-      return await db.findOne<User>('users', { email: email.toLowerCase() });
+      console.log('[UserService.findByEmail] About to query database for email:', email.toLowerCase());
+      console.log('[UserService.findByEmail] Database service type:', typeof db);
+      console.log('[UserService.findByEmail] Database findOne type:', typeof db.findOne);
+      const result = await db.findOne<User>('users', { email: email.toLowerCase() });
+      console.log('[UserService.findByEmail] Query result:', result ? 'User found' : 'No user found');
+      return result;
     } catch (error) {
+      console.error('[UserService.findByEmail] Caught error:', error);
+      console.error('[UserService.findByEmail] Error message:', error instanceof Error ? error.message : String(error));
+      console.error('[UserService.findByEmail] Error stack:', error instanceof Error ? error.stack : 'No stack');
       logger.error('Error finding user by email:', error);
       throw new ApiError(500, 'Failed to find user');
     }
@@ -40,14 +48,19 @@ export class UserService {
       // Hash password
       const passwordHash = await bcrypt.hash(userData.password, 12);
 
+      // Generate UUID for new user
+      const userId = crypto.randomUUID();
+
       // Create user
+      const now = new Date();
       const user = await db.insert<User>('users', {
+        id: userId,
         email: userData.email.toLowerCase(),
-        password_hash: passwordHash,
+        password: passwordHash,
         name: userData.name,
-        bio: userData.bio || null,
         role: userData.role || 'user',
-        preferences: {},
+        createdAt: now,
+        updatedAt: now,
       });
       console.error('[USER SERVICE] db.insert returned:', typeof user, user ? `id: ${user.id}` : 'undefined');
 

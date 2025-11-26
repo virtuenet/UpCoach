@@ -4,6 +4,8 @@ import { logger } from '../utils/logger';
 
 import { financialService } from './financial/FinancialService';
 import { reportingService } from './financial/ReportingService';
+import { dailyPulseService } from './ai/DailyPulseService';
+import { streakGuardianService } from './gamification/StreakGuardianService';
 
 export class SchedulerService {
   private static jobs: Map<string, cron.ScheduledTask> = new Map();
@@ -66,6 +68,37 @@ export class SchedulerService {
         logger.info('Quarterly projections completed');
       } catch (error) {
         logger.error('Failed to generate quarterly projections:', error);
+      }
+    });
+
+    // Morning pulse (6:30 AM UTC)
+    this.scheduleJob('daily-pulse-morning', '30 6 * * *', async () => {
+      logger.info('Generating morning daily pulse');
+      try {
+        await dailyPulseService.broadcastPulse('morning');
+        logger.info('Morning daily pulse broadcast completed');
+      } catch (error) {
+        logger.error('Failed to broadcast morning daily pulse', error);
+      }
+    });
+
+    // Evening pulse (10:00 PM UTC)
+    this.scheduleJob('daily-pulse-evening', '0 22 * * *', async () => {
+      logger.info('Generating evening daily pulse');
+      try {
+        await dailyPulseService.broadcastPulse('evening');
+        logger.info('Evening daily pulse broadcast completed');
+      } catch (error) {
+        logger.error('Failed to broadcast evening daily pulse', error);
+      }
+    });
+
+    // Guardian risk scan (every hour)
+    this.scheduleJob('guardian-risk-scan', '15 * * * *', async () => {
+      try {
+        await streakGuardianService.scanForAtRiskUsers();
+      } catch (error) {
+        logger.error('Failed streak guardian scan', error);
       }
     });
 

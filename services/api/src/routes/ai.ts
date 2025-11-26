@@ -1,6 +1,8 @@
 import { Router } from 'express';
 
 import { aiController } from '../controllers/ai';
+import { dailyPulseController } from '../controllers/ai/DailyPulseController';
+import { companionChatController } from '../controllers/ai/CompanionChatController';
 import { userProfilingController } from '../controllers/ai/UserProfilingController';
 import { localLLMController } from '../controllers/ai/LocalLLMController';
 import { authenticate } from '../middleware/auth';
@@ -110,11 +112,27 @@ router.post('/insights/:insightId/dismiss', authenticate, aiRateLimiter, aiContr
 
 // Local LLM Routes
 router.get('/local-llm/status', authenticate, localLLMRateLimiter, localLLMController.getStatus);
-router.get('/local-llm/models', authenticate, localLLMRateLimiter, localLLMController.getAvailableModels);
-router.post('/local-llm/generate', authenticate, localLLMRateLimiter, validateConversationInput, localLLMController.generateResponse);
-router.post('/local-llm/initialize', authenticate, aiRateLimiter, localLLMController.initializeModel);
+// TODO: Implement missing methods in LocalLLMController
+// router.get('/local-llm/models', authenticate, localLLMRateLimiter, localLLMController.getAvailableModels);
+router.post('/local-llm/generate', authenticate, localLLMRateLimiter, validateConversationInput, localLLMController.processQuery);
+// router.post('/local-llm/initialize', authenticate, aiRateLimiter, localLLMController.initializeModel);
 router.get('/local-llm/health', localLLMController.healthCheck);
-router.get('/local-llm/metrics', authenticate, localLLMRateLimiter, localLLMController.getMetrics);
+// router.get('/local-llm/metrics', authenticate, localLLMRateLimiter, localLLMController.getMetrics);
+
+// Daily Pulse Routes
+router.get('/pulse', authenticate, aiRateLimiter, (req, res, next) => dailyPulseController.getPulse(req, res, next));
+router.post('/pulse/broadcast', authenticate, aiRateLimiter, (req, res, next) =>
+  dailyPulseController.broadcast(req, res, next)
+);
+
+// Companion chat routes
+router.get('/companion/history', authenticate, aiRateLimiter, (req, res, next) =>
+  companionChatController.history(req, res, next)
+);
+router.post('/companion/message', authenticate, conversationRateLimiter, companionChatController.sendMessage);
+router.delete('/companion/history', authenticate, aiRateLimiter, (req, res, next) =>
+  companionChatController.reset(req, res, next)
+);
 
 // Hybrid AI Routes (local + cloud fallback)
 router.post('/hybrid/generate', authenticate, aiRateLimiter, validateConversationInput, aiController.hybridGenerate);

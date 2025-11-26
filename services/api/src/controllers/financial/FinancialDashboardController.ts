@@ -2,8 +2,13 @@ import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
 import { Request, Response } from 'express';
 import { Op } from 'sequelize';
 import * as ExcelJS from 'exceljs';
-// @ts-ignore - Optional dependency for PDF generation
-import puppeteer from 'puppeteer';
+// @ts-ignore - Optional dependency for PDF generation - loaded dynamically
+let puppeteer: any = null;
+try {
+  puppeteer = require('puppeteer');
+} catch (e) {
+  console.warn('Puppeteer not installed - PDF generation will be disabled');
+}
 
 import {
   Transaction,

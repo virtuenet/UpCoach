@@ -10,19 +10,41 @@ type SchemaDefinitions = typeof schema.definitions;
 const ajv = new Ajv({ allErrors: true, strict: false });
 addFormats(ajv);
 
-const blockSchemaMap: Partial<Record<AllBlockTypes, unknown>> = {
-  sections: schema.definitions?.LandingSectionContent,
-  'cta-blocks': schema.definitions?.CtaBlockContent,
-  'pricing-tiers': schema.definitions?.PricingTierContent,
-  testimonials: schema.definitions?.TestimonialContent,
-  'remote-copy': schema.definitions?.RemoteCopyEntry,
+// Add the main schema with all definitions to ajv first
+// This makes the definitions available for $ref resolution
+ajv.addSchema(schema);
+
+// Create wrapper schemas that reference the main schema's definitions
+const blockSchemaMap: Partial<Record<AllBlockTypes, Record<string, unknown>>> = {
+  sections: {
+    $schema: 'http://json-schema.org/draft-07/schema#',
+    $ref: `${schema.$id}#/definitions/LandingSectionContent`,
+  },
+  'cta-blocks': {
+    $schema: 'http://json-schema.org/draft-07/schema#',
+    $ref: `${schema.$id}#/definitions/CtaBlockContent`,
+  },
+  'pricing-tiers': {
+    $schema: 'http://json-schema.org/draft-07/schema#',
+    $ref: `${schema.$id}#/definitions/PricingTierContent`,
+  },
+  testimonials: {
+    $schema: 'http://json-schema.org/draft-07/schema#',
+    $ref: `${schema.$id}#/definitions/TestimonialContent`,
+  },
+  'remote-copy': {
+    $schema: 'http://json-schema.org/draft-07/schema#',
+    $ref: `${schema.$id}#/definitions/RemoteCopyEntry`,
+  },
 };
 
 const validators: Partial<Record<AllBlockTypes, ValidateFunction>> = {};
 
-Object.entries(blockSchemaMap).forEach(([key, definition]) => {
-  if (definition) {
-    validators[key as AllBlockTypes] = ajv.compile(definition as Record<string, unknown>);
+Object.entries(blockSchemaMap).forEach(([key, wrapperSchema]) => {
+  if (wrapperSchema) {
+    // Compile wrapper schemas that reference the main schema
+    // This allows nested $ref resolution to work correctly
+    validators[key as AllBlockTypes] = ajv.compile(wrapperSchema);
   }
 });
 

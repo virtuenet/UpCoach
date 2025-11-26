@@ -21,6 +21,7 @@ import coachRoutes from './coach';
 import csrfRoutes from './csrf';
 import enterpriseRoutes from './enterprise';
 import gamificationRoutes from './gamification';
+import progressRoutes from './progress';
 import goalRoutes from './goals';
 import habitRoutes from './habits';
 import moodRoutes from './mood';
@@ -30,7 +31,7 @@ import uploadRoutes from './upload';
 import userRoutes from './users';
 import userProfileRoutes from './user';
 import voiceJournalRoutes from './voiceJournal';
-import { localLLMRouter } from './localLLM';
+import localLLMRouter from './localLLM';
 import publicLandingRoutes from './public/landing';
 import publicMobileContentRoutes from './public/mobile';
 
@@ -111,6 +112,7 @@ export const setupRoutes = (app: Application): void => {
 
   // Gamification routes (protected)
   app.use(`${apiPrefix}/gamification`, gamificationRoutes);
+  app.use(`${apiPrefix}/progress`, authMiddleware, tenantContextMiddleware, progressRoutes);
 
   // Enterprise routes (mixed public and protected)
   app.use(`${apiPrefix}/enterprise`, enterpriseRoutes);

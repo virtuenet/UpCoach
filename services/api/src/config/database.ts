@@ -1,5 +1,4 @@
 import { logger } from '../utils/logger';
-
 import { sequelize } from './sequelize';
 
 // Re-export sequelize for compatibility
@@ -8,20 +7,21 @@ export { sequelize };
 // Initialize database connection
 export async function initializeDatabase(): Promise<void> {
   try {
+    logger.info('Authenticating database connection...');
     await sequelize.authenticate();
     logger.info('Database connection established successfully.');
 
     // Initialize models after database connection is ready
+    logger.info('Initializing models...');
     await initializeModels();
+    logger.info('Models initialized successfully.');
 
-    // Sync models with database - temporarily disabled for debugging
-    // if (env === 'development') {
-    //   await sequelize.sync({ alter: true });
-    //   logger.info('Database models synchronized.');
-    // }
-    logger.info('Database sync disabled for debugging.');
+    logger.info('Database initialization complete.');
   } catch (error) {
-    logger.error('Unable to connect to the database:', error);
+    logger.error('Database initialization failed:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+    });
     throw error;
   }
 }
@@ -32,9 +32,11 @@ async function initializeModels(): Promise<void> {
     // Import and initialize models that have deferred initialization
     const { initializeAllModels } = await import('../models/modelInitializer');
     await initializeAllModels(sequelize);
-    logger.info('All models initialized successfully.');
   } catch (error) {
-    logger.error('Failed to initialize models:', error);
+    logger.error('Failed to initialize models:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack?.substring(0, 500) : 'No stack trace',
+    });
     throw error;
   }
 }

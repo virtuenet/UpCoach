@@ -48,6 +48,14 @@ const envSchema = z.object({
   CLAUDE_API_KEY: z.string().optional(),
   CLAUDE_MODEL: z.string().default('claude-3-sonnet-20240229'),
 
+  // Local LLM Configuration
+  LOCAL_LLM_ENABLED: z.string().optional().default('false'),
+  LOCAL_LLM_MODEL_PATH: z.string().optional().default('./models/phi-3.5-mini-instruct.gguf'),
+  LOCAL_LLM_MAX_TOKENS: z.string().optional().default('512'),
+  LOCAL_LLM_CONTEXT_WINDOW: z.string().optional().default('4096'),
+  LOCAL_LLM_TIMEOUT_MS: z.string().optional().default('20000'),
+  LOCAL_LLM_BACKEND: z.enum(['llama.cpp', 'transformers', 'onnx']).optional().default('llama.cpp'),
+
   // Supabase Configuration (if using Supabase for auth/storage)
   SUPABASE_URL: z.string().optional(),
   SUPABASE_ANON_KEY: z.string().optional(),
@@ -182,6 +190,12 @@ const env: Record<string, any> = envResult.success ? envResult.data : {
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || '',
   CLAUDE_API_KEY: process.env.CLAUDE_API_KEY || process.env.ANTHROPIC_API_KEY || '',
   CLAUDE_MODEL: process.env.CLAUDE_MODEL || 'claude-3-haiku-20240307',
+  LOCAL_LLM_ENABLED: process.env.LOCAL_LLM_ENABLED || 'false',
+  LOCAL_LLM_MODEL_PATH: process.env.LOCAL_LLM_MODEL_PATH || './models/phi-3.5-mini-instruct.gguf',
+  LOCAL_LLM_MAX_TOKENS: process.env.LOCAL_LLM_MAX_TOKENS || '512',
+  LOCAL_LLM_CONTEXT_WINDOW: process.env.LOCAL_LLM_CONTEXT_WINDOW || '4096',
+  LOCAL_LLM_TIMEOUT_MS: process.env.LOCAL_LLM_TIMEOUT_MS || '20000',
+  LOCAL_LLM_BACKEND: process.env.LOCAL_LLM_BACKEND || 'llama.cpp',
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || '',
   SUPABASE_URL: process.env.SUPABASE_URL || '',
@@ -249,6 +263,16 @@ export const config = {
     expiresIn: env.JWT_EXPIRES_IN,
     refreshSecret: env.JWT_REFRESH_SECRET,
     refreshExpiresIn: env.JWT_REFRESH_EXPIRES_IN,
+  },
+
+  // Local LLM
+  localLLM: {
+    enabled: String(env.LOCAL_LLM_ENABLED || '').toLowerCase() === 'true',
+    modelPath: env.LOCAL_LLM_MODEL_PATH,
+    maxTokens: parseInt(env.LOCAL_LLM_MAX_TOKENS, 10) || 512,
+    contextWindow: parseInt(env.LOCAL_LLM_CONTEXT_WINDOW, 10) || 4096,
+    timeoutMs: parseInt(env.LOCAL_LLM_TIMEOUT_MS, 10) || 20000,
+    backend: env.LOCAL_LLM_BACKEND || 'llama.cpp',
   },
 
   // OpenAI
@@ -361,11 +385,11 @@ export const config = {
       profilesSampleRate: env.SENTRY_PROFILES_SAMPLE_RATE,
     },
     datadog: {
-      enabled: env.DATADOG_ENABLED,
+      enabled: String(env.DATADOG_ENABLED || '').toLowerCase() === 'true',
       agentHost: env.DATADOG_AGENT_HOST,
-      agentPort: env.DATADOG_AGENT_PORT,
+      agentPort: env.DATADOG_AGENT_PORT ? parseInt(String(env.DATADOG_AGENT_PORT), 10) : undefined,
       statsdHost: env.DATADOG_STATSD_HOST,
-      statsdPort: env.DATADOG_STATSD_PORT,
+      statsdPort: env.DATADOG_STATSD_PORT ? parseInt(String(env.DATADOG_STATSD_PORT), 10) : undefined,
       service: env.DATADOG_SERVICE,
       version: env.DATADOG_VERSION,
     },

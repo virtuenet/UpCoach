@@ -36,9 +36,9 @@ class AnalyticsInsightsService {
           COUNT(*)::int AS total_goals,
           COUNT(*) FILTER (WHERE status = 'completed')::int AS completed_goals,
           COUNT(*) FILTER (WHERE status = 'active')::int AS active_goals,
-          AVG(progress_percentage)::numeric AS avg_progress
+          AVG("progress")::numeric AS avg_progress
         FROM goals
-        WHERE user_id = $1
+        WHERE "userId" = $1
       `,
       [userId]
     );
@@ -70,12 +70,12 @@ class AnalyticsInsightsService {
     }>(
       `
         SELECT
-          date_trunc('day', completed_at) AS day,
+          date_trunc('day', "completedAt") AS day,
           AVG(CASE WHEN completed THEN 1 ELSE 0 END)::numeric AS completion_rate,
-          AVG(quality)::numeric AS avg_quality
+          0::numeric AS avg_quality
         FROM habit_check_ins
-        WHERE user_id = $1
-          AND completed_at >= NOW() - ($2::text || ' days')::interval
+        WHERE "userId" = $1
+          AND "completedAt" >= NOW() - ($2::text || ' days')::interval
         GROUP BY day
         ORDER BY day
       `,

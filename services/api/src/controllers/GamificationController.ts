@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { body, query, param, validationResult } from 'express-validator';
 
 import { gamificationService } from '../services/gamification/GamificationService';
+import { microAdventureService } from '../services/gamification/MicroAdventureService';
 import { logger } from '../utils/logger';
 
 export class GamificationController {
@@ -184,6 +185,67 @@ export class GamificationController {
         _res.status(500).json({
           success: false,
           error: 'Failed to get challenges',
+        });
+      }
+    },
+  ];
+
+  getMicroChallenges = [
+    query('limit').optional().isInt({ min: 1, max: 10 }),
+    async (req: Request, _res: Response) => {
+      try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return _res.status(400).json({ errors: errors.array() });
+        }
+
+        const userId = req.userId;
+        const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 4;
+        const challenges = await microAdventureService.getRecommendedChallenges(userId, { limit });
+
+        _res.json({
+          success: true,
+          data: challenges,
+        });
+      } catch (error) {
+        logger.error('Error fetching micro challenges', { error });
+        _res.status(500).json({
+          success: false,
+          error: 'Unable to fetch micro challenges',
+        });
+      }
+    },
+  ];
+
+  completeMicroChallenge = [
+    param('challengeId').isString().isLength({ min: 3 }),
+    async (req: Request, _res: Response) => {
+      try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return _res.status(400).json({ errors: errors.array() });
+        }
+
+        const userId = req.userId;
+        const { challengeId } = req.params;
+        const result = await microAdventureService.markChallengeComplete(userId, challengeId);
+
+        if (!result) {
+          return _res.status(404).json({
+            success: false,
+            error: 'Challenge not found',
+          });
+        }
+
+        _res.json({
+          success: true,
+          data: result,
+        });
+      } catch (error) {
+        logger.error('Error completing micro challenge', { error });
+        _res.status(500).json({
+          success: false,
+          error: 'Unable to complete micro challenge',
         });
       }
     },

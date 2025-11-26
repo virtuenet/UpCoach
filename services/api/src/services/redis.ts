@@ -29,7 +29,13 @@ class RedisService {
     });
 
     this.client.on('error', err => {
-      logger.error('Redis client error:', err);
+      logger.error('Redis client error:', {
+        message: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+        code: (err as any)?.code,
+        errno: (err as any)?.errno,
+        syscall: (err as any)?.syscall,
+      });
       this.isConnected = false;
     });
 

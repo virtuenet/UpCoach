@@ -86,7 +86,14 @@ export class UnifiedEmailService {
     // Verify connection
     this.transporter.verify(error => {
       if (error) {
-        logger.error('Email service initialization failed:', error);
+        logger.error('Email service initialization failed:', {
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+          code: (error as any)?.code,
+          command: (error as any)?.command,
+          response: (error as any)?.response,
+          responseCode: (error as any)?.responseCode,
+        });
       } else {
         logger.info('Email service ready');
       }
@@ -656,8 +663,37 @@ export class UnifiedEmailService {
   }
 }
 
-// Export singleton instance
-export const emailService = new UnifiedEmailService();
+// Singleton instance for lazy initialization
+let emailServiceInstance: UnifiedEmailService | null = null;
 
-// Export for backward compatibility
-export default emailService;
+/**
+ * Get singleton instance of UnifiedEmailService with lazy initialization
+ * This prevents instantiation at module load time, avoiding dependency issues
+ */
+export function getEmailService(): UnifiedEmailService {
+  if (!emailServiceInstance) {
+    emailServiceInstance = new UnifiedEmailService();
+  }
+  return emailServiceInstance;
+}
+
+// Create a Proxy for backward compatibility with existing code
+// This allows `import emailService from ...` to work without changes
+const emailServiceProxy = new Proxy({} as UnifiedEmailService, {
+  get(target, prop) {
+    const instance = getEmailService();
+    const value = (instance as any)[prop];
+    return typeof value === 'function' ? value.bind(instance) : value;
+  },
+  set(target, prop, value) {
+    const instance = getEmailService();
+    (instance as any)[prop] = value;
+    return true;
+  }
+});
+
+// Export proxy as default for backward compatibility
+export default emailServiceProxy;
+
+// Also export as named export for consistency
+export const emailService = emailServiceProxy;

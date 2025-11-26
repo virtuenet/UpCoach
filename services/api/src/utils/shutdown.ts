@@ -95,12 +95,24 @@ class GracefulShutdown {
 
     // Handle uncaught errors
     process.on('uncaughtException', error => {
-      logger.error('Uncaught exception:', error);
+      logger.error('Uncaught exception:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : undefined,
+        code: (error as any)?.code,
+      });
       this.shutdown('UNCAUGHT_EXCEPTION', 1);
     });
 
     process.on('unhandledRejection', (reason, promise) => {
-      logger.error('Unhandled rejection at:', promise, 'reason:', reason);
+      logger.error('Unhandled rejection:', {
+        reason: reason instanceof Error ? {
+          message: reason.message,
+          stack: reason.stack,
+          name: reason.name,
+        } : reason,
+        promise: String(promise),
+      });
       // Don't exit on unhandled rejection in development
       if (process.env.NODE_ENV === 'production') {
         this.shutdown('UNHANDLED_REJECTION', 1);

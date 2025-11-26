@@ -152,12 +152,16 @@ export class DatabaseService {
     conditions: Record<string, any>,
     columns: string[] = ['*']
   ): Promise<T | null> {
+    // Quote column names to preserve case sensitivity
     const whereClause = Object.keys(conditions)
-      .map((key, index) => `${key} = $${index + 1}`)
+      .map((key, index) => `"${key}" = $${index + 1}`)
       .join(' AND ');
 
+    // Quote select columns
+    const quotedColumns = columns.map(col => col === '*' ? '*' : `"${col}"`);
+
     const query = `
-      SELECT ${columns.join(', ')}
+      SELECT ${quotedColumns.join(', ')}
       FROM ${table}
       WHERE ${whereClause}
       LIMIT 1
@@ -181,12 +185,15 @@ export class DatabaseService {
   ): Promise<T[]> {
     const { columns = ['*'], orderBy, limit, offset } = options;
 
-    let query = `SELECT ${columns.join(', ')} FROM ${table}`;
+    // Quote select columns
+    const quotedColumns = columns.map(col => col === '*' ? '*' : `"${col}"`);
+    let query = `SELECT ${quotedColumns.join(', ')} FROM ${table}`;
     const values: unknown[] = [];
 
     if (Object.keys(conditions).length > 0) {
+      // Quote column names in where clause
       const whereClause = Object.keys(conditions)
-        .map((key, index) => `${key} = $${index + 1}`)
+        .map((key, index) => `"${key}" = $${index + 1}`)
         .join(' AND ');
       query += ` WHERE ${whereClause}`;
       values.push(...Object.values(conditions));
@@ -217,10 +224,14 @@ export class DatabaseService {
     const placeholders = columns.map((_, index) => `$${index + 1}`);
     const values = Object.values(data);
 
+    // Quote column names to preserve case sensitivity
+    const quotedColumns = columns.map(col => `"${col}"`);
+    const quotedReturning = returning.map(col => col === '*' ? '*' : `"${col}"`);
+
     const query = `
-      INSERT INTO ${table} (${columns.join(', ')})
+      INSERT INTO ${table} (${quotedColumns.join(', ')})
       VALUES (${placeholders.join(', ')})
-      RETURNING ${returning.join(', ')}
+      RETURNING ${quotedReturning.join(', ')}
     `;
 
     const result = await this.query<T>(query, values);
@@ -233,19 +244,24 @@ export class DatabaseService {
     conditions: Record<string, any>,
     returning: string[] = ['*']
   ): Promise<T | null> {
+    // Quote column names to preserve case sensitivity
     const setClause = Object.keys(data)
-      .map((key, index) => `${key} = $${index + 1}`)
+      .map((key, index) => `"${key}" = $${index + 1}`)
       .join(', ');
 
+    // Quote column names in where clause
     const whereClause = Object.keys(conditions)
-      .map((key, index) => `${key} = $${Object.keys(data).length + index + 1}`)
+      .map((key, index) => `"${key}" = $${Object.keys(data).length + index + 1}`)
       .join(' AND ');
+
+    // Quote returning columns
+    const quotedReturning = returning.map(col => col === '*' ? '*' : `"${col}"`);
 
     const query = `
       UPDATE ${table}
-      SET ${setClause}, updated_at = NOW()
+      SET ${setClause}, "updatedAt" = NOW()
       WHERE ${whereClause}
-      RETURNING ${returning.join(', ')}
+      RETURNING ${quotedReturning.join(', ')}
     `;
 
     const values = [...Object.values(data), ...Object.values(conditions)];
@@ -255,8 +271,9 @@ export class DatabaseService {
   }
 
   public async delete(table: string, conditions: Record<string, any>): Promise<number> {
+    // Quote column names to preserve case sensitivity
     const whereClause = Object.keys(conditions)
-      .map((key, index) => `${key} = $${index + 1}`)
+      .map((key, index) => `"${key}" = $${index + 1}`)
       .join(' AND ');
 
     const query = `DELETE FROM ${table} WHERE ${whereClause}`;

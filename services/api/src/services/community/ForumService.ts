@@ -1,20 +1,14 @@
 import { Op } from 'sequelize';
 
-import { sequelize } from '../../config/database';
-import forumCategoryFactory from '../../models/community/ForumCategory';
-import forumPostFactory from '../../models/community/ForumPost';
-import forumThreadFactory from '../../models/community/ForumThread';
-import forumVoteFactory from '../../models/community/ForumVote';
+import ForumCategory from '../../models/community/ForumCategory';
+import ForumPost from '../../models/community/ForumPost';
+import ForumThread from '../../models/community/ForumThread';
+import ForumVote from '../../models/community/ForumVote';
 import { User } from '../../models/User';
 import { logger } from '../../utils/logger';
 import { getCacheService } from '../cache/UnifiedCacheService';
 import DOMPurify from 'isomorphic-dompurify';
-
-// Initialize forum models
-const ForumCategory = forumCategoryFactory(sequelize);
-const ForumThread = forumThreadFactory(sequelize);
-const ForumPost = forumPostFactory(sequelize);
-const ForumVote = forumVoteFactory(sequelize);
+import { sequelize } from '../../config/database';
 
 interface CreateThreadData {
   categoryId: string;

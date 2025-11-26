@@ -63,7 +63,7 @@ export class DataDogService {
       // Initialize APM tracer
       tracer.init({
         hostname: config.agentHost || 'localhost',
-        port: config.agentPort || 8126,
+        port: typeof config.agentPort === 'number' ? config.agentPort : parseInt(String(config.agentPort || '8126'), 10),
         env: config.env || process.env.NODE_ENV,
         service: config.service || 'upcoach-backend',
         version: config.version || process.env.npm_package_version,
@@ -104,7 +104,7 @@ export class DataDogService {
       // Initialize StatsD client for custom metrics
       this.statsD = new StatsD({
         host: config.statsdHost || 'localhost',
-        port: config.statsdPort || 8125,
+        port: typeof config.statsdPort === 'number' ? config.statsdPort : parseInt(String(config.statsdPort || '8125'), 10),
         prefix: `${config.service || 'upcoach'}.`,
         global_tags: [
           `env:${config.env || process.env.NODE_ENV}`,

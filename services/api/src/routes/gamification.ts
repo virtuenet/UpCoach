@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { gamificationController } from '../controllers/GamificationController';
+import { streakGuardianController } from '../controllers/gamification/StreakGuardianController';
 import { authMiddleware as authenticateToken } from '../middleware/auth';
 
 const router = Router();
@@ -20,6 +21,15 @@ router.post('/streaks/update', gamificationController.updateStreak);
 // Challenges
 router.get('/challenges', gamificationController.getChallenges);
 router.post('/challenges/:challengeId/join', gamificationController.joinChallenge);
+router.get('/micro-challenges', gamificationController.getMicroChallenges);
+router.post('/micro-challenges/:challengeId/complete', gamificationController.completeMicroChallenge);
+
+// Streak guardian routes
+router.get('/guardians', streakGuardianController.list);
+router.post('/guardians', streakGuardianController.invite);
+router.post('/guardians/:ownerId/respond', streakGuardianController.accept);
+router.delete('/guardians/:guardianId', streakGuardianController.remove);
+router.post('/guardians/:linkId/cheer', streakGuardianController.cheer);
 
 // Leaderboard
 router.get('/leaderboard', gamificationController.getLeaderboard);

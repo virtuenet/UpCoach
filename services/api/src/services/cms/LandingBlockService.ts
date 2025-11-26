@@ -176,10 +176,15 @@ export class LandingBlockService {
       throw new Error(`Block ${id} not found for type ${blockType}`);
     }
 
+    const currentMetadata = (record.getDataValue('metadata') as Record<string, unknown>) ?? {};
+    const existingApprovals = Array.isArray(currentMetadata.approvals)
+      ? (currentMetadata.approvals as unknown[])
+      : [];
+
     const metadata = {
-      ...(record.getDataValue('metadata') as Record<string, unknown> ?? {}),
+      ...currentMetadata,
       approvals: [
-        ...((record.getDataValue('metadata') as Record<string, unknown>?)?['approvals'] as unknown[]? ?? []),
+        ...existingApprovals,
         {
           approvedBy: approverId,
           notes,
