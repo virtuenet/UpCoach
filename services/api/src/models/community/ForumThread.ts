@@ -66,10 +66,18 @@ export class ForumThread
     this.views += 1;
     await this.save();
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof ForumThread;
 }
 
-export default (sequelize: Sequelize) => {
-  ForumThread.init(
+// Static method for deferred initialization
+ForumThread.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for ForumThread initialization');
+  }
+
+  return ForumThread.init(
     {
       id: {
         type: DataTypes.UUID,
@@ -145,13 +153,16 @@ export default (sequelize: Sequelize) => {
       },
     },
     {
-      sequelize,
+      sequelize: sequelizeInstance,
       modelName: 'ForumThread',
       tableName: 'forum_threads',
       timestamps: true,
       underscored: true,
     }
   );
-
-  return ForumThread;
 };
+
+// Comment out immediate initialization to prevent premature execution
+// ForumThread.init(...) will be called via ForumThread.initializeModel() after database is ready
+
+export default ForumThread;

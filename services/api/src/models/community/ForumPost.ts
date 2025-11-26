@@ -77,10 +77,18 @@ export class ForumPost
       as: 'votes',
     });
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof ForumPost;
 }
 
-export default (sequelize: Sequelize) => {
-  ForumPost.init(
+// Static method for deferred initialization
+ForumPost.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for ForumPost initialization');
+  }
+
+  return ForumPost.init(
     {
       id: {
         type: DataTypes.UUID,
@@ -162,13 +170,16 @@ export default (sequelize: Sequelize) => {
       },
     },
     {
-      sequelize,
+      sequelize: sequelizeInstance,
       modelName: 'ForumPost',
       tableName: 'forum_posts',
       timestamps: true,
       underscored: true,
     }
   );
-
-  return ForumPost;
 };
+
+// Comment out immediate initialization to prevent premature execution
+// ForumPost.init(...) will be called via ForumPost.initializeModel() after database is ready
+
+export default ForumPost;

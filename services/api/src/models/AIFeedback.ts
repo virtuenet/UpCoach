@@ -8,7 +8,6 @@ import {
   ForeignKey,
   NonAttribute,
 } from 'sequelize';
-import { sequelize } from '../config/database';
 
 import { AIInteraction } from './AIInteraction';
 import { User } from './User';
@@ -94,11 +93,17 @@ export class AIFeedback extends Model<
 
     return result?.avgRating || 0;
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof AIFeedback;
 }
 
-// Initialize model - skip in test environment to prevent "No Sequelize instance passed" errors
-// Jest mocks will handle model initialization in tests
-if (process.env.NODE_ENV !== 'test') {
+// Static method for deferred initialization
+AIFeedback.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for AIFeedback initialization');
+  }
+
   AIFeedback.init(
   {
     id: {
@@ -145,25 +150,28 @@ if (process.env.NODE_ENV !== 'test') {
     },
   },
   {
-    sequelize,
+    sequelize: sequelizeInstance,
     modelName: 'AIFeedback',
     tableName: 'ai_feedback',
     timestamps: false,
   }
 );
-}
 
-// Define associations - skip in test environment
-if (process.env.NODE_ENV !== 'test') {
-AIFeedback.belongsTo(AIInteraction, {
-  foreignKey: 'interactionId',
-  as: 'interaction',
-});
+  // Define associations
+  AIFeedback.belongsTo(AIInteraction, {
+    foreignKey: 'interactionId',
+    as: 'interaction',
+  });
 
-AIFeedback.belongsTo(User, {
-  foreignKey: 'userId',
-  as: 'user',
-});
-}
+  AIFeedback.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'user',
+  });
+
+  return AIFeedback;
+};
+
+// Comment out immediate initialization to prevent premature execution
+// AIFeedback.init(...) will be called via AIFeedback.initializeModel() after database is ready
 
 export default AIFeedback;

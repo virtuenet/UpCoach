@@ -6,8 +6,8 @@ import {
   CreationOptional,
   ForeignKey,
   NonAttribute,
+  Sequelize,
 } from 'sequelize';
-import { sequelize } from '../config/database';
 import { User } from './User';
 
 export type AIInteractionType = 'conversation' | 'recommendation' | 'voice' | 'prediction' | 'insight';
@@ -108,11 +108,17 @@ export class AIInteraction extends Model<
       order: [['createdAt', 'DESC']],
     });
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof AIInteraction;
 }
 
-// Initialize model - skip in test environment to prevent "No Sequelize instance passed" errors
-// Jest mocks will handle model initialization in tests
-if (process.env.NODE_ENV !== 'test') {
+// Static method for deferred initialization
+AIInteraction.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for AIInteraction initialization');
+  }
+
   AIInteraction.init(
   {
     id: {
@@ -176,7 +182,7 @@ if (process.env.NODE_ENV !== 'test') {
     },
   },
   {
-    sequelize,
+    sequelize: sequelizeInstance,
     modelName: 'AIInteraction',
     tableName: 'ai_interactions',
     timestamps: true,
@@ -196,14 +202,17 @@ if (process.env.NODE_ENV !== 'test') {
     ],
   }
 );
-}
 
-// Define associations - skip in test environment
-if (process.env.NODE_ENV !== 'test') {
+  // Define associations
   AIInteraction.belongsTo(User, {
     foreignKey: 'userId',
     as: 'user',
   });
-}
+
+  return AIInteraction;
+};
+
+// Comment out immediate initialization to prevent premature execution
+// AIInteraction.init(...) will be called via AIInteraction.initializeModel() after database is ready
 
 export default AIInteraction;

@@ -1,6 +1,4 @@
-import { Model, DataTypes, Optional } from 'sequelize';
-
-import { sequelize } from '../config/sequelize';
+import { Model, DataTypes, Optional, Sequelize } from 'sequelize';
 
 export interface MoodAttributes {
   id: string;
@@ -58,9 +56,18 @@ export class Mood extends Model<MoodAttributes, MoodCreationAttributes> implemen
   public static associate(models: unknown) {
     Mood.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof Mood;
 }
 
-Mood.init(
+// Static method for deferred initialization
+Mood.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for Mood initialization');
+  }
+
+  Mood.init(
   {
     id: {
       type: DataTypes.UUID,
@@ -136,9 +143,17 @@ Mood.init(
     },
   },
   {
-    sequelize,
+    sequelize: sequelizeInstance,
     modelName: 'Mood',
     tableName: 'moods',
     timestamps: true,
   }
 );
+
+  return Mood;
+};
+
+// Comment out immediate initialization to prevent premature execution
+// Mood.init(...) will be called via Mood.initializeModel() after database is ready
+
+export default Mood;

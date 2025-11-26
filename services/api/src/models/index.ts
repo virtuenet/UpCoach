@@ -32,8 +32,9 @@ import {
   ReportStatus,
   ReportFormat,
 } from './financial/FinancialReport';
-import { FinancialSnapshot, SnapshotPeriod } from './financial/FinancialSnapshot';
-import { RevenueAnalytics } from './financial/RevenueAnalytics';
+// Temporarily commented out - will be initialized via modelInitializer.ts
+// import { FinancialSnapshot, SnapshotPeriod } from './financial/FinancialSnapshot';
+// import { RevenueAnalytics } from './financial/RevenueAnalytics';
 import {
   Subscription,
   SubscriptionStatus,
@@ -53,6 +54,7 @@ import { User } from './User';
 import { UserActivity } from './UserActivity';
 import { Organization } from './Organization';
 import { OrganizationMember } from './OrganizationMember';
+import { StreakGuardianLink } from './StreakGuardianLink';
 // import { UserProfile } from './UserProfile';
 // ✅ FIXED: AIInteraction converted to Model.init() pattern - no longer uses sequelize-typescript decorators
 import { AIInteraction } from './AIInteraction';
@@ -69,6 +71,7 @@ export {
   UserActivity,
   Organization,
   OrganizationMember,
+  StreakGuardianLink,
   Goal,
   Task,
   Mood,
@@ -84,8 +87,8 @@ export {
   SubscriptionPlan,
   BillingInterval,
   CostTracking, // ✅ FIXED: Now using Model.init() pattern
-  FinancialSnapshot,
-  SnapshotPeriod,
+  // FinancialSnapshot, // Temporarily commented - initialized via modelInitializer.ts
+  // SnapshotPeriod,
   BillingEvent,
   BillingEventType,
   BillingEventSource,
@@ -94,7 +97,7 @@ export {
   ReportType,
   ReportStatus,
   ReportFormat,
-  RevenueAnalytics,
+  // RevenueAnalytics, // Temporarily commented - initialized via modelInitializer.ts
 };
 export { Experiment } from './experiments/Experiment';
 // export { ExperimentAssignment } from './experiments/ExperimentAssignment';
@@ -190,6 +193,13 @@ export function defineAssociations() {
   if (User && UserActivity) {
     User.hasMany(UserActivity, { foreignKey: 'userId', as: 'activities' });
     UserActivity.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+  }
+
+  if (User && StreakGuardianLink) {
+    User.hasMany(StreakGuardianLink, { foreignKey: 'ownerUserId', as: 'streakGuardians' });
+    User.hasMany(StreakGuardianLink, { foreignKey: 'guardianUserId', as: 'guardianOf' });
+    StreakGuardianLink.belongsTo(User, { foreignKey: 'ownerUserId', as: 'owner' });
+    StreakGuardianLink.belongsTo(User, { foreignKey: 'guardianUserId', as: 'guardian' });
   }
 
   // Subscription associations

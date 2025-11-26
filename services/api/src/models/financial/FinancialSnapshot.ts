@@ -4,8 +4,8 @@ import {
   InferAttributes,
   InferCreationAttributes,
   CreationOptional,
+  Sequelize,
 } from 'sequelize';
-import { sequelize } from '../../config/database';
 
 export enum SnapshotPeriod {
   DAILY = 'daily',
@@ -100,13 +100,18 @@ export class FinancialSnapshot extends Model<
   get isHealthy(): boolean {
     return this.netProfit > 0 && this.churnRate < 10 && this.ltvToCacRatio > 3;
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof FinancialSnapshot;
 }
 
-// Initialize model
-// Initialize model - skip in test environment to prevent "No Sequelize instance passed" errors
-// Jest mocks will handle model initialization in tests
-if (process.env.NODE_ENV !== 'test') {
-FinancialSnapshot.init(
+// Static method for deferred initialization
+FinancialSnapshot.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for FinancialSnapshot initialization');
+  }
+
+  return FinancialSnapshot.init(
   {
     id: {
       type: DataTypes.UUID,
@@ -369,7 +374,7 @@ FinancialSnapshot.init(
     },
   },
   {
-    sequelize,
+    sequelize: sequelizeInstance,
     modelName: 'FinancialSnapshot',
     tableName: 'financial_snapshots',
     timestamps: true,
@@ -387,6 +392,9 @@ FinancialSnapshot.init(
     ],
   }
 );
-}
+};
+
+// Comment out immediate initialization to prevent premature execution
+// FinancialSnapshot.init(...) will be called via FinancialSnapshot.initializeModel() after database is ready
 
 export default FinancialSnapshot;

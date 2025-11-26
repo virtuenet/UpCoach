@@ -1,6 +1,4 @@
-import { DataTypes, Model, Optional } from 'sequelize';
-
-import { sequelize } from '../../config/database';
+import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
 
 export interface ExperimentAssignmentAttributes {
   id: string;
@@ -95,90 +93,103 @@ class ExperimentAssignment
       include: ['experiment'],
     });
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof ExperimentAssignment;
 }
 
-ExperimentAssignment.init(
-  {
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
-    },
-    experimentId: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: 'experiments',
-        key: 'id',
-      },
-    },
-    userId: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
-    },
-    variantId: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    assignedAt: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
-      allowNull: false,
-    },
-    context: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-    isExcluded: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-      allowNull: false,
-    },
-    exclusionReason: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    userAgent: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    ipAddress: {
-      type: DataTypes.INET,
-      allowNull: true,
-    },
-    sessionId: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-  },
-  {
-    sequelize,
-    modelName: 'ExperimentAssignment',
-    tableName: 'experiment_assignments',
-    timestamps: false,
-    indexes: [
-      {
-        unique: true,
-        fields: ['experimentId', 'userId'],
-      },
-      {
-        fields: ['userId'],
-      },
-      {
-        fields: ['variantId'],
-      },
-      {
-        fields: ['assignedAt'],
-      },
-      {
-        fields: ['isExcluded'],
-      },
-    ],
+// Static method for deferred initialization
+ExperimentAssignment.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for ExperimentAssignment initialization');
   }
-);
+
+  return ExperimentAssignment.init(
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      experimentId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: 'experiments',
+          key: 'id',
+        },
+      },
+      userId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
+      },
+      variantId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      assignedAt: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+        allowNull: false,
+      },
+      context: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
+      isExcluded: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+      },
+      exclusionReason: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      userAgent: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      ipAddress: {
+        type: DataTypes.INET,
+        allowNull: true,
+      },
+      sessionId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+    },
+    {
+      sequelize: sequelizeInstance,
+      modelName: 'ExperimentAssignment',
+      tableName: 'experiment_assignments',
+      timestamps: false,
+      indexes: [
+        {
+          unique: true,
+          fields: ['experimentId', 'userId'],
+        },
+        {
+          fields: ['userId'],
+        },
+        {
+          fields: ['variantId'],
+        },
+        {
+          fields: ['assignedAt'],
+        },
+        {
+          fields: ['isExcluded'],
+        },
+      ],
+    }
+  );
+};
+
+// Comment out immediate initialization to prevent premature execution
+// ExperimentAssignment.init(...) will be called via ExperimentAssignment.initializeModel() after database is ready
 
 export { ExperimentAssignment };

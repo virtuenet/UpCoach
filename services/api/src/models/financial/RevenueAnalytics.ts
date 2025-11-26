@@ -4,8 +4,8 @@ import {
   InferAttributes,
   InferCreationAttributes,
   CreationOptional,
+  Sequelize,
 } from 'sequelize';
-import { sequelize } from '../../config/database';
 
 export enum AnalyticsPeriod {
   DAILY = 'daily',
@@ -136,190 +136,198 @@ export class RevenueAnalytics extends Model<
   get isForecastReliable(): boolean {
     return (this.forecastConfidence || 0) > 80 && (this.forecastAccuracy || 0) > 85;
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof RevenueAnalytics;
 }
 
-// Initialize model
-// Initialize model - skip in test environment to prevent "No Sequelize instance passed" errors
-// Jest mocks will handle model initialization in tests
-if (process.env.NODE_ENV !== 'test') {
-RevenueAnalytics.init(
-  {
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
-    },
-    period: {
-      type: DataTypes.ENUM(...Object.values(AnalyticsPeriod)),
-      allowNull: false,
-    },
-    periodStart: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    periodEnd: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    // Cohort Analysis
-    cohortMonth: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    cohortSize: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0,
-    },
-    monthsSinceStart: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0,
-    },
-    retentionRate: {
-      type: DataTypes.DECIMAL(5, 2),
-      allowNull: false,
-      defaultValue: 0,
-    },
-    cohortRevenue: {
-      type: DataTypes.DECIMAL(12, 2),
-      allowNull: false,
-      defaultValue: 0,
-    },
-    cumulativeCohortRevenue: {
-      type: DataTypes.DECIMAL(12, 2),
-      allowNull: false,
-      defaultValue: 0,
-    },
-    // Revenue Segmentation
-    revenueBySegment: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-    // Customer Segments
-    customerSegments: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-    // Expansion & Contraction
-    expansionRevenue: {
-      type: DataTypes.DECIMAL(12, 2),
-      allowNull: false,
-      defaultValue: 0,
-    },
-    expansionCount: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0,
-    },
-    contractionRevenue: {
-      type: DataTypes.DECIMAL(12, 2),
-      allowNull: false,
-      defaultValue: 0,
-    },
-    contractionCount: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0,
-    },
-    // Forecasting
-    forecastModel: {
-      type: DataTypes.ENUM(...Object.values(ForecastModel)),
-      allowNull: true,
-    },
-    forecastedRevenue: {
-      type: DataTypes.DECIMAL(12, 2),
-      allowNull: true,
-    },
-    forecastLowerBound: {
-      type: DataTypes.DECIMAL(12, 2),
-      allowNull: true,
-    },
-    forecastUpperBound: {
-      type: DataTypes.DECIMAL(12, 2),
-      allowNull: true,
-    },
-    forecastConfidence: {
-      type: DataTypes.DECIMAL(5, 2),
-      allowNull: true,
-    },
-    forecastAccuracy: {
-      type: DataTypes.DECIMAL(5, 2),
-      allowNull: true,
-    },
-    // Churn Prediction
-    churnPrediction: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-    // LTV Analysis
-    averageLtv: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
-      defaultValue: 0,
-    },
-    ltvBySegment: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-    ltvDistribution: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-    // Feature Impact
-    featureImpact: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-    // Seasonality
-    seasonalityFactors: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-    // Anomalies
-    hasAnomaly: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
-    },
-    anomalyDetails: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-    // Metadata
-    metadata: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-  },
-  {
-    sequelize,
-    modelName: 'RevenueAnalytics',
-    tableName: 'revenue_analytics',
-    timestamps: true,
-    indexes: [
-      {
-        fields: ['period'],
-      },
-      {
-        fields: ['periodStart'],
-      },
-      {
-        fields: ['cohortMonth'],
-      },
-    ],
+// Static method for deferred initialization
+RevenueAnalytics.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for RevenueAnalytics initialization');
   }
-);
-}
+
+  return RevenueAnalytics.init(
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      period: {
+        type: DataTypes.ENUM(...Object.values(AnalyticsPeriod)),
+        allowNull: false,
+      },
+      periodStart: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      periodEnd: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      // Cohort Analysis
+      cohortMonth: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      cohortSize: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      monthsSinceStart: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      retentionRate: {
+        type: DataTypes.DECIMAL(5, 2),
+        allowNull: false,
+        defaultValue: 0,
+      },
+      cohortRevenue: {
+        type: DataTypes.DECIMAL(12, 2),
+        allowNull: false,
+        defaultValue: 0,
+      },
+      cumulativeCohortRevenue: {
+        type: DataTypes.DECIMAL(12, 2),
+        allowNull: false,
+        defaultValue: 0,
+      },
+      // Revenue Segmentation
+      revenueBySegment: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
+      // Customer Segments
+      customerSegments: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
+      // Expansion & Contraction
+      expansionRevenue: {
+        type: DataTypes.DECIMAL(12, 2),
+        allowNull: false,
+        defaultValue: 0,
+      },
+      expansionCount: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      contractionRevenue: {
+        type: DataTypes.DECIMAL(12, 2),
+        allowNull: false,
+        defaultValue: 0,
+      },
+      contractionCount: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      // Forecasting
+      forecastModel: {
+        type: DataTypes.ENUM(...Object.values(ForecastModel)),
+        allowNull: true,
+      },
+      forecastedRevenue: {
+        type: DataTypes.DECIMAL(12, 2),
+        allowNull: true,
+      },
+      forecastLowerBound: {
+        type: DataTypes.DECIMAL(12, 2),
+        allowNull: true,
+      },
+      forecastUpperBound: {
+        type: DataTypes.DECIMAL(12, 2),
+        allowNull: true,
+      },
+      forecastConfidence: {
+        type: DataTypes.DECIMAL(5, 2),
+        allowNull: true,
+      },
+      forecastAccuracy: {
+        type: DataTypes.DECIMAL(5, 2),
+        allowNull: true,
+      },
+      // Churn Prediction
+      churnPrediction: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
+      // LTV Analysis
+      averageLtv: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+        defaultValue: 0,
+      },
+      ltvBySegment: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
+      ltvDistribution: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
+      // Feature Impact
+      featureImpact: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
+      // Seasonality
+      seasonalityFactors: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
+      // Anomalies
+      hasAnomaly: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      anomalyDetails: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
+      // Metadata
+      metadata: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
+      createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW,
+      },
+      updatedAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW,
+      },
+    },
+    {
+      sequelize: sequelizeInstance,
+      modelName: 'RevenueAnalytics',
+      tableName: 'revenue_analytics',
+      timestamps: true,
+      indexes: [
+        {
+          fields: ['period'],
+        },
+        {
+          fields: ['periodStart'],
+        },
+        {
+          fields: ['cohortMonth'],
+        },
+      ],
+    }
+  );
+};
+
+// Comment out immediate initialization to prevent premature execution
+// RevenueAnalytics.init(...) will be called via RevenueAnalytics.initializeModel() after database is ready
 
 export default RevenueAnalytics;

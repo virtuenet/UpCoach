@@ -1,6 +1,4 @@
-import { Model, DataTypes, Optional } from 'sequelize';
-
-import { sequelize } from '../../config/database';
+import { Model, DataTypes, Optional, Sequelize } from 'sequelize';
 
 export interface ContentVersionAttributes {
   id: number;
@@ -30,7 +28,7 @@ export interface ContentVersionCreationAttributes
     | 'updatedAt'
   > {}
 
-class ContentVersion
+export class ContentVersion
   extends Model<ContentVersionAttributes, ContentVersionCreationAttributes>
   implements ContentVersionAttributes
 {
@@ -46,74 +44,89 @@ class ContentVersion
   public createdBy!: number;
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof ContentVersion;
 }
 
-ContentVersion.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    contentId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'content_articles',
-        key: 'id',
-      },
-    },
-    version: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 1,
-    },
-    title: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    content: {
-      type: DataTypes.TEXT,
-      allowNull: false,
-    },
-    excerpt: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    featuredImage: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    metadata: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-      defaultValue: {},
-    },
-    changes: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    createdBy: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
-    },
-  },
-  {
-    sequelize,
-    modelName: 'ContentVersion',
-    tableName: 'content_versions',
-    timestamps: true,
-    indexes: [
-      {
-        fields: ['contentId', 'version'],
-        unique: true,
-      },
-    ],
+// Static method for deferred initialization
+ContentVersion.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for ContentVersion initialization');
   }
-);
+
+  ContentVersion.init(
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      contentId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'content_articles',
+          key: 'id',
+        },
+      },
+      version: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 1,
+      },
+      title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      content: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      excerpt: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      featuredImage: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      metadata: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+        defaultValue: {},
+      },
+      changes: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      createdBy: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
+      },
+    },
+    {
+      sequelize: sequelizeInstance,
+      modelName: 'ContentVersion',
+      tableName: 'content_versions',
+      timestamps: true,
+      indexes: [
+        {
+          fields: ['contentId', 'version'],
+          unique: true,
+        },
+      ],
+    }
+  );
+
+  return ContentVersion;
+};
+
+// Comment out immediate initialization to prevent premature execution
+// ContentVersion.init(...) will be called via ContentVersion.initializeModel() after database is ready
 
 export default ContentVersion;

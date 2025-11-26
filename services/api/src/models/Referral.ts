@@ -6,9 +6,10 @@ import {
   CreationOptional,
   ForeignKey,
   NonAttribute,
- Op, QueryTypes } from 'sequelize';
-
-import { sequelize } from '../config/database';
+  Op,
+  QueryTypes,
+  Sequelize,
+} from 'sequelize';
 
 import { User } from './User';
 
@@ -123,9 +124,9 @@ export class Referral extends Model<InferAttributes<Referral>, InferCreationAttr
       }
     }
 
-    const result = await sequelize.query(
+    const result = await this.sequelize!.query(
       `
-      SELECT 
+      SELECT
         r.referrer_id as "userId",
         u.name as "userName",
         COUNT(r.id) as "referralCount",
@@ -154,129 +155,119 @@ export class Referral extends Model<InferAttributes<Referral>, InferCreationAttr
       totalEarnings: number;
     }>;
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof Referral;
 }
 
-// Initialize the model
-Referral.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    referrerId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: User,
-        key: 'id',
-      },
-    },
-    refereeId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: User,
-        key: 'id',
-      },
-    },
-    code: {
-      type: DataTypes.STRING(20),
-      allowNull: false,
-      unique: true,
-      validate: {
-        notEmpty: true,
-        len: [4, 20],
-      },
-    },
-    programId: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-      defaultValue: 'standard',
-    },
-    status: {
-      type: DataTypes.ENUM('pending', 'completed', 'expired', 'cancelled'),
-      allowNull: false,
-      defaultValue: 'pending',
-    },
-    rewardStatus: {
-      type: DataTypes.ENUM('pending', 'paid', 'failed'),
-      allowNull: false,
-      defaultValue: 'pending',
-    },
-    referrerReward: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
-    },
-    refereeReward: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: true,
-    },
-    metadata: {
-      type: DataTypes.JSONB,
-      allowNull: false,
-      defaultValue: {},
-    },
-    completedAt: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    expiresAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    createdAt: DataTypes.DATE,
-    updatedAt: DataTypes.DATE,
-  },
-  {
-    sequelize,
-    modelName: 'Referral',
-    tableName: 'referrals',
-    indexes: [
-      {
-        fields: ['code'],
-        unique: true,
-      },
-      {
-        fields: ['referrer_id'],
-      },
-      {
-        fields: ['referee_id'],
-      },
-      {
-        fields: ['status'],
-      },
-      {
-        fields: ['expires_at'],
-      },
-      {
-        fields: ['completed_at'],
-      },
-    ],
+// Static method for deferred initialization
+Referral.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for Referral initialization');
   }
-);
 
-// Define associations
-Referral.belongsTo(User, {
-  foreignKey: 'referrerId',
-  as: 'referrer',
-});
+  return Referral.init(
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      referrerId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: User,
+          key: 'id',
+        },
+      },
+      refereeId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: User,
+          key: 'id',
+        },
+      },
+      code: {
+        type: DataTypes.STRING(20),
+        allowNull: false,
+        unique: true,
+        validate: {
+          notEmpty: true,
+          len: [4, 20],
+        },
+      },
+      programId: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        defaultValue: 'standard',
+      },
+      status: {
+        type: DataTypes.ENUM('pending', 'completed', 'expired', 'cancelled'),
+        allowNull: false,
+        defaultValue: 'pending',
+      },
+      rewardStatus: {
+        type: DataTypes.ENUM('pending', 'paid', 'failed'),
+        allowNull: false,
+        defaultValue: 'pending',
+      },
+      referrerReward: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true,
+      },
+      refereeReward: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true,
+      },
+      metadata: {
+        type: DataTypes.JSONB,
+        allowNull: false,
+        defaultValue: {},
+      },
+      completedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      expiresAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      createdAt: DataTypes.DATE,
+      updatedAt: DataTypes.DATE,
+    },
+    {
+      sequelize: sequelizeInstance,
+      modelName: 'Referral',
+      tableName: 'referrals',
+      indexes: [
+        {
+          fields: ['code'],
+          unique: true,
+        },
+        {
+          fields: ['referrer_id'],
+        },
+        {
+          fields: ['referee_id'],
+        },
+        {
+          fields: ['status'],
+        },
+        {
+          fields: ['expires_at'],
+        },
+        {
+          fields: ['completed_at'],
+        },
+      ],
+    }
+  );
+};
 
-Referral.belongsTo(User, {
-  foreignKey: 'refereeId',
-  as: 'referee',
-});
-
-// Add to User model associations
-User.hasMany(Referral, {
-  foreignKey: 'referrerId',
-  as: 'sentReferrals',
-});
-
-User.hasOne(Referral, {
-  foreignKey: 'refereeId',
-  as: 'receivedReferral',
-});
+// Comment out immediate initialization to prevent premature execution
+// Referral.init(...) will be called via Referral.initializeModel() after database is ready
 
 
 export default Referral;

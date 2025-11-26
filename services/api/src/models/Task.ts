@@ -1,6 +1,4 @@
-import { Model, DataTypes, Optional } from 'sequelize';
-
-import { sequelize } from '../config/sequelize';
+import { Model, DataTypes, Optional, Sequelize } from 'sequelize';
 
 export interface TaskAttributes {
   id: string;
@@ -66,88 +64,103 @@ export class Task extends Model<TaskAttributes, TaskCreationAttributes> implemen
     Task.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
     Task.belongsTo(models.Goal, { foreignKey: 'goalId', as: 'goal' });
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof Task;
 }
 
-Task.init(
-  {
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
-    },
-    userId: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
-    },
-    goalId: {
-      type: DataTypes.UUID,
-      allowNull: true,
-      references: {
-        model: 'goals',
-        key: 'id',
-      },
-    },
-    title: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    dueDate: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    priority: {
-      type: DataTypes.ENUM('low', 'medium', 'high'),
-      defaultValue: 'medium',
-      allowNull: false,
-    },
-    status: {
-      type: DataTypes.ENUM('pending', 'in_progress', 'completed', 'cancelled'),
-      defaultValue: 'pending',
-      allowNull: false,
-    },
-    category: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    tags: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      allowNull: true,
-      defaultValue: [],
-    },
-    estimatedTime: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    actualTime: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    isRecurring: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-      allowNull: false,
-    },
-    recurringPattern: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-    completedAt: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-  },
-  {
-    sequelize,
-    modelName: 'Task',
-    tableName: 'tasks',
-    timestamps: true,
+// Static method for deferred initialization
+Task.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for Task initialization');
   }
-);
+
+  return Task.init(
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      userId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
+      },
+      goalId: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        references: {
+          model: 'goals',
+          key: 'id',
+        },
+      },
+      title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      dueDate: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      priority: {
+        type: DataTypes.ENUM('low', 'medium', 'high'),
+        defaultValue: 'medium',
+        allowNull: false,
+      },
+      status: {
+        type: DataTypes.ENUM('pending', 'in_progress', 'completed', 'cancelled'),
+        defaultValue: 'pending',
+        allowNull: false,
+      },
+      category: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      tags: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        allowNull: true,
+        defaultValue: [],
+      },
+      estimatedTime: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      actualTime: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      isRecurring: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+      },
+      recurringPattern: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
+      completedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+    },
+    {
+      sequelize: sequelizeInstance,
+      modelName: 'Task',
+      tableName: 'tasks',
+      timestamps: true,
+    }
+  );
+};
+
+// Comment out immediate initialization to prevent premature execution
+// Task.init(...) will be called via Task.initializeModel() after database is ready
+
+export default Task;

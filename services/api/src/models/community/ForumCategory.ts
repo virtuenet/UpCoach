@@ -40,10 +40,18 @@ export class ForumCategory
       as: 'threads',
     });
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof ForumCategory;
 }
 
-export default (sequelize: Sequelize) => {
-  ForumCategory.init(
+// Static method for deferred initialization
+ForumCategory.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for ForumCategory initialization');
+  }
+
+  return ForumCategory.init(
     {
       id: {
         type: DataTypes.UUID,
@@ -91,13 +99,16 @@ export default (sequelize: Sequelize) => {
       },
     },
     {
-      sequelize,
+      sequelize: sequelizeInstance,
       modelName: 'ForumCategory',
       tableName: 'forum_categories',
       timestamps: true,
       underscored: true,
     }
   );
-
-  return ForumCategory;
 };
+
+// Comment out immediate initialization to prevent premature execution
+// ForumCategory.init(...) will be called via ForumCategory.initializeModel() after database is ready
+
+export default ForumCategory;

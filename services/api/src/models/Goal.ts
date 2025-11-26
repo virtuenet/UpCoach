@@ -1,6 +1,4 @@
-import { Model, DataTypes, Optional } from 'sequelize';
-
-import { sequelize } from '../config/sequelize';
+import { Model, DataTypes, Optional, Sequelize } from 'sequelize';
 
 export interface GoalAttributes {
   id: string;
@@ -60,9 +58,18 @@ export class Goal extends Model<GoalAttributes, GoalCreationAttributes> implemen
     Goal.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
     Goal.hasMany(models.Task, { foreignKey: 'goalId', as: 'tasks' });
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof Goal;
 }
 
-Goal.init(
+// Static method for deferred initialization
+Goal.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for Goal initialization');
+  }
+
+  Goal.init(
   {
     id: {
       type: DataTypes.UUID,
@@ -131,9 +138,17 @@ Goal.init(
     },
   },
   {
-    sequelize,
+    sequelize: sequelizeInstance,
     modelName: 'Goal',
     tableName: 'goals',
     timestamps: true,
   }
 );
+
+  return Goal;
+};
+
+// Comment out immediate initialization to prevent premature execution
+// Goal.init(...) will be called via Goal.initializeModel() after database is ready
+
+export default Goal;

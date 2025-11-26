@@ -1,6 +1,4 @@
-import { Model, DataTypes, Optional } from 'sequelize';
-
-import { sequelize } from '../config/sequelize';
+import { Model, DataTypes, Optional, Sequelize } from 'sequelize';
 
 export interface ChatAttributes {
   id: string;
@@ -49,9 +47,18 @@ export class Chat extends Model<ChatAttributes, ChatCreationAttributes> implemen
     Chat.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
     Chat.hasMany(models.ChatMessage, { foreignKey: 'chatId', as: 'messages' });
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof Chat;
 }
 
-Chat.init(
+// Static method for deferred initialization
+Chat.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for Chat initialization');
+  }
+
+  Chat.init(
   {
     id: {
       type: DataTypes.UUID,
@@ -99,9 +106,17 @@ Chat.init(
     },
   },
   {
-    sequelize,
+    sequelize: sequelizeInstance,
     modelName: 'Chat',
     tableName: 'chats',
     timestamps: true,
   }
 );
+
+  return Chat;
+};
+
+// Comment out immediate initialization to prevent premature execution
+// Chat.init(...) will be called via Chat.initializeModel() after database is ready
+
+export default Chat;

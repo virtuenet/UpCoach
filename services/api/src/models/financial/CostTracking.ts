@@ -4,8 +4,8 @@ import {
   InferAttributes,
   InferCreationAttributes,
   CreationOptional,
+  Sequelize,
 } from 'sequelize';
-import { sequelize } from '../../config/database';
 
 export enum CostCategory {
   INFRASTRUCTURE = 'infrastructure',
@@ -86,158 +86,166 @@ export class CostTracking extends Model<
     // This would be compared against budget data
     return false; // Placeholder
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof CostTracking;
 }
 
-// Initialize model
-// Initialize model - skip in test environment to prevent "No Sequelize instance passed" errors
-// Jest mocks will handle model initialization in tests
-if (process.env.NODE_ENV !== 'test') {
-CostTracking.init(
-  {
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
-    },
-    category: {
-      type: DataTypes.ENUM(...Object.values(CostCategory)),
-      allowNull: false,
-    },
-    type: {
-      type: DataTypes.ENUM(...Object.values(CostType)),
-      allowNull: false,
-      defaultValue: CostType.VARIABLE,
-    },
-    provider: {
-      type: DataTypes.ENUM(...Object.values(CostProvider)),
-      allowNull: true,
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    amount: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
-    },
-    currency: {
-      type: DataTypes.STRING(3),
-      allowNull: false,
-      defaultValue: 'USD',
-    },
-    periodStart: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    periodEnd: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    quantity: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    unit: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    unitCost: {
-      type: DataTypes.DECIMAL(10, 4),
-      allowNull: true,
-    },
-    invoiceNumber: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    vendorId: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    department: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    project: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    tags: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-    isRecurring: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
-    },
-    recurringInterval: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    nextBillingDate: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    isApproved: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
-    },
-    approvedBy: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    approvedAt: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    metadata: {
-      type: DataTypes.JSONB,
-      allowNull: true,
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-  },
-  {
-    sequelize,
-    modelName: 'CostTracking',
-    tableName: 'cost_tracking',
-    timestamps: true,
-    indexes: [
-      {
-        fields: ['category'],
-      },
-      {
-        fields: ['provider'],
-      },
-      {
-        fields: ['period_start'],
-      },
-      {
-        fields: ['period_end'],
-      },
-    ],
-    hooks: {
-      beforeCreate: async (instance: CostTracking) => {
-        if (instance.quantity && instance.amount) {
-          instance.unitCost = instance.amount / instance.quantity;
-        }
-      },
-    },
+// Static method for deferred initialization
+CostTracking.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for CostTracking initialization');
   }
-);
-}
+
+  return CostTracking.init(
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      category: {
+        type: DataTypes.ENUM(...Object.values(CostCategory)),
+        allowNull: false,
+      },
+      type: {
+        type: DataTypes.ENUM(...Object.values(CostType)),
+        allowNull: false,
+        defaultValue: CostType.VARIABLE,
+      },
+      provider: {
+        type: DataTypes.ENUM(...Object.values(CostProvider)),
+        allowNull: true,
+      },
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      amount: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+      },
+      currency: {
+        type: DataTypes.STRING(3),
+        allowNull: false,
+        defaultValue: 'USD',
+      },
+      periodStart: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      periodEnd: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      quantity: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      unit: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      unitCost: {
+        type: DataTypes.DECIMAL(10, 4),
+        allowNull: true,
+      },
+      invoiceNumber: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      vendorId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      department: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      project: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      tags: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
+      isRecurring: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      recurringInterval: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      nextBillingDate: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      isApproved: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      approvedBy: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      approvedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      metadata: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
+      createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW,
+      },
+      updatedAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW,
+      },
+    },
+    {
+      sequelize: sequelizeInstance,
+      modelName: 'CostTracking',
+      tableName: 'cost_tracking',
+      timestamps: true,
+      indexes: [
+        {
+          fields: ['category'],
+        },
+        {
+          fields: ['provider'],
+        },
+        {
+          fields: ['period_start'],
+        },
+        {
+          fields: ['period_end'],
+        },
+      ],
+      hooks: {
+        beforeCreate: async (instance: CostTracking) => {
+          if (instance.quantity && instance.amount) {
+            instance.unitCost = instance.amount / instance.quantity;
+          }
+        },
+      },
+    }
+  );
+};
+
+// Comment out immediate initialization to prevent premature execution
+// CostTracking.init(...) will be called via CostTracking.initializeModel() after database is ready
 
 export default CostTracking;

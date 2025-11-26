@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import * as sequelize from 'sequelize';
 import {
   Model,
@@ -9,7 +9,6 @@ import {
   ForeignKey,
   NonAttribute,
 } from 'sequelize';
-import { sequelize as sequelizeInstance } from '../config/database';
 
 import type { CoachProfile } from './CoachProfile';
 import type { CoachSession } from './CoachSession';
@@ -242,168 +241,158 @@ export class CoachReview extends Model<
     });
     return count > 0;
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof CoachReview;
 }
 
-// Initialize model
-// Initialize model - skip in test environment to prevent "No Sequelize instance passed" errors
-// Jest mocks will handle model initialization in tests
-if (process.env.NODE_ENV !== 'test') {
-CoachReview.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-    },
-    coachId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'coach_profiles',
-        key: 'id',
-      },
-    },
-    clientId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
-    },
-    sessionId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'coach_sessions',
-        key: 'id',
-      },
-    },
-    // Ratings
-    rating: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: {
-        min: 1,
-        max: 5,
-      },
-    },
-    title: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    comment: {
-      type: DataTypes.TEXT,
-      allowNull: false,
-    },
-    // Detailed Ratings
-    communicationRating: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        min: 1,
-        max: 5,
-      },
-    },
-    knowledgeRating: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        min: 1,
-        max: 5,
-      },
-    },
-    helpfulnessRating: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        min: 1,
-        max: 5,
-      },
-    },
-    // Status Flags
-    isVerified: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    isFeatured: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    isVisible: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
-    // Coach Response
-    coachResponse: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    coachResponseAt: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    // Engagement Metrics
-    helpfulCount: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-    },
-    unhelpfulCount: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-  },
-  {
-    sequelize: sequelizeInstance,
-    modelName: 'CoachReview',
-    tableName: 'coach_reviews',
-    timestamps: true,
-    indexes: [
-      {
-        unique: true,
-        fields: ['coach_id', 'client_id', 'session_id'],
-      },
-    ],
-    hooks: {
-      afterCreate: async (instance: CoachReview) => {
-        await instance.updateCoachStats();
-      },
-      afterUpdate: async (instance: CoachReview) => {
-        if (instance.changed('rating') || instance.changed('isVisible')) {
-          await instance.updateCoachStats();
-        }
-      },
-    },
+// Static method for deferred initialization
+CoachReview.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for CoachReview initialization');
   }
-);
-}
 
-// Define associations - skip in test environment
-if (process.env.NODE_ENV !== 'test') {
-CoachReview.belongsTo(require('./CoachProfile').CoachProfile, {
-  foreignKey: 'coachId',
-  as: 'coach',
-});
+  return CoachReview.init(
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      coachId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'coach_profiles',
+          key: 'id',
+        },
+      },
+      clientId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
+      },
+      sessionId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'coach_sessions',
+          key: 'id',
+        },
+      },
+      // Ratings
+      rating: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: {
+          min: 1,
+          max: 5,
+        },
+      },
+      title: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+      },
+      comment: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      // Detailed Ratings
+      communicationRating: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        validate: {
+          min: 1,
+          max: 5,
+        },
+      },
+      knowledgeRating: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        validate: {
+          min: 1,
+          max: 5,
+        },
+      },
+      helpfulnessRating: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        validate: {
+          min: 1,
+          max: 5,
+        },
+      },
+      // Status Flags
+      isVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      isFeatured: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      isVisible: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
+      // Coach Response
+      coachResponse: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      coachResponseAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      // Engagement Metrics
+      helpfulCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
+      unhelpfulCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
+      createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW,
+      },
+      updatedAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW,
+      },
+    },
+    {
+      sequelize: sequelizeInstance,
+      modelName: 'CoachReview',
+      tableName: 'coach_reviews',
+      timestamps: true,
+      indexes: [
+        {
+          unique: true,
+          fields: ['coach_id', 'client_id', 'session_id'],
+        },
+      ],
+      hooks: {
+        afterCreate: async (instance: CoachReview) => {
+          await instance.updateCoachStats();
+        },
+        afterUpdate: async (instance: CoachReview) => {
+          if (instance.changed('rating') || instance.changed('isVisible')) {
+            await instance.updateCoachStats();
+          }
+        },
+      },
+    }
+  );
+};
 
-CoachReview.belongsTo(User, {
-  foreignKey: 'clientId',
-  as: 'client',
-});
-
-CoachReview.belongsTo(require('./CoachSession').CoachSession, {
-  foreignKey: 'sessionId',
-  as: 'session',
-});
-}
+// Comment out immediate initialization to prevent premature execution
+// CoachReview.init(...) will be called via CoachReview.initializeModel() after database is ready
 
 export default CoachReview;

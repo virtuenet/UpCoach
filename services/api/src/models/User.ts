@@ -1,7 +1,5 @@
 import * as bcrypt from 'bcryptjs';
-import { Model, DataTypes, Optional } from 'sequelize';
-
-import { sequelize } from '../config/sequelize';
+import { Model, DataTypes, Optional, Sequelize } from 'sequelize';
 
 export interface UserAttributes {
   id: string;
@@ -118,9 +116,18 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
     // User has many activities
     User.hasMany(models.UserActivity, { foreignKey: 'userId', as: 'activities' });
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof User;
 }
 
-User.init(
+// Static method for deferred initialization
+User.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for User initialization');
+  }
+
+  User.init(
   {
     id: {
       type: DataTypes.UUID,
@@ -238,7 +245,7 @@ User.init(
     },
   },
   {
-    sequelize,
+    sequelize: sequelizeInstance,
     modelName: 'User',
     tableName: 'users',
     timestamps: true,
@@ -260,3 +267,11 @@ User.init(
     },
   }
 );
+
+  return User;
+};
+
+// Comment out immediate initialization to prevent premature execution
+// User.init(...) will be called via User.initializeModel() after database is ready
+
+export default User;

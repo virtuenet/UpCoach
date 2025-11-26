@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import {
   Model,
   DataTypes,
@@ -8,7 +8,6 @@ import {
   ForeignKey,
   NonAttribute,
 } from 'sequelize';
-import { sequelize } from '../config/database';
 
 import { CoachPackage } from './CoachPackage';
 import type { CoachReview } from './CoachReview';
@@ -200,13 +199,18 @@ export class CoachProfile extends Model<
       ],
     });
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof CoachProfile;
 }
 
-// Initialize model
-// Initialize model - skip in test environment to prevent "No Sequelize instance passed" errors
-// Jest mocks will handle model initialization in tests
-if (process.env.NODE_ENV !== 'test') {
-CoachProfile.init(
+// Static method for deferred initialization
+CoachProfile.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for CoachProfile initialization');
+  }
+
+  CoachProfile.init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -368,7 +372,7 @@ CoachProfile.init(
     },
   },
   {
-    sequelize,
+    sequelize: sequelizeInstance,
     modelName: 'CoachProfile',
     tableName: 'coach_profiles',
     timestamps: true,
@@ -398,29 +402,41 @@ CoachProfile.init(
     },
   }
 );
-}
 
-// Define associations - skip in test environment
-if (process.env.NODE_ENV !== 'test') {
-CoachProfile.belongsTo(User, {
-  foreignKey: 'userId',
-  as: 'user',
-});
+  // Define associations
+  // Conditionally set up associations if models are available
+  if (sequelizeInstance.models.User) {
+    CoachProfile.belongsTo(sequelizeInstance.models.User, {
+      foreignKey: 'userId',
+      as: 'user',
+    });
+  }
 
-CoachProfile.hasMany(require('./CoachSession').CoachSession, {
-  foreignKey: 'coachId',
-  as: 'sessions',
-});
+  if (sequelizeInstance.models.CoachSession) {
+    CoachProfile.hasMany(sequelizeInstance.models.CoachSession, {
+      foreignKey: 'coachId',
+      as: 'sessions',
+    });
+  }
 
-CoachProfile.hasMany(require('./CoachReview').CoachReview, {
-  foreignKey: 'coachId',
-  as: 'reviews',
-});
+  if (sequelizeInstance.models.CoachReview) {
+    CoachProfile.hasMany(sequelizeInstance.models.CoachReview, {
+      foreignKey: 'coachId',
+      as: 'reviews',
+    });
+  }
 
-CoachProfile.hasMany(CoachPackage, {
-  foreignKey: 'coachId',
-  as: 'packages',
-});
-}
+  if (sequelizeInstance.models.CoachPackage) {
+    CoachProfile.hasMany(sequelizeInstance.models.CoachPackage, {
+      foreignKey: 'coachId',
+      as: 'packages',
+    });
+  }
+
+  return CoachProfile;
+};
+
+// Comment out immediate initialization to prevent premature execution
+// CoachProfile.init(...) will be called via CoachProfile.initializeModel() after database is ready
 
 export default CoachProfile;

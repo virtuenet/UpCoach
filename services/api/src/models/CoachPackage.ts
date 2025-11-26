@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import * as sequelize from 'sequelize';
 import {
   Model,
@@ -9,7 +9,6 @@ import {
   ForeignKey,
   NonAttribute,
 } from 'sequelize';
-import { sequelize as sequelizeInstance } from '../config/database';
 
 import type { CoachProfile } from './CoachProfile';
 import { User } from './User';
@@ -127,13 +126,18 @@ export class CoachPackage extends Model<
       savings: Number((regularPrice - packagePrice).toFixed(2)),
     };
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof CoachPackage;
 }
 
-// Initialize model
-// Initialize model - skip in test environment to prevent "No Sequelize instance passed" errors
-// Jest mocks will handle model initialization in tests
-if (process.env.NODE_ENV !== 'test') {
-CoachPackage.init(
+// Static method for deferred initialization
+CoachPackage.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for CoachPackage initialization');
+  }
+
+  CoachPackage.init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -233,14 +237,21 @@ CoachPackage.init(
     },
   }
 );
-}
 
-// Define associations - skip in test environment
-if (process.env.NODE_ENV !== 'test') {
-CoachPackage.belongsTo(require('./CoachProfile').CoachProfile, {
-  foreignKey: 'coachId',
-  as: 'coach',
-});
+  // Define associations
+  // Use sequelizeInstance.models to access CoachProfile after it's initialized
+  if (sequelizeInstance.models.CoachProfile) {
+    CoachPackage.belongsTo(sequelizeInstance.models.CoachProfile, {
+      foreignKey: 'coachId',
+      as: 'coach',
+    });
+  }
+
+  return CoachPackage;
+};
+
+// Comment out immediate initialization to prevent premature execution
+// CoachPackage.init(...) will be called via CoachPackage.initializeModel() after database is ready
 
 // Client Package Purchases Model
 export class ClientCoachPackage extends Model<
@@ -335,10 +346,18 @@ export class ClientCoachPackage extends Model<
       }
     );
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof ClientCoachPackage;
 }
 
-// Initialize ClientCoachPackage model
-ClientCoachPackage.init(
+// Static method for deferred initialization of ClientCoachPackage
+ClientCoachPackage.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for ClientCoachPackage initialization');
+  }
+
+  ClientCoachPackage.init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -404,22 +423,27 @@ ClientCoachPackage.init(
   }
 );
 
-// Define ClientCoachPackage associations
-ClientCoachPackage.belongsTo(CoachPackage, {
-  foreignKey: 'packageId',
-  as: 'package',
-});
+  // Define ClientCoachPackage associations
+  ClientCoachPackage.belongsTo(CoachPackage, {
+    foreignKey: 'packageId',
+    as: 'package',
+  });
 
-ClientCoachPackage.belongsTo(User, {
-  foreignKey: 'clientId',
-  as: 'client',
-});
+  ClientCoachPackage.belongsTo(User, {
+    foreignKey: 'clientId',
+    as: 'client',
+  });
 
-// Define reverse association
-CoachPackage.hasMany(ClientCoachPackage, {
-  foreignKey: 'packageId',
-  as: 'clientPackages',
-});
-}
+  // Define reverse association
+  CoachPackage.hasMany(ClientCoachPackage, {
+    foreignKey: 'packageId',
+    as: 'clientPackages',
+  });
+
+  return ClientCoachPackage;
+};
+
+// Comment out immediate initialization to prevent premature execution
+// ClientCoachPackage.init(...) will be called via ClientCoachPackage.initializeModel() after database is ready
 
 export default CoachPackage;

@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import {
   Model,
   DataTypes,
@@ -8,7 +8,6 @@ import {
   ForeignKey,
   NonAttribute,
 } from 'sequelize';
-import { sequelize } from '../config/database';
 
 import type { CoachProfile } from './CoachProfile';
 import { User } from './User';
@@ -239,209 +238,204 @@ export class CoachSession extends Model<
 
     return conflicts > 0;
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof CoachSession;
 }
 
-// Initialize model
-// Initialize model - skip in test environment to prevent "No Sequelize instance passed" errors
-// Jest mocks will handle model initialization in tests
-if (process.env.NODE_ENV !== 'test') {
-CoachSession.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true,
-    },
-    coachId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'coach_profiles',
-        key: 'id',
-      },
-    },
-    clientId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
-    },
-    // Session Details
-    title: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    sessionType: {
-      type: DataTypes.ENUM(...Object.values(SessionType)),
-      allowNull: false,
-    },
-    status: {
-      type: DataTypes.ENUM(...Object.values(SessionStatus)),
-      allowNull: false,
-      defaultValue: SessionStatus.PENDING,
-    },
-    // Timing
-    scheduledAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    durationMinutes: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    actualStartTime: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    actualEndTime: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    timezone: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-    },
-    // Meeting Details
-    meetingUrl: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    meetingPassword: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-    },
-    locationAddress: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    // Pricing
-    hourlyRate: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
-    },
-    totalAmount: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
-    },
-    currency: {
-      type: DataTypes.STRING(3),
-      defaultValue: 'USD',
-    },
-    paymentStatus: {
-      type: DataTypes.ENUM(...Object.values(PaymentStatus)),
-      defaultValue: PaymentStatus.PENDING,
-    },
-    paymentId: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-    // Notes & Resources
-    coachNotes: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    clientNotes: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    sharedResources: {
-      type: DataTypes.JSONB,
-      defaultValue: [],
-    },
-    // Feedback
-    clientRating: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        min: 1,
-        max: 5,
-      },
-    },
-    clientFeedback: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    coachRating: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: {
-        min: 1,
-        max: 5,
-      },
-    },
-    coachFeedback: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    // Metadata
-    cancellationReason: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    cancelledBy: {
-      type: DataTypes.STRING(50),
-      allowNull: true,
-    },
-    cancelledAt: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    metadata: {
-      type: DataTypes.JSONB,
-      defaultValue: {},
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
-  },
-  {
-    sequelize,
-    modelName: 'CoachSession',
-    tableName: 'coach_sessions',
-    timestamps: true,
-    hooks: {
-      beforeCreate: (instance: CoachSession) => {
-        const hours = instance.durationMinutes / 60;
-        instance.totalAmount = Number((instance.hourlyRate * hours).toFixed(2));
-      },
-      afterUpdate: async (instance: CoachSession) => {
-        if (instance.changed('status') && instance.status === SessionStatus.COMPLETED) {
-          // This would trigger the database trigger, but we can also handle it here
-          const { CoachProfile } = require('./CoachProfile');
-          await CoachProfile.increment('totalSessions', {
-            where: { id: instance.coachId },
-          });
-        }
-      },
-    },
+// Static method for deferred initialization
+CoachSession.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for CoachSession initialization');
   }
-);
-}
 
-// Define associations - skip in test environment
-if (process.env.NODE_ENV !== 'test') {
-CoachSession.belongsTo(require('./CoachProfile').CoachProfile, {
-  foreignKey: 'coachId',
-  as: 'coach',
-});
+  return CoachSession.init(
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      coachId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'coach_profiles',
+          key: 'id',
+        },
+      },
+      clientId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
+      },
+      // Session Details
+      title: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+      },
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      sessionType: {
+        type: DataTypes.ENUM(...Object.values(SessionType)),
+        allowNull: false,
+      },
+      status: {
+        type: DataTypes.ENUM(...Object.values(SessionStatus)),
+        allowNull: false,
+        defaultValue: SessionStatus.PENDING,
+      },
+      // Timing
+      scheduledAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      durationMinutes: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      actualStartTime: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      actualEndTime: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      timezone: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+      },
+      // Meeting Details
+      meetingUrl: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      meetingPassword: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      locationAddress: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      // Pricing
+      hourlyRate: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+      },
+      totalAmount: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+      },
+      currency: {
+        type: DataTypes.STRING(3),
+        defaultValue: 'USD',
+      },
+      paymentStatus: {
+        type: DataTypes.ENUM(...Object.values(PaymentStatus)),
+        defaultValue: PaymentStatus.PENDING,
+      },
+      paymentId: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+      },
+      // Notes & Resources
+      coachNotes: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      clientNotes: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      sharedResources: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+      },
+      // Feedback
+      clientRating: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        validate: {
+          min: 1,
+          max: 5,
+        },
+      },
+      clientFeedback: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      coachRating: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        validate: {
+          min: 1,
+          max: 5,
+        },
+      },
+      coachFeedback: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      // Metadata
+      cancellationReason: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      cancelledBy: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+      },
+      cancelledAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      metadata: {
+        type: DataTypes.JSONB,
+        defaultValue: {},
+      },
+      createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW,
+      },
+      updatedAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW,
+      },
+    },
+    {
+      sequelize: sequelizeInstance,
+      modelName: 'CoachSession',
+      tableName: 'coach_sessions',
+      timestamps: true,
+      hooks: {
+        beforeCreate: (instance: CoachSession) => {
+          const hours = instance.durationMinutes / 60;
+          instance.totalAmount = Number((instance.hourlyRate * hours).toFixed(2));
+        },
+        afterUpdate: async (instance: CoachSession) => {
+          if (instance.changed('status') && instance.status === SessionStatus.COMPLETED) {
+            // This would trigger the database trigger, but we can also handle it here
+            const { CoachProfile } = require('./CoachProfile');
+            await CoachProfile.increment('totalSessions', {
+              where: { id: instance.coachId },
+            });
+          }
+        },
+      },
+    }
+  );
+};
 
-CoachSession.belongsTo(User, {
-  foreignKey: 'clientId',
-  as: 'client',
-});
-}
+// Comment out immediate initialization to prevent premature execution
+// CoachSession.init(...) will be called via CoachSession.initializeModel() after database is ready
 
 export default CoachSession;

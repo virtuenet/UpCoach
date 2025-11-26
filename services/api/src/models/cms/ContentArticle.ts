@@ -1,7 +1,6 @@
-import { Model, DataTypes, Optional, BelongsToGetAssociationMixin, Op } from 'sequelize';
+import { Model, DataTypes, Optional, BelongsToGetAssociationMixin, Op, Sequelize } from 'sequelize';
 import slugify from 'slugify';
 
-import { sequelize } from '../../config/database';
 import { User } from '../User';
 
 import { ContentCategory } from './ContentCategory';
@@ -197,10 +196,19 @@ export class ContentArticle
       as: 'interactions',
     });
   }
+
+  // Static method declaration for lazy initialization
+  static initializeModel: (sequelize: Sequelize) => typeof ContentArticle;
 }
 
-ContentArticle.init(
-  {
+// Static method for deferred initialization
+ContentArticle.initializeModel = function(sequelizeInstance: Sequelize) {
+  if (!sequelizeInstance) {
+    throw new Error('Sequelize instance required for ContentArticle initialization');
+  }
+
+  return ContentArticle.init(
+    {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
@@ -330,7 +338,7 @@ ContentArticle.init(
     },
   },
   {
-    sequelize,
+    sequelize: sequelizeInstance,
     modelName: 'ContentArticle',
     tableName: 'content_articles',
     timestamps: true,
@@ -393,13 +401,13 @@ ContentArticle.init(
         attributes: {
           include: [
             [
-              sequelize.literal(
+              sequelizeInstance.literal(
                 '(SELECT COUNT(*) FROM content_interactions WHERE content_id = "ContentArticle"."id" AND interaction_type = \'view\')'
               ),
               'actualViewCount',
             ],
             [
-              sequelize.literal(
+              sequelizeInstance.literal(
                 '(SELECT COUNT(*) FROM content_interactions WHERE content_id = "ContentArticle"."id" AND interaction_type = \'like\')'
               ),
               'actualLikeCount',
@@ -428,6 +436,10 @@ ContentArticle.init(
       },
     ],
   }
-);
+  );
+};
+
+// Comment out immediate initialization to prevent premature execution
+// ContentArticle.init(...) will be called via ContentArticle.initializeModel() after database is ready
 
 export default ContentArticle;
