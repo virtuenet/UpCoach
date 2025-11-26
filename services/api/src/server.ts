@@ -65,8 +65,7 @@ async function initializeServices(): Promise<void> {
     // 5. Initialize scheduler service
     logger.info('⏰ Starting scheduler service...');
     try {
-      const scheduler = SchedulerService.getInstance();
-      await scheduler.initialize();
+      SchedulerService.initialize();
       logger.info('✅ Scheduler service started');
     } catch (error) {
       logger.error('❌ Scheduler service failed to start:', error);
@@ -121,7 +120,8 @@ async function runMigrations(): Promise<void> {
         logger.info(`✅ Migration ${file} executed successfully`);
       } catch (error: unknown) {
         // Ignore "already exists" errors
-        if (error.message?.includes('already exists')) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('already exists')) {
           logger.debug(`⏭️  Migration ${file} already applied`);
         } else {
           logger.error(`❌ Migration ${file} failed:`, error);
@@ -130,7 +130,8 @@ async function runMigrations(): Promise<void> {
       }
     }
   } catch (error: unknown) {
-    if (error.code === 'ENOENT') {
+    const errorCode = error && typeof error === 'object' && 'code' in error ? (error as any).code : null;
+    if (errorCode === 'ENOENT') {
       logger.warn('⚠️  No migrations directory found');
     } else {
       throw error;
@@ -144,7 +145,7 @@ async function runMigrations(): Promise<void> {
 async function startServer(): Promise<void> {
   try {
     // Import app after services are initialized
-    const app = (await import('./index')).default || (await import('./index')).app;
+    const { default: app } = await import('./index');
 
     // Create HTTP server
     server = createServer(app);
@@ -202,8 +203,7 @@ async function gracefulShutdown(signal: string): Promise<void> {
 
     // 2. Stop scheduler
     logger.info('⏰ Stopping scheduler service...');
-    const scheduler = SchedulerService.getInstance();
-    await scheduler.stop();
+    SchedulerService.stopAllJobs();
     logger.info('✅ Scheduler stopped');
 
     // 3. Close database connections

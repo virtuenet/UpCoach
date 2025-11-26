@@ -82,6 +82,13 @@ const ComparisonTable = dynamic(() => import('@/components/sections/ComparisonTa
   loading: () => <div className="h-96 bg-gray-50 animate-pulse" />,
 });
 
+const ProgressTheater = dynamic(
+  () => import('@/components/sections/ProgressTheater').then(mod => mod.ProgressTheater),
+  {
+    loading: () => <div className="h-96 bg-slate-900 animate-pulse" />,
+  }
+);
+
 export const metadata: Metadata = {
   title: 'UpCoach - AI-Powered Personal Coaching Platform',
   description:
@@ -117,6 +124,29 @@ export default async function HomePage() {
   const ctaContent = normalizeCtaBlock(ctaBlocks?.[0]);
   const blogContent = blogCards as BlogCardContent[];
   const comparisonContent = (comparisonTables?.[0] as ComparisonTableContent | undefined) ?? null;
+  const progressHighlights = [
+    {
+      id: 'demo-1',
+      title: 'Goal streak',
+      summary: 'Coaching teams completed 3 major deliverables this week.',
+      metricLabel: 'Goals shipped',
+      metricValue: '3',
+    },
+    {
+      id: 'demo-2',
+      title: 'Habit momentum',
+      summary: 'Morning sessions hit 78% adherence across cohorts.',
+      metricLabel: 'Habit completion',
+      metricValue: '78%',
+    },
+    {
+      id: 'demo-3',
+      title: 'Energy check',
+      summary: 'Daily mood check-ins jumped 42% after launching nudges.',
+      metricLabel: 'Mood entries',
+      metricValue: '+42%',
+    },
+  ];
 
   return (
     <ClientWrapper>
@@ -147,6 +177,10 @@ export default async function HomePage() {
 
         <LazySection>
           <BlogHighlights cards={blogContent} />
+        </LazySection>
+
+        <LazySection>
+          <ProgressTheater highlights={progressHighlights} />
         </LazySection>
 
         <LazySection>

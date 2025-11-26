@@ -10,6 +10,7 @@
 import { initializeDatabase } from './config/database';
 import { config } from './config/environment';
 import { SchedulerService } from './services/SchedulerService';
+import { DatabaseService } from './services/database';
 import { logger } from './utils/logger';
 import { gracefulShutdown } from './utils/shutdown';
 import app from './app';
@@ -21,15 +22,33 @@ const PORT = config.port;
  */
 async function initializeServices() {
   try {
-    // Initialize database
+    // Initialize PostgreSQL connection pool
+    logger.info('Initializing PostgreSQL connection pool...');
+    await DatabaseService.initialize();
+    logger.info('PostgreSQL connection pool initialized successfully');
+
+    // Initialize Sequelize database and models
+    logger.info('About to initialize database...');
     await initializeDatabase();
+    logger.info('Database initialized successfully');
 
     // Initialize scheduler service
+    logger.info('About to initialize scheduler service...');
     SchedulerService.initialize();
+    logger.info('Scheduler service initialized successfully');
 
     logger.info('All services initialized successfully');
   } catch (error) {
     logger.error('Failed to initialize services:', error);
+    logger.error('Error type:', typeof error);
+    logger.error('Error is null?:', error === null);
+    logger.error('Error is undefined?:', error === undefined);
+    if (error instanceof Error) {
+      logger.error('Error message:', error.message);
+      logger.error('Error stack:', error.stack);
+    } else {
+      logger.error('Error (stringified):', JSON.stringify(error));
+    }
     process.exit(1);
   }
 }
