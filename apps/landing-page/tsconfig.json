@@ -35,10 +35,10 @@
       "@upcoach/types/*": ["../../packages/types/src/*"],
       "@upcoach/utils": ["../../packages/utils/src"],
       "@upcoach/utils/*": ["../../packages/utils/src/*"],
-      "@upcoach/ui": ["../../packages/ui/src"],
-      "@upcoach/ui/*": ["../../packages/ui/src/*"]
+      "@upcoach/ui": ["../../packages/ui/dist"],
+      "@upcoach/ui/*": ["../../packages/ui/dist/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "../../types/missing-types.d.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src/tests/**/*", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"]
 }

@@ -42,7 +42,7 @@ export async function getFeatureBlocks(locale = 'en-US', variant = 'default') {
 }
 
 export async function getPricingTiers(locale = 'en-US', variant = 'default') {
-  const result = await fetchPublic<{ content: Record<string, unknown> }>('/api/public/landing/pricing', locale, variant);
+  const result = await fetchPublic<{ content: Record<string, unknown>; metadata?: Record<string, unknown> }>('/api/public/landing/pricing', locale, variant);
   return result.data.map(entry => ({ ...entry.content, metadata: entry.metadata }));
 }
 
@@ -73,10 +73,10 @@ export async function getBlogCards(locale = 'en-US', variant = 'default'): Promi
   return result.data.map(entry => {
     const content = entry.content as BlogCardContent;
     return {
-      key: (entry as Record<string, unknown>).key ?? content.title ?? 'blog-card',
+      key: entry.key ?? content.title ?? 'blog-card',
       ...content,
       tags: Array.isArray(content.tags) ? content.tags : [],
-    };
+    } as BlogCardContent;
   });
 }
 

@@ -1,16 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
+import type { Metric } from 'web-vitals';
 
 import { trackWebVitals } from '@/services/analytics';
-
-type MetricType = {
-  name: string;
-  value: number;
-  delta: number;
-  id: string;
-  entries: any[];
-};
 
 export default function WebVitals() {
   useEffect(() => {
@@ -20,9 +13,10 @@ export default function WebVitals() {
       }
 
       try {
-        const { onCLS, onFID, onFCP, onLCP, onTTFB, onINP } = await import('web-vitals');
+        // web-vitals v3.x uses getCLS/getFID/etc instead of onCLS/onFID
+        const { getCLS, getFID, getFCP, getLCP, getTTFB } = await import('web-vitals');
 
-        const sendToAnalytics = (metric: MetricType) => {
+        const sendToAnalytics = (metric: Metric) => {
           // Log to console in development
           if (process.env.NODE_ENV === 'development') {
             console.log(`Web Vital: ${metric.name}`, {
@@ -56,10 +50,6 @@ export default function WebVitals() {
               rating =
                 metric.value <= 800 ? 'good' : metric.value <= 1800 ? 'needs-improvement' : 'poor';
               break;
-            case 'INP':
-              rating =
-                metric.value <= 200 ? 'good' : metric.value <= 500 ? 'needs-improvement' : 'poor';
-              break;
           }
 
           // Track to Google Analytics
@@ -71,12 +61,11 @@ export default function WebVitals() {
         };
 
         // Core Web Vitals
-        onCLS(sendToAnalytics);
-        onFID(sendToAnalytics);
-        onFCP(sendToAnalytics);
-        onLCP(sendToAnalytics);
-        onTTFB(sendToAnalytics);
-        onINP(sendToAnalytics);
+        getCLS(sendToAnalytics);
+        getFID(sendToAnalytics);
+        getFCP(sendToAnalytics);
+        getLCP(sendToAnalytics);
+        getTTFB(sendToAnalytics);
       } catch (error) {
         console.error('Failed to load web-vitals:', error);
       }

@@ -265,7 +265,7 @@ export default function OnboardingPage() {
                       <Input
                         id="age"
                         type="number"
-                        value={data.profile.age || ''}
+                        value={data.profile.age?.toString() || ''}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateData('profile', 'age', parseInt(e.target.value))}
                         placeholder="25"
                         className="mt-1"

@@ -9,7 +9,7 @@ type Props = {
 };
 
 export default function ComparisonTable({ comparison }: Props) {
-  if (!comparison || !comparison.columns?.length) {
+  if (!comparison || !comparison.columns?.length || !comparison.features?.length) {
     return null;
   }
 

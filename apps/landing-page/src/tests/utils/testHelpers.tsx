@@ -1,6 +1,6 @@
-import { render, RenderOptions, act } from '@testing-library/react';
+import { render, RenderOptions } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import React, { ReactElement } from 'react';
+import React, { ReactElement, act } from 'react';
 
 // Custom render function with providers
 export function renderWithProviders(ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) {

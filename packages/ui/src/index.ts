@@ -43,6 +43,8 @@ export * from './theme';
 
 // Types
 export type { ButtonProps } from './components/Button';
+export type { InputProps } from './components/Input';
+export type { TextareaProps } from './components/Textarea';
 export type {
   UnifiedAdminLayoutProps,
   NavItem,
