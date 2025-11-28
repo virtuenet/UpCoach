@@ -234,12 +234,29 @@ export async function initializeDatabase() {
     // Define associations
     defineAssociations();
 
-    // Sync models with database - temporarily disabled for debugging
-    // if (process.env.NODE_ENV !== 'production') {
-    //   await sequelize.sync({ alter: true });
-    //   logger.info('Database models synchronized.');
-    // }
-    logger.info('Database sync disabled for debugging.');
+    // Database sync strategy based on environment
+    const syncMode = process.env.DB_SYNC_MODE || 'none';
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    if (isProduction) {
+      // In production, never auto-sync - use migrations instead
+      logger.info('Production mode: Database sync disabled. Use migrations for schema changes.');
+    } else if (syncMode === 'alter') {
+      // Development: alter tables to match models (safe, preserves data)
+      await sequelize.sync({ alter: true });
+      logger.info('Database models synchronized with alter mode.');
+    } else if (syncMode === 'force') {
+      // Test only: drop and recreate tables (destroys data!)
+      if (process.env.NODE_ENV === 'test') {
+        await sequelize.sync({ force: true });
+        logger.info('Database models synchronized with force mode (test environment).');
+      } else {
+        logger.warn('Force sync requested but not in test environment - ignoring.');
+      }
+    } else {
+      // Default: no sync, rely on migrations
+      logger.info('Database sync disabled. Set DB_SYNC_MODE=alter for development auto-sync.');
+    }
   } catch (error) {
     logger.error('Unable to connect to the database:', error);
     throw error;

@@ -330,6 +330,196 @@ export class LocalLLMController {
       load_average: os.loadavg()
     };
   }
+
+  /**
+   * Get list of available LLM models
+   */
+  static async getAvailableModels(req: Request, res: Response) {
+    try {
+      const modelsDir = process.env.LOCAL_LLM_MODELS_DIR || path.join(__dirname, '../../models');
+      let availableModels: Array<{
+        name: string;
+        path: string;
+        size: number;
+        format: string;
+        loaded: boolean;
+      }> = [];
+
+      try {
+        const files = await fs.readdir(modelsDir);
+        const modelFiles = files.filter(f =>
+          f.endsWith('.gguf') || f.endsWith('.bin') || f.endsWith('.safetensors')
+        );
+
+        for (const file of modelFiles) {
+          const filePath = path.join(modelsDir, file);
+          const stats = await fs.stat(filePath);
+          availableModels.push({
+            name: file.replace(/\.(gguf|bin|safetensors)$/, ''),
+            path: filePath,
+            size: stats.size,
+            format: path.extname(file).slice(1),
+            loaded: filePath === this.modelPath && this.isModelLoaded
+          });
+        }
+      } catch {
+        // Models directory doesn't exist or is empty
+      }
+
+      // Always include the configured model path
+      const configuredModelName = path.basename(this.modelPath).replace(/\.(gguf|bin|safetensors)$/, '');
+      const configuredModelExists = await this.checkModelFile();
+
+      if (!availableModels.find(m => m.path === this.modelPath)) {
+        availableModels.unshift({
+          name: configuredModelName,
+          path: this.modelPath,
+          size: 0,
+          format: path.extname(this.modelPath).slice(1) || 'gguf',
+          loaded: this.isModelLoaded
+        });
+      }
+
+      res.json({
+        success: true,
+        models: availableModels,
+        current_model: {
+          name: configuredModelName,
+          path: this.modelPath,
+          loaded: this.isModelLoaded,
+          available: configuredModelExists
+        },
+        supported_formats: ['gguf', 'bin', 'safetensors']
+      });
+    } catch (error) {
+      console.error('Get available models error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to retrieve available models'
+      });
+    }
+  }
+
+  /**
+   * Initialize a specific model
+   */
+  static async initializeModel(req: Request, res: Response) {
+    try {
+      const { model_path, model_name } = req.body;
+
+      // Use provided path or look up by name
+      let targetPath = model_path;
+      if (!targetPath && model_name) {
+        const modelsDir = process.env.LOCAL_LLM_MODELS_DIR || path.join(__dirname, '../../models');
+        targetPath = path.join(modelsDir, `${model_name}.gguf`);
+      }
+
+      if (!targetPath) {
+        return res.status(400).json({
+          success: false,
+          error: 'Model path or name required'
+        });
+      }
+
+      // Check if model file exists
+      try {
+        await fs.access(targetPath);
+      } catch {
+        return res.status(404).json({
+          success: false,
+          error: 'Model file not found',
+          path: targetPath
+        });
+      }
+
+      // Unload current model if different
+      if (this.isModelLoaded && this.modelPath !== targetPath) {
+        if (this.modelProcess) {
+          (this.modelProcess as { kill: () => void }).kill();
+          this.modelProcess = null;
+        }
+        this.isModelLoaded = false;
+      }
+
+      // Update model path and mark as loaded
+      this.modelPath = targetPath;
+      this.isModelLoaded = true;
+
+      res.json({
+        success: true,
+        message: 'Model initialized successfully',
+        model: {
+          path: targetPath,
+          name: path.basename(targetPath).replace(/\.(gguf|bin|safetensors)$/, ''),
+          loaded: true
+        }
+      });
+    } catch (error) {
+      console.error('Initialize model error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to initialize model'
+      });
+    }
+  }
+
+  /**
+   * Get LLM performance metrics
+   */
+  static async getMetrics(req: Request, res: Response) {
+    try {
+      const systemInfo = await this.getSystemInfo();
+      const modelAvailable = await this.isModelAvailable();
+
+      // Calculate queue metrics
+      const queueLength = this.requestQueue.length;
+      const oldestRequest = this.requestQueue[0];
+      const queueWaitTime = oldestRequest ? Date.now() - oldestRequest.timestamp : 0;
+
+      // Memory usage
+      const memoryUsage = process.memoryUsage();
+
+      res.json({
+        success: true,
+        metrics: {
+          model: {
+            path: this.modelPath,
+            loaded: this.isModelLoaded,
+            available: modelAvailable
+          },
+          queue: {
+            length: queueLength,
+            is_processing: this.isProcessing,
+            oldest_request_age_ms: queueWaitTime,
+            max_queue_size: 10
+          },
+          performance: {
+            uptime_seconds: process.uptime(),
+            memory_usage: {
+              heap_used: memoryUsage.heapUsed,
+              heap_total: memoryUsage.heapTotal,
+              rss: memoryUsage.rss,
+              external: memoryUsage.external
+            }
+          },
+          system: systemInfo,
+          limits: {
+            max_tokens: 4096,
+            max_context_length: 4096,
+            request_timeout_ms: 30000,
+            queue_timeout_ms: 60000
+          }
+        },
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Get metrics error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to retrieve metrics'
+      });
+    }
+  }
 }
 
 // Export both default and named instance for different import styles

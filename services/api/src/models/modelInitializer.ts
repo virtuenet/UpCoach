@@ -14,10 +14,17 @@ import AIInteraction from './AIInteraction';
 import AIFeedback from './AIFeedback';
 import CoachPackage, { ClientCoachPackage } from './CoachPackage';
 import CoachProfile from './CoachProfile';
+import CoachReview from './CoachReview';
+import CoachSession from './CoachSession';
+import Referral from './Referral';
 
 // CMS models
 import ContentVersion from './cms/ContentVersion';
 import ContentArticle from './cms/ContentArticle';
+import ContentComment from './cms/ContentComment';
+import ContentInteraction from './cms/ContentInteraction';
+import ContentSchedule from './cms/ContentSchedule';
+import ContentTemplate from './cms/ContentTemplate';
 import {
   LandingSection,
   LandingCtaBlock,
@@ -31,9 +38,11 @@ import {
 // Financial models
 import CostTracking from './financial/CostTracking';
 import FinancialSnapshot from './financial/FinancialSnapshot';
+import RevenueAnalytics from './financial/RevenueAnalytics';
 
 // Experiments models
 import { ExperimentEvent } from './experiments/ExperimentEvent';
+import { ExperimentAssignment } from './experiments/ExperimentAssignment';
 
 // Community models
 import ForumCategory from './community/ForumCategory';
@@ -59,6 +68,7 @@ export async function initializeAllModels(sequelize: Sequelize): Promise<void> {
     Chat,
     ChatMessage,
     Mood,
+    Referral,
 
     // AI & Coaching models
     AIInteraction,
@@ -66,10 +76,16 @@ export async function initializeAllModels(sequelize: Sequelize): Promise<void> {
     CoachPackage,
     ClientCoachPackage,
     CoachProfile,
+    CoachReview,
+    CoachSession,
 
     // CMS models
     ContentVersion,
     ContentArticle,
+    ContentComment,
+    ContentInteraction,
+    ContentSchedule,
+    ContentTemplate,
     LandingSection,
     LandingCtaBlock,
     LandingPricingTier,
@@ -81,20 +97,17 @@ export async function initializeAllModels(sequelize: Sequelize): Promise<void> {
     // Financial models
     CostTracking,
     FinancialSnapshot,
+    RevenueAnalytics,
 
     // Experiments models
     ExperimentEvent,
+    ExperimentAssignment,
 
     // Community models
     ForumCategory,
     ForumThread,
     ForumPost,
     ForumVote,
-
-    // Add remaining models here as they are converted:
-    // UserActivity, VoiceJournalEntry, Referral, Organization, OrganizationMember, Team,
-    // CoachReview, CoachSession, StreakGuardianLink,
-    // Article, Category, Comment, Content, ContentAnalytics, ContentArticle, etc.
   ];
 
   let initializedCount = 0;

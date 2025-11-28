@@ -143,9 +143,45 @@ export class UserProfilingService {
     );
     const totalSessions = sessionsResult.rows.length;
 
-    // For now, set avgSessionDuration to 0 to avoid complex JOIN queries
-    // TODO: Implement proper session duration calculation with raw SQL
-    const avgSessionDuration = 0;
+    // Calculate average session duration from chat messages
+    // A "session" is defined as messages within 30 minutes of each other
+    const sessionDurationResult = await db.query<{ avg_duration_minutes: number }>(
+      `
+      WITH message_gaps AS (
+        SELECT
+          "createdAt",
+          EXTRACT(EPOCH FROM ("createdAt" - LAG("createdAt") OVER (ORDER BY "createdAt"))) / 60 AS gap_minutes
+        FROM chats
+        WHERE "userId" = $1
+        AND "createdAt" >= NOW() - INTERVAL '30 days'
+      ),
+      session_boundaries AS (
+        SELECT
+          "createdAt",
+          gap_minutes,
+          CASE WHEN gap_minutes IS NULL OR gap_minutes > 30 THEN 1 ELSE 0 END AS is_new_session
+        FROM message_gaps
+      ),
+      sessions AS (
+        SELECT
+          SUM(is_new_session) OVER (ORDER BY "createdAt") AS session_id,
+          "createdAt"
+        FROM session_boundaries
+      ),
+      session_durations AS (
+        SELECT
+          session_id,
+          EXTRACT(EPOCH FROM (MAX("createdAt") - MIN("createdAt"))) / 60 AS duration_minutes
+        FROM sessions
+        GROUP BY session_id
+        HAVING COUNT(*) > 1
+      )
+      SELECT COALESCE(AVG(duration_minutes), 0) AS avg_duration_minutes
+      FROM session_durations
+      `,
+      [profile.userId]
+    );
+    const avgSessionDuration = Math.round(sessionDurationResult.rows[0]?.avg_duration_minutes || 0);
 
     // Update progress metrics
     profile.metadata.progressMetrics = {

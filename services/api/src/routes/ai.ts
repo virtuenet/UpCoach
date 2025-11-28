@@ -112,12 +112,11 @@ router.post('/insights/:insightId/dismiss', authenticate, aiRateLimiter, aiContr
 
 // Local LLM Routes
 router.get('/local-llm/status', authenticate, localLLMRateLimiter, localLLMController.getStatus);
-// TODO: Implement missing methods in LocalLLMController
-// router.get('/local-llm/models', authenticate, localLLMRateLimiter, localLLMController.getAvailableModels);
+router.get('/local-llm/models', authenticate, localLLMRateLimiter, localLLMController.getAvailableModels);
 router.post('/local-llm/generate', authenticate, localLLMRateLimiter, validateConversationInput, localLLMController.processQuery);
-// router.post('/local-llm/initialize', authenticate, aiRateLimiter, localLLMController.initializeModel);
+router.post('/local-llm/initialize', authenticate, aiRateLimiter, localLLMController.initializeModel);
 router.get('/local-llm/health', localLLMController.healthCheck);
-// router.get('/local-llm/metrics', authenticate, localLLMRateLimiter, localLLMController.getMetrics);
+router.get('/local-llm/metrics', authenticate, localLLMRateLimiter, localLLMController.getMetrics);
 
 // Daily Pulse Routes
 router.get('/pulse', authenticate, aiRateLimiter, (req, res, next) => dailyPulseController.getPulse(req, res, next));
