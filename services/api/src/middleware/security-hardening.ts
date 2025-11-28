@@ -84,27 +84,31 @@ export const createRateLimiter = (options: {
     // Custom key generator for better tracking
     keyGenerator: (req: Request) => {
       // Use IP + User-Agent for better fingerprinting
-      const ip = req.ip || req.connection.remoteAddress || 'unknown';
+      const ip = req.ip || req.socket?.remoteAddress || 'unknown';
       const userAgent = req.get('User-Agent') || 'unknown';
-      return `${ip}-${Buffer.from(userAgent).toString('base64').slice(0, 10)}`;
+      return `${ip}-${Buffer.from(userAgent).toString('base64').subarray(0, 10)}`;
     },
 
     // Skip rate limiting for trusted IPs in development
     skip: (req: Request) => {
       if (process.env.NODE_ENV === 'development') {
         const trustedIPs = ['127.0.0.1', '::1', 'localhost'];
-        return trustedIPs.includes(req.ip);
+        return trustedIPs.includes(req.ip || '');
       }
       return false;
     },
 
-    // Enhanced logging
-    onLimitReached: (req: Request) => {
+    // Handler for rate limit exceeded
+    handler: (req: Request, res: Response) => {
       logger.warn('Rate limit exceeded', {
         ip: req.ip,
         userAgent: req.get('User-Agent'),
         path: req.path,
         method: req.method
+      });
+      res.status(429).json({
+        error: options.message || 'Too many requests, please try again later',
+        retryAfter: Math.ceil(options.windowMs / 1000)
       });
     }
   });
@@ -182,7 +186,7 @@ export const corsConfig = cors({
 });
 
 // Request sanitization middleware
-export const sanitizeRequest = (req: Request, res: Response, next: NextFunction) => {
+export const sanitizeRequest = (req: Request, _res: Response, next: NextFunction) => {
   // Remove potentially dangerous characters from all string inputs
   const sanitizeString = (str: string): string => {
     return str
@@ -195,7 +199,7 @@ export const sanitizeRequest = (req: Request, res: Response, next: NextFunction)
   };
 
   // Recursively sanitize object properties
-  const sanitizeObject = (obj: unknown): unknown => {
+  const sanitizeObject = (obj: unknown): Record<string, unknown> | unknown[] | unknown => {
     if (typeof obj === 'string') {
       return sanitizeString(obj);
     }
@@ -205,7 +209,7 @@ export const sanitizeRequest = (req: Request, res: Response, next: NextFunction)
     }
 
     if (obj && typeof obj === 'object') {
-      const sanitized: unknown = {};
+      const sanitized: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(obj)) {
         sanitized[key] = sanitizeObject(value);
       }
@@ -221,11 +225,11 @@ export const sanitizeRequest = (req: Request, res: Response, next: NextFunction)
   }
 
   if (req.query) {
-    req.query = sanitizeObject(req.query);
+    req.query = sanitizeObject(req.query) as typeof req.query;
   }
 
   if (req.params) {
-    req.params = sanitizeObject(req.params);
+    req.params = sanitizeObject(req.params) as typeof req.params;
   }
 
   next();
@@ -271,9 +275,8 @@ export const securityLogger = (req: Request, res: Response, next: NextFunction) 
     });
   }
 
-  // Override res.end to log response details
-  const originalEnd = res.end;
-  res.end = function(...args: unknown[]) {
+  // Log response on finish
+  res.on('finish', () => {
     const duration = Date.now() - startTime;
 
     if (res.statusCode >= 400 || suspiciousDetected) {
@@ -284,16 +287,14 @@ export const securityLogger = (req: Request, res: Response, next: NextFunction) 
         suspicious: suspiciousDetected
       });
     }
-
-    originalEnd.apply(this, args);
-  };
+  });
 
   next();
 };
 
 // IP filtering middleware (for production)
-export const ipFilter = (req: Request, res: Response, next: NextFunction) => {
-  const clientIP = req.ip;
+export const ipFilter = (req: Request, res: Response, next: NextFunction): void => {
+  const clientIP = req.ip || '';
 
   // Blocked IP ranges (example - configure based on your needs)
   const blockedIPs = process.env.BLOCKED_IPS?.split(',') || [];
@@ -302,13 +303,15 @@ export const ipFilter = (req: Request, res: Response, next: NextFunction) => {
   // If allowlist is configured, only allow those IPs
   if (allowedIPs.length > 0 && !allowedIPs.includes(clientIP)) {
     logger.warn('IP not in allowlist', { ip: clientIP });
-    return res.status(403).json({ error: 'Access denied' });
+    res.status(403).json({ error: 'Access denied' });
+    return;
   }
 
   // Block specific IPs
   if (blockedIPs.includes(clientIP)) {
     logger.warn('Blocked IP attempted access', { ip: clientIP });
-    return res.status(403).json({ error: 'Access denied' });
+    res.status(403).json({ error: 'Access denied' });
+    return;
   }
 
   next();
@@ -339,7 +342,7 @@ export const requestTimeout = (timeoutMs: number = 30000) => {
 
 // Content length limiter
 export const contentLengthLimit = (maxSize: number = 10 * 1024 * 1024) => { // 10MB default
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     const contentLength = parseInt(req.get('Content-Length') || '0');
 
     if (contentLength > maxSize) {
@@ -349,7 +352,8 @@ export const contentLengthLimit = (maxSize: number = 10 * 1024 * 1024) => { // 1
         ip: req.ip,
         path: req.path
       });
-      return res.status(413).json({ error: 'Payload too large' });
+      res.status(413).json({ error: 'Payload too large' });
+      return;
     }
 
     next();

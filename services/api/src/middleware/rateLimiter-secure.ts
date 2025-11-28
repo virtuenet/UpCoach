@@ -1,11 +1,16 @@
 import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
-import type { RateLimitRequestHandler, Options } from 'express-rate-limit';
+import type { RateLimitRequestHandler } from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 
 import { logger } from '../utils/logger';
 import { redis } from '../services/redis';
+
+// Type for socket with TLS methods
+interface TLSSocket {
+  getPeerCertificate?: () => { fingerprint?: string } | null;
+}
 
 /**
  * Generate cryptographically secure request fingerprint
@@ -15,6 +20,9 @@ function generateSecureFingerprint(req: Request): string {
   const secret = process.env.FINGERPRINT_SECRET || 'default-fingerprint-secret-change-me';
 
   // Collect immutable request characteristics
+  const tlsSocket = req.socket as TLSSocket;
+  const tlsFingerprint = tlsSocket.getPeerCertificate?.()?.fingerprint || 'no-tls';
+
   const components = [
     req.ip || 'unknown',
     req.get('user-agent') || 'no-agent',
@@ -23,7 +31,7 @@ function generateSecureFingerprint(req: Request): string {
     req.get('sec-ch-ua') || 'no-ch-ua',
     req.get('sec-ch-ua-platform') || 'no-platform',
     // Add TLS fingerprint if available
-    (req.socket as unknown).getPeerCertificate?.()?.fingerprint || 'no-tls',
+    tlsFingerprint,
   ];
 
   // Use HMAC for secure fingerprinting
@@ -33,16 +41,18 @@ function generateSecureFingerprint(req: Request): string {
     .digest('hex');
 }
 
+// Redis client type for sendCommand
+interface RedisClientWithSendCommand {
+  sendCommand: (args: string[]) => Promise<unknown>;
+}
+
 /**
  * Create Redis store for distributed rate limiting
  */
 function createRedisStore(windowMs: number) {
+  const redisClient = redis as unknown as RedisClientWithSendCommand;
   return new RedisStore({
-    client: redis,
-    sendCommand: (...args: string[]) => (redis as unknown).sendCommand(args),
-    // Use sliding window for more accurate rate limiting
-    windowMs,
-    // Ensure keys are properly prefixed
+    sendCommand: async (...args: string[]) => redisClient.sendCommand(args),
     prefix: 'rl:',
   });
 }
@@ -297,23 +307,27 @@ export const distributedRateLimiter = (
       const identifier = req.ip || 'unknown';
       const key = `${keyPrefix}:${identifier}:${window}`;
 
-      // Use Redis pipeline for atomic operations
-      const pipeline = redis.pipeline();
-      pipeline.incr(key);
-      pipeline.expire(key, Math.ceil(windowMs / 1000));
+      // Use Redis multi for atomic operations
+      const multi = redis.multi();
+      multi.incr(key);
+      multi.expire(key, Math.ceil(windowMs / 1000));
 
-      const results = await pipeline.exec();
+      const results = await multi.exec();
 
       if (!results || results.length < 1) {
         // Fail open if Redis fails
-        return next();
+        next();
+        return;
       }
 
-      const [[incrErr, requestCount]] = results as [[Error | null, number]];
+      const [incrResult] = results;
+      const incrErr = incrResult?.[0] as Error | null;
+      const requestCount = (incrResult?.[1] as number) || 0;
 
       if (incrErr) {
         logger.error('Distributed rate limiter error:', incrErr);
-        return next(); // Fail open
+        next(); // Fail open
+        return;
       }
 
       if (requestCount > maxRequests) {
@@ -323,11 +337,12 @@ export const distributedRateLimiter = (
         res.setHeader('X-RateLimit-Remaining', '0');
         res.setHeader('X-RateLimit-Reset', String(new Date((window + 1) * windowMs).toISOString()));
 
-        return res.status(429).json({
+        res.status(429).json({
           success: false,
           error: 'Rate limit exceeded',
           message: `Too many requests. Limit: ${maxRequests} per ${windowMs / 1000} seconds`,
         });
+        return;
       }
 
       // Set rate limit headers
@@ -391,11 +406,12 @@ export const threatDetectionMiddleware = async (
           body: req.body,
         });
 
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           error: 'Invalid request',
           message: 'Request blocked by security filter',
         });
+        return;
       }
     }
 
@@ -404,11 +420,12 @@ export const threatDetectionMiddleware = async (
     if (contentLength > 10 * 1024 * 1024) { // 10MB limit
       await trackViolation(req.ip || 'unknown', 'oversized_request');
 
-      return res.status(413).json({
+      res.status(413).json({
         success: false,
         error: 'Payload too large',
         message: 'Request size exceeds limit',
       });
+      return;
     }
 
     next();
@@ -474,7 +491,12 @@ export async function clearRateLimit(identifier: string, limiterType: string = '
     const keys = await redis.keys(pattern);
 
     if (keys.length > 0) {
-      await redis.del(...keys);
+      // Use multi to delete all keys
+      const multi = redis.multi();
+      for (const key of keys) {
+        multi.del(key);
+      }
+      await multi.exec();
       logger.info(`Cleared rate limits for ${identifier} (${limiterType})`);
     }
   } catch (error) {

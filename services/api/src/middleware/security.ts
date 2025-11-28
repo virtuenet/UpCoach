@@ -1,5 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, Express } from 'express';
 import helmet from 'helmet';
+import type { ContentSecurityPolicyDirectiveValue } from 'helmet';
 
 import { logger } from '../utils/logger';
 
@@ -47,6 +48,9 @@ const cspConfig = {
   upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : undefined,
 };
 
+// Type for CSP directives
+type CspDirectives = Record<string, Iterable<ContentSecurityPolicyDirectiveValue>>;
+
 /**
  * Security headers middleware
  */
@@ -54,7 +58,7 @@ export function securityHeaders() {
   return helmet({
     // Content Security Policy
     contentSecurityPolicy: {
-      directives: cspConfig as unknown,
+      directives: cspConfig as CspDirectives,
     },
 
     // Strict Transport Security
@@ -550,7 +554,7 @@ export function securityMonitoring() {
 /**
  * Apply all security middleware
  */
-export function applySecurityMiddleware(app: unknown): void {
+export function applySecurityMiddleware(app: Express): void {
   // Request ID (should be first)
   app.use(requestId());
 

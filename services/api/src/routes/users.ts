@@ -324,18 +324,54 @@ router.get(
   '/all',
   requireRole(['admin']),
   asyncHandler(async (req: AuthenticatedRequest, _res: Response) => {
-    // This would require implementing a method to list all users
-    // For now, we'll return a placeholder
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
+    const offset = (page - 1) * limit;
+    const search = req.query.search as string;
+
+    // Build where clause for search
+    let whereClause = '';
+    const params: unknown[] = [limit, offset];
+    if (search) {
+      whereClause = `WHERE name ILIKE $3 OR email ILIKE $3`;
+      params.push(`%${search}%`);
+    }
+
+    // Get users with pagination
+    const usersResult = await db.query(
+      `SELECT id, email, name, role, "isActive", "createdAt", "lastLoginAt"
+       FROM users ${whereClause}
+       ORDER BY "createdAt" DESC
+       LIMIT $1 OFFSET $2`,
+      params
+    );
+
+    // Get total count
+    const countResult = await db.query(
+      `SELECT COUNT(*) as total FROM users ${search ? whereClause.replace('$3', '$1') : ''}`,
+      search ? [`%${search}%`] : []
+    );
+
+    const total = parseInt(countResult[0]?.total || '0');
+    const totalPages = Math.ceil(total / limit);
+
     _res.json({
       success: true,
-      message: 'Admin endpoint - list all users',
       data: {
-        users: [],
+        users: usersResult.map((user: Record<string, unknown>) => ({
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          isActive: user.isActive,
+          createdAt: user.createdAt,
+          lastLoginAt: user.lastLoginAt,
+        })),
         pagination: {
-          page: 1,
-          limit: 20,
-          total: 0,
-          totalPages: 0,
+          page,
+          limit,
+          total,
+          totalPages,
         },
       },
     });

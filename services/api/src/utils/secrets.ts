@@ -108,10 +108,11 @@ export function decrypt(encryptedText: string, key: string): string {
   const algorithm = 'aes-256-gcm';
   const buffer = Buffer.from(encryptedText, 'base64');
 
-  const salt = buffer.slice(0, 16);
-  const iv = buffer.slice(16, 32);
-  const authTag = buffer.slice(32, 48);
-  const encrypted = buffer.slice(48);
+  // Use subarray instead of deprecated slice
+  const salt = buffer.subarray(0, 16);
+  const iv = buffer.subarray(16, 32);
+  const authTag = buffer.subarray(32, 48);
+  const encrypted = buffer.subarray(48);
 
   const derivedKey = crypto.pbkdf2Sync(key, salt, 100000, 32, 'sha256');
   const decipher = crypto.createDecipheriv(algorithm, derivedKey, iv);

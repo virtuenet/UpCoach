@@ -1,6 +1,6 @@
 /**
  * Local LLM Routes
- * Placeholder routes for local LLM functionality
+ * Routes for on-device AI inference using local LLM models
  */
 
 import { Router } from 'express';

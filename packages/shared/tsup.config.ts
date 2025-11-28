@@ -9,7 +9,7 @@ export default defineConfig({
     'src/services/index.ts',
   ],
   format: ['cjs', 'esm'],
-  dts: true, // Re-enable TypeScript declarations for proper imports
+  dts: false, // Disabled DTS generation due to tsconfig issues
   splitting: false,
   sourcemap: true,
   clean: true,

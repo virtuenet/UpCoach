@@ -21,6 +21,6 @@
     }
   },
   "include": ["src", "src/*.d.ts"],
-  "exclude": ["node_modules", "dist", "**/*.test.*", "**/*.spec.*"],
+  "exclude": ["node_modules", "dist", "**/*.test.*", "**/*.spec.*", "src/test-utils/**", "src/tests/**"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

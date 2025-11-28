@@ -104,8 +104,26 @@ export function handleControllerError(error: unknown, res: Response, context: st
     error: error instanceof Error ? error.stack : error,
   });
 
+  // Define proper interface for error response
+  interface ErrorResponseBody {
+    success: boolean;
+    error: {
+      message: string;
+      statusCode: number;
+      timestamp: string;
+      retryable: boolean;
+      action?: string;
+      helpUrl?: string;
+      technical?: {
+        message: string;
+        context: string;
+        stack?: string;
+      };
+    };
+  }
+
   // Prepare response
-  const response: unknown = {
+  const response: ErrorResponseBody = {
     success: false,
     error: {
       message: userFriendlyError.userMessage,

@@ -58,10 +58,10 @@ export async function testDatabaseConnection(): Promise<boolean> {
 
       const result = await sequelize.query('SELECT 1+1 as result', {
         raw: true,
-        type: (sequelize as unknown).QueryTypes?.SELECT || 'SELECT',
+        type: 'SELECT',
       });
 
-      return result && result[0] && (result[0] as unknown).result === 2;
+      return result && result[0] && (result[0] as { result?: number })?.result === 2;
     })();
 
     const isHealthy = await Promise.race([healthCheckPromise, timeoutPromise]);
@@ -213,7 +213,7 @@ export function createApp(): ReturnType<typeof express> {
   app.use(
     json({
       limit: '10mb',
-      verify: (req: unknown, _res, buf) => {
+      verify: (req: Express.Request, _res, buf) => {
         req.rawBody = buf;
       },
     })
@@ -221,9 +221,9 @@ export function createApp(): ReturnType<typeof express> {
   app.use(urlencoded({ extended: true, limit: '10mb' }));
 
   // Handle JSON parsing errors
-  app.use((err: unknown, req: unknown, res: unknown, next: unknown) => {
+  app.use((err: unknown, _req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (err instanceof SyntaxError && 'body' in err) {
-      (res as unknown).status(400).json({
+      res.status(400).json({
         success: false,
         error: 'Invalid JSON format in request body',
       });
@@ -254,7 +254,7 @@ export function createApp(): ReturnType<typeof express> {
   configureCsrf(app);
 
   // CSRF token endpoint for clients
-  app.get('/api/csrf-token', (req: unknown, res) => {
+  app.get('/api/csrf-token', (req: express.Request & { csrfToken?: () => string }, res) => {
     try {
       if (req.csrfToken) {
         const token = req.csrfToken();
@@ -309,7 +309,7 @@ export function createApp(): ReturnType<typeof express> {
 
   // API Documentation endpoint
   app.get('/api', (_req, res) => {
-    (res as unknown).json({
+    res.json({
       name: 'UpCoach Backend API',
       version: '1.0.0',
       description: 'Personal coaching and development platform API',

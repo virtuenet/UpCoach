@@ -36,6 +36,34 @@ export interface SecurityHeadersConfig {
   certificateTransparencyMaxAge?: number;
 }
 
+// Type for CSP violation reports
+interface CSPViolationReport {
+  'document-uri'?: string;
+  'violated-directive'?: string;
+  'blocked-uri'?: string;
+  'source-file'?: string;
+  'line-number'?: number;
+  'original-policy'?: string;
+  'disposition'?: string;
+}
+
+// Type for Expect-CT reports
+interface ExpectCTReport {
+  hostname?: string;
+  port?: number;
+  effectiveExpirationDate?: string;
+  scts?: unknown[];
+  servedCertificateChain?: unknown[];
+  failureMode?: string;
+}
+
+// Type for CT monitor reports
+interface CTReport {
+  id?: string;
+  hostname?: string;
+  timestamp?: string;
+}
+
 const defaultConfig: SecurityHeadersConfig = {
   enableHSTS: true,
   hstsMaxAge: 31536000, // 1 year
@@ -135,7 +163,7 @@ function buildPermissionsPolicy(policies: Record<string, string[]>): string {
 export function securityHeaders(customConfig?: Partial<SecurityHeadersConfig>) {
   const config = { ...defaultConfig, ...customConfig };
 
-  return (req: Request, _res: Response, next: NextFunction) => {
+  return (_req: Request, _res: Response, next: NextFunction) => {
     try {
       // Generate nonce for this request
       const nonce = config.enableCSP ? generateCSPNonce() : undefined;
@@ -283,7 +311,7 @@ export class CertificateTransparencyMonitor {
   /**
    * Store CT violation for audit trail
    */
-  private async storeViolation(report: unknown): Promise<void> {
+  private async storeViolation(report: CTReport): Promise<void> {
     // Store in database or file system
     // This would integrate with your audit logging system
     logger.info('CT violation stored for audit', { reportId: report.id });
@@ -341,7 +369,7 @@ export function securityReportHandler() {
 /**
  * Process CSP violation report
  */
-async function processCSPReport(report: unknown): Promise<void> {
+async function processCSPReport(report: CSPViolationReport): Promise<void> {
   logger.warn('CSP violation detected', {
     documentUri: report['document-uri'],
     violatedDirective: report['violated-directive'],
@@ -374,13 +402,13 @@ async function processCSPReport(report: unknown): Promise<void> {
 /**
  * Process Expect-CT report
  */
-async function processExpectCTReport(report: unknown): Promise<void> {
+async function processExpectCTReport(report: ExpectCTReport): Promise<void> {
   logger.warn('Expect-CT violation detected', {
     hostname: report.hostname,
     port: report.port,
-    effectiveExpirationDate: report['effective-expiration-date'],
-    failureMode: report['failure-mode'],
-    servedCertificateChain: report['served-certificate-chain'],
+    effectiveExpirationDate: report.effectiveExpirationDate,
+    failureMode: report.failureMode,
+    servedCertificateChain: report.servedCertificateChain,
   });
 
   // Alert security team via monitoring service
@@ -392,10 +420,9 @@ async function processExpectCTReport(report: unknown): Promise<void> {
     metadata: {
       hostname: report.hostname,
       port: report.port,
-      effectiveExpirationDate: report['effective-expiration-date'],
-      failureMode: report['failure-mode'],
-      servedCertificateChain: report['served-certificate-chain'],
-      testReport: report['test-report'],
+      effectiveExpirationDate: report.effectiveExpirationDate,
+      failureMode: report.failureMode,
+      servedCertificateChain: report.servedCertificateChain,
     },
   });
 

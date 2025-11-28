@@ -1,6 +1,6 @@
 /**
  * Mobile API Routes
- * Placeholder routes for mobile-specific functionality
+ * Routes for mobile app configuration and device registration
  */
 
 import { Router } from 'express';

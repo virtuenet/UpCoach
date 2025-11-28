@@ -3,6 +3,46 @@
  * Configurable retry strategies for different scenarios
  */
 
+/**
+ * Interface for errors with a code property (e.g., network errors)
+ */
+interface ErrorWithCode {
+  code?: string;
+  message?: string;
+}
+
+/**
+ * Interface for HTTP errors with response property
+ */
+interface HttpError extends ErrorWithCode {
+  response?: {
+    status: number;
+  };
+}
+
+/**
+ * Type guard to check if error has a code property
+ */
+function hasErrorCode(error: unknown): error is ErrorWithCode {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    ('code' in error || 'message' in error)
+  );
+}
+
+/**
+ * Type guard to check if error has an HTTP response
+ */
+function isHttpError(error: unknown): error is HttpError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'response' in error &&
+    typeof (error as HttpError).response === 'object'
+  );
+}
+
 export interface RetryOptions {
   maxAttempts: number;
   baseDelayMs: number;
@@ -148,13 +188,20 @@ export class RetryPolicy {
       maxDelayMs: 10000,
       backoffMultiplier: 2,
       jitterMs: 500,
-      retryCondition: (error) => {
+      retryCondition: (error: unknown) => {
         // Retry on network errors or 5xx status codes
-        return error.code === 'ECONNABORTED' ||
-               error.code === 'ETIMEDOUT' ||
-               error.code === 'ENOTFOUND' ||
-               error.code === 'ECONNRESET' ||
-               (error.response && error.response.status >= 500);
+        if (hasErrorCode(error)) {
+          if (error.code === 'ECONNABORTED' ||
+              error.code === 'ETIMEDOUT' ||
+              error.code === 'ENOTFOUND' ||
+              error.code === 'ECONNRESET') {
+            return true;
+          }
+        }
+        if (isHttpError(error) && error.response) {
+          return error.response.status >= 500;
+        }
+        return false;
       }
     });
   }
@@ -166,9 +213,9 @@ export class RetryPolicy {
       maxDelayMs: 5000,
       backoffMultiplier: 1.5,
       jitterMs: 100,
-      retryCondition: (error) => {
+      retryCondition: (error: unknown) => {
         // Retry on connection errors, timeouts, or deadlocks
-        const message = error.message?.toLowerCase() || '';
+        const message = hasErrorCode(error) ? (error.message?.toLowerCase() || '') : '';
         return message.includes('connection') ||
                message.includes('timeout') ||
                message.includes('deadlock') ||
@@ -184,13 +231,17 @@ export class RetryPolicy {
       maxDelayMs: 30000,
       backoffMultiplier: 2,
       jitterMs: 1000,
-      retryCondition: (error, attempt) => {
+      retryCondition: (error: unknown, _attempt: number) => {
         // Don't retry client errors (4xx) except 429 (rate limit)
-        if (error.response && error.response.status >= 400 && error.response.status < 500) {
-          return error.response.status === 429;
+        if (isHttpError(error) && error.response) {
+          if (error.response.status >= 400 && error.response.status < 500) {
+            return error.response.status === 429;
+          }
+          // Retry server errors (5xx)
+          return error.response.status >= 500;
         }
-        // Retry server errors (5xx) and network errors
-        return !error.response || error.response.status >= 500;
+        // Retry network errors (no response)
+        return true;
       }
     });
   }
@@ -201,8 +252,8 @@ export class RetryPolicy {
       baseDelayMs: 500,
       maxDelayMs: 5000,
       backoffMultiplier: 2,
-      retryCondition: (error) => {
-        const code = error.code || '';
+      retryCondition: (error: unknown) => {
+        const code = hasErrorCode(error) ? (error.code || '') : '';
         // Retry on file system temporary errors
         return code === 'EBUSY' ||
                code === 'EAGAIN' ||

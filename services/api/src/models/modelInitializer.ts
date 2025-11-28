@@ -144,4 +144,132 @@ export async function initializeAllModels(sequelize: Sequelize): Promise<void> {
   if (failedCount > 0) {
     throw new Error(`Failed to initialize ${failedCount} models`);
   }
+
+  // Define associations after all models are initialized
+  logger.info('Defining model associations...');
+  defineAssociations(sequelize);
+  logger.info('Model associations defined successfully.');
+}
+
+/**
+ * Define associations between models
+ * Called after all models are initialized
+ */
+function defineAssociations(sequelize: Sequelize): void {
+  const models = sequelize.models;
+
+  // User associations
+  if (models.User && models.UserProfile) {
+    models.User.hasOne(models.UserProfile, { foreignKey: 'userId', as: 'profile' });
+    models.UserProfile.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+  }
+
+  if (models.User && models.Goal) {
+    models.User.hasMany(models.Goal, { foreignKey: 'userId', as: 'goals' });
+    models.Goal.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+  }
+
+  if (models.User && models.Task) {
+    models.User.hasMany(models.Task, { foreignKey: 'userId', as: 'tasks' });
+    models.Task.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+  }
+
+  if (models.User && models.Mood) {
+    models.User.hasMany(models.Mood, { foreignKey: 'userId', as: 'moods' });
+    models.Mood.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+  }
+
+  if (models.User && models.Chat) {
+    models.User.hasMany(models.Chat, { foreignKey: 'userId', as: 'chats' });
+    models.Chat.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+  }
+
+  // Chat and ChatMessage associations
+  if (models.Chat && models.ChatMessage) {
+    models.Chat.hasMany(models.ChatMessage, { foreignKey: 'chatId', as: 'messages' });
+    models.ChatMessage.belongsTo(models.Chat, { foreignKey: 'chatId', as: 'chat' });
+  }
+
+  // Goal and Task associations
+  if (models.Goal && models.Task) {
+    models.Goal.hasMany(models.Task, { foreignKey: 'goalId', as: 'tasks' });
+    models.Task.belongsTo(models.Goal, { foreignKey: 'goalId', as: 'goal' });
+  }
+
+  // AI associations
+  if (models.User && models.AIInteraction) {
+    models.User.hasMany(models.AIInteraction, { foreignKey: 'userId', as: 'aiInteractions' });
+    models.AIInteraction.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+  }
+
+  if (models.User && models.AIFeedback) {
+    models.User.hasMany(models.AIFeedback, { foreignKey: 'userId', as: 'aiFeedbacks' });
+    models.AIFeedback.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+  }
+
+  // Coaching associations
+  if (models.User && models.CoachProfile) {
+    models.User.hasOne(models.CoachProfile, { foreignKey: 'userId', as: 'coachProfile' });
+    models.CoachProfile.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+  }
+
+  if (models.CoachProfile && models.CoachPackage) {
+    models.CoachProfile.hasMany(models.CoachPackage, { foreignKey: 'coachId', as: 'packages' });
+    models.CoachPackage.belongsTo(models.CoachProfile, { foreignKey: 'coachId', as: 'coach' });
+  }
+
+  if (models.CoachProfile && models.CoachReview) {
+    models.CoachProfile.hasMany(models.CoachReview, { foreignKey: 'coachId', as: 'reviews' });
+    models.CoachReview.belongsTo(models.CoachProfile, { foreignKey: 'coachId', as: 'coach' });
+  }
+
+  if (models.CoachProfile && models.CoachSession) {
+    models.CoachProfile.hasMany(models.CoachSession, { foreignKey: 'coachId', as: 'sessions' });
+    models.CoachSession.belongsTo(models.CoachProfile, { foreignKey: 'coachId', as: 'coach' });
+  }
+
+  // Forum/Community associations
+  if (models.ForumCategory && models.ForumThread) {
+    models.ForumCategory.hasMany(models.ForumThread, { foreignKey: 'categoryId', as: 'threads' });
+    models.ForumThread.belongsTo(models.ForumCategory, { foreignKey: 'categoryId', as: 'category' });
+  }
+
+  if (models.ForumThread && models.ForumPost) {
+    models.ForumThread.hasMany(models.ForumPost, { foreignKey: 'threadId', as: 'posts' });
+    models.ForumPost.belongsTo(models.ForumThread, { foreignKey: 'threadId', as: 'thread' });
+  }
+
+  if (models.ForumPost && models.ForumVote) {
+    models.ForumPost.hasMany(models.ForumVote, { foreignKey: 'postId', as: 'votes' });
+    models.ForumVote.belongsTo(models.ForumPost, { foreignKey: 'postId', as: 'post' });
+  }
+
+  if (models.User && models.ForumThread) {
+    models.User.hasMany(models.ForumThread, { foreignKey: 'userId', as: 'forumThreads' });
+    models.ForumThread.belongsTo(models.User, { foreignKey: 'userId', as: 'author' });
+  }
+
+  if (models.User && models.ForumPost) {
+    models.User.hasMany(models.ForumPost, { foreignKey: 'userId', as: 'forumPosts' });
+    models.ForumPost.belongsTo(models.User, { foreignKey: 'userId', as: 'author' });
+  }
+
+  // Content associations
+  if (models.ContentArticle && models.ContentComment) {
+    models.ContentArticle.hasMany(models.ContentComment, { foreignKey: 'articleId', as: 'comments' });
+    models.ContentComment.belongsTo(models.ContentArticle, { foreignKey: 'articleId', as: 'article' });
+  }
+
+  if (models.ContentArticle && models.ContentVersion) {
+    models.ContentArticle.hasMany(models.ContentVersion, { foreignKey: 'articleId', as: 'versions' });
+    models.ContentVersion.belongsTo(models.ContentArticle, { foreignKey: 'articleId', as: 'article' });
+  }
+
+  // Experiment associations
+  if (models.ExperimentEvent && models.ExperimentAssignment) {
+    models.ExperimentAssignment.hasMany(models.ExperimentEvent, { foreignKey: 'assignmentId', as: 'events' });
+    models.ExperimentEvent.belongsTo(models.ExperimentAssignment, { foreignKey: 'assignmentId', as: 'assignment' });
+  }
+
+  logger.debug('All model associations defined');
 }

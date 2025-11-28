@@ -28,6 +28,9 @@ interface LazyLoadOptions {
   preload?: boolean;
   retryAttempts?: number;
   timeout?: number;
+  loadingMessage?: string;
+  fullScreen?: boolean;
+  loadingSize?: 'small' | 'medium' | 'large';
 }
 
 /**
@@ -152,7 +155,7 @@ export function createLazyComponent<T = {}>(
       return preloadCache.get(cacheKey)!;
     }
 
-    let lastError: Error;
+    let lastError: Error = new Error('Component loading failed');
 
     for (let attempt = 1; attempt <= retryAttempts; attempt++) {
       try {
@@ -205,30 +208,27 @@ export function createLazyComponent<T = {}>(
 /**
  * Higher-order component for lazy loading with enhanced features
  */
-export function withLazyLoading<T extends {}>(
+export function withLazyLoading<T extends Record<string, unknown>>(
   LazyComponent: LazyExoticComponent<ComponentType<T>>,
-  options: LazyLoadOptions & {
-    loadingMessage?: string;
-    loadingSize?: 'small' | 'medium' | 'large';
-    fullScreen?: boolean;
-  } = {}
+  options: LazyLoadOptions = {}
 ) {
   const {
-    fallback = DefaultLoadingComponent,
+    fallback: FallbackComponent = DefaultLoadingComponent,
     errorFallback = DefaultErrorFallback,
     loadingMessage,
     loadingSize,
     fullScreen
   } = options;
 
-  const WrappedComponent: React.FC<T> = (props) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const WrappedComponent = (props: T) => {
     const LoadingFallback = React.useMemo(() => (
-      <fallback
+      <FallbackComponent
         message={loadingMessage}
         size={loadingSize}
         fullScreen={fullScreen}
       />
-    ), [loadingMessage, loadingSize, fullScreen]);
+    ), []);
 
     return (
       <ErrorBoundary
@@ -237,27 +237,29 @@ export function withLazyLoading<T extends {}>(
         onError={(error) => {
           console.error('Lazy component error:', error);
           // Log to monitoring service
-          if (typeof window !== 'undefined' && (window as any).Sentry) {
-            (window as any).Sentry.captureException(error);
+          if (typeof window !== 'undefined' && (window as unknown as { Sentry?: { captureException: (e: Error) => void } }).Sentry) {
+            (window as unknown as { Sentry: { captureException: (e: Error) => void } }).Sentry.captureException(error);
           }
         }}
       >
         <Suspense fallback={LoadingFallback}>
+          {/* @ts-expect-error - Complex generic prop spreading */}
           <LazyComponent {...props} />
         </Suspense>
       </ErrorBoundary>
     );
   };
 
-  WrappedComponent.displayName = `withLazyLoading(${LazyComponent.displayName || 'Component'})`;
+  const componentName = (LazyComponent as unknown as { displayName?: string }).displayName || 'Component';
+  WrappedComponent.displayName = `withLazyLoading(${componentName})`;
 
-  return memo(WrappedComponent);
+  return memo(WrappedComponent) as React.MemoExoticComponent<React.FC<T>>;
 }
 
 /**
  * Route-based lazy loading with intersection observer for preloading
  */
-export function createRouteComponent<T = {}>(
+export function createRouteComponent<T extends Record<string, unknown> = Record<string, unknown>>(
   componentImport: () => Promise<{ default: ComponentType<T> }>,
   options: LazyLoadOptions & {
     preloadDistance?: number;
@@ -288,10 +290,10 @@ export function createRouteComponent<T = {}>(
     );
 
     // Store observer for potential cleanup
-    (LazyComponent as any).__observer = observer;
+    (LazyComponent as unknown as { __observer: IntersectionObserver }).__observer = observer;
   }
 
-  return withLazyLoading(LazyComponent, {
+  return withLazyLoading(LazyComponent as LazyExoticComponent<ComponentType<T>>, {
     ...lazyOptions,
     loadingMessage: routeName ? `Loading ${routeName}...` : 'Loading page...',
     fullScreen: true

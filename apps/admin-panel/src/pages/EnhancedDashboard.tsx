@@ -57,6 +57,7 @@ import {
   Group,
   PersonAdd,
   PersonRemove,
+  Close as X,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 
@@ -93,7 +94,13 @@ const MetricCard = styled(Card)(({ theme }) => ({
   },
 }));
 
-const StatusBadge = styled(Chip)(({ theme, severity }) => ({
+interface StatusBadgeProps {
+  severity?: 'success' | 'warning' | 'error' | 'info';
+}
+
+const StatusBadge = styled(Chip, {
+  shouldForwardProp: (prop) => prop !== 'severity',
+})<StatusBadgeProps>(({ severity }) => ({
   fontWeight: 600,
   fontSize: '0.75rem',
   height: 24,
@@ -115,12 +122,17 @@ const StatusBadge = styled(Chip)(({ theme, severity }) => ({
   }),
 }));
 
-const AnimatedNumber = ({ value, duration = 1000 }) => {
+interface AnimatedNumberProps {
+  value: number | string;
+  duration?: number;
+}
+
+const AnimatedNumber: React.FC<AnimatedNumberProps> = ({ value, duration = 1000 }) => {
   const [displayValue, setDisplayValue] = useState(0);
 
   useEffect(() => {
     const startTime = Date.now();
-    const endValue = parseInt(value);
+    const endValue = typeof value === 'string' ? parseInt(value) : value;
 
     const updateValue = () => {
       const now = Date.now();
@@ -139,7 +151,13 @@ const AnimatedNumber = ({ value, duration = 1000 }) => {
   return <span>{displayValue.toLocaleString()}</span>;
 };
 
-const CircularProgressWithLabel = ({ value, size = 60, thickness = 4 }) => {
+interface CircularProgressWithLabelProps {
+  value: number;
+  size?: number;
+  thickness?: number;
+}
+
+const CircularProgressWithLabel: React.FC<CircularProgressWithLabelProps> = ({ value, size = 60, thickness = 4 }) => {
   return (
     <Box position="relative" display="inline-flex">
       <Box
@@ -187,8 +205,64 @@ const CircularProgressWithLabel = ({ value, size = 60, thickness = 4 }) => {
   );
 };
 
+// Type definitions for dashboard data
+type HealthStatusType = 'excellent' | 'good' | 'warning' | 'critical';
+type TrendType = 'up' | 'down';
+type ActivityTypeConst = 'content' | 'admin' | 'support' | 'deployment' | 'marketing';
+type NotificationType = 'info' | 'warning' | 'success' | 'error';
+
+interface MetricValue {
+  value: number | string;
+  change: number;
+  trend: TrendType;
+}
+
+interface HealthMetric {
+  value: number;
+  status: HealthStatusType;
+  threshold: number;
+}
+
+interface Notification {
+  id: number;
+  type: NotificationType;
+  title: string;
+  message: string;
+  time: string;
+}
+
+interface Activity {
+  id: number;
+  user: string;
+  action: string;
+  time: string;
+  avatar: string;
+  type: ActivityTypeConst;
+}
+
+interface DashboardData {
+  metrics: {
+    totalUsers: MetricValue;
+    activeUsers: MetricValue;
+    newUsers: MetricValue;
+    revenue: MetricValue;
+    conversionRate: MetricValue;
+    avgSessionTime: MetricValue;
+  };
+  systemHealth: {
+    apiLatency: HealthMetric;
+    errorRate: HealthMetric;
+    uptime: HealthMetric;
+    cpuUsage: HealthMetric;
+    memoryUsage: HealthMetric;
+    diskUsage: HealthMetric;
+  };
+  notifications: Notification[];
+  recentActivities: Activity[];
+}
+
 // Mock data with enhanced structure
-const enhancedDashboardData = {
+const enhancedDashboardData: DashboardData = {
   metrics: {
     totalUsers: { value: 12450, change: 12.5, trend: 'up' },
     activeUsers: { value: 8930, change: 8.2, trend: 'up' },
@@ -225,13 +299,13 @@ export default function EnhancedDashboard() {
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
   const [selectedPeriod, setSelectedPeriod] = useState('7d');
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showNotifications, setShowNotifications] = useState(true);
-  const [expandedMetric, setExpandedMetric] = useState(null);
+  const [expandedMetric, setExpandedMetric] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const handlePeriodChange = (period) => {
+  const handlePeriodChange = (period: string) => {
     setSelectedPeriod(period);
     setIsLoading(true);
     // Simulate data loading
@@ -253,8 +327,8 @@ export default function EnhancedDashboard() {
     console.log('Exporting dashboard data...');
   };
 
-  const getActivityIcon = (type) => {
-    const icons = {
+  const getActivityIcon = (type: ActivityTypeConst) => {
+    const icons: Record<ActivityTypeConst, React.ReactNode> = {
       content: <ContentCopy fontSize="small" />,
       admin: <Security fontSize="small" />,
       support: <People fontSize="small" />,
@@ -264,8 +338,8 @@ export default function EnhancedDashboard() {
     return icons[type] || <Info fontSize="small" />;
   };
 
-  const getHealthStatusColor = (status) => {
-    const colors = {
+  const getHealthStatusColor = (status: HealthStatusType) => {
+    const colors: Record<HealthStatusType, string> = {
       excellent: '#10b981',
       good: '#3b82f6',
       warning: '#f59e0b',
@@ -292,7 +366,7 @@ export default function EnhancedDashboard() {
             <Button
               variant="outlined"
               startIcon={<FilterList />}
-              onClick={(e) => setAnchorEl(e.currentTarget)}
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => setAnchorEl(e.currentTarget)}
               size="small"
             >
               {selectedPeriod === '24h' ? 'Last 24 Hours' :

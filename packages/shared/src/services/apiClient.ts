@@ -3,7 +3,7 @@
  * Creates configured axios instances for admin and CMS panels
  */
 
-import axios, { AxiosInstance, AxiosError } from 'axios';
+import axios, { AxiosInstance, AxiosError, isAxiosError } from 'axios';
 
 export interface ApiClientConfig {
   baseURL: string;
@@ -105,7 +105,7 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
             const newToken = await config.getCSRFToken();
             if (newToken && error.config) {
               error.config.headers['X-CSRF-Token'] = newToken;
-              return client(error.config);
+              return client.request(error.config);
             }
           } catch (csrfError) {
             console.error('Failed to refresh CSRF token:', csrfError);
@@ -133,7 +133,7 @@ export function handleApiError(error: any): {
   code?: string;
   details?: any;
 } {
-  if (axios.isAxiosError(error)) {
+  if (isAxiosError(error)) {
     const response = error.response;
 
     if (response) {
@@ -175,7 +175,7 @@ export function withRetry<T>(
     delay = 1000,
     shouldRetry = error => {
       // Retry on network errors and 5xx server errors
-      if (axios.isAxiosError(error)) {
+      if (isAxiosError(error)) {
         return !error.response || error.response.status >= 500;
       }
       return false;
