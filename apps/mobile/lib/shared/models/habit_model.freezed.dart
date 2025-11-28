@@ -48,12 +48,8 @@ mixin _$Habit {
   DateTime? get reminderTime => throw _privateConstructorUsedError;
   String get reminderMessage => throw _privateConstructorUsedError;
 
-  /// Serializes this Habit to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of Habit
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $HabitCopyWith<Habit> get copyWith => throw _privateConstructorUsedError;
 }
 
@@ -100,8 +96,6 @@ class _$HabitCopyWithImpl<$Res, $Val extends Habit>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of Habit
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -279,8 +273,6 @@ class __$$HabitImplCopyWithImpl<$Res>
       _$HabitImpl _value, $Res Function(_$HabitImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of Habit
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -588,7 +580,7 @@ class _$HabitImpl implements _Habit {
                 other.reminderMessage == reminderMessage));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hashAll([
         runtimeType,
@@ -619,9 +611,7 @@ class _$HabitImpl implements _Habit {
         reminderMessage
       ]);
 
-  /// Create a copy of Habit
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$HabitImplCopyWith<_$HabitImpl> get copyWith =>
@@ -700,10 +690,10 @@ abstract class _Habit implements Habit {
   @override
   int get totalCompletions;
   @override
-  List<int> get weekdays; // For weekly habits: [1,2,3,4,5] = Mon-Fri
-  @override
-  int? get customInterval; // For custom frequency
-  @override
+  List<int> get weekdays;
+  @override // For weekly habits: [1,2,3,4,5] = Mon-Fri
+  int? get customInterval;
+  @override // For custom frequency
   DateTime? get lastCompletedAt;
   @override
   DateTime? get startDate;
@@ -715,11 +705,8 @@ abstract class _Habit implements Habit {
   DateTime? get reminderTime;
   @override
   String get reminderMessage;
-
-  /// Create a copy of Habit
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$HabitImplCopyWith<_$HabitImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -739,12 +726,8 @@ mixin _$HabitCompletion {
       throw _privateConstructorUsedError; // In minutes for time-based habits
   DateTime get createdAt => throw _privateConstructorUsedError;
 
-  /// Serializes this HabitCompletion to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of HabitCompletion
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $HabitCompletionCopyWith<HabitCompletion> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -775,8 +758,6 @@ class _$HabitCompletionCopyWithImpl<$Res, $Val extends HabitCompletion>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of HabitCompletion
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -847,8 +828,6 @@ class __$$HabitCompletionImplCopyWithImpl<$Res>
       _$HabitCompletionImpl _value, $Res Function(_$HabitCompletionImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of HabitCompletion
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -949,14 +928,12 @@ class _$HabitCompletionImpl implements _HabitCompletion {
                 other.createdAt == createdAt));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
       runtimeType, id, habitId, completedAt, value, notes, duration, createdAt);
 
-  /// Create a copy of HabitCompletion
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$HabitCompletionImplCopyWith<_$HabitCompletionImpl> get copyWith =>
@@ -995,14 +972,11 @@ abstract class _HabitCompletion implements HabitCompletion {
   @override
   String get notes;
   @override
-  int? get duration; // In minutes for time-based habits
-  @override
+  int? get duration;
+  @override // In minutes for time-based habits
   DateTime get createdAt;
-
-  /// Create a copy of HabitCompletion
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$HabitCompletionImplCopyWith<_$HabitCompletionImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1021,12 +995,8 @@ mixin _$HabitStreak {
   bool get isActive => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
 
-  /// Serializes this HabitStreak to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of HabitStreak
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $HabitStreakCopyWith<HabitStreak> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1057,8 +1027,6 @@ class _$HabitStreakCopyWithImpl<$Res, $Val extends HabitStreak>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of HabitStreak
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1129,8 +1097,6 @@ class __$$HabitStreakImplCopyWithImpl<$Res>
       _$HabitStreakImpl _value, $Res Function(_$HabitStreakImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of HabitStreak
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1229,14 +1195,12 @@ class _$HabitStreakImpl implements _HabitStreak {
                 other.createdAt == createdAt));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, id, habitId, startDate, endDate,
       length, isActive, createdAt);
 
-  /// Create a copy of HabitStreak
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$HabitStreakImplCopyWith<_$HabitStreakImpl> get copyWith =>
@@ -1277,11 +1241,8 @@ abstract class _HabitStreak implements HabitStreak {
   bool get isActive;
   @override
   DateTime get createdAt;
-
-  /// Create a copy of HabitStreak
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$HabitStreakImplCopyWith<_$HabitStreakImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1303,12 +1264,8 @@ mixin _$HabitAchievement {
   String get icon => throw _privateConstructorUsedError;
   bool get isShown => throw _privateConstructorUsedError;
 
-  /// Serializes this HabitAchievement to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of HabitAchievement
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $HabitAchievementCopyWith<HabitAchievement> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1341,8 +1298,6 @@ class _$HabitAchievementCopyWithImpl<$Res, $Val extends HabitAchievement>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of HabitAchievement
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1425,8 +1380,6 @@ class __$$HabitAchievementImplCopyWithImpl<$Res>
       $Res Function(_$HabitAchievementImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of HabitAchievement
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1544,14 +1497,12 @@ class _$HabitAchievementImpl implements _HabitAchievement {
             (identical(other.isShown, isShown) || other.isShown == isShown));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, id, habitId, type, title,
       description, threshold, unlockedAt, icon, isShown);
 
-  /// Create a copy of HabitAchievement
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$HabitAchievementImplCopyWith<_$HabitAchievementImpl> get copyWith =>
@@ -1586,8 +1537,8 @@ abstract class _HabitAchievement implements HabitAchievement {
   @override
   String get habitId;
   @override
-  String get type; // 'streak', 'completion', 'consistency'
-  @override
+  String get type;
+  @override // 'streak', 'completion', 'consistency'
   String get title;
   @override
   String get description;
@@ -1599,11 +1550,8 @@ abstract class _HabitAchievement implements HabitAchievement {
   String get icon;
   @override
   bool get isShown;
-
-  /// Create a copy of HabitAchievement
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$HabitAchievementImplCopyWith<_$HabitAchievementImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1620,9 +1568,7 @@ mixin _$HabitState {
   Habit? get selectedHabit => throw _privateConstructorUsedError;
   DateTime? get selectedDate => throw _privateConstructorUsedError;
 
-  /// Create a copy of HabitState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $HabitStateCopyWith<HabitState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -1657,8 +1603,6 @@ class _$HabitStateCopyWithImpl<$Res, $Val extends HabitState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of HabitState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1712,8 +1656,6 @@ class _$HabitStateCopyWithImpl<$Res, $Val extends HabitState>
     ) as $Val);
   }
 
-  /// Create a copy of HabitState
-  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $HabitCopyWith<$Res>? get selectedHabit {
@@ -1758,8 +1700,6 @@ class __$$HabitStateImplCopyWithImpl<$Res>
       _$HabitStateImpl _value, $Res Function(_$HabitStateImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of HabitState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -1922,9 +1862,7 @@ class _$HabitStateImpl implements _HabitState {
       selectedHabit,
       selectedDate);
 
-  /// Create a copy of HabitState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$HabitStateImplCopyWith<_$HabitStateImpl> get copyWith =>
@@ -1961,11 +1899,8 @@ abstract class _HabitState implements HabitState {
   Habit? get selectedHabit;
   @override
   DateTime? get selectedDate;
-
-  /// Create a copy of HabitState
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$HabitStateImplCopyWith<_$HabitStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

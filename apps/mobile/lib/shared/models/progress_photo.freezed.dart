@@ -31,12 +31,8 @@ mixin _$ProgressPhoto {
   bool get isFavorite => throw _privateConstructorUsedError;
   List<String> get tags => throw _privateConstructorUsedError;
 
-  /// Serializes this ProgressPhoto to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of ProgressPhoto
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $ProgressPhotoCopyWith<ProgressPhoto> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -70,8 +66,6 @@ class _$ProgressPhotoCopyWithImpl<$Res, $Val extends ProgressPhoto>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of ProgressPhoto
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -160,8 +154,6 @@ class __$$ProgressPhotoImplCopyWithImpl<$Res>
       _$ProgressPhotoImpl _value, $Res Function(_$ProgressPhotoImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of ProgressPhoto
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -296,7 +288,7 @@ class _$ProgressPhotoImpl implements _ProgressPhoto {
             const DeepCollectionEquality().equals(other._tags, _tags));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -311,9 +303,7 @@ class _$ProgressPhotoImpl implements _ProgressPhoto {
       isFavorite,
       const DeepCollectionEquality().hash(_tags));
 
-  /// Create a copy of ProgressPhoto
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$ProgressPhotoImplCopyWith<_$ProgressPhotoImpl> get copyWith =>
@@ -363,11 +353,8 @@ abstract class _ProgressPhoto implements ProgressPhoto {
   bool get isFavorite;
   @override
   List<String> get tags;
-
-  /// Create a copy of ProgressPhoto
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$ProgressPhotoImplCopyWith<_$ProgressPhotoImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -380,9 +367,7 @@ mixin _$ProgressPhotosState {
   String? get error => throw _privateConstructorUsedError;
   ProgressPhoto? get selectedPhoto => throw _privateConstructorUsedError;
 
-  /// Create a copy of ProgressPhotosState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $ProgressPhotosStateCopyWith<ProgressPhotosState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -413,8 +398,6 @@ class _$ProgressPhotosStateCopyWithImpl<$Res, $Val extends ProgressPhotosState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of ProgressPhotosState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -448,8 +431,6 @@ class _$ProgressPhotosStateCopyWithImpl<$Res, $Val extends ProgressPhotosState>
     ) as $Val);
   }
 
-  /// Create a copy of ProgressPhotosState
-  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $ProgressPhotoCopyWith<$Res>? get selectedPhoto {
@@ -490,8 +471,6 @@ class __$$ProgressPhotosStateImplCopyWithImpl<$Res>
       $Res Function(_$ProgressPhotosStateImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of ProgressPhotosState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -586,9 +565,7 @@ class _$ProgressPhotosStateImpl implements _ProgressPhotosState {
       error,
       selectedPhoto);
 
-  /// Create a copy of ProgressPhotosState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$ProgressPhotosStateImplCopyWith<_$ProgressPhotosStateImpl> get copyWith =>
@@ -614,11 +591,8 @@ abstract class _ProgressPhotosState implements ProgressPhotosState {
   String? get error;
   @override
   ProgressPhoto? get selectedPhoto;
-
-  /// Create a copy of ProgressPhotosState
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$ProgressPhotosStateImplCopyWith<_$ProgressPhotosStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

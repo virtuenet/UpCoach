@@ -36,12 +36,8 @@ mixin _$VoiceJournalEntry {
   bool get isAnalyzed => throw _privateConstructorUsedError;
   bool get isFavorite => throw _privateConstructorUsedError;
 
-  /// Serializes this VoiceJournalEntry to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of VoiceJournalEntry
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $VoiceJournalEntryCopyWith<VoiceJournalEntry> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -80,8 +76,6 @@ class _$VoiceJournalEntryCopyWithImpl<$Res, $Val extends VoiceJournalEntry>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of VoiceJournalEntry
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -200,8 +194,6 @@ class __$$VoiceJournalEntryImplCopyWithImpl<$Res>
       $Res Function(_$VoiceJournalEntryImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of VoiceJournalEntry
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -394,7 +386,7 @@ class _$VoiceJournalEntryImpl implements _VoiceJournalEntry {
                 other.isFavorite == isFavorite));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -414,9 +406,7 @@ class _$VoiceJournalEntryImpl implements _VoiceJournalEntry {
       isAnalyzed,
       isFavorite);
 
-  /// Create a copy of VoiceJournalEntry
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$VoiceJournalEntryImplCopyWith<_$VoiceJournalEntryImpl> get copyWith =>
@@ -482,11 +472,8 @@ abstract class _VoiceJournalEntry implements VoiceJournalEntry {
   bool get isAnalyzed;
   @override
   bool get isFavorite;
-
-  /// Create a copy of VoiceJournalEntry
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$VoiceJournalEntryImplCopyWith<_$VoiceJournalEntryImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -500,9 +487,7 @@ mixin _$VoiceJournalState {
   String? get error => throw _privateConstructorUsedError;
   VoiceJournalEntry? get currentEntry => throw _privateConstructorUsedError;
 
-  /// Create a copy of VoiceJournalState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $VoiceJournalStateCopyWith<VoiceJournalState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -534,8 +519,6 @@ class _$VoiceJournalStateCopyWithImpl<$Res, $Val extends VoiceJournalState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of VoiceJournalState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -574,8 +557,6 @@ class _$VoiceJournalStateCopyWithImpl<$Res, $Val extends VoiceJournalState>
     ) as $Val);
   }
 
-  /// Create a copy of VoiceJournalState
-  /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
   $VoiceJournalEntryCopyWith<$Res>? get currentEntry {
@@ -617,8 +598,6 @@ class __$$VoiceJournalStateImplCopyWithImpl<$Res>
       $Res Function(_$VoiceJournalStateImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of VoiceJournalState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -725,9 +704,7 @@ class _$VoiceJournalStateImpl implements _VoiceJournalState {
       error,
       currentEntry);
 
-  /// Create a copy of VoiceJournalState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$VoiceJournalStateImplCopyWith<_$VoiceJournalStateImpl> get copyWith =>
@@ -756,11 +733,8 @@ abstract class _VoiceJournalState implements VoiceJournalState {
   String? get error;
   @override
   VoiceJournalEntry? get currentEntry;
-
-  /// Create a copy of VoiceJournalState
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$VoiceJournalStateImplCopyWith<_$VoiceJournalStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
