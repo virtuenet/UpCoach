@@ -402,6 +402,8 @@ export function validateSession(req: unknown, res: unknown, next: unknown): void
         sessionId: req.sessionID,
       });
     }
+  }).catch(error => {
+    logger.error('Failed to detect session anomalies', { error: error instanceof Error ? error.message : 'Unknown error' });
   });
 
   next();

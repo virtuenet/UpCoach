@@ -135,3 +135,11 @@ performance-reports/
 
 # Test artifacts
 test-artifacts/
+
+# Test verification scripts
+verify-*.js
+landing-page-review.js
+screenshots/
+
+# TypeScript build info
+*.tsbuildinfo
