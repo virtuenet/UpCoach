@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:upcoach/core/theme/app_colors.dart';
-import 'package:upcoach/shared/widgets/custom_app_bar.dart';
-import 'package:upcoach/shared/widgets/loading_indicator.dart';
+import 'package:go_router/go_router.dart';
+import 'package:upcoach_mobile/core/theme/app_colors.dart';
+import 'package:upcoach_mobile/shared/constants/ui_constants.dart';
+import 'package:upcoach_mobile/shared/widgets/custom_app_bar.dart';
+import 'package:upcoach_mobile/shared/widgets/loading_indicator.dart';
 import '../../domain/services/ai_service.dart';
 import '../../domain/models/ai_response.dart';
 import '../widgets/chat_message_widget.dart';

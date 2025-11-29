@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:upcoach/core/services/api_service.dart';
-import 'package:upcoach/core/services/auth_service.dart';
+import 'package:upcoach_mobile/core/services/api_service.dart';
+import 'package:upcoach_mobile/core/services/auth_service.dart';
 import '../models/ai_response.dart';
 
 final aiServiceProvider = Provider<AIService>((ref) {

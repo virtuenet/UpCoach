@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:upcoach/core/theme/app_colors.dart';
+import 'package:upcoach_mobile/core/theme/app_colors.dart';
 import '../../domain/models/ai_response.dart';
 import 'package:intl/intl.dart';
 

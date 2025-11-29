@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:upcoach/core/theme/app_colors.dart';
+import 'package:upcoach_mobile/core/theme/app_colors.dart';
 import '../../../../shared/constants/ui_constants.dart';
 
 // AttachmentFile model for file attachments

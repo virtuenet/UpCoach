@@ -1,10 +1,16 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:io' show Platform;
 import '../constants/app_constants.dart';
 import '../../shared/models/user_model.dart';
 import '../../shared/models/auth_response.dart';
+
+/// Provider for AuthService
+final authServiceProvider = Provider<AuthService>((ref) {
+  return AuthService();
+});
 
 class AuthService {
   static final AuthService _instance = AuthService._internal();

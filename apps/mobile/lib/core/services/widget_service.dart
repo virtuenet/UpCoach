@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../features/goals/data/models/goal_model.dart';
-import '../../features/tasks/data/models/task_model.dart';
-import '../utils/date_formatter.dart';
+import '../../shared/models/goal_model.dart';
+import '../../shared/models/task_model.dart';
 
 class WidgetService {
   static const String _androidWidgetName = 'UpCoachWidget';
