@@ -1,29 +1,17 @@
 import 'package:flutter/material.dart';
 import '../../../shared/constants/ui_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../shared/constants/ui_constants.dart';
 import 'package:go_router/go_router.dart';
-import '../../../shared/constants/ui_constants.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../shared/constants/ui_constants.dart';
 import 'dart:io';
-import '../../../shared/constants/ui_constants.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../shared/constants/ui_constants.dart';
 import '../../../features/auth/providers/auth_provider.dart';
-import '../../../shared/constants/ui_constants.dart';
 import '../providers/profile_provider.dart';
-import '../../../shared/constants/ui_constants.dart';
 import '../services/profile_service.dart';
-import '../../../shared/constants/ui_constants.dart';
 import 'edit_profile_screen.dart';
-import '../../../shared/constants/ui_constants.dart';
 import 'settings_screen.dart';
-import '../../../shared/constants/ui_constants.dart';
 import 'help_center_screen.dart';
-import '../../../shared/constants/ui_constants.dart';
 import 'feedback_screen.dart';
-import '../../../shared/constants/ui_constants.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});

@@ -1,19 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../shared/constants/ui_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../shared/constants/ui_constants.dart';
 import 'package:go_router/go_router.dart';
-import '../../../shared/constants/ui_constants.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../shared/constants/ui_constants.dart';
 import '../../../shared/models/goal_model.dart';
-import '../../../shared/constants/ui_constants.dart';
 import '../providers/goal_provider.dart';
-import '../../../shared/constants/ui_constants.dart';
 import 'create_goal_screen.dart';
-import '../../../shared/constants/ui_constants.dart';
 import 'goal_detail_screen.dart';
-import '../../../shared/constants/ui_constants.dart';
 
 class GoalsScreen extends ConsumerStatefulWidget {
   const GoalsScreen({super.key});

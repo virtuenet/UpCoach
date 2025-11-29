@@ -60,7 +60,7 @@ class OfflineSyncService {
   final StreamController<String?> _errorController = StreamController<String?>.broadcast();
   
   Timer? _autoSyncTimer;
-  StreamSubscription<ConnectivityResult>? _connectivitySubscription;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
 
   OfflineSyncService(this._apiService) {
     _init();
@@ -122,8 +122,9 @@ class OfflineSyncService {
 
   // Check if device is online
   Future<bool> isOnline() async {
-    final connectivityResult = await _connectivity.checkConnectivity();
-    return connectivityResult != ConnectivityResult.none;
+    final connectivityResults = await _connectivity.checkConnectivity();
+    return connectivityResults.isNotEmpty &&
+        connectivityResults.any((r) => r != ConnectivityResult.none);
   }
 
   // Get offline data size
@@ -232,8 +233,11 @@ class OfflineSyncService {
   }
 
   // Private methods
-  void _onConnectivityChanged(ConnectivityResult result) {
-    if (result != ConnectivityResult.none) {
+  void _onConnectivityChanged(List<ConnectivityResult> results) {
+    // Check if any connection is available (not none)
+    final hasConnection = results.isNotEmpty &&
+        results.any((r) => r != ConnectivityResult.none);
+    if (hasConnection) {
       // Device came online, attempt sync
       _attemptSync();
     }

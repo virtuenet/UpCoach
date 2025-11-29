@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../shared/constants/ui_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../shared/constants/ui_constants.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../shared/constants/ui_constants.dart';
 import '../../../shared/widgets/chat_message_bubble.dart';
-import '../../../shared/constants/ui_constants.dart';
 import '../../../shared/widgets/chat_input.dart';
-import '../../../shared/constants/ui_constants.dart';
 import '../providers/chat_provider.dart';
-import '../../../shared/constants/ui_constants.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});

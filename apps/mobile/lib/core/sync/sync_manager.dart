@@ -118,7 +118,7 @@ class SyncManager extends ChangeNotifier {
   SyncStatus _status = SyncStatus.idle;
   DateTime? _lastSyncTime;
   bool _isOnline = false;
-  StreamSubscription<ConnectivityResult>? _connectivitySubscription;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
 
   // Callbacks
   Future<Map<String, dynamic>?> Function(SyncOperation)? onServerSync;
@@ -398,16 +398,18 @@ class SyncManager extends ChangeNotifier {
   // Connectivity management
 
   Future<void> _checkConnectivity() async {
-    final result = await _connectivity.checkConnectivity();
-    _isOnline = result != ConnectivityResult.none;
+    final results = await _connectivity.checkConnectivity();
+    _isOnline = results.isNotEmpty &&
+        results.any((r) => r != ConnectivityResult.none);
     notifyListeners();
   }
 
   void _startConnectivityListener() {
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
-      (ConnectivityResult result) {
+      (List<ConnectivityResult> results) {
         final wasOffline = !_isOnline;
-        _isOnline = result != ConnectivityResult.none;
+        _isOnline = results.isNotEmpty &&
+            results.any((r) => r != ConnectivityResult.none);
         notifyListeners();
 
         // Auto-sync when coming back online

@@ -3,7 +3,8 @@ import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-enum BiometricType {
+// Use a different name to avoid conflict with local_auth's BiometricType
+enum AppBiometricType {
   face,
   fingerprint,
   iris,
@@ -30,19 +31,19 @@ class BiometricService {
     }
   }
   
-  Future<List<BiometricType>> getAvailableBiometrics() async {
+  Future<List<AppBiometricType>> getAvailableBiometrics() async {
     try {
       final availableBiometrics = await _localAuth.getAvailableBiometrics();
       return availableBiometrics.map((biometric) {
         switch (biometric) {
           case BiometricType.face:
-            return BiometricType.face;
+            return AppBiometricType.face;
           case BiometricType.fingerprint:
-            return BiometricType.fingerprint;
+            return AppBiometricType.fingerprint;
           case BiometricType.iris:
-            return BiometricType.iris;
+            return AppBiometricType.iris;
           default:
-            return BiometricType.unknown;
+            return AppBiometricType.unknown;
         }
       }).toList();
     } catch (e) {

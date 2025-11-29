@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:upcoach_mobile/shared/constants/ui_constants.dart';
 
 import '../../../shared/models/habit_model.dart';
 

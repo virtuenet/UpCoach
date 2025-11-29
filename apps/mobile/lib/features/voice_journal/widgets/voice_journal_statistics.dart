@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:upcoach_mobile/shared/constants/ui_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../../../core/theme/app_theme.dart';

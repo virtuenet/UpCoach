@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_html/flutter_html.dart' hide Margins, HtmlPaddings;
 import 'package:share_plus/share_plus.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_spacing.dart';
-import '../../../../core/constants/app_text_styles.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/constants/app_spacing.dart';
+import '../../../../shared/constants/app_text_styles.dart';
 import '../../../../shared/models/content_article.dart';
 import '../../../../shared/widgets/shimmer_loading.dart';
 import '../providers/content_providers.dart';

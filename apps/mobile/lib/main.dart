@@ -9,7 +9,7 @@ import 'core/services/sync_service.dart';
 import 'core/services/sync_integration_service.dart';
 import 'core/services/supabase_service.dart';
 import 'core/performance/performance_monitor.dart';
-import 'core/performance/performance_overlay.dart';
+import 'core/performance/performance_overlay.dart' as app_overlay;
 import 'services/firebase_service.dart';
 import 'shared/widgets/loading_overlay.dart';
 
@@ -43,7 +43,7 @@ class UpCoachApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
 
-    return PerformanceOverlay(
+    return app_overlay.PerformanceOverlay(
       enabled: kDebugMode,
       child: MaterialApp.router(
         title: 'UpCoach',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:upcoach_mobile/shared/constants/ui_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -7,7 +8,7 @@ import '../../../core/services/content_service.dart';
 import '../../../shared/models/content_article.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../../../shared/widgets/error_view.dart';
-import '../../../shared/constants/app_colors.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../shared/constants/app_text_styles.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
