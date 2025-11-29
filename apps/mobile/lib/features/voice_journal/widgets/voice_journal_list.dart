@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/constants/ui_constants.dart';
@@ -436,7 +437,7 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
 ${widget.entry.title}
 
 Recorded on: ${_formatDate(widget.entry.createdAt)}
-Duration: ${_formatDuration(widget.entry.durationSeconds)}
+Duration: ${_formatDuration(Duration(seconds: widget.entry.durationSeconds))}
 
 ${widget.entry.transcriptionText?.isNotEmpty == true ? 'Transcription:\n${widget.entry.transcriptionText!}' : 'Voice journal entry from UpCoach'}
 

@@ -192,7 +192,7 @@ class _BiometricSettingsScreenState extends ConsumerState<BiometricSettingsScree
 
   Widget _buildAvailableBiometricsCard(
     AppLocalizations l10n,
-    AsyncValue<List<BiometricType>> availableBiometrics,
+    AsyncValue<List<AppBiometricType>> availableBiometrics,
   ) {
     return Card(
       child: Padding(
@@ -220,21 +220,22 @@ class _BiometricSettingsScreenState extends ConsumerState<BiometricSettingsScree
                     IconData icon;
                     String label;
                     switch (type) {
-                      case BiometricType.face:
+                      case AppBiometricType.face:
                         icon = Icons.face;
                         label = 'Face Recognition';
                         break;
-                      case BiometricType.fingerprint:
+                      case AppBiometricType.fingerprint:
                         icon = Icons.fingerprint;
                         label = 'Fingerprint';
                         break;
-                      case BiometricType.iris:
+                      case AppBiometricType.iris:
                         icon = Icons.remove_red_eye;
                         label = 'Iris Scan';
                         break;
-                      default:
+                      case AppBiometricType.unknown:
                         icon = Icons.security;
                         label = 'Unknown';
+                        break;
                     }
                     return ListTile(
                       leading: Icon(icon, color: AppColors.primaryColor),

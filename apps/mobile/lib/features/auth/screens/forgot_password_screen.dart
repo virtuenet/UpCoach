@@ -164,10 +164,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 const SizedBox(height: UIConstants.spacingXL),
                 CustomTextField(
                   controller: _emailController,
-                  label: 'Email',
+                  labelText: 'Email',
                   hintText: 'Enter your email',
                   keyboardType: TextInputType.emailAddress,
-                  prefixIcon: Icons.email_outlined,
+                  prefixIcon: const Icon(Icons.email_outlined),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';

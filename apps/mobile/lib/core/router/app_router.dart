@@ -221,7 +221,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/progress-photos/view',
         builder: (context, state) {
           final photos = state.extra as List<ProgressPhoto>;
-          final initialIndex = state.queryParameters['index'] ?? '0';
+          final initialIndex = state.uri.queryParameters['index'] ?? '0';
           return PhotoViewerScreen(
             photos: photos,
             initialIndex: int.parse(initialIndex),

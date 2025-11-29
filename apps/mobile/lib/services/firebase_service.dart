@@ -2,6 +2,7 @@
 ///
 /// Provides centralized Firebase initialization and management.
 
+import 'dart:ui' show Color;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -223,7 +224,7 @@ class FirebaseService {
     if (notification == null) return;
 
     // Android notification details
-    const androidDetails = AndroidNotificationDetails(
+    final androidDetails = AndroidNotificationDetails(
       'high_importance_channel',
       'High Importance Notifications',
       channelDescription: 'This channel is used for important notifications.',
@@ -231,7 +232,7 @@ class FirebaseService {
       priority: Priority.high,
       showWhen: true,
       icon: '@mipmap/ic_launcher',
-      color: Color(0xFF667eea),
+      color: const Color(0xFF667eea),
     );
 
     // iOS notification details
@@ -242,7 +243,7 @@ class FirebaseService {
     );
 
     // Notification details
-    const details = NotificationDetails(
+    final details = NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
     );
@@ -320,7 +321,7 @@ class FirebaseService {
   }
 
   /// Log analytics event
-  Future<void> logEvent(String name, {Map<String, dynamic>? parameters}) async {
+  Future<void> logEvent(String name, {Map<String, Object>? parameters}) async {
     try {
       await _analytics.logEvent(name: name, parameters: parameters);
     } catch (e, stackTrace) {

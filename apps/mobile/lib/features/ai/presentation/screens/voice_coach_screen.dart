@@ -23,7 +23,7 @@ class VoiceCoachScreen extends ConsumerStatefulWidget {
 class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
   bool _isAnalyzing = false;
   bool _isRecording = false;
-  File? _audioFile;
+  String? _audioFilePath;
 
   @override
   Widget build(BuildContext context) {
@@ -110,11 +110,11 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
             ),
             const SizedBox(height: UIConstants.spacingMD),
             VoiceRecordingWidget(
-              onRecordingComplete: (file) {
+              onRecordingComplete: (filePath) {
                 setState(() {
-                  _audioFile = file;
+                  _audioFilePath = filePath;
                 });
-                _analyzeVoice(file);
+                _analyzeVoice(File(filePath));
               },
               onRecordingStart: () {
                 setState(() {

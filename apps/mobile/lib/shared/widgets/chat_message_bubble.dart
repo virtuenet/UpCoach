@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:upcoach_mobile/shared/constants/ui_constants.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../models/chat_message.dart';
 

@@ -69,7 +69,7 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
     }
   }
 
-  Future<void> _sendMessage(String message) async {
+  Future<void> _sendMessage(String message, {List<AttachmentFile>? attachments}) async {
     if (message.trim().isEmpty) return;
 
     // Add user message

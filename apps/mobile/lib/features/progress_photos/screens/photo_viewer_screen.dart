@@ -5,12 +5,26 @@ import '../../../shared/widgets/custom_app_bar.dart';
 import '../../../core/theme/app_colors.dart';
 
 class PhotoViewerScreen extends StatefulWidget {
-  final ProgressPhoto photo;
+  final List<ProgressPhoto> photos;
+  final int initialIndex;
 
   const PhotoViewerScreen({
     super.key,
-    required this.photo,
+    required this.photos,
+    this.initialIndex = 0,
   });
+
+  /// Convenience constructor for single photo
+  factory PhotoViewerScreen.single({
+    Key? key,
+    required ProgressPhoto photo,
+  }) {
+    return PhotoViewerScreen(
+      key: key,
+      photos: [photo],
+      initialIndex: 0,
+    );
+  }
 
   @override
   State<PhotoViewerScreen> createState() => _PhotoViewerScreenState();
@@ -18,11 +32,23 @@ class PhotoViewerScreen extends StatefulWidget {
 
 class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
   final TransformationController _transformationController = TransformationController();
+  late PageController _pageController;
+  late int _currentIndex;
   bool _showOverlay = true;
+
+  ProgressPhoto get _currentPhoto => widget.photos[_currentIndex];
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: _currentIndex);
+  }
 
   @override
   void dispose() {
     _transformationController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -37,15 +63,33 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Image viewer with zoom
-            InteractiveViewer(
-              transformationController: _transformationController,
-              minScale: 0.5,
-              maxScale: 4.0,
-              child: Center(
-                child: _buildImage(),
-              ),
-            ),
+            // Image viewer with PageView for gallery support
+            widget.photos.length > 1
+                ? PageView.builder(
+                    controller: _pageController,
+                    itemCount: widget.photos.length,
+                    onPageChanged: (index) {
+                      setState(() => _currentIndex = index);
+                    },
+                    itemBuilder: (context, index) {
+                      return InteractiveViewer(
+                        transformationController: _transformationController,
+                        minScale: 0.5,
+                        maxScale: 4.0,
+                        child: Center(
+                          child: _buildImage(widget.photos[index]),
+                        ),
+                      );
+                    },
+                  )
+                : InteractiveViewer(
+                    transformationController: _transformationController,
+                    minScale: 0.5,
+                    maxScale: 4.0,
+                    child: Center(
+                      child: _buildImage(_currentPhoto),
+                    ),
+                  ),
             // Top overlay
             if (_showOverlay)
               Positioned(
@@ -62,14 +106,30 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
                 right: 0,
                 child: _buildBottomOverlay(),
               ),
+            // Page indicator for gallery
+            if (_showOverlay && widget.photos.length > 1)
+              Positioned(
+                bottom: 120,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Text(
+                    '${_currentIndex + 1} / ${widget.photos.length}',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildImage() {
-    final imagePath = widget.photo.imagePath;
+  Widget _buildImage(ProgressPhoto photo) {
+    final imagePath = photo.imagePath;
 
     if (imagePath.startsWith('http')) {
       return Image.network(
@@ -133,7 +193,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
             ),
             Expanded(
               child: Text(
-                widget.photo.title ?? 'Progress Photo',
+                _currentPhoto.title ?? 'Progress Photo',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -144,8 +204,8 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
             ),
             IconButton(
               icon: Icon(
-                widget.photo.isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: widget.photo.isFavorite ? AppColors.error : Colors.white,
+                _currentPhoto.isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: _currentPhoto.isFavorite ? AppColors.error : Colors.white,
               ),
               onPressed: () {
                 // TODO: Toggle favorite
@@ -192,7 +252,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      widget.photo.category,
+                      _currentPhoto.category,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 12,
@@ -202,7 +262,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    _formatDate(widget.photo.takenAt),
+                    _formatDate(_currentPhoto.takenAt),
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 12,
@@ -210,10 +270,10 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
                   ),
                 ],
               ),
-              if (widget.photo.notes != null && widget.photo.notes!.isNotEmpty) ...[
+              if (_currentPhoto.notes != null && _currentPhoto.notes!.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
-                  widget.photo.notes!,
+                  _currentPhoto.notes!,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 14,
@@ -222,12 +282,12 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
-              if (widget.photo.tags.isNotEmpty) ...[
+              if (_currentPhoto.tags.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
                   runSpacing: 4,
-                  children: widget.photo.tags.map((tag) {
+                  children: _currentPhoto.tags.map((tag) {
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(

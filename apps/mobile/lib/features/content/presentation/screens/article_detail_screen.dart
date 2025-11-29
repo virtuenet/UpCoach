@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_html/flutter_html.dart' hide Margins, HtmlPaddings;
+import 'package:flutter_html/flutter_html.dart' as html;
 import 'package:share_plus/share_plus.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -243,35 +243,47 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                     // Article body
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                      child: Html(
+                      child: html.Html(
                         data: article.content.body,
                         style: {
-                          'body': Style(
-                            fontSize: FontSize(16),
-                            lineHeight: LineHeight(1.6),
+                          'body': html.Style(
+                            fontSize: html.FontSize(16),
+                            lineHeight: html.LineHeight(1.6),
                             color: AppColors.textPrimary,
                           ),
-                          'h1': Style(
-                            fontSize: FontSize(24),
+                          'h1': html.Style(
+                            fontSize: html.FontSize(24),
                             fontWeight: FontWeight.bold,
-                            margin: Margins.symmetric(vertical: AppSpacing.md),
+                            margin: html.Margins.only(
+                              top: AppSpacing.md,
+                              bottom: AppSpacing.md,
+                            ),
                           ),
-                          'h2': Style(
-                            fontSize: FontSize(20),
+                          'h2': html.Style(
+                            fontSize: html.FontSize(20),
                             fontWeight: FontWeight.bold,
-                            margin: Margins.symmetric(vertical: AppSpacing.md),
+                            margin: html.Margins.only(
+                              top: AppSpacing.md,
+                              bottom: AppSpacing.md,
+                            ),
                           ),
-                          'h3': Style(
-                            fontSize: FontSize(18),
+                          'h3': html.Style(
+                            fontSize: html.FontSize(18),
                             fontWeight: FontWeight.w600,
-                            margin: Margins.symmetric(vertical: AppSpacing.sm),
+                            margin: html.Margins.only(
+                              top: AppSpacing.sm,
+                              bottom: AppSpacing.sm,
+                            ),
                           ),
-                          'p': Style(
-                            margin: Margins.only(bottom: AppSpacing.md),
+                          'p': html.Style(
+                            margin: html.Margins.only(bottom: AppSpacing.md),
                           ),
-                          'blockquote': Style(
-                            padding: HtmlPaddings.all(AppSpacing.md),
-                            margin: Margins.symmetric(vertical: AppSpacing.md),
+                          'blockquote': html.Style(
+                            padding: html.HtmlPaddings.all(AppSpacing.md),
+                            margin: html.Margins.only(
+                              top: AppSpacing.md,
+                              bottom: AppSpacing.md,
+                            ),
                             backgroundColor: AppColors.neutralLight,
                             border: Border(
                               left: BorderSide(
@@ -280,18 +292,21 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                               ),
                             ),
                           ),
-                          'code': Style(
+                          'code': html.Style(
                             backgroundColor: AppColors.neutralLight,
-                            padding: HtmlPaddings.symmetric(
+                            padding: html.HtmlPaddings.symmetric(
                               horizontal: AppSpacing.xs,
                               vertical: 2,
                             ),
                             fontFamily: 'monospace',
                           ),
-                          'pre': Style(
+                          'pre': html.Style(
                             backgroundColor: AppColors.neutralLight,
-                            padding: HtmlPaddings.all(AppSpacing.md),
-                            margin: Margins.symmetric(vertical: AppSpacing.md),
+                            padding: html.HtmlPaddings.all(AppSpacing.md),
+                            margin: html.Margins.only(
+                              top: AppSpacing.md,
+                              bottom: AppSpacing.md,
+                            ),
                           ),
                         },
                         onLinkTap: (url, _, __) {

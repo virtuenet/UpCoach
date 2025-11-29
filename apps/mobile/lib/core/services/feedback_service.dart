@@ -64,10 +64,7 @@ class FeedbackService {
         ),
       );
 
-      logger.i('Feedback submitted successfully', {
-        'type': type,
-        'subject': subject,
-      });
+      logger.i('Feedback submitted successfully: type=$type, subject=$subject');
     } on DioException catch (e) {
       logger.e('Failed to submit feedback', error: e);
       throw ApiException.fromDioError(e);

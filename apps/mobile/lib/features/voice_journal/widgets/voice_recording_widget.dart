@@ -7,7 +7,16 @@ import '../providers/voice_journal_provider.dart';
 import '../../../core/services/voice_recording_service.dart';
 
 class VoiceRecordingWidget extends ConsumerStatefulWidget {
-  const VoiceRecordingWidget({super.key});
+  final void Function(String filePath)? onRecordingComplete;
+  final VoidCallback? onRecordingStart;
+  final VoidCallback? onRecordingStop;
+
+  const VoiceRecordingWidget({
+    super.key,
+    this.onRecordingComplete,
+    this.onRecordingStart,
+    this.onRecordingStop,
+  });
 
   @override
   ConsumerState<VoiceRecordingWidget> createState() => _VoiceRecordingWidgetState();
@@ -318,7 +327,9 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
 
   Future<void> _startRecording() async {
     final success = await ref.read(voiceJournalProvider.notifier).startRecording();
-    if (!success) {
+    if (success) {
+      widget.onRecordingStart?.call();
+    } else {
       _showErrorSnackBar('Failed to start recording. Please check microphone permissions.');
     }
   }
@@ -327,9 +338,12 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
     final entry = await ref.read(voiceJournalProvider.notifier).stopRecording(
       title: _titleController.text.trim(),
     );
-    
+
+    widget.onRecordingStop?.call();
+
     if (entry != null) {
       _titleController.clear();
+      widget.onRecordingComplete?.call(entry.audioFilePath);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Voice journal "${entry.title}" saved successfully!'),
@@ -351,6 +365,7 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
   Future<void> _cancelRecording() async {
     await ref.read(voiceJournalProvider.notifier).cancelRecording();
     _titleController.clear();
+    widget.onRecordingStop?.call();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Recording cancelled'),

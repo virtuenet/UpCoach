@@ -1044,7 +1044,7 @@ class _PhotoDetailScreen extends StatelessWidget {
                 final box = context.findRenderObject() as RenderBox?;
                 await Share.shareXFiles(
                   [XFile(photo.imagePath)],
-                  text: 'Progress photo taken on ${_formatDate(photo.createdAt)}\n${photo.notes?.isNotEmpty == true ? photo.notes! : 'My UpCoach progress journey 💪'}',
+                  text: 'Progress photo taken on ${photo.createdAt != null ? _formatDate(photo.createdAt!) : 'Unknown date'}\n${photo.notes?.isNotEmpty == true ? photo.notes! : 'My UpCoach progress journey 💪'}',
                   subject: 'UpCoach Progress Photo',
                   sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
                 );

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:upcoach_mobile/shared/constants/ui_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/goal_model.dart';
 import '../providers/goal_provider.dart';
 
 class CreateGoalScreen extends ConsumerStatefulWidget {
-  final Goal? goalToEdit;
+  final GoalModel? goalToEdit;
 
   const CreateGoalScreen({super.key, this.goalToEdit});
 
@@ -37,7 +38,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
     if (widget.goalToEdit != null) {
       final goal = widget.goalToEdit!;
       _titleController.text = goal.title;
-      _descriptionController.text = goal.description;
+      _descriptionController.text = goal.description ?? '';
       _category = goal.category;
       _priority = goal.priority;
       _targetDate = goal.targetDate;
