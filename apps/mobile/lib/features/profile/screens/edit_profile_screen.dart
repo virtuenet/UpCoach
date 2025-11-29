@@ -10,6 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../shared/constants/ui_constants.dart';
 import '../providers/profile_provider.dart';
 
@@ -433,7 +434,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       throw Exception('User not authenticated');
     }
 
-    final uri = Uri.parse('${AppConstants.apiUrl}/v2/users/$userId/avatar');
+    final uri = Uri.parse('${AppConstants.apiUrl}/users/$userId/avatar');
 
     final request = http.MultipartRequest('POST', uri);
     request.headers['Authorization'] = 'Bearer $accessToken';

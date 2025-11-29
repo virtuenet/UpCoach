@@ -52,6 +52,37 @@ class LeaderboardEntry {
   });
 }
 
+// Challenge Model
+class Challenge {
+  final String id;
+  final String name;
+  final String description;
+  final String type;
+  final int requiredProgress;
+  final int currentProgress;
+  final int rewardPoints;
+  final String? participationStatus;
+  final DateTime? startDate;
+  final DateTime? endDate;
+
+  const Challenge({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.type,
+    required this.requiredProgress,
+    this.currentProgress = 0,
+    this.rewardPoints = 0,
+    this.participationStatus,
+    this.startDate,
+    this.endDate,
+  });
+
+  double get completionPercentage => requiredProgress > 0
+      ? (currentProgress / requiredProgress * 100).clamp(0.0, 100.0)
+      : 0.0;
+}
+
 // Reward
 class Reward {
   final String id;
@@ -80,23 +111,33 @@ class Reward {
 // User Stats
 class UserGamificationStats {
   final int totalPoints;
+  final int currentPoints;
   final int currentStreak;
   final int bestStreak;
   final int achievementsUnlocked;
   final int totalAchievements;
   final int currentRank;
+  final int? rank;
   final String tier;
   final int pointsToNextTier;
+  final int level;
+  final double levelProgress;
+  final int nextLevelPoints;
 
   const UserGamificationStats({
     this.totalPoints = 0,
+    this.currentPoints = 0,
     this.currentStreak = 0,
     this.bestStreak = 0,
     this.achievementsUnlocked = 0,
     this.totalAchievements = 0,
     this.currentRank = 0,
+    this.rank,
     this.tier = 'Bronze',
     this.pointsToNextTier = 0,
+    this.level = 1,
+    this.levelProgress = 0.0,
+    this.nextLevelPoints = 1000,
   });
 }
 
@@ -104,6 +145,7 @@ class UserGamificationStats {
 class GamificationState {
   final UserGamificationStats stats;
   final List<Achievement> achievements;
+  final List<Challenge> challenges;
   final List<LeaderboardEntry> leaderboard;
   final List<Reward> rewards;
   final bool isLoading;
@@ -113,6 +155,7 @@ class GamificationState {
   const GamificationState({
     this.stats = const UserGamificationStats(),
     this.achievements = const [],
+    this.challenges = const [],
     this.leaderboard = const [],
     this.rewards = const [],
     this.isLoading = false,
@@ -123,6 +166,7 @@ class GamificationState {
   GamificationState copyWith({
     UserGamificationStats? stats,
     List<Achievement>? achievements,
+    List<Challenge>? challenges,
     List<LeaderboardEntry>? leaderboard,
     List<Reward>? rewards,
     bool? isLoading,
@@ -132,6 +176,7 @@ class GamificationState {
     return GamificationState(
       stats: stats ?? this.stats,
       achievements: achievements ?? this.achievements,
+      challenges: challenges ?? this.challenges,
       leaderboard: leaderboard ?? this.leaderboard,
       rewards: rewards ?? this.rewards,
       isLoading: isLoading ?? this.isLoading,
@@ -166,13 +211,18 @@ class GamificationNotifier extends StateNotifier<GamificationState> {
       state = state.copyWith(
         stats: const UserGamificationStats(
           totalPoints: 2500,
+          currentPoints: 2500,
           currentStreak: 7,
           bestStreak: 14,
           achievementsUnlocked: 12,
           totalAchievements: 50,
           currentRank: 42,
+          rank: 42,
           tier: 'Silver',
           pointsToNextTier: 500,
+          level: 5,
+          levelProgress: 65.0,
+          nextLevelPoints: 3000,
         ),
         isLoading: false,
       );
@@ -269,6 +319,36 @@ class GamificationNotifier extends StateNotifier<GamificationState> {
     }
   }
 
+  Future<void> loadChallenges() async {
+    try {
+      // TODO: Implement API call
+      await Future.delayed(const Duration(milliseconds: 300));
+      state = state.copyWith(challenges: [
+        const Challenge(
+          id: '1',
+          name: '7-Day Fitness',
+          description: 'Complete 7 workouts in a week',
+          type: 'weekly',
+          requiredProgress: 7,
+          currentProgress: 3,
+          rewardPoints: 200,
+          participationStatus: 'active',
+        ),
+        const Challenge(
+          id: '2',
+          name: 'Daily Meditation',
+          description: 'Meditate for 30 days',
+          type: 'monthly',
+          requiredProgress: 30,
+          currentProgress: 0,
+          rewardPoints: 500,
+        ),
+      ]);
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
   Future<bool> redeemReward(String rewardId) async {
     try {
       // TODO: Implement API call
@@ -277,6 +357,28 @@ class GamificationNotifier extends StateNotifier<GamificationState> {
     } catch (e) {
       state = state.copyWith(error: e.toString());
       return false;
+    }
+  }
+
+  Future<void> claimAchievement(String achievementId) async {
+    try {
+      // TODO: Implement API call
+      await Future.delayed(const Duration(milliseconds: 300));
+      // Refresh achievements after claiming
+      await loadAchievements();
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
+  Future<void> joinChallenge(String challengeId) async {
+    try {
+      // TODO: Implement API call
+      await Future.delayed(const Duration(milliseconds: 300));
+      // Refresh challenges after joining
+      await loadChallenges();
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
     }
   }
 }
@@ -304,4 +406,8 @@ final rewardsProvider = Provider<List<Reward>>((ref) {
 
 final isGamificationLoadingProvider = Provider<bool>((ref) {
   return ref.watch(gamificationProvider).isLoading;
+});
+
+final challengesProvider = Provider<List<Challenge>>((ref) {
+  return ref.watch(gamificationProvider).challenges;
 });

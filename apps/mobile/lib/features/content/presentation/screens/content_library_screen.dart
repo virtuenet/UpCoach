@@ -147,33 +147,7 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
 
           // Articles list
           Expanded(
-            child: contentState.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              loaded: (articles, hasMore) => _buildArticlesList(articles, hasMore),
-              error: (message) => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      size: 64,
-                      color: AppColors.error,
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    Text(
-                      message,
-                      style: AppTextStyles.bodyLarge,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    ElevatedButton(
-                      onPressed: () => ref.refresh(contentNotifierProvider),
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            child: _buildContentBody(contentState),
           ),
         ],
       ),
@@ -342,6 +316,39 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
         );
       },
     );
+  }
+
+  Widget _buildContentBody(ContentState contentState) {
+    if (contentState is ContentLoading) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (contentState is ContentLoaded) {
+      return _buildArticlesList(contentState.articles, contentState.hasMore);
+    } else if (contentState is ContentError) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              size: 64,
+              color: AppColors.error,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              contentState.message,
+              style: AppTextStyles.bodyLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            ElevatedButton(
+              onPressed: () => ref.refresh(contentNotifierProvider),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   String _formatDate(DateTime date) {

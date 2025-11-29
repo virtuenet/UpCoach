@@ -483,33 +483,33 @@ class _MockHomeScreenState extends State<_MockHomeScreen> {
         onTap: (index) {
           setState(() => _currentTabIndex = index);
         },
-        items: const [
+        items: [
           BottomNavigationBarItem(
             icon: Semantics(
               label: 'Navigate to home',
-              child: Icon(Icons.home),
+              child: const Icon(Icons.home),
             ),
             label: 'Home',
           ),
           BottomNavigationBarItem(
             icon: Semantics(
               label: 'Navigate to goals',
-              child: Icon(Icons.flag),
+              child: const Icon(Icons.flag),
             ),
             label: 'Goals',
           ),
           BottomNavigationBarItem(
             icon: Semantics(
               label: 'Navigate to habits',
-              child: Icon(Icons.check_circle_outline),
+              child: const Icon(Icons.check_circle_outline),
             ),
             label: 'Habits',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.chat_bubble_outline),
             label: 'Chat',
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             label: 'Profile',
           ),

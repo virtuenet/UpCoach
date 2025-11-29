@@ -1549,7 +1549,7 @@ class __$$ArticleFiltersImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$ArticleFiltersImpl implements _ArticleFilters {
+class _$ArticleFiltersImpl extends _ArticleFilters {
   const _$ArticleFiltersImpl(
       {this.categoryId,
       final List<String>? tags,
@@ -1558,7 +1558,8 @@ class _$ArticleFiltersImpl implements _ArticleFilters {
       this.sortOrder,
       this.page,
       this.limit})
-      : _tags = tags;
+      : _tags = tags,
+        super._();
 
   @override
   final int? categoryId;
@@ -1623,7 +1624,7 @@ class _$ArticleFiltersImpl implements _ArticleFilters {
           this, _$identity);
 }
 
-abstract class _ArticleFilters implements ArticleFilters {
+abstract class _ArticleFilters extends ArticleFilters {
   const factory _ArticleFilters(
       {final int? categoryId,
       final List<String>? tags,
@@ -1632,6 +1633,7 @@ abstract class _ArticleFilters implements ArticleFilters {
       final String? sortOrder,
       final int? page,
       final int? limit}) = _$ArticleFiltersImpl;
+  const _ArticleFilters._() : super._();
 
   @override
   int? get categoryId;

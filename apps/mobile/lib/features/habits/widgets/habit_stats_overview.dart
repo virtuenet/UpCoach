@@ -408,7 +408,7 @@ class _WeeklyActivityChart extends StatelessWidget {
       child: SfCartesianChart(
         primaryXAxis: CategoryAxis(),
         primaryYAxis: NumericAxis(minimum: 0),
-        series: <ChartSeries>[
+        series: <CartesianSeries<ChartData, String>>[
           ColumnSeries<ChartData, String>(
             dataSource: weekData,
             xValueMapper: (ChartData data, _) => data.x,

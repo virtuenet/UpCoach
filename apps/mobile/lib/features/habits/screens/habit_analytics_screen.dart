@@ -7,7 +7,9 @@ import '../../../shared/models/habit_model.dart';
 import '../providers/habit_provider.dart';
 
 class HabitAnalyticsScreen extends ConsumerStatefulWidget {
-  const HabitAnalyticsScreen({super.key});
+  final Habit? habit;
+
+  const HabitAnalyticsScreen({super.key, this.habit});
 
   @override
   ConsumerState<HabitAnalyticsScreen> createState() => _HabitAnalyticsScreenState();
@@ -43,7 +45,7 @@ class _HabitAnalyticsScreenState extends ConsumerState<HabitAnalyticsScreen>
         elevation: 0,
         actions: [
           PopupMenuButton<String>(
-            value: _selectedTimeframe,
+            initialValue: _selectedTimeframe,
             onSelected: (value) {
               setState(() {
                 _selectedTimeframe = value;

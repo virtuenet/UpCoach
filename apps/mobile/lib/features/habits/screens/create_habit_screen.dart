@@ -6,7 +6,9 @@ import '../../../shared/models/habit_model.dart';
 import '../providers/habit_provider.dart';
 
 class CreateHabitScreen extends ConsumerStatefulWidget {
-  const CreateHabitScreen({super.key});
+  final Habit? habitToEdit;
+
+  const CreateHabitScreen({super.key, this.habitToEdit});
 
   @override
   ConsumerState<CreateHabitScreen> createState() => _CreateHabitScreenState();

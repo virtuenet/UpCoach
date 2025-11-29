@@ -391,13 +391,11 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
                                                       final String shareText = '''
 ${article.title}
 
-${article.excerpt}
+${article.summary}
 
 Published: ${article.publishedAt != null ? DateFormat('MMM d, yyyy').format(article.publishedAt!) : DateFormat('MMM d, yyyy').format(article.createdAt)}
-Author: ${article.author ?? 'UpCoach'}
-Category: ${article.category}
-
-${article.contentUrl?.isNotEmpty == true ? 'Read more: ${article.contentUrl}' : ''}
+Author: ${article.author.name}
+Category: ${article.category.name}
 
 ---
 Saved from UpCoach - Your AI-powered coaching companion 📚

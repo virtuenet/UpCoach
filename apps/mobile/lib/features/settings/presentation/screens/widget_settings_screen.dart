@@ -86,7 +86,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
     try {
       final result = await _deviceCalendarPlugin.requestPermissions();
       setState(() {
-        _calendarPermissionGranted = result.isGranted;
+        _calendarPermissionGranted = result.isSuccess && (result.data ?? false);
       });
     } catch (_) {}
   }

@@ -83,13 +83,8 @@ class GoldenTestConfig {
 
 /// Custom golden test matcher with tolerance
 Matcher matchesGoldenFileWithTolerance(String key, {double tolerance = 0.05}) {
-  return MatchesGoldenFile.withTestName(
-    key,
-    customPump: (tester) async {
-      await tester.pump();
-      await tester.pump(const Duration(seconds: 1));
-    },
-  );
+  // Use standard matchesGoldenFile matcher
+  return matchesGoldenFile(key);
 }
 
 /// Extension for multi-device golden testing

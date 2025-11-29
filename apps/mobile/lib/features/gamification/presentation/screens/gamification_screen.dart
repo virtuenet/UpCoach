@@ -33,7 +33,8 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
 
   @override
   Widget build(BuildContext context) {
-    final userStatsAsync = ref.watch(userStatsProvider);
+    final userStats = ref.watch(userStatsProvider);
+    final isLoading = ref.watch(isGamificationLoadingProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -46,11 +47,9 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
             pinned: true,
             backgroundColor: theme.primaryColor,
             flexibleSpace: FlexibleSpaceBar(
-              background: userStatsAsync.when(
-                data: (stats) => _buildStatsHeader(stats),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (_, __) => const Center(child: Text('Error loading stats')),
-              ),
+              background: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _buildStatsHeader(userStats),
             ),
             title: const Text('Achievements'),
           ),
@@ -91,7 +90,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
     );
   }
 
-  Widget _buildStatsHeader(UserStats stats) {
+  Widget _buildStatsHeader(UserGamificationStats stats) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -223,128 +222,169 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
   }
 
   Widget _buildAchievementsTab() {
-    final achievementsAsync = ref.watch(userAchievementsProvider);
+    final achievements = ref.watch(achievementsProvider);
 
-    return achievementsAsync.when(
-      data: (achievements) {
-        final categories = achievements
-            .map((a) => a.category)
-            .toSet()
-            .toList();
+    if (achievements.isEmpty) {
+      return const Center(child: Text('No achievements yet'));
+    }
 
-        return DefaultTabController(
-          length: categories.length,
-          child: Column(
-            children: [
-              TabBar(
-                isScrollable: true,
-                tabs: categories
-                    .map((cat) => Tab(text: cat.toUpperCase()))
-                    .toList(),
-              ),
-              Expanded(
-                child: TabBarView(
-                  children: categories.map((category) {
-                    final categoryAchievements = achievements
-                        .where((a) => a.category == category)
-                        .toList();
-                    
-                    return GridView.builder(
-                      padding: const EdgeInsets.all(UIConstants.spacingMD),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.8,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                      ),
-                      itemCount: categoryAchievements.length,
-                      itemBuilder: (context, index) {
-                        return AchievementCard(
-                          achievement: categoryAchievements[index],
-                          onClaim: () {
-                            ref.read(gamificationProvider.notifier)
-                                .claimAchievement(categoryAchievements[index].id);
-                          },
-                        );
+    final categories = achievements
+        .map((a) => a.category)
+        .toSet()
+        .toList();
+
+    return DefaultTabController(
+      length: categories.length,
+      child: Column(
+        children: [
+          TabBar(
+            isScrollable: true,
+            tabs: categories
+                .map((cat) => Tab(text: cat.toUpperCase()))
+                .toList(),
+          ),
+          Expanded(
+            child: TabBarView(
+              children: categories.map((category) {
+                final categoryAchievements = achievements
+                    .where((a) => a.category == category)
+                    .toList();
+
+                return GridView.builder(
+                  padding: const EdgeInsets.all(UIConstants.spacingMD),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.8,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: categoryAchievements.length,
+                  itemBuilder: (context, index) {
+                    return AchievementCard(
+                      achievement: categoryAchievements[index],
+                      onTap: () {
+                        if (!categoryAchievements[index].isUnlocked) {
+                          ref.read(gamificationProvider.notifier)
+                              .claimAchievement(categoryAchievements[index].id);
+                        }
                       },
                     );
-                  }).toList(),
-                ),
-              ),
-            ],
+                  },
+                );
+              }).toList(),
+            ),
           ),
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => const Center(child: Text('Error loading achievements')),
+        ],
+      ),
     );
   }
 
   Widget _buildChallengesTab() {
-    final challengesAsync = ref.watch(challengesProvider);
+    final challenges = ref.watch(challengesProvider);
 
-    return challengesAsync.when(
-      data: (challenges) {
-        return ListView.builder(
-          padding: const EdgeInsets.all(UIConstants.spacingMD),
-          itemCount: challenges.length,
-          itemBuilder: (context, index) {
-            final challenge = challenges[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 16),
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: _getChallengeColor(challenge.type),
-                  child: Icon(
-                    _getChallengeIcon(challenge.type),
-                    color: Colors.white,
-                  ),
-                ),
-                title: Text(challenge.name),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(challenge.description),
-                    const SizedBox(height: UIConstants.spacingSM),
-                    if (challenge.participationStatus != null)
-                      LinearProgressIndicator(
-                        value: challenge.completionPercentage / 100,
-                        backgroundColor: Colors.grey[300],
-                        valueColor: AlwaysStoppedAnimation(
-                          _getChallengeColor(challenge.type),
-                        ),
-                      ),
-                  ],
-                ),
-                trailing: challenge.participationStatus == null
-                    ? ElevatedButton(
-                        onPressed: () {
-                          ref.read(gamificationProvider.notifier)
-                              .joinChallenge(challenge.id);
-                        },
-                        child: const Text('Join'),
-                      )
-                    : Chip(
-                        label: Text(challenge.participationStatus!),
-                        backgroundColor: _getStatusColor(challenge.participationStatus!),
-                      ),
-                isThreeLine: true,
+    if (challenges.isEmpty) {
+      return const Center(child: Text('No challenges available'));
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
+      itemCount: challenges.length,
+      itemBuilder: (context, index) {
+        final challenge = challenges[index];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 16),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: _getChallengeColor(challenge.type),
+              child: Icon(
+                _getChallengeIcon(challenge.type),
+                color: Colors.white,
               ),
-            );
-          },
+            ),
+            title: Text(challenge.name),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(challenge.description),
+                const SizedBox(height: UIConstants.spacingSM),
+                if (challenge.participationStatus != null)
+                  LinearProgressIndicator(
+                    value: challenge.completionPercentage / 100,
+                    backgroundColor: Colors.grey[300],
+                    valueColor: AlwaysStoppedAnimation(
+                      _getChallengeColor(challenge.type),
+                    ),
+                  ),
+              ],
+            ),
+            trailing: challenge.participationStatus == null
+                ? ElevatedButton(
+                    onPressed: () {
+                      ref.read(gamificationProvider.notifier)
+                          .joinChallenge(challenge.id);
+                    },
+                    child: const Text('Join'),
+                  )
+                : Chip(
+                    label: Text(challenge.participationStatus!),
+                    backgroundColor: _getStatusColor(challenge.participationStatus!),
+                  ),
+            isThreeLine: true,
+          ),
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => const Center(child: Text('Error loading challenges')),
     );
   }
 
   Widget _buildLeaderboardTab() {
-    return const LeaderboardWidget();
+    final leaderboard = ref.watch(leaderboardProvider);
+    final gamificationState = ref.watch(gamificationProvider);
+
+    return Padding(
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
+      child: LeaderboardWidget(
+        entries: leaderboard,
+        selectedPeriod: gamificationState.selectedLeaderboardPeriod,
+        onPeriodChanged: (period) {
+          ref.read(gamificationProvider.notifier).loadLeaderboard(period: period);
+        },
+      ),
+    );
   }
 
   Widget _buildRewardsTab() {
-    return const RewardStoreWidget();
+    final rewards = ref.watch(rewardsProvider);
+    final userStats = ref.watch(userStatsProvider);
+
+    return Padding(
+      padding: const EdgeInsets.all(UIConstants.spacingMD),
+      child: RewardStoreWidget(
+        rewards: rewards,
+        userPoints: userStats.totalPoints,
+        onRewardTap: (reward) async {
+          final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('Redeem ${reward.name}?'),
+              content: Text('This will cost ${reward.cost} points.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Redeem'),
+                ),
+              ],
+            ),
+          );
+          if (confirmed == true) {
+            await ref.read(gamificationProvider.notifier).redeemReward(reward.id);
+          }
+        },
+      ),
+    );
   }
 
   Color _getChallengeColor(String type) {

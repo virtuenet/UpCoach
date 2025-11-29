@@ -85,6 +85,8 @@ class ArticleListResponse with _$ArticleListResponse {
 
 @freezed
 class ArticleFilters with _$ArticleFilters {
+  const ArticleFilters._();
+
   const factory ArticleFilters({
     int? categoryId,
     List<String>? tags,

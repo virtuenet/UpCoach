@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../shared/constants/ui_constants.dart';
 import '../providers/profile_provider.dart';
 import '../../../core/services/two_factor_auth_service.dart';
@@ -1097,7 +1098,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       final userId = authState.user!.id;
       if (accessToken == null) throw Exception('Missing token');
 
-      final endpoint = '${AppTheme.apiBase ?? ''}/api/v2/reports/weekly/$userId/$type';
+      final endpoint = '${AppConstants.apiUrl}/v2/reports/weekly/$userId/$type';
       final uri = Uri.parse(endpoint);
       final res = await http.post(uri, headers: {
         'Authorization': 'Bearer $accessToken',

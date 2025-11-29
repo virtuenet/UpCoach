@@ -130,7 +130,15 @@ void expectLoadingIndicator(WidgetTester tester) {
 }
 
 /// Mock Navigation Observer for tracking navigation
-class MockNavigatorObserver extends Mock implements NavigatorObserver {}
+class MockNavigatorObserver extends Mock implements NavigatorObserver {
+  final List<Route<dynamic>> pushedRoutes = [];
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    pushedRoutes.add(route);
+    super.noSuchMethod(Invocation.method(#didPush, [route, previousRoute]));
+  }
+}
 
 /// Creates a MaterialApp with navigation observer for testing navigation
 Widget createNavigableTestWidget({
@@ -150,7 +158,8 @@ void expectRoutePushed(
   MockNavigatorObserver observer,
   String routeName,
 ) {
-  verify(observer.didPush(any, any)).called(greaterThan(0));
+  // Verify navigation occurred - simplified check since detailed route matching is complex
+  expect(observer.pushedRoutes.isNotEmpty, isTrue, reason: 'Expected route $routeName to be pushed');
 }
 
 /// Creates a mock of a common service/repository
