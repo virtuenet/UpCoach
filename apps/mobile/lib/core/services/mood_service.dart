@@ -122,6 +122,11 @@ class MoodService {
     }
   }
 
+  /// Get all mood entries without filtering (for data export)
+  Future<List<MoodModel>> getAllMoodEntries() async {
+    return getMoodEntries();
+  }
+
   // Create a temporary mood entry for optimistic UI updates
   MoodModel createTemporaryMoodEntry({
     required MoodLevel level,

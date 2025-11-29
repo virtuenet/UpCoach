@@ -170,9 +170,9 @@ class DataExportService {
         data['voice_journals'] = voiceJournals.map((entry) => {
           'id': entry.id,
           'title': entry.title,
-          'content': entry.content,
-          'transcript': entry.transcript,
-          'duration': entry.duration,
+          'summary': entry.summary,
+          'transcript': entry.transcriptionText,
+          'duration': entry.durationSeconds,
           'created_at': entry.createdAt.toIso8601String(),
           'updated_at': entry.updatedAt?.toIso8601String(),
           // Note: Audio files are not included in JSON export for size reasons

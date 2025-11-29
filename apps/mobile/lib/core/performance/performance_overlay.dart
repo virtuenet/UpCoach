@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'performance_monitor.dart';
+import 'image_optimizer.dart';
 
 /// Performance overlay widget (dev mode only)
 class PerformanceOverlay extends StatefulWidget {
@@ -306,7 +307,7 @@ class _PerformanceDebugScreenState extends State<PerformanceDebugScreen> {
   }
 
   Widget _buildWarningsCard() {
-    final warnings = _monitor._getPerformanceWarnings();
+    final warnings = _monitor.getPerformanceWarnings();
 
     if (warnings.isEmpty) {
       return const SizedBox.shrink();

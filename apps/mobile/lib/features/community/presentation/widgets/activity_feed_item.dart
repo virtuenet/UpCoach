@@ -3,16 +3,20 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/constants/app_text_styles.dart';
 import '../providers/forum_providers.dart';
 
-class ActivityFeedItemWidget extends StatelessWidget {
+// Rename to match usage in community_screen.dart
+// ignore: camel_case_types
+class ActivityFeedItemCard extends StatelessWidget {
   final ActivityFeedItem activity;
   final VoidCallback? onTap;
-  final VoidCallback? onUserTap;
+  final void Function(String userId)? onUserTap;
+  final void Function(String type, String id)? onContentTap;
 
-  const ActivityFeedItemWidget({
+  const ActivityFeedItemCard({
     Key? key,
     required this.activity,
     this.onTap,
     this.onUserTap,
+    this.onContentTap,
   }) : super(key: key);
 
   IconData _getIconForType(String type) {
@@ -85,7 +89,7 @@ class ActivityFeedItemWidget extends StatelessWidget {
               clipBehavior: Clip.none,
               children: [
                 GestureDetector(
-                  onTap: onUserTap,
+                  onTap: () => onUserTap?.call(activity.userId),
                   child: CircleAvatar(
                     radius: 20,
                     backgroundColor: AppColors.gray200,

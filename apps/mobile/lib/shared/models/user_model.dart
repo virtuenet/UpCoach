@@ -6,6 +6,7 @@ class UserModel extends Equatable {
   final String name;
   final String? bio;
   final String? avatarUrl;
+  final String? subscriptionStatus;
   final Map<String, dynamic> preferences;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -16,6 +17,7 @@ class UserModel extends Equatable {
     required this.name,
     this.bio,
     this.avatarUrl,
+    this.subscriptionStatus,
     this.preferences = const {},
     required this.createdAt,
     required this.updatedAt,
@@ -28,6 +30,7 @@ class UserModel extends Equatable {
       name: json['name'] as String? ?? '',
       bio: json['bio'] as String?,
       avatarUrl: json['avatar_url'] as String?,
+      subscriptionStatus: json['subscription_status'] as String?,
       preferences: json['preferences'] as Map<String, dynamic>? ?? {},
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
@@ -41,6 +44,7 @@ class UserModel extends Equatable {
       'name': name,
       'bio': bio,
       'avatar_url': avatarUrl,
+      'subscription_status': subscriptionStatus,
       'preferences': preferences,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
@@ -53,6 +57,7 @@ class UserModel extends Equatable {
     String? name,
     String? bio,
     String? avatarUrl,
+    String? subscriptionStatus,
     Map<String, dynamic>? preferences,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -63,6 +68,7 @@ class UserModel extends Equatable {
       name: name ?? this.name,
       bio: bio ?? this.bio,
       avatarUrl: avatarUrl ?? this.avatarUrl,
+      subscriptionStatus: subscriptionStatus ?? this.subscriptionStatus,
       preferences: preferences ?? this.preferences,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -76,6 +82,7 @@ class UserModel extends Equatable {
         name,
         bio,
         avatarUrl,
+        subscriptionStatus,
         preferences,
         createdAt,
         updatedAt,

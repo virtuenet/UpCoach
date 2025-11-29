@@ -134,6 +134,11 @@ class TaskService {
     }
   }
 
+  /// Get all tasks without filtering (for data export)
+  Future<List<TaskModel>> getAllTasks() async {
+    return getTasks();
+  }
+
   // Create a temporary task for optimistic UI updates
   TaskModel createTemporaryTask({
     required String title,

@@ -23,6 +23,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _acceptTerms = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -412,7 +413,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   label: const Text('Continue with Google'),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: const BorderSide(color: AppColors.outline),
+                    side: BorderSide(color: AppColors.outline),
                   ),
                 ),
                 

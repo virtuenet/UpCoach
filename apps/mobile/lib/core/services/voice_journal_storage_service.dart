@@ -295,6 +295,11 @@ class VoiceJournalStorageService {
     }
   }
 
+  /// Get all entries (alias for loadEntries for data export compatibility)
+  Future<List<VoiceJournalEntry>> getAllEntries() async {
+    return loadEntries();
+  }
+
   // Private helper methods
 
   /// Find the index of an entry by ID

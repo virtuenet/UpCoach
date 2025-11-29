@@ -240,7 +240,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
           padding: const EdgeInsets.all(UIConstants.spacingMD),
           itemCount: activities.length,
           itemBuilder: (context, index) {
-            return ActivityFeedItem(
+            return ActivityFeedItemCard(
               activity: activities[index],
               onUserTap: (userId) {
                 context.push('/profile/$userId');

@@ -143,4 +143,15 @@ class AppTextStyles {
     letterSpacing: 1.5,
     fontFamily: fontFamily,
   );
+
+  // Legacy aliases for backwards compatibility
+  static const TextStyle h1 = headlineLarge;
+  static const TextStyle h2 = headlineMedium;
+  static const TextStyle h3 = headlineSmall;
+  static const TextStyle h4 = titleLarge;
+  static const TextStyle h5 = titleMedium;
+  static const TextStyle h6 = titleSmall;
+
+  // Additional style variant alias
+  static TextStyle get bodySecondary => bodyMediumSecondary;
 }

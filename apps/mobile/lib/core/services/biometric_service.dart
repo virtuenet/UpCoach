@@ -127,7 +127,7 @@ final isBiometricEnabledProvider = FutureProvider<bool>((ref) async {
   return service.isBiometricEnabled();
 });
 
-final availableBiometricsProvider = FutureProvider<List<BiometricType>>((ref) async {
+final availableBiometricsProvider = FutureProvider<List<AppBiometricType>>((ref) async {
   final service = ref.watch(biometricServiceProvider);
   return service.getAvailableBiometrics();
 });

@@ -37,7 +37,7 @@ class WidgetService {
       for (int i = 0; i < goals.length && i < 3; i++) {
         final goal = goals[i];
         await HomeWidget.saveWidgetData<String>('goal_${i}_title', goal.title);
-        await HomeWidget.saveWidgetData<String>('goal_${i}_status', goal.status);
+        await HomeWidget.saveWidgetData<String>('goal_${i}_status', goal.status.name);
         await HomeWidget.saveWidgetData<double>('goal_${i}_progress', goal.progress);
       }
       
@@ -65,7 +65,7 @@ class WidgetService {
       for (int i = 0; i < pendingTasks.length; i++) {
         final task = pendingTasks[i];
         await HomeWidget.saveWidgetData<String>('task_${i}_title', task.title);
-        await HomeWidget.saveWidgetData<String>('task_${i}_priority', task.priority);
+        await HomeWidget.saveWidgetData<String>('task_${i}_priority', task.priority.name);
         await HomeWidget.saveWidgetData<String>('task_${i}_due', task.dueDate?.toIso8601String() ?? '');
       }
       

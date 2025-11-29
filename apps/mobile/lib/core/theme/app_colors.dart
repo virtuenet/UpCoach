@@ -48,6 +48,14 @@ class AppColors {
   static const Color gray800 = Color(0xFF1F2937);
   static const Color gray900 = Color(0xFF111827);
 
+  // Additional aliases used across the app
+  static const Color primaryColor = primary;
+  static const Color text = textPrimary;
+  static const Color surfaceVariant = gray100;
+  static const Color outline = gray300;
+  static const Color neutralLight = gray200;
+  static const Color neutralDark = gray700;
+
   // Chart Colors
   static const List<Color> chartColors = [
     Color(0xFF6366F1), // Indigo

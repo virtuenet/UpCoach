@@ -1,12 +1,12 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureStorage {
-  static const _storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(
+  static final _storage = FlutterSecureStorage(
+    aOptions: const AndroidOptions(
       encryptedSharedPreferences: true,
     ),
-    iOptions: IOSOptions(
-      accessibility: IOSAccessibility.first_unlock_this_device,
+    iOptions: const IOSOptions(
+      accessibility: KeychainAccessibility.first_unlock_this_device,
     ),
   );
 

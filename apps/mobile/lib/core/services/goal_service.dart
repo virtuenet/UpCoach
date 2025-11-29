@@ -157,6 +157,11 @@ class GoalService {
     }
   }
 
+  /// Get all goals without filtering (for data export)
+  Future<List<GoalModel>> getAllGoals() async {
+    return getGoals();
+  }
+
   // Create a temporary goal for optimistic UI updates
   GoalModel createTemporaryGoal({
     required String title,

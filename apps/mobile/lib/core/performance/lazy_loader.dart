@@ -3,6 +3,7 @@
 /// Provides helpers for lazy loading widgets and data.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 /// Lazy load widget builder
 typedef LazyBuilder = Widget Function();
@@ -86,19 +87,27 @@ class _VisibilityDetectorState extends State<VisibilityDetector> {
 
     final renderObject = context.findRenderObject();
     if (renderObject == null || !renderObject.attached) return;
+    if (renderObject is! RenderBox) return;
 
-    final viewport = RenderAbstractViewport.of(renderObject);
+    final RenderBox renderBox = renderObject;
+    final viewport = RenderAbstractViewport.maybeOf(renderBox);
     if (viewport == null) return;
 
-    final Size size = renderObject.paintBounds.size;
-    final Offset position = renderObject.localToGlobal(Offset.zero);
+    final Size size = renderBox.paintBounds.size;
+    final Offset position = renderBox.localToGlobal(Offset.zero);
     final Rect bounds = position & size;
 
-    // Get viewport bounds
-    final RenderBox? renderBox = viewport as RenderBox?;
-    if (renderBox == null) return;
+    // Get viewport bounds - RenderAbstractViewport is a RenderObject, not RenderBox
+    // We need to find the parent RenderBox for bounds
+    RenderBox? viewportBox;
+    RenderObject? current = viewport;
+    while (current != null && current is! RenderBox) {
+      current = current.parent;
+    }
+    viewportBox = current as RenderBox?;
+    if (viewportBox == null) return;
 
-    final viewportBounds = Offset.zero & renderBox.size;
+    final viewportBounds = Offset.zero & viewportBox.size;
 
     // Check if widget is visible
     if (bounds.overlaps(viewportBounds)) {

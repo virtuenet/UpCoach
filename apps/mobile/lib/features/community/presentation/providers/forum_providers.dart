@@ -192,7 +192,9 @@ final forumProvider = StateNotifierProvider<ForumNotifier, ForumState>((ref) {
   return ForumNotifier();
 });
 
-final forumCategoriesProvider = Provider<List<ForumCategory>>((ref) {
+final forumCategoriesProvider = FutureProvider<List<ForumCategory>>((ref) async {
+  final notifier = ref.watch(forumProvider.notifier);
+  await notifier.loadCategories();
   return ref.watch(forumProvider).categories;
 });
 
@@ -200,7 +202,9 @@ final forumThreadsProvider = Provider<List<ForumThread>>((ref) {
   return ref.watch(forumProvider).threads;
 });
 
-final activityFeedProvider = Provider<List<ActivityFeedItem>>((ref) {
+final activityFeedProvider = FutureProvider<List<ActivityFeedItem>>((ref) async {
+  final notifier = ref.watch(forumProvider.notifier);
+  await notifier.loadActivityFeed();
   return ref.watch(forumProvider).activityFeed;
 });
 
@@ -214,4 +218,44 @@ final isForumLoadingProvider = Provider<bool>((ref) {
 
 final forumErrorProvider = Provider<String?>((ref) {
   return ref.watch(forumProvider).error;
+});
+
+// Alias providers for community screen compatibility
+final latestThreadsProvider = FutureProvider<List<ForumThread>>((ref) async {
+  final notifier = ref.watch(forumProvider.notifier);
+  await notifier.loadCategories();
+  return ref.watch(forumThreadsProvider);
+});
+
+// Community Group model
+class CommunityGroup {
+  final String id;
+  final String name;
+  final String description;
+  final String? imageUrl;
+  final String? avatarUrl;
+  final int memberCount;
+  final int postCount;
+  final bool isPrivate;
+  final String createdBy;
+  final DateTime createdAt;
+
+  const CommunityGroup({
+    required this.id,
+    required this.name,
+    required this.description,
+    this.imageUrl,
+    this.avatarUrl,
+    this.memberCount = 0,
+    this.postCount = 0,
+    this.isPrivate = false,
+    required this.createdBy,
+    required this.createdAt,
+  });
+}
+
+final communityGroupsProvider = FutureProvider<List<CommunityGroup>>((ref) async {
+  // TODO: Implement API call to fetch community groups
+  await Future.delayed(const Duration(milliseconds: 300));
+  return [];
 });

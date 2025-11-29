@@ -135,6 +135,24 @@ class SyncManager extends ChangeNotifier {
   int get conflictCount => _conflicts.length;
   List<SyncConflict> get conflicts => List.unmodifiable(_conflicts);
 
+  // Additional getters for sync_integration_service compatibility
+  SyncStatus get syncStatus => _status;
+  List<SyncConflict> get pendingConflicts => List.unmodifiable(_conflicts);
+
+  // Stream controllers for reactive updates
+  final StreamController<SyncStatus> _statusController =
+      StreamController<SyncStatus>.broadcast();
+  final StreamController<List<SyncConflict>> _conflictsController =
+      StreamController<List<SyncConflict>>.broadcast();
+
+  Stream<SyncStatus> get syncStatusStream => _statusController.stream;
+  Stream<List<SyncConflict>> get conflictsStream => _conflictsController.stream;
+
+  /// Get the current sync queue
+  Future<List<SyncOperation>> getSyncQueue() async {
+    return List.unmodifiable(_syncQueue);
+  }
+
   /// Initialize the sync manager
   Future<void> initialize() async {
     await _loadSyncQueue();
@@ -153,6 +171,8 @@ class SyncManager extends ChangeNotifier {
   @override
   void dispose() {
     _connectivitySubscription?.cancel();
+    _statusController.close();
+    _conflictsController.close();
     super.dispose();
   }
 

@@ -278,12 +278,12 @@ class PerformanceMonitor {
       'currentMetrics': metrics.toJson(),
       'routeStats': routeStats,
       'isGood': isPerformanceGood(),
-      'warnings': _getPerformanceWarnings(),
+      'warnings': getPerformanceWarnings(),
     };
   }
 
   /// Get performance warnings
-  List<String> _getPerformanceWarnings() {
+  List<String> getPerformanceWarnings() {
     final warnings = <String>[];
     final metrics = getMetrics();
 
@@ -340,8 +340,8 @@ mixin PerformanceTracking {
 }
 
 /// Extension for measuring async operations
-extension PerformanceMeasure on Future<T> Function() {
-  Future<T> measurePerformance<T>(String operationName) async {
+extension PerformanceMeasure<T> on Future<T> Function() {
+  Future<T> measurePerformance(String operationName) async {
     final startTime = DateTime.now();
     try {
       final result = await this();

@@ -20,6 +20,9 @@ class AuthService {
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
   UserModel? _currentUser;
 
+  /// Get the current authenticated user
+  UserModel? get currentUser => _currentUser;
+
   AuthService._internal() {
     _dio.options.baseUrl = AppConstants.apiUrl;
     _dio.options.connectTimeout = const Duration(seconds: AppConstants.requestTimeoutSeconds);
@@ -172,33 +175,36 @@ class AuthService {
 
   Future<AuthResponse> signInWithGoogle() async {
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn(
-        scopes: ['email', 'profile'],
+      // Initialize GoogleSignIn (google_sign_in 7.x API)
+      final googleSignIn = GoogleSignIn.instance;
+      await googleSignIn.initialize(
         serverClientId: _getServerClientId(),
       );
 
-      // Sign in with Google
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      if (googleUser == null) {
+      // Authenticate with Google (v7 uses authenticate() instead of signIn())
+      final authResult = await googleSignIn.authenticate();
+      if (authResult == null) {
         throw Exception('Google sign in was cancelled by user');
       }
 
-      // Get authentication details
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      // Get user info directly from auth result
+      final email = authResult.email;
+      final displayName = authResult.displayName;
+      final photoUrl = authResult.photoUrl;
 
-      if (googleAuth.idToken == null) {
-        throw Exception('Failed to get Google ID token');
-      }
+      // Request authorization for scopes to get access token
+      final authorization = await authResult.authorizationClient.authorizeScopes(
+        ['email', 'profile', 'openid'],
+      );
 
       // Send to backend for verification and user creation/login
       final response = await _dio.post(
         '/auth/google',
         data: {
-          'idToken': googleAuth.idToken,
-          'accessToken': googleAuth.accessToken,
-          'email': googleUser.email,
-          'displayName': googleUser.displayName,
-          'photoUrl': googleUser.photoUrl,
+          'accessToken': authorization.accessToken,
+          'email': email,
+          'displayName': displayName,
+          'photoUrl': photoUrl,
         },
       );
 
@@ -236,7 +242,7 @@ class AuthService {
 
   Future<void> signOutFromGoogle() async {
     try {
-      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final googleSignIn = GoogleSignIn.instance;
       await googleSignIn.signOut();
     } catch (e) {
       // Silently handle sign out errors
