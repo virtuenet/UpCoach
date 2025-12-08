@@ -39,19 +39,24 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
-          color: foregroundColor ?? (isDark ? AppColors.darkOnSurface : AppColors.textPrimary),
+          color: foregroundColor ??
+              (isDark ? AppColors.darkOnSurface : AppColors.textPrimary),
         ),
       ),
       centerTitle: centerTitle,
       elevation: elevation,
-      backgroundColor: backgroundColor ?? (isDark ? AppColors.darkSurface : AppColors.lightSurface),
+      backgroundColor: backgroundColor ??
+          (isDark ? AppColors.darkSurface : AppColors.lightSurface),
       surfaceTintColor: Colors.transparent,
       leading: leading ??
           (showBackButton && Navigator.of(context).canPop()
               ? IconButton(
                   icon: Icon(
                     Icons.arrow_back_ios,
-                    color: foregroundColor ?? (isDark ? AppColors.darkOnSurface : AppColors.textPrimary),
+                    color: foregroundColor ??
+                        (isDark
+                            ? AppColors.darkOnSurface
+                            : AppColors.textPrimary),
                   ),
                   onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
                 )

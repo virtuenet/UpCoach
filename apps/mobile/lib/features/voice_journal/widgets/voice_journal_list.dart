@@ -32,7 +32,9 @@ class VoiceJournalList extends ConsumerWidget {
             ),
             const SizedBox(height: UIConstants.spacingMD),
             Text(
-              filteredEntries != null ? 'No matching journals found' : 'No voice journals yet',
+              filteredEntries != null
+                  ? 'No matching journals found'
+                  : 'No voice journals yet',
               style: TextStyle(
                 fontSize: 18,
                 color: Colors.grey.shade600,
@@ -85,7 +87,7 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
   @override
   Widget build(BuildContext context) {
     final voiceJournalState = ref.watch(voiceJournalProvider);
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
@@ -116,9 +118,9 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                     onPressed: () => _togglePlayback(),
                   ),
                 ),
-                
+
                 const SizedBox(width: UIConstants.spacingMD),
-                
+
                 // Title and Date
                 Expanded(
                   child: Column(
@@ -144,18 +146,22 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                     ],
                   ),
                 ),
-                
+
                 // Favorite Button
                 IconButton(
                   icon: Icon(
-                    widget.entry.isFavorite ? Icons.favorite : Icons.favorite_border,
+                    widget.entry.isFavorite
+                        ? Icons.favorite
+                        : Icons.favorite_border,
                     color: widget.entry.isFavorite ? Colors.red : Colors.grey,
                   ),
                   onPressed: () {
-                    ref.read(voiceJournalProvider.notifier).toggleFavorite(widget.entry.id);
+                    ref
+                        .read(voiceJournalProvider.notifier)
+                        .toggleFavorite(widget.entry.id);
                   },
                 ),
-                
+
                 // More Options
                 PopupMenuButton<String>(
                   onSelected: (value) => _handleMenuAction(value),
@@ -205,16 +211,17 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: UIConstants.spacingMD),
-            
+
             // Duration and File Size
             Row(
               children: [
                 Icon(Icons.access_time, size: 16, color: Colors.grey.shade600),
                 const SizedBox(width: UIConstants.spacingXS),
                 Text(
-                  _formatDuration(Duration(seconds: widget.entry.durationSeconds)),
+                  _formatDuration(
+                      Duration(seconds: widget.entry.durationSeconds)),
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey.shade600,
@@ -233,7 +240,8 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                 if (widget.entry.isTranscribed) ...[
                   const SizedBox(width: UIConstants.spacingMD),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.green.shade100,
                       borderRadius: BorderRadius.circular(UIConstants.radiusLG),
@@ -242,7 +250,8 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.transcribe, size: 12, color: Colors.green.shade700),
+                        Icon(Icons.transcribe,
+                            size: 12, color: Colors.green.shade700),
                         const SizedBox(width: UIConstants.spacingXS),
                         Text(
                           'Transcribed',
@@ -258,9 +267,10 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                 ],
               ],
             ),
-            
+
             // Transcription (if available and expanded)
-            if (widget.entry.isTranscribed && widget.entry.transcriptionText != null) ...[
+            if (widget.entry.isTranscribed &&
+                widget.entry.transcriptionText != null) ...[
               const SizedBox(height: UIConstants.spacingMD),
               GestureDetector(
                 onTap: () {
@@ -281,7 +291,8 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.transcribe, size: 16, color: Colors.grey.shade700),
+                          Icon(Icons.transcribe,
+                              size: 16, color: Colors.grey.shade700),
                           const SizedBox(width: UIConstants.spacingXS),
                           Text(
                             'Transcription',
@@ -327,7 +338,7 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                 ),
               ),
             ],
-            
+
             // Transcription Button (if not transcribed)
             if (!widget.entry.isTranscribed) ...[
               const SizedBox(height: UIConstants.spacingMD),
@@ -337,7 +348,9 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                   onPressed: voiceJournalState.isTranscribing
                       ? null
                       : () {
-                          ref.read(voiceJournalProvider.notifier).transcribeEntry(widget.entry.id);
+                          ref
+                              .read(voiceJournalProvider.notifier)
+                              .transcribeEntry(widget.entry.id);
                         },
                   icon: voiceJournalState.isTranscribing
                       ? const SizedBox(
@@ -346,7 +359,9 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.transcribe),
-                  label: Text(voiceJournalState.isTranscribing ? 'Transcribing...' : 'Transcribe Audio'),
+                  label: Text(voiceJournalState.isTranscribing
+                      ? 'Transcribing...'
+                      : 'Transcribe Audio'),
                 ),
               ),
             ],
@@ -367,7 +382,7 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
       setState(() {
         _isPlaying = true;
       });
-      
+
       // Auto-stop playing after duration (simplified)
       Future.delayed(Duration(seconds: widget.entry.durationSeconds), () {
         if (mounted) {
@@ -385,7 +400,9 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
         _showRenameDialog();
         break;
       case 'transcribe':
-        ref.read(voiceJournalProvider.notifier).transcribeEntry(widget.entry.id);
+        ref
+            .read(voiceJournalProvider.notifier)
+            .transcribeEntry(widget.entry.id);
         break;
       case 'share':
         _shareEntry();
@@ -398,7 +415,7 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
 
   void _showRenameDialog() {
     final controller = TextEditingController(text: widget.entry.title);
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -419,9 +436,9 @@ class _VoiceJournalCardState extends ConsumerState<VoiceJournalCard> {
           TextButton(
             onPressed: () {
               ref.read(voiceJournalProvider.notifier).updateEntryTitle(
-                widget.entry.id,
-                controller.text.trim(),
-              );
+                    widget.entry.id,
+                    controller.text.trim(),
+                  );
               context.pop();
             },
             child: const Text('Save'),
@@ -446,17 +463,18 @@ Created with UpCoach - Your AI-powered coaching companion 🎯
 ''';
 
       final box = context.findRenderObject() as RenderBox?;
-      await Share.share(
-        shareText,
-        subject: 'Voice Journal Entry: ${widget.entry.title}',
-        sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+      await SharePlus.instance.share(
+        ShareParams(
+          text: shareText,
+          subject: 'Voice Journal Entry: ${widget.entry.title}',
+          sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+        ),
       );
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error sharing entry: $e')),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error sharing entry: $e')),
+      );
     }
   }
 
@@ -465,7 +483,8 @@ Created with UpCoach - Your AI-powered coaching companion 🎯
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Journal Entry'),
-        content: Text('Are you sure you want to delete "${widget.entry.title}"? This action cannot be undone.'),
+        content: Text(
+            'Are you sure you want to delete "${widget.entry.title}"? This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => context.pop(),
@@ -473,7 +492,9 @@ Created with UpCoach - Your AI-powered coaching companion 🎯
           ),
           TextButton(
             onPressed: () {
-              ref.read(voiceJournalProvider.notifier).deleteEntry(widget.entry.id);
+              ref
+                  .read(voiceJournalProvider.notifier)
+                  .deleteEntry(widget.entry.id);
               context.pop();
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -512,4 +533,4 @@ Created with UpCoach - Your AI-powered coaching companion 🎯
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
-} 
+}

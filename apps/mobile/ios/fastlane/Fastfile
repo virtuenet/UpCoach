@@ -1,0 +1,293 @@
+# UpCoach iOS Fastfile
+# https://docs.fastlane.tools
+
+default_platform(:ios)
+
+# CI-friendly configuration
+is_ci = ENV['CI'] == 'true' || ENV['GITHUB_ACTIONS'] == 'true'
+
+platform :ios do
+  # ============================================================================
+  # Before All Hook
+  # ============================================================================
+
+  before_all do
+    if is_ci
+      puts "Running in CI environment"
+
+      # Set up App Store Connect API key for CI
+      if ENV['APP_STORE_CONNECT_API_KEY_ID'] && ENV['APP_STORE_CONNECT_API_ISSUER_ID']
+        app_store_connect_api_key(
+          key_id: ENV['APP_STORE_CONNECT_API_KEY_ID'],
+          issuer_id: ENV['APP_STORE_CONNECT_API_ISSUER_ID'],
+          key_filepath: ENV['APP_STORE_CONNECT_API_KEY_PATH'] || "~/.appstoreconnect/private_keys/AuthKey_#{ENV['APP_STORE_CONNECT_API_KEY_ID']}.p8",
+          in_house: false
+        )
+      end
+    end
+  end
+
+  # ============================================================================
+  # Development & Testing
+  # ============================================================================
+
+  desc "Run Flutter tests"
+  lane :test do
+    Dir.chdir("../..") do
+      sh("flutter test")
+    end
+  end
+
+  desc "Build development version"
+  lane :build_dev do
+    Dir.chdir("../..") do
+      sh("flutter build ios --debug --no-codesign")
+    end
+  end
+
+  # ============================================================================
+  # Beta / TestFlight
+  # ============================================================================
+
+  desc "Push a new beta build to TestFlight"
+  lane :beta do |options|
+    # Skip git checks in CI
+    unless is_ci || options[:skip_git_check]
+      ensure_git_status_clean
+    end
+
+    # Increment build number (skip in CI - version set by workflow)
+    unless is_ci || options[:skip_version_bump]
+      increment_build_number(
+        xcodeproj: "Runner.xcodeproj"
+      )
+    end
+
+    # Build Flutter app
+    Dir.chdir("../..") do
+      sh("flutter build ios --release --no-codesign")
+    end
+
+    # Build and sign with gym
+    build_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store",
+      output_directory: "./build",
+      output_name: "UpCoach.ipa"
+    )
+
+    # Upload to TestFlight
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      apple_id: ENV["APPLE_ID"],
+      app_identifier: "com.upcoach.upcoach-mobile",
+      team_id: ENV["TEAM_ID"]
+    )
+
+    # Commit version bump (skip in CI)
+    unless is_ci
+      commit_version_bump(
+        message: "Bump iOS build number for TestFlight",
+        xcodeproj: "Runner.xcodeproj"
+      )
+
+      add_git_tag(
+        tag: "ios/beta/#{get_build_number}"
+      )
+
+      push_to_git_remote
+    end
+  end
+
+  # ============================================================================
+  # App Store Release
+  # ============================================================================
+
+  desc "Push a new release to the App Store"
+  lane :release do |options|
+    # Skip git checks in CI
+    unless is_ci || options[:skip_git_check]
+      ensure_git_status_clean
+    end
+
+    # Increment version number (skip in CI - version set by workflow)
+    unless is_ci || options[:skip_version_bump]
+      increment_version_number(
+        xcodeproj: "Runner.xcodeproj",
+        bump_type: "patch"
+      )
+
+      increment_build_number(
+        xcodeproj: "Runner.xcodeproj"
+      )
+    end
+
+    # Build Flutter app
+    Dir.chdir("../..") do
+      sh("flutter build ios --release --no-codesign")
+    end
+
+    # Build and sign
+    build_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store",
+      output_directory: "./build",
+      output_name: "UpCoach.ipa"
+    )
+
+    # Upload to App Store Connect
+    upload_to_app_store(
+      force: true,
+      skip_metadata: false,
+      skip_screenshots: false,
+      submit_for_review: false,
+      automatic_release: false,
+      app_identifier: "com.upcoach.upcoach-mobile",
+      team_id: ENV["TEAM_ID"]
+    )
+
+    # Commit and tag (skip in CI)
+    unless is_ci
+      commit_version_bump(
+        message: "Release iOS version #{get_version_number}",
+        xcodeproj: "Runner.xcodeproj"
+      )
+
+      add_git_tag(
+        tag: "ios/release/#{get_version_number}"
+      )
+
+      push_to_git_remote
+    end
+  end
+
+  # ============================================================================
+  # CI-Specific Lanes
+  # ============================================================================
+
+  desc "CI: Build and upload to TestFlight"
+  lane :ci_beta do
+    # Sync certificates
+    match(
+      type: "appstore",
+      app_identifier: "com.upcoach.upcoach-mobile",
+      readonly: true
+    )
+
+    # Build and sign
+    build_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store",
+      output_directory: "./build",
+      output_name: "UpCoach.ipa"
+    )
+
+    # Upload to TestFlight
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      app_identifier: "com.upcoach.upcoach-mobile"
+    )
+  end
+
+  desc "CI: Build and upload to App Store"
+  lane :ci_release do
+    # Sync certificates
+    match(
+      type: "appstore",
+      app_identifier: "com.upcoach.upcoach-mobile",
+      readonly: true
+    )
+
+    # Build and sign
+    build_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store",
+      output_directory: "./build",
+      output_name: "UpCoach.ipa"
+    )
+
+    # Upload to App Store Connect (as draft)
+    upload_to_app_store(
+      force: true,
+      skip_metadata: true,
+      skip_screenshots: true,
+      submit_for_review: false,
+      automatic_release: false,
+      app_identifier: "com.upcoach.upcoach-mobile"
+    )
+  end
+
+  # ============================================================================
+  # Certificates & Provisioning
+  # ============================================================================
+
+  desc "Sync certificates and provisioning profiles"
+  lane :sync_certs do
+    match(
+      type: "appstore",
+      app_identifier: "com.upcoach.upcoach-mobile",
+      readonly: true
+    )
+
+    match(
+      type: "development",
+      app_identifier: "com.upcoach.upcoach-mobile",
+      readonly: true
+    )
+  end
+
+  desc "Create new certificates and profiles"
+  lane :create_certs do
+    match(
+      type: "development",
+      app_identifier: "com.upcoach.upcoach-mobile",
+      force_for_new_devices: true
+    )
+
+    match(
+      type: "appstore",
+      app_identifier: "com.upcoach.upcoach-mobile"
+    )
+  end
+
+  # ============================================================================
+  # Screenshots
+  # ============================================================================
+
+  desc "Capture screenshots for App Store"
+  lane :screenshots do
+    capture_screenshots(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner"
+    )
+
+    frame_screenshots(
+      white: true,
+      path: "./fastlane/screenshots"
+    )
+  end
+
+  # ============================================================================
+  # Utilities
+  # ============================================================================
+
+  desc "Update App Store metadata only"
+  lane :update_metadata do
+    upload_to_app_store(
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      app_identifier: "com.upcoach.upcoach-mobile"
+    )
+  end
+
+  desc "Download existing metadata and screenshots"
+  lane :download_metadata do
+    download_metadata(
+      app_identifier: "com.upcoach.upcoach-mobile"
+    )
+  end
+end

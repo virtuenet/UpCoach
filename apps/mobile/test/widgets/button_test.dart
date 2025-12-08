@@ -5,7 +5,7 @@ void main() {
   group('Button Widget Tests', () {
     testWidgets('Button displays correct text', (WidgetTester tester) async {
       const buttonText = 'Test Button';
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -22,7 +22,7 @@ void main() {
 
     testWidgets('Button responds to tap', (WidgetTester tester) async {
       bool wasPressed = false;
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -42,9 +42,10 @@ void main() {
       expect(wasPressed, isTrue);
     });
 
-    testWidgets('Disabled button does not respond to tap', (WidgetTester tester) async {
+    testWidgets('Disabled button does not respond to tap',
+        (WidgetTester tester) async {
       bool wasPressed = false;
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -62,7 +63,8 @@ void main() {
       expect(wasPressed, isFalse);
     });
 
-    testWidgets('Button shows loading indicator when loading', (WidgetTester tester) async {
+    testWidgets('Button shows loading indicator when loading',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -84,7 +86,8 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('Button changes color on theme change', (WidgetTester tester) async {
+    testWidgets('Button changes color on theme change',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(

@@ -1,8 +1,9 @@
-/// Sync Integration Service
-///
-/// Bridges the existing SyncService with the new advanced SyncManager
-/// to provide enhanced offline sync capabilities with better conflict resolution.
+// Sync Integration Service
+//
+// Bridges the existing SyncService with the new advanced SyncManager
+// to provide enhanced offline sync capabilities with better conflict resolution.
 
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../sync/sync_manager.dart';
@@ -11,7 +12,8 @@ import 'offline_service.dart';
 
 /// Integration service that combines legacy sync with enhanced sync manager
 class SyncIntegrationService {
-  static final SyncIntegrationService _instance = SyncIntegrationService._internal();
+  static final SyncIntegrationService _instance =
+      SyncIntegrationService._internal();
   factory SyncIntegrationService() => _instance;
 
   SyncIntegrationService._internal();
@@ -37,7 +39,7 @@ class SyncIntegrationService {
     _setupSyncBridge();
 
     _isInitialized = true;
-    print('✅ Sync Integration Service initialized');
+    debugPrint('✅ Sync Integration Service initialized');
   }
 
   void _setupSyncBridge() {
@@ -95,7 +97,8 @@ class SyncIntegrationService {
   List<SyncConflict> get pendingConflicts => _syncManager.pendingConflicts;
 
   /// Stream of conflicts
-  Stream<List<SyncConflict>> get conflictsStream => _syncManager.conflictsStream;
+  Stream<List<SyncConflict>> get conflictsStream =>
+      _syncManager.conflictsStream;
 
   /// Get number of pending operations
   Future<int> get pendingOperationsCount async {

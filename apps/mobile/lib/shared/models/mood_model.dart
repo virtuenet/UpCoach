@@ -56,11 +56,12 @@ class MoodModel extends Equatable {
         orElse: () => MoodLevel.neutral,
       ),
       categories: (json['categories'] as List<dynamic>?)
-          ?.map((c) => MoodCategory.values.firstWhere(
-                (e) => e.name == c,
-                orElse: () => MoodCategory.content,
-              ))
-          .toList() ?? [],
+              ?.map((c) => MoodCategory.values.firstWhere(
+                    (e) => e.name == c,
+                    orElse: () => MoodCategory.content,
+                  ))
+              .toList() ??
+          [],
       note: json['note'] as String?,
       activities: (json['activities'] as List<dynamic>?)?.cast<String>() ?? [],
       timestamp: DateTime.parse(json['timestamp'] as String),
@@ -214,4 +215,4 @@ class MoodModel extends Equatable {
         timestamp,
         metadata,
       ];
-} 
+}

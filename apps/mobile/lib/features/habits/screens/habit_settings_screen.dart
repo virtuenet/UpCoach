@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/constants/ui_constants.dart';
-import '../providers/habit_provider.dart';
 
 class HabitSettingsScreen extends ConsumerStatefulWidget {
   const HabitSettingsScreen({super.key});
 
   @override
-  ConsumerState<HabitSettingsScreen> createState() => _HabitSettingsScreenState();
+  ConsumerState<HabitSettingsScreen> createState() =>
+      _HabitSettingsScreenState();
 }
 
 class _HabitSettingsScreenState extends ConsumerState<HabitSettingsScreen> {
@@ -42,19 +42,15 @@ class _HabitSettingsScreenState extends ConsumerState<HabitSettingsScreen> {
           _buildSectionHeader('Notifications'),
           _buildNotificationSettings(),
           const SizedBox(height: UIConstants.spacingLG),
-
           _buildSectionHeader('Timing'),
           _buildTimingSettings(),
           const SizedBox(height: UIConstants.spacingLG),
-
           _buildSectionHeader('Experience'),
           _buildExperienceSettings(),
           const SizedBox(height: UIConstants.spacingLG),
-
           _buildSectionHeader('Data'),
           _buildDataSettings(),
           const SizedBox(height: UIConstants.spacingLG),
-
           _buildSectionHeader('Advanced'),
           _buildAdvancedSettings(),
         ],
@@ -154,7 +150,8 @@ class _HabitSettingsScreenState extends ConsumerState<HabitSettingsScreen> {
         children: [
           ListTile(
             title: const Text('Default Habit Duration'),
-            subtitle: Text('New habits default to $_defaultHabitDuration minutes'),
+            subtitle:
+                Text('New habits default to $_defaultHabitDuration minutes'),
             trailing: const Icon(Icons.timer),
             onTap: () => _selectDefaultDuration(),
           ),
@@ -315,7 +312,8 @@ class _HabitSettingsScreenState extends ConsumerState<HabitSettingsScreen> {
 
     if (time != null) {
       setState(() {
-        _reminderTime = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+        _reminderTime =
+            '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
       });
     }
   }
@@ -323,23 +321,35 @@ class _HabitSettingsScreenState extends ConsumerState<HabitSettingsScreen> {
   void _selectWeeklyReportDay() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Select Report Day'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
-          ].map((day) => RadioListTile<String>(
-            title: Text(day),
-            value: day,
-            groupValue: _weeklyReportDay,
-            onChanged: (value) {
+        content: RadioGroup<String>(
+          groupValue: _weeklyReportDay,
+          onChanged: (value) {
+            if (value != null) {
               setState(() {
-                _weeklyReportDay = value!;
+                _weeklyReportDay = value;
               });
-              Navigator.of(context).pop();
-            },
-          )).toList(),
+              Navigator.of(dialogContext).pop();
+            }
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              'Sunday',
+              'Monday',
+              'Tuesday',
+              'Wednesday',
+              'Thursday',
+              'Friday',
+              'Saturday'
+            ]
+                .map((day) => RadioListTile<String>(
+                      title: Text(day),
+                      value: day,
+                    ))
+                .toList(),
+          ),
         ),
       ),
     );
@@ -348,23 +358,27 @@ class _HabitSettingsScreenState extends ConsumerState<HabitSettingsScreen> {
   void _selectDefaultDuration() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Default Habit Duration'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            '15', '30', '45', '60', '90', '120'
-          ].map((duration) => RadioListTile<String>(
-            title: Text('$duration minutes'),
-            value: duration,
-            groupValue: _defaultHabitDuration,
-            onChanged: (value) {
+        content: RadioGroup<String>(
+          groupValue: _defaultHabitDuration,
+          onChanged: (value) {
+            if (value != null) {
               setState(() {
-                _defaultHabitDuration = value!;
+                _defaultHabitDuration = value;
               });
-              Navigator.of(context).pop();
-            },
-          )).toList(),
+              Navigator.of(dialogContext).pop();
+            }
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: ['15', '30', '45', '60', '90', '120']
+                .map((duration) => RadioListTile<String>(
+                      title: Text('$duration minutes'),
+                      value: duration,
+                    ))
+                .toList(),
+          ),
         ),
       ),
     );
@@ -381,7 +395,8 @@ class _HabitSettingsScreenState extends ConsumerState<HabitSettingsScreen> {
 
     if (time != null) {
       setState(() {
-        _streakResetTime = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+        _streakResetTime =
+            '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
       });
     }
   }
@@ -399,7 +414,8 @@ class _HabitSettingsScreenState extends ConsumerState<HabitSettingsScreen> {
             const SizedBox(height: UIConstants.spacingSM),
             Text('Offset: ${DateTime.now().timeZoneOffset}'),
             const SizedBox(height: UIConstants.spacingMD),
-            const Text('Time zone changes are automatically detected and applied to your habit schedules.'),
+            const Text(
+                'Time zone changes are automatically detected and applied to your habit schedules.'),
           ],
         ),
         actions: [
@@ -417,7 +433,8 @@ class _HabitSettingsScreenState extends ConsumerState<HabitSettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Export Habit Data'),
-        content: const Text('This will create a backup file containing all your habit data, completions, and achievements.'),
+        content: const Text(
+            'This will create a backup file containing all your habit data, completions, and achievements.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -501,7 +518,8 @@ class _HabitSettingsScreenState extends ConsumerState<HabitSettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Clear Cache'),
-        content: const Text('This will clear temporary files and free up storage space. Your habit data will not be affected.'),
+        content: const Text(
+            'This will clear temporary files and free up storage space. Your habit data will not be affected.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -537,7 +555,8 @@ class _HabitSettingsScreenState extends ConsumerState<HabitSettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Reset All Settings'),
-        content: const Text('This will restore all settings to their default values. This action cannot be undone.'),
+        content: const Text(
+            'This will restore all settings to their default values. This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -592,7 +611,8 @@ class _HabitSettingsScreenState extends ConsumerState<HabitSettingsScreen> {
         color: AppTheme.primaryColor,
       ),
       children: [
-        const Text('UpCoach helps you build positive habits and achieve your goals.'),
+        const Text(
+            'UpCoach helps you build positive habits and achieve your goals.'),
         const SizedBox(height: UIConstants.spacingMD),
         const Text('Made with ❤️ for habit enthusiasts everywhere.'),
       ],

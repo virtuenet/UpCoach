@@ -8,10 +8,15 @@ import 'messages_all.dart';
 class AppLocalizations {
   AppLocalizations(this.localeName);
 
+  /// Static delegate for localization
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      AppLocalizationsDelegate();
+
   static Future<AppLocalizations> load(Locale locale) {
-    final String name = locale.countryCode == null || locale.countryCode!.isEmpty
-        ? locale.languageCode
-        : locale.toString();
+    final String name =
+        locale.countryCode == null || locale.countryCode!.isEmpty
+            ? locale.languageCode
+            : locale.toString();
     final String localeName = Intl.canonicalizedLocale(name);
 
     return initializeMessages(localeName).then((_) {
@@ -42,16 +47,19 @@ class AppLocalizations {
   String get login => Intl.message('Login', name: 'login');
   String get logout => Intl.message('Logout', name: 'logout');
   String get register => Intl.message('Register', name: 'register');
-  String get forgotPassword => Intl.message('Forgot Password?', name: 'forgotPassword');
+  String get forgotPassword =>
+      Intl.message('Forgot Password?', name: 'forgotPassword');
   String get email => Intl.message('Email', name: 'email');
   String get password => Intl.message('Password', name: 'password');
-  String get confirmPassword => Intl.message('Confirm Password', name: 'confirmPassword');
+  String get confirmPassword =>
+      Intl.message('Confirm Password', name: 'confirmPassword');
 
   // Dashboard
   String get dashboard => Intl.message('Dashboard', name: 'dashboard');
   String get overview => Intl.message('Overview', name: 'overview');
   String get statistics => Intl.message('Statistics', name: 'statistics');
-  String get recentActivity => Intl.message('Recent Activity', name: 'recentActivity');
+  String get recentActivity =>
+      Intl.message('Recent Activity', name: 'recentActivity');
   String get progress => Intl.message('Progress', name: 'progress');
 
   // Goals
@@ -83,8 +91,10 @@ class AppLocalizations {
   String get coaching => Intl.message('Coaching', name: 'coaching');
   String get sessions => Intl.message('Sessions', name: 'sessions');
   String get bookSession => Intl.message('Book Session', name: 'bookSession');
-  String get upcomingSessions => Intl.message('Upcoming Sessions', name: 'upcomingSessions');
-  String get pastSessions => Intl.message('Past Sessions', name: 'pastSessions');
+  String get upcomingSessions =>
+      Intl.message('Upcoming Sessions', name: 'upcomingSessions');
+  String get pastSessions =>
+      Intl.message('Past Sessions', name: 'pastSessions');
   String get coach => Intl.message('Coach', name: 'coach');
   String get duration => Intl.message('Duration', name: 'duration');
   String get price => Intl.message('Price', name: 'price');
@@ -110,24 +120,32 @@ class AppLocalizations {
   // Profile
   String get profile => Intl.message('Profile', name: 'profile');
   String get editProfile => Intl.message('Edit Profile', name: 'editProfile');
-  String get personalInfo => Intl.message('Personal Information', name: 'personalInfo');
+  String get personalInfo =>
+      Intl.message('Personal Information', name: 'personalInfo');
   String get firstName => Intl.message('First Name', name: 'firstName');
   String get lastName => Intl.message('Last Name', name: 'lastName');
   String get phone => Intl.message('Phone', name: 'phone');
   String get bio => Intl.message('Bio', name: 'bio');
   String get timezone => Intl.message('Timezone', name: 'timezone');
   String get language => Intl.message('Language', name: 'language');
-  String get notifications => Intl.message('Notifications', name: 'notifications');
+  String get notifications =>
+      Intl.message('Notifications', name: 'notifications');
   String get privacy => Intl.message('Privacy', name: 'privacy');
   String get security => Intl.message('Security', name: 'security');
-  String get changePassword => Intl.message('Change Password', name: 'changePassword');
-  String get deleteAccount => Intl.message('Delete Account', name: 'deleteAccount');
+  String get changePassword =>
+      Intl.message('Change Password', name: 'changePassword');
+  String get deleteAccount =>
+      Intl.message('Delete Account', name: 'deleteAccount');
 
   // Messages
-  String get saveSuccess => Intl.message('Saved successfully', name: 'saveSuccess');
-  String get deleteSuccess => Intl.message('Deleted successfully', name: 'deleteSuccess');
-  String get updateSuccess => Intl.message('Updated successfully', name: 'updateSuccess');
-  String get createSuccess => Intl.message('Created successfully', name: 'createSuccess');
+  String get saveSuccess =>
+      Intl.message('Saved successfully', name: 'saveSuccess');
+  String get deleteSuccess =>
+      Intl.message('Deleted successfully', name: 'deleteSuccess');
+  String get updateSuccess =>
+      Intl.message('Updated successfully', name: 'updateSuccess');
+  String get createSuccess =>
+      Intl.message('Created successfully', name: 'createSuccess');
   String get confirmDelete => Intl.message(
         'Are you sure you want to delete this?',
         name: 'confirmDelete',
@@ -142,8 +160,8 @@ class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
 
   @override
   bool isSupported(Locale locale) {
-    return ['en', 'es', 'fr', 'de', 'pt', 'zh', 'ja', 'ar']
-        .contains(locale.languageCode);
+    // Supported languages: English, Spanish, French, Indonesian, Arabic
+    return ['en', 'es', 'fr', 'id', 'ar'].contains(locale.languageCode);
   }
 
   @override
@@ -167,10 +185,7 @@ class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
     Locale('en'),
     Locale('es'),
     Locale('fr'),
-    Locale('de'),
-    Locale('pt'),
-    Locale('zh'),
-    Locale('ja'),
+    Locale('id'),
     Locale('ar'),
   ];
 }

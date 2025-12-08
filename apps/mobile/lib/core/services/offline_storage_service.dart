@@ -5,7 +5,8 @@ import '../utils/logger.dart';
 
 /// Service for managing offline storage of articles and content
 class OfflineStorageService {
-  static final OfflineStorageService _instance = OfflineStorageService._internal();
+  static final OfflineStorageService _instance =
+      OfflineStorageService._internal();
   static OfflineStorageService get instance => _instance;
 
   OfflineStorageService._internal();

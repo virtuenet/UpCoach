@@ -8,10 +8,10 @@ class AchievementCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const AchievementCard({
-    Key? key,
+    super.key,
     required this.achievement,
     this.onTap,
-  }) : super(key: key);
+  });
 
   IconData _getIconData(String iconName) {
     switch (iconName) {
@@ -63,7 +63,7 @@ class AchievementCard extends StatelessWidget {
                     height: 56,
                     decoration: BoxDecoration(
                       color: isUnlocked
-                          ? AppColors.primary.withOpacity(0.1)
+                          ? AppColors.primary.withValues(alpha: 0.1)
                           : AppColors.gray100,
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -105,7 +105,7 @@ class AchievementCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.success.withOpacity(0.1),
+                        color: AppColors.success.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(

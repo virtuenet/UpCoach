@@ -5,7 +5,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 class OfflineService {
   static final OfflineService _instance = OfflineService._internal();
   factory OfflineService() => _instance;
-  
+
   OfflineService._internal();
 
   late final SharedPreferences _prefs;
@@ -14,7 +14,7 @@ class OfflineService {
 
   Future<void> initialize() async {
     if (_isInitialized) return;
-    
+
     _prefs = await SharedPreferences.getInstance();
     _connectivity = Connectivity();
     _isInitialized = true;
@@ -23,12 +23,12 @@ class OfflineService {
   // Network connectivity
   Future<bool> isOnline() async {
     final connectivityResult = await _connectivity.checkConnectivity();
-    return connectivityResult != ConnectivityResult.none;
+    return !connectivityResult.contains(ConnectivityResult.none);
   }
 
   Stream<bool> get connectivityStream {
     return _connectivity.onConnectivityChanged.map(
-      (result) => result != ConnectivityResult.none,
+      (result) => !result.contains(ConnectivityResult.none),
     );
   }
 
@@ -37,18 +37,20 @@ class OfflineService {
     await _ensureInitialized();
     final jsonString = jsonEncode(data);
     await _prefs.setString(_getCacheKey(key), jsonString);
-    await _prefs.setInt(_getTimestampKey(key), DateTime.now().millisecondsSinceEpoch);
+    await _prefs.setInt(
+        _getTimestampKey(key), DateTime.now().millisecondsSinceEpoch);
   }
 
-  Future<Map<String, dynamic>?> getCachedData(String key, {Duration? maxAge}) async {
+  Future<Map<String, dynamic>?> getCachedData(String key,
+      {Duration? maxAge}) async {
     await _ensureInitialized();
-    
+
     final cacheKey = _getCacheKey(key);
     final timestampKey = _getTimestampKey(key);
-    
+
     final jsonString = _prefs.getString(cacheKey);
     final timestamp = _prefs.getInt(timestampKey);
-    
+
     if (jsonString == null || timestamp == null) {
       return null;
     }
@@ -78,7 +80,8 @@ class OfflineService {
 
   Future<void> clearAllCache() async {
     await _ensureInitialized();
-    final keys = _prefs.getKeys().where((key) => key.startsWith('cache_')).toList();
+    final keys =
+        _prefs.getKeys().where((key) => key.startsWith('cache_')).toList();
     for (final key in keys) {
       await _prefs.remove(key);
     }
@@ -87,24 +90,25 @@ class OfflineService {
   // Pending operations (for sync when online)
   Future<void> addPendingOperation(PendingOperation operation) async {
     await _ensureInitialized();
-    
+
     final operations = await getPendingOperations();
     operations.add(operation);
-    
+
     final jsonList = operations.map((op) => op.toJson()).toList();
     await _prefs.setString('pending_operations', jsonEncode(jsonList));
   }
 
   Future<List<PendingOperation>> getPendingOperations() async {
     await _ensureInitialized();
-    
+
     final jsonString = _prefs.getString('pending_operations');
     if (jsonString == null) return [];
-    
+
     try {
       final jsonList = jsonDecode(jsonString) as List<dynamic>;
       return jsonList
-          .map((json) => PendingOperation.fromJson(json as Map<String, dynamic>))
+          .map(
+              (json) => PendingOperation.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (e) {
       return [];
@@ -113,10 +117,10 @@ class OfflineService {
 
   Future<void> removePendingOperation(String operationId) async {
     await _ensureInitialized();
-    
+
     final operations = await getPendingOperations();
     operations.removeWhere((op) => op.id == operationId);
-    
+
     final jsonList = operations.map((op) => op.toJson()).toList();
     await _prefs.setString('pending_operations', jsonEncode(jsonList));
   }
@@ -129,7 +133,7 @@ class OfflineService {
   // User preferences
   Future<void> saveUserPreference(String key, dynamic value) async {
     await _ensureInitialized();
-    
+
     if (value is String) {
       await _prefs.setString('pref_$key', value);
     } else if (value is int) {
@@ -147,9 +151,9 @@ class OfflineService {
 
   Future<T?> getUserPreference<T>(String key, {T? defaultValue}) async {
     await _ensureInitialized();
-    
+
     final prefKey = 'pref_$key';
-    
+
     if (T == String) {
       return _prefs.getString(prefKey) as T? ?? defaultValue;
     } else if (T == int) {
@@ -235,7 +239,8 @@ mixin OfflineCapable {
     T Function(Map<String, dynamic>)? fromJson,
   }) async {
     // Try cache first
-    final cachedData = await _offlineService.getCachedData(cacheKey, maxAge: maxAge);
+    final cachedData =
+        await _offlineService.getCachedData(cacheKey, maxAge: maxAge);
     if (cachedData != null && fromJson != null) {
       return fromJson(cachedData);
     }
@@ -244,12 +249,12 @@ mixin OfflineCapable {
     if (await _offlineService.isOnline()) {
       try {
         final result = await onlineOperation();
-        
+
         // Cache the result if it's serializable
         if (result != null && result is Map<String, dynamic>) {
           await _offlineService.cacheData(cacheKey, result);
         }
-        
+
         return result;
       } catch (e) {
         // If API fails but we have cache, return cached data
@@ -264,7 +269,7 @@ mixin OfflineCapable {
     if (cachedData != null && fromJson != null) {
       return fromJson(cachedData);
     }
-    
+
     throw Exception('No internet connection and no cached data available');
   }
 
@@ -288,4 +293,4 @@ mixin OfflineCapable {
     // This would be implemented by the specific service
     throw UnimplementedError('Subclass must implement _executeOperation');
   }
-} 
+}

@@ -60,19 +60,23 @@ class MoodState {
   List<MoodModel> get weekMoods {
     final now = DateTime.now();
     final weekStart = now.subtract(Duration(days: now.weekday - 1));
-    return moodEntries.where((mood) {
-      return mood.timestamp.isAfter(weekStart.subtract(const Duration(days: 1)));
-    }).toList()
-      ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    final moods = moodEntries.where((mood) {
+      return mood.timestamp
+          .isAfter(weekStart.subtract(const Duration(days: 1)));
+    }).toList();
+    moods.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    return moods;
   }
 
   List<MoodModel> get monthMoods {
     final now = DateTime.now();
     final monthStart = DateTime(now.year, now.month, 1);
-    return moodEntries.where((mood) {
-      return mood.timestamp.isAfter(monthStart.subtract(const Duration(days: 1)));
-    }).toList()
-      ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    final moods = moodEntries.where((mood) {
+      return mood.timestamp
+          .isAfter(monthStart.subtract(const Duration(days: 1)));
+    }).toList();
+    moods.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    return moods;
   }
 
   double get averageMoodLevel {
@@ -89,7 +93,8 @@ class MoodState {
 class MoodNotifier extends StateNotifier<MoodState> {
   final MoodService _moodService;
 
-  MoodNotifier(this._moodService) : super(MoodState(selectedDate: DateTime.now())) {
+  MoodNotifier(this._moodService)
+      : super(MoodState(selectedDate: DateTime.now())) {
     loadMoodEntries();
     loadStats();
     loadInsights();
@@ -174,13 +179,14 @@ class MoodNotifier extends StateNotifier<MoodState> {
       }).toList();
 
       state = state.copyWith(moodEntries: updatedMoods);
-      
+
       // Reload stats and insights
       await loadStats();
       await loadInsights();
     } catch (e) {
       // Remove temporary mood on error
-      final updatedMoods = state.moodEntries.where((m) => m.userId != 'temp').toList();
+      final updatedMoods =
+          state.moodEntries.where((m) => m.userId != 'temp').toList();
       state = state.copyWith(
         moodEntries: updatedMoods,
         error: e.toString(),
@@ -209,7 +215,7 @@ class MoodNotifier extends StateNotifier<MoodState> {
       }).toList();
 
       state = state.copyWith(moodEntries: updatedMoods);
-      
+
       // Reload stats and insights
       await loadStats();
       await loadInsights();
@@ -221,10 +227,11 @@ class MoodNotifier extends StateNotifier<MoodState> {
   Future<void> deleteMoodEntry(String moodId) async {
     try {
       await _moodService.deleteMoodEntry(moodId);
-      
-      final updatedMoods = state.moodEntries.where((m) => m.id != moodId).toList();
+
+      final updatedMoods =
+          state.moodEntries.where((m) => m.id != moodId).toList();
       state = state.copyWith(moodEntries: updatedMoods);
-      
+
       // Reload stats and insights
       await loadStats();
       await loadInsights();
@@ -245,4 +252,4 @@ class MoodNotifier extends StateNotifier<MoodState> {
 final moodProvider = StateNotifierProvider<MoodNotifier, MoodState>((ref) {
   final moodService = ref.watch(moodServiceProvider);
   return MoodNotifier(moodService);
-}); 
+});

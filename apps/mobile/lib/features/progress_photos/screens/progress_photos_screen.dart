@@ -13,7 +13,8 @@ class ProgressPhotosScreen extends ConsumerStatefulWidget {
   const ProgressPhotosScreen({super.key});
 
   @override
-  ConsumerState<ProgressPhotosScreen> createState() => _ProgressPhotosScreenState();
+  ConsumerState<ProgressPhotosScreen> createState() =>
+      _ProgressPhotosScreenState();
 }
 
 class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
@@ -176,11 +177,12 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
         source: ImageSource.camera,
         imageQuality: 80,
       );
-      
+
       if (photo != null) {
         _showPhotoDetailsDialog(photo.path);
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error taking photo: $e')),
       );
@@ -193,11 +195,12 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
         source: ImageSource.gallery,
         imageQuality: 80,
       );
-      
+
       if (photo != null) {
         _showPhotoDetailsDialog(photo.path);
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error picking photo: $e')),
       );
@@ -208,7 +211,7 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
     final titleController = TextEditingController();
     final notesController = TextEditingController();
     String selectedCategory = 'General';
-    
+
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -230,7 +233,7 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
                 ),
               ),
               const SizedBox(height: UIConstants.spacingMD),
-              
+
               // Title
               TextField(
                 controller: titleController,
@@ -240,15 +243,21 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
                 ),
               ),
               const SizedBox(height: UIConstants.spacingMD),
-              
+
               // Category
               DropdownButtonFormField<String>(
-                value: selectedCategory,
+                initialValue: selectedCategory,
                 decoration: const InputDecoration(
                   labelText: 'Category',
                   border: OutlineInputBorder(),
                 ),
-                items: ['General', 'Fitness', 'Weight Loss', 'Muscle Gain', 'Health']
+                items: [
+                  'General',
+                  'Fitness',
+                  'Weight Loss',
+                  'Muscle Gain',
+                  'Health'
+                ]
                     .map((category) => DropdownMenuItem(
                           value: category,
                           child: Text(category),
@@ -261,7 +270,7 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
                 },
               ),
               const SizedBox(height: UIConstants.spacingMD),
-              
+
               // Notes
               TextField(
                 controller: notesController,
@@ -296,13 +305,14 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
     );
   }
 
-  void _savePhoto(String imagePath, String title, String category, String notes) {
+  void _savePhoto(
+      String imagePath, String title, String category, String notes) {
     ref.read(progressPhotosProvider.notifier).addPhoto(
-      imagePath: imagePath,
-      title: title.isEmpty ? null : title,
-      category: category,
-      notes: notes.isEmpty ? null : notes,
-    );
+          imagePath: imagePath,
+          title: title.isEmpty ? null : title,
+          category: category,
+          notes: notes.isEmpty ? null : notes,
+        );
   }
 
   void _viewPhoto(ProgressPhoto photo) {
@@ -504,9 +514,9 @@ class _CompareViewState extends State<_CompareView> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: UIConstants.spacingLG),
-          
+
           // Comparison view
           if (_beforePhoto != null && _afterPhoto != null) ...[
             Expanded(
@@ -579,9 +589,10 @@ class _PhotoCard extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.1),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -674,10 +685,12 @@ class _TimelineItem extends StatelessWidget {
                     ),
                     const SizedBox(height: UIConstants.spacingXS),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(UIConstants.radiusMD),
+                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                        borderRadius:
+                            BorderRadius.circular(UIConstants.radiusMD),
                       ),
                       child: Text(
                         photo.category,
@@ -859,7 +872,8 @@ class _ComparisonView extends StatelessWidget {
                     const SizedBox(height: UIConstants.spacingSM),
                     Expanded(
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(UIConstants.radiusMD),
+                        borderRadius:
+                            BorderRadius.circular(UIConstants.radiusMD),
                         child: Image.file(
                           File(beforePhoto.imagePath),
                           fit: BoxFit.cover,
@@ -892,7 +906,8 @@ class _ComparisonView extends StatelessWidget {
                     const SizedBox(height: UIConstants.spacingSM),
                     Expanded(
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(UIConstants.radiusMD),
+                        borderRadius:
+                            BorderRadius.circular(UIConstants.radiusMD),
                         child: Image.file(
                           File(afterPhoto.imagePath),
                           fit: BoxFit.cover,
@@ -939,12 +954,13 @@ class _ProgressStats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final daysDifference = afterPhoto.takenAt.difference(beforePhoto.takenAt).inDays;
+    final daysDifference =
+        afterPhoto.takenAt.difference(beforePhoto.takenAt).inDays;
 
     return Container(
       padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withOpacity(0.1),
+        color: AppTheme.primaryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(UIConstants.radiusLG),
       ),
       child: Column(
@@ -1042,11 +1058,15 @@ class _PhotoDetailScreen extends StatelessWidget {
             onPressed: () async {
               try {
                 final box = context.findRenderObject() as RenderBox?;
-                await Share.shareXFiles(
-                  [XFile(photo.imagePath)],
-                  text: 'Progress photo taken on ${photo.createdAt != null ? _formatDate(photo.createdAt!) : 'Unknown date'}\n${photo.notes?.isNotEmpty == true ? photo.notes! : 'My UpCoach progress journey 💪'}',
-                  subject: 'UpCoach Progress Photo',
-                  sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+                await SharePlus.instance.share(
+                  ShareParams(
+                    files: [XFile(photo.imagePath)],
+                    text:
+                        'Progress photo taken on ${photo.createdAt != null ? _formatDate(photo.createdAt!) : 'Unknown date'}\n${photo.notes?.isNotEmpty == true ? photo.notes! : 'My UpCoach progress journey 💪'}',
+                    subject: 'UpCoach Progress Photo',
+                    sharePositionOrigin:
+                        box!.localToGlobal(Offset.zero) & box.size,
+                  ),
                 );
               } catch (e) {
                 if (context.mounted) {
@@ -1065,7 +1085,8 @@ class _PhotoDetailScreen extends StatelessWidget {
                 builder: (BuildContext context) {
                   return AlertDialog(
                     title: const Text('Delete Photo'),
-                    content: const Text('Are you sure you want to delete this progress photo? This action cannot be undone.'),
+                    content: const Text(
+                        'Are you sure you want to delete this progress photo? This action cannot be undone.'),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(false),
@@ -1073,7 +1094,8 @@ class _PhotoDetailScreen extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(true),
-                        style: TextButton.styleFrom(foregroundColor: Colors.red),
+                        style:
+                            TextButton.styleFrom(foregroundColor: Colors.red),
                         child: const Text('Delete'),
                       ),
                     ],
@@ -1092,19 +1114,16 @@ class _PhotoDetailScreen extends StatelessWidget {
                   // Remove from state management (if using Riverpod)
                   // This would need to be implemented in the provider
 
+                  if (!context.mounted) return;
                   Navigator.of(context).pop(); // Go back to main screen
-
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Photo deleted successfully')),
-                    );
-                  }
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Photo deleted successfully')),
+                  );
                 } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error deleting photo: $e')),
-                    );
-                  }
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error deleting photo: $e')),
+                  );
                 }
               }
             },
@@ -1149,7 +1168,8 @@ class _PhotoDetailScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: UIConstants.spacingSM),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor,
                     borderRadius: BorderRadius.circular(UIConstants.radiusMD),
@@ -1184,4 +1204,4 @@ class _PhotoDetailScreen extends StatelessWidget {
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year} at ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
-} 
+}

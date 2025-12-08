@@ -8,10 +8,11 @@ import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
-  const ForgotPasswordScreen({Key? key}) : super(key: key);
+  const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
@@ -34,14 +35,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     try {
       final authNotifier = ref.read(authProvider.notifier);
       await authNotifier.sendPasswordResetEmail(_emailController.text);
-      
+
       setState(() {
         _emailSent = true;
         _isLoading = false;
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -75,7 +76,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryColor.withOpacity(0.1),
+                    color: AppColors.primaryColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(

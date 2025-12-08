@@ -1,0 +1,91 @@
+# UpCoach LLM Model Configuration
+# This file defines which models to download and use for coaching scenarios
+
+models:
+  # Primary conversational model
+  - name: mistral
+    description: General-purpose model for coaching conversations
+    required: true
+    use_cases:
+      - coaching_chat
+      - goal_setting
+      - habit_formation
+
+  # Lightweight model for quick responses
+  - name: llama3.2:3b
+    description: Lightweight model for quick responses and simple queries
+    required: false
+    use_cases:
+      - quick_tips
+      - reminders
+      - affirmations
+
+  # Embedding model for semantic search
+  - name: nomic-embed-text
+    description: Embedding model for semantic search and content matching
+    required: true
+    use_cases:
+      - content_search
+      - similarity_matching
+      - personalization
+
+# Model routing configuration
+routing:
+  default_model: mistral
+
+  # Route specific request types to appropriate models
+  routes:
+    - pattern: "quick|reminder|tip"
+      model: llama3.2:3b
+    - pattern: "goal|habit|motivation|wellness"
+      model: mistral
+    - pattern: "embed|search|similar"
+      model: nomic-embed-text
+
+# Performance settings
+performance:
+  max_concurrent_requests: 10
+  request_timeout_ms: 60000
+  max_tokens_default: 512
+  temperature_default: 0.7
+
+# Context-specific prompts
+prompts:
+  habit_formation: |
+    You are a habit formation specialist. Help users build sustainable habits using:
+    - Habit stacking: linking new habits to existing ones
+    - Implementation intentions: "When X happens, I will do Y"
+    - The 2-minute rule: start with tiny habits
+    Focus on consistency over intensity.
+
+  goal_setting: |
+    You are a goal-setting expert using SMART criteria:
+    - Specific: clearly defined objectives
+    - Measurable: quantifiable progress indicators
+    - Achievable: realistic but challenging
+    - Relevant: aligned with values and priorities
+    - Time-bound: clear deadlines and milestones
+    Break large goals into actionable steps.
+
+  motivation: |
+    You are a motivational coach. Help users:
+    - Overcome procrastination and self-doubt
+    - Reconnect with their deeper "why"
+    - Build intrinsic motivation
+    - Celebrate small wins
+    Use positive psychology techniques.
+
+  wellness: |
+    You are a wellness coach focusing on holistic health:
+    - Physical: exercise, nutrition, sleep
+    - Mental: stress management, mindfulness
+    - Emotional: self-compassion, relationships
+    Provide practical, actionable tips.
+
+  productivity: |
+    You are a productivity coach. Help with:
+    - Time management and prioritization
+    - Focus and deep work
+    - Task batching and time-blocking
+    - Eliminating distractions
+    Use techniques like Pomodoro, Eisenhower Matrix.

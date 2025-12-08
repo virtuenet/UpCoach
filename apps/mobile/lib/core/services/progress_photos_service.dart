@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,7 +11,7 @@ class ProgressPhotosService {
   Future<List<ProgressPhoto>> getAllPhotos() async {
     final prefs = await SharedPreferences.getInstance();
     final photosJson = prefs.getStringList(_photosKey) ?? [];
-    
+
     return photosJson.map((jsonString) {
       final json = jsonDecode(jsonString) as Map<String, dynamic>;
       return ProgressPhoto.fromJson(json);
@@ -19,17 +20,17 @@ class ProgressPhotosService {
 
   Future<ProgressPhoto> addPhoto(ProgressPhoto photo) async {
     final existingPhotos = await getAllPhotos();
-    
+
     existingPhotos.add(photo);
     await _savePhotos(existingPhotos);
-    
+
     return photo;
   }
 
   Future<void> updatePhoto(ProgressPhoto photo) async {
     final existingPhotos = await getAllPhotos();
     final index = existingPhotos.indexWhere((p) => p.id == photo.id);
-    
+
     if (index != -1) {
       existingPhotos[index] = photo.copyWith(updatedAt: DateTime.now());
       await _savePhotos(existingPhotos);
@@ -39,7 +40,7 @@ class ProgressPhotosService {
   Future<void> deletePhoto(String photoId) async {
     final existingPhotos = await getAllPhotos();
     final photo = existingPhotos.firstWhere((p) => p.id == photoId);
-    
+
     // Delete the actual image file
     try {
       final file = File(photo.imagePath);
@@ -47,9 +48,9 @@ class ProgressPhotosService {
         await file.delete();
       }
     } catch (e) {
-      print('Error deleting image file: $e');
+      debugPrint('Error deleting image file: $e');
     }
-    
+
     // Remove from list
     existingPhotos.removeWhere((p) => p.id == photoId);
     await _savePhotos(existingPhotos);
@@ -69,7 +70,8 @@ class ProgressPhotosService {
     return allPhotos.where((p) => p.category == category).toList();
   }
 
-  Future<List<ProgressPhoto>> getPhotosByDateRange(DateTime start, DateTime end) async {
+  Future<List<ProgressPhoto>> getPhotosByDateRange(
+      DateTime start, DateTime end) async {
     final allPhotos = await getAllPhotos();
     return allPhotos.where((p) {
       return p.takenAt.isAfter(start) && p.takenAt.isBefore(end);
@@ -78,7 +80,7 @@ class ProgressPhotosService {
 
   Future<Map<String, dynamic>> exportPhotos() async {
     final photos = await getAllPhotos();
-    
+
     return {
       'photos': photos.map((p) => p.toJson()).toList(),
       'exportedAt': DateTime.now().toIso8601String(),
@@ -101,7 +103,8 @@ class ProgressPhotosService {
 
   Future<void> _savePhotos(List<ProgressPhoto> photos) async {
     final prefs = await SharedPreferences.getInstance();
-    final photosJson = photos.map((photo) => jsonEncode(photo.toJson())).toList();
+    final photosJson =
+        photos.map((photo) => jsonEncode(photo.toJson())).toList();
     await prefs.setStringList(_photosKey, photosJson);
   }
 }
@@ -109,4 +112,4 @@ class ProgressPhotosService {
 // Provider
 final progressPhotosServiceProvider = Provider<ProgressPhotosService>((ref) {
   return ProgressPhotosService();
-}); 
+});

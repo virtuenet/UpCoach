@@ -8,10 +8,10 @@ class ThreadListItem extends StatelessWidget {
   final VoidCallback? onTap;
 
   const ThreadListItem({
-    Key? key,
+    super.key,
     required this.thread,
     this.onTap,
-  }) : super(key: key);
+  });
 
   String _formatTimeAgo(DateTime dateTime) {
     final now = DateTime.now();
@@ -91,7 +91,8 @@ class ThreadListItem extends StatelessWidget {
                 Wrap(
                   spacing: 6,
                   runSpacing: 4,
-                  children: thread.tags.take(3).map((tag) => _buildTag(tag)).toList(),
+                  children:
+                      thread.tags.take(3).map((tag) => _buildTag(tag)).toList(),
                 ),
               ],
               const SizedBox(height: 12),
@@ -130,7 +131,8 @@ class ThreadListItem extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  _buildStat(Icons.remove_red_eye_outlined, '${thread.viewCount}'),
+                  _buildStat(
+                      Icons.remove_red_eye_outlined, '${thread.viewCount}'),
                   const SizedBox(width: 12),
                   _buildStat(Icons.chat_bubble_outline, '${thread.replyCount}'),
                 ],
@@ -146,7 +148,7 @@ class ThreadListItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.1),
+        color: AppColors.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(

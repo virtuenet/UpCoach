@@ -49,7 +49,8 @@ class TwoFactorAuthService {
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
-        throw Exception('Failed to generate TOTP secret: ${response.reasonPhrase}');
+        throw Exception(
+            'Failed to generate TOTP secret: ${response.reasonPhrase}');
       }
     } catch (e) {
       throw Exception('Error generating TOTP secret: $e');
@@ -143,7 +144,8 @@ class TwoFactorAuthService {
         final data = json.decode(response.body);
         return List<String>.from(data['codes']);
       } else {
-        throw Exception('Failed to generate backup codes: ${response.reasonPhrase}');
+        throw Exception(
+            'Failed to generate backup codes: ${response.reasonPhrase}');
       }
     } catch (e) {
       throw Exception('Error generating backup codes: $e');
@@ -169,7 +171,8 @@ class TwoFactorAuthService {
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to add trusted device: ${response.reasonPhrase}');
+        throw Exception(
+            'Failed to add trusted device: ${response.reasonPhrase}');
       }
     } catch (e) {
       throw Exception('Error adding trusted device: $e');
@@ -194,7 +197,8 @@ class TwoFactorAuthService {
         final data = json.decode(response.body);
         return List<Map<String, dynamic>>.from(data['devices']);
       } else {
-        throw Exception('Failed to get trusted devices: ${response.reasonPhrase}');
+        throw Exception(
+            'Failed to get trusted devices: ${response.reasonPhrase}');
       }
     } catch (e) {
       throw Exception('Error getting trusted devices: $e');
@@ -216,7 +220,8 @@ class TwoFactorAuthService {
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to remove trusted device: ${response.reasonPhrase}');
+        throw Exception(
+            'Failed to remove trusted device: ${response.reasonPhrase}');
       }
     } catch (e) {
       throw Exception('Error removing trusted device: $e');

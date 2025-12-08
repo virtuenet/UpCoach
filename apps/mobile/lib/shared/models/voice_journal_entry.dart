@@ -37,4 +37,4 @@ class VoiceJournalState with _$VoiceJournalState {
     String? error,
     VoiceJournalEntry? currentEntry,
   }) = _VoiceJournalState;
-} 
+}

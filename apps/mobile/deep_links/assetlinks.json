@@ -1,0 +1,38 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.upcoach.upcoach_mobile",
+      "sha256_cert_fingerprints": [
+        "SHA256_FINGERPRINT_PLACEHOLDER"
+      ]
+    }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.upcoach.upcoach_mobile.dev",
+      "sha256_cert_fingerprints": [
+        "SHA256_FINGERPRINT_DEV_PLACEHOLDER"
+      ]
+    }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.upcoach.upcoach_mobile.staging",
+      "sha256_cert_fingerprints": [
+        "SHA256_FINGERPRINT_STAGING_PLACEHOLDER"
+      ]
+    }
+  }
+]

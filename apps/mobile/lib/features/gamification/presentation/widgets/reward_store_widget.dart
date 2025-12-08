@@ -10,12 +10,12 @@ class RewardStoreWidget extends StatelessWidget {
   final VoidCallback? onViewAll;
 
   const RewardStoreWidget({
-    Key? key,
+    super.key,
     required this.rewards,
     this.userPoints = 0,
     this.onRewardTap,
     this.onViewAll,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class RewardStoreWidget extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
@@ -102,7 +102,7 @@ class RewardStoreWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: canAfford && isAvailable
-                ? AppColors.primary.withOpacity(0.3)
+                ? AppColors.primary.withValues(alpha: 0.3)
                 : AppColors.gray200,
           ),
         ),
@@ -115,7 +115,7 @@ class RewardStoreWidget extends StatelessWidget {
               height: 60,
               decoration: BoxDecoration(
                 color: isAvailable
-                    ? AppColors.primary.withOpacity(0.1)
+                    ? AppColors.primary.withValues(alpha: 0.1)
                     : AppColors.gray100,
                 borderRadius: BorderRadius.circular(12),
               ),

@@ -1,6 +1,6 @@
-/// Test Helpers and Utilities for Widget Tests
-///
-/// This file provides common utilities, mocks, and helpers for widget testing.
+// Test Helpers and Utilities for Widget Tests
+//
+// This file provides common utilities, mocks, and helpers for widget testing.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -159,11 +159,12 @@ void expectRoutePushed(
   String routeName,
 ) {
   // Verify navigation occurred - simplified check since detailed route matching is complex
-  expect(observer.pushedRoutes.isNotEmpty, isTrue, reason: 'Expected route $routeName to be pushed');
+  expect(observer.pushedRoutes.isNotEmpty, isTrue,
+      reason: 'Expected route $routeName to be pushed');
 }
 
 /// Creates a mock of a common service/repository
-/// Usage: final mockService = createMock<MyService>();
+/// Usage: `final mockService = createMock<MyService>();`
 T createMock<T extends Object>() {
   return Mock() as T;
 }

@@ -47,13 +47,14 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
   // Start recording a new voice journal entry
   Future<bool> startRecording() async {
     if (state.isRecording) return false;
-    
+
     state = state.copyWith(isRecording: true, error: null);
-    
+
     try {
       final success = await _voiceRecordingService.startRecording();
       if (!success) {
-        state = state.copyWith(isRecording: false, error: 'Failed to start recording');
+        state = state.copyWith(
+            isRecording: false, error: 'Failed to start recording');
         return false;
       }
       return true;
@@ -66,11 +67,12 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
   // Stop recording and save entry
   Future<VoiceJournalEntry?> stopRecording({required String title}) async {
     if (!state.isRecording) return null;
-    
+
     try {
       final audioPath = await _voiceRecordingService.stopRecording();
       if (audioPath == null) {
-        state = state.copyWith(isRecording: false, error: 'Failed to save recording');
+        state = state.copyWith(
+            isRecording: false, error: 'Failed to save recording');
         return null;
       }
 
@@ -82,7 +84,9 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
       // Create voice journal entry
       final entry = VoiceJournalEntry(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        title: title.isEmpty ? 'Voice Journal ${DateTime.now().day}/${DateTime.now().month}' : title,
+        title: title.isEmpty
+            ? 'Voice Journal ${DateTime.now().day}/${DateTime.now().month}'
+            : title,
         audioFilePath: audioPath,
         createdAt: DateTime.now(),
         durationSeconds: duration.inSeconds,
@@ -101,7 +105,8 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
       final saved = await _storageService.saveEntry(entry);
       if (!saved) {
         // If save failed, remove from state and show error
-        final revertedEntries = state.entries.where((e) => e.id != entry.id).toList();
+        final revertedEntries =
+            state.entries.where((e) => e.id != entry.id).toList();
         state = state.copyWith(
           entries: revertedEntries,
           error: 'Failed to save voice journal entry to storage',
@@ -119,7 +124,7 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
   // Cancel current recording
   Future<void> cancelRecording() async {
     if (!state.isRecording) return;
-    
+
     await _voiceRecordingService.cancelRecording();
     state = state.copyWith(isRecording: false, currentEntry: null);
   }
@@ -145,7 +150,8 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
 
     try {
       final entry = state.entries[entryIndex];
-      final transcriptionResult = await _speechToTextService.transcribeAudioFile(
+      final transcriptionResult =
+          await _speechToTextService.transcribeAudioFile(
         entry.audioFilePath,
       );
 
@@ -199,14 +205,14 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
       if (entryIndex == -1) return;
 
       final entry = state.entries[entryIndex];
-      
+
       // Delete audio file
       await _voiceRecordingService.deleteRecording(entry.audioFilePath);
-      
+
       // Remove from entries list
       final updatedEntries = [...state.entries];
       updatedEntries.removeAt(entryIndex);
-      
+
       state = state.copyWith(entries: updatedEntries);
 
       // Delete from local storage
@@ -261,13 +267,15 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
     if (query.isEmpty) return state.entries;
 
     return state.entries.where((entry) {
-      final titleMatch = entry.title.toLowerCase().contains(query.toLowerCase());
+      final titleMatch =
+          entry.title.toLowerCase().contains(query.toLowerCase());
       final transcriptionMatch = entry.transcriptionText
-          ?.toLowerCase()
-          .contains(query.toLowerCase()) ?? false;
-      final tagsMatch = entry.tags.any((tag) => 
-          tag.toLowerCase().contains(query.toLowerCase()));
-      
+              ?.toLowerCase()
+              .contains(query.toLowerCase()) ??
+          false;
+      final tagsMatch = entry.tags
+          .any((tag) => tag.toLowerCase().contains(query.toLowerCase()));
+
       return titleMatch || transcriptionMatch || tagsMatch;
     }).toList();
   }
@@ -282,9 +290,10 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
   // Get statistics
   Map<String, dynamic> getStatistics() {
     final totalEntries = state.entries.length;
-    final totalDuration = state.entries.fold<int>(
-      0, (sum, entry) => sum + entry.durationSeconds);
-    final transcribedEntries = state.entries.where((e) => e.isTranscribed).length;
+    final totalDuration =
+        state.entries.fold<int>(0, (sum, entry) => sum + entry.durationSeconds);
+    final transcribedEntries =
+        state.entries.where((e) => e.isTranscribed).length;
     final favoriteEntries = state.entries.where((e) => e.isFavorite).length;
 
     return {
@@ -293,8 +302,10 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
       'transcribedEntries': transcribedEntries,
       'favoriteEntries': favoriteEntries,
       'averageConfidence': transcribedEntries > 0
-          ? state.entries.where((e) => e.isTranscribed).fold<double>(
-              0, (sum, entry) => sum + entry.confidence) / transcribedEntries
+          ? state.entries
+                  .where((e) => e.isTranscribed)
+                  .fold<double>(0, (sum, entry) => sum + entry.confidence) /
+              transcribedEntries
           : 0.0,
     };
   }
@@ -313,7 +324,8 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
     try {
       return await _storageService.exportToJson();
     } catch (e) {
-      state = state.copyWith(error: 'Failed to export entries: ${e.toString()}');
+      state =
+          state.copyWith(error: 'Failed to export entries: ${e.toString()}');
       return {};
     }
   }
@@ -329,7 +341,8 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
       }
       return false;
     } catch (e) {
-      state = state.copyWith(error: 'Failed to import entries: ${e.toString()}');
+      state =
+          state.copyWith(error: 'Failed to import entries: ${e.toString()}');
       return false;
     }
   }
@@ -350,6 +363,7 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
   }
 
   // Close storage service
+  @override
   Future<void> dispose() async {
     await _storageService.close();
     super.dispose();
@@ -357,9 +371,11 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
 }
 
 // Provider
-final voiceJournalProvider = StateNotifierProvider<VoiceJournalNotifier, VoiceJournalState>((ref) {
+final voiceJournalProvider =
+    StateNotifierProvider<VoiceJournalNotifier, VoiceJournalState>((ref) {
   final voiceRecordingService = ref.read(voiceRecordingServiceProvider);
   final speechToTextService = ref.read(speechToTextServiceProvider);
   final storageService = ref.read(voiceJournalStorageServiceProvider);
-  return VoiceJournalNotifier(voiceRecordingService, speechToTextService, storageService);
-}); 
+  return VoiceJournalNotifier(
+      voiceRecordingService, speechToTextService, storageService);
+});

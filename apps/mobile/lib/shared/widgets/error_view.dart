@@ -11,14 +11,14 @@ class ErrorView extends StatelessWidget {
   final double iconSize;
 
   const ErrorView({
-    Key? key,
+    super.key,
     this.title,
     this.message,
     this.onRetry,
     this.retryText,
     this.icon = Icons.error_outline,
     this.iconSize = 64,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -82,9 +82,9 @@ class NetworkErrorView extends StatelessWidget {
   final VoidCallback? onRetry;
 
   const NetworkErrorView({
-    Key? key,
+    super.key,
     this.onRetry,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -105,13 +105,13 @@ class EmptyStateView extends StatelessWidget {
   final String? actionText;
 
   const EmptyStateView({
-    Key? key,
+    super.key,
     this.title,
     this.message,
     this.icon = Icons.inbox_outlined,
     this.onAction,
     this.actionText,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -73,7 +73,7 @@ class TaskState {
   }
 
   List<TaskModel> get filteredTasks {
-    return tasks.where((task) {
+    final filtered = tasks.where((task) {
       if (filter.status != null && task.status != filter.status) {
         return false;
       }
@@ -83,43 +83,46 @@ class TaskState {
       if (filter.priority != null && task.priority != filter.priority) {
         return false;
       }
-      if (filter.startDate != null && task.dueDate != null &&
+      if (filter.startDate != null &&
+          task.dueDate != null &&
           task.dueDate!.isBefore(filter.startDate!)) {
         return false;
       }
-      if (filter.endDate != null && task.dueDate != null &&
+      if (filter.endDate != null &&
+          task.dueDate != null &&
           task.dueDate!.isAfter(filter.endDate!)) {
         return false;
       }
       return true;
-    }).toList()
-      ..sort((a, b) {
-        // Sort by priority (urgent first) then by due date
-        if (a.priority != b.priority) {
-          return b.priority.index.compareTo(a.priority.index);
-        }
-        if (a.dueDate != null && b.dueDate != null) {
-          return a.dueDate!.compareTo(b.dueDate!);
-        }
-        if (a.dueDate != null) return -1;
-        if (b.dueDate != null) return 1;
-        return b.createdAt.compareTo(a.createdAt);
-      });
+    }).toList();
+    filtered.sort((a, b) {
+      // Sort by priority (urgent first) then by due date
+      if (a.priority != b.priority) {
+        return b.priority.index.compareTo(a.priority.index);
+      }
+      if (a.dueDate != null && b.dueDate != null) {
+        return a.dueDate!.compareTo(b.dueDate!);
+      }
+      if (a.dueDate != null) return -1;
+      if (b.dueDate != null) return 1;
+      return b.createdAt.compareTo(a.createdAt);
+    });
+    return filtered;
   }
 
-  List<TaskModel> get todayTasks => 
+  List<TaskModel> get todayTasks =>
       filteredTasks.where((task) => task.isDueToday).toList();
-  
-  List<TaskModel> get overdueTasks => 
+
+  List<TaskModel> get overdueTasks =>
       filteredTasks.where((task) => task.isOverdue).toList();
-  
-  List<TaskModel> get upcomingTasks => 
-      filteredTasks.where((task) => 
-          task.dueDate != null && 
+
+  List<TaskModel> get upcomingTasks => filteredTasks
+      .where((task) =>
+          task.dueDate != null &&
           task.dueDate!.isAfter(DateTime.now()) &&
           !task.isDueToday &&
-          !task.isCompleted
-      ).toList();
+          !task.isCompleted)
+      .toList();
 }
 
 // Task Provider
@@ -206,7 +209,8 @@ class TaskNotifier extends StateNotifier<TaskState> {
       await loadStats();
     } catch (e) {
       // Remove temporary task on error
-      final updatedTasks = state.tasks.where((t) => t.userId != 'temp').toList();
+      final updatedTasks =
+          state.tasks.where((t) => t.userId != 'temp').toList();
       state = state.copyWith(
         tasks: updatedTasks,
         error: e.toString(),
@@ -249,7 +253,7 @@ class TaskNotifier extends StateNotifier<TaskState> {
 
   Future<void> toggleTaskCompletion(String taskId) async {
     final task = state.tasks.firstWhere((t) => t.id == taskId);
-    
+
     try {
       final updatedTask = task.isCompleted
           ? await _taskService.uncompleteTask(taskId)
@@ -269,7 +273,7 @@ class TaskNotifier extends StateNotifier<TaskState> {
   Future<void> deleteTask(String taskId) async {
     try {
       await _taskService.deleteTask(taskId);
-      
+
       final updatedTasks = state.tasks.where((t) => t.id != taskId).toList();
       state = state.copyWith(tasks: updatedTasks);
       await loadStats();
@@ -296,4 +300,4 @@ class TaskNotifier extends StateNotifier<TaskState> {
 final taskProvider = StateNotifierProvider<TaskNotifier, TaskState>((ref) {
   final taskService = ref.watch(taskServiceProvider);
   return TaskNotifier(taskService);
-}); 
+});

@@ -1,0 +1,11 @@
+What's New in UpCoach 1.0:
+
+- Introducing On-Device AI for offline coaching
+- Enhanced voice journaling with transcription
+- New gamification system with achievements
+- Improved habit tracking with smart reminders
+- Community forums for peer support
+- Beautiful new dashboard with progress insights
+- Performance improvements and bug fixes
+
+Thank you for choosing UpCoach! We're constantly improving based on your feedback. Rate us 5 stars if you love the app!

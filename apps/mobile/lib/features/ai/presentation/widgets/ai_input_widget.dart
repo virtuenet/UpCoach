@@ -27,10 +27,10 @@ class AIInputWidget extends StatefulWidget {
   final bool isLoading;
 
   const AIInputWidget({
-    Key? key,
+    super.key,
     required this.onSendMessage,
     required this.isLoading,
-  }) : super(key: key);
+  });
 
   @override
   State<AIInputWidget> createState() => _AIInputWidgetState();
@@ -44,7 +44,7 @@ class _AIInputWidgetState extends State<AIInputWidget> {
   bool _hasText = false;
   bool _isListening = false;
   bool _speechAvailable = false;
-  List<AttachmentFile> _attachments = [];
+  final List<AttachmentFile> _attachments = [];
 
   @override
   void initState() {
@@ -109,8 +109,10 @@ class _AIInputWidgetState extends State<AIInputWidget> {
           pauseFor: const Duration(seconds: 3),
         );
       } else {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Microphone permission required for voice input')),
+          const SnackBar(
+              content: Text('Microphone permission required for voice input')),
         );
       }
     }
@@ -138,6 +140,7 @@ class _AIInputWidgetState extends State<AIInputWidget> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error picking files: $e')),
       );
@@ -188,7 +191,7 @@ class _AIInputWidgetState extends State<AIInputWidget> {
         color: AppColors.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -270,53 +273,59 @@ class _AIInputWidgetState extends State<AIInputWidget> {
                 IconButton(
                   icon: const Icon(Icons.attach_file),
                   onPressed: widget.isLoading ? null : _pickFile,
-                  color: _attachments.isNotEmpty ? AppColors.primary : AppColors.textSecondary,
+                  color: _attachments.isNotEmpty
+                      ? AppColors.primary
+                      : AppColors.textSecondary,
                 ),
                 Expanded(
-              child: TextField(
-                controller: _controller,
-                focusNode: _focusNode,
-                enabled: !widget.isLoading,
-                maxLines: null,
-                textInputAction: TextInputAction.send,
-                onSubmitted: (_) => _sendMessage(),
-                decoration: InputDecoration(
-                  hintText: 'Ask your AI coach...',
-                  hintStyle: TextStyle(color: AppColors.textSecondary),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: AppColors.background,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
+                  child: TextField(
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    enabled: !widget.isLoading,
+                    maxLines: null,
+                    textInputAction: TextInputAction.send,
+                    onSubmitted: (_) => _sendMessage(),
+                    decoration: InputDecoration(
+                      hintText: 'Ask your AI coach...',
+                      hintStyle: TextStyle(color: AppColors.textSecondary),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: AppColors.background,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: UIConstants.spacingSM),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              child: IconButton(
-                icon: Icon(
-                  _hasText
-                      ? Icons.send
-                      : (_isListening ? Icons.mic_off : Icons.mic),
-                  color: widget.isLoading
-                      ? AppColors.textSecondary
-                      : (_hasText || _isListening ? AppColors.primary : AppColors.textSecondary),
+                const SizedBox(width: UIConstants.spacingSM),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  child: IconButton(
+                    icon: Icon(
+                      _hasText
+                          ? Icons.send
+                          : (_isListening ? Icons.mic_off : Icons.mic),
+                      color: widget.isLoading
+                          ? AppColors.textSecondary
+                          : (_hasText || _isListening
+                              ? AppColors.primary
+                              : AppColors.textSecondary),
+                    ),
+                    onPressed: widget.isLoading
+                        ? null
+                        : () {
+                            if (_hasText) {
+                              _sendMessage();
+                            } else {
+                              _toggleListening();
+                            }
+                          },
+                  ),
                 ),
-                onPressed: widget.isLoading ? null : () {
-                  if (_hasText) {
-                    _sendMessage();
-                  } else {
-                    _toggleListening();
-                  }
-                },
-              ),
-            ),
               ],
             ),
           ],

@@ -9,12 +9,14 @@ class RealtimeService {
     _channel ??= client.channel('events');
 
     // Subscribe to broadcast events using Supabase 2.x API
-    _channel!.onBroadcast(
-      event: 'goals_updated',
-      callback: (payload) {
-        // Handle goals updates, trigger UI refresh as needed
-      },
-    ).subscribe();
+    _channel!
+        .onBroadcast(
+          event: 'goals_updated',
+          callback: (payload) {
+            // Handle goals updates, trigger UI refresh as needed
+          },
+        )
+        .subscribe();
   }
 
   Future<void> dispose() async {
@@ -24,5 +26,3 @@ class RealtimeService {
     }
   }
 }
-
-

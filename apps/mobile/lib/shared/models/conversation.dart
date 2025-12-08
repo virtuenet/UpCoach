@@ -86,9 +86,9 @@ class Conversation extends Equatable {
   }
 
   ChatMessage? get lastMessage => messages.isNotEmpty ? messages.last : null;
-  
+
   int get messageCount => messages.length;
-  
+
   bool get isEmpty => messages.isEmpty;
 
   @override
@@ -101,4 +101,4 @@ class Conversation extends Equatable {
         updatedAt,
         metadata,
       ];
-} 
+}

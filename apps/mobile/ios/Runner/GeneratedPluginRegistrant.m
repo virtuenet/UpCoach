@@ -6,10 +6,22 @@
 
 #import "GeneratedPluginRegistrant.h"
 
+#if __has_include(<agora_rtc_engine/AgoraRtcNgPlugin.h>)
+#import <agora_rtc_engine/AgoraRtcNgPlugin.h>
+#else
+@import agora_rtc_engine;
+#endif
+
 #if __has_include(<app_links/AppLinksIosPlugin.h>)
 #import <app_links/AppLinksIosPlugin.h>
 #else
 @import app_links;
+#endif
+
+#if __has_include(<app_settings/AppSettingsPlugin.h>)
+#import <app_settings/AppSettingsPlugin.h>
+#else
+@import app_settings;
 #endif
 
 #if __has_include(<audio_session/AudioSessionPlugin.h>)
@@ -90,6 +102,12 @@
 @import firebase_messaging;
 #endif
 
+#if __has_include(<firebase_performance/FLTFirebasePerformancePlugin.h>)
+#import <firebase_performance/FLTFirebasePerformancePlugin.h>
+#else
+@import firebase_performance;
+#endif
+
 #if __has_include(<flutter_image_compress_common/ImageCompressPlugin.h>)
 #import <flutter_image_compress_common/ImageCompressPlugin.h>
 #else
@@ -100,6 +118,12 @@
 #import <flutter_local_notifications/FlutterLocalNotificationsPlugin.h>
 #else
 @import flutter_local_notifications;
+#endif
+
+#if __has_include(<flutter_native_splash/FlutterNativeSplashPlugin.h>)
+#import <flutter_native_splash/FlutterNativeSplashPlugin.h>
+#else
+@import flutter_native_splash;
 #endif
 
 #if __has_include(<flutter_secure_storage_darwin/FlutterSecureStorageDarwinPlugin.h>)
@@ -136,6 +160,12 @@
 #import <integration_test/IntegrationTestPlugin.h>
 #else
 @import integration_test;
+#endif
+
+#if __has_include(<iris_method_channel/IrisMethodChannelPlugin.h>)
+#import <iris_method_channel/IrisMethodChannelPlugin.h>
+#else
+@import iris_method_channel;
 #endif
 
 #if __has_include(<just_audio/JustAudioPlugin.h>)
@@ -216,16 +246,36 @@
 @import sqflite_darwin;
 #endif
 
+#if __has_include(<stripe_ios/StripeIosPlugin.h>)
+#import <stripe_ios/StripeIosPlugin.h>
+#else
+@import stripe_ios;
+#endif
+
 #if __has_include(<url_launcher_ios/URLLauncherPlugin.h>)
 #import <url_launcher_ios/URLLauncherPlugin.h>
 #else
 @import url_launcher_ios;
 #endif
 
+#if __has_include(<vibration/VibrationPlugin.h>)
+#import <vibration/VibrationPlugin.h>
+#else
+@import vibration;
+#endif
+
+#if __has_include(<wakelock_plus/WakelockPlusPlugin.h>)
+#import <wakelock_plus/WakelockPlusPlugin.h>
+#else
+@import wakelock_plus;
+#endif
+
 @implementation GeneratedPluginRegistrant
 
 + (void)registerWithRegistry:(NSObject<FlutterPluginRegistry>*)registry {
+  [AgoraRtcNgPlugin registerWithRegistrar:[registry registrarForPlugin:@"AgoraRtcNgPlugin"]];
   [AppLinksIosPlugin registerWithRegistrar:[registry registrarForPlugin:@"AppLinksIosPlugin"]];
+  [AppSettingsPlugin registerWithRegistrar:[registry registrarForPlugin:@"AppSettingsPlugin"]];
   [AudioSessionPlugin registerWithRegistrar:[registry registrarForPlugin:@"AudioSessionPlugin"]];
   [AudioWaveformsPlugin registerWithRegistrar:[registry registrarForPlugin:@"AudioWaveformsPlugin"]];
   [AudioplayersDarwinPlugin registerWithRegistrar:[registry registrarForPlugin:@"AudioplayersDarwinPlugin"]];
@@ -239,14 +289,17 @@
   [FLTFirebaseCorePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseCorePlugin"]];
   [FLTFirebaseCrashlyticsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseCrashlyticsPlugin"]];
   [FLTFirebaseMessagingPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseMessagingPlugin"]];
+  [FLTFirebasePerformancePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebasePerformancePlugin"]];
   [ImageCompressPlugin registerWithRegistrar:[registry registrarForPlugin:@"ImageCompressPlugin"]];
   [FlutterLocalNotificationsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterLocalNotificationsPlugin"]];
+  [FlutterNativeSplashPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterNativeSplashPlugin"]];
   [FlutterSecureStorageDarwinPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterSecureStorageDarwinPlugin"]];
   [FlutterTtsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterTtsPlugin"]];
   [FLTGoogleSignInPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTGoogleSignInPlugin"]];
   [HomeWidgetPlugin registerWithRegistrar:[registry registrarForPlugin:@"HomeWidgetPlugin"]];
   [FLTImagePickerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTImagePickerPlugin"]];
   [IntegrationTestPlugin registerWithRegistrar:[registry registrarForPlugin:@"IntegrationTestPlugin"]];
+  [IrisMethodChannelPlugin registerWithRegistrar:[registry registrarForPlugin:@"IrisMethodChannelPlugin"]];
   [JustAudioPlugin registerWithRegistrar:[registry registrarForPlugin:@"JustAudioPlugin"]];
   [LocalAuthPlugin registerWithRegistrar:[registry registrarForPlugin:@"LocalAuthPlugin"]];
   [FPPPackageInfoPlusPlugin registerWithRegistrar:[registry registrarForPlugin:@"FPPPackageInfoPlusPlugin"]];
@@ -260,7 +313,10 @@
   [SignInWithApplePlugin registerWithRegistrar:[registry registrarForPlugin:@"SignInWithApplePlugin"]];
   [SpeechToTextPlugin registerWithRegistrar:[registry registrarForPlugin:@"SpeechToTextPlugin"]];
   [SqflitePlugin registerWithRegistrar:[registry registrarForPlugin:@"SqflitePlugin"]];
+  [StripeIosPlugin registerWithRegistrar:[registry registrarForPlugin:@"StripeIosPlugin"]];
   [URLLauncherPlugin registerWithRegistrar:[registry registrarForPlugin:@"URLLauncherPlugin"]];
+  [VibrationPlugin registerWithRegistrar:[registry registrarForPlugin:@"VibrationPlugin"]];
+  [WakelockPlusPlugin registerWithRegistrar:[registry registrarForPlugin:@"WakelockPlusPlugin"]];
 }
 
 @end

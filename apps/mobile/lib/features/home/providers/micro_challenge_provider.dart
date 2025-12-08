@@ -8,4 +8,3 @@ final microChallengesProvider =
   final service = ref.watch(microChallengeServiceProvider);
   return service.fetchChallenges();
 });
-

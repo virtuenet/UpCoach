@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:upcoach_mobile/shared/constants/ui_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/services/content_service.dart';
 import '../../../shared/models/content_article.dart';
@@ -19,20 +18,21 @@ final savedArticlesProvider = FutureProvider<List<ContentArticle>>((ref) async {
 });
 
 class SavedArticlesScreen extends ConsumerStatefulWidget {
-  const SavedArticlesScreen({Key? key}) : super(key: key);
+  const SavedArticlesScreen({super.key});
 
   @override
-  ConsumerState<SavedArticlesScreen> createState() => _SavedArticlesScreenState();
+  ConsumerState<SavedArticlesScreen> createState() =>
+      _SavedArticlesScreenState();
 }
 
 class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
   String _searchQuery = '';
   String _selectedCategory = 'All';
-  
+
   final List<String> _categories = [
     'All',
     'Health',
-    'Fitness', 
+    'Fitness',
     'Nutrition',
     'Mindfulness',
     'Recovery',
@@ -41,23 +41,31 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
 
   List<ContentArticle> _filterArticles(List<ContentArticle> articles) {
     var filtered = articles;
-    
+
     // Filter by category
     if (_selectedCategory != 'All') {
-      filtered = filtered.where((article) => 
-        article.category.name.toLowerCase() == _selectedCategory.toLowerCase()
-      ).toList();
+      filtered = filtered
+          .where((article) =>
+              article.category.name.toLowerCase() ==
+              _selectedCategory.toLowerCase())
+          .toList();
     }
-    
+
     // Filter by search query
     if (_searchQuery.isNotEmpty) {
-      filtered = filtered.where((article) =>
-        article.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-        article.summary.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-        article.tags.any((tag) => tag.toLowerCase().contains(_searchQuery.toLowerCase()))
-      ).toList();
+      filtered = filtered
+          .where((article) =>
+              article.title
+                  .toLowerCase()
+                  .contains(_searchQuery.toLowerCase()) ||
+              article.summary
+                  .toLowerCase()
+                  .contains(_searchQuery.toLowerCase()) ||
+              article.tags.any((tag) =>
+                  tag.toLowerCase().contains(_searchQuery.toLowerCase())))
+          .toList();
     }
-    
+
     return filtered;
   }
 
@@ -84,8 +92,8 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
       try {
         final contentService = ref.read(contentServiceProvider);
         await contentService.toggleSaveArticle(article.id);
-        ref.refresh(savedArticlesProvider);
-        
+        ref.invalidate(savedArticlesProvider);
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Article removed from saved')),
@@ -114,11 +122,11 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
         loading: () => const LoadingIndicator(),
         error: (error, stackTrace) => ErrorView(
           message: error.toString(),
-          onRetry: () => ref.refresh(savedArticlesProvider),
+          onRetry: () => ref.invalidate(savedArticlesProvider),
         ),
         data: (articles) {
           final filteredArticles = _filterArticles(articles);
-          
+
           return Column(
             children: [
               // Search Bar
@@ -137,15 +145,15 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
                       borderSide: BorderSide.none,
                     ),
                     suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () => setState(() => _searchQuery = ''),
-                        )
-                      : null,
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () => setState(() => _searchQuery = ''),
+                          )
+                        : null,
                   ),
                 ),
               ),
-              
+
               // Category Filter
               Container(
                 height: 48,
@@ -157,7 +165,7 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
                   itemBuilder: (context, index) {
                     final category = _categories[index];
                     final isSelected = category == _selectedCategory;
-                    
+
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: FilterChip(
@@ -169,226 +177,278 @@ class _SavedArticlesScreenState extends ConsumerState<SavedArticlesScreen> {
                         backgroundColor: AppColors.surface,
                         selectedColor: AppColors.primary,
                         labelStyle: TextStyle(
-                          color: isSelected ? Colors.white : AppColors.textSecondary,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          color: isSelected
+                              ? Colors.white
+                              : AppColors.textSecondary,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
                     );
                   },
                 ),
               ),
-              
+
               // Results
               Expanded(
                 child: filteredArticles.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            _searchQuery.isNotEmpty || _selectedCategory != 'All'
-                              ? Icons.search_off
-                              : Icons.bookmark_border,
-                            size: 64,
-                            color: AppColors.textSecondary,
-                          ),
-                          const SizedBox(height: UIConstants.spacingMD),
-                          Text(
-                            _searchQuery.isNotEmpty || _selectedCategory != 'All'
-                              ? 'No articles found'
-                              : 'No saved articles yet',
-                            style: AppTextStyles.h3,
-                          ),
-                          const SizedBox(height: UIConstants.spacingSM),
-                          Text(
-                            _searchQuery.isNotEmpty || _selectedCategory != 'All'
-                              ? 'Try different search terms or filters'
-                              : 'Articles you save will appear here',
-                            style: AppTextStyles.bodySecondary,
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: () async {
-                        ref.refresh(savedArticlesProvider);
-                      },
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(UIConstants.spacingMD),
-                        itemCount: filteredArticles.length,
-                        itemBuilder: (context, index) {
-                          final article = filteredArticles[index];
-                          
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(UIConstants.radiusLG),
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              _searchQuery.isNotEmpty ||
+                                      _selectedCategory != 'All'
+                                  ? Icons.search_off
+                                  : Icons.bookmark_border,
+                              size: 64,
+                              color: AppColors.textSecondary,
                             ),
-                            child: InkWell(
-                              onTap: () {
-                                context.push('/content/article/${article.id}');
-                              },
-                              borderRadius: BorderRadius.circular(UIConstants.radiusLG),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Article Image
-                                  if (article.featuredImage != null)
-                                    ClipRRect(
-                                      borderRadius: const BorderRadius.vertical(
-                                        top: Radius.circular(12),
-                                      ),
-                                      child: AspectRatio(
-                                        aspectRatio: 16 / 9,
-                                        child: CachedNetworkImage(
-                                          imageUrl: article.featuredImage!,
-                                          fit: BoxFit.cover,
-                                          placeholder: (context, url) => Container(
-                                            color: AppColors.surface,
-                                            child: const Center(
-                                              child: CircularProgressIndicator(),
+                            const SizedBox(height: UIConstants.spacingMD),
+                            Text(
+                              _searchQuery.isNotEmpty ||
+                                      _selectedCategory != 'All'
+                                  ? 'No articles found'
+                                  : 'No saved articles yet',
+                              style: AppTextStyles.h3,
+                            ),
+                            const SizedBox(height: UIConstants.spacingSM),
+                            Text(
+                              _searchQuery.isNotEmpty ||
+                                      _selectedCategory != 'All'
+                                  ? 'Try different search terms or filters'
+                                  : 'Articles you save will appear here',
+                              style: AppTextStyles.bodySecondary,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: () async {
+                          ref.invalidate(savedArticlesProvider);
+                        },
+                        child: ListView.builder(
+                          padding: const EdgeInsets.all(UIConstants.spacingMD),
+                          itemCount: filteredArticles.length,
+                          itemBuilder: (context, index) {
+                            final article = filteredArticles[index];
+
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 16),
+                              elevation: 2,
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(UIConstants.radiusLG),
+                              ),
+                              child: InkWell(
+                                onTap: () {
+                                  context
+                                      .push('/content/article/${article.id}');
+                                },
+                                borderRadius:
+                                    BorderRadius.circular(UIConstants.radiusLG),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Article Image
+                                    if (article.featuredImage != null)
+                                      ClipRRect(
+                                        borderRadius:
+                                            const BorderRadius.vertical(
+                                          top: Radius.circular(12),
+                                        ),
+                                        child: AspectRatio(
+                                          aspectRatio: 16 / 9,
+                                          child: CachedNetworkImage(
+                                            imageUrl: article.featuredImage!,
+                                            fit: BoxFit.cover,
+                                            placeholder: (context, url) =>
+                                                Container(
+                                              color: AppColors.surface,
+                                              child: const Center(
+                                                child:
+                                                    CircularProgressIndicator(),
+                                              ),
                                             ),
-                                          ),
-                                          errorWidget: (context, url, error) => Container(
-                                            color: AppColors.surface,
-                                            child: const Icon(
-                                              Icons.image_not_supported,
-                                              color: AppColors.textSecondary,
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    Container(
+                                              color: AppColors.surface,
+                                              child: const Icon(
+                                                Icons.image_not_supported,
+                                                color: AppColors.textSecondary,
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  
-                                  Padding(
-                                    padding: const EdgeInsets.all(UIConstants.spacingMD),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        // Category & Read Time
-                                        Row(
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 12,
-                                                vertical: 4,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: AppColors.primary.withOpacity(0.1),
-                                                borderRadius: BorderRadius.circular(UIConstants.radiusXL),
-                                              ),
-                                              child: Text(
-                                                article.category.name,
-                                                style: TextStyle(
-                                                  color: AppColors.primary,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w600,
+
+                                    Padding(
+                                      padding: const EdgeInsets.all(
+                                          UIConstants.spacingMD),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          // Category & Read Time
+                                          Row(
+                                            children: [
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 12,
+                                                  vertical: 4,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.primary
+                                                      .withValues(alpha: 0.1),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          UIConstants.radiusXL),
+                                                ),
+                                                child: Text(
+                                                  article.category.name,
+                                                  style: TextStyle(
+                                                    color: AppColors.primary,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                            const SizedBox(width: UIConstants.spacingSM),
-                                            Icon(
-                                              Icons.visibility,
-                                              size: 14,
-                                              color: AppColors.textSecondary,
-                                            ),
-                                            const SizedBox(width: UIConstants.spacingXS),
-                                            Text(
-                                              '${article.viewCount} views',
-                                              style: TextStyle(
+                                              const SizedBox(
+                                                  width: UIConstants.spacingSM),
+                                              Icon(
+                                                Icons.visibility,
+                                                size: 14,
                                                 color: AppColors.textSecondary,
-                                                fontSize: 12,
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: UIConstants.spacingMD),
-                                        
-                                        // Title
-                                        Text(
-                                          article.title,
-                                          style: AppTextStyles.h3,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: UIConstants.spacingSM),
-                                        
-                                        // Summary
-                                        Text(
-                                          article.summary,
-                                          style: AppTextStyles.bodySecondary,
-                                          maxLines: 3,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: UIConstants.spacingMD),
-                                        
-                                        // Bottom Row
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            // Author & Date
-                                            Expanded(
-                                              child: Row(
-                                                children: [
-                                                  if (article.author.avatar != null)
-                                                    CircleAvatar(
-                                                      radius: 16,
-                                                      backgroundImage: CachedNetworkImageProvider(
-                                                        article.author.avatar!,
-                                                      ),
-                                                    )
-                                                  else
-                                                    CircleAvatar(
-                                                      radius: 16,
-                                                      backgroundColor: AppColors.primary,
-                                                      child: Text(
-                                                        article.author.name[0].toUpperCase(),
-                                                        style: const TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 12,
+                                              const SizedBox(
+                                                  width: UIConstants.spacingXS),
+                                              Text(
+                                                '${article.viewCount} views',
+                                                style: TextStyle(
+                                                  color:
+                                                      AppColors.textSecondary,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(
+                                              height: UIConstants.spacingMD),
+
+                                          // Title
+                                          Text(
+                                            article.title,
+                                            style: AppTextStyles.h3,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(
+                                              height: UIConstants.spacingSM),
+
+                                          // Summary
+                                          Text(
+                                            article.summary,
+                                            style: AppTextStyles.bodySecondary,
+                                            maxLines: 3,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(
+                                              height: UIConstants.spacingMD),
+
+                                          // Bottom Row
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              // Author & Date
+                                              Expanded(
+                                                child: Row(
+                                                  children: [
+                                                    if (article.author.avatar !=
+                                                        null)
+                                                      CircleAvatar(
+                                                        radius: 16,
+                                                        backgroundImage:
+                                                            CachedNetworkImageProvider(
+                                                          article
+                                                              .author.avatar!,
                                                         ),
-                                                      ),
-                                                    ),
-                                                  const SizedBox(width: UIConstants.spacingSM),
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      children: [
-                                                        Text(
-                                                          article.author.name,
-                                                          style: const TextStyle(
+                                                      )
+                                                    else
+                                                      CircleAvatar(
+                                                        radius: 16,
+                                                        backgroundColor:
+                                                            AppColors.primary,
+                                                        child: Text(
+                                                          article.author.name[0]
+                                                              .toUpperCase(),
+                                                          style:
+                                                              const TextStyle(
+                                                            color: Colors.white,
                                                             fontSize: 12,
-                                                            fontWeight: FontWeight.w600,
-                                                          ),
-                                                          overflow: TextOverflow.ellipsis,
-                                                        ),
-                                                        Text(
-                                                          article.publishedAt != null 
-                                                            ? DateFormat('MMM d, yyyy').format(article.publishedAt!)
-                                                            : DateFormat('MMM d, yyyy').format(article.createdAt),
-                                                          style: TextStyle(
-                                                            fontSize: 11,
-                                                            color: AppColors.textSecondary,
                                                           ),
                                                         ),
-                                                      ],
+                                                      ),
+                                                    const SizedBox(
+                                                        width: UIConstants
+                                                            .spacingSM),
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            article.author.name,
+                                                            style:
+                                                                const TextStyle(
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                            ),
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                          ),
+                                                          Text(
+                                                            article.publishedAt !=
+                                                                    null
+                                                                ? DateFormat(
+                                                                        'MMM d, yyyy')
+                                                                    .format(article
+                                                                        .publishedAt!)
+                                                                : DateFormat(
+                                                                        'MMM d, yyyy')
+                                                                    .format(article
+                                                                        .createdAt),
+                                                            style: TextStyle(
+                                                              fontSize: 11,
+                                                              color: AppColors
+                                                                  .textSecondary,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
-                                                  ),
-                                                ],
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                            
-                                            // Actions
-                                            Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                IconButton(
-                                                  icon: const Icon(Icons.share_outlined),
-                                                  onPressed: () async {
-                                                    try {
-                                                      final String shareText = '''
+
+                                              // Actions
+                                              Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                        Icons.share_outlined),
+                                                    onPressed: () async {
+                                                      try {
+                                                        final String shareText =
+                                                            '''
 ${article.title}
 
 ${article.summary}
@@ -401,43 +461,61 @@ Category: ${article.category.name}
 Saved from UpCoach - Your AI-powered coaching companion 📚
 ''';
 
-                                                      final box = context.findRenderObject() as RenderBox?;
-                                                      await Share.share(
-                                                        shareText,
-                                                        subject: 'Article: ${article.title}',
-                                                        sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
-                                                      );
-                                                    } catch (e) {
-                                                      if (context.mounted) {
-                                                        ScaffoldMessenger.of(context).showSnackBar(
-                                                          SnackBar(content: Text('Error sharing article: $e')),
+                                                        final box = context
+                                                                .findRenderObject()
+                                                            as RenderBox?;
+                                                        await SharePlus.instance
+                                                            .share(
+                                                          ShareParams(
+                                                            text: shareText,
+                                                            subject:
+                                                                'Article: ${article.title}',
+                                                            sharePositionOrigin:
+                                                                box!.localToGlobal(
+                                                                        Offset
+                                                                            .zero) &
+                                                                    box.size,
+                                                          ),
                                                         );
+                                                      } catch (e) {
+                                                        if (context.mounted) {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(
+                                                            SnackBar(
+                                                                content: Text(
+                                                                    'Error sharing article: $e')),
+                                                          );
+                                                        }
                                                       }
-                                                    }
-                                                  },
-                                                  iconSize: 20,
-                                                  color: AppColors.textSecondary,
-                                                ),
-                                                IconButton(
-                                                  icon: const Icon(Icons.bookmark),
-                                                  onPressed: () => _removeFromSaved(article),
-                                                  iconSize: 20,
-                                                  color: AppColors.primary,
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ],
+                                                    },
+                                                    iconSize: 20,
+                                                    color:
+                                                        AppColors.textSecondary,
+                                                  ),
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                        Icons.bookmark),
+                                                    onPressed: () =>
+                                                        _removeFromSaved(
+                                                            article),
+                                                    iconSize: 20,
+                                                    color: AppColors.primary,
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
-                    ),
               ),
             ],
           );

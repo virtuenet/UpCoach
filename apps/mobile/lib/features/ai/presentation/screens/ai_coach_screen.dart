@@ -10,7 +10,8 @@ import '../../domain/models/ai_response.dart';
 import '../widgets/chat_message_widget.dart';
 import '../widgets/ai_input_widget.dart';
 
-final chatMessagesProvider = StateNotifierProvider<ChatMessagesNotifier, List<AIResponse>>((ref) {
+final chatMessagesProvider =
+    StateNotifierProvider<ChatMessagesNotifier, List<AIResponse>>((ref) {
   return ChatMessagesNotifier();
 });
 
@@ -27,7 +28,7 @@ class ChatMessagesNotifier extends StateNotifier<List<AIResponse>> {
 }
 
 class AICoachScreen extends ConsumerStatefulWidget {
-  const AICoachScreen({Key? key}) : super(key: key);
+  const AICoachScreen({super.key});
 
   @override
   ConsumerState<AICoachScreen> createState() => _AICoachScreenState();
@@ -52,15 +53,15 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
 
   Future<void> _sendInitialMessage() async {
     final aiService = ref.read(aiServiceProvider);
-    
+
     setState(() => _isLoading = true);
-    
+
     try {
       final response = await aiService.sendMessage(
         "Hello! I'm here to help you with your coaching journey. What would you like to work on today?",
         sessionId: _sessionId,
       );
-      
+
       ref.read(chatMessagesProvider.notifier).addMessage(response);
     } catch (e) {
       _showError('Failed to connect to AI coach');
@@ -69,7 +70,8 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
     }
   }
 
-  Future<void> _sendMessage(String message, {List<AttachmentFile>? attachments}) async {
+  Future<void> _sendMessage(String message,
+      {List<AttachmentFile>? attachments}) async {
     if (message.trim().isEmpty) return;
 
     // Add user message
@@ -82,24 +84,26 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
     ref.read(chatMessagesProvider.notifier).addMessage(userMessage);
 
     setState(() => _isLoading = true);
-    
+
     try {
       final aiService = ref.read(aiServiceProvider);
       final messages = ref.read(chatMessagesProvider);
-      
+
       // Get conversation history
-      final history = messages.map((m) => {
-        'role': m.role,
-        'content': m.content,
-      }).toList();
-      
+      final history = messages
+          .map((m) => {
+                'role': m.role,
+                'content': m.content,
+              })
+          .toList();
+
       final response = await aiService.getSmartResponse(
         message,
         conversationHistory: history,
       );
-      
+
       ref.read(chatMessagesProvider.notifier).addMessage(response);
-      
+
       // Scroll to bottom
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
@@ -129,7 +133,7 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
   @override
   Widget build(BuildContext context) {
     final messages = ref.watch(chatMessagesProvider);
-    
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: CustomAppBar(
@@ -164,7 +168,7 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
                           child: Center(child: LoadingIndicator()),
                         );
                       }
-                      
+
                       final message = messages[index];
                       return ChatMessageWidget(
                         message: message,
@@ -190,7 +194,7 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
           Icon(
             Icons.psychology,
             size: 80,
-            color: AppColors.primary.withOpacity(0.5),
+            color: AppColors.primary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: UIConstants.spacingMD),
           Text(
@@ -201,8 +205,8 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
           Text(
             'Ask me anything about your goals, habits, or progress',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+                  color: AppColors.textSecondary,
+                ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: UIConstants.spacingXL),
@@ -227,7 +231,7 @@ class _AICoachScreenState extends ConsumerState<AICoachScreen> {
         return ActionChip(
           label: Text(suggestion),
           onPressed: () => _sendMessage(suggestion),
-          backgroundColor: AppColors.primary.withOpacity(0.1),
+          backgroundColor: AppColors.primary.withValues(alpha: 0.1),
           labelStyle: TextStyle(color: AppColors.primary),
         );
       }).toList(),

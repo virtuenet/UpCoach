@@ -4,17 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:upcoach_mobile/core/theme/app_colors.dart';
 import 'package:upcoach_mobile/shared/constants/ui_constants.dart';
-import 'package:upcoach_mobile/shared/widgets/custom_app_bar.dart';
 import 'package:upcoach_mobile/shared/widgets/loading_indicator.dart';
 import '../../domain/services/ai_service.dart';
 import '../../domain/models/ai_response.dart';
 import 'package:upcoach_mobile/features/voice_journal/widgets/voice_recording_widget.dart';
-import 'package:upcoach_mobile/core/services/voice_recording_service.dart';
 
 final voiceAnalysisProvider = StateProvider<VoiceAnalysis?>((ref) => null);
 
 class VoiceCoachScreen extends ConsumerStatefulWidget {
-  const VoiceCoachScreen({Key? key}) : super(key: key);
+  const VoiceCoachScreen({super.key});
 
   @override
   ConsumerState<VoiceCoachScreen> createState() => _VoiceCoachScreenState();
@@ -23,7 +21,6 @@ class VoiceCoachScreen extends ConsumerStatefulWidget {
 class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
   bool _isAnalyzing = false;
   bool _isRecording = false;
-  String? _audioFilePath;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +28,7 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(title: 'Voice Coach'),
+      appBar: AppBar(title: const Text('Voice Coach')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(UIConstants.spacingMD),
         child: Column(
@@ -46,8 +43,8 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
               Text(
                 'Analyzing your voice...',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                      color: AppColors.textSecondary,
+                    ),
               ),
             ],
             if (voiceAnalysis != null && !_isAnalyzing) ...[
@@ -84,8 +81,8 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
             Text(
               'Record your voice to get insights about your emotional state, stress levels, and energy. Our AI coach will provide personalized feedback based on your voice patterns.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+                    color: AppColors.textSecondary,
+                  ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -111,9 +108,6 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
             const SizedBox(height: UIConstants.spacingMD),
             VoiceRecordingWidget(
               onRecordingComplete: (filePath) {
-                setState(() {
-                  _audioFilePath = filePath;
-                });
                 _analyzeVoice(File(filePath));
               },
               onRecordingStart: () {
@@ -132,8 +126,8 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
               Text(
                 'Speak naturally for 10-30 seconds',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                      color: AppColors.textSecondary,
+                    ),
               ),
             ],
           ],
@@ -179,43 +173,46 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
                 Text(
                   'Emotional Analysis',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
             const SizedBox(height: UIConstants.spacingMD),
             ...emotions.map((emotion) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        emotion.key.toUpperCase(),
-                        style: Theme.of(context).textTheme.bodyMedium,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            emotion.key.toUpperCase(),
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          Text(
+                            '${(emotion.value * 100).toInt()}%',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        '${(emotion.value * 100).toInt()}%',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
+                      const SizedBox(height: UIConstants.spacingXS),
+                      LinearProgressIndicator(
+                        value: emotion.value,
+                        backgroundColor: AppColors.surface,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          _getEmotionColor(emotion.key),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: UIConstants.spacingXS),
-                  LinearProgressIndicator(
-                    value: emotion.value,
-                    backgroundColor: AppColors.surface,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      _getEmotionColor(emotion.key),
-                    ),
-                  ),
-                ],
-              ),
-            )).toList(),
+                )),
           ],
         ),
       ),
@@ -258,7 +255,8 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
     );
   }
 
-  Widget _buildMetricRow(String label, double value, IconData icon, Color color) {
+  Widget _buildMetricRow(
+      String label, double value, IconData icon, Color color) {
     return Row(
       children: [
         Icon(icon, color: color, size: 24),
@@ -284,8 +282,8 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
         Text(
           '${(value * 100).toInt()}%',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
       ],
     );
@@ -309,28 +307,29 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
                 Text(
                   'Voice Insights',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
             const SizedBox(height: UIConstants.spacingMD),
             ...analysis.insights!.map((insight) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.check_circle, size: 20, color: AppColors.success),
-                  const SizedBox(width: UIConstants.spacingSM),
-                  Expanded(
-                    child: Text(
-                      insight,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.check_circle,
+                          size: 20, color: AppColors.success),
+                      const SizedBox(width: UIConstants.spacingSM),
+                      Expanded(
+                        child: Text(
+                          insight,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            )).toList(),
+                )),
           ],
         ),
       ),
@@ -340,7 +339,7 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
   Widget _buildCoachingCard(VoiceAnalysis analysis) {
     return Card(
       elevation: 2,
-      color: AppColors.primary.withOpacity(0.1),
+      color: AppColors.primary.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(UIConstants.radiusLG),
       ),
@@ -356,8 +355,8 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
                 Text(
                   'AI Coach Recommendations',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
@@ -391,13 +390,14 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
     try {
       final aiService = ref.read(aiServiceProvider);
       final analysis = await aiService.analyzeVoice(audioFile);
-      
+
       ref.read(voiceAnalysisProvider.notifier).state = analysis;
-      
+
       // Get coaching advice
       final sessionId = analysis.sessionId;
       await aiService.getVoiceCoaching(sessionId);
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to analyze voice: ${e.toString()}'),
@@ -434,7 +434,8 @@ class _VoiceCoachScreenState extends ConsumerState<VoiceCoachScreen> {
       return "Your voice indicates elevated stress levels. Consider taking a few deep breaths and practicing relaxation techniques. Would you like to explore stress management strategies?";
     } else if (analysis.energyLevel < 0.3) {
       return "Your energy seems low right now. This might be a good time for rest or gentle activities. Let's discuss ways to boost your energy naturally.";
-    } else if (analysis.emotions['happy'] != null && analysis.emotions['happy']! > 0.6) {
+    } else if (analysis.emotions['happy'] != null &&
+        analysis.emotions['happy']! > 0.6) {
       return "You sound positive and energetic! This is a great time to tackle challenging goals or connect with others. How can we build on this positive momentum?";
     } else {
       return "Your voice patterns show a balanced emotional state. Let's explore how to maintain this equilibrium and work towards your goals effectively.";

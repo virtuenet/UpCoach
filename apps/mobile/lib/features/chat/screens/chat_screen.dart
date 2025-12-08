@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/chat_message_bubble.dart';
 import '../../../shared/widgets/chat_input.dart';
+import '../../../shared/models/conversation.dart';
 import '../providers/chat_provider.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -70,7 +71,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     // Auto-scroll when new messages arrive
     ref.listen(chatProvider, (previous, current) {
-      if (previous?.currentConversation?.messages.length != 
+      if (previous?.currentConversation?.messages.length !=
           current.currentConversation?.messages.length) {
         _scrollToBottom();
       }
@@ -102,7 +103,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(UIConstants.spacingMD),
-              color: AppTheme.errorColor.withOpacity(0.1),
+              color: AppTheme.errorColor.withValues(alpha: 0.1),
               child: Row(
                 children: [
                   Icon(
@@ -162,7 +163,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.1),
+                color: AppTheme.primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(40),
               ),
               child: const Icon(
@@ -175,18 +176,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             Text(
               'Welcome to AI Coach!',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textPrimary,
-              ),
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary,
+                  ),
             ),
             const SizedBox(height: UIConstants.spacingMD),
             Text(
               'Start a conversation to get personalized coaching and guidance tailored to your goals.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppTheme.textSecondary,
-                height: 1.5,
-              ),
+                    color: AppTheme.textSecondary,
+                    height: 1.5,
+                  ),
             ),
             const SizedBox(height: UIConstants.spacingXL),
             _buildSuggestedPrompts(),
@@ -210,27 +211,27 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         Text(
           'Try asking:',
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: AppTheme.textPrimary,
-          ),
+                fontWeight: FontWeight.w600,
+                color: AppTheme.textPrimary,
+              ),
         ),
         const SizedBox(height: UIConstants.spacingMD),
         ...prompts.map((prompt) => Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: OutlinedButton(
-            onPressed: () => _handleSendMessage(prompt),
-            style: OutlinedButton.styleFrom(
-              alignment: Alignment.centerLeft,
-              padding: const EdgeInsets.all(UIConstants.spacingMD),
-            ),
-            child: Text(prompt),
-          ),
-        )),
+              padding: const EdgeInsets.only(bottom: 8),
+              child: OutlinedButton(
+                onPressed: () => _handleSendMessage(prompt),
+                style: OutlinedButton.styleFrom(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.all(UIConstants.spacingMD),
+                ),
+                child: Text(prompt),
+              ),
+            )),
       ],
     );
   }
 
-  Widget _buildMessagesList(conversation) {
+  Widget _buildMessagesList(Conversation conversation) {
     if (conversation.isEmpty) {
       return const Center(
         child: Text(
@@ -251,9 +252,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         final message = conversation.messages[index];
         return ChatMessageBubble(
           message: message,
-          onRetry: message.hasFailed 
-              ? () => _handleRetryMessage(message.id)
-              : null,
+          onRetry:
+              message.hasFailed ? () => _handleRetryMessage(message.id) : null,
         );
       },
     );
@@ -287,11 +287,11 @@ class _ConversationsListSheet extends ConsumerWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppTheme.textSecondary.withOpacity(0.3),
+              color: AppTheme.textSecondary.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: const EdgeInsets.all(UIConstants.spacingLG),
@@ -300,8 +300,8 @@ class _ConversationsListSheet extends ConsumerWidget {
                 Text(
                   'Conversations',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 const Spacer(),
                 TextButton.icon(
@@ -315,7 +315,7 @@ class _ConversationsListSheet extends ConsumerWidget {
               ],
             ),
           ),
-          
+
           // Conversations list
           Expanded(
             child: conversations.isEmpty
@@ -333,23 +333,25 @@ class _ConversationsListSheet extends ConsumerWidget {
                     itemCount: conversations.length,
                     itemBuilder: (context, index) {
                       final conversation = conversations[index];
-                      final isSelected = chatState.currentConversation?.id == conversation.id;
-                      
+                      final isSelected =
+                          chatState.currentConversation?.id == conversation.id;
+
                       return ListTile(
                         selected: isSelected,
                         leading: Container(
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: isSelected 
-                                ? AppTheme.primaryColor 
-                                : AppTheme.textSecondary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(UIConstants.radiusXL),
+                            color: isSelected
+                                ? AppTheme.primaryColor
+                                : AppTheme.textSecondary.withValues(alpha: 0.1),
+                            borderRadius:
+                                BorderRadius.circular(UIConstants.radiusXL),
                           ),
                           child: Icon(
                             Icons.chat_bubble_outline,
-                            color: isSelected 
-                                ? Colors.white 
+                            color: isSelected
+                                ? Colors.white
                                 : AppTheme.textSecondary,
                             size: 20,
                           ),
@@ -379,14 +381,16 @@ class _ConversationsListSheet extends ConsumerWidget {
                           ],
                           onSelected: (value) {
                             if (value == 'delete') {
-                              ref.read(chatProvider.notifier)
+                              ref
+                                  .read(chatProvider.notifier)
                                   .deleteConversation(conversation.id);
                             }
                           },
                         ),
                         onTap: () {
                           context.pop();
-                          ref.read(chatProvider.notifier)
+                          ref
+                              .read(chatProvider.notifier)
                               .selectConversation(conversation.id);
                         },
                       );
@@ -397,4 +401,4 @@ class _ConversationsListSheet extends ConsumerWidget {
       ),
     );
   }
-} 
+}

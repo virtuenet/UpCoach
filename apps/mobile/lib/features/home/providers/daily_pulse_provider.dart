@@ -9,4 +9,3 @@ final dailyPulseProvider = FutureProvider.autoDispose<DailyPulse>((ref) async {
   final pulse = await service.fetchPulse(period: period);
   return pulse;
 });
-

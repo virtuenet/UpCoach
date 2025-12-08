@@ -12,7 +12,7 @@ class VoiceJournalStatistics extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final voiceJournalState = ref.watch(voiceJournalProvider);
     final statistics = ref.read(voiceJournalProvider.notifier).getStatistics();
-    
+
     if (voiceJournalState.entries.isEmpty) {
       return Center(
         child: Column(
@@ -73,9 +73,9 @@ class VoiceJournalStatistics extends ConsumerWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: UIConstants.spacingMD),
-          
+
           Row(
             children: [
               Expanded(
@@ -97,9 +97,9 @@ class VoiceJournalStatistics extends ConsumerWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: UIConstants.spacingLG),
-          
+
           // Transcription Accuracy
           if (statistics['transcribedEntries'] > 0) ...[
             const Text(
@@ -115,7 +115,7 @@ class VoiceJournalStatistics extends ConsumerWidget {
             ),
             const SizedBox(height: UIConstants.spacingLG),
           ],
-          
+
           // Weekly Activity Chart
           const Text(
             'Weekly Activity',
@@ -126,9 +126,9 @@ class VoiceJournalStatistics extends ConsumerWidget {
           ),
           const SizedBox(height: UIConstants.spacingMD),
           _WeeklyActivityChart(entries: voiceJournalState.entries),
-          
+
           const SizedBox(height: UIConstants.spacingLG),
-          
+
           // Monthly Breakdown
           const Text(
             'Monthly Breakdown',
@@ -139,9 +139,9 @@ class VoiceJournalStatistics extends ConsumerWidget {
           ),
           const SizedBox(height: UIConstants.spacingMD),
           _MonthlyBreakdown(entries: voiceJournalState.entries),
-          
+
           const SizedBox(height: UIConstants.spacingLG),
-          
+
           // Recent Activity
           const Text(
             'Recent Activity',
@@ -176,9 +176,9 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(UIConstants.radiusLG),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,14 +222,14 @@ class _TranscriptionQualityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final percentage = (averageConfidence * 100).round();
-    final qualityText = percentage >= 90 
-        ? 'Excellent' 
-        : percentage >= 80 
-            ? 'Good' 
-            : percentage >= 70 
-                ? 'Fair' 
+    final qualityText = percentage >= 90
+        ? 'Excellent'
+        : percentage >= 80
+            ? 'Good'
+            : percentage >= 70
+                ? 'Fair'
                 : 'Needs Improvement';
-    
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(UIConstants.spacingMD),
@@ -283,7 +283,8 @@ class _TranscriptionQualityCard extends StatelessWidget {
                     LinearProgressIndicator(
                       value: averageConfidence,
                       backgroundColor: Colors.blue.shade100,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade700),
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Colors.blue.shade700),
                     ),
                   ],
                 ),
@@ -292,7 +293,7 @@ class _TranscriptionQualityCard extends StatelessWidget {
           ),
           const SizedBox(height: UIConstants.spacingMD),
           Text(
-            percentage >= 80 
+            percentage >= 80
                 ? 'Your recordings have excellent audio quality for transcription!'
                 : 'Tip: Record in a quiet environment for better transcription accuracy.',
             style: TextStyle(
@@ -320,10 +321,10 @@ class _WeeklyActivityChart extends StatelessWidget {
       final dayEntries = entries.where((entry) {
         final entryDate = entry.createdAt;
         return entryDate.year == date.year &&
-               entryDate.month == date.month &&
-               entryDate.day == date.day;
+            entryDate.month == date.month &&
+            entryDate.day == date.day;
       }).length;
-      
+
       return ChartData(
         ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][date.weekday - 1],
         dayEntries,
@@ -368,13 +369,14 @@ class _MonthlyBreakdown extends StatelessWidget {
     // Calculate monthly stats
     final now = DateTime.now();
     final thisMonth = entries.where((entry) {
-      return entry.createdAt.year == now.year && entry.createdAt.month == now.month;
+      return entry.createdAt.year == now.year &&
+          entry.createdAt.month == now.month;
     }).length;
-    
+
     final lastMonth = entries.where((entry) {
       final lastMonthDate = DateTime(now.year, now.month - 1);
-      return entry.createdAt.year == lastMonthDate.year && 
-             entry.createdAt.month == lastMonthDate.month;
+      return entry.createdAt.year == lastMonthDate.year &&
+          entry.createdAt.month == lastMonthDate.month;
     }).length;
 
     return Container(
@@ -443,21 +445,30 @@ class _MonthlyBreakdown extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  thisMonth > lastMonth ? Icons.trending_up : 
-                  thisMonth < lastMonth ? Icons.trending_down : Icons.trending_flat,
-                  color: thisMonth > lastMonth ? Colors.green : 
-                         thisMonth < lastMonth ? Colors.red : Colors.grey,
+                  thisMonth > lastMonth
+                      ? Icons.trending_up
+                      : thisMonth < lastMonth
+                          ? Icons.trending_down
+                          : Icons.trending_flat,
+                  color: thisMonth > lastMonth
+                      ? Colors.green
+                      : thisMonth < lastMonth
+                          ? Colors.red
+                          : Colors.grey,
                 ),
                 const SizedBox(width: UIConstants.spacingSM),
                 Text(
-                  thisMonth > lastMonth 
+                  thisMonth > lastMonth
                       ? '+${((thisMonth - lastMonth) / lastMonth * 100).round()}% from last month'
-                      : thisMonth < lastMonth 
+                      : thisMonth < lastMonth
                           ? '${((thisMonth - lastMonth) / lastMonth * 100).round()}% from last month'
                           : 'Same as last month',
                   style: TextStyle(
-                    color: thisMonth > lastMonth ? Colors.green : 
-                           thisMonth < lastMonth ? Colors.red : Colors.grey,
+                    color: thisMonth > lastMonth
+                        ? Colors.green
+                        : thisMonth < lastMonth
+                            ? Colors.red
+                            : Colors.grey,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -477,7 +488,7 @@ class _RecentActivity extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final recentEntries = entries.take(5).toList();
-    
+
     if (recentEntries.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(UIConstants.spacingLG),
@@ -579,4 +590,4 @@ class ChartData {
   ChartData(this.x, this.y);
   final String x;
   final int y;
-} 
+}

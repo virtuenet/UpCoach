@@ -48,16 +48,17 @@ class DailyPulse {
     return DailyPulse(
       id: json['id'] as String? ?? '',
       period: json['period'] as String? ?? 'morning',
-      generatedAt: DateTime.tryParse(json['generatedAt'] as String? ?? '') ?? DateTime.now(),
+      generatedAt: DateTime.tryParse(json['generatedAt'] as String? ?? '') ??
+          DateTime.now(),
       headline: json['headline'] as String? ?? '',
       summary: json['summary'] as String? ?? '',
       encouragement: json['encouragement'] as String? ?? '',
       gratitudePrompt: json['gratitudePrompt'] as String?,
       metrics: (json['metrics'] as Map<String, dynamic>?) ?? const {},
       recommendedActions: (json['recommendedActions'] as List<dynamic>? ?? [])
-          .map((action) => DailyPulseAction.fromJson(action as Map<String, dynamic>))
+          .map((action) =>
+              DailyPulseAction.fromJson(action as Map<String, dynamic>))
           .toList(),
     );
   }
 }
-

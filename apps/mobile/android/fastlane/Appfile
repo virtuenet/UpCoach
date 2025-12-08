@@ -1,0 +1,12 @@
+# UpCoach Android Appfile
+# https://docs.fastlane.tools/advanced/Appfile/
+
+# Package name
+package_name("com.upcoach.upcoach_mobile")
+
+# Path to Google Play Console JSON key
+json_key_file(ENV["PLAY_STORE_JSON_KEY"] || "play-store-key.json")
+
+# For all available options:
+# https://docs.fastlane.tools/actions/supply/
+# https://docs.fastlane.tools/actions/upload_to_play_store/

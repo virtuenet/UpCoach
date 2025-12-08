@@ -4,7 +4,8 @@ import '../constants/ui_constants.dart';
 import '../../core/theme/app_theme.dart';
 
 // Provider for managing loading state
-final loadingOverlayProvider = StateNotifierProvider<LoadingOverlayNotifier, LoadingState>((ref) {
+final loadingOverlayProvider =
+    StateNotifierProvider<LoadingOverlayNotifier, LoadingState>((ref) {
   return LoadingOverlayNotifier();
 });
 
@@ -91,7 +92,7 @@ class LoadingOverlay extends ConsumerWidget {
                 ? () => ref.read(loadingOverlayProvider.notifier).hide()
                 : null,
             child: Container(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               child: Center(
                 child: Card(
                   child: Container(
@@ -106,11 +107,13 @@ class LoadingOverlay extends ConsumerWidget {
                         if (loadingState.progress != null)
                           CircularProgressIndicator(
                             value: loadingState.progress,
-                            strokeWidth: UIConstants.loadingIndicatorStrokeWidth,
+                            strokeWidth:
+                                UIConstants.loadingIndicatorStrokeWidth,
                           )
                         else
                           const CircularProgressIndicator(
-                            strokeWidth: UIConstants.loadingIndicatorStrokeWidth,
+                            strokeWidth:
+                                UIConstants.loadingIndicatorStrokeWidth,
                           ),
                         if (loadingState.message != null) ...[
                           const SizedBox(height: UIConstants.spacingMD),
@@ -124,19 +127,23 @@ class LoadingOverlay extends ConsumerWidget {
                           const SizedBox(height: UIConstants.spacingSM),
                           Text(
                             '${(loadingState.progress! * 100).toInt()}%',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.primaryColor,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.primaryColor,
+                                ),
                           ),
                         ],
                         if (loadingState.canDismiss) ...[
                           const SizedBox(height: UIConstants.spacingMD),
                           Text(
                             'Tap to dismiss',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.textSecondary,
-                            ),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: AppTheme.textSecondary,
+                                    ),
                           ),
                         ],
                       ],

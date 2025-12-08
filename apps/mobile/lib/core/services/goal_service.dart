@@ -6,14 +6,16 @@ import '../../shared/models/goal_model.dart';
 class GoalService {
   static final GoalService _instance = GoalService._internal();
   factory GoalService() => _instance;
-  
+
   final Dio _dio = Dio();
   final Uuid _uuid = const Uuid();
 
   GoalService._internal() {
     _dio.options.baseUrl = AppConstants.apiUrl;
-    _dio.options.connectTimeout = const Duration(seconds: AppConstants.requestTimeoutSeconds);
-    _dio.options.receiveTimeout = const Duration(seconds: AppConstants.requestTimeoutSeconds);
+    _dio.options.connectTimeout =
+        const Duration(seconds: AppConstants.requestTimeoutSeconds);
+    _dio.options.receiveTimeout =
+        const Duration(seconds: AppConstants.requestTimeoutSeconds);
   }
 
   Future<List<GoalModel>> getGoals({
@@ -56,7 +58,8 @@ class GoalService {
           'category': category.name,
           'priority': priority.name,
           'target_date': targetDate.toIso8601String(),
-          if (milestones != null && milestones.isNotEmpty) 'milestones': milestones,
+          if (milestones != null && milestones.isNotEmpty)
+            'milestones': milestones,
         },
       );
 
@@ -84,7 +87,9 @@ class GoalService {
       if (category != null) data['category'] = category.name;
       if (priority != null) data['priority'] = priority.name;
       if (status != null) data['status'] = status.name;
-      if (targetDate != null) data['target_date'] = targetDate.toIso8601String();
+      if (targetDate != null) {
+        data['target_date'] = targetDate.toIso8601String();
+      }
       if (progress != null) data['progress'] = progress;
       if (milestones != null) data['milestones'] = milestones;
 
@@ -205,4 +210,4 @@ class GoalService {
       return 'An unexpected error occurred';
     }
   }
-} 
+}

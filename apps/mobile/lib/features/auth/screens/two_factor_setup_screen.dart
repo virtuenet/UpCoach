@@ -73,7 +73,8 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
     });
 
     try {
-      final result = await _twoFactorService.verifyAndEnableTOTP(_tokenController.text);
+      final result =
+          await _twoFactorService.verifyAndEnableTOTP(_tokenController.text);
       setState(() {
         _backupCodes = List<String>.from(result['backupCodes'] ?? []);
         _isVerifying = false;
@@ -227,10 +228,10 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _nextStep,
-              child: const Text('I have an authenticator app'),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
               ),
+              child: const Text('I have an authenticator app'),
             ),
           ),
         ],
@@ -257,7 +258,6 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
             style: TextStyle(fontSize: 16),
           ),
           const SizedBox(height: UIConstants.spacingLG),
-
           if (_isLoading)
             const Center(child: CircularProgressIndicator())
           else if (_qrCodeUrl != null) ...[
@@ -307,7 +307,8 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
                       ),
                       IconButton(
                         icon: const Icon(Icons.copy),
-                        onPressed: () => _copyToClipboard(_manualEntryKey ?? ''),
+                        onPressed: () =>
+                            _copyToClipboard(_manualEntryKey ?? ''),
                         tooltip: 'Copy code',
                       ),
                     ],
@@ -352,9 +353,10 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
               Container(
                 padding: const EdgeInsets.all(UIConstants.spacingMD),
                 decoration: BoxDecoration(
-                  color: AppTheme.errorColor.withOpacity(0.1),
+                  color: AppTheme.errorColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(UIConstants.radiusMD),
-                  border: Border.all(color: AppTheme.errorColor.withOpacity(0.3)),
+                  border: Border.all(
+                      color: AppTheme.errorColor.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
@@ -371,15 +373,16 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
               ),
             ],
           ],
-
           const Spacer(),
-
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _isVerifying || _tokenController.text.length != 6
                   ? null
                   : _verifyAndEnable,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+              ),
               child: _isVerifying
                   ? const SizedBox(
                       width: 20,
@@ -387,9 +390,6 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Text('Verify and Enable'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-              ),
             ),
           ),
         ],
@@ -414,9 +414,10 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
           Container(
             padding: const EdgeInsets.all(UIConstants.spacingMD),
             decoration: BoxDecoration(
-              color: AppTheme.successColor.withOpacity(0.1),
+              color: AppTheme.successColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(UIConstants.radiusMD),
-              border: Border.all(color: AppTheme.successColor.withOpacity(0.3)),
+              border: Border.all(
+                  color: AppTheme.successColor.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
@@ -431,9 +432,7 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
               ],
             ),
           ),
-
           const SizedBox(height: UIConstants.spacingXL),
-
           const Text(
             'Save Your Backup Codes',
             style: TextStyle(
@@ -447,7 +446,6 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
             style: TextStyle(fontSize: 16),
           ),
           const SizedBox(height: UIConstants.spacingMD),
-
           if (_backupCodes != null) ...[
             Container(
               padding: const EdgeInsets.all(UIConstants.spacingMD),
@@ -475,30 +473,28 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
                   ),
                   const SizedBox(height: UIConstants.spacingSM),
                   ...(_backupCodes!.map((code) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    child: Text(
-                      code,
-                      style: const TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 16,
-                      ),
-                    ),
-                  ))),
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Text(
+                          code,
+                          style: const TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 16,
+                          ),
+                        ),
+                      ))),
                 ],
               ),
             ),
           ],
-
           const Spacer(),
-
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Done'),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
               ),
+              child: const Text('Done'),
             ),
           ),
         ],
@@ -506,7 +502,8 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
     );
   }
 
-  Widget _buildAppRecommendation(String name, String description, IconData icon) {
+  Widget _buildAppRecommendation(
+      String name, String description, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(

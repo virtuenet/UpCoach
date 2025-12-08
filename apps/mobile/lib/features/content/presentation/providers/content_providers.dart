@@ -5,16 +5,10 @@ import '../../../../shared/models/content_article.dart';
 
 part 'content_providers.g.dart';
 
-// Content service provider
-@riverpod
-ContentService contentService(ContentServiceRef ref) {
-  return ref.watch(contentServiceProvider);
-}
-
 // Article detail provider
 @riverpod
 Future<ContentArticle> articleDetail(
-  ArticleDetailRef ref,
+  Ref ref,
   int articleId,
 ) async {
   final service = ref.watch(contentServiceProvider);
@@ -23,14 +17,14 @@ Future<ContentArticle> articleDetail(
 
 // Featured articles provider
 @riverpod
-Future<List<ContentArticle>> featuredArticles(FeaturedArticlesRef ref) async {
+Future<List<ContentArticle>> featuredArticles(Ref ref) async {
   final service = ref.watch(contentServiceProvider);
   return service.getFeaturedArticles();
 }
 
 // Categories provider
 @riverpod
-Future<List<ContentCategory>> categories(CategoriesRef ref) async {
+Future<List<ContentCategory>> categories(Ref ref) async {
   final service = ref.watch(contentServiceProvider);
   return service.getCategories();
 }
@@ -38,7 +32,7 @@ Future<List<ContentCategory>> categories(CategoriesRef ref) async {
 // Related articles provider
 @riverpod
 Future<List<ContentArticle>> relatedArticles(
-  RelatedArticlesRef ref,
+  Ref ref,
   int articleId,
 ) async {
   final service = ref.watch(contentServiceProvider);
@@ -48,7 +42,7 @@ Future<List<ContentArticle>> relatedArticles(
 // Coach articles provider
 @riverpod
 Future<ArticleListResponse> coachArticles(
-  CoachArticlesRef ref,
+  Ref ref,
   int coachId, {
   int page = 1,
 }) async {
@@ -97,11 +91,11 @@ class ContentNotifier extends StateNotifier<ContentState> {
       state = const ContentLoading();
       _currentPage = 1;
       _allArticles = [];
-      
+
       final response = await _service.getArticles(
         filters: _currentFilters?.copyWith(page: _currentPage),
       );
-      
+
       _allArticles = response.articles;
       state = ContentLoaded(
         articles: _allArticles,
@@ -114,7 +108,7 @@ class ContentNotifier extends StateNotifier<ContentState> {
 
   Future<void> loadMoreArticles() async {
     if (state is! ContentLoaded) return;
-    
+
     final currentState = state as ContentLoaded;
     if (!currentState.hasMore) return;
 
@@ -123,7 +117,7 @@ class ContentNotifier extends StateNotifier<ContentState> {
       final response = await _service.getArticles(
         filters: _currentFilters?.copyWith(page: _currentPage),
       );
-      
+
       _allArticles.addAll(response.articles);
       state = ContentLoaded(
         articles: _allArticles,
@@ -163,7 +157,8 @@ class ContentNotifier extends StateNotifier<ContentState> {
 }
 
 // Content notifier provider
-final contentNotifierProvider = StateNotifierProvider<ContentNotifier, ContentState>((ref) {
+final contentNotifierProvider =
+    StateNotifierProvider<ContentNotifier, ContentState>((ref) {
   final service = ref.watch(contentServiceProvider);
   return ContentNotifier(service);
 });

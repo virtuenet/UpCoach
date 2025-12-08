@@ -48,13 +48,15 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
 
-  AuthNotifier() : _authService = AuthService(), super(const AuthState()) {
+  AuthNotifier()
+      : _authService = AuthService(),
+        super(const AuthState()) {
     _checkAuthStatus();
   }
 
   Future<void> _checkAuthStatus() async {
     state = state.copyWith(isLoading: true);
-    
+
     try {
       final user = await _authService.getCurrentUser();
       if (user != null) {
@@ -79,13 +81,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String password,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       final authResponse = await _authService.login(
         email: email,
         password: password,
       );
-      
+
       state = state.copyWith(
         user: authResponse.user,
         isAuthenticated: true,
@@ -93,7 +95,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         accessToken: authResponse.accessToken,
         refreshToken: authResponse.refreshToken,
       );
-      
+
       return true;
     } catch (e) {
       state = state.copyWith(
@@ -111,7 +113,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     String? lastName,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       final authResponse = await _authService.register(
         email: email,
@@ -119,7 +121,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         firstName: firstName,
         lastName: lastName,
       );
-      
+
       state = state.copyWith(
         user: authResponse.user,
         isAuthenticated: true,
@@ -127,7 +129,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         accessToken: authResponse.accessToken,
         refreshToken: authResponse.refreshToken,
       );
-      
+
       return true;
     } catch (e) {
       state = state.copyWith(
@@ -144,7 +146,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       // Handle error but still clear local state
     }
-    
+
     state = const AuthState();
   }
 
@@ -157,7 +159,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     try {
       final response = await _authService.refreshToken(refreshToken);
-      
+
       state = state.copyWith(
         isAuthenticated: true,
         user: response.user,
@@ -179,7 +181,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> sendPasswordResetEmail(String email) async {
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       await _authService.sendPasswordResetEmail(email);
       state = state.copyWith(isLoading: false);
@@ -188,16 +190,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
         error: e.toString(),
         isLoading: false,
       );
-      throw e;
+      rethrow;
     }
   }
 
   Future<bool> signInWithGoogle() async {
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       final authResponse = await _authService.signInWithGoogle();
-      
+
       state = state.copyWith(
         user: authResponse.user,
         isAuthenticated: true,
@@ -205,7 +207,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         accessToken: authResponse.accessToken,
         refreshToken: authResponse.refreshToken,
       );
-      
+
       return true;
     } catch (e) {
       state = state.copyWith(
@@ -219,4 +221,4 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier();
-}); 
+});

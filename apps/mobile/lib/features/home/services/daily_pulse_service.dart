@@ -17,7 +17,9 @@ class DailyPulseService {
         queryParameters: period == 'auto' ? null : {'period': period},
       );
     } on DioException catch (error) {
-      final message = error.error?.toString() ?? error.message ?? 'Unable to load daily pulse';
+      final message = error.error?.toString() ??
+          error.message ??
+          'Unable to load daily pulse';
       throw Exception(message);
     }
 
@@ -31,4 +33,3 @@ final dailyPulseServiceProvider = Provider<DailyPulseService>((ref) {
   final api = ref.watch(apiServiceProvider);
   return DailyPulseService(api);
 });
-

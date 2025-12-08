@@ -8,7 +8,8 @@ import 'package:upcoach_mobile/shared/widgets/loading_indicator.dart';
 import '../../domain/services/ai_service.dart';
 import '../../domain/models/ai_response.dart';
 
-final recommendationsProvider = FutureProvider<List<AIRecommendation>>((ref) async {
+final recommendationsProvider =
+    FutureProvider<List<AIRecommendation>>((ref) async {
   final aiService = ref.watch(aiServiceProvider);
   return await aiService.getRecommendations();
 });
@@ -19,7 +20,7 @@ final predictionsProvider = FutureProvider<List<AIPrediction>>((ref) async {
 });
 
 class RecommendationsScreen extends ConsumerWidget {
-  const RecommendationsScreen({Key? key}) : super(key: key);
+  const RecommendationsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -60,7 +61,8 @@ class RecommendationsScreen extends ConsumerWidget {
     return recommendationsAsync.when(
       loading: () => const Center(child: LoadingIndicator()),
       error: (error, stack) => _buildError(context, error.toString()),
-      data: (recommendations) => _buildRecommendationsList(context, ref, recommendations),
+      data: (recommendations) =>
+          _buildRecommendationsList(context, ref, recommendations),
     );
   }
 
@@ -99,7 +101,7 @@ class RecommendationsScreen extends ConsumerWidget {
         itemBuilder: (context, index) {
           final type = groupedRecommendations.keys.elementAt(index);
           final items = groupedRecommendations[type]!;
-          
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -107,9 +109,9 @@ class RecommendationsScreen extends ConsumerWidget {
               _buildSectionHeader(context, type),
               const SizedBox(height: UIConstants.spacingMD),
               ...items.map((rec) => _RecommendationCard(
-                recommendation: rec,
-                onTap: () => _handleRecommendationTap(context, rec),
-              )).toList(),
+                    recommendation: rec,
+                    onTap: () => _handleRecommendationTap(context, rec),
+                  )),
             ],
           );
         },
@@ -146,8 +148,8 @@ class RecommendationsScreen extends ConsumerWidget {
         Text(
           title,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
       ],
     );
@@ -161,7 +163,7 @@ class RecommendationsScreen extends ConsumerWidget {
           Icon(
             Icons.recommend,
             size: 80,
-            color: AppColors.primary.withOpacity(0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
           ),
           const SizedBox(height: UIConstants.spacingMD),
           Text(
@@ -172,8 +174,8 @@ class RecommendationsScreen extends ConsumerWidget {
           Text(
             'Keep tracking your progress to get personalized recommendations',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+                  color: AppColors.textSecondary,
+                ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -189,7 +191,7 @@ class RecommendationsScreen extends ConsumerWidget {
           Icon(
             Icons.insights,
             size: 80,
-            color: AppColors.primary.withOpacity(0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
           ),
           const SizedBox(height: UIConstants.spacingMD),
           Text(
@@ -200,8 +202,8 @@ class RecommendationsScreen extends ConsumerWidget {
           Text(
             'We need more data to make accurate predictions',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+                  color: AppColors.textSecondary,
+                ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -228,8 +230,8 @@ class RecommendationsScreen extends ConsumerWidget {
           Text(
             error,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+                  color: AppColors.textSecondary,
+                ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -292,10 +294,9 @@ class _RecommendationCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const _RecommendationCard({
-    Key? key,
     required this.recommendation,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -328,29 +329,34 @@ class _RecommendationCard extends StatelessWidget {
                     Text(
                       recommendation.title,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     const SizedBox(height: UIConstants.spacingXS),
                     Text(
                       recommendation.description,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                            color: AppColors.textSecondary,
+                          ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (recommendation.tags != null && recommendation.tags!.isNotEmpty) ...[
+                    if (recommendation.tags != null &&
+                        recommendation.tags!.isNotEmpty) ...[
                       const SizedBox(height: UIConstants.spacingSM),
                       Wrap(
                         spacing: 6,
-                        children: recommendation.tags!.map((tag) => Chip(
-                          label: Text(tag),
-                          labelStyle: const TextStyle(fontSize: 11),
-                          backgroundColor: AppColors.primary.withOpacity(0.1),
-                          padding: EdgeInsets.zero,
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        )).toList(),
+                        children: recommendation.tags!
+                            .map((tag) => Chip(
+                                  label: Text(tag),
+                                  labelStyle: const TextStyle(fontSize: 11),
+                                  backgroundColor:
+                                      AppColors.primary.withValues(alpha: 0.1),
+                                  padding: EdgeInsets.zero,
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ))
+                            .toList(),
                       ),
                     ],
                   ],
@@ -375,9 +381,8 @@ class _PredictionCard extends StatelessWidget {
   final AIPrediction prediction;
 
   const _PredictionCard({
-    Key? key,
     required this.prediction,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -400,7 +405,7 @@ class _PredictionCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(UIConstants.spacingSM),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                   ),
                   child: Icon(icon, color: color, size: 24),
@@ -412,15 +417,16 @@ class _PredictionCard extends StatelessWidget {
                     children: [
                       Text(
                         _getPredictionTitle(prediction.type),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                       Text(
                         prediction.description,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                              color: AppColors.textSecondary,
+                            ),
                       ),
                     ],
                   ),
@@ -441,38 +447,41 @@ class _PredictionCard extends StatelessWidget {
                 Text(
                   '${(prediction.probability * 100).toInt()}%',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
                 ),
               ],
             ),
-            if (prediction.factors != null && prediction.factors!.isNotEmpty) ...[
+            if (prediction.factors != null &&
+                prediction.factors!.isNotEmpty) ...[
               const SizedBox(height: UIConstants.spacingMD),
               Text(
                 'Key Factors:',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: UIConstants.spacingXS),
               ...prediction.factors!.map((factor) => Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Row(
-                  children: [
-                    const Icon(Icons.circle, size: 6, color: AppColors.textSecondary),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        factor,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.circle,
+                            size: 6, color: AppColors.textSecondary),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            factor,
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-              )).toList(),
+                  )),
             ],
           ],
         ),
@@ -521,9 +530,8 @@ class _RecommendationDetailSheet extends StatelessWidget {
   final AIRecommendation recommendation;
 
   const _RecommendationDetailSheet({
-    Key? key,
     required this.recommendation,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

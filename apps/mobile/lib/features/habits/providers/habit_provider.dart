@@ -1,24 +1,32 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/models/habit_model.dart';
 import '../../../core/services/habit_service.dart';
+import '../../../core/services/notification_scheduler_service.dart';
+import '../../../core/services/gamification_event_service.dart';
 
 class HabitNotifier extends StateNotifier<HabitState> {
-  HabitNotifier(this._habitService) : super(const HabitState()) {
+  HabitNotifier(
+    this._habitService,
+    this._notificationScheduler,
+    this._gamificationEventService,
+  ) : super(const HabitState()) {
     loadHabits();
   }
 
   final HabitService _habitService;
+  final NotificationSchedulerService _notificationScheduler;
+  final GamificationEventService? _gamificationEventService;
 
   // Load all habits
   Future<void> loadHabits() async {
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       final habits = await _habitService.getAllHabits();
       final completions = await _habitService.getAllCompletions();
       final streaks = await _habitService.getAllStreaks();
       final achievements = await _habitService.getAllAchievements();
-      
+
       state = state.copyWith(
         habits: habits,
         completions: completions,
@@ -37,16 +45,21 @@ class HabitNotifier extends StateNotifier<HabitState> {
   // Create new habit
   Future<bool> createHabit(Habit habit) async {
     state = state.copyWith(isSaving: true, error: null);
-    
+
     try {
       final createdHabit = await _habitService.createHabit(habit);
       final updatedHabits = [...state.habits, createdHabit];
-      
+
       state = state.copyWith(
         habits: updatedHabits,
         isSaving: false,
       );
-      
+
+      // Schedule notification if habit has reminder
+      if (createdHabit.hasReminder && createdHabit.reminderTime != null) {
+        await _notificationScheduler.scheduleHabitReminder(createdHabit);
+      }
+
       return true;
     } catch (e) {
       state = state.copyWith(
@@ -60,21 +73,28 @@ class HabitNotifier extends StateNotifier<HabitState> {
   // Update habit
   Future<bool> updateHabit(Habit habit) async {
     state = state.copyWith(isSaving: true, error: null);
-    
+
     try {
       final updatedHabit = await _habitService.updateHabit(habit);
       final habitIndex = state.habits.indexWhere((h) => h.id == habit.id);
-      
+
       if (habitIndex != -1) {
         final updatedHabits = [...state.habits];
         updatedHabits[habitIndex] = updatedHabit;
-        
+
         state = state.copyWith(
           habits: updatedHabits,
           isSaving: false,
         );
       }
-      
+
+      // Update notification schedule
+      if (updatedHabit.hasReminder && updatedHabit.reminderTime != null) {
+        await _notificationScheduler.scheduleHabitReminder(updatedHabit);
+      } else {
+        await _notificationScheduler.cancelHabitReminder(updatedHabit.id);
+      }
+
       return true;
     } catch (e) {
       state = state.copyWith(
@@ -88,14 +108,20 @@ class HabitNotifier extends StateNotifier<HabitState> {
   // Delete habit
   Future<bool> deleteHabit(String habitId) async {
     state = state.copyWith(isSaving: true, error: null);
-    
+
     try {
       await _habitService.deleteHabit(habitId);
       final updatedHabits = state.habits.where((h) => h.id != habitId).toList();
-      final updatedCompletions = state.completions.where((c) => c.habitId != habitId).toList();
-      final updatedStreaks = state.streaks.where((s) => s.habitId != habitId).toList();
-      final updatedAchievements = state.achievements.where((a) => a.habitId != habitId).toList();
-      
+      final updatedCompletions =
+          state.completions.where((c) => c.habitId != habitId).toList();
+      final updatedStreaks =
+          state.streaks.where((s) => s.habitId != habitId).toList();
+      final updatedAchievements =
+          state.achievements.where((a) => a.habitId != habitId).toList();
+
+      // Cancel any scheduled notifications for this habit
+      await _notificationScheduler.cancelHabitReminder(habitId);
+
       state = state.copyWith(
         habits: updatedHabits,
         completions: updatedCompletions,
@@ -103,7 +129,7 @@ class HabitNotifier extends StateNotifier<HabitState> {
         achievements: updatedAchievements,
         isSaving: false,
       );
-      
+
       return true;
     } catch (e) {
       state = state.copyWith(
@@ -115,11 +141,12 @@ class HabitNotifier extends StateNotifier<HabitState> {
   }
 
   // Complete habit for today
-  Future<bool> completeHabit(String habitId, {int value = 1, String notes = '', int? duration}) async {
+  Future<bool> completeHabit(String habitId,
+      {int value = 1, String notes = '', int? duration}) async {
     try {
       final habit = state.habits.firstWhere((h) => h.id == habitId);
       final now = DateTime.now();
-      
+
       final completion = HabitCompletion(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         habitId: habitId,
@@ -129,19 +156,39 @@ class HabitNotifier extends StateNotifier<HabitState> {
         duration: duration,
         createdAt: now,
       );
-      
+
       await _habitService.addCompletion(completion);
-      
+
       // Update habit's last completed and streak
       final updatedHabit = await _updateHabitStreak(habit, completion);
       await updateHabit(updatedHabit);
-      
+
       // Check for achievements
       await _checkAchievements(habitId);
-      
+
+      // Track gamification event
+      if (_gamificationEventService != null) {
+        await _gamificationEventService!.trackHabitCompletion(
+          habitId: habitId,
+          habitName: habit.name,
+          currentStreak: updatedHabit.currentStreak,
+          totalCompletions: updatedHabit.totalCompletions,
+        );
+
+        // Check if all daily habits are completed
+        final todayHabits = getHabitsForDate(now);
+        final completedToday =
+            todayHabits.where((h) => h.isCompletedToday).length;
+        if (completedToday == todayHabits.length && todayHabits.isNotEmpty) {
+          await _gamificationEventService!.trackEvent(
+            GamificationEventType.allDailyHabitsCompleted,
+          );
+        }
+      }
+
       // Reload to get fresh data
       await loadHabits();
-      
+
       return true;
     } catch (e) {
       state = state.copyWith(error: e.toString());
@@ -153,22 +200,23 @@ class HabitNotifier extends StateNotifier<HabitState> {
   Future<bool> undoHabitCompletion(String habitId) async {
     try {
       final today = DateTime.now();
-      final todayCompletions = state.completions.where((c) => 
-        c.habitId == habitId &&
-        c.completedAt.year == today.year &&
-        c.completedAt.month == today.month &&
-        c.completedAt.day == today.day
-      ).toList();
-      
+      final todayCompletions = state.completions
+          .where((c) =>
+              c.habitId == habitId &&
+              c.completedAt.year == today.year &&
+              c.completedAt.month == today.month &&
+              c.completedAt.day == today.day)
+          .toList();
+
       for (final completion in todayCompletions) {
         await _habitService.deleteCompletion(completion.id);
       }
-      
+
       // Update habit streak
       final habit = state.habits.firstWhere((h) => h.id == habitId);
       final updatedHabit = await _recalculateHabitStreak(habit);
       await updateHabit(updatedHabit);
-      
+
       await loadHabits();
       return true;
     } catch (e) {
@@ -179,27 +227,27 @@ class HabitNotifier extends StateNotifier<HabitState> {
 
   // Get habits for specific date
   List<Habit> getHabitsForDate(DateTime date) {
-    return state.habits.where((habit) => 
-      habit.isActive && habit.isScheduledForDate(date)
-    ).toList();
+    return state.habits
+        .where((habit) => habit.isActive && habit.isScheduledForDate(date))
+        .toList();
   }
 
   // Get habits by category
   List<Habit> getHabitsByCategory(HabitCategory category) {
-    return state.habits.where((habit) => 
-      habit.category == category && habit.isActive
-    ).toList();
+    return state.habits
+        .where((habit) => habit.category == category && habit.isActive)
+        .toList();
   }
 
   // Search habits
   List<Habit> searchHabits(String query) {
     if (query.isEmpty) return state.habits;
-    
+
     final lowercaseQuery = query.toLowerCase();
     return state.habits.where((habit) {
       return habit.name.toLowerCase().contains(lowercaseQuery) ||
-             habit.description.toLowerCase().contains(lowercaseQuery) ||
-             habit.tags.any((tag) => tag.toLowerCase().contains(lowercaseQuery));
+          habit.description.toLowerCase().contains(lowercaseQuery) ||
+          habit.tags.any((tag) => tag.toLowerCase().contains(lowercaseQuery));
     }).toList();
   }
 
@@ -226,33 +274,39 @@ class HabitNotifier extends StateNotifier<HabitState> {
   // Get habit statistics
   Map<String, dynamic> getHabitStatistics(String habitId) {
     final habit = state.habits.firstWhere((h) => h.id == habitId);
-    final habitCompletions = state.completions.where((c) => c.habitId == habitId).toList();
-    
+    final habitCompletions =
+        state.completions.where((c) => c.habitId == habitId).toList();
+
     final now = DateTime.now();
-    final thisWeek = _getDateRange(now.subtract(Duration(days: now.weekday - 1)), 7);
-    final thisMonth = _getDateRange(DateTime(now.year, now.month, 1), DateTime(now.year, now.month + 1, 0).day);
-    
-    final weekCompletions = habitCompletions.where((c) => thisWeek.any((date) => 
-      c.completedAt.year == date.year &&
-      c.completedAt.month == date.month &&
-      c.completedAt.day == date.day
-    )).length;
-    
-    final monthCompletions = habitCompletions.where((c) => thisMonth.any((date) => 
-      c.completedAt.year == date.year &&
-      c.completedAt.month == date.month &&
-      c.completedAt.day == date.day
-    )).length;
-    
+    final thisWeek =
+        _getDateRange(now.subtract(Duration(days: now.weekday - 1)), 7);
+    final thisMonth = _getDateRange(DateTime(now.year, now.month, 1),
+        DateTime(now.year, now.month + 1, 0).day);
+
+    final weekCompletions = habitCompletions
+        .where((c) => thisWeek.any((date) =>
+            c.completedAt.year == date.year &&
+            c.completedAt.month == date.month &&
+            c.completedAt.day == date.day))
+        .length;
+
+    final monthCompletions = habitCompletions
+        .where((c) => thisMonth.any((date) =>
+            c.completedAt.year == date.year &&
+            c.completedAt.month == date.month &&
+            c.completedAt.day == date.day))
+        .length;
+
     return {
       'totalCompletions': habitCompletions.length,
       'currentStreak': habit.currentStreak,
       'longestStreak': habit.longestStreak,
       'weekCompletions': weekCompletions,
       'monthCompletions': monthCompletions,
-      'completionRate': habitCompletions.length > 0 
-        ? (habitCompletions.length / _getDaysSinceCreated(habit)).clamp(0.0, 1.0)
-        : 0.0,
+      'completionRate': habitCompletions.isNotEmpty
+          ? (habitCompletions.length / _getDaysSinceCreated(habit))
+              .clamp(0.0, 1.0)
+          : 0.0,
     };
   }
 
@@ -260,19 +314,22 @@ class HabitNotifier extends StateNotifier<HabitState> {
   Map<String, dynamic> getOverallStatistics() {
     final activeHabits = state.habits.where((h) => h.isActive).length;
     final totalCompletions = state.completions.length;
-    final currentStreaks = state.habits.fold<int>(0, (sum, h) => sum + h.currentStreak);
+    final currentStreaks =
+        state.habits.fold<int>(0, (sum, h) => sum + h.currentStreak);
     final achievements = state.achievements.length;
-    
+
     final today = DateTime.now();
-    final todayCompletions = state.completions.where((c) => 
-      c.completedAt.year == today.year &&
-      c.completedAt.month == today.month &&
-      c.completedAt.day == today.day
-    ).length;
-    
+    final todayCompletions = state.completions
+        .where((c) =>
+            c.completedAt.year == today.year &&
+            c.completedAt.month == today.month &&
+            c.completedAt.day == today.day)
+        .length;
+
     final todayHabits = getHabitsForDate(today).length;
-    final completionRate = todayHabits > 0 ? (todayCompletions / todayHabits) : 0.0;
-    
+    final completionRate =
+        todayHabits > 0 ? (todayCompletions / todayHabits) : 0.0;
+
     return {
       'activeHabits': activeHabits,
       'totalCompletions': totalCompletions,
@@ -285,25 +342,26 @@ class HabitNotifier extends StateNotifier<HabitState> {
   }
 
   // Private helper methods
-  Future<Habit> _updateHabitStreak(Habit habit, HabitCompletion completion) async {
+  Future<Habit> _updateHabitStreak(
+      Habit habit, HabitCompletion completion) async {
     final yesterday = completion.completedAt.subtract(const Duration(days: 1));
-    final wasCompletedYesterday = state.completions.any((c) => 
-      c.habitId == habit.id &&
-      c.completedAt.year == yesterday.year &&
-      c.completedAt.month == yesterday.month &&
-      c.completedAt.day == yesterday.day
-    );
-    
+    final wasCompletedYesterday = state.completions.any((c) =>
+        c.habitId == habit.id &&
+        c.completedAt.year == yesterday.year &&
+        c.completedAt.month == yesterday.month &&
+        c.completedAt.day == yesterday.day);
+
     int newStreak;
     if (wasCompletedYesterday) {
       newStreak = habit.currentStreak + 1;
     } else {
       newStreak = 1;
     }
-    
+
     return habit.copyWith(
       currentStreak: newStreak,
-      longestStreak: newStreak > habit.longestStreak ? newStreak : habit.longestStreak,
+      longestStreak:
+          newStreak > habit.longestStreak ? newStreak : habit.longestStreak,
       totalCompletions: habit.totalCompletions + 1,
       lastCompletedAt: completion.completedAt,
       updatedAt: DateTime.now(),
@@ -315,7 +373,7 @@ class HabitNotifier extends StateNotifier<HabitState> {
         .where((c) => c.habitId == habit.id)
         .toList()
       ..sort((a, b) => b.completedAt.compareTo(a.completedAt));
-    
+
     if (habitCompletions.isEmpty) {
       return habit.copyWith(
         currentStreak: 0,
@@ -323,17 +381,17 @@ class HabitNotifier extends StateNotifier<HabitState> {
         updatedAt: DateTime.now(),
       );
     }
-    
+
     int currentStreak = 0;
     DateTime? lastDate;
-    
+
     for (final completion in habitCompletions) {
       final completionDate = DateTime(
         completion.completedAt.year,
         completion.completedAt.month,
         completion.completedAt.day,
       );
-      
+
       if (lastDate == null) {
         currentStreak = 1;
         lastDate = completionDate;
@@ -347,7 +405,7 @@ class HabitNotifier extends StateNotifier<HabitState> {
         }
       }
     }
-    
+
     return habit.copyWith(
       currentStreak: currentStreak,
       lastCompletedAt: habitCompletions.first.completedAt,
@@ -358,39 +416,41 @@ class HabitNotifier extends StateNotifier<HabitState> {
 
   Future<void> _checkAchievements(String habitId) async {
     final habit = state.habits.firstWhere((h) => h.id == habitId);
-    final existingAchievements = state.achievements.where((a) => a.habitId == habitId).toList();
-    
+    final existingAchievements =
+        state.achievements.where((a) => a.habitId == habitId).toList();
+
     // Check streak achievements
     final streakMilestones = [7, 30, 100, 365];
     for (final milestone in streakMilestones) {
       if (habit.currentStreak >= milestone) {
         final achievementId = '${habitId}_streak_$milestone';
         final exists = existingAchievements.any((a) => a.id == achievementId);
-        
+
         if (!exists) {
           final achievement = HabitAchievement(
             id: achievementId,
             habitId: habitId,
             type: 'streak',
             title: '$milestone Day Streak!',
-            description: 'Completed ${habit.name} for $milestone consecutive days',
+            description:
+                'Completed ${habit.name} for $milestone consecutive days',
             threshold: milestone,
             unlockedAt: DateTime.now(),
             icon: '🔥',
           );
-          
+
           await _habitService.addAchievement(achievement);
         }
       }
     }
-    
+
     // Check completion achievements
     final completionMilestones = [10, 50, 100, 500, 1000];
     for (final milestone in completionMilestones) {
       if (habit.totalCompletions >= milestone) {
         final achievementId = '${habitId}_completion_$milestone';
         final exists = existingAchievements.any((a) => a.id == achievementId);
-        
+
         if (!exists) {
           final achievement = HabitAchievement(
             id: achievementId,
@@ -402,7 +462,7 @@ class HabitNotifier extends StateNotifier<HabitState> {
             unlockedAt: DateTime.now(),
             icon: '⭐',
           );
-          
+
           await _habitService.addAchievement(achievement);
         }
       }
@@ -422,5 +482,16 @@ class HabitNotifier extends StateNotifier<HabitState> {
 // Provider for HabitNotifier
 final habitProvider = StateNotifierProvider<HabitNotifier, HabitState>((ref) {
   final habitService = ref.read(habitServiceProvider);
-  return HabitNotifier(habitService);
-}); 
+  final notificationScheduler = ref.read(notificationSchedulerProvider);
+
+  // Get gamification service (optional - may not be available)
+  GamificationEventService? gamificationService;
+  try {
+    gamificationService = ref.read(gamificationEventServiceProvider);
+  } catch (_) {
+    // Gamification service not available
+  }
+
+  return HabitNotifier(
+      habitService, notificationScheduler, gamificationService);
+});

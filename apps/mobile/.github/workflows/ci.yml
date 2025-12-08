@@ -1,0 +1,371 @@
+# UpCoach Mobile CI/CD Pipeline
+# Main workflow for continuous integration and deployment
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'release/**'
+    paths:
+      - 'apps/mobile/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'apps/mobile/**'
+  workflow_dispatch:
+    inputs:
+      build_android:
+        description: 'Build Android'
+        required: false
+        default: true
+        type: boolean
+      build_ios:
+        description: 'Build iOS'
+        required: false
+        default: true
+        type: boolean
+      run_tests:
+        description: 'Run Tests'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  FLUTTER_VERSION: '3.35.3'
+  JAVA_VERSION: '17'
+  RUBY_VERSION: '3.2'
+  WORKING_DIRECTORY: 'apps/mobile'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # =============================================================================
+  # Code Quality & Analysis
+  # =============================================================================
+  analyze:
+    name: Analyze & Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+          cache-key: flutter-${{ env.FLUTTER_VERSION }}-${{ hashFiles('**/pubspec.lock') }}
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Verify Formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze Code
+        run: flutter analyze --no-fatal-infos
+
+      - name: Check for Outdated Dependencies
+        run: flutter pub outdated
+        continue-on-error: true
+
+  # =============================================================================
+  # Unit & Widget Tests
+  # =============================================================================
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: analyze
+    if: ${{ github.event.inputs.run_tests != 'false' }}
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+          cache-key: flutter-${{ env.FLUTTER_VERSION }}-${{ hashFiles('**/pubspec.lock') }}
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Run Unit Tests
+        run: flutter test --coverage --reporter=github
+
+      - name: Upload Coverage Report
+        uses: codecov/codecov-action@v4
+        with:
+          files: ${{ env.WORKING_DIRECTORY }}/coverage/lcov.info
+          flags: unittests
+          name: flutter-coverage
+          fail_ci_if_error: false
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: ${{ env.WORKING_DIRECTORY }}/coverage/
+
+  # =============================================================================
+  # Android Build
+  # =============================================================================
+  build-android:
+    name: Build Android
+    runs-on: ubuntu-latest
+    needs: test
+    if: ${{ github.event.inputs.build_android != 'false' }}
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+          cache-key: flutter-${{ env.FLUTTER_VERSION }}-${{ hashFiles('**/pubspec.lock') }}
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Setup Android Keystore
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+          echo "storeFile=upload-keystore.jks" >> android/key.properties
+          echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+
+      - name: Build Debug APK (PR)
+        if: github.event_name == 'pull_request'
+        run: flutter build apk --debug
+
+      - name: Build Release APK
+        if: github.event_name != 'pull_request'
+        run: flutter build apk --release
+
+      - name: Build App Bundle (Release)
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/'))
+        run: flutter build appbundle --release
+
+      - name: Upload Debug APK
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-apk
+          path: ${{ env.WORKING_DIRECTORY }}/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 7
+
+      - name: Upload Release APK
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-apk
+          path: ${{ env.WORKING_DIRECTORY }}/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      - name: Upload App Bundle
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/'))
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-app-bundle
+          path: ${{ env.WORKING_DIRECTORY }}/build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+  # =============================================================================
+  # iOS Build
+  # =============================================================================
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+    needs: test
+    if: ${{ github.event.inputs.build_ios != 'false' }}
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+          cache-key: flutter-${{ env.FLUTTER_VERSION }}-${{ hashFiles('**/pubspec.lock') }}
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: true
+          working-directory: ${{ env.WORKING_DIRECTORY }}/ios
+
+      - name: Get Dependencies
+        run: flutter pub get
+
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install --repo-update
+
+      - name: Setup iOS Certificates (Release)
+        if: github.event_name != 'pull_request'
+        env:
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_AUTH }}
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+        run: |
+          cd ios
+          bundle exec fastlane match appstore --readonly
+
+      - name: Build iOS (Debug - Simulator)
+        if: github.event_name == 'pull_request'
+        run: flutter build ios --debug --simulator --no-codesign
+
+      - name: Build iOS (Release)
+        if: github.event_name != 'pull_request'
+        run: flutter build ios --release --no-codesign
+
+      - name: Archive iOS App
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/'))
+        run: |
+          cd ios
+          xcodebuild -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -archivePath build/Runner.xcarchive \
+            archive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Upload iOS Build
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build
+          path: ${{ env.WORKING_DIRECTORY }}/build/ios/iphoneos/
+          retention-days: 30
+
+  # =============================================================================
+  # Deploy to Internal Testing (Develop Branch)
+  # =============================================================================
+  deploy-internal:
+    name: Deploy to Internal Testing
+    runs-on: ubuntu-latest
+    needs: [build-android, build-ios]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    environment: internal
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download Android APK
+        uses: actions/download-artifact@v4
+        with:
+          name: android-release-apk
+          path: ${{ env.WORKING_DIRECTORY }}/build/
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: true
+          working-directory: ${{ env.WORKING_DIRECTORY }}/android
+
+      - name: Deploy to Play Store Internal
+        env:
+          PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
+        run: |
+          echo "$PLAY_STORE_JSON_KEY" > android/play-store-key.json
+          cd android
+          bundle exec fastlane internal
+
+      - name: Notify Slack
+        if: always()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "🚀 UpCoach Mobile - Internal Build Deployed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*UpCoach Mobile*\nInternal build deployed to Play Store Internal Track\n*Commit:* `${{ github.sha }}`"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true
+
+  # =============================================================================
+  # Notify on Failure
+  # =============================================================================
+  notify-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [analyze, test, build-android, build-ios]
+    if: failure()
+
+    steps:
+      - name: Notify Slack on Failure
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "❌ UpCoach Mobile CI Failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*UpCoach Mobile CI Failed*\n*Branch:* `${{ github.ref_name }}`\n*Commit:* `${{ github.sha }}`\n*Author:* ${{ github.actor }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true

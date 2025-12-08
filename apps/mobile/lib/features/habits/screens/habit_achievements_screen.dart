@@ -9,10 +9,12 @@ class HabitAchievementsScreen extends ConsumerStatefulWidget {
   const HabitAchievementsScreen({super.key});
 
   @override
-  ConsumerState<HabitAchievementsScreen> createState() => _HabitAchievementsScreenState();
+  ConsumerState<HabitAchievementsScreen> createState() =>
+      _HabitAchievementsScreenState();
 }
 
-class _HabitAchievementsScreenState extends ConsumerState<HabitAchievementsScreen>
+class _HabitAchievementsScreenState
+    extends ConsumerState<HabitAchievementsScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
 
@@ -81,10 +83,12 @@ class _HabitAchievementsScreenState extends ConsumerState<HabitAchievementsScree
             _buildEmptyState(
               icon: Icons.emoji_events_outlined,
               title: 'No achievements yet',
-              subtitle: 'Keep working on your habits to earn your first achievement!',
+              subtitle:
+                  'Keep working on your habits to earn your first achievement!',
             )
           else
-            ...earnedAchievements.map((achievement) => _buildAchievementCard(achievement, true)),
+            ...earnedAchievements
+                .map((achievement) => _buildAchievementCard(achievement, true)),
         ],
       ),
     );
@@ -100,15 +104,16 @@ class _HabitAchievementsScreenState extends ConsumerState<HabitAchievementsScree
         children: [
           _buildSectionHeader('Almost There!'),
           const SizedBox(height: UIConstants.spacingMD),
-
           if (inProgressAchievements.isEmpty)
             _buildEmptyState(
               icon: Icons.trending_up_outlined,
               title: 'All caught up!',
-              subtitle: 'You\'ve completed all available achievements. New ones coming soon!',
+              subtitle:
+                  'You\'ve completed all available achievements. New ones coming soon!',
             )
           else
-            ...inProgressAchievements.map((achievement) => _buildProgressCard(achievement)),
+            ...inProgressAchievements
+                .map((achievement) => _buildProgressCard(achievement)),
         ],
       ),
     );
@@ -124,7 +129,6 @@ class _HabitAchievementsScreenState extends ConsumerState<HabitAchievementsScree
         children: [
           _buildSectionHeader('Habit Badges'),
           const SizedBox(height: UIConstants.spacingMD),
-
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -217,7 +221,8 @@ class _HabitAchievementsScreenState extends ConsumerState<HabitAchievementsScree
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
+  Widget _buildStatItem(
+      String label, String value, IconData icon, Color color) {
     return Column(
       children: [
         Icon(icon, color: color, size: 24),
@@ -241,7 +246,8 @@ class _HabitAchievementsScreenState extends ConsumerState<HabitAchievementsScree
     );
   }
 
-  Widget _buildAchievementCard(Map<String, dynamic> achievement, bool isEarned) {
+  Widget _buildAchievementCard(
+      Map<String, dynamic> achievement, bool isEarned) {
     return Card(
       margin: const EdgeInsets.only(bottom: UIConstants.spacingMD),
       elevation: UIConstants.elevationSM,
@@ -453,7 +459,7 @@ class _HabitAchievementsScreenState extends ConsumerState<HabitAchievementsScree
                   vertical: 2,
                 ),
                 decoration: BoxDecoration(
-                  color: badge['color'].withOpacity(0.1),
+                  color: badge['color'].withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(UIConstants.radiusSM),
                 ),
                 child: Text(
@@ -628,6 +634,7 @@ class _HabitAchievementsScreenState extends ConsumerState<HabitAchievementsScree
   }
 
   int _calculateTotalPoints(List<Map<String, dynamic>> achievements) {
-    return achievements.fold(0, (sum, achievement) => sum + (achievement['points'] as int));
+    return achievements.fold(
+        0, (sum, achievement) => sum + (achievement['points'] as int));
   }
 }

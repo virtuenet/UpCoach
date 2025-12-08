@@ -1,6 +1,6 @@
-/// Conflict Resolution Dialog Widget
-///
-/// Provides a UI for users to manually resolve sync conflicts.
+// Conflict Resolution Dialog Widget
+//
+// Provides a UI for users to manually resolve sync conflicts.
 
 import 'package:flutter/material.dart';
 import 'sync_manager.dart';
@@ -10,10 +10,10 @@ class ConflictResolutionDialog extends StatefulWidget {
   final Function(ConflictResolution) onResolved;
 
   const ConflictResolutionDialog({
-    Key? key,
+    super.key,
     required this.conflict,
     required this.onResolved,
-  }) : super(key: key);
+  });
 
   @override
   State<ConflictResolutionDialog> createState() =>
@@ -128,41 +128,42 @@ class _ConflictResolutionDialogState extends State<ConflictResolutionDialog> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-        RadioListTile<ConflictResolution>(
-          title: const Text('Keep Local Changes'),
-          subtitle: const Text('Use the version from this device'),
-          value: ConflictResolution.keepLocal,
+        RadioGroup<ConflictResolution>(
           groupValue: _selectedResolution,
           onChanged: (value) => setState(() => _selectedResolution = value),
-          dense: true,
-        ),
-        RadioListTile<ConflictResolution>(
-          title: const Text('Keep Server Changes'),
-          subtitle: const Text('Use the version from the server'),
-          value: ConflictResolution.keepServer,
-          groupValue: _selectedResolution,
-          onChanged: (value) => setState(() => _selectedResolution = value),
-          dense: true,
-        ),
-        RadioListTile<ConflictResolution>(
-          title: const Text('Use Newer Version'),
-          subtitle: Text(
-            widget.conflict.localTimestamp.isAfter(widget.conflict.serverTimestamp)
-                ? 'Local is newer'
-                : 'Server is newer',
+          child: Column(
+            children: [
+              RadioListTile<ConflictResolution>(
+                title: const Text('Keep Local Changes'),
+                subtitle: const Text('Use the version from this device'),
+                value: ConflictResolution.keepLocal,
+                dense: true,
+              ),
+              RadioListTile<ConflictResolution>(
+                title: const Text('Keep Server Changes'),
+                subtitle: const Text('Use the version from the server'),
+                value: ConflictResolution.keepServer,
+                dense: true,
+              ),
+              RadioListTile<ConflictResolution>(
+                title: const Text('Use Newer Version'),
+                subtitle: Text(
+                  widget.conflict.localTimestamp
+                          .isAfter(widget.conflict.serverTimestamp)
+                      ? 'Local is newer'
+                      : 'Server is newer',
+                ),
+                value: ConflictResolution.newerWins,
+                dense: true,
+              ),
+              RadioListTile<ConflictResolution>(
+                title: const Text('Merge Changes'),
+                subtitle: const Text('Combine both versions (advanced)'),
+                value: ConflictResolution.merge,
+                dense: true,
+              ),
+            ],
           ),
-          value: ConflictResolution.newerWins,
-          groupValue: _selectedResolution,
-          onChanged: (value) => setState(() => _selectedResolution = value),
-          dense: true,
-        ),
-        RadioListTile<ConflictResolution>(
-          title: const Text('Merge Changes'),
-          subtitle: const Text('Combine both versions (advanced)'),
-          value: ConflictResolution.merge,
-          groupValue: _selectedResolution,
-          onChanged: (value) => setState(() => _selectedResolution = value),
-          dense: true,
         ),
       ],
     );
@@ -259,7 +260,9 @@ class _ConflictResolutionDialogState extends State<ConflictResolutionDialog> {
 
   String _formatValue(dynamic value) {
     if (value == null) return 'null';
-    if (value is String) return value.length > 50 ? '${value.substring(0, 50)}...' : value;
+    if (value is String) {
+      return value.length > 50 ? '${value.substring(0, 50)}...' : value;
+    }
     if (value is DateTime) return _formatTimestamp(value);
     return value.toString();
   }
@@ -270,23 +273,24 @@ class SyncStatusIndicator extends StatelessWidget {
   final SyncManager syncManager;
 
   const SyncStatusIndicator({
-    Key? key,
+    super.key,
     required this.syncManager,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: syncManager,
       builder: (context, _) {
-        if (syncManager.status == SyncStatus.idle && !syncManager.hasPendingOperations) {
+        if (syncManager.status == SyncStatus.idle &&
+            !syncManager.hasPendingOperations) {
           return const SizedBox.shrink();
         }
 
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: _getStatusColor().withOpacity(0.1),
+            color: _getStatusColor().withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: _getStatusColor()),
           ),
@@ -306,7 +310,8 @@ class SyncStatusIndicator extends StatelessWidget {
               if (syncManager.pendingCount > 0) ...[
                 const SizedBox(width: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: _getStatusColor(),
                     borderRadius: BorderRadius.circular(10),

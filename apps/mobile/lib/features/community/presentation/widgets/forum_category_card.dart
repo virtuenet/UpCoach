@@ -8,10 +8,10 @@ class ForumCategoryCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const ForumCategoryCard({
-    Key? key,
+    super.key,
     required this.category,
     this.onTap,
-  }) : super(key: key);
+  });
 
   IconData _getIconData(String iconName) {
     switch (iconName) {
@@ -49,7 +49,7 @@ class ForumCategoryCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -79,9 +79,11 @@ class ForumCategoryCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        _buildStat(Icons.forum_outlined, '${category.threadCount}'),
+                        _buildStat(
+                            Icons.forum_outlined, '${category.threadCount}'),
                         const SizedBox(width: 16),
-                        _buildStat(Icons.people_outline, '${category.memberCount}'),
+                        _buildStat(
+                            Icons.people_outline, '${category.memberCount}'),
                       ],
                     ),
                   ],

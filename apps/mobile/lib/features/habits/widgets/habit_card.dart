@@ -27,7 +27,8 @@ class HabitCard extends StatelessWidget {
     final today = DateTime.now();
     final progress = habit.getProgressForDate(today, completions);
     final isCompleted = progress >= 1.0;
-    final streakText = habit.currentStreak > 0 ? '🔥 ${habit.currentStreak}' : '';
+    final streakText =
+        habit.currentStreak > 0 ? '🔥 ${habit.currentStreak}' : '';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -51,7 +52,8 @@ class HabitCard extends StatelessWidget {
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: Color(int.parse('0xFF${habit.color.substring(1)}')).withOpacity(0.2),
+                      color: Color(int.parse('0xFF${habit.color.substring(1)}'))
+                          .withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                     ),
                     child: Center(
@@ -61,9 +63,9 @@ class HabitCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(width: UIConstants.spacingMD),
-                  
+
                   // Habit info
                   Expanded(
                     child: Column(
@@ -85,10 +87,12 @@ class HabitCard extends StatelessWidget {
                             if (streakText.isNotEmpty) ...[
                               const SizedBox(width: UIConstants.spacingSM),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: Colors.orange.shade100,
-                                  borderRadius: BorderRadius.circular(UIConstants.radiusLG),
+                                  borderRadius: BorderRadius.circular(
+                                      UIConstants.radiusLG),
                                 ),
                                 child: Text(
                                   streakText,
@@ -114,10 +118,13 @@ class HabitCard extends StatelessWidget {
                             ),
                             const SizedBox(width: UIConstants.spacingSM),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: _getCategoryColor(habit.category).withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(UIConstants.radiusMD),
+                                color: _getCategoryColor(habit.category)
+                                    .withValues(alpha: 0.2),
+                                borderRadius:
+                                    BorderRadius.circular(UIConstants.radiusMD),
                               ),
                               child: Text(
                                 _getCategoryName(habit.category),
@@ -133,7 +140,7 @@ class HabitCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  
+
                   // More options
                   PopupMenuButton<String>(
                     onSelected: (value) {
@@ -154,7 +161,9 @@ class HabitCard extends StatelessWidget {
                         value: 'toggle',
                         child: Row(
                           children: [
-                            Icon(habit.isActive ? Icons.pause : Icons.play_arrow),
+                            Icon(habit.isActive
+                                ? Icons.pause
+                                : Icons.play_arrow),
                             const SizedBox(width: UIConstants.spacingSM),
                             Text(habit.isActive ? 'Pause' : 'Resume'),
                           ],
@@ -184,9 +193,9 @@ class HabitCard extends StatelessWidget {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: UIConstants.spacingMD),
-              
+
               // Progress indicator
               if (habit.type != HabitType.simple) ...[
                 Row(
@@ -213,7 +222,7 @@ class HabitCard extends StatelessWidget {
                 ),
                 const SizedBox(height: UIConstants.spacingSM),
               ],
-              
+
               // Description (if available)
               if (habit.description.isNotEmpty) ...[
                 Text(
@@ -227,48 +236,59 @@ class HabitCard extends StatelessWidget {
                 ),
                 const SizedBox(height: UIConstants.spacingSM),
               ],
-              
+
               // Action buttons
               Row(
                 children: [
                   // Activity status
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: habit.isActive ? Colors.green.shade100 : Colors.grey.shade100,
+                      color: habit.isActive
+                          ? Colors.green.shade100
+                          : Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          habit.isActive ? Icons.check_circle : Icons.pause_circle,
+                          habit.isActive
+                              ? Icons.check_circle
+                              : Icons.pause_circle,
                           size: 16,
-                          color: habit.isActive ? Colors.green.shade700 : Colors.grey.shade600,
+                          color: habit.isActive
+                              ? Colors.green.shade700
+                              : Colors.grey.shade600,
                         ),
                         const SizedBox(width: UIConstants.spacingXS),
                         Text(
                           habit.isActive ? 'Active' : 'Paused',
                           style: TextStyle(
                             fontSize: 12,
-                            color: habit.isActive ? Colors.green.shade700 : Colors.grey.shade600,
+                            color: habit.isActive
+                                ? Colors.green.shade700
+                                : Colors.grey.shade600,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  
+
                   const Spacer(),
-                  
+
                   // Completion status for today
                   if (habit.isScheduledForDate(today)) ...[
                     if (isCompleted)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.green.shade100,
-                          borderRadius: BorderRadius.circular(UIConstants.radiusXL),
+                          borderRadius:
+                              BorderRadius.circular(UIConstants.radiusXL),
                           border: Border.all(color: Colors.green.shade300),
                         ),
                         child: Row(
@@ -297,19 +317,23 @@ class HabitCard extends StatelessWidget {
                         icon: const Icon(Icons.add, size: 16),
                         label: const Text('Complete'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(int.parse('0xFF${habit.color.substring(1)}')),
+                          backgroundColor: Color(
+                              int.parse('0xFF${habit.color.substring(1)}')),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                       ),
                   ] else
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(UIConstants.radiusMD),
+                        borderRadius:
+                            BorderRadius.circular(UIConstants.radiusMD),
                       ),
                       child: Text(
                         'Not today',
@@ -347,7 +371,8 @@ class HabitCard extends StatelessWidget {
     );
   }
 
-  void _completeHabit(BuildContext context, int value, String notes, int? duration) {
+  void _completeHabit(
+      BuildContext context, int value, String notes, int? duration) {
     // This would typically call a callback to the parent widget
     // For now, show a success message
     ScaffoldMessenger.of(context).showSnackBar(
@@ -358,13 +383,14 @@ class HabitCard extends StatelessWidget {
     );
   }
 
-  String _getProgressText(Habit habit, List<HabitCompletion> completions, DateTime date) {
+  String _getProgressText(
+      Habit habit, List<HabitCompletion> completions, DateTime date) {
     final dayCompletions = completions.where((c) {
       final completedDate = c.completedAt;
       return c.habitId == habit.id &&
-             completedDate.year == date.year &&
-             completedDate.month == date.month &&
-             completedDate.day == date.day;
+          completedDate.year == date.year &&
+          completedDate.month == date.month &&
+          completedDate.day == date.day;
     }).toList();
 
     if (dayCompletions.isEmpty) {
@@ -376,10 +402,12 @@ class HabitCard extends StatelessWidget {
         return dayCompletions.isNotEmpty ? 'Done' : 'Pending';
       case HabitType.count:
       case HabitType.value:
-        final totalValue = dayCompletions.fold<int>(0, (sum, c) => sum + c.value);
+        final totalValue =
+            dayCompletions.fold<int>(0, (sum, c) => sum + c.value);
         return '$totalValue/${habit.targetValue} ${habit.unit}';
       case HabitType.time:
-        final totalDuration = dayCompletions.fold<int>(0, (sum, c) => sum + (c.duration ?? 0));
+        final totalDuration =
+            dayCompletions.fold<int>(0, (sum, c) => sum + (c.duration ?? 0));
         return '$totalDuration/${habit.targetValue} min';
     }
   }
@@ -452,9 +480,11 @@ class _CompletionDialogState extends State<_CompletionDialog> {
   @override
   void initState() {
     super.initState();
-    _valueController = TextEditingController(text: widget.habit.targetValue.toString());
+    _valueController =
+        TextEditingController(text: widget.habit.targetValue.toString());
     _notesController = TextEditingController();
-    _durationController = TextEditingController(text: widget.habit.targetValue.toString());
+    _durationController =
+        TextEditingController(text: widget.habit.targetValue.toString());
   }
 
   @override
@@ -472,17 +502,18 @@ class _CompletionDialogState extends State<_CompletionDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (widget.habit.type == HabitType.count || widget.habit.type == HabitType.value)
+          if (widget.habit.type == HabitType.count ||
+              widget.habit.type == HabitType.value)
             TextField(
               controller: _valueController,
               decoration: InputDecoration(
-                labelText: widget.habit.type == HabitType.count ? 'Count' : 'Value',
+                labelText:
+                    widget.habit.type == HabitType.count ? 'Count' : 'Value',
                 suffixText: widget.habit.unit,
                 border: const OutlineInputBorder(),
               ),
               keyboardType: TextInputType.number,
             ),
-          
           if (widget.habit.type == HabitType.time) ...[
             TextField(
               controller: _durationController,
@@ -495,9 +526,7 @@ class _CompletionDialogState extends State<_CompletionDialog> {
             ),
             const SizedBox(height: UIConstants.spacingMD),
           ],
-          
           const SizedBox(height: UIConstants.spacingMD),
-          
           TextField(
             controller: _notesController,
             decoration: const InputDecoration(
@@ -526,15 +555,17 @@ class _CompletionDialogState extends State<_CompletionDialog> {
     int value = 1;
     int? duration;
 
-    if (widget.habit.type == HabitType.count || widget.habit.type == HabitType.value) {
+    if (widget.habit.type == HabitType.count ||
+        widget.habit.type == HabitType.value) {
       value = int.tryParse(_valueController.text) ?? 1;
     }
 
     if (widget.habit.type == HabitType.time) {
-      duration = int.tryParse(_durationController.text) ?? widget.habit.targetValue;
+      duration =
+          int.tryParse(_durationController.text) ?? widget.habit.targetValue;
     }
 
     widget.onComplete(value, _notesController.text, duration);
     context.pop();
   }
-} 
+}

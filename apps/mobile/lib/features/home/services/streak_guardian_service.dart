@@ -24,7 +24,8 @@ class StreakGuardianService {
 
   Future<void> sendCheer(String linkId, String message) async {
     try {
-      await _api.post('/api/gamification/guardians/$linkId/cheer', data: {'message': message});
+      await _api.post('/api/gamification/guardians/$linkId/cheer',
+          data: {'message': message});
     } on DioException catch (error) {
       throw Exception(error.error?.toString() ?? 'Unable to send cheer');
     }
@@ -35,4 +36,3 @@ final streakGuardianServiceProvider = Provider<StreakGuardianService>((ref) {
   final api = ref.watch(apiServiceProvider);
   return StreakGuardianService(api);
 });
-

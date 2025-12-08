@@ -5,7 +5,7 @@ import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:intl/message_lookup_by_library.dart';
 
-typedef Future<dynamic> LibraryLoader();
+typedef LibraryLoader = Future<dynamic> Function();
 
 Map<String, LibraryLoader> _deferredLibraries = {};
 
@@ -27,7 +27,9 @@ MessageLookupByLibrary? _findExact(String localeName) {
 Future<bool> initializeMessages(String localeName) async {
   var availableLocale = Intl.verifiedLocale(
     localeName,
-    (locale) => _deferredLibraries.containsKey(locale) || _findExact(localeName) != null,
+    (locale) =>
+        _deferredLibraries.containsKey(locale) ||
+        _findExact(localeName) != null,
     onFailure: (_) => null,
   );
   if (availableLocale == null) {

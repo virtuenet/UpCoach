@@ -19,7 +19,8 @@ class VoiceRecordingWidget extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<VoiceRecordingWidget> createState() => _VoiceRecordingWidgetState();
+  ConsumerState<VoiceRecordingWidget> createState() =>
+      _VoiceRecordingWidgetState();
 }
 
 class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
@@ -28,7 +29,7 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
   late AnimationController _scaleController;
   late Animation<double> _pulseAnimation;
   late Animation<double> _scaleAnimation;
-  
+
   final TextEditingController _titleController = TextEditingController();
   bool _isRecording = false;
   Duration _recordingDuration = Duration.zero;
@@ -36,17 +37,17 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
   @override
   void initState() {
     super.initState();
-    
+
     _pulseController = AnimationController(
       duration: const Duration(seconds: 1),
       vsync: this,
     );
-    
+
     _scaleController = AnimationController(
       duration: const Duration(milliseconds: 150),
       vsync: this,
     );
-    
+
     _pulseAnimation = Tween<double>(
       begin: 1.0,
       end: 1.2,
@@ -54,7 +55,7 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
       parent: _pulseController,
       curve: Curves.easeInOut,
     ));
-    
+
     _scaleAnimation = Tween<double>(
       begin: 1.0,
       end: 0.95,
@@ -76,9 +77,9 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
   Widget build(BuildContext context) {
     final voiceJournalState = ref.watch(voiceJournalProvider);
     final voiceRecordingService = ref.watch(voiceRecordingServiceProvider);
-    
+
     _isRecording = voiceJournalState.isRecording;
-    
+
     // Listen to recording state changes
     ref.listen(voiceRecordingServiceProvider, (previous, next) {
       next.stateStream.listen((state) {
@@ -88,7 +89,7 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
           _pulseController.stop();
         }
       });
-      
+
       next.durationStream.listen((duration) {
         setState(() {
           _recordingDuration = duration;
@@ -177,17 +178,23 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
                     animation: _isRecording ? _pulseAnimation : _scaleAnimation,
                     builder: (context, child) {
                       return Transform.scale(
-                        scale: _isRecording ? _pulseAnimation.value : _scaleAnimation.value,
+                        scale: _isRecording
+                            ? _pulseAnimation.value
+                            : _scaleAnimation.value,
                         child: Container(
                           width: 120,
                           height: 120,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: _isRecording ? Colors.red : AppTheme.primaryColor,
+                            color: _isRecording
+                                ? Colors.red
+                                : AppTheme.primaryColor,
                             boxShadow: [
                               BoxShadow(
-                                color: (_isRecording ? Colors.red : AppTheme.primaryColor)
-                                    .withOpacity(0.3),
+                                color: (_isRecording
+                                        ? Colors.red
+                                        : AppTheme.primaryColor)
+                                    .withValues(alpha: 0.3),
                                 blurRadius: 20,
                                 spreadRadius: 5,
                               ),
@@ -241,12 +248,14 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
                       // Pause/Resume Button
                       ElevatedButton.icon(
                         onPressed: _togglePauseResume,
-                        icon: Icon(voiceRecordingService.state == RecordingState.paused
-                            ? Icons.play_arrow
-                            : Icons.pause),
-                        label: Text(voiceRecordingService.state == RecordingState.paused
-                            ? 'Resume'
-                            : 'Pause'),
+                        icon: Icon(
+                            voiceRecordingService.state == RecordingState.paused
+                                ? Icons.play_arrow
+                                : Icons.pause),
+                        label: Text(
+                            voiceRecordingService.state == RecordingState.paused
+                                ? 'Resume'
+                                : 'Pause'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.secondaryColor,
                           foregroundColor: Colors.white,
@@ -283,10 +292,10 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
             Container(
               padding: const EdgeInsets.all(UIConstants.spacingMD),
               decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.1),
+                color: AppTheme.primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                 border: Border.all(
-                  color: AppTheme.primaryColor.withOpacity(0.3),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
                 ),
               ),
               child: Column(
@@ -326,22 +335,24 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
   }
 
   Future<void> _startRecording() async {
-    final success = await ref.read(voiceJournalProvider.notifier).startRecording();
+    final success =
+        await ref.read(voiceJournalProvider.notifier).startRecording();
     if (success) {
       widget.onRecordingStart?.call();
     } else {
-      _showErrorSnackBar('Failed to start recording. Please check microphone permissions.');
+      _showErrorSnackBar(
+          'Failed to start recording. Please check microphone permissions.');
     }
   }
 
   Future<void> _stopAndSaveRecording() async {
     final entry = await ref.read(voiceJournalProvider.notifier).stopRecording(
-      title: _titleController.text.trim(),
-    );
+          title: _titleController.text.trim(),
+        );
 
     widget.onRecordingStop?.call();
 
-    if (entry != null) {
+    if (entry != null && mounted) {
       _titleController.clear();
       widget.onRecordingComplete?.call(entry.audioFilePath);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -366,6 +377,7 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
     await ref.read(voiceJournalProvider.notifier).cancelRecording();
     _titleController.clear();
     widget.onRecordingStop?.call();
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Recording cancelled'),
@@ -398,4 +410,4 @@ class _VoiceRecordingWidgetState extends ConsumerState<VoiceRecordingWidget>
     final seconds = twoDigits(duration.inSeconds.remainder(60));
     return '$minutes:$seconds';
   }
-} 
+}

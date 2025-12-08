@@ -17,32 +17,38 @@ class AppLogger {
   );
 
   /// Log verbose message
-  void v(dynamic message, {DateTime? time, Object? error, StackTrace? stackTrace}) {
+  void v(dynamic message,
+      {DateTime? time, Object? error, StackTrace? stackTrace}) {
     _logger.t(message, time: time, error: error, stackTrace: stackTrace);
   }
 
   /// Log debug message
-  void d(dynamic message, {DateTime? time, Object? error, StackTrace? stackTrace}) {
+  void d(dynamic message,
+      {DateTime? time, Object? error, StackTrace? stackTrace}) {
     _logger.d(message, time: time, error: error, stackTrace: stackTrace);
   }
 
   /// Log info message
-  void i(dynamic message, {DateTime? time, Object? error, StackTrace? stackTrace}) {
+  void i(dynamic message,
+      {DateTime? time, Object? error, StackTrace? stackTrace}) {
     _logger.i(message, time: time, error: error, stackTrace: stackTrace);
   }
 
   /// Log warning message
-  void w(dynamic message, {DateTime? time, Object? error, StackTrace? stackTrace}) {
+  void w(dynamic message,
+      {DateTime? time, Object? error, StackTrace? stackTrace}) {
     _logger.w(message, time: time, error: error, stackTrace: stackTrace);
   }
 
   /// Log error message
-  void e(dynamic message, {DateTime? time, Object? error, StackTrace? stackTrace}) {
+  void e(dynamic message,
+      {DateTime? time, Object? error, StackTrace? stackTrace}) {
     _logger.e(message, time: time, error: error, stackTrace: stackTrace);
   }
 
   /// Log fatal message
-  void f(dynamic message, {DateTime? time, Object? error, StackTrace? stackTrace}) {
+  void f(dynamic message,
+      {DateTime? time, Object? error, StackTrace? stackTrace}) {
     _logger.f(message, time: time, error: error, stackTrace: stackTrace);
   }
 }

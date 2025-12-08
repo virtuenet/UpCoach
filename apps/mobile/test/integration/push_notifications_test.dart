@@ -1,14 +1,13 @@
-/// Integration tests for push notifications
-///
-/// Tests Firebase Cloud Messaging integration including:
-/// - Service initialization
-/// - Token management
-/// - Topic subscriptions
-/// - Message handling
-/// - Analytics integration
+// Integration tests for push notifications
+//
+// Tests Firebase Cloud Messaging integration including:
+// - Service initialization
+// - Token management
+// - Topic subscriptions
+// - Message handling
+// - Analytics integration
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
@@ -134,7 +133,8 @@ void main() {
     });
 
     group('Local Notifications', () {
-      test('should display local notification for foreground message', () async {
+      test('should display local notification for foreground message',
+          () async {
         // Verify local notification is shown when app is in foreground
         expect(true, true); // Placeholder
       });
@@ -242,7 +242,8 @@ void main() {
         expect(true, true); // Placeholder
       });
 
-      test('should update backend when user changes notification settings', () async {
+      test('should update backend when user changes notification settings',
+          () async {
         // Verify settings changes are sent to API
         expect(true, true); // Placeholder
       });

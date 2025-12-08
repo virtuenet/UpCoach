@@ -1,26 +1,29 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/app_constants.dart';
+import '../utils/retry_helper.dart';
+import '../errors/error_handler.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
-  
+
   late final Dio _dio;
 
   ApiService._internal() {
     _dio = Dio();
     _dio.options.baseUrl = AppConstants.apiUrl;
-    _dio.options.connectTimeout = const Duration(seconds: AppConstants.requestTimeoutSeconds);
-    _dio.options.receiveTimeout = const Duration(seconds: AppConstants.requestTimeoutSeconds);
-    
+    _dio.options.connectTimeout =
+        const Duration(seconds: AppConstants.requestTimeoutSeconds);
+    _dio.options.receiveTimeout =
+        const Duration(seconds: AppConstants.requestTimeoutSeconds);
+
     // Add interceptors
     _dio.interceptors.add(_AuthInterceptor());
     _dio.interceptors.add(_ErrorInterceptor());
     _dio.interceptors.add(_LoggingInterceptor());
   }
-
-
 
   Dio get dio => _dio;
 
@@ -78,6 +81,80 @@ class ApiService {
       options: options,
     );
   }
+
+  /// GET request with automatic retry
+  Future<Response<T>> getWithRetry<T>(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    RetryConfig retryConfig = RetryConfig.api,
+  }) async {
+    return RetryHelper.retry(
+      operation: () =>
+          get<T>(path, queryParameters: queryParameters, options: options),
+      config: retryConfig.copyWith(
+        shouldRetry: (error) => RetryHelper.isRetryableError(error),
+      ),
+    );
+  }
+
+  /// POST request with automatic retry
+  Future<Response<T>> postWithRetry<T>(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    RetryConfig retryConfig = RetryConfig.api,
+  }) async {
+    return RetryHelper.retry(
+      operation: () => post<T>(path,
+          data: data, queryParameters: queryParameters, options: options),
+      config: retryConfig.copyWith(
+        shouldRetry: (error) => RetryHelper.isRetryableError(error),
+      ),
+    );
+  }
+
+  /// Safe GET request that handles errors and returns null on failure
+  Future<Response<T>?> safeGet<T>(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    bool showErrorToast = true,
+  }) async {
+    try {
+      return await get<T>(path,
+          queryParameters: queryParameters, options: options);
+    } catch (error, stackTrace) {
+      if (showErrorToast) {
+        ErrorHandler().handleAndShow(error, stackTrace);
+      } else {
+        ErrorHandler().handle(error, stackTrace);
+      }
+      return null;
+    }
+  }
+
+  /// Safe POST request that handles errors and returns null on failure
+  Future<Response<T>?> safePost<T>(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    bool showErrorToast = true,
+  }) async {
+    try {
+      return await post<T>(path,
+          data: data, queryParameters: queryParameters, options: options);
+    } catch (error, stackTrace) {
+      if (showErrorToast) {
+        ErrorHandler().handleAndShow(error, stackTrace);
+      } else {
+        ErrorHandler().handle(error, stackTrace);
+      }
+      return null;
+    }
+  }
 }
 
 class _AuthInterceptor extends Interceptor {
@@ -89,11 +166,11 @@ class _AuthInterceptor extends Interceptor {
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
     }
-    
+
     // Add common headers
     options.headers['Content-Type'] = 'application/json';
     options.headers['Accept'] = 'application/json';
-    
+
     handler.next(options);
   }
 
@@ -151,23 +228,24 @@ class _ErrorInterceptor extends Interceptor {
 class _LoggingInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    print('🌐 ${options.method} ${options.uri}');
+    debugPrint('🌐 ${options.method} ${options.uri}');
     if (options.data != null) {
-      print('📤 Request data: ${options.data}');
+      debugPrint('📤 Request data: ${options.data}');
     }
     handler.next(options);
   }
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    print('✅ ${response.statusCode} ${response.requestOptions.uri}');
+    debugPrint('✅ ${response.statusCode} ${response.requestOptions.uri}');
     handler.next(response);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    print('❌ ${err.response?.statusCode ?? 'No Status'} ${err.requestOptions.uri}');
-    print('Error: ${err.message}');
+    debugPrint(
+        '❌ ${err.response?.statusCode ?? 'No Status'} ${err.requestOptions.uri}');
+    debugPrint('Error: ${err.message}');
     handler.next(err);
   }
 }
@@ -194,7 +272,7 @@ class ApiError {
     if (exception.response != null) {
       statusCode = exception.response!.statusCode;
       final data = exception.response!.data;
-      
+
       if (data is Map<String, dynamic>) {
         message = data['message'] ?? 'An error occurred';
         code = data['code'];
@@ -239,4 +317,4 @@ class ApiError {
 // Provider for ApiService
 final apiServiceProvider = Provider<ApiService>((ref) {
   return ApiService();
-}); 
+});

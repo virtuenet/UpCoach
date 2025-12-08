@@ -72,11 +72,11 @@ class TaskModel extends Equatable {
         (e) => e.name == json['category'],
         orElse: () => TaskCategory.other,
       ),
-      dueDate: json['due_date'] != null 
-          ? DateTime.parse(json['due_date'] as String) 
+      dueDate: json['due_date'] != null
+          ? DateTime.parse(json['due_date'] as String)
           : null,
-      completedAt: json['completed_at'] != null 
-          ? DateTime.parse(json['completed_at'] as String) 
+      completedAt: json['completed_at'] != null
+          ? DateTime.parse(json['completed_at'] as String)
           : null,
       tags: (json['tags'] as List<dynamic>?)?.cast<String>() ?? [],
       createdAt: DateTime.parse(json['created_at'] as String),
@@ -139,7 +139,7 @@ class TaskModel extends Equatable {
   bool get isPending => status == TaskStatus.pending;
   bool get isInProgress => status == TaskStatus.inProgress;
   bool get isCancelled => status == TaskStatus.cancelled;
-  
+
   bool get isOverdue {
     if (dueDate == null || isCompleted || isCancelled) return false;
     return DateTime.now().isAfter(dueDate!);
@@ -148,17 +148,17 @@ class TaskModel extends Equatable {
   bool get isDueToday {
     if (dueDate == null) return false;
     final now = DateTime.now();
-    return dueDate!.year == now.year && 
-           dueDate!.month == now.month && 
-           dueDate!.day == now.day;
+    return dueDate!.year == now.year &&
+        dueDate!.month == now.month &&
+        dueDate!.day == now.day;
   }
 
   bool get isDueTomorrow {
     if (dueDate == null) return false;
     final tomorrow = DateTime.now().add(const Duration(days: 1));
-    return dueDate!.year == tomorrow.year && 
-           dueDate!.month == tomorrow.month && 
-           dueDate!.day == tomorrow.day;
+    return dueDate!.year == tomorrow.year &&
+        dueDate!.month == tomorrow.month &&
+        dueDate!.day == tomorrow.day;
   }
 
   String get priorityLabel {
@@ -207,4 +207,4 @@ class TaskModel extends Equatable {
         updatedAt,
         metadata,
       ];
-} 
+}

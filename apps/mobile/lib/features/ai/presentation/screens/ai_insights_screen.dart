@@ -6,13 +6,14 @@ import 'package:upcoach_mobile/shared/widgets/custom_app_bar.dart';
 import 'package:upcoach_mobile/shared/widgets/loading_indicator.dart';
 import '../../domain/services/ai_service.dart';
 
-final activeInsightsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final activeInsightsProvider =
+    FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final aiService = ref.watch(aiServiceProvider);
   return await aiService.getActiveInsights();
 });
 
 class AIInsightsScreen extends ConsumerWidget {
-  const AIInsightsScreen({Key? key}) : super(key: key);
+  const AIInsightsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,7 +30,8 @@ class AIInsightsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInsightsList(BuildContext context, WidgetRef ref, List<Map<String, dynamic>> insights) {
+  Widget _buildInsightsList(BuildContext context, WidgetRef ref,
+      List<Map<String, dynamic>> insights) {
     if (insights.isEmpty) {
       return _buildEmptyState(context);
     }
@@ -58,7 +60,7 @@ class AIInsightsScreen extends ConsumerWidget {
           Icon(
             Icons.insights,
             size: 80,
-            color: AppColors.primary.withOpacity(0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
           ),
           const SizedBox(height: UIConstants.spacingMD),
           Text(
@@ -69,8 +71,8 @@ class AIInsightsScreen extends ConsumerWidget {
           Text(
             'Check back later for personalized insights',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+                  color: AppColors.textSecondary,
+                ),
           ),
         ],
       ),
@@ -96,8 +98,8 @@ class AIInsightsScreen extends ConsumerWidget {
           Text(
             error,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+                  color: AppColors.textSecondary,
+                ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -117,10 +119,9 @@ class _InsightCard extends StatelessWidget {
   final VoidCallback onDismiss;
 
   const _InsightCard({
-    Key? key,
     required this.insight,
     required this.onDismiss,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +148,7 @@ class _InsightCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(UIConstants.spacingSM),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.1),
+                      color: color.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                     ),
                     child: Icon(icon, color: color, size: 24),
@@ -157,8 +158,8 @@ class _InsightCard extends StatelessWidget {
                     child: Text(
                       insight['title'] ?? 'Insight',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                   ),
                   IconButton(
@@ -175,7 +176,7 @@ class _InsightCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (insight['actionItems'] != null && 
+              if (insight['actionItems'] != null &&
                   (insight['actionItems'] as List).isNotEmpty) ...[
                 const SizedBox(height: UIConstants.spacingMD),
                 Row(
@@ -189,9 +190,9 @@ class _InsightCard extends StatelessWidget {
                     Text(
                       '${(insight['actionItems'] as List).length} action items',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.warning,
-                        fontWeight: FontWeight.w500,
-                      ),
+                            color: AppColors.warning,
+                            fontWeight: FontWeight.w500,
+                          ),
                     ),
                   ],
                 ),
@@ -285,21 +286,21 @@ class _InsightCard extends StatelessWidget {
                   ),
                   const SizedBox(height: UIConstants.spacingMD),
                   ...(insight['actionItems'] as List).map((item) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(Icons.check_circle_outline, size: 20),
-                        const SizedBox(width: UIConstants.spacingSM),
-                        Expanded(
-                          child: Text(
-                            item.toString(),
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.check_circle_outline, size: 20),
+                            const SizedBox(width: UIConstants.spacingSM),
+                            Expanded(
+                              child: Text(
+                                item.toString(),
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  )).toList(),
+                      )),
                 ],
               ],
             ),

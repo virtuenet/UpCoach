@@ -12,12 +12,12 @@ class ActivityFeedItemCard extends StatelessWidget {
   final void Function(String type, String id)? onContentTap;
 
   const ActivityFeedItemCard({
-    Key? key,
+    super.key,
     required this.activity,
     this.onTap,
     this.onUserTap,
     this.onContentTap,
-  }) : super(key: key);
+  });
 
   IconData _getIconForType(String type) {
     switch (type) {
@@ -115,7 +115,7 @@ class ActivityFeedItemCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: iconColor.withOpacity(0.1),
+                      color: iconColor.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: AppColors.surface,

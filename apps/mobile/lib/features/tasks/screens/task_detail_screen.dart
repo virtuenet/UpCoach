@@ -43,7 +43,8 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
 
   void _initializeControllers() {
     _titleController = TextEditingController(text: _task.title);
-    _descriptionController = TextEditingController(text: _task.description ?? '');
+    _descriptionController =
+        TextEditingController(text: _task.description ?? '');
     _tagsController = TextEditingController(text: _task.tags.join(', '));
     _priority = _task.priority;
     _category = _task.category;
@@ -69,7 +70,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
       firstDate: DateTime.now().subtract(const Duration(days: 365)),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    
+
     if (date != null) {
       setState(() {
         _dueDate = date;
@@ -82,7 +83,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
       context: context,
       initialTime: _dueTime ?? TimeOfDay.now(),
     );
-    
+
     if (time != null) {
       setState(() {
         _dueTime = time;
@@ -92,10 +93,10 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
 
   DateTime? _getCombinedDateTime() {
     if (_dueDate == null) return null;
-    
+
     final date = _dueDate!;
     final time = _dueTime ?? const TimeOfDay(hour: 23, minute: 59);
-    
+
     return DateTime(
       date.year,
       date.month,
@@ -108,7 +109,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
   List<String> _getTags() {
     final tagsText = _tagsController.text.trim();
     if (tagsText.isEmpty) return [];
-    
+
     return tagsText
         .split(',')
         .map((tag) => tag.trim())
@@ -133,24 +134,24 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
 
     try {
       await ref.read(taskProvider.notifier).updateTask(
-        taskId: _task.id,
-        title: _titleController.text.trim(),
-        description: _descriptionController.text.trim().isEmpty 
-            ? null 
-            : _descriptionController.text.trim(),
-        priority: _priority,
-        status: _status,
-        category: _category,
-        dueDate: _getCombinedDateTime(),
-        tags: _getTags(),
-      );
+            taskId: _task.id,
+            title: _titleController.text.trim(),
+            description: _descriptionController.text.trim().isEmpty
+                ? null
+                : _descriptionController.text.trim(),
+            priority: _priority,
+            status: _status,
+            category: _category,
+            dueDate: _getCombinedDateTime(),
+            tags: _getTags(),
+          );
 
       // Update local task
       setState(() {
         _task = _task.copyWith(
           title: _titleController.text.trim(),
-          description: _descriptionController.text.trim().isEmpty 
-              ? null 
+          description: _descriptionController.text.trim().isEmpty
+              ? null
               : _descriptionController.text.trim(),
           priority: _priority,
           status: _status,
@@ -200,10 +201,10 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
             style: TextButton.styleFrom(
               foregroundColor: AppTheme.errorColor,
             ),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -272,9 +273,8 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                decoration: _task.isCompleted 
-                    ? TextDecoration.lineThrough 
-                    : null,
+                decoration:
+                    _task.isCompleted ? TextDecoration.lineThrough : null,
               ),
             ),
             value: _task.isCompleted,
@@ -288,9 +288,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             },
           ),
         ),
-        
+
         const SizedBox(height: UIConstants.spacingMD),
-        
+
         // Task details
         Card(
           child: Padding(
@@ -298,12 +298,13 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (_task.description != null && _task.description!.isNotEmpty) ...[
+                if (_task.description != null &&
+                    _task.description!.isNotEmpty) ...[
                   Text(
                     'Description',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                   const SizedBox(height: UIConstants.spacingSM),
                   Text(
@@ -312,19 +313,15 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                   ),
                   const SizedBox(height: UIConstants.spacingMD),
                 ],
-                
-                _buildInfoRow('Category', _task.categoryLabel, 
+                _buildInfoRow('Category', _task.categoryLabel,
                     icon: _getCategoryIcon(_task.category)),
                 const SizedBox(height: UIConstants.spacingMD),
-                
                 _buildInfoRow('Priority', _task.priorityLabel,
                     color: _getPriorityColor(_task.priority)),
                 const SizedBox(height: UIConstants.spacingMD),
-                
                 _buildInfoRow('Status', _getStatusLabel(_task.status),
                     color: _getStatusColor(_task.status)),
                 const SizedBox(height: UIConstants.spacingMD),
-                
                 if (_task.dueDate != null) ...[
                   _buildInfoRow(
                     'Due Date',
@@ -334,31 +331,33 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                   ),
                   const SizedBox(height: UIConstants.spacingMD),
                 ],
-                
                 if (_task.tags.isNotEmpty) ...[
                   Text(
                     'Tags',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                   const SizedBox(height: UIConstants.spacingSM),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: _task.tags.map((tag) => Chip(
-                      label: Text(tag),
-                      backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-                    )).toList(),
+                    children: _task.tags
+                        .map((tag) => Chip(
+                              label: Text(tag),
+                              backgroundColor:
+                                  AppTheme.primaryColor.withValues(alpha: 0.1),
+                            ))
+                        .toList(),
                   ),
                 ],
               ],
             ),
           ),
         ),
-        
+
         const SizedBox(height: UIConstants.spacingMD),
-        
+
         // Timestamps
         Card(
           child: Padding(
@@ -381,7 +380,8 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                   const SizedBox(height: UIConstants.spacingMD),
                   _buildInfoRow(
                     'Completed',
-                    DateFormat('MMM d, yyyy - h:mm a').format(_task.completedAt!),
+                    DateFormat('MMM d, yyyy - h:mm a')
+                        .format(_task.completedAt!),
                     icon: Icons.check_circle,
                     color: AppTheme.successColor,
                   ),
@@ -390,9 +390,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             ),
           ),
         ),
-        
+
         const SizedBox(height: UIConstants.spacingXL),
-        
+
         // Delete button
         OutlinedButton.icon(
           onPressed: _deleteTask,
@@ -421,9 +421,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           ),
           textCapitalization: TextCapitalization.sentences,
         ),
-        
+
         const SizedBox(height: UIConstants.spacingMD),
-        
+
         // Description
         TextFormField(
           controller: _descriptionController,
@@ -436,15 +436,15 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           maxLines: 3,
           textCapitalization: TextCapitalization.sentences,
         ),
-        
+
         const SizedBox(height: UIConstants.spacingLG),
-        
+
         // Status
         Text(
           'Status',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+                fontWeight: FontWeight.w600,
+              ),
         ),
         const SizedBox(height: UIConstants.spacingSM),
         Wrap(
@@ -463,15 +463,15 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             );
           }).toList(),
         ),
-        
+
         const SizedBox(height: UIConstants.spacingLG),
-        
+
         // Category
         Text(
           'Category',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+                fontWeight: FontWeight.w600,
+              ),
         ),
         const SizedBox(height: UIConstants.spacingSM),
         Wrap(
@@ -494,15 +494,15 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             );
           }).toList(),
         ),
-        
+
         const SizedBox(height: UIConstants.spacingLG),
-        
+
         // Priority
         Text(
           'Priority',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+                fontWeight: FontWeight.w600,
+              ),
         ),
         const SizedBox(height: UIConstants.spacingSM),
         Wrap(
@@ -518,13 +518,13 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                   });
                 }
               },
-              selectedColor: _getPriorityColor(priority).withOpacity(0.3),
+              selectedColor: _getPriorityColor(priority).withValues(alpha: 0.3),
             );
           }).toList(),
         ),
-        
+
         const SizedBox(height: UIConstants.spacingLG),
-        
+
         // Due Date & Time
         Row(
           children: [
@@ -561,9 +561,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                         ? 'Select time'
                         : _dueTime!.format(context),
                     style: TextStyle(
-                      color: _dueDate == null
-                          ? AppTheme.textSecondary
-                          : null,
+                      color: _dueDate == null ? AppTheme.textSecondary : null,
                     ),
                   ),
                 ),
@@ -571,9 +569,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
             ),
           ],
         ),
-        
+
         const SizedBox(height: UIConstants.spacingMD),
-        
+
         // Tags
         TextFormField(
           controller: _tagsController,
@@ -584,20 +582,22 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
           ),
           textCapitalization: TextCapitalization.words,
         ),
-        
+
         const SizedBox(height: UIConstants.spacingXL),
-        
+
         // Action buttons
         Row(
           children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: _isLoading ? null : () {
-                  setState(() {
-                    _isEditing = false;
-                    _initializeControllers();
-                  });
-                },
+                onPressed: _isLoading
+                    ? null
+                    : () {
+                        setState(() {
+                          _isEditing = false;
+                          _initializeControllers();
+                        });
+                      },
                 child: const Text('Cancel'),
               ),
             ),
@@ -622,7 +622,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     );
   }
 
-  Widget _buildInfoRow(String label, String value, {
+  Widget _buildInfoRow(
+    String label,
+    String value, {
     IconData? icon,
     Color? color,
   }) {
@@ -656,7 +658,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
 
   String _getCategoryLabel(TaskCategory category) => _task.categoryLabel;
   String _getPriorityLabel(TaskPriority priority) => _task.priorityLabel;
-  
+
   String _getStatusLabel(TaskStatus status) {
     switch (status) {
       case TaskStatus.pending:
@@ -720,4 +722,4 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     if (_task.isDueTomorrow) return AppTheme.infoColor;
     return AppTheme.textSecondary;
   }
-} 
+}

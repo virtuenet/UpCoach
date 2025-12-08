@@ -8,7 +8,7 @@ import '../../../shared/constants/app_text_styles.dart';
 import '../../../core/services/feedback_service.dart';
 
 class FeedbackScreen extends ConsumerStatefulWidget {
-  const FeedbackScreen({Key? key}) : super(key: key);
+  const FeedbackScreen({super.key});
 
   @override
   ConsumerState<FeedbackScreen> createState() => _FeedbackScreenState();
@@ -18,7 +18,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
   final _formKey = GlobalKey<FormState>();
   final _subjectController = TextEditingController();
   final _messageController = TextEditingController();
-  
+
   String _selectedType = 'Bug Report';
   String _selectedPriority = 'Medium';
   final List<File> _attachments = [];
@@ -78,7 +78,7 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
 
     try {
       final feedbackService = ref.read(feedbackServiceProvider);
-      
+
       await feedbackService.submitFeedback(
         type: _selectedType,
         priority: _selectedPriority,
@@ -147,12 +147,13 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                     ),
                     const SizedBox(height: UIConstants.spacingMD),
                     DropdownButtonFormField<String>(
-                      value: _selectedType,
+                      initialValue: _selectedType,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: AppColors.surface,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(UIConstants.radiusMD),
+                          borderRadius:
+                              BorderRadius.circular(UIConstants.radiusMD),
                           borderSide: BorderSide.none,
                         ),
                       ),
@@ -183,7 +184,8 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
             const SizedBox(height: UIConstants.spacingMD),
 
             // Priority (only for bug reports)
-            if (_selectedType == 'Bug Report' || _selectedType == 'Performance Issue')
+            if (_selectedType == 'Bug Report' ||
+                _selectedType == 'Performance Issue')
               Card(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(UIConstants.radiusLG),
@@ -221,7 +223,8 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                 ),
               ),
 
-            if (_selectedType == 'Bug Report' || _selectedType == 'Performance Issue')
+            if (_selectedType == 'Bug Report' ||
+                _selectedType == 'Performance Issue')
               const SizedBox(height: UIConstants.spacingMD),
 
             // Subject & Message
@@ -324,7 +327,8 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                               child: Stack(
                                 children: [
                                   ClipRRect(
-                                    borderRadius: BorderRadius.circular(UIConstants.radiusMD),
+                                    borderRadius: BorderRadius.circular(
+                                        UIConstants.radiusMD),
                                     child: Image.file(
                                       _attachments[index],
                                       width: 100,
@@ -345,7 +349,8 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                                           color: Colors.white,
                                         ),
                                         padding: EdgeInsets.zero,
-                                        onPressed: () => _removeAttachment(index),
+                                        onPressed: () =>
+                                            _removeAttachment(index),
                                       ),
                                     ),
                                   ),
@@ -383,7 +388,8 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
             const SizedBox(height: UIConstants.spacingMD),
 
             // Device Info (for bug reports)
-            if (_selectedType == 'Bug Report' || _selectedType == 'Performance Issue')
+            if (_selectedType == 'Bug Report' ||
+                _selectedType == 'Performance Issue')
               Card(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(UIConstants.radiusLG),
@@ -416,7 +422,8 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                         ),
                       ),
                       const SizedBox(height: UIConstants.spacingMD),
-                      _buildInfoRow('Device', '${Platform.operatingSystem} ${Platform.operatingSystemVersion}'),
+                      _buildInfoRow('Device',
+                          '${Platform.operatingSystem} ${Platform.operatingSystemVersion}'),
                       _buildInfoRow('App Version', '1.0.0'),
                       _buildInfoRow('Build Number', '100'),
                     ],
@@ -436,21 +443,21 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                 ),
               ),
               child: _isSubmitting
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Text(
+                      'Submit Feedback',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  )
-                : const Text(
-                    'Submit Feedback',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
             ),
             const SizedBox(height: UIConstants.spacingXL),
           ],

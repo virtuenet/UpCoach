@@ -7,7 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../shared/constants/app_text_styles.dart';
 
 class HelpCenterScreen extends ConsumerStatefulWidget {
-  const HelpCenterScreen({Key? key}) : super(key: key);
+  const HelpCenterScreen({super.key});
 
   @override
   ConsumerState<HelpCenterScreen> createState() => _HelpCenterScreenState();
@@ -54,79 +54,93 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
     FAQItem(
       category: 'Getting Started',
       question: 'How do I create my first goal?',
-      answer: 'To create your first goal, tap the Goals tab and press the + button. Enter your goal details, set a deadline, and choose if you want AI assistance to break it down into actionable tasks.',
+      answer:
+          'To create your first goal, tap the Goals tab and press the + button. Enter your goal details, set a deadline, and choose if you want AI assistance to break it down into actionable tasks.',
     ),
     FAQItem(
       category: 'Getting Started',
       question: 'What is UpCoach?',
-      answer: 'UpCoach is your personal AI-powered life coach that helps you achieve your goals, track your progress, and maintain healthy habits through personalized guidance and motivation.',
+      answer:
+          'UpCoach is your personal AI-powered life coach that helps you achieve your goals, track your progress, and maintain healthy habits through personalized guidance and motivation.',
     ),
     FAQItem(
       category: 'Account & Billing',
       question: 'How do I upgrade my subscription?',
-      answer: 'Go to Profile > Settings > Subscription to view available plans. Select your desired plan and follow the payment instructions. Your upgrade will be activated immediately.',
+      answer:
+          'Go to Profile > Settings > Subscription to view available plans. Select your desired plan and follow the payment instructions. Your upgrade will be activated immediately.',
     ),
     FAQItem(
       category: 'Account & Billing',
       question: 'Can I cancel my subscription anytime?',
-      answer: 'Yes, you can cancel your subscription at any time from Settings > Subscription. You\'ll continue to have access until the end of your current billing period.',
+      answer:
+          'Yes, you can cancel your subscription at any time from Settings > Subscription. You\'ll continue to have access until the end of your current billing period.',
     ),
     FAQItem(
       category: 'AI Coach',
       question: 'How does the AI coach work?',
-      answer: 'Our AI coach uses advanced language models to understand your goals, analyze your progress, and provide personalized advice. It learns from your interactions to offer increasingly relevant guidance.',
+      answer:
+          'Our AI coach uses advanced language models to understand your goals, analyze your progress, and provide personalized advice. It learns from your interactions to offer increasingly relevant guidance.',
     ),
     FAQItem(
       category: 'AI Coach',
       question: 'Is my conversation with the AI private?',
-      answer: 'Yes, all conversations with your AI coach are completely private and encrypted. We never share your personal data or conversations with third parties.',
+      answer:
+          'Yes, all conversations with your AI coach are completely private and encrypted. We never share your personal data or conversations with third parties.',
     ),
     FAQItem(
       category: 'Goals & Tasks',
       question: 'How many goals can I create?',
-      answer: 'Free users can create up to 3 active goals. Premium users have unlimited goals. You can archive completed goals to make room for new ones.',
+      answer:
+          'Free users can create up to 3 active goals. Premium users have unlimited goals. You can archive completed goals to make room for new ones.',
     ),
     FAQItem(
       category: 'Goals & Tasks',
       question: 'Can I share my progress with others?',
-      answer: 'Yes, you can share your progress through the share button on any goal or achievement. You can also export your progress reports as PDFs.',
+      answer:
+          'Yes, you can share your progress through the share button on any goal or achievement. You can also export your progress reports as PDFs.',
     ),
     FAQItem(
       category: 'Privacy & Security',
       question: 'How is my data protected?',
-      answer: 'We use industry-standard encryption for all data transmission and storage. Your data is stored securely in compliance with GDPR and other privacy regulations.',
+      answer:
+          'We use industry-standard encryption for all data transmission and storage. Your data is stored securely in compliance with GDPR and other privacy regulations.',
     ),
     FAQItem(
       category: 'Privacy & Security',
       question: 'Can I delete my account and data?',
-      answer: 'Yes, you can request account deletion from Settings > Privacy > Delete Account. This will permanently remove all your data within 30 days.',
+      answer:
+          'Yes, you can request account deletion from Settings > Privacy > Delete Account. This will permanently remove all your data within 30 days.',
     ),
     FAQItem(
       category: 'Technical Issues',
       question: 'The app is crashing, what should I do?',
-      answer: 'Try these steps: 1) Force close and restart the app, 2) Check for app updates, 3) Clear app cache in your device settings, 4) Reinstall the app. If issues persist, contact support.',
+      answer:
+          'Try these steps: 1) Force close and restart the app, 2) Check for app updates, 3) Clear app cache in your device settings, 4) Reinstall the app. If issues persist, contact support.',
     ),
     FAQItem(
       category: 'Technical Issues',
       question: 'How do I sync data across devices?',
-      answer: 'Your data automatically syncs when you\'re logged into the same account on multiple devices. Ensure you have a stable internet connection for real-time syncing.',
+      answer:
+          'Your data automatically syncs when you\'re logged into the same account on multiple devices. Ensure you have a stable internet connection for real-time syncing.',
     ),
   ];
 
   List<FAQItem> get filteredFAQs {
     var filtered = _faqs;
-    
+
     if (_selectedCategory != 'All') {
-      filtered = filtered.where((faq) => faq.category == _selectedCategory).toList();
+      filtered =
+          filtered.where((faq) => faq.category == _selectedCategory).toList();
     }
-    
+
     if (_searchQuery.isNotEmpty) {
-      filtered = filtered.where((faq) =>
-        faq.question.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-        faq.answer.toLowerCase().contains(_searchQuery.toLowerCase())
-      ).toList();
+      filtered = filtered
+          .where((faq) =>
+              faq.question.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+              faq.answer.toLowerCase().contains(_searchQuery.toLowerCase()))
+          .toList();
     }
-    
+
     return filtered;
   }
 
@@ -155,15 +169,15 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
                   borderSide: BorderSide.none,
                 ),
                 suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () => setState(() => _searchQuery = ''),
-                    )
-                  : null,
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () => setState(() => _searchQuery = ''),
+                      )
+                    : null,
               ),
             ),
           ),
-          
+
           // Quick Actions
           Container(
             padding: const EdgeInsets.all(UIConstants.spacingMD),
@@ -189,7 +203,7 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
               ],
             ),
           ),
-          
+
           // Category Filters
           if (_searchQuery.isEmpty) ...[
             SizedBox(
@@ -201,28 +215,30 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
                   FilterChip(
                     label: const Text('All'),
                     selected: _selectedCategory == 'All',
-                    onSelected: (_) => setState(() => _selectedCategory = 'All'),
+                    onSelected: (_) =>
+                        setState(() => _selectedCategory = 'All'),
                   ),
                   const SizedBox(width: UIConstants.spacingSM),
                   ..._categories.map((category) => Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: Text(category.name),
-                      selected: _selectedCategory == category.name,
-                      onSelected: (_) => setState(() => _selectedCategory = category.name),
-                    ),
-                  )),
+                        padding: const EdgeInsets.only(right: 8),
+                        child: FilterChip(
+                          label: Text(category.name),
+                          selected: _selectedCategory == category.name,
+                          onSelected: (_) =>
+                              setState(() => _selectedCategory = category.name),
+                        ),
+                      )),
                 ],
               ),
             ),
             const SizedBox(height: UIConstants.spacingMD),
           ],
-          
+
           // FAQ List or Categories Grid
           Expanded(
             child: _searchQuery.isEmpty && _selectedCategory == 'All'
-              ? _buildCategoriesGrid()
-              : _buildFAQList(),
+                ? _buildCategoriesGrid()
+                : _buildFAQList(),
           ),
         ],
       ),
@@ -241,8 +257,9 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
       itemCount: _categories.length,
       itemBuilder: (context, index) {
         final category = _categories[index];
-        final faqCount = _faqs.where((faq) => faq.category == category.name).length;
-        
+        final faqCount =
+            _faqs.where((faq) => faq.category == category.name).length;
+
         return Card(
           elevation: 2,
           shape: RoundedRectangleBorder(
@@ -283,7 +300,7 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
 
   Widget _buildFAQList() {
     final faqs = filteredFAQs;
-    
+
     if (faqs.isEmpty) {
       return Center(
         child: Column(
@@ -308,13 +325,13 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
         ),
       );
     }
-    
+
     return ListView.builder(
       padding: const EdgeInsets.all(UIConstants.spacingMD),
       itemCount: faqs.length,
       itemBuilder: (context, index) {
         final faq = faqs[index];
-        
+
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           shape: RoundedRectangleBorder(
@@ -450,7 +467,7 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
         'subject': 'Help Request from UpCoach App',
       },
     );
-    
+
     if (await canLaunchUrl(emailUri)) {
       await launchUrl(emailUri);
     }
@@ -459,7 +476,9 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
   void _rateFAQ(FAQItem faq, bool helpful) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(helpful ? 'Thanks for your feedback!' : 'Sorry this wasn\'t helpful'),
+        content: Text(helpful
+            ? 'Thanks for your feedback!'
+            : 'Sorry this wasn\'t helpful'),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -497,12 +516,11 @@ class _QuickActionCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const _QuickActionCard({
-    Key? key,
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

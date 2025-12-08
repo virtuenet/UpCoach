@@ -48,7 +48,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   void _navigateAfterDelay() async {
     await Future.delayed(const Duration(milliseconds: 3000));
-    
+
     if (mounted) {
       final authState = ref.read(authProvider);
       if (authState.isAuthenticated) {
@@ -95,10 +95,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         height: 128,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(UIConstants.radiusFull),
+                          borderRadius:
+                              BorderRadius.circular(UIConstants.radiusFull),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.25),
+                              color: Colors.black.withValues(alpha: 0.25),
                               blurRadius: 24,
                               offset: const Offset(0, 8),
                             ),
@@ -124,21 +125,25 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       children: [
                         Text(
                           'CoachUp',
-                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 36,
-                            letterSpacing: 1.2,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineLarge
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 36,
+                                letterSpacing: 1.2,
+                              ),
                         ),
                         const SizedBox(height: UIConstants.spacingSM),
                         Text(
                           'AI Coach at Work',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: Colors.white.withOpacity(0.9),
-                            fontSize: 18,
-                            letterSpacing: 0.5,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                    fontSize: 18,
+                                    letterSpacing: 0.5,
+                                  ),
                         ),
                       ],
                     ),
@@ -155,7 +160,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       width: 32,
                       height: 32,
                       child: CircularProgressIndicator(
-                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor:
+                            const AlwaysStoppedAnimation<Color>(Colors.white),
                         strokeWidth: 3,
                       ),
                     ),
@@ -168,4 +174,4 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       ),
     );
   }
-} 
+}

@@ -19,7 +19,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _tagsController = TextEditingController();
-  
+
   TaskPriority _priority = TaskPriority.medium;
   TaskCategory _category = TaskCategory.personal;
   DateTime? _dueDate;
@@ -41,7 +41,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    
+
     if (date != null) {
       setState(() {
         _dueDate = date;
@@ -54,7 +54,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
       context: context,
       initialTime: _dueTime ?? TimeOfDay.now(),
     );
-    
+
     if (time != null) {
       setState(() {
         _dueTime = time;
@@ -64,10 +64,10 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
 
   DateTime? _getCombinedDateTime() {
     if (_dueDate == null) return null;
-    
+
     final date = _dueDate!;
     final time = _dueTime ?? const TimeOfDay(hour: 23, minute: 59);
-    
+
     return DateTime(
       date.year,
       date.month,
@@ -80,7 +80,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
   List<String> _getTags() {
     final tagsText = _tagsController.text.trim();
     if (tagsText.isEmpty) return [];
-    
+
     return tagsText
         .split(',')
         .map((tag) => tag.trim())
@@ -90,22 +90,22 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
 
   Future<void> _createTask() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() {
       _isLoading = true;
     });
 
     try {
       await ref.read(taskProvider.notifier).createTask(
-        title: _titleController.text.trim(),
-        description: _descriptionController.text.trim().isEmpty 
-            ? null 
-            : _descriptionController.text.trim(),
-        priority: _priority,
-        category: _category,
-        dueDate: _getCombinedDateTime(),
-        tags: _getTags(),
-      );
+            title: _titleController.text.trim(),
+            description: _descriptionController.text.trim().isEmpty
+                ? null
+                : _descriptionController.text.trim(),
+            priority: _priority,
+            category: _category,
+            dueDate: _getCombinedDateTime(),
+            tags: _getTags(),
+          );
 
       if (mounted) {
         context.pop();
@@ -167,9 +167,9 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
               },
               textCapitalization: TextCapitalization.sentences,
             ),
-            
+
             const SizedBox(height: UIConstants.spacingMD),
-            
+
             // Description
             TextFormField(
               controller: _descriptionController,
@@ -182,15 +182,15 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
               maxLines: 3,
               textCapitalization: TextCapitalization.sentences,
             ),
-            
+
             const SizedBox(height: UIConstants.spacingLG),
-            
+
             // Category
             Text(
               'Category',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
             const SizedBox(height: UIConstants.spacingSM),
             Wrap(
@@ -213,15 +213,15 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
                 );
               }).toList(),
             ),
-            
+
             const SizedBox(height: UIConstants.spacingLG),
-            
+
             // Priority
             Text(
               'Priority',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
             const SizedBox(height: UIConstants.spacingSM),
             Wrap(
@@ -237,13 +237,14 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
                       });
                     }
                   },
-                  selectedColor: _getPriorityColor(priority).withOpacity(0.3),
+                  selectedColor:
+                      _getPriorityColor(priority).withValues(alpha: 0.3),
                 );
               }).toList(),
             ),
-            
+
             const SizedBox(height: UIConstants.spacingLG),
-            
+
             // Due Date & Time
             Row(
               children: [
@@ -280,9 +281,8 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
                             ? 'Select time'
                             : _dueTime!.format(context),
                         style: TextStyle(
-                          color: _dueDate == null
-                              ? AppTheme.textSecondary
-                              : null,
+                          color:
+                              _dueDate == null ? AppTheme.textSecondary : null,
                         ),
                       ),
                     ),
@@ -290,9 +290,9 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: UIConstants.spacingMD),
-            
+
             // Tags
             TextFormField(
               controller: _tagsController,
@@ -303,9 +303,9 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
               ),
               textCapitalization: TextCapitalization.words,
             ),
-            
+
             const SizedBox(height: UIConstants.spacingXL),
-            
+
             // Create button
             ElevatedButton.icon(
               onPressed: _isLoading ? null : _createTask,
@@ -388,4 +388,4 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
         return AppTheme.errorColor;
     }
   }
-} 
+}

@@ -9,12 +9,12 @@ class ShimmerLoading extends StatelessWidget {
   final EdgeInsetsGeometry? margin;
 
   const ShimmerLoading({
-    Key? key,
+    super.key,
     this.width = double.infinity,
     this.height = 20,
     this.borderRadius = 8,
     this.margin,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -42,13 +42,13 @@ class ShimmerCard extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
 
   const ShimmerCard({
-    Key? key,
+    super.key,
     this.width,
     this.height = 120,
     this.borderRadius = 12,
     this.margin,
     this.padding,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -89,10 +89,10 @@ class ShimmerListItem extends StatelessWidget {
   final EdgeInsetsGeometry? margin;
 
   const ShimmerListItem({
-    Key? key,
+    super.key,
     this.height = 80,
     this.margin,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -130,9 +130,9 @@ class ShimmerAvatar extends StatelessWidget {
   final double size;
 
   const ShimmerAvatar({
-    Key? key,
+    super.key,
     this.size = 48,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

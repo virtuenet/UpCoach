@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_html/flutter_html.dart' as html;
 import 'package:share_plus/share_plus.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/services/content_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/constants/app_spacing.dart';
 import '../../../../shared/constants/app_text_styles.dart';
@@ -22,7 +23,8 @@ class ArticleDetailScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ArticleDetailScreen> createState() => _ArticleDetailScreenState();
+  ConsumerState<ArticleDetailScreen> createState() =>
+      _ArticleDetailScreenState();
 }
 
 class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
@@ -121,7 +123,7 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                                 end: Alignment.bottomCenter,
                                 colors: [
                                   Colors.transparent,
-                                  Colors.black.withOpacity(0.7),
+                                  Colors.black.withValues(alpha: 0.7),
                                 ],
                               ),
                             ),
@@ -154,8 +156,10 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                                   vertical: AppSpacing.xs,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primary.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(AppSpacing.xs),
+                                  color:
+                                      AppColors.primary.withValues(alpha: 0.1),
+                                  borderRadius:
+                                      BorderRadius.circular(AppSpacing.xs),
                                 ),
                                 child: Text(
                                   article.category.name,
@@ -242,7 +246,8 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
 
                     // Article body
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                       child: html.Html(
                         data: article.content.body,
                         style: {
@@ -322,7 +327,8 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                     if (article.tags.isNotEmpty) ...[
                       const Divider(height: AppSpacing.xl * 2),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.lg),
                         child: Wrap(
                           spacing: AppSpacing.sm,
                           runSpacing: AppSpacing.sm,
@@ -394,7 +400,8 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
             ),
             const SizedBox(height: AppSpacing.lg),
             ElevatedButton(
-              onPressed: () => ref.refresh(articleDetailProvider(widget.articleId)),
+              onPressed: () =>
+                  ref.refresh(articleDetailProvider(widget.articleId)),
               child: const Text('Retry'),
             ),
           ],
@@ -410,19 +417,31 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
 
   String _formatDate(DateTime date) {
     final months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
   void _shareArticle(ContentArticle article) {
     final url = 'https://upcoach.ai/articles/${article.slug}';
-    Share.share(
-      '${article.title}\n\n${article.summary}\n\nRead more: $url',
-      subject: article.title,
+    SharePlus.instance.share(
+      ShareParams(
+        text: '${article.title}\n\n${article.summary}\n\nRead more: $url',
+        subject: article.title,
+      ),
     );
-    
+
     // Track share
     ref.read(contentServiceProvider).shareArticle(article.id, 'app');
   }

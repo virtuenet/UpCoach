@@ -43,7 +43,8 @@ class ChatService {
 
   Future<Conversation> getConversation(String conversationId) async {
     final conversations = await getConversations();
-    return conversations.firstWhere((conv) => conv.id == conversationId, orElse: () => conversations.first);
+    return conversations.firstWhere((conv) => conv.id == conversationId,
+        orElse: () => conversations.first);
   }
 
   Future<ChatMessage> sendMessage({
@@ -127,10 +128,13 @@ class ChatService {
     return ChatMessage(
       id: json['id'] as String? ?? _uuid.v4(),
       content: json['content'] as String? ?? '',
-      type: json['role'] == 'assistant' ? MessageType.assistant : MessageType.user,
+      type: json['role'] == 'assistant'
+          ? MessageType.assistant
+          : MessageType.user,
       status: MessageStatus.sent,
-      timestamp: DateTime.tryParse(json['timestamp'] as String? ?? '') ?? DateTime.now(),
+      timestamp: DateTime.tryParse(json['timestamp'] as String? ?? '') ??
+          DateTime.now(),
       metadata: json,
     );
   }
-} 
+}

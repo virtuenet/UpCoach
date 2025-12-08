@@ -19,14 +19,15 @@ class GoldenTestConfig {
   /// Set up golden test configuration
   static void setUp() {
     TestWidgetsFlutterBinding.ensureInitialized();
-    
+
     // Configure font loading for golden tests
     loadAppFonts();
-    
-    // Set default test viewport size
-    TestWidgetsFlutterBinding.instance.window.physicalSizeTestValue = 
-      const Size(1080, 1920);
-    TestWidgetsFlutterBinding.instance.window.devicePixelRatioTestValue = 3.0;
+
+    // Set default test viewport size using the new API
+    final binding = TestWidgetsFlutterBinding.instance;
+    binding.platformDispatcher.views.first.physicalSize =
+        const Size(1080, 1920);
+    binding.platformDispatcher.views.first.devicePixelRatio = 3.0;
   }
 
   /// Create a test wrapper widget with theme
@@ -58,8 +59,8 @@ class GoldenTestConfig {
       colorScheme: const ColorScheme.light(
         primary: Color(0xFF1976D2),
         secondary: Color(0xFF039BE5),
-        surface: Color(0xFFF5F5F5),
-        background: Colors.white,
+        surface: Colors.white,
+        surfaceContainerHighest: Color(0xFFF5F5F5),
       ),
       fontFamily: 'Poppins',
     );
@@ -73,8 +74,8 @@ class GoldenTestConfig {
       colorScheme: const ColorScheme.dark(
         primary: Color(0xFF2196F3),
         secondary: Color(0xFF03A9F4),
-        surface: Color(0xFF121212),
-        background: Color(0xFF1E1E1E),
+        surface: Color(0xFF1E1E1E),
+        surfaceContainerHighest: Color(0xFF121212),
       ),
       fontFamily: 'Poppins',
     );
@@ -99,14 +100,14 @@ extension GoldenTestExtensions on WidgetTester {
         GoldenTestConfig.testWrapper(child: widget),
         surfaceSize: device.size,
       );
-      
+
       await screenMatchesGolden(
         this,
         '${description}_${device.name}',
       );
     }
   }
-  
+
   Future<void> testGoldenForThemes(
     String description,
     Widget widget,
@@ -114,14 +115,14 @@ extension GoldenTestExtensions on WidgetTester {
   ) async {
     for (final theme in themes) {
       final themeName = theme == ThemeMode.light ? 'light' : 'dark';
-      
+
       await pumpWidgetBuilder(
         GoldenTestConfig.testWrapper(
           child: widget,
           themeMode: theme,
         ),
       );
-      
+
       await screenMatchesGolden(
         this,
         '${description}_$themeName',

@@ -21,15 +21,19 @@ class MicroChallengeService {
           .map((item) => MicroChallenge.fromJson(item as Map<String, dynamic>))
           .toList();
     } on DioException catch (error) {
-      throw Exception(error.error?.toString() ?? error.message ?? 'Unable to load challenges');
+      throw Exception(error.error?.toString() ??
+          error.message ??
+          'Unable to load challenges');
     }
   }
 
   Future<void> completeChallenge(String challengeId) async {
     try {
-      await _api.post('/api/gamification/micro-challenges/$challengeId/complete');
+      await _api
+          .post('/api/gamification/micro-challenges/$challengeId/complete');
     } on DioException catch (error) {
-      throw Exception(error.error?.toString() ?? 'Unable to complete challenge');
+      throw Exception(
+          error.error?.toString() ?? 'Unable to complete challenge');
     }
   }
 }
@@ -38,4 +42,3 @@ final microChallengeServiceProvider = Provider<MicroChallengeService>((ref) {
   final api = ref.watch(apiServiceProvider);
   return MicroChallengeService(api);
 });
-

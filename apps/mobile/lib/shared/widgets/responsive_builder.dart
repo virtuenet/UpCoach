@@ -110,7 +110,7 @@ class ResponsiveGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final columns = ResponsiveBuilder.getGridColumns(context);
-    
+
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),

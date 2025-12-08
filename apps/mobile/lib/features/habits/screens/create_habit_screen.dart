@@ -27,22 +27,52 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
   HabitCategory _selectedCategory = HabitCategory.other;
   String _selectedColor = '#4A90E2';
   String _selectedIcon = '🎯';
-  List<int> _selectedWeekdays = [];
+  final List<int> _selectedWeekdays = [];
   DateTime? _startDate;
   DateTime? _endDate;
   bool _hasReminder = false;
   TimeOfDay? _reminderTime;
-  
+
   final List<String> _availableIcons = [
-    '🎯', '💪', '📚', '🧘', '🏃', '💧', '🍎', '🎨',
-    '💰', '🎵', '📝', '🌱', '☀️', '🌙', '⭐', '🔥',
-    '💡', '🎪', '🎭', '🎨', '📊', '🏆', '🎖️', '👑',
+    '🎯',
+    '💪',
+    '📚',
+    '🧘',
+    '🏃',
+    '💧',
+    '🍎',
+    '🎨',
+    '💰',
+    '🎵',
+    '📝',
+    '🌱',
+    '☀️',
+    '🌙',
+    '⭐',
+    '🔥',
+    '💡',
+    '🎪',
+    '🎭',
+    '🎨',
+    '📊',
+    '🏆',
+    '🎖️',
+    '👑',
   ];
-  
+
   final List<String> _availableColors = [
-    '#4A90E2', '#50C878', '#F39C12', '#E74C3C',
-    '#9B59B6', '#1ABC9C', '#34495E', '#F1C40F',
-    '#E67E22', '#95A5A6', '#3498DB', '#2ECC71',
+    '#4A90E2',
+    '#50C878',
+    '#F39C12',
+    '#E74C3C',
+    '#9B59B6',
+    '#1ABC9C',
+    '#34495E',
+    '#F1C40F',
+    '#E67E22',
+    '#95A5A6',
+    '#3498DB',
+    '#2ECC71',
   ];
 
   @override
@@ -161,7 +191,9 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
                         child: TextFormField(
                           controller: _unitController,
                           decoration: InputDecoration(
-                            labelText: _selectedType == HabitType.time ? 'minutes' : 'Unit',
+                            labelText: _selectedType == HabitType.time
+                                ? 'minutes'
+                                : 'Unit',
                             border: const OutlineInputBorder(),
                             hintText: _getUnitHint(),
                           ),
@@ -237,14 +269,16 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
                     Expanded(
                       child: ListTile(
                         title: const Text('Start Date'),
-                        subtitle: Text(_startDate?.toString().split(' ')[0] ?? 'Not set'),
+                        subtitle: Text(
+                            _startDate?.toString().split(' ')[0] ?? 'Not set'),
                         trailing: const Icon(Icons.calendar_today),
                         onTap: () async {
                           final date = await showDatePicker(
                             context: context,
                             initialDate: _startDate ?? DateTime.now(),
                             firstDate: DateTime.now(),
-                            lastDate: DateTime.now().add(const Duration(days: 365)),
+                            lastDate:
+                                DateTime.now().add(const Duration(days: 365)),
                           );
                           if (date != null) {
                             setState(() {
@@ -257,14 +291,17 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
                     Expanded(
                       child: ListTile(
                         title: const Text('End Date'),
-                        subtitle: Text(_endDate?.toString().split(' ')[0] ?? 'Not set'),
+                        subtitle: Text(
+                            _endDate?.toString().split(' ')[0] ?? 'Not set'),
                         trailing: const Icon(Icons.calendar_today),
                         onTap: () async {
                           final date = await showDatePicker(
                             context: context,
-                            initialDate: _endDate ?? DateTime.now().add(const Duration(days: 30)),
+                            initialDate: _endDate ??
+                                DateTime.now().add(const Duration(days: 30)),
                             firstDate: _startDate ?? DateTime.now(),
-                            lastDate: DateTime.now().add(const Duration(days: 365)),
+                            lastDate:
+                                DateTime.now().add(const Duration(days: 365)),
                           );
                           if (date != null) {
                             setState(() {
@@ -308,7 +345,8 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
                     onTap: () async {
                       final time = await showTimePicker(
                         context: context,
-                        initialTime: _reminderTime ?? const TimeOfDay(hour: 9, minute: 0),
+                        initialTime: _reminderTime ??
+                            const TimeOfDay(hour: 9, minute: 0),
                       );
                       if (time != null) {
                         setState(() {
@@ -327,7 +365,8 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
     );
   }
 
-  Widget _buildSection({required String title, required List<Widget> children}) {
+  Widget _buildSection(
+      {required String title, required List<Widget> children}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -346,47 +385,55 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
   }
 
   Widget _buildTypeSelector() {
-    return Column(
-      children: HabitType.values.map((type) {
-        return RadioListTile<HabitType>(
-          title: Text(_getTypeTitle(type)),
-          subtitle: Text(_getTypeDescription(type)),
-          value: type,
-          groupValue: _selectedType,
-          onChanged: (value) {
-            setState(() {
-              _selectedType = value!;
-              if (type == HabitType.time) {
-                _unitController.text = 'minutes';
-              }
-            });
-          },
-        );
-      }).toList(),
+    return RadioGroup<HabitType>(
+      groupValue: _selectedType,
+      onChanged: (value) {
+        if (value != null) {
+          setState(() {
+            _selectedType = value;
+            if (value == HabitType.time) {
+              _unitController.text = 'minutes';
+            }
+          });
+        }
+      },
+      child: Column(
+        children: HabitType.values.map((type) {
+          return RadioListTile<HabitType>(
+            title: Text(_getTypeTitle(type)),
+            subtitle: Text(_getTypeDescription(type)),
+            value: type,
+          );
+        }).toList(),
+      ),
     );
   }
 
   Widget _buildFrequencySelector() {
-    return Column(
-      children: HabitFrequency.values.map((frequency) {
-        return RadioListTile<HabitFrequency>(
-          title: Text(_getFrequencyTitle(frequency)),
-          subtitle: Text(_getFrequencyDescription(frequency)),
-          value: frequency,
-          groupValue: _selectedFrequency,
-          onChanged: (value) {
-            setState(() {
-              _selectedFrequency = value!;
-            });
-          },
-        );
-      }).toList(),
+    return RadioGroup<HabitFrequency>(
+      groupValue: _selectedFrequency,
+      onChanged: (value) {
+        if (value != null) {
+          setState(() {
+            _selectedFrequency = value;
+          });
+        }
+      },
+      child: Column(
+        children: HabitFrequency.values.map((frequency) {
+          return RadioListTile<HabitFrequency>(
+            title: Text(_getFrequencyTitle(frequency)),
+            subtitle: Text(_getFrequencyDescription(frequency)),
+            value: frequency,
+          );
+        }).toList(),
+      ),
     );
   }
 
   Widget _buildWeekdaySelector() {
     const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -400,7 +447,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
           children: List.generate(7, (index) {
             final dayNumber = index + 1;
             final isSelected = _selectedWeekdays.contains(dayNumber);
-            
+
             return FilterChip(
               label: Text(weekdays[index]),
               selected: isSelected,
@@ -413,7 +460,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
                   }
                 });
               },
-              selectedColor: AppTheme.primaryColor.withOpacity(0.2),
+              selectedColor: AppTheme.primaryColor.withValues(alpha: 0.2),
               checkmarkColor: AppTheme.primaryColor,
             );
           }),
@@ -424,7 +471,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
 
   Widget _buildCategorySelector() {
     return DropdownButtonFormField<HabitCategory>(
-      value: _selectedCategory,
+      initialValue: _selectedCategory,
       decoration: const InputDecoration(
         labelText: 'Category',
         border: OutlineInputBorder(),
@@ -453,7 +500,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
           style: TextStyle(fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: UIConstants.spacingSM),
-        Container(
+        SizedBox(
           height: 60,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
@@ -461,7 +508,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
             itemBuilder: (context, index) {
               final icon = _availableIcons[index];
               final isSelected = _selectedIcon == icon;
-              
+
               return GestureDetector(
                 onTap: () {
                   setState(() {
@@ -472,10 +519,14 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
                   width: 50,
                   margin: const EdgeInsets.only(right: 8),
                   decoration: BoxDecoration(
-                    color: isSelected ? AppTheme.primaryColor.withOpacity(0.2) : Colors.grey.shade100,
+                    color: isSelected
+                        ? AppTheme.primaryColor.withValues(alpha: 0.2)
+                        : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                     border: Border.all(
-                      color: isSelected ? AppTheme.primaryColor : Colors.grey.shade300,
+                      color: isSelected
+                          ? AppTheme.primaryColor
+                          : Colors.grey.shade300,
                       width: 2,
                     ),
                   ),
@@ -508,7 +559,7 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
           runSpacing: 8,
           children: _availableColors.map((color) {
             final isSelected = _selectedColor == color;
-            
+
             return GestureDetector(
               onTap: () {
                 setState(() {
@@ -542,7 +593,8 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
       return;
     }
 
-    if (_selectedFrequency == HabitFrequency.weekly && _selectedWeekdays.isEmpty) {
+    if (_selectedFrequency == HabitFrequency.weekly &&
+        _selectedWeekdays.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please select at least one day for weekly habits'),
@@ -577,8 +629,8 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
     );
 
     final success = await ref.read(habitProvider.notifier).createHabit(habit);
-    
-    if (success) {
+
+    if (success && mounted) {
       Navigator.pop(context, true);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -676,4 +728,4 @@ class _CreateHabitScreenState extends ConsumerState<CreateHabitScreen> {
         return 'glasses, pages, etc.';
     }
   }
-} 
+}

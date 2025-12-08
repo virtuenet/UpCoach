@@ -17,11 +17,12 @@ const _prefsLastUpdatedKey = 'on_device_llm_last_updated';
 const _prefsAutoDownloadKey = 'on_device_llm_auto_download';
 
 class OnDeviceLlmManager extends StateNotifier<OnDeviceLlmState> {
-  OnDeviceLlmManager(this._dio, this._engine) : super(OnDeviceLlmState.initial()) {
+  OnDeviceLlmManager(Dio dio, this._engine)
+      : super(OnDeviceLlmState.initial()) {
+    // dio parameter reserved for future API download implementation
     _hydrate();
   }
 
-  final Dio _dio;
   final OnDeviceLlmEngine _engine;
   CancelToken? _downloadToken;
 
@@ -113,7 +114,8 @@ class OnDeviceLlmManager extends StateNotifier<OnDeviceLlmState> {
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_prefsModelPathKey, filePath);
-      await prefs.setInt(_prefsLastUpdatedKey, DateTime.now().millisecondsSinceEpoch);
+      await prefs.setInt(
+          _prefsLastUpdatedKey, DateTime.now().millisecondsSinceEpoch);
     } catch (error) {
       state = state.copyWith(
         status: OnDeviceModelStatus.error,
@@ -185,4 +187,3 @@ final onDeviceLlmManagerProvider =
   final engine = OnDeviceLlmEngine();
   return OnDeviceLlmManager(dio, engine);
 });
-

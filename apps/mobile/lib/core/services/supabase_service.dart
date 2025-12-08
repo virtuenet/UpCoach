@@ -16,5 +16,3 @@ class SupabaseService {
     _initialized = true;
   }
 }
-
-

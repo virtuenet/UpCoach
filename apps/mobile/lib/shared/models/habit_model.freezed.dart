@@ -429,12 +429,12 @@ class _$HabitImpl implements _Habit {
       this.longestStreak = 0,
       this.totalCompletions = 0,
       final List<int> weekdays = const [],
-      this.customInterval = null,
-      this.lastCompletedAt = null,
-      this.startDate = null,
-      this.endDate = null,
+      this.customInterval,
+      this.lastCompletedAt,
+      this.startDate,
+      this.endDate,
       this.hasReminder = false,
-      this.reminderTime = null,
+      this.reminderTime,
       this.reminderMessage = ''})
       : _tags = tags,
         _weekdays = weekdays;
@@ -505,23 +505,18 @@ class _$HabitImpl implements _Habit {
 
 // For weekly habits: [1,2,3,4,5] = Mon-Fri
   @override
-  @JsonKey()
   final int? customInterval;
 // For custom frequency
   @override
-  @JsonKey()
   final DateTime? lastCompletedAt;
   @override
-  @JsonKey()
   final DateTime? startDate;
   @override
-  @JsonKey()
   final DateTime? endDate;
   @override
   @JsonKey()
   final bool hasReminder;
   @override
-  @JsonKey()
   final DateTime? reminderTime;
   @override
   @JsonKey()
@@ -881,7 +876,7 @@ class _$HabitCompletionImpl implements _HabitCompletion {
       required this.completedAt,
       this.value = 1,
       this.notes = '',
-      this.duration = null,
+      this.duration,
       required this.createdAt});
 
   factory _$HabitCompletionImpl.fromJson(Map<String, dynamic> json) =>
@@ -900,7 +895,6 @@ class _$HabitCompletionImpl implements _HabitCompletion {
   @JsonKey()
   final String notes;
   @override
-  @JsonKey()
   final int? duration;
 // In minutes for time-based habits
   @override
@@ -1766,7 +1760,7 @@ class _$HabitStateImpl implements _HabitState {
       this.isSaving = false,
       this.error,
       this.selectedHabit,
-      this.selectedDate = null})
+      this.selectedDate})
       : _habits = habits,
         _completions = completions,
         _streaks = streaks,
@@ -1819,7 +1813,6 @@ class _$HabitStateImpl implements _HabitState {
   @override
   final Habit? selectedHabit;
   @override
-  @JsonKey()
   final DateTime? selectedDate;
 
   @override

@@ -36,7 +36,7 @@ _$HabitImpl _$$HabitImplFromJson(Map<String, dynamic> json) => _$HabitImpl(
               ?.map((e) => (e as num).toInt())
               .toList() ??
           const [],
-      customInterval: (json['customInterval'] as num?)?.toInt() ?? null,
+      customInterval: (json['customInterval'] as num?)?.toInt(),
       lastCompletedAt: json['lastCompletedAt'] == null
           ? null
           : DateTime.parse(json['lastCompletedAt'] as String),
@@ -116,7 +116,7 @@ _$HabitCompletionImpl _$$HabitCompletionImplFromJson(
       completedAt: DateTime.parse(json['completedAt'] as String),
       value: (json['value'] as num?)?.toInt() ?? 1,
       notes: json['notes'] as String? ?? '',
-      duration: (json['duration'] as num?)?.toInt() ?? null,
+      duration: (json['duration'] as num?)?.toInt(),
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
 

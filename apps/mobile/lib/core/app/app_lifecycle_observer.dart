@@ -7,12 +7,13 @@ class AppLifecycleObserver extends ConsumerStatefulWidget {
   final Widget child;
 
   const AppLifecycleObserver({
-    Key? key,
+    super.key,
     required this.child,
-  }) : super(key: key);
+  });
 
   @override
-  ConsumerState<AppLifecycleObserver> createState() => _AppLifecycleObserverState();
+  ConsumerState<AppLifecycleObserver> createState() =>
+      _AppLifecycleObserverState();
 }
 
 class _AppLifecycleObserverState extends ConsumerState<AppLifecycleObserver>

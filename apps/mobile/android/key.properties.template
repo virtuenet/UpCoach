@@ -1,0 +1,14 @@
+# Android App Signing Configuration for UpCoach
+# Copy this file to key.properties and fill in your values
+# NEVER commit key.properties to version control!
+
+# Release keystore configuration
+storePassword=YOUR_KEYSTORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=upload
+storeFile=../keystores/upload-keystore.jks
+
+# Optional: Separate play store upload key
+# playStoreKeyAlias=play_upload
+# playStoreKeyPassword=YOUR_PLAY_KEY_PASSWORD
+# playStoreStoreFile=../keystores/play-upload-keystore.jks

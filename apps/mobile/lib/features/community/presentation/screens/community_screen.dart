@@ -8,7 +8,7 @@ import '../widgets/thread_list_item.dart';
 import '../widgets/activity_feed_item.dart';
 
 class CommunityScreen extends ConsumerStatefulWidget {
-  const CommunityScreen({Key? key}) : super(key: key);
+  const CommunityScreen({super.key});
 
   @override
   ConsumerState<CommunityScreen> createState() => _CommunityScreenState();
@@ -109,7 +109,8 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                       child: ForumCategoryCard(
                         category: categories[index],
                         onTap: () {
-                          context.push('/community/forums/${categories[index].id}');
+                          context.push(
+                              '/community/forums/${categories[index].id}');
                         },
                       ),
                     );
@@ -122,7 +123,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
               ),
             ),
             const SizedBox(height: UIConstants.spacingLG),
-            
+
             // Latest Threads
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -196,9 +197,8 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen>
                 subtitle: Text(
                   '${group.memberCount} members • ${group.postCount} posts',
                 ),
-                trailing: group.isPrivate
-                    ? const Icon(Icons.lock, size: 16)
-                    : null,
+                trailing:
+                    group.isPrivate ? const Icon(Icons.lock, size: 16) : null,
                 onTap: () {
                   context.push('/community/groups/${group.id}');
                 },

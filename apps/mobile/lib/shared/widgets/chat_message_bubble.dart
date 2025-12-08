@@ -20,9 +20,8 @@ class ChatMessageBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(
-        mainAxisAlignment: message.isUser 
-            ? MainAxisAlignment.end 
-            : MainAxisAlignment.start,
+        mainAxisAlignment:
+            message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!message.isUser) ...[
@@ -46,15 +45,11 @@ class ChatMessageBubble extends StatelessWidget {
       width: 32,
       height: 32,
       decoration: BoxDecoration(
-        color: message.isUser 
-            ? AppTheme.primaryColor 
-            : AppTheme.secondaryColor,
+        color: message.isUser ? AppTheme.primaryColor : AppTheme.secondaryColor,
         borderRadius: BorderRadius.circular(UIConstants.radiusXL),
       ),
       child: Icon(
-        message.isUser 
-            ? Icons.person 
-            : Icons.psychology_alt,
+        message.isUser ? Icons.person : Icons.psychology_alt,
         color: Colors.white,
         size: 18,
       ),
@@ -72,7 +67,7 @@ class ChatMessageBubble extends StatelessWidget {
         decoration: BoxDecoration(
           color: _getBubbleColor(context),
           borderRadius: _getBorderRadius(),
-          border: message.hasFailed 
+          border: message.hasFailed
               ? Border.all(color: AppTheme.errorColor, width: 1)
               : null,
         ),
@@ -136,7 +131,7 @@ class ChatMessageBubble extends StatelessWidget {
         Text(
           _formatTime(message.timestamp),
           style: TextStyle(
-            color: _getTextColor(context).withOpacity(0.7),
+            color: _getTextColor(context).withValues(alpha: 0.7),
             fontSize: 12,
           ),
         ),
@@ -172,7 +167,7 @@ class ChatMessageBubble extends StatelessWidget {
             child: CircularProgressIndicator(
               strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation<Color>(
-                _getTextColor(context).withOpacity(0.7),
+                _getTextColor(context).withValues(alpha: 0.7),
               ),
             ),
           ),
@@ -181,7 +176,7 @@ class ChatMessageBubble extends StatelessWidget {
           Icon(
             Icons.check,
             size: 14,
-            color: _getTextColor(context).withOpacity(0.7),
+            color: _getTextColor(context).withValues(alpha: 0.7),
           ),
         ],
       ],
@@ -190,20 +185,18 @@ class ChatMessageBubble extends StatelessWidget {
 
   Color _getBubbleColor(BuildContext context) {
     if (message.hasFailed) {
-      return AppTheme.errorColor.withOpacity(0.1);
+      return AppTheme.errorColor.withValues(alpha: 0.1);
     }
-    
-    return message.isUser 
-        ? AppTheme.primaryColor
-        : Theme.of(context).cardColor;
+
+    return message.isUser ? AppTheme.primaryColor : Theme.of(context).cardColor;
   }
 
   Color _getTextColor(BuildContext context) {
     if (message.hasFailed) {
       return AppTheme.errorColor;
     }
-    
-    return message.isUser 
+
+    return message.isUser
         ? Colors.white
         : Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
   }
@@ -212,12 +205,10 @@ class ChatMessageBubble extends StatelessWidget {
     return BorderRadius.only(
       topLeft: const Radius.circular(16),
       topRight: const Radius.circular(16),
-      bottomLeft: message.isUser 
-          ? const Radius.circular(16) 
-          : const Radius.circular(4),
-      bottomRight: message.isUser 
-          ? const Radius.circular(4) 
-          : const Radius.circular(16),
+      bottomLeft:
+          message.isUser ? const Radius.circular(16) : const Radius.circular(4),
+      bottomRight:
+          message.isUser ? const Radius.circular(4) : const Radius.circular(16),
     );
   }
 
@@ -270,4 +261,4 @@ class ChatMessageBubble extends StatelessWidget {
       ),
     );
   }
-} 
+}

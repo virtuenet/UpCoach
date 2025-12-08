@@ -60,4 +60,4 @@ class AuthResponse extends Equatable {
         tokenType,
         expiresIn,
       ];
-} 
+}

@@ -78,4 +78,3 @@ class OnDeviceLlmState extends Equatable {
         lastLatencyMs,
       ];
 }
-

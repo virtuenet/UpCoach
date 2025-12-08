@@ -45,10 +45,10 @@ class TaskListTile extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Delete'),
                 style: TextButton.styleFrom(
                   foregroundColor: AppTheme.errorColor,
                 ),
+                child: const Text('Delete'),
               ),
             ],
           ),
@@ -75,13 +75,13 @@ class TaskListTile extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: task.isCompleted 
-                            ? AppTheme.successColor 
+                        color: task.isCompleted
+                            ? AppTheme.successColor
                             : _getPriorityColor(task.priority),
                         width: 2,
                       ),
-                      color: task.isCompleted 
-                          ? AppTheme.successColor 
+                      color: task.isCompleted
+                          ? AppTheme.successColor
                           : Colors.transparent,
                     ),
                     child: task.isCompleted
@@ -94,7 +94,7 @@ class TaskListTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: UIConstants.spacingMD),
-                
+
                 // Task details
                 Expanded(
                   child: Column(
@@ -106,15 +106,15 @@ class TaskListTile extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          decoration: task.isCompleted 
-                              ? TextDecoration.lineThrough 
+                          decoration: task.isCompleted
+                              ? TextDecoration.lineThrough
                               : null,
-                          color: task.isCompleted 
-                              ? AppTheme.textSecondary 
+                          color: task.isCompleted
+                              ? AppTheme.textSecondary
                               : AppTheme.textPrimary,
                         ),
                       ),
-                      
+
                       if (task.description != null) ...[
                         const SizedBox(height: UIConstants.spacingXS),
                         Text(
@@ -124,15 +124,15 @@ class TaskListTile extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 14,
                             color: AppTheme.textSecondary,
-                            decoration: task.isCompleted 
-                                ? TextDecoration.lineThrough 
+                            decoration: task.isCompleted
+                                ? TextDecoration.lineThrough
                                 : null,
                           ),
                         ),
                       ],
-                      
+
                       const SizedBox(height: UIConstants.spacingSM),
-                      
+
                       // Task metadata
                       Wrap(
                         spacing: 8,
@@ -144,14 +144,14 @@ class TaskListTile extends StatelessWidget {
                             icon: _getCategoryIcon(task.category),
                             color: _getCategoryColor(task.category),
                           ),
-                          
+
                           // Priority chip (only if not completed)
                           if (!task.isCompleted)
                             _buildChip(
                               label: task.priorityLabel,
                               color: _getPriorityColor(task.priority),
                             ),
-                          
+
                           // Due date chip
                           if (task.dueDate != null)
                             _buildChip(
@@ -159,18 +159,19 @@ class TaskListTile extends StatelessWidget {
                               icon: Icons.calendar_today,
                               color: _getDueDateColor(task),
                             ),
-                          
+
                           // Tags
                           ...task.tags.map((tag) => _buildChip(
-                            label: tag,
-                            color: AppTheme.primaryColor.withOpacity(0.7),
-                          )),
+                                label: tag,
+                                color: AppTheme.primaryColor
+                                    .withValues(alpha: 0.7),
+                              )),
                         ],
                       ),
                     ],
                   ),
                 ),
-                
+
                 // Chevron
                 const Icon(
                   Icons.chevron_right,
@@ -192,10 +193,10 @@ class TaskListTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(UIConstants.radiusLG),
         border: Border.all(
-          color: color.withOpacity(0.3),
+          color: color.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -278,7 +279,7 @@ class TaskListTile extends StatelessWidget {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final dateOnly = DateTime(date.year, date.month, date.day);
-    
+
     if (dateOnly == today) {
       return 'Today';
     } else if (dateOnly == today.add(const Duration(days: 1))) {
@@ -291,4 +292,4 @@ class TaskListTile extends StatelessWidget {
       return DateFormat('MMM d').format(date);
     }
   }
-} 
+}

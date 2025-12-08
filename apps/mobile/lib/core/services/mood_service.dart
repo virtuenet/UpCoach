@@ -6,14 +6,16 @@ import '../../shared/models/mood_model.dart';
 class MoodService {
   static final MoodService _instance = MoodService._internal();
   factory MoodService() => _instance;
-  
+
   final Dio _dio = Dio();
   final Uuid _uuid = const Uuid();
 
   MoodService._internal() {
     _dio.options.baseUrl = AppConstants.apiUrl;
-    _dio.options.connectTimeout = const Duration(seconds: AppConstants.requestTimeoutSeconds);
-    _dio.options.receiveTimeout = const Duration(seconds: AppConstants.requestTimeoutSeconds);
+    _dio.options.connectTimeout =
+        const Duration(seconds: AppConstants.requestTimeoutSeconds);
+    _dio.options.receiveTimeout =
+        const Duration(seconds: AppConstants.requestTimeoutSeconds);
   }
 
   Future<List<MoodModel>> getMoodEntries({
@@ -23,7 +25,9 @@ class MoodService {
   }) async {
     try {
       final queryParams = <String, dynamic>{};
-      if (startDate != null) queryParams['start_date'] = startDate.toIso8601String();
+      if (startDate != null) {
+        queryParams['start_date'] = startDate.toIso8601String();
+      }
       if (endDate != null) queryParams['end_date'] = endDate.toIso8601String();
       if (limit != null) queryParams['limit'] = limit;
 
@@ -52,10 +56,11 @@ class MoodService {
         '/mood',
         data: {
           'level': level.name,
-          if (categories != null && categories.isNotEmpty) 
+          if (categories != null && categories.isNotEmpty)
             'categories': categories.map((c) => c.name).toList(),
           if (note != null && note.isNotEmpty) 'note': note,
-          if (activities != null && activities.isNotEmpty) 'activities': activities,
+          if (activities != null && activities.isNotEmpty)
+            'activities': activities,
         },
       );
 
@@ -75,7 +80,9 @@ class MoodService {
     try {
       final data = <String, dynamic>{};
       if (level != null) data['level'] = level.name;
-      if (categories != null) data['categories'] = categories.map((c) => c.name).toList();
+      if (categories != null) {
+        data['categories'] = categories.map((c) => c.name).toList();
+      }
       if (note != null) data['note'] = note;
       if (activities != null) data['activities'] = activities;
 
@@ -100,7 +107,9 @@ class MoodService {
   }) async {
     try {
       final queryParams = <String, dynamic>{};
-      if (startDate != null) queryParams['start_date'] = startDate.toIso8601String();
+      if (startDate != null) {
+        queryParams['start_date'] = startDate.toIso8601String();
+      }
       if (endDate != null) queryParams['end_date'] = endDate.toIso8601String();
 
       final response = await _dio.get(
@@ -162,4 +171,4 @@ class MoodService {
       return 'An unexpected error occurred';
     }
   }
-} 
+}

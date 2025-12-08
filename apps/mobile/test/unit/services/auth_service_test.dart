@@ -8,7 +8,7 @@ class AuthService {
   Future<bool> login(String email, String password) async {
     // Simulate API call
     await Future.delayed(const Duration(milliseconds: 100));
-    
+
     if (email == 'test@example.com' && password == 'password123') {
       _currentUser = email;
       _authToken = 'mock_token_123';
@@ -38,7 +38,7 @@ class AuthService {
 
   Future<bool> register(String email, String password, String name) async {
     await Future.delayed(const Duration(milliseconds: 100));
-    
+
     if (email.contains('@') && password.length >= 8 && name.isNotEmpty) {
       return true;
     }
@@ -56,7 +56,7 @@ void main() {
 
     test('successful login sets user and token', () async {
       final result = await authService.login('test@example.com', 'password123');
-      
+
       expect(result, isTrue);
       expect(authService.isAuthenticated, isTrue);
       expect(authService.currentUser, equals('test@example.com'));
@@ -65,7 +65,7 @@ void main() {
 
     test('failed login does not set user or token', () async {
       final result = await authService.login('wrong@example.com', 'wrongpass');
-      
+
       expect(result, isFalse);
       expect(authService.isAuthenticated, isFalse);
       expect(authService.currentUser, isNull);
@@ -76,7 +76,7 @@ void main() {
       // First login
       await authService.login('test@example.com', 'password123');
       expect(authService.isAuthenticated, isTrue);
-      
+
       // Then logout
       await authService.logout();
       expect(authService.isAuthenticated, isFalse);
@@ -88,10 +88,10 @@ void main() {
       // Login first
       await authService.login('test@example.com', 'password123');
       final originalToken = authService.authToken;
-      
+
       // Refresh token
       final refreshResult = await authService.refreshToken();
-      
+
       expect(refreshResult, isTrue);
       expect(authService.authToken, equals('refreshed_token_456'));
       expect(authService.authToken, isNot(equals(originalToken)));
@@ -99,7 +99,7 @@ void main() {
 
     test('refresh token fails when not authenticated', () async {
       final refreshResult = await authService.refreshToken();
-      
+
       expect(refreshResult, isFalse);
       expect(authService.authToken, isNull);
     });
@@ -110,7 +110,7 @@ void main() {
         'password123',
         'Test User',
       );
-      
+
       expect(result, isFalse);
     });
 
@@ -120,7 +120,7 @@ void main() {
         'short',
         'Test User',
       );
-      
+
       expect(result, isFalse);
     });
 
@@ -130,7 +130,7 @@ void main() {
         'password123',
         '',
       );
-      
+
       expect(result, isFalse);
     });
 
@@ -140,7 +140,7 @@ void main() {
         'password123',
         'New User',
       );
-      
+
       expect(result, isTrue);
     });
 

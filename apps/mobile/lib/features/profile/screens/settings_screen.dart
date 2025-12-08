@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/constants/ui_constants.dart';
@@ -14,6 +14,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/ondevice/on_device_llm_manager.dart';
 import '../../../core/ondevice/on_device_llm_state.dart';
+import '../../../core/providers/locale_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   final int initialTab;
@@ -46,7 +47,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
 
   // App settings
   String _theme = 'system';
-  String _language = 'english';
 
   // Security settings
   bool _twoFactorEnabled = false;
@@ -84,60 +84,81 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   }
 
   // Language Selection Methods
-  final Map<String, String> _languages = {
-    'english': 'English',
-    'spanish': 'Español',
-    'french': 'Français',
-    'german': 'Deutsch',
-    'italian': 'Italiano',
-    'portuguese': 'Português',
-    'chinese_simplified': '简体中文',
-    'chinese_traditional': '繁體中文',
-    'japanese': '日本語',
-    'korean': '한국어',
-  };
-
-  String _getLanguageDisplayName(String languageCode) {
-    return _languages[languageCode] ?? 'English';
-  }
-
   Future<void> _showLanguageSelection() async {
-    final selectedLanguage = await showDialog<String>(
+    final localeState = ref.read(localeProvider);
+    final localeNotifier = ref.read(localeProvider.notifier);
+
+    final selectedLocale = await showDialog<Locale?>(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text('Select Language'),
           content: SizedBox(
             width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: _languages.length,
-              itemBuilder: (context, index) {
-                final entry = _languages.entries.elementAt(index);
-                final languageCode = entry.key;
-                final languageName = entry.value;
-                final isSelected = _language == languageCode;
-
-                return ListTile(
-                  title: Text(languageName),
-                  leading: Radio<String>(
-                    value: languageCode,
-                    groupValue: _language,
-                    onChanged: (value) {
-                      Navigator.of(context).pop(value);
-                    },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // System default option
+                ListTile(
+                  title: const Text('System Default'),
+                  subtitle: Text(SupportedLocales.getDisplayName(
+                    WidgetsBinding.instance.platformDispatcher.locale,
+                  )),
+                  leading: Icon(
+                    localeState.isSystemLocale
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_unchecked,
+                    color: localeState.isSystemLocale
+                        ? AppTheme.primaryColor
+                        : Colors.grey,
                   ),
                   onTap: () {
-                    Navigator.of(context).pop(languageCode);
+                    Navigator.of(dialogContext).pop(null); // null means system
                   },
-                  trailing: isSelected ? const Icon(Icons.check, color: Colors.green) : null,
-                );
-              },
+                  trailing: localeState.isSystemLocale
+                      ? const Icon(Icons.check, color: Colors.green)
+                      : null,
+                ),
+                const Divider(),
+                // All supported locales
+                ...SupportedLocales.all.map((locale) {
+                  final isSelected = !localeState.isSystemLocale &&
+                      localeState.locale.languageCode == locale.languageCode;
+                  final isRTL = SupportedLocales.isRTL(locale);
+
+                  return ListTile(
+                    title: Text(SupportedLocales.getDisplayName(locale)),
+                    subtitle: isRTL ? const Text('Right-to-left') : null,
+                    leading: Icon(
+                      isSelected
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked,
+                      color: isSelected ? AppTheme.primaryColor : Colors.grey,
+                    ),
+                    onTap: () {
+                      Navigator.of(dialogContext).pop(locale);
+                    },
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isRTL)
+                          const Padding(
+                            padding: EdgeInsets.only(right: 8),
+                            child: Icon(Icons.format_textdirection_r_to_l,
+                                size: 16),
+                          ),
+                        if (isSelected)
+                          const Icon(Icons.check, color: Colors.green),
+                      ],
+                    ),
+                  );
+                }),
+              ],
             ),
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('Cancel'),
             ),
           ],
@@ -145,40 +166,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       },
     );
 
-    if (selectedLanguage != null && selectedLanguage != _language) {
-      await _updateLanguage(selectedLanguage);
-    }
-  }
-
-  Future<void> _updateLanguage(String languageCode) async {
-    try {
-      // Update the language preference in SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('app_language', languageCode);
-
-      setState(() {
-        _language = languageCode;
-      });
-
-      // Show success message
+    // Handle selection
+    if (selectedLocale == null && !localeState.isSystemLocale) {
+      // User selected "System Default"
+      await localeNotifier.useSystemLocale();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Language changed to ${_getLanguageDisplayName(languageCode)}'),
-            action: SnackBarAction(
-              label: 'Restart App',
-              onPressed: () {
-                // In a real app, you might trigger an app restart here
-                // or use a localization state management solution
-              },
-            ),
+          const SnackBar(
+            content: Text('Language set to System Default'),
           ),
         );
       }
-    } catch (e) {
+    } else if (selectedLocale != null &&
+        selectedLocale.languageCode != localeState.locale.languageCode) {
+      await localeNotifier.setLocale(selectedLocale);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update language: $e')),
+          SnackBar(
+            content: Text(
+                'Language changed to ${SupportedLocales.getDisplayName(selectedLocale)}'),
+          ),
         );
       }
     }
@@ -219,52 +226,76 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     return ListView(
       children: [
         _buildSectionHeader('Appearance'),
-        RadioListTile<String>(
-          title: const Text('System Default'),
-          subtitle: const Text('Follow system theme'),
-          value: 'system',
+        RadioGroup<String>(
           groupValue: _theme,
           onChanged: (value) {
-            setState(() {
-              _theme = value!;
-            });
+            if (value != null) {
+              setState(() {
+                _theme = value;
+              });
+            }
           },
+          child: Column(
+            children: [
+              RadioListTile<String>(
+                title: const Text('System Default'),
+                subtitle: const Text('Follow system theme'),
+                value: 'system',
+              ),
+              RadioListTile<String>(
+                title: const Text('Light Mode'),
+                subtitle: const Text('Always use light theme'),
+                value: 'light',
+              ),
+              RadioListTile<String>(
+                title: const Text('Dark Mode'),
+                subtitle: const Text('Always use dark theme'),
+                value: 'dark',
+              ),
+            ],
+          ),
         ),
-        RadioListTile<String>(
-          title: const Text('Light Mode'),
-          subtitle: const Text('Always use light theme'),
-          value: 'light',
-          groupValue: _theme,
-          onChanged: (value) {
-            setState(() {
-              _theme = value!;
-            });
-          },
-        ),
-        RadioListTile<String>(
-          title: const Text('Dark Mode'),
-          subtitle: const Text('Always use dark theme'),
-          value: 'dark',
-          groupValue: _theme,
-          onChanged: (value) {
-            setState(() {
-              _theme = value!;
-            });
-          },
-        ),
-        
-        const Divider(),
-        
-        _buildSectionHeader('Language'),
+
+        // Accessibility Settings
         ListTile(
-          title: const Text('App Language'),
-          subtitle: Text(_getLanguageDisplayName(_language)),
+          leading: const Icon(Icons.accessibility_new),
+          title: const Text('Accessibility'),
+          subtitle: const Text('Screen reader, text size, motion'),
           trailing: const Icon(Icons.chevron_right),
-          onTap: () => _showLanguageSelection(),
+          onTap: () => context.push('/settings/accessibility'),
         ),
-        
+
         const Divider(),
-        
+
+        _buildSectionHeader('Language'),
+        Consumer(
+          builder: (context, ref, child) {
+            final localeState = ref.watch(localeProvider);
+            final displayName = localeState.isSystemLocale
+                ? 'System Default (${SupportedLocales.getDisplayName(localeState.locale)})'
+                : SupportedLocales.getDisplayName(localeState.locale);
+
+            return ListTile(
+              title: const Text('App Language'),
+              subtitle: Text(displayName),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (localeState.isRTL)
+                    const Padding(
+                      padding: EdgeInsets.only(right: 8),
+                      child: Icon(Icons.format_textdirection_r_to_l, size: 16),
+                    ),
+                  const Icon(Icons.chevron_right),
+                ],
+              ),
+              onTap: () => _showLanguageSelection(),
+            );
+          },
+        ),
+
+        const Divider(),
+
         _buildSectionHeader('Data & Storage'),
         ListTile(
           title: const Text('Clear Cache'),
@@ -304,7 +335,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         _buildSectionHeader('On-device AI'),
         SwitchListTile(
           title: const Text('Use on-device mini model'),
-          subtitle: const Text('Route quick prompts through the local 1–2B model'),
+          subtitle:
+              const Text('Route quick prompts through the local 1–2B model'),
           value: onDeviceState.enabled,
           onChanged: (value) {
             onDeviceManager.setEnabled(value);
@@ -314,7 +346,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           title: Text(onDeviceState.activeModel.name),
           subtitle: Text(_formatOnDeviceStatus(onDeviceState)),
           trailing: _buildOnDeviceTrailing(onDeviceState),
-          onTap: () => _showOnDeviceActionsSheet(onDeviceManager, onDeviceState),
+          onTap: () =>
+              _showOnDeviceActionsSheet(onDeviceManager, onDeviceState),
         ),
       ],
     );
@@ -335,28 +368,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         ListTile(
           title: const Text('Two-Factor Authentication'),
           subtitle: Text(_twoFactorEnabled
-            ? 'Enhanced security enabled'
-            : 'Add an extra layer of security'),
+              ? 'Enhanced security enabled'
+              : 'Add an extra layer of security'),
           trailing: _isLoading2FAStatus
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : Switch(
-                value: _twoFactorEnabled,
-                onChanged: (value) async {
-                  if (value) {
-                    await _setupTwoFactor();
-                  } else {
-                    await _disableTwoFactor();
-                  }
-                },
-              ),
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Switch(
+                  value: _twoFactorEnabled,
+                  onChanged: (value) async {
+                    if (value) {
+                      await _setupTwoFactor();
+                    } else {
+                      await _disableTwoFactor();
+                    }
+                  },
+                ),
         ),
-        
         const Divider(),
-        
         _buildSectionHeader('Privacy'),
         SwitchListTile(
           title: const Text('Share Analytics'),
@@ -378,9 +409,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             });
           },
         ),
-        
         const Divider(),
-        
         _buildSectionHeader('Account Management'),
         ListTile(
           title: const Text(
@@ -408,7 +437,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             : 'Ready for offline prompts';
         return '${state.activeModel.sizeMB} MB cached • $freshness';
       case OnDeviceModelStatus.downloading:
-        final percent = (state.downloadProgress * 100).clamp(0, 100).toStringAsFixed(0);
+        final percent =
+            (state.downloadProgress * 100).clamp(0, 100).toStringAsFixed(0);
         return 'Downloading… $percent%';
       case OnDeviceModelStatus.error:
         return 'Error: ${state.lastError ?? 'unknown'}';
@@ -446,8 +476,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             children: [
               ListTile(
                 leading: const Icon(Icons.download),
-                title: Text(state.status == OnDeviceModelStatus.ready ? 'Refresh model' : 'Download model'),
-                subtitle: Text('${state.activeModel.sizeMB} MB • ${state.activeModel.backend}'),
+                title: Text(state.status == OnDeviceModelStatus.ready
+                    ? 'Refresh model'
+                    : 'Download model'),
+                subtitle: Text(
+                    '${state.activeModel.sizeMB} MB • ${state.activeModel.backend}'),
                 onTap: () {
                   Navigator.of(context).pop();
                   manager.downloadActiveModel();
@@ -492,43 +525,45 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             });
           },
         ),
-        
         const Divider(),
-        
         _buildSectionHeader('Notification Types'),
         SwitchListTile(
           title: const Text('Task Reminders'),
           subtitle: const Text('Get reminded about your tasks'),
           value: _taskReminders,
-          onChanged: _pushNotifications ? (value) {
-            setState(() {
-              _taskReminders = value;
-            });
-          } : null,
+          onChanged: _pushNotifications
+              ? (value) {
+                  setState(() {
+                    _taskReminders = value;
+                  });
+                }
+              : null,
         ),
         SwitchListTile(
           title: const Text('Goal Updates'),
           subtitle: const Text('Track your goal progress'),
           value: _goalReminders,
-          onChanged: _pushNotifications ? (value) {
-            setState(() {
-              _goalReminders = value;
-            });
-          } : null,
+          onChanged: _pushNotifications
+              ? (value) {
+                  setState(() {
+                    _goalReminders = value;
+                  });
+                }
+              : null,
         ),
         SwitchListTile(
           title: const Text('Mood Check-ins'),
           subtitle: const Text('Daily mood tracking reminders'),
           value: _moodReminders,
-          onChanged: _pushNotifications ? (value) {
-            setState(() {
-              _moodReminders = value;
-            });
-          } : null,
+          onChanged: _pushNotifications
+              ? (value) {
+                  setState(() {
+                    _moodReminders = value;
+                  });
+                }
+              : null,
         ),
-        
         const Divider(),
-        
         _buildSectionHeader('Email Notifications'),
         SwitchListTile(
           title: const Text('Email Updates'),
@@ -563,7 +598,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Clear Cache'),
-        content: const Text('This will clear all cached data. You may need to re-download some content.'),
+        content: const Text(
+            'This will clear all cached data. You may need to re-download some content.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -579,10 +615,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                 ),
               );
             },
-            child: const Text('Clear'),
             style: TextButton.styleFrom(
               foregroundColor: AppTheme.errorColor,
             ),
+            child: const Text('Clear'),
           ),
         ],
       ),
@@ -636,7 +672,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           ),
           TextButton(
             onPressed: () async {
-              if (newPasswordController.text != confirmPasswordController.text) {
+              if (newPasswordController.text !=
+                  confirmPasswordController.text) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Passwords do not match'),
@@ -648,20 +685,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
 
               try {
                 await ref.read(profileProvider.notifier).updatePassword(
-                  currentPassword: currentPasswordController.text,
-                  newPassword: newPasswordController.text,
+                      currentPassword: currentPasswordController.text,
+                      newPassword: newPasswordController.text,
+                    );
+
+                if (!context.mounted) return;
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Password changed successfully'),
+                    backgroundColor: AppTheme.successColor,
+                  ),
                 );
-                
-                if (mounted) {
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Password changed successfully'),
-                      backgroundColor: AppTheme.successColor,
-                    ),
-                  );
-                }
               } catch (e) {
+                if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Failed to change password: $e'),
@@ -690,6 +727,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         setState(() {
           _twoFactorEnabled = true;
         });
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Two-factor authentication enabled successfully'),
@@ -698,6 +736,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to setup 2FA: $e'),
@@ -720,6 +759,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         setState(() {
           _twoFactorEnabled = false;
         });
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Two-factor authentication disabled'),
@@ -728,6 +768,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to disable 2FA: $e'),
@@ -753,7 +794,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           TextButton(
             onPressed: () async {
               Navigator.of(context).pop();
-              
+
               final confirmDelete = await showDialog<bool>(
                 context: context,
                 builder: (context) => AlertDialog(
@@ -768,10 +809,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                     ),
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(true),
-                      child: const Text('Yes, Delete Everything'),
                       style: TextButton.styleFrom(
                         foregroundColor: AppTheme.errorColor,
                       ),
+                      child: const Text('Yes, Delete Everything'),
                     ),
                   ],
                 ),
@@ -781,21 +822,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                 try {
                   await ref.read(profileProvider.notifier).deleteAccount();
                 } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Failed to delete account: $e'),
-                        backgroundColor: AppTheme.errorColor,
-                      ),
-                    );
-                  }
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to delete account: $e'),
+                      backgroundColor: AppTheme.errorColor,
+                    ),
+                  );
                 }
               }
             },
-            child: const Text('Delete'),
             style: TextButton.styleFrom(
               foregroundColor: AppTheme.errorColor,
             ),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -867,17 +907,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               Container(
                 padding: const EdgeInsets.all(UIConstants.spacingSM),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.1),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.info_outline, size: 16, color: AppTheme.primaryColor),
+                    Icon(Icons.info_outline,
+                        size: 16, color: AppTheme.primaryColor),
                     SizedBox(width: UIConstants.spacingSM),
                     Expanded(
                       child: Text(
                         'Your export will include profile, habits, tasks, goals, and mood data in GDPR-compliant JSON format.',
-                        style: TextStyle(fontSize: 12, color: AppTheme.primaryColor),
+                        style: TextStyle(
+                            fontSize: 12, color: AppTheme.primaryColor),
                       ),
                     ),
                   ],
@@ -985,7 +1027,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                 children: [
                   Icon(Icons.lock, size: 16, color: AppTheme.successColor),
                   SizedBox(width: UIConstants.spacingSM),
-                  Text('Encrypted', style: TextStyle(color: AppTheme.successColor)),
+                  Text('Encrypted',
+                      style: TextStyle(color: AppTheme.successColor)),
                 ],
               ),
             const SizedBox(height: UIConstants.spacingMD),
@@ -1006,14 +1049,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               try {
                 await _dataExportService.shareExportedData(result);
               } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Failed to share: $e'),
-                      backgroundColor: AppTheme.errorColor,
-                    ),
-                  );
-                }
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to share: $e'),
+                    backgroundColor: AppTheme.errorColor,
+                  ),
+                );
               }
             },
             icon: const Icon(Icons.share),
@@ -1070,10 +1112,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               Navigator.of(context).pop();
               _showDataExportDialog(); // Retry
             },
-            child: const Text('Retry'),
             style: TextButton.styleFrom(
               foregroundColor: AppTheme.primaryColor,
             ),
+            child: const Text('Retry'),
           ),
         ],
       ),
@@ -1100,15 +1142,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
 
       final endpoint = '${AppConstants.apiUrl}/v2/reports/weekly/$userId/$type';
       final uri = Uri.parse(endpoint);
-      final res = await http.post(uri, headers: {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
-      }, body: type == 'sheets' ? '{"rows":[["Metric","Value"],["Completed Tasks",0],["Active Days",0]]}' : '{"content":"Weekly report content"}');
+      final res = await http.post(uri,
+          headers: {
+            'Authorization': 'Bearer $accessToken',
+            'Content-Type': 'application/json',
+          },
+          body: type == 'sheets'
+              ? '{"rows":[["Metric","Value"],["Completed Tasks",0],["Active Days",0]]}'
+              : '{"content":"Weekly report content"}');
 
       if (res.statusCode >= 200 && res.statusCode < 300) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Weekly export started. Check Google Workspace.')),
+            const SnackBar(
+                content:
+                    Text('Weekly export started. Check Google Workspace.')),
           );
         }
       } else {
@@ -1122,4 +1170,4 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       }
     }
   }
-} 
+}

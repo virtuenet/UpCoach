@@ -8,4 +8,3 @@ final progressHighlightsProvider =
   final service = ref.watch(progressHighlightServiceProvider);
   return service.fetchHighlights();
 });
-

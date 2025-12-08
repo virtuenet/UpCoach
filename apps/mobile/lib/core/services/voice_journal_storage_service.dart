@@ -54,7 +54,8 @@ class VoiceJournalStorageService {
               entries.add(entry);
             } else {
               // Remove entry if audio file is missing
-              _logger.w('Removing entry ${entry.id} - audio file missing: ${entry.audioFilePath}');
+              _logger.w(
+                  'Removing entry ${entry.id} - audio file missing: ${entry.audioFilePath}');
               await _entriesBox!.deleteAt(i);
             }
           } catch (e) {
@@ -217,7 +218,8 @@ class VoiceJournalStorageService {
               cleanedCount++;
               _logger.i('Deleted orphaned audio file: ${file.path}');
             } catch (e) {
-              _logger.w('Failed to delete orphaned file: ${file.path}', error: e);
+              _logger.w('Failed to delete orphaned file: ${file.path}',
+                  error: e);
             }
           }
         }
@@ -347,7 +349,8 @@ class VoiceJournalStorageService {
   }
 
   /// Calculate total storage size of all entries
-  Future<int> _calculateTotalStorageSize(List<VoiceJournalEntry> entries) async {
+  Future<int> _calculateTotalStorageSize(
+      List<VoiceJournalEntry> entries) async {
     int totalSize = 0;
 
     for (final entry in entries) {
@@ -385,6 +388,7 @@ class VoiceJournalStorageService {
 }
 
 // Provider for the storage service
-final voiceJournalStorageServiceProvider = Provider<VoiceJournalStorageService>((ref) {
+final voiceJournalStorageServiceProvider =
+    Provider<VoiceJournalStorageService>((ref) {
   return VoiceJournalStorageService();
 });

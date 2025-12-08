@@ -17,8 +17,8 @@ class ProgressHighlightService {
   }
 }
 
-final progressHighlightServiceProvider = Provider<ProgressHighlightService>((ref) {
+final progressHighlightServiceProvider =
+    Provider<ProgressHighlightService>((ref) {
   final api = ref.watch(apiServiceProvider);
   return ProgressHighlightService(api);
 });
-

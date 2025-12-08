@@ -97,4 +97,4 @@ class ChatMessage extends Equatable {
         conversationId,
         metadata,
       ];
-} 
+}

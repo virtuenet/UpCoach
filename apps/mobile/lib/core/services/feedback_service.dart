@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'dart:io';
 import '../providers/dio_provider.dart';
@@ -8,7 +9,7 @@ import '../utils/logger.dart';
 part 'feedback_service.g.dart';
 
 @riverpod
-FeedbackService feedbackService(FeedbackServiceRef ref) {
+FeedbackService feedbackService(Ref ref) {
   final dio = ref.watch(dioProvider);
   return FeedbackService(dio);
 }
@@ -42,8 +43,9 @@ class FeedbackService {
       if (attachments != null && attachments.isNotEmpty) {
         for (int i = 0; i < attachments.length; i++) {
           final file = attachments[i];
-          final fileName = 'attachment_${i + 1}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-          
+          final fileName =
+              'attachment_${i + 1}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
           formData.files.add(
             MapEntry(
               'attachments',
@@ -56,7 +58,7 @@ class FeedbackService {
         }
       }
 
-      final response = await _dio.post(
+      await _dio.post(
         _baseEndpoint,
         data: formData,
         options: Options(
@@ -74,11 +76,11 @@ class FeedbackService {
   Future<List<FeedbackItem>> getUserFeedback() async {
     try {
       final response = await _dio.get('$_baseEndpoint/my-feedback');
-      
+
       final items = (response.data['data'] as List)
           .map((json) => FeedbackItem.fromJson(json))
           .toList();
-      
+
       return items;
     } on DioException catch (e) {
       logger.e('Failed to fetch user feedback', error: e);
@@ -131,13 +133,13 @@ class FeedbackItem {
       message: json['message'],
       status: json['status'],
       createdAt: DateTime.parse(json['createdAt']),
-      resolvedAt: json['resolvedAt'] != null 
-        ? DateTime.parse(json['resolvedAt']) 
-        : null,
+      resolvedAt: json['resolvedAt'] != null
+          ? DateTime.parse(json['resolvedAt'])
+          : null,
       response: json['response'],
       attachmentUrls: json['attachmentUrls'] != null
-        ? List<String>.from(json['attachmentUrls'])
-        : null,
+          ? List<String>.from(json['attachmentUrls'])
+          : null,
     );
   }
 }

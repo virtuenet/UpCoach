@@ -41,7 +41,8 @@ class DashboardWidget extends StatelessWidget {
 
 void main() {
   group('Dashboard Widget Tests', () {
-    testWidgets('Dashboard displays app bar with title', (WidgetTester tester) async {
+    testWidgets('Dashboard displays app bar with title',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: DashboardWidget(),
@@ -64,7 +65,8 @@ void main() {
       expect(find.byIcon(Icons.fitness_center), findsOneWidget);
     });
 
-    testWidgets('Dashboard shows mood tracker card', (WidgetTester tester) async {
+    testWidgets('Dashboard shows mood tracker card',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: DashboardWidget(),
@@ -111,7 +113,8 @@ void main() {
       expect(find.byType(Card), findsNWidgets(3));
     });
 
-    testWidgets('Dashboard cards have ListTile structure', (WidgetTester tester) async {
+    testWidgets('Dashboard cards have ListTile structure',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: DashboardWidget(),
@@ -119,7 +122,7 @@ void main() {
       );
 
       expect(find.byType(ListTile), findsNWidgets(3));
-      
+
       // Verify each ListTile has leading icon, title, and subtitle
       final listTiles = tester.widgetList<ListTile>(find.byType(ListTile));
       for (final tile in listTiles) {

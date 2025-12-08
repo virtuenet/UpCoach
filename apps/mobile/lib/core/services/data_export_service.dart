@@ -22,7 +22,8 @@ class DataExportService {
   final TaskService _taskService = TaskService();
   final GoalService _goalService = GoalService();
   final MoodService _moodService = MoodService();
-  final VoiceJournalStorageService _voiceJournalService = VoiceJournalStorageService();
+  final VoiceJournalStorageService _voiceJournalService =
+      VoiceJournalStorageService();
 
   /// Export user data in GDPR-compliant JSON format
   Future<ExportResult> exportUserData({
@@ -93,12 +94,14 @@ class DataExportService {
       throw Exception('Export file not found');
     }
 
-    await Share.shareXFiles(
-      [XFile(result.filePath!)],
-      subject: 'UpCoach Data Export - ${result.fileName}',
-      text: result.encrypted
-          ? 'Your encrypted UpCoach data export (${_formatFileSize(result.fileSize ?? 0)})'
-          : 'Your UpCoach data export (${_formatFileSize(result.fileSize ?? 0)})',
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(result.filePath!)],
+        subject: 'UpCoach Data Export - ${result.fileName}',
+        text: result.encrypted
+            ? 'Your encrypted UpCoach data export (${_formatFileSize(result.fileSize ?? 0)})'
+            : 'Your UpCoach data export (${_formatFileSize(result.fileSize ?? 0)})',
+      ),
     );
   }
 
@@ -119,8 +122,8 @@ class DataExportService {
       'avatar_url': user.avatarUrl,
       'subscription_status': user.subscriptionStatus,
       'preferences': user.preferences,
-      'created_at': user.createdAt?.toIso8601String(),
-      'updated_at': user.updatedAt?.toIso8601String(),
+      'created_at': user.createdAt.toIso8601String(),
+      'updated_at': user.updatedAt.toIso8601String(),
     };
 
     // Habits data
@@ -156,32 +159,37 @@ class DataExportService {
     // Mood tracking data
     try {
       final moodEntries = await _moodService.getAllMoodEntries();
-      data['mood_entries'] = moodEntries.map((entry) => entry.toJson()).toList();
+      data['mood_entries'] =
+          moodEntries.map((entry) => entry.toJson()).toList();
     } catch (e) {
       data['mood_entries'] = [];
       data['export_errors'] = data['export_errors'] ?? [];
-      data['export_errors'].add('Failed to export mood entries: ${e.toString()}');
+      data['export_errors']
+          .add('Failed to export mood entries: ${e.toString()}');
     }
 
     // Voice journals (if requested)
     if (includeVoiceJournals) {
       try {
         final voiceJournals = await _voiceJournalService.getAllEntries();
-        data['voice_journals'] = voiceJournals.map((entry) => {
-          'id': entry.id,
-          'title': entry.title,
-          'summary': entry.summary,
-          'transcript': entry.transcriptionText,
-          'duration': entry.durationSeconds,
-          'created_at': entry.createdAt.toIso8601String(),
-          'updated_at': entry.updatedAt?.toIso8601String(),
-          // Note: Audio files are not included in JSON export for size reasons
-          'audio_file_included': false,
-        }).toList();
+        data['voice_journals'] = voiceJournals
+            .map((entry) => {
+                  'id': entry.id,
+                  'title': entry.title,
+                  'summary': entry.summary,
+                  'transcript': entry.transcriptionText,
+                  'duration': entry.durationSeconds,
+                  'created_at': entry.createdAt.toIso8601String(),
+                  'updated_at': entry.updatedAt?.toIso8601String(),
+                  // Note: Audio files are not included in JSON export for size reasons
+                  'audio_file_included': false,
+                })
+            .toList();
       } catch (e) {
         data['voice_journals'] = [];
         data['export_errors'] = data['export_errors'] ?? [];
-        data['export_errors'].add('Failed to export voice journals: ${e.toString()}');
+        data['export_errors']
+            .add('Failed to export voice journals: ${e.toString()}');
       }
     }
 
@@ -189,7 +197,8 @@ class DataExportService {
   }
 
   /// Create export metadata for GDPR compliance
-  Map<String, dynamic> _createExportMetadata(UserModel user, Map<String, dynamic> data) {
+  Map<String, dynamic> _createExportMetadata(
+      UserModel user, Map<String, dynamic> data) {
     final recordCounts = <String, int>{};
 
     data.forEach((key, value) {
@@ -208,14 +217,16 @@ class DataExportService {
       'record_counts': recordCounts,
       'app_version': '1.0.0', // TODO: Get from package info
       'export_purpose': 'User data portability request (GDPR Article 20)',
-      'retention_notice': 'This export contains personal data. Please handle according to applicable privacy laws.',
+      'retention_notice':
+          'This export contains personal data. Please handle according to applicable privacy laws.',
     };
   }
 
   /// Encrypt sensitive data using AES-256
   Future<String> _encryptData(String data) async {
     // Generate a random encryption key
-    final key = List<int>.generate(32, (i) => DateTime.now().millisecondsSinceEpoch % 256);
+    final key = List<int>.generate(
+        32, (i) => DateTime.now().millisecondsSinceEpoch % 256);
 
     // Simple XOR encryption for demo (use proper AES in production)
     final bytes = utf8.encode(data);
@@ -227,7 +238,8 @@ class DataExportService {
 
     // Store encryption key securely
     final keyHash = sha256.convert(key).toString();
-    await _secureStorage.write(key: 'export_key_$keyHash', value: base64Encode(key));
+    await _secureStorage.write(
+        key: 'export_key_$keyHash', value: base64Encode(key));
 
     return json.encode({
       'encrypted': true,
@@ -238,7 +250,8 @@ class DataExportService {
   }
 
   /// Save export data to file
-  Future<File> _saveToFile(String data, String userId, {bool encrypted = false}) async {
+  Future<File> _saveToFile(String data, String userId,
+      {bool encrypted = false}) async {
     final directory = await getApplicationDocumentsDirectory();
     final exportDir = Directory('${directory.path}/exports');
 
@@ -257,7 +270,8 @@ class DataExportService {
   }
 
   /// Log export event for audit trail
-  Future<void> _logExportEvent(String userId, String filePath, {bool encrypted = false}) async {
+  Future<void> _logExportEvent(String userId, String filePath,
+      {bool encrypted = false}) async {
     final logEntry = {
       'event': 'data_export',
       'user_id': userId,

@@ -18,7 +18,7 @@ class ProgressPhoto with _$ProgressPhoto {
     @Default([]) List<String> tags,
   }) = _ProgressPhoto;
 
-  factory ProgressPhoto.fromJson(Map<String, dynamic> json) => 
+  factory ProgressPhoto.fromJson(Map<String, dynamic> json) =>
       _$ProgressPhotoFromJson(json);
 }
 
@@ -31,4 +31,4 @@ class ProgressPhotosState with _$ProgressPhotosState {
     String? error,
     ProgressPhoto? selectedPhoto,
   }) = _ProgressPhotosState;
-} 
+}

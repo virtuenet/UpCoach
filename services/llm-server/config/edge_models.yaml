@@ -1,0 +1,356 @@
+# UpCoach Edge/Mobile Model Configuration
+# This file defines on-device models for mobile inference
+
+# =============================================================================
+# Edge Model Catalog
+# =============================================================================
+
+edge_models:
+  # ---------------------------------------------------------------------------
+  # TinyLlama 1.1B - Default balanced model
+  # ---------------------------------------------------------------------------
+  - id: tinyllama-1.1b
+    name: TinyLlama 1.1B
+    description: Balanced model for on-device coaching conversations
+    version: "1.0.0"
+
+    # Platform support
+    platforms:
+      - ios
+      - android
+
+    # Model formats per platform
+    formats:
+      onnx:
+        filename: tinyllama-1.1b-q4.onnx
+        url: https://models.upcoach.com/edge/tinyllama-1.1b-q4.onnx
+        size_mb: 580
+        sha256: "placeholder-sha256-hash"
+        quantization: int4
+
+      coreml:
+        filename: tinyllama-1.1b.mlmodelc
+        url: https://models.upcoach.com/edge/tinyllama-1.1b.mlmodelc.zip
+        size_mb: 620
+        sha256: "placeholder-sha256-hash"
+        quantization: float16
+        ios_min_version: "15.0"
+
+    # Model capabilities
+    capabilities:
+      - conversational
+      - coaching
+      - goal_setting
+      - habit_tips
+
+    # Performance characteristics
+    performance:
+      max_context_length: 2048
+      avg_tokens_per_second: 15
+      first_token_latency_ms: 800
+      memory_usage_mb: 1200
+
+    # Device requirements
+    requirements:
+      min_ram_gb: 3
+      min_ios_version: "15.0"
+      min_android_sdk: 28
+      recommended_chipsets:
+        ios: ["A13", "A14", "A15", "A16", "A17", "M1", "M2"]
+        android: ["Snapdragon 8 Gen 1", "Snapdragon 8 Gen 2", "Dimensity 9000"]
+
+    # Use case routing
+    routing:
+      priority: 1
+      use_for:
+        - coaching_chat
+        - goal_analysis
+        - habit_formation
+        - motivation
+        - wellness_tips
+      max_prompt_length: 500
+
+  # ---------------------------------------------------------------------------
+  # Phi-2 (2.7B) - Complex reasoning model
+  # ---------------------------------------------------------------------------
+  - id: phi2-2.7b
+    name: Phi-2 2.7B
+    description: Advanced model for complex reasoning and detailed analysis
+    version: "1.0.0"
+
+    platforms:
+      - ios
+      - android
+
+    formats:
+      onnx:
+        filename: phi2-2.7b-q4.onnx
+        url: https://models.upcoach.com/edge/phi2-2.7b-q4.onnx
+        size_mb: 1400
+        sha256: "placeholder-sha256-hash"
+        quantization: int4
+
+      coreml:
+        filename: phi2-2.7b.mlmodelc
+        url: https://models.upcoach.com/edge/phi2-2.7b.mlmodelc.zip
+        size_mb: 1500
+        sha256: "placeholder-sha256-hash"
+        quantization: float16
+        ios_min_version: "16.0"
+
+    capabilities:
+      - conversational
+      - complex_reasoning
+      - detailed_analysis
+      - action_planning
+
+    performance:
+      max_context_length: 2048
+      avg_tokens_per_second: 8
+      first_token_latency_ms: 1500
+      memory_usage_mb: 2800
+
+    requirements:
+      min_ram_gb: 6
+      min_ios_version: "16.0"
+      min_android_sdk: 30
+      recommended_chipsets:
+        ios: ["A15", "A16", "A17", "M1", "M2"]
+        android: ["Snapdragon 8 Gen 2", "Dimensity 9200"]
+
+    routing:
+      priority: 2
+      use_for:
+        - complex_goal_analysis
+        - detailed_planning
+        - obstacle_analysis
+        - progress_review
+      max_prompt_length: 800
+
+  # ---------------------------------------------------------------------------
+  # SmolLM 360M - Ultra-lightweight model
+  # ---------------------------------------------------------------------------
+  - id: smollm-360m
+    name: SmolLM 360M
+    description: Ultra-lightweight model for instant responses
+    version: "1.0.0"
+
+    platforms:
+      - ios
+      - android
+
+    formats:
+      onnx:
+        filename: smollm-360m-q8.onnx
+        url: https://models.upcoach.com/edge/smollm-360m-q8.onnx
+        size_mb: 180
+        sha256: "placeholder-sha256-hash"
+        quantization: int8
+
+      tflite:
+        filename: smollm-360m.tflite
+        url: https://models.upcoach.com/edge/smollm-360m.tflite
+        size_mb: 170
+        sha256: "placeholder-sha256-hash"
+        quantization: int8
+
+    capabilities:
+      - basic_responses
+      - affirmations
+      - reminders
+      - quick_tips
+
+    performance:
+      max_context_length: 1024
+      avg_tokens_per_second: 35
+      first_token_latency_ms: 200
+      memory_usage_mb: 400
+
+    requirements:
+      min_ram_gb: 2
+      min_ios_version: "14.0"
+      min_android_sdk: 26
+      recommended_chipsets:
+        ios: ["A12", "A13", "A14", "A15", "A16", "A17"]
+        android: ["Snapdragon 765", "Snapdragon 778", "Dimensity 1000"]
+
+    routing:
+      priority: 3
+      use_for:
+        - daily_affirmations
+        - quick_reminders
+        - simple_tips
+        - encouragement
+      max_prompt_length: 200
+
+  # ---------------------------------------------------------------------------
+  # Gemma 2B - Google's efficient model
+  # ---------------------------------------------------------------------------
+  - id: gemma-2b
+    name: Gemma 2B
+    description: Google's efficient language model for balanced performance
+    version: "1.0.0"
+
+    platforms:
+      - ios
+      - android
+
+    formats:
+      onnx:
+        filename: gemma-2b-q4.onnx
+        url: https://models.upcoach.com/edge/gemma-2b-q4.onnx
+        size_mb: 1100
+        sha256: "placeholder-sha256-hash"
+        quantization: int4
+
+    capabilities:
+      - conversational
+      - coaching
+      - instruction_following
+
+    performance:
+      max_context_length: 2048
+      avg_tokens_per_second: 12
+      first_token_latency_ms: 1000
+      memory_usage_mb: 2000
+
+    requirements:
+      min_ram_gb: 4
+      min_ios_version: "15.0"
+      min_android_sdk: 28
+
+    routing:
+      priority: 2
+      use_for:
+        - general_coaching
+        - instruction_following
+      max_prompt_length: 600
+
+# =============================================================================
+# Default Model Selection
+# =============================================================================
+
+defaults:
+  # Default model per platform
+  ios: tinyllama-1.1b
+  android: tinyllama-1.1b
+
+  # Fallback for low-memory devices
+  low_memory: smollm-360m
+
+  # High-performance devices
+  high_performance: phi2-2.7b
+
+# =============================================================================
+# Model Selection Rules
+# =============================================================================
+
+selection_rules:
+  # Rule: Use lightweight model for simple prompts
+  - condition:
+      prompt_length_max: 100
+      query_type: [affirmation, reminder, quick_tip]
+    model: smollm-360m
+
+  # Rule: Use full model for coaching conversations
+  - condition:
+      prompt_length_min: 100
+      query_type: [coaching, goal, habit]
+    model: tinyllama-1.1b
+
+  # Rule: Use advanced model for complex analysis
+  - condition:
+      query_type: [analysis, planning, review]
+      device_ram_min: 6
+    model: phi2-2.7b
+
+  # Rule: Fallback to lightweight if low memory
+  - condition:
+      device_ram_max: 3
+    model: smollm-360m
+
+# =============================================================================
+# Model Update Configuration
+# =============================================================================
+
+updates:
+  # Check for updates interval
+  check_interval_hours: 24
+
+  # Only download on WiFi
+  wifi_only: true
+
+  # Auto-update settings
+  auto_update: false
+
+  # Background download
+  background_download: true
+
+  # Keep previous version
+  keep_previous: true
+
+# =============================================================================
+# Caching Configuration
+# =============================================================================
+
+caching:
+  # Enable response caching
+  enabled: true
+
+  # Cache size limit
+  max_size_mb: 50
+
+  # Cache TTL for different response types
+  ttl:
+    affirmations: 86400  # 24 hours
+    tips: 43200          # 12 hours
+    coaching: 3600       # 1 hour
+    default: 1800        # 30 minutes
+
+# =============================================================================
+# Prompt Templates
+# =============================================================================
+
+prompts:
+  # System prompt for all coaching
+  system_base: |
+    You are a supportive life coach helping users achieve their goals.
+    Be warm, encouraging, and provide specific actionable advice.
+    Keep responses concise and focused.
+
+  # Context-specific templates
+  templates:
+    habit_formation: |
+      Help the user build sustainable habits using:
+      - Habit stacking (link to existing habits)
+      - The 2-minute rule (start small)
+      - Implementation intentions (when X, I will Y)
+      Focus on consistency over intensity.
+
+    goal_setting: |
+      Help the user set SMART goals:
+      - Specific and clear
+      - Measurable progress
+      - Achievable but challenging
+      - Relevant to their values
+      - Time-bound milestones
+
+    motivation: |
+      Help the user stay motivated by:
+      - Reconnecting with their "why"
+      - Celebrating small wins
+      - Reframing obstacles
+      - Building intrinsic motivation
+
+    wellness: |
+      Support holistic wellness:
+      - Physical: exercise, nutrition, sleep
+      - Mental: mindfulness, stress management
+      - Emotional: self-compassion, relationships
+
+    productivity: |
+      Boost productivity with:
+      - Time blocking and prioritization
+      - Focus techniques (Pomodoro, deep work)
+      - Eliminating distractions
+      - Energy management

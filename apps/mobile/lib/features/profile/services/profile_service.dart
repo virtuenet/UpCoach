@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'dart:io';
 import '../../../core/providers/dio_provider.dart';
@@ -9,7 +10,7 @@ import '../../../shared/models/user.dart';
 part 'profile_service.g.dart';
 
 @riverpod
-ProfileService profileService(ProfileServiceRef ref) {
+ProfileService profileService(Ref ref) {
   final dio = ref.watch(dioProvider);
   return ProfileService(dio);
 }
@@ -43,7 +44,9 @@ class ProfileService {
       if (name != null) data['name'] = name;
       if (bio != null) data['bio'] = bio;
       if (phone != null) data['phone'] = phone;
-      if (dateOfBirth != null) data['dateOfBirth'] = dateOfBirth.toIso8601String();
+      if (dateOfBirth != null) {
+        data['dateOfBirth'] = dateOfBirth.toIso8601String();
+      }
       if (gender != null) data['gender'] = gender;
       if (preferences != null) data['preferences'] = preferences;
 
@@ -60,7 +63,8 @@ class ProfileService {
       final formData = FormData.fromMap({
         'photo': await MultipartFile.fromFile(
           photo.path,
-          filename: 'profile_photo_${DateTime.now().millisecondsSinceEpoch}.jpg',
+          filename:
+              'profile_photo_${DateTime.now().millisecondsSinceEpoch}.jpg',
         ),
       });
 

@@ -4,18 +4,18 @@ on:
   push:
     branches: [main, develop]
     paths:
-      - 'upcoach-project/apps/mobile/**'
+      - 'apps/mobile/**'
       - '.github/workflows/mobile-build.yml'
   pull_request:
     branches: [main, develop]
     paths:
-      - 'upcoach-project/apps/mobile/**'
+      - 'apps/mobile/**'
 
 env:
-  FLUTTER_VERSION: '3.16.0'
+  FLUTTER_VERSION: '3.35.3'
   JAVA_VERSION: '17'
   XCODE_VERSION: '15.0'
-  WORKING_DIRECTORY: './upcoach-project/apps/mobile'
+  WORKING_DIRECTORY: './apps/mobile'
 
 jobs:
   # ========================================

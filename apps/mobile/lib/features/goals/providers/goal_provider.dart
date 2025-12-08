@@ -35,22 +35,23 @@ class GoalState {
     );
   }
 
-  List<GoalModel> get activeGoals => 
+  List<GoalModel> get activeGoals =>
       goals.where((goal) => goal.isActive).toList();
-  
-  List<GoalModel> get completedGoals => 
+
+  List<GoalModel> get completedGoals =>
       goals.where((goal) => goal.isCompleted).toList();
-  
-  List<GoalModel> get overdueGoals => 
+
+  List<GoalModel> get overdueGoals =>
       goals.where((goal) => goal.isOverdue).toList();
-  
+
   List<GoalModel> get upcomingGoals {
     final now = DateTime.now();
-    return goals.where((goal) => 
-        goal.isActive && 
-        goal.targetDate.isAfter(now) &&
-        goal.daysRemaining <= 30
-    ).toList()
+    return goals
+        .where((goal) =>
+            goal.isActive &&
+            goal.targetDate.isAfter(now) &&
+            goal.daysRemaining <= 30)
+        .toList()
       ..sort((a, b) => a.targetDate.compareTo(b.targetDate));
   }
 
@@ -140,7 +141,8 @@ class GoalNotifier extends StateNotifier<GoalState> {
       await loadStats();
     } catch (e) {
       // Remove temporary goal on error
-      final updatedGoals = state.goals.where((g) => g.userId != 'temp').toList();
+      final updatedGoals =
+          state.goals.where((g) => g.userId != 'temp').toList();
       state = state.copyWith(
         goals: updatedGoals,
         error: e.toString(),
@@ -229,7 +231,7 @@ class GoalNotifier extends StateNotifier<GoalState> {
   Future<void> deleteGoal(String goalId) async {
     try {
       await _goalService.deleteGoal(goalId);
-      
+
       final updatedGoals = state.goals.where((g) => g.id != goalId).toList();
       state = state.copyWith(goals: updatedGoals);
       await loadStats();
@@ -246,4 +248,4 @@ class GoalNotifier extends StateNotifier<GoalState> {
 final goalProvider = StateNotifierProvider<GoalNotifier, GoalState>((ref) {
   final goalService = ref.watch(goalServiceProvider);
   return GoalNotifier(goalService);
-}); 
+});

@@ -1,0 +1,290 @@
+# UpCoach Android Fastfile
+# https://docs.fastlane.tools
+
+default_platform(:android)
+
+# CI-friendly configuration
+is_ci = ENV['CI'] == 'true' || ENV['GITHUB_ACTIONS'] == 'true'
+
+platform :android do
+  # ============================================================================
+  # Before All Hook
+  # ============================================================================
+
+  before_all do
+    # Set up environment for CI
+    if is_ci
+      puts "Running in CI environment"
+    end
+  end
+
+  # ============================================================================
+  # Development & Testing
+  # ============================================================================
+
+  desc "Run Flutter tests"
+  lane :test do
+    Dir.chdir("../..") do
+      sh("flutter test")
+    end
+  end
+
+  desc "Build debug APK"
+  lane :build_debug do
+    Dir.chdir("../..") do
+      sh("flutter build apk --debug")
+    end
+  end
+
+  # ============================================================================
+  # Beta / Internal Testing
+  # ============================================================================
+
+  desc "Submit a new internal testing build to Play Store"
+  lane :internal do |options|
+    # Skip git checks in CI
+    unless is_ci || options[:skip_git_check]
+      ensure_git_status_clean
+    end
+
+    # Build Flutter app bundle
+    Dir.chdir("../..") do
+      sh("flutter build appbundle --release")
+    end
+
+    # Upload to Play Store internal track
+    upload_to_play_store(
+      track: "internal",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      json_key: ENV["PLAY_STORE_JSON_KEY"] || "play-store-key.json"
+    )
+
+    # Add git tag (skip in CI - handled by GitHub Actions)
+    unless is_ci
+      add_git_tag(
+        tag: "android/internal/#{android_get_version_name}-#{android_get_version_code}"
+      )
+      push_to_git_remote
+    end
+  end
+
+  desc "Submit a new beta build to Play Store"
+  lane :beta do |options|
+    # Skip git checks in CI
+    unless is_ci || options[:skip_git_check]
+      ensure_git_status_clean
+    end
+
+    # Increment version code (skip in CI - version set by workflow)
+    unless is_ci || options[:skip_version_bump]
+      increment_version_code(
+        gradle_file_path: "app/build.gradle.kts"
+      )
+    end
+
+    # Build Flutter app bundle
+    Dir.chdir("../..") do
+      sh("flutter build appbundle --release")
+    end
+
+    # Upload to Play Store beta track
+    upload_to_play_store(
+      track: "beta",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      json_key: ENV["PLAY_STORE_JSON_KEY"] || "play-store-key.json"
+    )
+
+    # Commit version bump (skip in CI)
+    unless is_ci
+      git_commit(
+        path: ["app/build.gradle.kts"],
+        message: "Bump Android version code for beta"
+      )
+
+      add_git_tag(
+        tag: "android/beta/#{android_get_version_name}-#{android_get_version_code}"
+      )
+
+      push_to_git_remote
+    end
+  end
+
+  # ============================================================================
+  # Production Release
+  # ============================================================================
+
+  desc "Deploy a new version to the Play Store production track"
+  lane :release do |options|
+    # Skip git checks in CI
+    unless is_ci || options[:skip_git_check]
+      ensure_git_status_clean
+    end
+
+    # Increment version (skip in CI - version set by workflow)
+    unless is_ci || options[:skip_version_bump]
+      increment_version_name(
+        gradle_file_path: "app/build.gradle.kts",
+        bump_type: "patch"
+      )
+
+      increment_version_code(
+        gradle_file_path: "app/build.gradle.kts"
+      )
+    end
+
+    # Build Flutter app bundle
+    Dir.chdir("../..") do
+      sh("flutter build appbundle --release")
+    end
+
+    # Upload to Play Store production
+    upload_to_play_store(
+      track: "production",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      release_status: "draft", # or "completed" for immediate release
+      json_key: ENV["PLAY_STORE_JSON_KEY"] || "play-store-key.json"
+    )
+
+    # Commit and tag (skip in CI)
+    unless is_ci
+      git_commit(
+        path: ["app/build.gradle.kts"],
+        message: "Release Android version #{android_get_version_name}"
+      )
+
+      add_git_tag(
+        tag: "android/release/#{android_get_version_name}"
+      )
+
+      push_to_git_remote
+    end
+  end
+
+  # ============================================================================
+  # CI-Specific Lanes
+  # ============================================================================
+
+  desc "CI: Upload existing AAB to internal track"
+  lane :ci_internal do
+    upload_to_play_store(
+      track: "internal",
+      aab: ENV["AAB_PATH"] || "../build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      json_key: ENV["PLAY_STORE_JSON_KEY"] || "play-store-key.json"
+    )
+  end
+
+  desc "CI: Upload existing AAB to beta track"
+  lane :ci_beta do
+    upload_to_play_store(
+      track: "beta",
+      aab: ENV["AAB_PATH"] || "../build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      json_key: ENV["PLAY_STORE_JSON_KEY"] || "play-store-key.json"
+    )
+  end
+
+  desc "CI: Upload existing AAB to production track (as draft)"
+  lane :ci_release do
+    upload_to_play_store(
+      track: "production",
+      aab: ENV["AAB_PATH"] || "../build/app/outputs/bundle/release/app-release.aab",
+      release_status: "draft",
+      json_key: ENV["PLAY_STORE_JSON_KEY"] || "play-store-key.json"
+    )
+  end
+
+  # ============================================================================
+  # Utilities
+  # ============================================================================
+
+  desc "Build release APK for manual distribution"
+  lane :build_apk do
+    Dir.chdir("../..") do
+      sh("flutter build apk --release --split-per-abi")
+    end
+    puts "APKs built at: ../build/app/outputs/flutter-apk/"
+  end
+
+  desc "Build release App Bundle"
+  lane :build_bundle do
+    Dir.chdir("../..") do
+      sh("flutter build appbundle --release")
+    end
+    puts "Bundle built at: ../build/app/outputs/bundle/release/"
+  end
+
+  desc "Update Play Store metadata only"
+  lane :update_metadata do
+    upload_to_play_store(
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      json_key: ENV["PLAY_STORE_JSON_KEY"] || "play-store-key.json"
+    )
+  end
+
+  desc "Download existing Play Store metadata"
+  lane :download_metadata do
+    download_from_play_store(
+      json_key: ENV["PLAY_STORE_JSON_KEY"] || "play-store-key.json"
+    )
+  end
+
+  desc "Promote internal to beta"
+  lane :promote_to_beta do
+    upload_to_play_store(
+      track: "internal",
+      track_promote_to: "beta",
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      json_key: ENV["PLAY_STORE_JSON_KEY"] || "play-store-key.json"
+    )
+  end
+
+  desc "Promote beta to production"
+  lane :promote_to_production do
+    upload_to_play_store(
+      track: "beta",
+      track_promote_to: "production",
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      release_status: "draft",
+      json_key: ENV["PLAY_STORE_JSON_KEY"] || "play-store-key.json"
+    )
+  end
+
+  # ============================================================================
+  # Screenshots
+  # ============================================================================
+
+  desc "Capture screenshots using screengrab"
+  lane :screenshots do
+    capture_android_screenshots
+    frame_screenshots(
+      path: "./fastlane/metadata/android"
+    )
+  end
+
+  # ============================================================================
+  # Helper Methods
+  # ============================================================================
+
+  private_lane :android_get_version_name do
+    get_version_name(
+      gradle_file_path: "app/build.gradle.kts"
+    )
+  end
+
+  private_lane :android_get_version_code do
+    get_version_code(
+      gradle_file_path: "app/build.gradle.kts"
+    )
+  end
+end

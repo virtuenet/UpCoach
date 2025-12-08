@@ -1,0 +1,15 @@
+# Android Release Signing Configuration
+# Copy this file to key.properties and fill in your values
+# NEVER commit key.properties to version control
+
+# Keystore location (absolute path or relative to android/app)
+storeFile=upload-keystore.jks
+
+# Keystore password
+storePassword=YOUR_KEYSTORE_PASSWORD
+
+# Key alias
+keyAlias=upload
+
+# Key password
+keyPassword=YOUR_KEY_PASSWORD

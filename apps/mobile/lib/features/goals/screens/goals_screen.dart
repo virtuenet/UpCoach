@@ -5,8 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/goal_model.dart';
 import '../providers/goal_provider.dart';
-import 'create_goal_screen.dart';
-import 'goal_detail_screen.dart';
 
 class GoalsScreen extends ConsumerStatefulWidget {
   const GoalsScreen({super.key});
@@ -15,7 +13,7 @@ class GoalsScreen extends ConsumerStatefulWidget {
   ConsumerState<GoalsScreen> createState() => _GoalsScreenState();
 }
 
-class _GoalsScreenState extends ConsumerState<GoalsScreen> 
+class _GoalsScreenState extends ConsumerState<GoalsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   GoalCategory? _selectedCategory;
@@ -67,9 +65,8 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
           : Column(
               children: [
                 // Category filter
-                if (goalState.goals.isNotEmpty)
-                  _buildCategoryFilter(),
-                
+                if (goalState.goals.isNotEmpty) _buildCategoryFilter(),
+
                 // Tab content
                 Expanded(
                   child: TabBarView(
@@ -123,17 +120,17 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen>
           ),
           const SizedBox(width: UIConstants.spacingSM),
           ...GoalCategory.values.map((category) => Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(_getCategoryLabel(category)),
-              selected: _selectedCategory == category,
-              onSelected: (selected) {
-                setState(() {
-                  _selectedCategory = selected ? category : null;
-                });
-              },
-            ),
-          )),
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  label: Text(_getCategoryLabel(category)),
+                  selected: _selectedCategory == category,
+                  onSelected: (selected) {
+                    setState(() {
+                      _selectedCategory = selected ? category : null;
+                    });
+                  },
+                ),
+              )),
         ],
       ),
     );
@@ -189,7 +186,7 @@ class _GoalListView extends ConsumerWidget {
             Icon(
               Icons.flag_outlined,
               size: 64,
-              color: AppTheme.textSecondary.withOpacity(0.5),
+              color: AppTheme.textSecondary.withValues(alpha: 0.5),
             ),
             const SizedBox(height: UIConstants.spacingMD),
             Text(
@@ -222,7 +219,7 @@ class _GoalListView extends ConsumerWidget {
                     Icon(
                       Icons.flag_outlined,
                       size: 64,
-                      color: AppTheme.textSecondary.withOpacity(0.5),
+                      color: AppTheme.textSecondary.withValues(alpha: 0.5),
                     ),
                     const SizedBox(height: UIConstants.spacingMD),
                     Text(
@@ -238,9 +235,9 @@ class _GoalListView extends ConsumerWidget {
             )
           else
             ...goals.map((goal) => _GoalCard(
-              goal: goal,
-              onTap: () => onGoalTap(goal),
-            )),
+                  goal: goal,
+                  onTap: () => onGoalTap(goal),
+                )),
         ],
       ),
     );
@@ -253,8 +250,8 @@ class _GoalListView extends ConsumerWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppTheme.primaryColor.withOpacity(0.8),
-            AppTheme.secondaryColor.withOpacity(0.8),
+            AppTheme.primaryColor.withValues(alpha: 0.8),
+            AppTheme.secondaryColor.withValues(alpha: 0.8),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -267,9 +264,9 @@ class _GoalListView extends ConsumerWidget {
           Text(
             'Goal Progress',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
           ),
           const SizedBox(height: UIConstants.spacingMD),
           Row(
@@ -317,9 +314,9 @@ class _GoalListView extends ConsumerWidget {
         Text(
           value,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
         ),
         Text(
           label,
@@ -361,7 +358,8 @@ class _GoalCard extends ConsumerWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: _getCategoryColor(goal.category).withOpacity(0.2),
+                      color: _getCategoryColor(goal.category)
+                          .withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                     ),
                     child: Icon(
@@ -393,9 +391,11 @@ class _GoalCard extends ConsumerWidget {
                   ),
                   // Status chip
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: _getStatusColor(goal.status).withOpacity(0.2),
+                      color:
+                          _getStatusColor(goal.status).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(UIConstants.radiusXL),
                     ),
                     child: Text(
@@ -409,7 +409,7 @@ class _GoalCard extends ConsumerWidget {
                   ),
                 ],
               ),
-              
+
               if (goal.description != null) ...[
                 const SizedBox(height: UIConstants.spacingMD),
                 Text(
@@ -421,9 +421,9 @@ class _GoalCard extends ConsumerWidget {
                   ),
                 ),
               ],
-              
+
               const SizedBox(height: UIConstants.spacingMD),
-              
+
               // Progress bar
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -458,9 +458,9 @@ class _GoalCard extends ConsumerWidget {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: UIConstants.spacingMD),
-              
+
               // Bottom info
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -484,26 +484,26 @@ class _GoalCard extends ConsumerWidget {
                         ),
                       ],
                     ),
-                  
+
                   // Due date
                   Row(
                     children: [
                       Icon(
                         Icons.calendar_today,
                         size: 16,
-                        color: goal.isOverdue 
-                            ? AppTheme.errorColor 
+                        color: goal.isOverdue
+                            ? AppTheme.errorColor
                             : AppTheme.textSecondary,
                       ),
                       const SizedBox(width: UIConstants.spacingXS),
                       Text(
-                        goal.isOverdue 
-                            ? 'Overdue' 
+                        goal.isOverdue
+                            ? 'Overdue'
                             : '${goal.daysRemaining} days left',
                         style: TextStyle(
                           fontSize: 14,
-                          color: goal.isOverdue 
-                              ? AppTheme.errorColor 
+                          color: goal.isOverdue
+                              ? AppTheme.errorColor
                               : AppTheme.textSecondary,
                         ),
                       ),
@@ -574,4 +574,4 @@ class _GoalCard extends ConsumerWidget {
     if (progress >= 0.5) return AppTheme.warningColor;
     return AppTheme.errorColor;
   }
-} 
+}

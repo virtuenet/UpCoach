@@ -1,0 +1,93 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": [
+          "TEAM_ID.com.upcoach.upcoach-mobile"
+        ],
+        "paths": [
+          "/article/*",
+          "/coach/*",
+          "/session/*",
+          "/invite/*",
+          "/share/*",
+          "/call/*",
+          "/password-reset",
+          "/reset-password",
+          "/verify-email",
+          "/magic-link",
+          "/profile/*",
+          "/conversation/*",
+          "/goals",
+          "/goals/*",
+          "/tasks",
+          "/tasks/*",
+          "/habits",
+          "/mood",
+          "/gamification",
+          "/marketplace",
+          "/ai-coach",
+          "/settings",
+          "/onboarding",
+          "/checkout",
+          "/payment-success",
+          "/payment-cancel",
+          "/home",
+          "/chat",
+          "/messages"
+        ],
+        "components": [
+          {
+            "/": "/article/*",
+            "comment": "Article deep links"
+          },
+          {
+            "/": "/coach/*",
+            "comment": "Coach profile deep links"
+          },
+          {
+            "/": "/session/*",
+            "comment": "Session deep links"
+          },
+          {
+            "/": "/invite",
+            "?": { "code": "*" },
+            "comment": "Invite links with code"
+          },
+          {
+            "/": "/call/video/*",
+            "comment": "Video call deep links"
+          },
+          {
+            "/": "/call/audio/*",
+            "comment": "Audio call deep links"
+          },
+          {
+            "/": "/password-reset",
+            "?": { "token": "*" },
+            "comment": "Password reset with token"
+          },
+          {
+            "/": "/verify-email",
+            "?": { "token": "*" },
+            "comment": "Email verification with token"
+          },
+          {
+            "/": "/magic-link",
+            "?": { "token": "*" },
+            "comment": "Magic link authentication"
+          }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "TEAM_ID.com.upcoach.upcoach-mobile"
+    ]
+  },
+  "appclips": {
+    "apps": []
+  }
+}

@@ -10,6 +10,10 @@ import '../../../features/auth/providers/auth_provider.dart';
 import '../../../features/tasks/providers/task_provider.dart';
 import '../../../features/goals/providers/goal_provider.dart';
 import '../../../features/mood/providers/mood_provider.dart';
+import '../../../features/messaging/providers/messaging_provider.dart';
+import '../../../features/marketplace/providers/coach_booking_provider.dart';
+import '../../../features/gamification/providers/gamification_provider.dart';
+import '../../../shared/models/coach_models.dart';
 import '../../../core/services/remote_copy_service.dart';
 import '../providers/daily_pulse_provider.dart';
 import '../providers/micro_challenge_provider.dart';
@@ -21,7 +25,6 @@ import '../models/streak_guardian.dart';
 import '../models/progress_highlight.dart';
 import '../services/micro_challenge_service.dart';
 import '../services/streak_guardian_service.dart';
-import '../services/progress_highlight_service.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -32,6 +35,9 @@ class HomeScreen extends ConsumerWidget {
     final taskState = ref.watch(taskProvider);
     final goalState = ref.watch(goalProvider);
     final moodState = ref.watch(moodProvider);
+    final conversationsState = ref.watch(conversationsProvider);
+    final sessionsState = ref.watch(mySessionsProvider);
+    final gamificationState = ref.watch(gamificationProvider);
     final remoteStrings = ref.watch(
       remoteCopyProvider(
         const RemoteCopyParams(namespace: 'mobile.home', locale: 'en-US'),
@@ -41,7 +47,7 @@ class HomeScreen extends ConsumerWidget {
       data: (strings) => strings,
       orElse: () => const <String, String>{},
     );
-    
+
     final dailyPulseAsync = ref.watch(dailyPulseProvider);
     final microChallengesAsync = ref.watch(microChallengesProvider);
     final guardiansAsync = ref.watch(streakGuardiansProvider);
@@ -51,12 +57,16 @@ class HomeScreen extends ConsumerWidget {
     final todaysMood = moodState.todaysMood;
 
     return Scaffold(
+      floatingActionButton: _buildAICoachFAB(context),
       body: RefreshIndicator(
         onRefresh: () async {
           await Future.wait([
             ref.read(taskProvider.notifier).loadTasks(),
             ref.read(goalProvider.notifier).loadGoals(),
             ref.read(moodProvider.notifier).loadMoodEntries(),
+            ref.read(conversationsProvider.notifier).refreshConversations(),
+            ref.read(mySessionsProvider.notifier).loadData(),
+            ref.read(gamificationProvider.notifier).loadAll(),
             ref.refresh(dailyPulseProvider.future),
             ref.refresh(microChallengesProvider.future),
           ]);
@@ -91,7 +101,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            
+
             // Content
             SliverPadding(
               padding: ResponsiveBuilder.getScreenPadding(context),
@@ -106,150 +116,181 @@ class HomeScreen extends ConsumerWidget {
                         children: [
                           Text(
                             DateFormat('EEEE, MMMM d').format(DateTime.now()),
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: AppTheme.textSecondary,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  color: AppTheme.textSecondary,
+                                ),
                           ),
                           const SizedBox(height: UIConstants.spacingSM),
                           Text(
                             _getGreetingMessage(),
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  
+
+                  const SizedBox(height: UIConstants.spacingMD),
+
+                  // Upcoming Sessions Section
+                  _buildUpcomingSessionsSection(context, sessionsState),
+
+                  const SizedBox(height: UIConstants.spacingMD),
+
+                  // Recent Messages Section
+                  _buildRecentMessagesSection(context, conversationsState),
+
+                  const SizedBox(height: UIConstants.spacingMD),
+
+                  // Gamification Progress Summary
+                  _buildGamificationSummary(context, gamificationState),
+
                   const SizedBox(height: UIConstants.spacingMD),
 
                   _buildDailyPulseSection(context, ref, dailyPulseAsync),
-                  
+
                   const SizedBox(height: UIConstants.spacingMD),
-                  
-                  _buildMicroChallengesSection(context, ref, microChallengesAsync),
-                  
+
+                  _buildMicroChallengesSection(
+                      context, ref, microChallengesAsync),
+
                   const SizedBox(height: UIConstants.spacingMD),
-                  
+
                   _buildGuardianSection(context, ref, guardiansAsync),
-                  
+
                   const SizedBox(height: UIConstants.spacingMD),
 
                   _buildHighlightsSection(context, ref, highlightsAsync),
-                  
+
                   const SizedBox(height: UIConstants.spacingMD),
-                  
+
                   // Quick Actions
                   Text(
                     copy['home.quickActions.title'] ?? 'Quick Actions',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: UIConstants.spacingMD),
                   ResponsiveBuilder.isDesktop(context)
-                    ? Row(
-                        children: [
-                          Expanded(
-                            child: _QuickActionCard(
+                      ? Row(
+                          children: [
+                            Expanded(
+                              child: _QuickActionCard(
+                                icon: Icons.add_task,
+                                label: copy['home.quickActions.addTask'] ??
+                                    'Add Task',
+                                color: Colors.blue,
+                                onTap: () {
+                                  context.go('/tasks');
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: UIConstants.spacingMD),
+                            Expanded(
+                              child: _QuickActionCard(
+                                icon: Icons.flag,
+                                label: copy['home.quickActions.setGoal'] ??
+                                    'Set Goal',
+                                color: Colors.green,
+                                onTap: () {
+                                  context.go('/goals');
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: UIConstants.spacingMD),
+                            Expanded(
+                              child: _QuickActionCard(
+                                icon: Icons.mood,
+                                label: copy['home.quickActions.logMood'] ??
+                                    'Log Mood',
+                                color: Colors.orange,
+                                onTap: () {
+                                  context.go('/mood');
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: UIConstants.spacingMD),
+                            Expanded(
+                              child: _QuickActionCard(
+                                icon: Icons.insights,
+                                label: copy['home.quickActions.aiCoach'] ??
+                                    'AI Coach',
+                                color: Colors.purple,
+                                onTap: () {
+                                  context.go('/chat');
+                                },
+                              ),
+                            ),
+                          ],
+                        )
+                      : GridView.count(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          crossAxisCount:
+                              ResponsiveBuilder.isTablet(context) ? 3 : 2,
+                          crossAxisSpacing: UIConstants.spacingMD,
+                          mainAxisSpacing: UIConstants.spacingMD,
+                          childAspectRatio: 1.2,
+                          children: [
+                            _QuickActionCard(
                               icon: Icons.add_task,
-                              label: copy['home.quickActions.addTask'] ?? 'Add Task',
+                              label: copy['home.quickActions.addTask'] ??
+                                  'Add Task',
                               color: Colors.blue,
                               onTap: () {
                                 context.go('/tasks');
                               },
                             ),
-                          ),
-                          const SizedBox(width: UIConstants.spacingMD),
-                          Expanded(
-                            child: _QuickActionCard(
+                            _QuickActionCard(
                               icon: Icons.flag,
-                              label: copy['home.quickActions.setGoal'] ?? 'Set Goal',
+                              label: copy['home.quickActions.setGoal'] ??
+                                  'Set Goal',
                               color: Colors.green,
                               onTap: () {
                                 context.go('/goals');
                               },
                             ),
-                          ),
-                          const SizedBox(width: UIConstants.spacingMD),
-                          Expanded(
-                            child: _QuickActionCard(
+                            _QuickActionCard(
                               icon: Icons.mood,
-                              label: copy['home.quickActions.logMood'] ?? 'Log Mood',
+                              label: copy['home.quickActions.logMood'] ??
+                                  'Log Mood',
                               color: Colors.orange,
                               onTap: () {
                                 context.go('/mood');
                               },
                             ),
-                          ),
-                          const SizedBox(width: UIConstants.spacingMD),
-                          Expanded(
-                            child: _QuickActionCard(
+                            _QuickActionCard(
                               icon: Icons.insights,
-                              label: copy['home.quickActions.aiCoach'] ?? 'AI Coach',
+                              label: copy['home.quickActions.aiCoach'] ??
+                                  'AI Coach',
                               color: Colors.purple,
                               onTap: () {
                                 context.go('/chat');
                               },
                             ),
-                          ),
-                        ],
-                      )
-                    : GridView.count(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: ResponsiveBuilder.isTablet(context) ? 3 : 2,
-                        crossAxisSpacing: UIConstants.spacingMD,
-                        mainAxisSpacing: UIConstants.spacingMD,
-                        childAspectRatio: 1.2,
-                        children: [
-                          _QuickActionCard(
-                            icon: Icons.add_task,
-                            label: copy['home.quickActions.addTask'] ?? 'Add Task',
-                            color: Colors.blue,
-                            onTap: () {
-                              context.go('/tasks');
-                            },
-                          ),
-                          _QuickActionCard(
-                            icon: Icons.flag,
-                            label: copy['home.quickActions.setGoal'] ?? 'Set Goal',
-                            color: Colors.green,
-                            onTap: () {
-                              context.go('/goals');
-                            },
-                          ),
-                          _QuickActionCard(
-                            icon: Icons.mood,
-                            label: copy['home.quickActions.logMood'] ?? 'Log Mood',
-                            color: Colors.orange,
-                            onTap: () {
-                              context.go('/mood');
-                            },
-                          ),
-                          _QuickActionCard(
-                            icon: Icons.insights,
-                            label: copy['home.quickActions.aiCoach'] ?? 'AI Coach',
-                            color: Colors.purple,
-                            onTap: () {
-                              context.go('/chat');
-                            },
-                          ),
-                        ],
-                      ),
-                  
+                          ],
+                        ),
+
                   const SizedBox(height: UIConstants.spacingLG),
-                  
+
                   // Today's Overview
                   Text(
                     'Today\'s Overview',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: UIConstants.spacingMD),
-                  
+
                   // Mood Status
                   if (todaysMood != null)
                     Card(
@@ -258,7 +299,8 @@ class HomeScreen extends ConsumerWidget {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: _getMoodColor(todaysMood.level).withOpacity(0.2),
+                            color: _getMoodColor(todaysMood.level)
+                                .withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: Center(
@@ -269,7 +311,8 @@ class HomeScreen extends ConsumerWidget {
                           ),
                         ),
                         title: Text('Mood: ${todaysMood.levelLabel}'),
-                        subtitle: Text('Logged ${DateFormat('h:mm a').format(todaysMood.timestamp)}'),
+                        subtitle: Text(
+                            'Logged ${DateFormat('h:mm a').format(todaysMood.timestamp)}'),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () {
                           context.go('/mood');
@@ -283,10 +326,11 @@ class HomeScreen extends ConsumerWidget {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withOpacity(0.2),
+                            color: AppTheme.primaryColor.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.mood, color: AppTheme.primaryColor),
+                          child: const Icon(Icons.mood,
+                              color: AppTheme.primaryColor),
                         ),
                         title: const Text('Log your mood'),
                         subtitle: const Text('How are you feeling today?'),
@@ -296,29 +340,31 @@ class HomeScreen extends ConsumerWidget {
                         },
                       ),
                     ),
-                  
+
                   const SizedBox(height: UIConstants.spacingMD),
-                  
+
                   // Tasks Summary
                   _buildTasksSummary(context, taskState),
-                  
+
                   const SizedBox(height: UIConstants.spacingMD),
-                  
+
                   // Goals Summary
                   _buildGoalsSummary(context, goalState),
-                  
+
                   const SizedBox(height: UIConstants.spacingLG),
-                  
+
                   // Recent Activity
                   Text(
                     'Recent Activity',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: UIConstants.spacingMD),
-                  
-                  if (taskState.tasks.isEmpty && goalState.goals.isEmpty && moodState.moodEntries.isEmpty)
+
+                  if (taskState.tasks.isEmpty &&
+                      goalState.goals.isEmpty &&
+                      moodState.moodEntries.isEmpty)
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(32),
@@ -327,14 +373,18 @@ class HomeScreen extends ConsumerWidget {
                             Icon(
                               Icons.psychology,
                               size: 64,
-                              color: AppTheme.textSecondary.withOpacity(0.5),
+                              color:
+                                  AppTheme.textSecondary.withValues(alpha: 0.5),
                             ),
                             const SizedBox(height: UIConstants.spacingMD),
                             Text(
                               'Start your journey',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
                             const SizedBox(height: UIConstants.spacingSM),
                             Text(
@@ -349,8 +399,9 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     )
                   else
-                    ..._buildRecentActivity(context, taskState, goalState, moodState),
-                  
+                    ..._buildRecentActivity(
+                        context, taskState, goalState, moodState),
+
                   const SizedBox(height: 80), // Bottom padding for navigation
                 ]),
               ),
@@ -372,16 +423,531 @@ class HomeScreen extends ConsumerWidget {
     }
   }
 
+  // AI Coach Floating Action Button
+  Widget _buildAICoachFAB(BuildContext context) {
+    return FloatingActionButton.extended(
+      onPressed: () => context.push('/ai-chat'),
+      backgroundColor: AppTheme.primaryColor,
+      icon: const Icon(Icons.psychology, color: Colors.white),
+      label: const Text(
+        'AI Coach',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  // Upcoming Sessions Section
+  Widget _buildUpcomingSessionsSection(
+      BuildContext context, MySessionsState state) {
+    final upcomingSessions = state.upcomingSessions.take(3).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Upcoming Sessions',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            if (upcomingSessions.isNotEmpty)
+              TextButton(
+                onPressed: () => context.push('/marketplace/my-sessions'),
+                child: const Text('See all'),
+              ),
+          ],
+        ),
+        const SizedBox(height: UIConstants.spacingSM),
+        if (state.isLoading)
+          const Card(
+            child: Padding(
+              padding: EdgeInsets.all(UIConstants.spacingMD),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          )
+        else if (upcomingSessions.isEmpty)
+          Card(
+            child: ListTile(
+              leading: Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Colors.teal.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.event_available, color: Colors.teal),
+              ),
+              title: const Text('No upcoming sessions'),
+              subtitle:
+                  const Text('Browse coaches and book your first session'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () => context.push('/marketplace'),
+            ),
+          )
+        else
+          Column(
+            children: upcomingSessions.map((session) {
+              final isToday = _isToday(session.scheduledAt);
+              final isTomorrow = _isTomorrow(session.scheduledAt);
+              String dateLabel;
+              if (isToday) {
+                dateLabel = 'Today';
+              } else if (isTomorrow) {
+                dateLabel = 'Tomorrow';
+              } else {
+                dateLabel =
+                    DateFormat('EEE, MMM d').format(session.scheduledAt);
+              }
+
+              final coachName = session.coach?.displayName ?? session.title;
+              final coachImageUrl = session.coach?.profileImageUrl;
+
+              return Card(
+                margin: const EdgeInsets.only(bottom: UIConstants.spacingSM),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor:
+                        AppTheme.primaryColor.withValues(alpha: 0.1),
+                    backgroundImage: coachImageUrl != null
+                        ? NetworkImage(coachImageUrl)
+                        : null,
+                    child: coachImageUrl == null
+                        ? Text(
+                            coachName.isNotEmpty
+                                ? coachName[0].toUpperCase()
+                                : 'C',
+                            style: const TextStyle(
+                              color: AppTheme.primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        : null,
+                  ),
+                  title: Text(
+                    coachName,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: Text(
+                    '$dateLabel at ${DateFormat('h:mm a').format(session.scheduledAt)}',
+                  ),
+                  trailing: _buildSessionTypeIcon(session.sessionType),
+                  onTap: () {
+                    if (session.sessionType == SessionType.video) {
+                      context.push(
+                          '/call/video/${session.id}?coachName=${Uri.encodeComponent(coachName)}');
+                    } else if (session.sessionType == SessionType.audio) {
+                      context.push(
+                          '/call/audio/${session.id}?coachName=${Uri.encodeComponent(coachName)}');
+                    }
+                  },
+                ),
+              );
+            }).toList(),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSessionTypeIcon(dynamic sessionType) {
+    final typeName = sessionType.toString().split('.').last;
+    switch (typeName) {
+      case 'video':
+        return Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.blue.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.videocam, color: Colors.blue, size: 20),
+        );
+      case 'audio':
+        return Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.green.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.call, color: Colors.green, size: 20),
+        );
+      default:
+        return Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.purple.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(Icons.chat, color: Colors.purple, size: 20),
+        );
+    }
+  }
+
+  bool _isTomorrow(DateTime date) {
+    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    return date.year == tomorrow.year &&
+        date.month == tomorrow.month &&
+        date.day == tomorrow.day;
+  }
+
+  // Recent Messages Section
+  Widget _buildRecentMessagesSection(
+      BuildContext context, ConversationsState state) {
+    final recentConversations = state.conversations.take(3).toList();
+    final unreadCount = state.totalUnreadCount;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'Messages',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                if (unreadCount > 0) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      unreadCount > 99 ? '99+' : unreadCount.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            TextButton(
+              onPressed: () => context.go('/chat'),
+              child: const Text('See all'),
+            ),
+          ],
+        ),
+        const SizedBox(height: UIConstants.spacingSM),
+        if (state.isLoading)
+          const Card(
+            child: Padding(
+              padding: EdgeInsets.all(UIConstants.spacingMD),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          )
+        else if (recentConversations.isEmpty)
+          Card(
+            child: ListTile(
+              leading: Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Colors.indigo.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.message, color: Colors.indigo),
+              ),
+              title: const Text('No messages yet'),
+              subtitle: const Text('Start a conversation with your coach'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () => context.go('/chat'),
+            ),
+          )
+        else
+          Column(
+            children: recentConversations.map((conv) {
+              final hasUnread = conv.unreadCount > 0;
+              final displayName = conv.title ??
+                  conv.participants.firstOrNull?.displayName ??
+                  'Unknown';
+
+              return Card(
+                margin: const EdgeInsets.only(bottom: UIConstants.spacingSM),
+                child: ListTile(
+                  leading: Stack(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor:
+                            AppTheme.primaryColor.withValues(alpha: 0.1),
+                        backgroundImage: conv.imageUrl != null
+                            ? NetworkImage(conv.imageUrl!)
+                            : null,
+                        child: conv.imageUrl == null
+                            ? Text(
+                                displayName.isNotEmpty
+                                    ? displayName[0].toUpperCase()
+                                    : '?',
+                                style: const TextStyle(
+                                  color: AppTheme.primaryColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                            : null,
+                      ),
+                      if (hasUnread)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryColor,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  title: Text(
+                    displayName,
+                    style: TextStyle(
+                      fontWeight: hasUnread ? FontWeight.bold : FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: Text(
+                    conv.lastMessagePreview,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: hasUnread ? Colors.black87 : Colors.grey,
+                    ),
+                  ),
+                  trailing: Text(
+                    _formatMessageTime(conv.lastMessageAt ?? conv.createdAt),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: hasUnread ? AppTheme.primaryColor : Colors.grey,
+                      fontWeight:
+                          hasUnread ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                  onTap: () =>
+                      context.push('/messaging/${conv.id}', extra: conv),
+                ),
+              );
+            }).toList(),
+          ),
+      ],
+    );
+  }
+
+  String _formatMessageTime(DateTime time) {
+    final now = DateTime.now();
+    final difference = now.difference(time);
+
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return DateFormat('EEE').format(time);
+    } else {
+      return DateFormat('MMM d').format(time);
+    }
+  }
+
+  // Gamification Summary Section
+  Widget _buildGamificationSummary(
+      BuildContext context, GamificationState state) {
+    final stats = state.stats;
+
+    return Card(
+      child: InkWell(
+        onTap: () => context.go('/gamification'),
+        borderRadius: BorderRadius.circular(UIConstants.radiusLG),
+        child: Padding(
+          padding: const EdgeInsets.all(UIConstants.spacingMD),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Your Progress',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _getTierColor(stats.tier).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.workspace_premium,
+                          size: 16,
+                          color: _getTierColor(stats.tier),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          stats.tier,
+                          style: TextStyle(
+                            color: _getTierColor(stats.tier),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: UIConstants.spacingMD),
+              // Level progress bar
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Level ${stats.level}',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      Text(
+                        '${stats.currentPoints}/${stats.nextLevelPoints} XP',
+                        style: TextStyle(
+                          color: AppTheme.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: stats.levelProgress,
+                      backgroundColor: Colors.grey.withValues(alpha: 0.2),
+                      valueColor: AlwaysStoppedAnimation(AppTheme.primaryColor),
+                      minHeight: 8,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: UIConstants.spacingMD),
+              // Stats row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildStatItem(
+                    context,
+                    Icons.local_fire_department,
+                    '${stats.currentStreak}',
+                    'Day Streak',
+                    Colors.orange,
+                  ),
+                  _buildStatItem(
+                    context,
+                    Icons.emoji_events,
+                    '${stats.achievementsUnlocked}',
+                    'Achievements',
+                    Colors.amber,
+                  ),
+                  _buildStatItem(
+                    context,
+                    Icons.leaderboard,
+                    '#${stats.rank ?? stats.currentRank}',
+                    'Rank',
+                    Colors.purple,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatItem(
+    BuildContext context,
+    IconData icon,
+    String value,
+    String label,
+    Color color,
+  ) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            color: AppTheme.textSecondary,
+            fontSize: 11,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _getTierColor(String tier) {
+    switch (tier.toLowerCase()) {
+      case 'bronze':
+        return const Color(0xFFCD7F32);
+      case 'silver':
+        return const Color(0xFFC0C0C0);
+      case 'gold':
+        return const Color(0xFFFFD700);
+      case 'platinum':
+        return const Color(0xFFE5E4E2);
+      case 'diamond':
+        return const Color(0xFFB9F2FF);
+      default:
+        return Colors.grey;
+    }
+  }
+
   Widget _buildDailyPulseSection(
     BuildContext context,
     WidgetRef ref,
     AsyncValue<DailyPulse> pulseAsync,
   ) {
     return pulseAsync.when(
-      data: (pulse) => _DailyPulseCard(pulse: pulse, onRefresh: () => ref.refresh(dailyPulseProvider)),
+      data: (pulse) => _DailyPulseCard(
+          pulse: pulse, onRefresh: () => ref.refresh(dailyPulseProvider)),
       loading: () => const _DailyPulseSkeleton(),
       error: (error, stack) => Card(
-        color: Colors.red.withOpacity(0.05),
+        color: Colors.red.withValues(alpha: 0.05),
         child: ListTile(
           leading: const Icon(Icons.warning, color: Colors.red),
           title: const Text('Unable to load your daily pulse'),
@@ -429,7 +995,8 @@ class HomeScreen extends ConsumerWidget {
               return ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: challenges.length,
-                separatorBuilder: (_, __) => const SizedBox(width: UIConstants.spacingMD),
+                separatorBuilder: (_, __) =>
+                    const SizedBox(width: UIConstants.spacingMD),
                 itemBuilder: (context, index) {
                   final challenge = challenges[index];
                   return SizedBox(
@@ -437,7 +1004,8 @@ class HomeScreen extends ConsumerWidget {
                     child: _MicroChallengeCard(
                       challenge: challenge,
                       onComplete: () async {
-                        await _handleCompleteChallenge(context, ref, challenge.id);
+                        await _handleCompleteChallenge(
+                            context, ref, challenge.id);
                       },
                     ),
                   );
@@ -446,7 +1014,7 @@ class HomeScreen extends ConsumerWidget {
             },
             loading: () => const _MicroChallengeSkeleton(),
             error: (error, _) => Card(
-              color: Colors.red.withOpacity(0.05),
+              color: Colors.red.withValues(alpha: 0.05),
               child: ListTile(
                 leading: const Icon(Icons.warning, color: Colors.red),
                 title: const Text('Couldn’t load challenges'),
@@ -470,7 +1038,9 @@ class HomeScreen extends ConsumerWidget {
   ) async {
     final scaffold = ScaffoldMessenger.of(context);
     try {
-      await ref.read(microChallengeServiceProvider).completeChallenge(challengeId);
+      await ref
+          .read(microChallengeServiceProvider)
+          .completeChallenge(challengeId);
       ref.invalidate(microChallengesProvider);
       scaffold.showSnackBar(
         const SnackBar(content: Text('Nice! Challenge marked complete.')),
@@ -598,7 +1168,10 @@ class HomeScreen extends ConsumerWidget {
       children: [
         Text(
           'Progress highlights',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          style: Theme.of(context)
+              .textTheme
+              .titleLarge
+              ?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: UIConstants.spacingSM),
         SizedBox(
@@ -611,7 +1184,8 @@ class HomeScreen extends ConsumerWidget {
               return ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: highlights.length,
-                separatorBuilder: (_, __) => const SizedBox(width: UIConstants.spacingMD),
+                separatorBuilder: (_, __) =>
+                    const SizedBox(width: UIConstants.spacingMD),
                 itemBuilder: (context, index) {
                   final highlight = highlights[index];
                   return SizedBox(
@@ -639,7 +1213,8 @@ class HomeScreen extends ConsumerWidget {
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () => ref.refresh(progressHighlightsProvider),
+                        onPressed: () =>
+                            ref.refresh(progressHighlightsProvider),
                         child: const Text('Retry'),
                       ),
                     ),
@@ -653,18 +1228,20 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  void _handleShareHighlight(BuildContext context, ProgressHighlight highlight) {
+  void _handleShareHighlight(
+      BuildContext context, ProgressHighlight highlight) {
     final scaffold = ScaffoldMessenger.of(context);
     Clipboard.setData(ClipboardData(text: highlight.sharePrompt));
-    scaffold.showSnackBar(const SnackBar(content: Text('Share prompt copied!')));
+    scaffold
+        .showSnackBar(const SnackBar(content: Text('Share prompt copied!')));
   }
 
   Widget _buildTasksSummary(BuildContext context, TaskState taskState) {
     final pendingTasks = taskState.tasks.where((t) => !t.isCompleted).length;
-    final completedToday = taskState.tasks.where((t) => 
-        t.isCompleted && 
-        t.completedAt != null &&
-        _isToday(t.completedAt!)).length;
+    final completedToday = taskState.tasks
+        .where((t) =>
+            t.isCompleted && t.completedAt != null && _isToday(t.completedAt!))
+        .length;
 
     return Card(
       child: ListTile(
@@ -672,7 +1249,7 @@ class HomeScreen extends ConsumerWidget {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.2),
+            color: Colors.blue.withValues(alpha: 0.2),
             shape: BoxShape.circle,
           ),
           child: const Icon(Icons.task_alt, color: Colors.blue),
@@ -697,7 +1274,7 @@ class HomeScreen extends ConsumerWidget {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: Colors.green.withOpacity(0.2),
+            color: Colors.green.withValues(alpha: 0.2),
             shape: BoxShape.circle,
           ),
           child: const Icon(Icons.flag, color: Colors.green),
@@ -723,11 +1300,13 @@ class HomeScreen extends ConsumerWidget {
     // Add recent tasks
     for (final task in taskState.tasks.take(3)) {
       activities.add(_ActivityItem(
-        icon: task.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
+        icon: task.isCompleted
+            ? Icons.check_circle
+            : Icons.radio_button_unchecked,
         title: task.title,
         subtitle: task.isCompleted ? 'Task completed' : 'Task created',
-        time: task.isCompleted && task.completedAt != null 
-            ? task.completedAt! 
+        time: task.isCompleted && task.completedAt != null
+            ? task.completedAt!
             : task.createdAt,
         color: task.isCompleted ? Colors.green : Colors.blue,
       ));
@@ -757,34 +1336,37 @@ class HomeScreen extends ConsumerWidget {
 
     // Sort by time and take top 5
     activities.sort((a, b) => b.time.compareTo(a.time));
-    
-    return activities.take(5).map((activity) => Card(
-      child: ListTile(
-        leading: Icon(activity.icon, color: activity.color),
-        title: Text(activity.title),
-        subtitle: Text(activity.subtitle),
-        trailing: Text(
-          _formatTime(activity.time),
-          style: TextStyle(
-            color: AppTheme.textSecondary,
-            fontSize: 12,
-          ),
-        ),
-      ),
-    )).toList();
+
+    return activities
+        .take(5)
+        .map((activity) => Card(
+              child: ListTile(
+                leading: Icon(activity.icon, color: activity.color),
+                title: Text(activity.title),
+                subtitle: Text(activity.subtitle),
+                trailing: Text(
+                  _formatTime(activity.time),
+                  style: TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ))
+        .toList();
   }
 
   bool _isToday(DateTime date) {
     final now = DateTime.now();
-    return date.year == now.year && 
-           date.month == now.month && 
-           date.day == now.day;
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
   }
 
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final difference = now.difference(time);
-    
+
     if (difference.inMinutes < 60) {
       return '${difference.inMinutes}m ago';
     } else if (difference.inHours < 24) {
@@ -794,7 +1376,7 @@ class HomeScreen extends ConsumerWidget {
     }
   }
 
-  Color _getMoodColor(level) {
+  Color _getMoodColor(dynamic level) {
     // This would map to MoodLevel enum values
     return Colors.amber; // Simplified for now
   }
@@ -821,7 +1403,8 @@ class _DailyPulseCard extends StatelessWidget {
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: CircleAvatar(
-                backgroundColor: (isMorning ? Colors.orange : Colors.indigo).withOpacity(0.15),
+                backgroundColor: (isMorning ? Colors.orange : Colors.indigo)
+                    .withValues(alpha: 0.15),
                 child: Icon(
                   icon,
                   color: isMorning ? Colors.orange : Colors.indigo,
@@ -868,7 +1451,8 @@ class _DailyPulseCard extends StatelessWidget {
                         subtitle: Text(action.description),
                         trailing: Chip(
                           label: Text(action.timeframe),
-                          backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                          backgroundColor:
+                              AppTheme.primaryColor.withValues(alpha: 0.1),
                         ),
                       ),
                     )
@@ -886,7 +1470,8 @@ class _DailyPulseCard extends StatelessWidget {
                 ),
                 _MetricChip(
                   label: 'Goals',
-                  value: '${pulse.metrics['completedGoals'] ?? 0}/${pulse.metrics['activeGoals'] ?? 0}',
+                  value:
+                      '${pulse.metrics['completedGoals'] ?? 0}/${pulse.metrics['activeGoals'] ?? 0}',
                 ),
                 _MetricChip(
                   label: 'Habits',
@@ -943,7 +1528,7 @@ class _MetricChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Chip(
       labelPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      backgroundColor: AppTheme.primaryColor.withOpacity(0.08),
+      backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.08),
       label: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1009,7 +1594,8 @@ class _DailyPulseSkeleton extends StatelessWidget {
                 3,
                 (index) => Expanded(
                   child: Container(
-                    margin: EdgeInsets.only(right: index == 2 ? 0 : UIConstants.spacingSM),
+                    margin: EdgeInsets.only(
+                        right: index == 2 ? 0 : UIConstants.spacingSM),
                     height: 32,
                     decoration: BoxDecoration(
                       color: Colors.grey.shade200,
@@ -1232,7 +1818,7 @@ class _HighlightCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Chip(
-              backgroundColor: color.withOpacity(0.12),
+              backgroundColor: color.withValues(alpha: 0.12),
               label: Text(
                 highlight.title,
                 style: TextStyle(color: color, fontWeight: FontWeight.bold),
@@ -1256,7 +1842,10 @@ class _HighlightCard extends StatelessWidget {
                     ),
                     Text(
                       highlight.metricValue,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -1370,7 +1959,7 @@ class _QuickActionCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
+                  color: color.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: color, size: 24),
@@ -1406,4 +1995,4 @@ class _ActivityItem {
     required this.time,
     required this.color,
   });
-} 
+}

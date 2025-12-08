@@ -91,11 +91,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     if (_formKey.currentState!.validate()) {
       final success = await ref.read(authProvider.notifier).register(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-        firstName: _firstNameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
-      );
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+            firstName: _firstNameController.text.trim(),
+            lastName: _lastNameController.text.trim(),
+          );
 
       if (success) {
         if (mounted) {
@@ -156,7 +156,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: UIConstants.spacingLG),
-                
+
                 // Logo and Title
                 Center(
                   child: Column(
@@ -166,7 +166,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         height: 80,
                         decoration: BoxDecoration(
                           color: AppTheme.primaryColor,
-                          borderRadius: BorderRadius.circular(UIConstants.radiusXL),
+                          borderRadius:
+                              BorderRadius.circular(UIConstants.radiusXL),
                         ),
                         child: const Icon(
                           Icons.psychology_alt,
@@ -177,25 +178,28 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       const SizedBox(height: UIConstants.spacingLG),
                       Text(
                         'Create Account',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimary,
-                        ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.textPrimary,
+                            ),
                       ),
                       const SizedBox(height: UIConstants.spacingSM),
                       Text(
                         'Start your personal coaching journey today',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppTheme.textSecondary,
-                        ),
+                              color: AppTheme.textSecondary,
+                            ),
                         textAlign: TextAlign.center,
                       ),
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // First Name Field
                 TextFormField(
                   controller: _firstNameController,
@@ -207,9 +211,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     prefixIcon: Icon(Icons.person_outline),
                   ),
                 ),
-                
+
                 const SizedBox(height: UIConstants.spacingMD),
-                
+
                 // Last Name Field
                 TextFormField(
                   controller: _lastNameController,
@@ -221,9 +225,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     prefixIcon: Icon(Icons.person_outline),
                   ),
                 ),
-                
+
                 const SizedBox(height: UIConstants.spacingMD),
-                
+
                 // Email Field
                 TextFormField(
                   controller: _emailController,
@@ -236,9 +240,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     prefixIcon: Icon(Icons.email_outlined),
                   ),
                 ),
-                
+
                 const SizedBox(height: UIConstants.spacingMD),
-                
+
                 // Password Field
                 TextFormField(
                   controller: _passwordController,
@@ -251,8 +255,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     prefixIcon: const Icon(Icons.lock_outlined),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword 
-                            ? Icons.visibility_outlined 
+                        _obscurePassword
+                            ? Icons.visibility_outlined
                             : Icons.visibility_off_outlined,
                       ),
                       onPressed: () {
@@ -263,9 +267,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: UIConstants.spacingMD),
-                
+
                 // Confirm Password Field
                 TextFormField(
                   controller: _confirmPasswordController,
@@ -279,8 +283,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     prefixIcon: const Icon(Icons.lock_outlined),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscureConfirmPassword 
-                            ? Icons.visibility_outlined 
+                        _obscureConfirmPassword
+                            ? Icons.visibility_outlined
                             : Icons.visibility_off_outlined,
                       ),
                       onPressed: () {
@@ -291,9 +295,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: UIConstants.spacingLG),
-                
+
                 // Terms and Conditions
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -344,18 +348,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: UIConstants.spacingLG),
-                
+
                 // Error Message
                 if (authState.error != null) ...[
                   Container(
                     padding: const EdgeInsets.all(UIConstants.spacingMD),
                     decoration: BoxDecoration(
-                      color: AppTheme.errorColor.withOpacity(0.1),
+                      color: AppTheme.errorColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(UIConstants.radiusMD),
                       border: Border.all(
-                        color: AppTheme.errorColor.withOpacity(0.3),
+                        color: AppTheme.errorColor.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Text(
@@ -368,7 +372,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   ),
                   const SizedBox(height: UIConstants.spacingLG),
                 ],
-                
+
                 // Register Button
                 ElevatedButton(
                   onPressed: authState.isLoading ? null : _register,
@@ -378,14 +382,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : const Text('Create Account'),
                 ),
-                
+
                 const SizedBox(height: UIConstants.spacingLG),
-                
+
                 // Divider
                 Row(
                   children: [
@@ -403,9 +408,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     const Expanded(child: Divider()),
                   ],
                 ),
-                
+
                 const SizedBox(height: UIConstants.spacingLG),
-                
+
                 // Google Sign In Button
                 OutlinedButton.icon(
                   onPressed: _isLoading ? null : _signInWithGoogle,
@@ -416,9 +421,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     side: BorderSide(color: AppColors.outline),
                   ),
                 ),
-                
+
                 const SizedBox(height: UIConstants.spacingXL),
-                
+
                 // Sign In Link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -440,4 +445,4 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       ),
     );
   }
-} 
+}

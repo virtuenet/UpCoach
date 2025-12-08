@@ -5,13 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../features/auth/providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
 import '../services/profile_service.dart';
-import 'edit_profile_screen.dart';
-import 'settings_screen.dart';
-import 'help_center_screen.dart';
-import 'feedback_screen.dart';
+import '../../../core/providers/connectivity_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -105,15 +103,15 @@ class ProfileScreen extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: UIConstants.spacingMD),
-                  
+
                   // Name
                   Text(
                     user.name.isNotEmpty ? user.name : 'No name set',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
-                  
+
                   // Email
                   Text(
                     user.email,
@@ -122,7 +120,7 @@ class ProfileScreen extends ConsumerWidget {
                       color: AppTheme.textSecondary,
                     ),
                   ),
-                  
+
                   // Bio
                   if (user.bio != null && user.bio!.isNotEmpty) ...[
                     const SizedBox(height: UIConstants.spacingMD),
@@ -132,9 +130,9 @@ class ProfileScreen extends ConsumerWidget {
                       textAlign: TextAlign.center,
                     ),
                   ],
-                  
+
                   const SizedBox(height: UIConstants.spacingLG),
-                  
+
                   // Edit Profile Button
                   OutlinedButton.icon(
                     onPressed: () {
@@ -149,9 +147,9 @@ class ProfileScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            
+
             const Divider(height: 1),
-            
+
             // Stats Section
             Container(
               padding: const EdgeInsets.symmetric(vertical: 20),
@@ -179,9 +177,9 @@ class ProfileScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            
+
             const Divider(height: 1),
-            
+
             // Menu Items
             _buildMenuSection(
               context,
@@ -210,7 +208,10 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            
+
+            // Data & Sync Section
+            _buildDataSyncSection(context),
+
             _buildMenuSection(
               context,
               'Support',
@@ -242,7 +243,8 @@ class ProfileScreen extends ConsumerWidget {
                         height: 60,
                         decoration: BoxDecoration(
                           color: AppTheme.primaryColor,
-                          borderRadius: BorderRadius.circular(UIConstants.radiusLG),
+                          borderRadius:
+                              BorderRadius.circular(UIConstants.radiusLG),
                         ),
                         child: const Icon(
                           Icons.psychology,
@@ -260,9 +262,9 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: UIConstants.spacingLG),
-            
+
             // Sign Out Button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -280,10 +282,10 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(true),
-                          child: const Text('Sign Out'),
                           style: TextButton.styleFrom(
                             foregroundColor: AppTheme.errorColor,
                           ),
+                          child: const Text('Sign Out'),
                         ),
                       ],
                     ),
@@ -305,9 +307,9 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: UIConstants.spacingLG),
-            
+
             // App Version
             Center(
               child: Text(
@@ -341,8 +343,8 @@ class ProfileScreen extends ConsumerWidget {
         Text(
           value,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         Text(
           label,
@@ -375,11 +377,31 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
         ...items.map((item) => ListTile(
-          leading: Icon(item.icon),
-          title: Text(item.title),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: item.onTap,
-        )),
+              leading: Icon(item.icon),
+              title: Text(item.title),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: item.onTap,
+            )),
+      ],
+    );
+  }
+
+  Widget _buildDataSyncSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+          child: Text(
+            'Data & Sync',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.textSecondary,
+            ),
+          ),
+        ),
+        _OfflineSyncMenuItem(),
       ],
     );
   }
@@ -421,7 +443,8 @@ class ProfileScreen extends ConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text('Remove Photo', style: TextStyle(color: Colors.red)),
+              title: const Text('Remove Photo',
+                  style: TextStyle(color: Colors.red)),
               onTap: () {
                 context.pop();
                 _removePhoto(ref);
@@ -446,12 +469,12 @@ class ProfileScreen extends ConsumerWidget {
       try {
         final profileService = ref.read(profileServiceProvider);
         await profileService.updateProfilePhoto(File(image.path));
-        
+
         // Refresh profile data
-        ref.refresh(profileProvider);
+        ref.invalidate(profileProvider);
       } catch (e) {
-        // Handle error
-        print('Failed to update profile photo: $e');
+        // Handle error - logged but can't show UI since this is a stateless method
+        debugPrint('Failed to update profile photo: $e');
       }
     }
   }
@@ -460,12 +483,12 @@ class ProfileScreen extends ConsumerWidget {
     try {
       final profileService = ref.read(profileServiceProvider);
       await profileService.removeProfilePhoto();
-      
+
       // Refresh profile data
-      ref.refresh(profileProvider);
+      ref.invalidate(profileProvider);
     } catch (e) {
-      // Handle error
-      print('Failed to remove profile photo: $e');
+      // Handle error - logged but can't show UI since this is a stateless method
+      debugPrint('Failed to remove profile photo: $e');
     }
   }
 }
@@ -480,4 +503,69 @@ class _MenuItem {
     required this.title,
     required this.onTap,
   });
-} 
+}
+
+/// Special menu item for offline/sync status that shows connectivity state
+class _OfflineSyncMenuItem extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(connectivityProvider);
+
+    return ListTile(
+      leading: Icon(
+        state.isOnline ? Icons.cloud_done : Icons.cloud_off,
+        color: state.isOnline
+            ? (state.hasPendingChanges ? AppColors.warning : AppColors.success)
+            : AppColors.textSecondary,
+      ),
+      title: const Text('Offline & Sync'),
+      subtitle: Text(
+        _getSubtitle(state),
+        style: TextStyle(
+          color:
+              state.needsAttention ? AppColors.error : AppColors.textSecondary,
+          fontSize: 12,
+        ),
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (state.hasPendingChanges || state.hasConflicts)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: state.hasConflicts
+                    ? AppColors.error.withValues(alpha: 0.1)
+                    : AppColors.warning.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                state.hasConflicts
+                    ? '${state.pendingConflictsCount}'
+                    : '${state.pendingOperationsCount}',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color:
+                      state.hasConflicts ? AppColors.error : AppColors.warning,
+                ),
+              ),
+            ),
+          const SizedBox(width: 4),
+          const Icon(Icons.chevron_right),
+        ],
+      ),
+      onTap: () => context.push('/profile/offline-settings'),
+    );
+  }
+
+  String _getSubtitle(ConnectivityState state) {
+    if (!state.isOnline) return 'You\'re offline';
+    if (state.hasConflicts) return 'Conflicts need attention';
+    if (state.isSyncing) return 'Syncing...';
+    if (state.hasPendingChanges) {
+      return '${state.pendingOperationsCount} changes pending';
+    }
+    return 'All data synced';
+  }
+}

@@ -25,21 +25,32 @@ class AppSpacing {
   static const EdgeInsets paddingXL = EdgeInsets.all(xl);
 
   // Horizontal padding
-  static const EdgeInsets paddingHorizontalXS = EdgeInsets.symmetric(horizontal: xs);
-  static const EdgeInsets paddingHorizontalSM = EdgeInsets.symmetric(horizontal: sm);
-  static const EdgeInsets paddingHorizontalMD = EdgeInsets.symmetric(horizontal: md);
-  static const EdgeInsets paddingHorizontalLG = EdgeInsets.symmetric(horizontal: lg);
-  static const EdgeInsets paddingHorizontalXL = EdgeInsets.symmetric(horizontal: xl);
+  static const EdgeInsets paddingHorizontalXS =
+      EdgeInsets.symmetric(horizontal: xs);
+  static const EdgeInsets paddingHorizontalSM =
+      EdgeInsets.symmetric(horizontal: sm);
+  static const EdgeInsets paddingHorizontalMD =
+      EdgeInsets.symmetric(horizontal: md);
+  static const EdgeInsets paddingHorizontalLG =
+      EdgeInsets.symmetric(horizontal: lg);
+  static const EdgeInsets paddingHorizontalXL =
+      EdgeInsets.symmetric(horizontal: xl);
 
   // Vertical padding
-  static const EdgeInsets paddingVerticalXS = EdgeInsets.symmetric(vertical: xs);
-  static const EdgeInsets paddingVerticalSM = EdgeInsets.symmetric(vertical: sm);
-  static const EdgeInsets paddingVerticalMD = EdgeInsets.symmetric(vertical: md);
-  static const EdgeInsets paddingVerticalLG = EdgeInsets.symmetric(vertical: lg);
-  static const EdgeInsets paddingVerticalXL = EdgeInsets.symmetric(vertical: xl);
+  static const EdgeInsets paddingVerticalXS =
+      EdgeInsets.symmetric(vertical: xs);
+  static const EdgeInsets paddingVerticalSM =
+      EdgeInsets.symmetric(vertical: sm);
+  static const EdgeInsets paddingVerticalMD =
+      EdgeInsets.symmetric(vertical: md);
+  static const EdgeInsets paddingVerticalLG =
+      EdgeInsets.symmetric(vertical: lg);
+  static const EdgeInsets paddingVerticalXL =
+      EdgeInsets.symmetric(vertical: xl);
 
   // Screen padding
-  static const EdgeInsets screenPadding = EdgeInsets.symmetric(horizontal: md, vertical: sm);
+  static const EdgeInsets screenPadding =
+      EdgeInsets.symmetric(horizontal: md, vertical: sm);
   static const EdgeInsets cardPadding = EdgeInsets.all(md);
   static const EdgeInsets listPadding = EdgeInsets.symmetric(horizontal: md);
 

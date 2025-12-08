@@ -9,8 +9,10 @@ final dioProvider = Provider<Dio>((ref) {
 
   // Base configuration
   dio.options.baseUrl = AppConstants.apiUrl;
-  dio.options.connectTimeout = const Duration(seconds: AppConstants.requestTimeoutSeconds);
-  dio.options.receiveTimeout = const Duration(seconds: AppConstants.requestTimeoutSeconds);
+  dio.options.connectTimeout =
+      const Duration(seconds: AppConstants.requestTimeoutSeconds);
+  dio.options.receiveTimeout =
+      const Duration(seconds: AppConstants.requestTimeoutSeconds);
   dio.options.headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -44,7 +46,8 @@ class _LoggingInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    logger.e('❌ ${err.response?.statusCode ?? 'No Status'} ${err.requestOptions.uri}');
+    logger.e(
+        '❌ ${err.response?.statusCode ?? 'No Status'} ${err.requestOptions.uri}');
     logger.e('Error: ${err.message}');
     handler.next(err);
   }

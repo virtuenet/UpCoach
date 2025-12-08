@@ -53,9 +53,9 @@ class AIService {
   Future<List<AIRecommendation>> getRecommendations() async {
     final response = await _api.get('/ai/recommendations');
     final data = response.data['data'] as Map<String, dynamic>;
-    
+
     final recommendations = <AIRecommendation>[];
-    
+
     // Parse different recommendation types
     if (data['goals'] != null) {
       recommendations.addAll(
@@ -71,7 +71,7 @@ class AIService {
         ),
       );
     }
-    
+
     if (data['habits'] != null) {
       recommendations.addAll(
         (data['habits'] as List).map(
@@ -86,7 +86,7 @@ class AIService {
         ),
       );
     }
-    
+
     if (data['activities'] != null) {
       recommendations.addAll(
         (data['activities'] as List).map(
@@ -100,7 +100,7 @@ class AIService {
         ),
       );
     }
-    
+
     return recommendations;
   }
 
@@ -118,9 +118,9 @@ class AIService {
   Future<List<AIPrediction>> getPredictions() async {
     final response = await _api.get('/ai/predictions');
     final data = response.data['data'] as Map<String, dynamic>;
-    
+
     final predictions = <AIPrediction>[];
-    
+
     if (data['adherence'] != null) {
       predictions.add(AIPrediction(
         type: 'adherence',
@@ -129,7 +129,7 @@ class AIService {
         factors: List<String>.from(data['adherence']['factors'] ?? []),
       ));
     }
-    
+
     if (data['engagement'] != null) {
       predictions.add(AIPrediction(
         type: 'engagement',
@@ -138,7 +138,7 @@ class AIService {
         metadata: data['engagement'],
       ));
     }
-    
+
     if (data['burnout'] != null) {
       predictions.add(AIPrediction(
         type: 'burnout',
@@ -147,7 +147,7 @@ class AIService {
         factors: List<String>.from(data['burnout']['indicators'] ?? []),
       ));
     }
-    
+
     return predictions;
   }
 
@@ -170,7 +170,7 @@ class AIService {
       '/ai/voice/analyze',
       data: formData,
     );
-    
+
     return VoiceAnalysis.fromJson(response.data['data']);
   }
 

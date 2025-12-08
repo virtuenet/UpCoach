@@ -9,24 +9,26 @@ class ChatMessageWidget extends StatelessWidget {
   final bool isUser;
 
   const ChatMessageWidget({
-    Key? key,
+    super.key,
     required this.message,
     required this.isUser,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment:
+            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) _buildAvatar(),
           const SizedBox(width: UIConstants.spacingSM),
           Flexible(
             child: Column(
-              crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment:
+                  isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 Container(
                   padding: const EdgeInsets.all(UIConstants.spacingMD),
@@ -40,7 +42,7 @@ class ChatMessageWidget extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -58,9 +60,9 @@ class ChatMessageWidget extends StatelessWidget {
                 Text(
                   _formatTime(message.timestamp ?? DateTime.now()),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                  ),
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
                 ),
               ],
             ),
@@ -77,7 +79,7 @@ class ChatMessageWidget extends StatelessWidget {
       width: 32,
       height: 32,
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.1),
+        color: AppColors.primary.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
       child: Icon(
@@ -93,7 +95,7 @@ class ChatMessageWidget extends StatelessWidget {
       width: 32,
       height: 32,
       decoration: BoxDecoration(
-        color: AppColors.secondary.withOpacity(0.1),
+        color: AppColors.secondary.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
       child: Icon(

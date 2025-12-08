@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../shared/models/content_article.dart';
 import '../providers/dio_provider.dart';
@@ -9,7 +10,7 @@ import 'offline_storage_service.dart';
 part 'content_service.g.dart';
 
 @riverpod
-ContentService contentService(ContentServiceRef ref) {
+ContentService contentService(Ref ref) {
   final dio = ref.watch(dioProvider);
   return ContentService(dio);
 }
@@ -50,7 +51,7 @@ class ContentService {
     try {
       final identifier = id ?? slug;
       final response = await _dio.get('$_baseEndpoint/articles/$identifier');
-      
+
       // Track article view
       if (response.data['success']) {
         _trackArticleView(id ?? response.data['data']['id']);
@@ -124,7 +125,8 @@ class ContentService {
   // Get related articles
   Future<List<ContentArticle>> getRelatedArticles(int articleId) async {
     try {
-      final response = await _dio.get('$_baseEndpoint/articles/$articleId/related');
+      final response =
+          await _dio.get('$_baseEndpoint/articles/$articleId/related');
       final articles = (response.data['data'] as List)
           .map((json) => ContentArticle.fromJson(json))
           .toList();
@@ -198,7 +200,9 @@ class ContentService {
 
         return articlesMap.values.toList();
       } on DioException catch (e) {
-        logger.w('Failed to fetch online saved articles, returning offline only', error: e);
+        logger.w(
+            'Failed to fetch online saved articles, returning offline only',
+            error: e);
         return offlineArticles;
       }
     } catch (e) {
@@ -206,7 +210,7 @@ class ContentService {
       return [];
     }
   }
-  
+
   // Toggle save article
   Future<void> toggleSaveArticle(int articleId) async {
     try {
@@ -221,6 +225,7 @@ class ContentService {
   void _trackArticleView(int articleId) {
     _dio.post('$_baseEndpoint/articles/$articleId/view').catchError((e) {
       logger.w('Failed to track article view', error: e);
+      return Response(requestOptions: RequestOptions(), statusCode: 500);
     });
   }
 
@@ -285,7 +290,8 @@ class ContentService {
 
       // Check online if not offline
       try {
-        final response = await _dio.get('$_baseEndpoint/articles/$articleId/saved-status');
+        final response =
+            await _dio.get('$_baseEndpoint/articles/$articleId/saved-status');
         return response.data['isSaved'] ?? false;
       } on DioException catch (e) {
         logger.w('Failed to check online saved status', error: e);

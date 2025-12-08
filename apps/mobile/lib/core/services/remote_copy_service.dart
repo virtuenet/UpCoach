@@ -21,9 +21,12 @@ final remoteCopyServiceProvider = Provider<RemoteCopyService>((ref) {
   return RemoteCopyService(dio);
 });
 
-final remoteCopyProvider = FutureProvider.family<Map<String, String>, RemoteCopyParams>((ref, params) async {
+final remoteCopyProvider =
+    FutureProvider.family<Map<String, String>, RemoteCopyParams>(
+        (ref, params) async {
   final service = ref.watch(remoteCopyServiceProvider);
-  return service.fetchStringTable(namespace: params.namespace, locale: params.locale);
+  return service.fetchStringTable(
+      namespace: params.namespace, locale: params.locale);
 });
 
 class RemoteCopyService {
@@ -40,7 +43,8 @@ class RemoteCopyService {
     final cacheKey = 'remote_copy_${namespace}_$locale';
 
     if (!forceRefresh) {
-      final cached = await _offline.getCachedData(cacheKey, maxAge: const Duration(hours: 6));
+      final cached = await _offline.getCachedData(cacheKey,
+          maxAge: const Duration(hours: 6));
       if (cached != null && cached['entries'] is Map<String, dynamic>) {
         return (cached['entries'] as Map<String, dynamic>).map(
           (key, value) => MapEntry(key, value.toString()),
@@ -64,7 +68,8 @@ class RemoteCopyService {
       for (final entry in data) {
         if (entry is Map<String, dynamic>) {
           final key = entry['key'] as String?;
-          final value = entry['value'] as String? ?? entry['richValue']?.toString();
+          final value =
+              entry['value'] as String? ?? entry['richValue']?.toString();
           if (key != null && value != null) {
             entries[key] = value;
           }
@@ -90,4 +95,3 @@ class RemoteCopyService {
     }
   }
 }
-

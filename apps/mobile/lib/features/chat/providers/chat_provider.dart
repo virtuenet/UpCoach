@@ -60,7 +60,8 @@ class ChatNotifier extends StateNotifier<ChatState> {
       final conversations = await _chatService.getConversations();
       state = state.copyWith(
         conversations: conversations,
-        currentConversation: conversations.isNotEmpty ? conversations.first : null,
+        currentConversation:
+            conversations.isNotEmpty ? conversations.first : null,
         isLoading: false,
       );
     } catch (e) {
@@ -127,7 +128,8 @@ class ChatNotifier extends StateNotifier<ChatState> {
     await _processUserMessage(content, currentConv.id);
   }
 
-  Future<void> _processUserMessage(String content, String conversationId) async {
+  Future<void> _processUserMessage(
+      String content, String conversationId) async {
     if (content.trim().isEmpty) return;
 
     state = state.copyWith(isSending: true, error: null);
@@ -153,7 +155,8 @@ class ChatNotifier extends StateNotifier<ChatState> {
       if (localReply != null) {
         _updateMessageInCurrentConversation(
           userMessage.id,
-          userMessage.copyWith(status: MessageStatus.sent, timestamp: DateTime.now()),
+          userMessage.copyWith(
+              status: MessageStatus.sent, timestamp: DateTime.now()),
         );
         _updateMessageInCurrentConversation(
           aiPlaceholder.id,
@@ -171,7 +174,8 @@ class ChatNotifier extends StateNotifier<ChatState> {
       await _chatService.simulateTypingDelay(600);
 
       _updateMessageInCurrentConversation(userMessage.id, response['user']!);
-      _updateMessageInCurrentConversation(aiPlaceholder.id, response['assistant']!);
+      _updateMessageInCurrentConversation(
+          aiPlaceholder.id, response['assistant']!);
 
       state = state.copyWith(isSending: false);
     } catch (e) {
@@ -180,7 +184,8 @@ class ChatNotifier extends StateNotifier<ChatState> {
       if (currentConv != null && currentConv.messages.isNotEmpty) {
         final lastMessage = currentConv.messages.last;
         if (lastMessage.isPending) {
-          final failedMessage = lastMessage.copyWith(status: MessageStatus.failed);
+          final failedMessage =
+              lastMessage.copyWith(status: MessageStatus.failed);
           _updateMessageInCurrentConversation(lastMessage.id, failedMessage);
         }
       }
@@ -201,7 +206,8 @@ class ChatNotifier extends StateNotifier<ChatState> {
     }
   }
 
-  void _updateMessageInCurrentConversation(String messageId, ChatMessage updatedMessage) {
+  void _updateMessageInCurrentConversation(
+      String messageId, ChatMessage updatedMessage) {
     final currentConv = state.currentConversation;
     if (currentConv != null) {
       final updatedConv = currentConv.updateMessage(messageId, updatedMessage);
@@ -221,7 +227,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
   Future<void> deleteConversation(String conversationId) async {
     try {
       await _chatService.deleteConversation(conversationId);
-      
+
       final updatedConversations = state.conversations
           .where((conv) => conv.id != conversationId)
           .toList();
@@ -259,12 +265,12 @@ class ChatNotifier extends StateNotifier<ChatState> {
     if (firstMessage == null || firstMessage.trim().isEmpty) {
       return 'New Conversation';
     }
-    
+
     final content = firstMessage.trim();
     if (content.length <= 30) {
       return content;
     }
-    
+
     return '${content.substring(0, 27)}...';
   }
 }

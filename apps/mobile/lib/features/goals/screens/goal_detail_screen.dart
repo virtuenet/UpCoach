@@ -33,9 +33,9 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
 
   void _updateProgress() async {
     await ref.read(goalProvider.notifier).updateProgress(
-      _goal.id,
-      _progressValue,
-    );
+          _goal.id,
+          _progressValue,
+        );
     setState(() {
       _goal = _goal.copyWith(progress: _progressValue);
       _isEditingProgress = false;
@@ -44,23 +44,22 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
 
   void _toggleMilestone(String milestone) async {
     await ref.read(goalProvider.notifier).toggleMilestone(
-      _goal.id,
-      milestone,
-    );
-    
+          _goal.id,
+          milestone,
+        );
+
     // Update local state
     setState(() {
       final isCompleted = _goal.completedMilestones.contains(milestone);
       List<String> updatedMilestones;
-      
+
       if (isCompleted) {
-        updatedMilestones = _goal.completedMilestones
-            .where((m) => m != milestone)
-            .toList();
+        updatedMilestones =
+            _goal.completedMilestones.where((m) => m != milestone).toList();
       } else {
         updatedMilestones = [..._goal.completedMilestones, milestone];
       }
-      
+
       _goal = _goal.copyWith(completedMilestones: updatedMilestones);
     });
   }
@@ -78,10 +77,10 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
             style: TextButton.styleFrom(
               foregroundColor: AppTheme.errorColor,
             ),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -140,7 +139,8 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                   children: [
                     Icon(Icons.delete, color: AppTheme.errorColor),
                     SizedBox(width: UIConstants.spacingSM),
-                    Text('Delete', style: TextStyle(color: AppTheme.errorColor)),
+                    Text('Delete',
+                        style: TextStyle(color: AppTheme.errorColor)),
                   ],
                 ),
               ),
@@ -171,8 +171,10 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: _getCategoryColor(_goal.category).withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(UIConstants.radiusLG),
+                          color: _getCategoryColor(_goal.category)
+                              .withValues(alpha: 0.2),
+                          borderRadius:
+                              BorderRadius.circular(UIConstants.radiusLG),
                         ),
                         child: Icon(
                           _getCategoryIcon(_goal.category),
@@ -210,7 +212,7 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                       ),
                     ],
                   ),
-                  
+
                   if (_goal.description != null) ...[
                     const SizedBox(height: UIConstants.spacingMD),
                     Text(
@@ -221,37 +223,37 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                       ),
                     ),
                   ],
-                  
+
                   const SizedBox(height: UIConstants.spacingMD),
-                  
+
                   // Target date
                   Row(
                     children: [
                       Icon(
                         Icons.calendar_today,
                         size: 20,
-                        color: _goal.isOverdue 
-                            ? AppTheme.errorColor 
+                        color: _goal.isOverdue
+                            ? AppTheme.errorColor
                             : AppTheme.textSecondary,
                       ),
                       const SizedBox(width: UIConstants.spacingSM),
                       Text(
                         'Target: ${DateFormat('MMMM d, yyyy').format(_goal.targetDate)}',
                         style: TextStyle(
-                          color: _goal.isOverdue 
-                              ? AppTheme.errorColor 
+                          color: _goal.isOverdue
+                              ? AppTheme.errorColor
                               : AppTheme.textSecondary,
                         ),
                       ),
                       const Spacer(),
                       Text(
-                        _goal.isOverdue 
-                            ? 'Overdue' 
+                        _goal.isOverdue
+                            ? 'Overdue'
                             : '${_goal.daysRemaining} days left',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
-                          color: _goal.isOverdue 
-                              ? AppTheme.errorColor 
+                          color: _goal.isOverdue
+                              ? AppTheme.errorColor
                               : AppTheme.primaryColor,
                         ),
                       ),
@@ -261,9 +263,9 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: UIConstants.spacingMD),
-          
+
           // Progress card
           Card(
             child: Padding(
@@ -276,9 +278,10 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                     children: [
                       Text(
                         'Progress',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
                       ),
                       if (!_isEditingProgress)
                         TextButton(
@@ -291,9 +294,7 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                         ),
                     ],
                   ),
-                  
                   const SizedBox(height: UIConstants.spacingMD),
-                  
                   if (_isEditingProgress) ...[
                     Slider(
                       value: _progressValue,
@@ -341,16 +342,17 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                         ),
                         Text(
                           '${(_goal.progress * 100).toInt()}%',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
                       ],
                     ),
                   ],
-                  
                   const SizedBox(height: UIConstants.spacingMD),
-                  
                   LinearProgressIndicator(
                     value: _goal.progress,
                     minHeight: 8,
@@ -363,7 +365,7 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
               ),
             ),
           ),
-          
+
           // Milestones card
           if (_goal.milestones.isNotEmpty) ...[
             const SizedBox(height: UIConstants.spacingMD),
@@ -378,9 +380,10 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                       children: [
                         Text(
                           'Milestones',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                         ),
                         Text(
                           '${_goal.completedMilestonesCount}/${_goal.totalMilestones}',
@@ -391,9 +394,7 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                         ),
                       ],
                     ),
-                    
                     const SizedBox(height: UIConstants.spacingSM),
-                    
                     LinearProgressIndicator(
                       value: _goal.milestoneProgress,
                       backgroundColor: Colors.grey.shade200,
@@ -401,18 +402,16 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                         _getProgressColor(_goal.milestoneProgress),
                       ),
                     ),
-                    
                     const SizedBox(height: UIConstants.spacingMD),
-                    
                     ..._goal.milestones.map((milestone) {
-                      final isCompleted = _goal.completedMilestones.contains(milestone);
+                      final isCompleted =
+                          _goal.completedMilestones.contains(milestone);
                       return CheckboxListTile(
                         title: Text(
                           milestone,
                           style: TextStyle(
-                            decoration: isCompleted 
-                                ? TextDecoration.lineThrough 
-                                : null,
+                            decoration:
+                                isCompleted ? TextDecoration.lineThrough : null,
                           ),
                         ),
                         value: isCompleted,
@@ -425,9 +424,9 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
               ),
             ),
           ],
-          
+
           const SizedBox(height: UIConstants.spacingMD),
-          
+
           // Stats card
           Card(
             child: Padding(
@@ -438,8 +437,8 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
                   Text(
                     'Statistics',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                   const SizedBox(height: UIConstants.spacingMD),
                   _buildStatRow('Status', _goal.statusLabel,
@@ -467,7 +466,7 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(UIConstants.radiusXL),
       ),
       child: Text(
@@ -569,4 +568,4 @@ class _GoalDetailScreenState extends ConsumerState<GoalDetailScreen> {
     if (progress >= 0.5) return AppTheme.warningColor;
     return AppTheme.errorColor;
   }
-} 
+}

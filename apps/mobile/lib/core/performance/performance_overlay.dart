@@ -1,6 +1,6 @@
-/// Performance overlay for development
-///
-/// Displays real-time performance metrics during development.
+// Performance overlay for development
+//
+// Displays real-time performance metrics during development.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -13,10 +13,10 @@ class PerformanceOverlay extends StatefulWidget {
   final bool enabled;
 
   const PerformanceOverlay({
-    Key? key,
+    super.key,
     required this.child,
     this.enabled = kDebugMode,
-  }) : super(key: key);
+  });
 
   @override
   State<PerformanceOverlay> createState() => _PerformanceOverlayState();
@@ -82,7 +82,7 @@ class _PerformanceOverlayState extends State<PerformanceOverlay> {
     return GestureDetector(
       onTap: () => setState(() => _isExpanded = !_isExpanded),
       child: Card(
-        color: Colors.black.withOpacity(0.8),
+        color: Colors.black.withValues(alpha: 0.8),
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
@@ -168,7 +168,7 @@ class _PerformanceOverlayState extends State<PerformanceOverlay> {
 
 /// Performance debug screen
 class PerformanceDebugScreen extends StatefulWidget {
-  const PerformanceDebugScreen({Key? key}) : super(key: key);
+  const PerformanceDebugScreen({super.key});
 
   @override
   State<PerformanceDebugScreen> createState() => _PerformanceDebugScreenState();
@@ -240,8 +240,10 @@ class _PerformanceDebugScreenState extends State<PerformanceDebugScreen> {
               ],
             ),
             const Divider(),
-            _buildMetricTile('Average FPS', '${metrics.averageFps.toStringAsFixed(1)}'),
-            _buildMetricTile('Max Frame Time', '${metrics.maxFrameTime.toStringAsFixed(2)}ms'),
+            _buildMetricTile(
+                'Average FPS', metrics.averageFps.toStringAsFixed(1)),
+            _buildMetricTile('Max Frame Time',
+                '${metrics.maxFrameTime.toStringAsFixed(2)}ms'),
             _buildMetricTile('Memory Usage', '${metrics.memoryUsageMb}MB'),
             _buildMetricTile('Total Frames', '${metrics.frameCount}'),
           ],
@@ -299,7 +301,7 @@ class _PerformanceDebugScreenState extends State<PerformanceDebugScreen> {
                   visualDensity: VisualDensity.compact,
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),
@@ -335,7 +337,8 @@ class _PerformanceDebugScreenState extends State<PerformanceDebugScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline, size: 16, color: Colors.orange),
+                      const Icon(Icons.error_outline,
+                          size: 16, color: Colors.orange),
                       const SizedBox(width: 8),
                       Text(warning),
                     ],

@@ -1,0 +1,23 @@
+# UpCoach iOS Matchfile
+# https://docs.fastlane.tools/actions/match/
+
+# Git repository to store certificates
+git_url(ENV["MATCH_GIT_URL"] || "git@github.com:upcoach/certificates.git")
+
+# Storage mode (git, google_cloud, s3)
+storage_mode("git")
+
+# App identifier(s)
+app_identifier(["com.upcoach.upcoach-mobile"])
+
+# Apple Developer account
+username(ENV["APPLE_ID"])
+
+# Certificate types to manage
+type("development") # or "appstore", "adhoc", "enterprise"
+
+# Team ID
+team_id(ENV["TEAM_ID"])
+
+# Don't generate new certificates if existing ones are still valid
+readonly(true)

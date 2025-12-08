@@ -1,11 +1,12 @@
-/// Performance monitoring and optimization utilities
-///
-/// Tracks app performance metrics, memory usage, and render times.
+// Performance monitoring and optimization utilities
+//
+// Tracks app performance metrics, memory usage, and render times.
+// Integrates with Firebase Performance for cloud-based monitoring.
 
 import 'dart:async';
 import 'dart:developer' as developer;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Performance metrics data
 class PerformanceMetrics {
@@ -56,7 +57,6 @@ class PerformanceMonitor {
   // Frame tracking
   final List<Duration> _frameTimes = [];
   int _frameCount = 0;
-  DateTime? _lastFrameTime;
 
   // Route timing
   final Map<String, List<RouteTimingData>> _routeTimings = {};
@@ -314,6 +314,13 @@ class PerformanceMonitor {
     _metricsCallbacks.clear();
   }
 }
+
+/// Provider for PerformanceMonitor
+final performanceMonitorProvider = Provider<PerformanceMonitor>((ref) {
+  final monitor = PerformanceMonitor();
+  ref.onDispose(() => monitor.dispose());
+  return monitor;
+});
 
 /// Mixin for tracking widget build performance
 mixin PerformanceTracking {

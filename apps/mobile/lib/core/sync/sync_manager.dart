@@ -1,7 +1,7 @@
-/// Offline Sync Manager with Conflict Resolution
-///
-/// Handles offline data synchronization, conflict detection, and resolution
-/// for the UpCoach mobile application.
+// Offline Sync Manager with Conflict Resolution
+//
+// Handles offline data synchronization, conflict detection, and resolution
+// for the UpCoach mobile application.
 
 import 'dart:async';
 import 'dart:convert';
@@ -243,9 +243,8 @@ class SyncManager extends ChangeNotifier {
       _lastSyncTime = DateTime.now();
       await _saveLastSyncTime();
 
-      _status = _conflicts.isNotEmpty
-          ? SyncStatus.conflict
-          : SyncStatus.success;
+      _status =
+          _conflicts.isNotEmpty ? SyncStatus.conflict : SyncStatus.success;
     } catch (e) {
       debugPrint('Sync failed: $e');
       _status = SyncStatus.failed;
@@ -367,9 +366,7 @@ class SyncManager extends ChangeNotifier {
         // Use newer timestamp
         final localTime = DateTime.parse(local[key] as String);
         final serverTime = DateTime.parse(server[key] as String);
-        merged[key] = localTime.isAfter(serverTime)
-            ? local[key]
-            : server[key];
+        merged[key] = localTime.isAfter(serverTime) ? local[key] : server[key];
       } else if (value != server[key]) {
         // Conflict on this field - prefer local (can be customized)
         merged[key] = value;
@@ -419,8 +416,8 @@ class SyncManager extends ChangeNotifier {
 
   Future<void> _checkConnectivity() async {
     final results = await _connectivity.checkConnectivity();
-    _isOnline = results.isNotEmpty &&
-        results.any((r) => r != ConnectivityResult.none);
+    _isOnline =
+        results.isNotEmpty && results.any((r) => r != ConnectivityResult.none);
     notifyListeners();
   }
 
@@ -456,7 +453,8 @@ class SyncManager extends ChangeNotifier {
       final List<dynamic> json = jsonDecode(jsonString) as List<dynamic>;
       _syncQueue.clear();
       _syncQueue.addAll(
-        json.map((item) => SyncOperation.fromJson(item as Map<String, dynamic>)),
+        json.map(
+            (item) => SyncOperation.fromJson(item as Map<String, dynamic>)),
       );
     }
   }

@@ -77,7 +77,9 @@ class GoalModel extends Equatable {
       targetDate: DateTime.parse(json['target_date'] as String),
       progress: (json['progress'] as num).toDouble(),
       milestones: (json['milestones'] as List<dynamic>?)?.cast<String>() ?? [],
-      completedMilestones: (json['completed_milestones'] as List<dynamic>?)?.cast<String>() ?? [],
+      completedMilestones:
+          (json['completed_milestones'] as List<dynamic>?)?.cast<String>() ??
+              [],
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       metadata: json['metadata'] as Map<String, dynamic>?,
@@ -153,7 +155,7 @@ class GoalModel extends Equatable {
 
   int get totalMilestones => milestones.length;
   int get completedMilestonesCount => completedMilestones.length;
-  
+
   double get milestoneProgress {
     if (totalMilestones == 0) return 0.0;
     return completedMilestonesCount / totalMilestones;
@@ -219,4 +221,4 @@ class GoalModel extends Equatable {
         updatedAt,
         metadata,
       ];
-} 
+}

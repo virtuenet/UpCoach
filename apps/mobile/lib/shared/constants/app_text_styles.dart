@@ -113,11 +113,16 @@ class AppTextStyles {
   );
 
   // Colored variants
-  static TextStyle get bodyLargePrimary => bodyLarge.copyWith(color: AppColors.textPrimary);
-  static TextStyle get bodyLargeSecondary => bodyLarge.copyWith(color: AppColors.textSecondary);
-  static TextStyle get bodyMediumPrimary => bodyMedium.copyWith(color: AppColors.textPrimary);
-  static TextStyle get bodyMediumSecondary => bodyMedium.copyWith(color: AppColors.textSecondary);
-  static TextStyle get bodySmallSecondary => bodySmall.copyWith(color: AppColors.textSecondary);
+  static TextStyle get bodyLargePrimary =>
+      bodyLarge.copyWith(color: AppColors.textPrimary);
+  static TextStyle get bodyLargeSecondary =>
+      bodyLarge.copyWith(color: AppColors.textSecondary);
+  static TextStyle get bodyMediumPrimary =>
+      bodyMedium.copyWith(color: AppColors.textPrimary);
+  static TextStyle get bodyMediumSecondary =>
+      bodyMedium.copyWith(color: AppColors.textSecondary);
+  static TextStyle get bodySmallSecondary =>
+      bodySmall.copyWith(color: AppColors.textSecondary);
 
   // Button text
   static const TextStyle button = TextStyle(

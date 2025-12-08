@@ -15,7 +15,8 @@ class ContentLibraryScreen extends ConsumerStatefulWidget {
   const ContentLibraryScreen({super.key});
 
   @override
-  ConsumerState<ContentLibraryScreen> createState() => _ContentLibraryScreenState();
+  ConsumerState<ContentLibraryScreen> createState() =>
+      _ContentLibraryScreenState();
 }
 
 class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
@@ -38,7 +39,7 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= 
+    if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       // Load more articles when near bottom
       ref.read(contentNotifierProvider.notifier).loadMoreArticles();
@@ -80,7 +81,8 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
                         onPressed: () {
                           _searchController.clear();
                           setState(() => _searchQuery = '');
-                          ref.read(contentNotifierProvider.notifier)
+                          ref
+                              .read(contentNotifierProvider.notifier)
                               .searchArticles('');
                         },
                       )
@@ -94,7 +96,9 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
               ),
               onChanged: (value) {
                 setState(() => _searchQuery = value);
-                ref.read(contentNotifierProvider.notifier).searchArticles(value);
+                ref
+                    .read(contentNotifierProvider.notifier)
+                    .searchArticles(value);
               },
             ),
           ),
@@ -115,7 +119,8 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
                       isSelected: _selectedCategory == null,
                       onTap: () {
                         setState(() => _selectedCategory = null);
-                        ref.read(contentNotifierProvider.notifier)
+                        ref
+                            .read(contentNotifierProvider.notifier)
                             .filterByCategory(null);
                       },
                     );
@@ -128,7 +133,8 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
                     isSelected: _selectedCategory?.id == category.id,
                     onTap: () {
                       setState(() => _selectedCategory = category);
-                      ref.read(contentNotifierProvider.notifier)
+                      ref
+                          .read(contentNotifierProvider.notifier)
                           .filterByCategory(category.id);
                     },
                   );
@@ -207,7 +213,7 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
           color: AppColors.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

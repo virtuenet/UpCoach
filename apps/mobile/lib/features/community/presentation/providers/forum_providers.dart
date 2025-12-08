@@ -158,7 +158,8 @@ class ForumNotifier extends StateNotifier<ForumState> {
   }
 
   Future<void> loadThreads(String categoryId) async {
-    state = state.copyWith(isLoading: true, error: null, selectedCategoryId: categoryId);
+    state = state.copyWith(
+        isLoading: true, error: null, selectedCategoryId: categoryId);
     try {
       // TODO: Implement API call
       await Future.delayed(const Duration(milliseconds: 500));
@@ -192,7 +193,8 @@ final forumProvider = StateNotifierProvider<ForumNotifier, ForumState>((ref) {
   return ForumNotifier();
 });
 
-final forumCategoriesProvider = FutureProvider<List<ForumCategory>>((ref) async {
+final forumCategoriesProvider =
+    FutureProvider<List<ForumCategory>>((ref) async {
   final notifier = ref.watch(forumProvider.notifier);
   await notifier.loadCategories();
   return ref.watch(forumProvider).categories;
@@ -202,7 +204,8 @@ final forumThreadsProvider = Provider<List<ForumThread>>((ref) {
   return ref.watch(forumProvider).threads;
 });
 
-final activityFeedProvider = FutureProvider<List<ActivityFeedItem>>((ref) async {
+final activityFeedProvider =
+    FutureProvider<List<ActivityFeedItem>>((ref) async {
   final notifier = ref.watch(forumProvider.notifier);
   await notifier.loadActivityFeed();
   return ref.watch(forumProvider).activityFeed;
@@ -254,7 +257,8 @@ class CommunityGroup {
   });
 }
 
-final communityGroupsProvider = FutureProvider<List<CommunityGroup>>((ref) async {
+final communityGroupsProvider =
+    FutureProvider<List<CommunityGroup>>((ref) async {
   // TODO: Implement API call to fetch community groups
   await Future.delayed(const Duration(milliseconds: 300));
   return [];

@@ -6,22 +6,7 @@ part of 'content_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$contentServiceHash() => r'ffc09fea8f6b8b5d31ea2afb56de40dc31dbcc42';
-
-/// See also [contentService].
-@ProviderFor(contentService)
-final contentServiceProvider = AutoDisposeProvider<ContentService>.internal(
-  contentService,
-  name: r'contentServiceProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$contentServiceHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef ContentServiceRef = AutoDisposeProviderRef<ContentService>;
-String _$articleDetailHash() => r'6e76d452eb2b00aed6ba18e245bdfa50afb0df7b';
+String _$articleDetailHash() => r'9c53bc3866b3297ebded5e130af9b67b60864ee7';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -171,7 +156,7 @@ class _ArticleDetailProviderElement
   int get articleId => (origin as ArticleDetailProvider).articleId;
 }
 
-String _$featuredArticlesHash() => r'94c95e77138673350aaac64875eb07008964aebc';
+String _$featuredArticlesHash() => r'69bac680f541b73a0eceb9b0e1c24fc0161fa2de';
 
 /// See also [featuredArticles].
 @ProviderFor(featuredArticles)
@@ -188,7 +173,7 @@ final featuredArticlesProvider =
 
 typedef FeaturedArticlesRef
     = AutoDisposeFutureProviderRef<List<ContentArticle>>;
-String _$categoriesHash() => r'4ac8de7c0ca73c6bcd5c5a0801304963aa9339be';
+String _$categoriesHash() => r'bacd95a62cb4afa807e880a5de56efbb642ea7da';
 
 /// See also [categories].
 @ProviderFor(categories)
@@ -203,7 +188,7 @@ final categoriesProvider =
 );
 
 typedef CategoriesRef = AutoDisposeFutureProviderRef<List<ContentCategory>>;
-String _$relatedArticlesHash() => r'142c783f033291ea47af2459ee091bae5b8cbb48';
+String _$relatedArticlesHash() => r'029b2baea2c3a170bfd6185ac0a1e6ac45347623';
 
 /// See also [relatedArticles].
 @ProviderFor(relatedArticles)
@@ -333,7 +318,7 @@ class _RelatedArticlesProviderElement
   int get articleId => (origin as RelatedArticlesProvider).articleId;
 }
 
-String _$coachArticlesHash() => r'f0cb7b424a5f2599236dbb03202b1718d981f9a5';
+String _$coachArticlesHash() => r'd93e802fad54cf3c543cf1e66763eb9e7d748cbe';
 
 /// See also [coachArticles].
 @ProviderFor(coachArticles)

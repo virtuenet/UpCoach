@@ -49,7 +49,8 @@ class _DisableTwoFactorScreenState extends State<DisableTwoFactorScreen> {
 
     try {
       // First verify the 2FA token
-      final isValidToken = await _twoFactorService.verify2FA(_tokenController.text);
+      final isValidToken =
+          await _twoFactorService.verify2FA(_tokenController.text);
       if (!isValidToken) {
         throw Exception('Invalid authentication code');
       }
@@ -92,9 +93,10 @@ class _DisableTwoFactorScreenState extends State<DisableTwoFactorScreen> {
             Container(
               padding: const EdgeInsets.all(UIConstants.spacingMD),
               decoration: BoxDecoration(
-                color: AppTheme.warningColor.withOpacity(0.1),
+                color: AppTheme.warningColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(UIConstants.radiusMD),
-                border: Border.all(color: AppTheme.warningColor.withOpacity(0.3)),
+                border: Border.all(
+                    color: AppTheme.warningColor.withValues(alpha: 0.3)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,9 +218,10 @@ class _DisableTwoFactorScreenState extends State<DisableTwoFactorScreen> {
               Container(
                 padding: const EdgeInsets.all(UIConstants.spacingMD),
                 decoration: BoxDecoration(
-                  color: AppTheme.errorColor.withOpacity(0.1),
+                  color: AppTheme.errorColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(UIConstants.radiusMD),
-                  border: Border.all(color: AppTheme.errorColor.withOpacity(0.3)),
+                  border: Border.all(
+                      color: AppTheme.errorColor.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
@@ -272,10 +275,10 @@ class _DisableTwoFactorScreenState extends State<DisableTwoFactorScreen> {
                     onPressed: _isLoading
                         ? null
                         : () => Navigator.of(context).pop(false),
-                    child: const Text('Cancel'),
                     style: TextButton.styleFrom(
                       minimumSize: const Size.fromHeight(50),
                     ),
+                    child: const Text('Cancel'),
                   ),
                 ),
               ],

@@ -8,4 +8,3 @@ final streakGuardiansProvider =
   final service = ref.watch(streakGuardianServiceProvider);
   return service.fetchGuardians();
 });
-

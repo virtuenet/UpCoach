@@ -7,10 +7,11 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
 
 class WidgetSettingsScreen extends ConsumerStatefulWidget {
-  const WidgetSettingsScreen({Key? key}) : super(key: key);
+  const WidgetSettingsScreen({super.key});
 
   @override
-  ConsumerState<WidgetSettingsScreen> createState() => _WidgetSettingsScreenState();
+  ConsumerState<WidgetSettingsScreen> createState() =>
+      _WidgetSettingsScreenState();
 }
 
 class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
@@ -70,7 +71,8 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
             ),
             ListTile(
               title: const Text('Create test reminder'),
-              subtitle: const Text('Adds a test event to your default calendar'),
+              subtitle:
+                  const Text('Adds a test event to your default calendar'),
               trailing: const Icon(Icons.add_alert_outlined),
               onTap: _calendarPermissionGranted ? _addTestEvent : null,
               enabled: _calendarPermissionGranted,
@@ -96,7 +98,8 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
       final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
       final calendars = calendarsResult.data ?? [];
       if (calendars.isEmpty) return;
-      final defaultCal = calendars.firstWhere((c) => (c.isDefault ?? false), orElse: () => calendars.first);
+      final defaultCal = calendars.firstWhere((c) => (c.isDefault ?? false),
+          orElse: () => calendars.first);
       final event = Event(
         defaultCal.id!,
         title: 'UpCoach Session Reminder',
@@ -165,7 +168,8 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
     );
   }
 
-  Widget _buildWidgetTypeCard(AppLocalizations l10n, AsyncValue<String> currentType) {
+  Widget _buildWidgetTypeCard(
+      AppLocalizations l10n, AsyncValue<String> currentType) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(UIConstants.spacingMD),
@@ -185,28 +189,35 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
             ),
             const SizedBox(height: UIConstants.spacingMD),
             currentType.when(
-              data: (type) => Column(
-                children: availableWidgets.map((config) {
-                  return RadioListTile<String>(
-                    value: config.type,
-                    groupValue: type,
-                    onChanged: (value) => _changeWidgetType(value!),
-                    title: Row(
-                      children: [
-                        Icon(config.icon, size: 20, color: AppColors.primaryColor),
-                        const SizedBox(width: UIConstants.spacingSM),
-                        Text(config.title),
-                      ],
-                    ),
-                    subtitle: Text(
-                      config.description,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                    ),
-                    contentPadding: EdgeInsets.zero,
-                  );
-                }).toList(),
+              data: (type) => RadioGroup<String>(
+                groupValue: type,
+                onChanged: (value) {
+                  if (value != null) {
+                    _changeWidgetType(value);
+                  }
+                },
+                child: Column(
+                  children: availableWidgets.map((config) {
+                    return RadioListTile<String>(
+                      value: config.type,
+                      title: Row(
+                        children: [
+                          Icon(config.icon,
+                              size: 20, color: AppColors.primaryColor),
+                          const SizedBox(width: UIConstants.spacingSM),
+                          Text(config.title),
+                        ],
+                      ),
+                      subtitle: Text(
+                        config.description,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.grey[600],
+                            ),
+                      ),
+                      contentPadding: EdgeInsets.zero,
+                    );
+                  }).toList(),
+                ),
               ),
               loading: () => const CircularProgressIndicator(),
               error: (_, __) => const Text('Error loading widget types'),
@@ -217,7 +228,8 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
     );
   }
 
-  Widget _buildPreviewCard(AppLocalizations l10n, AsyncValue<String> currentType) {
+  Widget _buildPreviewCard(
+      AppLocalizations l10n, AsyncValue<String> currentType) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(UIConstants.spacingMD),
@@ -279,7 +291,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.primaryColor.withOpacity(0.1),
+                color: AppColors.primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(UIConstants.radiusLG),
               ),
               child: Text(
@@ -327,7 +339,9 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
                   value: progress,
                   backgroundColor: Colors.grey[300],
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    status == 'completed' ? Colors.green : AppColors.primaryColor,
+                    status == 'completed'
+                        ? Colors.green
+                        : AppColors.primaryColor,
                   ),
                   minHeight: 3,
                 ),
@@ -388,9 +402,12 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
   }
 
   Widget _buildTaskItem(String title, String priority, bool isCompleted) {
-    Color priorityColor = priority == 'high' ? Colors.red : 
-                         priority == 'medium' ? Colors.orange : Colors.green;
-    
+    Color priorityColor = priority == 'high'
+        ? Colors.red
+        : priority == 'medium'
+            ? Colors.orange
+            : Colors.green;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -497,7 +514,8 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
                 value: 0.75,
                 strokeWidth: 8,
                 backgroundColor: Colors.grey[300],
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
               ),
             ),
             Text(
@@ -572,7 +590,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
             Container(
               padding: const EdgeInsets.all(UIConstants.spacingMD),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(UIConstants.radiusMD),
               ),
               child: Row(
@@ -622,7 +640,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
     final widgetConfig = ref.read(widgetConfigProvider.notifier);
     await widgetConfig.setEnabled(enable);
     ref.invalidate(isWidgetEnabledProvider);
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -636,7 +654,7 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
     final widgetConfig = ref.read(widgetConfigProvider.notifier);
     await widgetConfig.setWidgetType(type);
     ref.invalidate(widgetTypeProvider);
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

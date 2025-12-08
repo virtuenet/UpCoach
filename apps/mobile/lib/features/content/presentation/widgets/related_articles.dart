@@ -54,7 +54,8 @@ class RelatedArticles extends ConsumerWidget {
                         children: [
                           if (article.featuredImage != null)
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(AppSpacing.sm),
+                              borderRadius:
+                                  BorderRadius.circular(AppSpacing.sm),
                               child: AspectRatio(
                                 aspectRatio: 16 / 9,
                                 child: Image.network(
@@ -76,7 +77,8 @@ class RelatedArticles extends ConsumerWidget {
                               height: 112,
                               decoration: BoxDecoration(
                                 color: AppColors.neutralLight,
-                                borderRadius: BorderRadius.circular(AppSpacing.sm),
+                                borderRadius:
+                                    BorderRadius.circular(AppSpacing.sm),
                               ),
                               child: const Center(
                                 child: Icon(

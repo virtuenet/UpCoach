@@ -105,17 +105,17 @@ class _ChatInputState extends State<ChatInput> {
                 ),
               ),
             ),
-            
+
             const SizedBox(width: UIConstants.spacingSM),
-            
+
             // Send button
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: 48,
               height: 48,
               child: Material(
-                color: _isTextEmpty || widget.isLoading 
-                    ? AppTheme.textSecondary.withOpacity(0.3)
+                color: _isTextEmpty || widget.isLoading
+                    ? AppTheme.textSecondary.withValues(alpha: 0.3)
                     : AppTheme.primaryColor,
                 borderRadius: BorderRadius.circular(24),
                 child: InkWell(
@@ -129,14 +129,14 @@ class _ChatInputState extends State<ChatInput> {
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white.withOpacity(0.7),
+                                Colors.white.withValues(alpha: 0.7),
                               ),
                             ),
                           )
                         : Icon(
                             Icons.send_rounded,
-                            color: _isTextEmpty 
-                                ? AppTheme.textSecondary.withOpacity(0.5)
+                            color: _isTextEmpty
+                                ? AppTheme.textSecondary.withValues(alpha: 0.5)
                                 : Colors.white,
                             size: 20,
                           ),
@@ -149,4 +149,4 @@ class _ChatInputState extends State<ChatInput> {
       ),
     );
   }
-} 
+}

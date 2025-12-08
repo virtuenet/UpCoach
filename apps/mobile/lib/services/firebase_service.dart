@@ -1,6 +1,6 @@
-/// Firebase service for push notifications, analytics, and crashlytics
-///
-/// Provides centralized Firebase initialization and management.
+// Firebase service for push notifications, analytics, and crashlytics
+//
+// Provides centralized Firebase initialization and management.
 
 import 'dart:ui' show Color;
 import 'package:firebase_core/firebase_core.dart';
@@ -99,7 +99,8 @@ class FirebaseService {
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       debugPrint('✅ Notification permission granted');
-    } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+    } else if (settings.authorizationStatus ==
+        AuthorizationStatus.provisional) {
       debugPrint('⚠️ Notification permission provisional');
     } else {
       debugPrint('❌ Notification permission denied');
@@ -138,7 +139,8 @@ class FirebaseService {
   /// Setup local notifications
   Future<void> _setupLocalNotifications() async {
     // Android settings
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
 
     // iOS settings
     const iosSettings = DarwinInitializationSettings(
@@ -258,11 +260,15 @@ class FirebaseService {
     );
   }
 
+  // Callback for local notification tap
+  Function(NotificationResponse)? onLocalNotificationTap;
+
   /// Handle local notification tap
   void _onLocalNotificationTap(NotificationResponse response) {
     debugPrint('👆 Local notification tapped');
     debugPrint('Payload: ${response.payload}');
-    // Handle navigation based on payload
+    // Delegate to callback if set
+    onLocalNotificationTap?.call(response);
   }
 
   /// Subscribe to topic

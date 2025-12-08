@@ -12,7 +12,8 @@ class HabitAnalyticsScreen extends ConsumerStatefulWidget {
   const HabitAnalyticsScreen({super.key, this.habit});
 
   @override
-  ConsumerState<HabitAnalyticsScreen> createState() => _HabitAnalyticsScreenState();
+  ConsumerState<HabitAnalyticsScreen> createState() =>
+      _HabitAnalyticsScreenState();
 }
 
 class _HabitAnalyticsScreenState extends ConsumerState<HabitAnalyticsScreen>
@@ -183,7 +184,8 @@ class _HabitAnalyticsScreenState extends ConsumerState<HabitAnalyticsScreen>
         children: [
           _buildSectionHeader('Individual Habit Progress'),
           const SizedBox(height: UIConstants.spacingMD),
-          ...habitState.habits.map((habit) => _buildHabitProgressCard(habit, habitState)),
+          ...habitState.habits
+              .map((habit) => _buildHabitProgressCard(habit, habitState)),
         ],
       ),
     );
@@ -260,8 +262,10 @@ class _HabitAnalyticsScreenState extends ConsumerState<HabitAnalyticsScreen>
                 bottomTitles: AxisTitles(
                   sideTitles: SideTitles(showTitles: true, reservedSize: 40),
                 ),
-                rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles:
+                    AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles:
+                    AxisTitles(sideTitles: SideTitles(showTitles: false)),
               ),
               borderData: FlBorderData(show: false),
               lineBarsData: [
@@ -272,7 +276,7 @@ class _HabitAnalyticsScreenState extends ConsumerState<HabitAnalyticsScreen>
                   barWidth: 3,
                   belowBarData: BarAreaData(
                     show: true,
-                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    color: AppTheme.primaryColor.withValues(alpha: 0.1),
                   ),
                   dotData: FlDotData(show: false),
                 ),
@@ -317,9 +321,8 @@ class _HabitAnalyticsScreenState extends ConsumerState<HabitAnalyticsScreen>
   }
 
   Widget _buildHabitProgressCard(Habit habit, HabitState habitState) {
-    final completions = habitState.completions
-        .where((c) => c.habitId == habit.id)
-        .length;
+    final completions =
+        habitState.completions.where((c) => c.habitId == habit.id).length;
     final streak = _calculateStreak(habit, habitState);
 
     return Card(
@@ -346,7 +349,7 @@ class _HabitAnalyticsScreenState extends ConsumerState<HabitAnalyticsScreen>
                   ),
                 ),
                 Text(
-                  '${streak} day streak',
+                  '$streak day streak',
                   style: TextStyle(
                     color: streak > 0 ? AppTheme.successColor : Colors.grey,
                     fontWeight: FontWeight.w500,
@@ -487,19 +490,22 @@ class _HabitAnalyticsScreenState extends ConsumerState<HabitAnalyticsScreen>
         'icon': Icons.trending_up,
         'color': AppTheme.successColor,
         'title': 'Great Progress!',
-        'description': 'You\'ve improved your completion rate by 15% this week.',
+        'description':
+            'You\'ve improved your completion rate by 15% this week.',
       },
       {
         'icon': Icons.schedule,
         'color': Colors.orange,
         'title': 'Timing Optimization',
-        'description': 'Your habits are most successful when completed in the morning.',
+        'description':
+            'Your habits are most successful when completed in the morning.',
       },
       {
         'icon': Icons.group,
         'color': AppTheme.primaryColor,
         'title': 'Social Habits',
-        'description': 'Consider adding a social component to boost motivation.',
+        'description':
+            'Consider adding a social component to boost motivation.',
       },
     ];
   }

@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:upcoach_mobile/shared/constants/ui_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:percent_indicator/percent_indicator.dart';
-import 'package:fl_chart/fl_chart.dart';
 import '../../providers/gamification_provider.dart';
 import '../widgets/achievement_card.dart';
 import '../widgets/leaderboard_widget.dart';
 import '../widgets/reward_store_widget.dart';
 
 class GamificationScreen extends ConsumerStatefulWidget {
-  const GamificationScreen({Key? key}) : super(key: key);
+  const GamificationScreen({super.key});
 
   @override
   ConsumerState<GamificationScreen> createState() => _GamificationScreenState();
@@ -98,7 +97,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
           end: Alignment.bottomRight,
           colors: [
             Theme.of(context).primaryColor,
-            Theme.of(context).primaryColor.withOpacity(0.8),
+            Theme.of(context).primaryColor.withValues(alpha: 0.8),
           ],
         ),
       ),
@@ -156,10 +155,16 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildStatItem('Points', stats.currentPoints.toString(), Icons.star),
-                  _buildStatItem('Achievements', stats.achievementsUnlocked.toString(), Icons.emoji_events),
-                  _buildStatItem('Streak', '${stats.currentStreak} days', Icons.local_fire_department),
-                  _buildStatItem('Rank', '#${stats.rank ?? '-'}', Icons.leaderboard),
+                  _buildStatItem(
+                      'Points', stats.currentPoints.toString(), Icons.star),
+                  _buildStatItem(
+                      'Achievements',
+                      stats.achievementsUnlocked.toString(),
+                      Icons.emoji_events),
+                  _buildStatItem('Streak', '${stats.currentStreak} days',
+                      Icons.local_fire_department),
+                  _buildStatItem(
+                      'Rank', '#${stats.rank ?? '-'}', Icons.leaderboard),
                 ],
               ),
             ],
@@ -178,7 +183,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
         color: Colors.amber,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -228,10 +233,7 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
       return const Center(child: Text('No achievements yet'));
     }
 
-    final categories = achievements
-        .map((a) => a.category)
-        .toSet()
-        .toList();
+    final categories = achievements.map((a) => a.category).toSet().toList();
 
     return DefaultTabController(
       length: categories.length,
@@ -239,16 +241,14 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
         children: [
           TabBar(
             isScrollable: true,
-            tabs: categories
-                .map((cat) => Tab(text: cat.toUpperCase()))
-                .toList(),
+            tabs:
+                categories.map((cat) => Tab(text: cat.toUpperCase())).toList(),
           ),
           Expanded(
             child: TabBarView(
               children: categories.map((category) {
-                final categoryAchievements = achievements
-                    .where((a) => a.category == category)
-                    .toList();
+                final categoryAchievements =
+                    achievements.where((a) => a.category == category).toList();
 
                 return GridView.builder(
                   padding: const EdgeInsets.all(UIConstants.spacingMD),
@@ -264,7 +264,8 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
                       achievement: categoryAchievements[index],
                       onTap: () {
                         if (!categoryAchievements[index].isUnlocked) {
-                          ref.read(gamificationProvider.notifier)
+                          ref
+                              .read(gamificationProvider.notifier)
                               .claimAchievement(categoryAchievements[index].id);
                         }
                       },
@@ -320,14 +321,16 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
             trailing: challenge.participationStatus == null
                 ? ElevatedButton(
                     onPressed: () {
-                      ref.read(gamificationProvider.notifier)
+                      ref
+                          .read(gamificationProvider.notifier)
                           .joinChallenge(challenge.id);
                     },
                     child: const Text('Join'),
                   )
                 : Chip(
                     label: Text(challenge.participationStatus!),
-                    backgroundColor: _getStatusColor(challenge.participationStatus!),
+                    backgroundColor:
+                        _getStatusColor(challenge.participationStatus!),
                   ),
             isThreeLine: true,
           ),
@@ -346,7 +349,9 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
         entries: leaderboard,
         selectedPeriod: gamificationState.selectedLeaderboardPeriod,
         onPeriodChanged: (period) {
-          ref.read(gamificationProvider.notifier).loadLeaderboard(period: period);
+          ref
+              .read(gamificationProvider.notifier)
+              .loadLeaderboard(period: period);
         },
       ),
     );
@@ -380,7 +385,9 @@ class _GamificationScreenState extends ConsumerState<GamificationScreen>
             ),
           );
           if (confirmed == true) {
-            await ref.read(gamificationProvider.notifier).redeemReward(reward.id);
+            await ref
+                .read(gamificationProvider.notifier)
+                .redeemReward(reward.id);
           }
         },
       ),

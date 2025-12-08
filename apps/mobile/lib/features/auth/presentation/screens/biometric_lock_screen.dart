@@ -10,13 +10,14 @@ class BiometricLockScreen extends ConsumerStatefulWidget {
   final VoidCallback? onCancel;
 
   const BiometricLockScreen({
-    Key? key,
+    super.key,
     required this.onAuthenticated,
     this.onCancel,
-  }) : super(key: key);
+  });
 
   @override
-  ConsumerState<BiometricLockScreen> createState() => _BiometricLockScreenState();
+  ConsumerState<BiometricLockScreen> createState() =>
+      _BiometricLockScreenState();
 }
 
 class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen>
@@ -40,7 +41,7 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen>
       curve: Curves.easeInOut,
     ));
     _animationController.repeat(reverse: true);
-    
+
     // Auto-trigger authentication on load
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _authenticate();
@@ -65,7 +66,7 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.primaryColor.withOpacity(0.1),
+              AppColors.primaryColor.withValues(alpha: 0.1),
               Colors.white,
             ],
           ),
@@ -118,7 +119,7 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen>
                         height: 120,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: AppColors.primaryColor.withOpacity(0.1),
+                          color: AppColors.primaryColor.withValues(alpha: 0.1),
                         ),
                         child: Icon(
                           Icons.fingerprint,
@@ -149,20 +150,22 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen>
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(UIConstants.radiusLG),
+                          borderRadius:
+                              BorderRadius.circular(UIConstants.radiusLG),
                         ),
                       ),
                     ),
                     const SizedBox(height: UIConstants.spacingMD),
                     OutlinedButton(
                       onPressed: _isAuthenticating ? null : _usePassword,
-                      child: Text('Use Password Instead'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(UIConstants.radiusLG),
+                          borderRadius:
+                              BorderRadius.circular(UIConstants.radiusLG),
                         ),
                       ),
+                      child: Text('Use Password Instead'),
                     ),
                     if (widget.onCancel != null) ...[
                       const SizedBox(height: UIConstants.spacingSM),

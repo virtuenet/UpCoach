@@ -1,9 +1,11 @@
-/// Image optimization utilities
-///
-/// Provides helpers for optimizing image loading and caching.
+// Image optimization utilities
+//
+// Provides helpers for optimizing image loading and caching.
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
 
 /// Optimized image widget with caching and placeholders
 class OptimizedImage extends StatelessWidget {
@@ -17,7 +19,7 @@ class OptimizedImage extends StatelessWidget {
   final Duration fadeInDuration;
 
   const OptimizedImage({
-    Key? key,
+    super.key,
     required this.imageUrl,
     this.width,
     this.height,
@@ -26,7 +28,7 @@ class OptimizedImage extends StatelessWidget {
     this.errorWidget,
     this.enableMemCache = true,
     this.fadeInDuration = const Duration(milliseconds: 300),
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -65,11 +67,11 @@ class OptimizedAvatar extends StatelessWidget {
   final String? initials;
 
   const OptimizedAvatar({
-    Key? key,
+    super.key,
     this.imageUrl,
     this.size = 40,
     this.initials,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -112,11 +114,11 @@ class ThumbnailImage extends StatelessWidget {
   final BoxFit fit;
 
   const ThumbnailImage({
-    Key? key,
+    super.key,
     required this.imageUrl,
     this.size = 80,
     this.fit = BoxFit.cover,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -138,11 +140,11 @@ class HeroImage extends StatelessWidget {
   final double? height;
 
   const HeroImage({
-    Key? key,
+    super.key,
     required this.imageUrl,
     required this.heroTag,
     this.height,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -258,8 +260,10 @@ class ImageOptimizationUtils {
   }) {
     final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
 
-    final actualWidth = width != null ? (width * devicePixelRatio).toInt() : null;
-    final actualHeight = height != null ? (height * devicePixelRatio).toInt() : null;
+    final actualWidth =
+        width != null ? (width * devicePixelRatio).toInt() : null;
+    final actualHeight =
+        height != null ? (height * devicePixelRatio).toInt() : null;
 
     return getOptimizedUrl(
       originalUrl,
@@ -274,5 +278,307 @@ class ImageOptimizationUtils {
     // For now, always return true
     // In production, check connection type (WiFi vs cellular, speed, etc.)
     return true;
+  }
+}
+
+/// Shimmer placeholder for images
+class ShimmerImagePlaceholder extends StatelessWidget {
+  final double? width;
+  final double? height;
+  final double borderRadius;
+
+  const ShimmerImagePlaceholder({
+    super.key,
+    this.width,
+    this.height,
+    this.borderRadius = 8,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(borderRadius),
+        ),
+      ),
+    );
+  }
+}
+
+/// Progressive image that loads thumbnail first, then full resolution
+class ProgressiveImage extends StatefulWidget {
+  final String thumbnailUrl;
+  final String fullUrl;
+  final double? width;
+  final double? height;
+  final BoxFit fit;
+
+  const ProgressiveImage({
+    super.key,
+    required this.thumbnailUrl,
+    required this.fullUrl,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
+  });
+
+  @override
+  State<ProgressiveImage> createState() => _ProgressiveImageState();
+}
+
+class _ProgressiveImageState extends State<ProgressiveImage> {
+  bool _fullImageLoaded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.passthrough,
+      children: [
+        // Thumbnail (blurred/low quality)
+        if (!_fullImageLoaded)
+          CachedNetworkImage(
+            imageUrl: widget.thumbnailUrl,
+            width: widget.width,
+            height: widget.height,
+            fit: widget.fit,
+            placeholder: (context, url) => ShimmerImagePlaceholder(
+              width: widget.width,
+              height: widget.height,
+            ),
+            errorWidget: (context, url, error) => const Icon(Icons.error),
+          ),
+        // Full resolution image
+        CachedNetworkImage(
+          imageUrl: widget.fullUrl,
+          width: widget.width,
+          height: widget.height,
+          fit: widget.fit,
+          fadeInDuration: const Duration(milliseconds: 300),
+          placeholder: (context, url) => const SizedBox.shrink(),
+          errorWidget: (context, url, error) => const SizedBox.shrink(),
+          imageBuilder: (context, imageProvider) {
+            // Mark full image as loaded
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && !_fullImageLoaded) {
+                setState(() => _fullImageLoaded = true);
+              }
+            });
+            return Image(
+              image: imageProvider,
+              width: widget.width,
+              height: widget.height,
+              fit: widget.fit,
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+/// Lazy-loaded image that only loads when visible
+class LazyImage extends StatefulWidget {
+  final String imageUrl;
+  final double? width;
+  final double? height;
+  final BoxFit fit;
+  final Widget? placeholder;
+
+  const LazyImage({
+    super.key,
+    required this.imageUrl,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
+    this.placeholder,
+  });
+
+  @override
+  State<LazyImage> createState() => _LazyImageState();
+}
+
+class _LazyImageState extends State<LazyImage> {
+  bool _shouldLoad = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Check if widget is in viewport
+    _checkVisibility();
+  }
+
+  void _checkVisibility() {
+    // Simple visibility check - loads after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_shouldLoad) {
+        setState(() => _shouldLoad = true);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_shouldLoad) {
+      return widget.placeholder ??
+          ShimmerImagePlaceholder(
+            width: widget.width,
+            height: widget.height,
+          );
+    }
+
+    return OptimizedImage(
+      imageUrl: widget.imageUrl,
+      width: widget.width,
+      height: widget.height,
+      fit: widget.fit,
+      placeholder: widget.placeholder,
+    );
+  }
+}
+
+/// Image preloader for upcoming images
+class ImagePreloader {
+  static final ImagePreloader _instance = ImagePreloader._internal();
+  factory ImagePreloader() => _instance;
+  ImagePreloader._internal();
+
+  final Set<String> _preloadedUrls = {};
+  final Map<String, Completer<void>> _pendingPreloads = {};
+
+  /// Preload a single image
+  Future<void> preload(BuildContext context, String url) async {
+    if (_preloadedUrls.contains(url)) return;
+    if (_pendingPreloads.containsKey(url)) {
+      return _pendingPreloads[url]!.future;
+    }
+
+    final completer = Completer<void>();
+    _pendingPreloads[url] = completer;
+
+    try {
+      await precacheImage(CachedNetworkImageProvider(url), context);
+      _preloadedUrls.add(url);
+      completer.complete();
+    } catch (e) {
+      debugPrint('Failed to preload image: $url - $e');
+      completer.completeError(e);
+    } finally {
+      _pendingPreloads.remove(url);
+    }
+  }
+
+  /// Preload multiple images
+  Future<void> preloadAll(BuildContext context, List<String> urls) async {
+    await Future.wait(
+      urls.map((url) => preload(context, url)),
+      eagerError: false,
+    );
+  }
+
+  /// Check if image is preloaded
+  bool isPreloaded(String url) => _preloadedUrls.contains(url);
+
+  /// Clear preload cache
+  void clear() {
+    _preloadedUrls.clear();
+  }
+}
+
+/// Responsive image that loads different resolutions based on screen
+class ResponsiveImage extends StatelessWidget {
+  final String baseUrl;
+  final double? width;
+  final double? height;
+  final BoxFit fit;
+  final Map<double, String>? breakpointUrls;
+
+  const ResponsiveImage({
+    super.key,
+    required this.baseUrl,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
+    this.breakpointUrls,
+  });
+
+  String _getUrlForContext(BuildContext context) {
+    if (breakpointUrls == null || breakpointUrls!.isEmpty) {
+      return ImageOptimizationUtils.getResponsiveUrl(
+        context,
+        baseUrl,
+        width: width,
+        height: height,
+      );
+    }
+
+    final screenWidth = MediaQuery.of(context).size.width;
+    final sortedBreakpoints = breakpointUrls!.keys.toList()..sort();
+
+    for (final breakpoint in sortedBreakpoints.reversed) {
+      if (screenWidth >= breakpoint) {
+        return breakpointUrls![breakpoint]!;
+      }
+    }
+
+    return breakpointUrls![sortedBreakpoints.first] ?? baseUrl;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return OptimizedImage(
+      imageUrl: _getUrlForContext(context),
+      width: width,
+      height: height,
+      fit: fit,
+    );
+  }
+}
+
+/// Blurred placeholder image
+class BlurredPlaceholderImage extends StatelessWidget {
+  final String imageUrl;
+  final String? blurHash;
+  final double? width;
+  final double? height;
+  final BoxFit fit;
+
+  const BlurredPlaceholderImage({
+    super.key,
+    required this.imageUrl,
+    this.blurHash,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
+      width: width,
+      height: height,
+      fit: fit,
+      fadeInDuration: const Duration(milliseconds: 300),
+      placeholder: (context, url) {
+        // If blur hash provided, could use flutter_blurhash package
+        // For now, use shimmer placeholder
+        return ShimmerImagePlaceholder(
+          width: width,
+          height: height,
+        );
+      },
+      errorWidget: (context, url, error) => Container(
+        width: width,
+        height: height,
+        color: Colors.grey[300],
+        child: const Icon(Icons.broken_image, color: Colors.grey),
+      ),
+    );
   }
 }

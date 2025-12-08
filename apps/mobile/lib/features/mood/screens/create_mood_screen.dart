@@ -70,19 +70,23 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
     try {
       if (widget.existingMood != null) {
         await ref.read(moodProvider.notifier).updateMoodEntry(
-          moodId: widget.existingMood!.id,
-          level: _selectedLevel,
-          categories: _selectedCategories.toList(),
-          note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
-          activities: _activities,
-        );
+              moodId: widget.existingMood!.id,
+              level: _selectedLevel,
+              categories: _selectedCategories.toList(),
+              note: _noteController.text.trim().isEmpty
+                  ? null
+                  : _noteController.text.trim(),
+              activities: _activities,
+            );
       } else {
         await ref.read(moodProvider.notifier).createMoodEntry(
-          level: _selectedLevel,
-          categories: _selectedCategories.toList(),
-          note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
-          activities: _activities,
-        );
+              level: _selectedLevel,
+              categories: _selectedCategories.toList(),
+              note: _noteController.text.trim().isEmpty
+                  ? null
+                  : _noteController.text.trim(),
+              activities: _activities,
+            );
       }
 
       if (mounted) {
@@ -90,8 +94,8 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              widget.existingMood != null 
-                  ? 'Mood updated successfully' 
+              widget.existingMood != null
+                  ? 'Mood updated successfully'
                   : 'Mood logged successfully',
             ),
             backgroundColor: AppTheme.successColor,
@@ -131,10 +135,10 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
             style: TextButton.styleFrom(
               foregroundColor: AppTheme.errorColor,
             ),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -142,7 +146,9 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
 
     if (confirm == true) {
       try {
-        await ref.read(moodProvider.notifier).deleteMoodEntry(widget.existingMood!.id);
+        await ref
+            .read(moodProvider.notifier)
+            .deleteMoodEntry(widget.existingMood!.id);
         if (mounted) {
           context.pop();
           ScaffoldMessenger.of(context).showSnackBar(
@@ -169,7 +175,8 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.existingMood != null ? 'Edit Mood' : 'Log Your Mood'),
+        title:
+            Text(widget.existingMood != null ? 'Edit Mood' : 'Log Your Mood'),
         actions: [
           if (widget.existingMood != null)
             IconButton(
@@ -189,13 +196,13 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
           Text(
             'How are you feeling?',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: UIConstants.spacingLG),
-          
+
           // Mood level selector
-          Container(
+          SizedBox(
             height: 100,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -215,11 +222,12 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
                       shape: BoxShape.circle,
                       color: isSelected
                           ? _getMoodColor(level)
-                          : _getMoodColor(level).withOpacity(0.3),
+                          : _getMoodColor(level).withValues(alpha: 0.3),
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: _getMoodColor(level).withOpacity(0.5),
+                                color:
+                                    _getMoodColor(level).withValues(alpha: 0.5),
                                 blurRadius: 10,
                                 spreadRadius: 2,
                               ),
@@ -239,27 +247,27 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
               }).toList(),
             ),
           ),
-          
+
           Text(
             _getMoodLabel(_selectedLevel),
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: _getMoodColor(_selectedLevel),
-              fontWeight: FontWeight.w600,
-            ),
+                  color: _getMoodColor(_selectedLevel),
+                  fontWeight: FontWeight.w600,
+                ),
             textAlign: TextAlign.center,
           ),
-          
+
           const SizedBox(height: UIConstants.spacingXL),
-          
+
           // Mood Categories
           Text(
             'What describes your mood?',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: UIConstants.spacingMD),
-          
+
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -284,22 +292,22 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
                     }
                   });
                 },
-                selectedColor: AppTheme.primaryColor.withOpacity(0.2),
+                selectedColor: AppTheme.primaryColor.withValues(alpha: 0.2),
               );
             }).toList(),
           ),
-          
+
           const SizedBox(height: UIConstants.spacingXL),
-          
+
           // Activities
           Text(
             'What have you been doing?',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: UIConstants.spacingMD),
-          
+
           Row(
             children: [
               Expanded(
@@ -321,7 +329,7 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
               ),
             ],
           ),
-          
+
           if (_activities.isNotEmpty) ...[
             const SizedBox(height: UIConstants.spacingSM),
             Wrap(
@@ -331,23 +339,23 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
                 return Chip(
                   label: Text(entry.value),
                   onDeleted: () => _removeActivity(entry.key),
-                  backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                  backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
                 );
               }).toList(),
             ),
           ],
-          
+
           const SizedBox(height: UIConstants.spacingXL),
-          
+
           // Note
           Text(
             'Any thoughts to share?',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: UIConstants.spacingMD),
-          
+
           TextFormField(
             controller: _noteController,
             decoration: const InputDecoration(
@@ -358,9 +366,9 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
             maxLines: 4,
             textCapitalization: TextCapitalization.sentences,
           ),
-          
+
           const SizedBox(height: UIConstants.spacingXL),
-          
+
           // Save button
           ElevatedButton.icon(
             onPressed: _isLoading ? null : _saveMood,
@@ -374,10 +382,10 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
                   )
                 : const Icon(Icons.save),
             label: Text(
-              _isLoading 
-                  ? 'Saving...' 
-                  : widget.existingMood != null 
-                      ? 'Update Mood' 
+              _isLoading
+                  ? 'Saving...'
+                  : widget.existingMood != null
+                      ? 'Update Mood'
                       : 'Save Mood',
             ),
             style: ElevatedButton.styleFrom(
@@ -433,4 +441,4 @@ class _CreateMoodScreenState extends ConsumerState<CreateMoodScreen> {
         return 'Very Good';
     }
   }
-} 
+}

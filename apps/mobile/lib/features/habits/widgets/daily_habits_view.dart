@@ -7,7 +7,8 @@ import '../../../shared/models/habit_model.dart';
 class DailyHabitsView extends StatelessWidget {
   final List<Habit> habits;
   final List<HabitCompletion> completions;
-  final Function(String habitId, int value, String notes, int? duration) onHabitComplete;
+  final Function(String habitId, int value, String notes, int? duration)
+      onHabitComplete;
   final Function(String habitId) onHabitUndo;
 
   const DailyHabitsView({
@@ -21,8 +22,9 @@ class DailyHabitsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final today = DateTime.now();
-    final todayHabits = habits.where((h) => h.isActive && h.isScheduledForDate(today)).toList();
-    
+    final todayHabits =
+        habits.where((h) => h.isActive && h.isScheduledForDate(today)).toList();
+
     if (todayHabits.isEmpty) {
       return Center(
         child: Column(
@@ -56,11 +58,13 @@ class DailyHabitsView extends StatelessWidget {
       );
     }
 
-    final completedHabits = todayHabits.where((habit) => 
-      habit.getProgressForDate(today, completions) >= 1.0).length;
-    
+    final completedHabits = todayHabits
+        .where((habit) => habit.getProgressForDate(today, completions) >= 1.0)
+        .length;
+
     final totalHabits = todayHabits.length;
-    final completionRate = totalHabits > 0 ? completedHabits / totalHabits : 0.0;
+    final completionRate =
+        totalHabits > 0 ? completedHabits / totalHabits : 0.0;
 
     return Column(
       children: [
@@ -72,7 +76,7 @@ class DailyHabitsView extends StatelessWidget {
             gradient: LinearGradient(
               colors: [
                 AppTheme.primaryColor,
-                AppTheme.primaryColor.withOpacity(0.8),
+                AppTheme.primaryColor.withValues(alpha: 0.8),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -89,7 +93,7 @@ class DailyHabitsView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: UIConstants.spacingMD),
-              
+
               // Circular Progress
               Stack(
                 alignment: Alignment.center,
@@ -100,8 +104,9 @@ class DailyHabitsView extends StatelessWidget {
                     child: CircularProgressIndicator(
                       value: completionRate,
                       strokeWidth: 8,
-                      backgroundColor: Colors.white.withOpacity(0.3),
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                      backgroundColor: Colors.white.withValues(alpha: 0.3),
+                      valueColor:
+                          const AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   ),
                   Column(
@@ -126,9 +131,9 @@ class DailyHabitsView extends StatelessWidget {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: UIConstants.spacingMD),
-              
+
               Text(
                 _getMotivationalMessage(completionRate),
                 style: const TextStyle(
@@ -180,7 +185,8 @@ class DailyHabitsView extends StatelessWidget {
 class _DailyHabitCard extends StatelessWidget {
   final Habit habit;
   final List<HabitCompletion> completions;
-  final Function(String habitId, int value, String notes, int? duration) onComplete;
+  final Function(String habitId, int value, String notes, int? duration)
+      onComplete;
   final Function(String habitId) onUndo;
 
   const _DailyHabitCard({
@@ -195,7 +201,7 @@ class _DailyHabitCard extends StatelessWidget {
     final today = DateTime.now();
     final progress = habit.getProgressForDate(today, completions);
     final isCompleted = progress >= 1.0;
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
@@ -213,7 +219,8 @@ class _DailyHabitCard extends StatelessWidget {
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: Color(int.parse('0xFF${habit.color.substring(1)}')).withOpacity(0.2),
+                    color: Color(int.parse('0xFF${habit.color.substring(1)}'))
+                        .withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(UIConstants.radiusLG),
                   ),
                   child: Center(
@@ -223,9 +230,9 @@ class _DailyHabitCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(width: UIConstants.spacingMD),
-                
+
                 // Habit info
                 Expanded(
                   child: Column(
@@ -236,7 +243,8 @@ class _DailyHabitCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          decoration: isCompleted ? TextDecoration.lineThrough : null,
+                          decoration:
+                              isCompleted ? TextDecoration.lineThrough : null,
                           color: isCompleted ? Colors.grey.shade600 : null,
                         ),
                       ),
@@ -268,7 +276,7 @@ class _DailyHabitCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 // Completion button/status
                 if (isCompleted)
                   Container(
@@ -289,19 +297,22 @@ class _DailyHabitCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(UIConstants.spacingSM),
                       decoration: BoxDecoration(
-                        color: Color(int.parse('0xFF${habit.color.substring(1)}')).withOpacity(0.2),
+                        color:
+                            Color(int.parse('0xFF${habit.color.substring(1)}'))
+                                .withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         Icons.add,
-                        color: Color(int.parse('0xFF${habit.color.substring(1)}')),
+                        color:
+                            Color(int.parse('0xFF${habit.color.substring(1)}')),
                         size: 20,
                       ),
                     ),
                   ),
               ],
             ),
-            
+
             // Progress indicator for non-simple habits
             if (habit.type != HabitType.simple) ...[
               const SizedBox(height: UIConstants.spacingMD),
@@ -328,7 +339,7 @@ class _DailyHabitCard extends StatelessWidget {
                 ],
               ),
             ],
-            
+
             // Action buttons when completed
             if (isCompleted) ...[
               const SizedBox(height: UIConstants.spacingMD),
@@ -352,7 +363,8 @@ class _DailyHabitCard extends StatelessWidget {
                       icon: const Icon(Icons.add, size: 16),
                       label: const Text('Add More'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(int.parse('0xFF${habit.color.substring(1)}')),
+                        backgroundColor:
+                            Color(int.parse('0xFF${habit.color.substring(1)}')),
                         foregroundColor: Colors.white,
                       ),
                     ),
@@ -388,9 +400,9 @@ class _DailyHabitCard extends StatelessWidget {
     final dayCompletions = completions.where((c) {
       final completedDate = c.completedAt;
       return c.habitId == habit.id &&
-             completedDate.year == today.year &&
-             completedDate.month == today.month &&
-             completedDate.day == today.day;
+          completedDate.year == today.year &&
+          completedDate.month == today.month &&
+          completedDate.day == today.day;
     }).toList();
 
     switch (habit.type) {
@@ -398,10 +410,12 @@ class _DailyHabitCard extends StatelessWidget {
         return dayCompletions.isNotEmpty ? 'Done' : 'Pending';
       case HabitType.count:
       case HabitType.value:
-        final totalValue = dayCompletions.fold<int>(0, (sum, c) => sum + c.value);
+        final totalValue =
+            dayCompletions.fold<int>(0, (sum, c) => sum + c.value);
         return '$totalValue/${habit.targetValue} ${habit.unit}';
       case HabitType.time:
-        final totalDuration = dayCompletions.fold<int>(0, (sum, c) => sum + (c.duration ?? 0));
+        final totalDuration =
+            dayCompletions.fold<int>(0, (sum, c) => sum + (c.duration ?? 0));
         return '$totalDuration/${habit.targetValue} min';
     }
   }
@@ -428,9 +442,11 @@ class _CompletionDialogState extends State<_CompletionDialog> {
   @override
   void initState() {
     super.initState();
-    _valueController = TextEditingController(text: widget.habit.targetValue.toString());
+    _valueController =
+        TextEditingController(text: widget.habit.targetValue.toString());
     _notesController = TextEditingController();
-    _durationController = TextEditingController(text: widget.habit.targetValue.toString());
+    _durationController =
+        TextEditingController(text: widget.habit.targetValue.toString());
   }
 
   @override
@@ -448,17 +464,18 @@ class _CompletionDialogState extends State<_CompletionDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (widget.habit.type == HabitType.count || widget.habit.type == HabitType.value)
+          if (widget.habit.type == HabitType.count ||
+              widget.habit.type == HabitType.value)
             TextField(
               controller: _valueController,
               decoration: InputDecoration(
-                labelText: widget.habit.type == HabitType.count ? 'Count' : 'Value',
+                labelText:
+                    widget.habit.type == HabitType.count ? 'Count' : 'Value',
                 suffixText: widget.habit.unit,
                 border: const OutlineInputBorder(),
               ),
               keyboardType: TextInputType.number,
             ),
-          
           if (widget.habit.type == HabitType.time) ...[
             TextField(
               controller: _durationController,
@@ -471,9 +488,8 @@ class _CompletionDialogState extends State<_CompletionDialog> {
             ),
             const SizedBox(height: UIConstants.spacingMD),
           ],
-          
-          if (widget.habit.type != HabitType.time) const SizedBox(height: UIConstants.spacingMD),
-          
+          if (widget.habit.type != HabitType.time)
+            const SizedBox(height: UIConstants.spacingMD),
           TextField(
             controller: _notesController,
             decoration: const InputDecoration(
@@ -493,7 +509,8 @@ class _CompletionDialogState extends State<_CompletionDialog> {
         ElevatedButton(
           onPressed: _complete,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Color(int.parse('0xFF${widget.habit.color.substring(1)}')),
+            backgroundColor:
+                Color(int.parse('0xFF${widget.habit.color.substring(1)}')),
             foregroundColor: Colors.white,
           ),
           child: const Text('Complete'),
@@ -506,15 +523,17 @@ class _CompletionDialogState extends State<_CompletionDialog> {
     int value = 1;
     int? duration;
 
-    if (widget.habit.type == HabitType.count || widget.habit.type == HabitType.value) {
+    if (widget.habit.type == HabitType.count ||
+        widget.habit.type == HabitType.value) {
       value = int.tryParse(_valueController.text) ?? 1;
     }
 
     if (widget.habit.type == HabitType.time) {
-      duration = int.tryParse(_durationController.text) ?? widget.habit.targetValue;
+      duration =
+          int.tryParse(_durationController.text) ?? widget.habit.targetValue;
     }
 
     widget.onComplete(value, _notesController.text, duration);
     context.pop();
   }
-} 
+}

@@ -28,8 +28,8 @@ class ProgressHighlight {
       metricLabel: json['metricLabel'] as String? ?? '',
       metricValue: json['metricValue'] as String? ?? '',
       sharePrompt: json['sharePrompt'] as String? ?? '',
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+          DateTime.now(),
     );
   }
 }
-

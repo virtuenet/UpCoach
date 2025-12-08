@@ -15,7 +15,7 @@ class CustomButton extends StatelessWidget {
   final bool enabled;
 
   const CustomButton({
-    Key? key,
+    super.key,
     required this.text,
     this.onPressed,
     this.isLoading = false,
@@ -27,12 +27,13 @@ class CustomButton extends StatelessWidget {
     this.borderRadius = 12,
     this.icon,
     this.enabled = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     final bgColor = backgroundColor ?? AppColors.primary;
-    final fgColor = textColor ?? (isOutlined ? AppColors.primary : Colors.white);
+    final fgColor =
+        textColor ?? (isOutlined ? AppColors.primary : Colors.white);
 
     return SizedBox(
       width: width,
@@ -54,7 +55,7 @@ class CustomButton extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: bgColor,
                 foregroundColor: fgColor,
-                disabledBackgroundColor: bgColor.withOpacity(0.5),
+                disabledBackgroundColor: bgColor.withValues(alpha: 0.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(borderRadius),
                 ),

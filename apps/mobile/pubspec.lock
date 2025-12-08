@@ -17,6 +17,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.59"
+  agora_rtc_engine:
+    dependency: "direct main"
+    description:
+      name: agora_rtc_engine
+      sha256: "6559294d18ce4445420e19dbdba10fb58cac955cd8f22dbceae26716e194d70e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.5.3"
   analyzer:
     dependency: transitive
     description:
@@ -41,8 +49,16 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
-  app_links:
+  ansicolor:
     dependency: transitive
+    description:
+      name: ansicolor
+      sha256: "50e982d500bc863e1d703448afdbf9e5a72eb48840a4f766fa361ffd6877055f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.3"
+  app_links:
+    dependency: "direct main"
     description:
       name: app_links
       sha256: "5f88447519add627fe1cbcab4fd1da3d4fed15b9baf29f28b22535c95ecee3e8"
@@ -73,6 +89,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
+  app_settings:
+    dependency: "direct main"
+    description:
+      name: app_settings
+      sha256: "476df1d85cec143c3d27dd1c7451629a59c0c5ccf70a0adcbfa92a0a2d928705"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.2.0"
   archive:
     dependency: transitive
     description:
@@ -329,6 +353,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.0"
+  cli_util:
+    dependency: transitive
+    description:
+      name: cli_util
+      sha256: ff6785f7e9e3c38ac98b2fb035701789de90154024a75b6cb926445e83197d1c
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.2"
   clock:
     dependency: transitive
     description:
@@ -673,6 +705,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.10.10"
+  firebase_performance:
+    dependency: "direct main"
+    description:
+      name: firebase_performance
+      sha256: b6948a02cb06d5da36e9f91f4a96b39745ab7565942a8134b7692ea6fc4ac595
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.10.1+10"
+  firebase_performance_platform_interface:
+    dependency: transitive
+    description:
+      name: firebase_performance_platform_interface
+      sha256: "836b219dc99c59ee5b854ba4f6432781f40ae75b31ea112f3b8b2ffce8a01cd4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.5+10"
+  firebase_performance_web:
+    dependency: transitive
+    description:
+      name: firebase_performance_web
+      sha256: "7b8cdc99f8c7ceafd6c3f51a3a661aef96bc9c5948af78d35bc9660941ed5b2f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.7+16"
   fixnum:
     dependency: transitive
     description:
@@ -763,6 +819,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.1.5"
+  flutter_launcher_icons:
+    dependency: "direct dev"
+    description:
+      name: flutter_launcher_icons
+      sha256: "10f13781741a2e3972126fae08393d3c4e01fa4cd7473326b94b72cf594195e7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.14.4"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -808,6 +872,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_native_splash:
+    dependency: "direct dev"
+    description:
+      name: flutter_native_splash
+      sha256: "4fb9f4113350d3a80841ce05ebf1976a36de622af7d19aca0ca9a9911c7ff002"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.7"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -880,6 +952,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
+  flutter_stripe:
+    dependency: "direct main"
+    description:
+      name: flutter_stripe
+      sha256: a474b283f4b07e8973687514bf48762e618073b0d6b7acc45cea9a60466d4f8c
+      url: "https://pub.dev"
+    source: hosted
+    version: "11.5.0"
   flutter_svg:
     dependency: "direct main"
     description:
@@ -1111,6 +1191,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
+  image:
+    dependency: transitive
+    description:
+      name: image
+      sha256: "4e973fcf4caae1a4be2fa0a13157aa38a8f9cb049db6529aa00b4d71abc4d928"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.5.4"
   image_picker:
     dependency: "direct main"
     description:
@@ -1204,6 +1292,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
+  iris_method_channel:
+    dependency: transitive
+    description:
+      name: iris_method_channel
+      sha256: bfb5cfc6c6eae42da8cd1b35977a72d8b8881848a5dfc3d672e4760a907d11a0
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.4"
   jni:
     dependency: transitive
     description:
@@ -2193,6 +2289,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  stripe_android:
+    dependency: transitive
+    description:
+      name: stripe_android
+      sha256: a666352e0c20753ecd8feebb5944882bf597167be4f020641266515a495bd55f
+      url: "https://pub.dev"
+    source: hosted
+    version: "11.5.0"
+  stripe_ios:
+    dependency: transitive
+    description:
+      name: stripe_ios
+      sha256: "0f7afed3ac61e544e7525da9b692b23d93e762d56f6c9aa7f77fc6d9a686a65d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "11.5.0"
+  stripe_platform_interface:
+    dependency: transitive
+    description:
+      name: stripe_platform_interface
+      sha256: "23c10f3875da07f85a6196fcb676e64c767ad2d04ec73ba4e941ac797a4ee4d3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "11.5.0"
   supabase:
     dependency: transitive
     description:
@@ -2305,6 +2425,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
+  universal_io:
+    dependency: transitive
+    description:
+      name: universal_io
+      sha256: f63cbc48103236abf48e345e07a03ce5757ea86285ed313a6a032596ed9301e2
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.1"
   url_launcher:
     dependency: "direct main"
     description:
@@ -2417,6 +2545,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "10.0.0"
+  vibration:
+    dependency: "direct main"
+    description:
+      name: vibration
+      sha256: "1fd51cb0f91c6d512734ca0e282dd87fbc7f389b6da5f03c77709ba2cf8fa901"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.4"
+  vibration_platform_interface:
+    dependency: transitive
+    description:
+      name: vibration_platform_interface
+      sha256: "4134fbfcd427b59a7a91f8733292e4e9b29a7f1e8224ff0d80f5745fbf0743c6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.1"
   vm_service:
     dependency: transitive
     description:
@@ -2425,6 +2569,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "15.0.2"
+  wakelock_plus:
+    dependency: "direct main"
+    description:
+      name: wakelock_plus
+      sha256: "9296d40c9adbedaba95d1e704f4e0b434be446e2792948d0e4aa977048104228"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.0"
+  wakelock_plus_platform_interface:
+    dependency: transitive
+    description:
+      name: wakelock_plus_platform_interface
+      sha256: "036deb14cd62f558ca3b73006d52ce049fabcdcb2eddfe0bf0fe4e8a943b5cf2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.0"
   watcher:
     dependency: transitive
     description:
@@ -2450,7 +2610,7 @@ packages:
     source: hosted
     version: "1.0.1"
   web_socket_channel:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: web_socket_channel
       sha256: d645757fb0f4773d602444000a8131ff5d48c9e47adfe9772652dd1a4f2d45c8

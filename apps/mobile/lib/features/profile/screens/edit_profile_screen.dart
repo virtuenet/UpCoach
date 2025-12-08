@@ -54,10 +54,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     try {
       await ref.read(profileProvider.notifier).updateProfile(
-        name: _nameController.text.trim(),
-        email: _emailController.text.trim(),
-        bio: _bioController.text.trim(),
-      );
+            name: _nameController.text.trim(),
+            email: _emailController.text.trim(),
+            bio: _bioController.text.trim(),
+          );
 
       if (mounted) {
         context.pop();
@@ -164,9 +164,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: UIConstants.spacingXL),
-            
+
             // Name Field
             TextFormField(
               controller: _nameController,
@@ -183,9 +183,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               },
               textCapitalization: TextCapitalization.words,
             ),
-            
+
             const SizedBox(height: UIConstants.spacingMD),
-            
+
             // Email Field
             TextFormField(
               controller: _emailController,
@@ -199,15 +199,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 if (value == null || value.trim().isEmpty) {
                   return 'Please enter your email';
                 }
-                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                    .hasMatch(value)) {
                   return 'Please enter a valid email';
                 }
                 return null;
               },
             ),
-            
+
             const SizedBox(height: UIConstants.spacingMD),
-            
+
             // Bio Field
             TextFormField(
               controller: _bioController,
@@ -221,12 +222,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               maxLength: 200,
               textCapitalization: TextCapitalization.sentences,
             ),
-            
+
             const SizedBox(height: UIConstants.spacingXL),
-            
+
             // Save Button
             ElevatedButton(
               onPressed: _isLoading ? null : _saveProfile,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(50),
+              ),
               child: _isLoading
                   ? const SizedBox(
                       width: 20,
@@ -236,9 +240,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       ),
                     )
                   : const Text('Save Changes'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-              ),
             ),
           ],
         ),
@@ -345,8 +346,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
       // Update user profile with new avatar URL
       await ref.read(profileProvider.notifier).updateProfile(
-        avatarUrl: uploadUrl,
-      );
+            avatarUrl: uploadUrl,
+          );
 
       _showSnackBar('Profile photo updated successfully');
     } catch (e) {
@@ -361,8 +362,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Future<void> _removePhoto() async {
     try {
       await ref.read(profileProvider.notifier).updateProfile(
-        avatarUrl: null,
-      );
+            avatarUrl: null,
+          );
       _showSnackBar('Profile photo removed successfully');
     } catch (e) {
       _showSnackBar('Failed to remove profile photo: $e');
@@ -394,13 +395,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         if (attempt == maxRetries - 1) {
           // Final attempt failed, add to background queue
           await _addToUploadQueue(imageFile);
-          throw Exception('Upload failed after $maxRetries attempts. Added to retry queue.');
+          throw Exception(
+              'Upload failed after $maxRetries attempts. Added to retry queue.');
         }
 
         // Exponential backoff delay
-        final delay = Duration(
-          milliseconds: baseDelay.inMilliseconds * (1 << attempt)
-        );
+        final delay =
+            Duration(milliseconds: baseDelay.inMilliseconds * (1 << attempt));
         await Future.delayed(delay);
 
         if (mounted) {
@@ -448,7 +449,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final response = await http.Response.fromStream(streamed);
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      final Map<String, dynamic> jsonBody = json.decode(response.body) as Map<String, dynamic>;
+      final Map<String, dynamic> jsonBody =
+          json.decode(response.body) as Map<String, dynamic>;
       final data = jsonBody['data'] as Map<String, dynamic>?;
       final avatarUrl = data != null ? (data['avatarUrl'] as String?) : null;
       if (avatarUrl == null || avatarUrl.isEmpty) {
@@ -467,15 +469,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       final originalSize = bytes.length;
 
       // If image is already small enough, return original
-      if (originalSize <= 500 * 1024) { // 500KB
+      if (originalSize <= 500 * 1024) {
+        // 500KB
         return imageFile;
       }
 
       // Calculate compression quality based on original size
       int quality = 85;
-      if (originalSize > 2 * 1024 * 1024) { // > 2MB
+      if (originalSize > 2 * 1024 * 1024) {
+        // > 2MB
         quality = 60;
-      } else if (originalSize > 1 * 1024 * 1024) { // > 1MB
+      } else if (originalSize > 1 * 1024 * 1024) {
+        // > 1MB
         quality = 70;
       }
 
@@ -498,7 +503,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
   }
 
-  Future<List<int>> _resizeAndCompressBytes(List<int> bytes, int quality) async {
+  Future<List<int>> _resizeAndCompressBytes(
+      List<int> bytes, int quality) async {
     // Basic compression implementation
     // In production, use packages like flutter_image_compress for better compression
     try {
@@ -526,7 +532,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       await _saveUploadToQueue(queueData);
 
       if (mounted) {
-        _showSnackBar('Upload failed. Will retry in background when connection improves.');
+        _showSnackBar(
+            'Upload failed. Will retry in background when connection improves.');
       }
     } catch (e) {
       if (mounted) {
@@ -553,7 +560,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       // Schedule background processing
       _scheduleBackgroundUpload();
     } catch (e) {
-      print('Error saving to upload queue: $e');
+      debugPrint('Error saving to upload queue: $e');
     }
   }
 
@@ -600,8 +607,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           if (uploadUrl.isNotEmpty) {
             // Upload successful, update profile
             await ref.read(profileProvider.notifier).updateProfile(
-              avatarUrl: uploadUrl,
-            );
+                  avatarUrl: uploadUrl,
+                );
 
             // Remove successful upload from queue
             continue;
@@ -622,7 +629,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         _scheduleBackgroundUpload();
       }
     } catch (e) {
-      print('Error processing upload queue: $e');
+      debugPrint('Error processing upload queue: $e');
     }
   }
 
@@ -640,4 +647,4 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       );
     }
   }
-} 
+}

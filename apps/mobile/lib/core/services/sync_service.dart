@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'offline_service.dart';
@@ -14,7 +15,7 @@ enum ConflictResolution {
 class SyncService {
   static final SyncService _instance = SyncService._internal();
   factory SyncService() => _instance;
-  
+
   SyncService._internal();
 
   final OfflineService _offlineService = OfflineService();
@@ -28,7 +29,7 @@ class SyncService {
 
   Future<void> initialize() async {
     await _offlineService.initialize();
-    
+
     // Listen to connectivity changes
     _connectivitySubscription = _offlineService.connectivityStream.listen(
       (isOnline) {
@@ -68,19 +69,19 @@ class SyncService {
 
   Future<void> _performSync() async {
     if (!await _offlineService.isOnline()) return;
-    
+
     _isSyncing = true;
-    
+
     try {
       // 1. Process pending operations first
       await _processPendingOperations();
-      
+
       // 2. Sync data from server
       await _syncFromServer();
-      
-      print('📊 Sync completed successfully');
+
+      debugPrint('📊 Sync completed successfully');
     } catch (e) {
-      print('❌ Sync failed: $e');
+      debugPrint('❌ Sync failed: $e');
     } finally {
       _isSyncing = false;
     }
@@ -88,14 +89,15 @@ class SyncService {
 
   Future<void> _processPendingOperations() async {
     final pendingOps = await _offlineService.getPendingOperations();
-    
+
     for (final operation in pendingOps) {
       try {
         await _executeOperation(operation);
         await _offlineService.removePendingOperation(operation.id);
-        print('✅ Synced pending operation: ${operation.type} ${operation.endpoint}');
+        debugPrint(
+            '✅ Synced pending operation: ${operation.type} ${operation.endpoint}');
       } catch (e) {
-        print('❌ Failed to sync operation ${operation.id}: $e');
+        debugPrint('❌ Failed to sync operation ${operation.id}: $e');
         // Keep the operation for next sync attempt
       }
     }
@@ -123,9 +125,9 @@ class SyncService {
     for (final entry in _syncCallbacks.entries) {
       try {
         await entry.value();
-        print('✅ Synced ${entry.key}');
+        debugPrint('✅ Synced ${entry.key}');
       } catch (e) {
-        print('❌ Failed to sync ${entry.key}: $e');
+        debugPrint('❌ Failed to sync ${entry.key}: $e');
       }
     }
   }
@@ -178,22 +180,22 @@ class SyncService {
         // Use server data, discard local changes
         await _offlineService.cacheData(resourceId, serverData);
         break;
-        
+
       case ConflictResolution.clientWins:
         // Push client data to server
         await _apiService.patch('/sync/resolve/$resourceId', data: clientData);
         break;
-        
+
       case ConflictResolution.mergeChanges:
         // Simple merge strategy (can be more sophisticated)
         final merged = <String, dynamic>{};
         merged.addAll(serverData);
         merged.addAll(clientData);
-        
+
         await _apiService.patch('/sync/resolve/$resourceId', data: merged);
         await _offlineService.cacheData(resourceId, merged);
         break;
-        
+
       case ConflictResolution.askUser:
         // This would trigger a UI dialog in a real implementation
         // For now, default to server wins
@@ -204,9 +206,9 @@ class SyncService {
 
   // Get sync status
   bool get isSyncing => _isSyncing;
-  
+
   Future<bool> get isOnline => _offlineService.isOnline();
-  
+
   Future<int> get pendingOperationsCount async {
     final operations = await _offlineService.getPendingOperations();
     return operations.length;
@@ -216,13 +218,13 @@ class SyncService {
 // Sync status provider
 final syncServiceProvider = Provider<SyncService>((ref) {
   final syncService = SyncService();
-  
+
   // Register sync callbacks for all data types
   syncService.registerSyncCallback('tasks', syncService.syncTasks);
   syncService.registerSyncCallback('goals', syncService.syncGoals);
   syncService.registerSyncCallback('moods', syncService.syncMoods);
   syncService.registerSyncCallback('profile', syncService.syncProfile);
-  
+
   return syncService;
 });
 
@@ -232,4 +234,4 @@ final connectivityProvider = StreamProvider<bool>((ref) {
 
 final syncStatusProvider = Provider<bool>((ref) {
   return ref.watch(syncServiceProvider).isSyncing;
-}); 
+});

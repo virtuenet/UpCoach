@@ -6,8 +6,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/task_model.dart';
 import '../../../shared/widgets/task_list_tile.dart';
 import '../providers/task_provider.dart';
-import 'create_task_screen.dart';
-import 'task_detail_screen.dart';
 
 class TasksScreen extends ConsumerStatefulWidget {
   const TasksScreen({super.key});
@@ -16,7 +14,7 @@ class TasksScreen extends ConsumerStatefulWidget {
   ConsumerState<TasksScreen> createState() => _TasksScreenState();
 }
 
-class _TasksScreenState extends ConsumerState<TasksScreen> 
+class _TasksScreenState extends ConsumerState<TasksScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -160,7 +158,7 @@ class _TaskListView extends ConsumerWidget {
             Icon(
               Icons.task_outlined,
               size: 64,
-              color: AppTheme.textSecondary.withOpacity(0.5),
+              color: AppTheme.textSecondary.withValues(alpha: 0.5),
             ),
             const SizedBox(height: UIConstants.spacingMD),
             Text(
@@ -193,7 +191,7 @@ class _TaskListView extends ConsumerWidget {
                     Icon(
                       Icons.task_outlined,
                       size: 64,
-                      color: AppTheme.textSecondary.withOpacity(0.5),
+                      color: AppTheme.textSecondary.withValues(alpha: 0.5),
                     ),
                     const SizedBox(height: UIConstants.spacingMD),
                     Text(
@@ -209,15 +207,17 @@ class _TaskListView extends ConsumerWidget {
             )
           else
             ...tasks.map((task) => TaskListTile(
-              task: task,
-              onTap: () => onTaskTap(task),
-              onToggleComplete: () {
-                ref.read(taskProvider.notifier).toggleTaskCompletion(task.id);
-              },
-              onDelete: () {
-                ref.read(taskProvider.notifier).deleteTask(task.id);
-              },
-            )),
+                  task: task,
+                  onTap: () => onTaskTap(task),
+                  onToggleComplete: () {
+                    ref
+                        .read(taskProvider.notifier)
+                        .toggleTaskCompletion(task.id);
+                  },
+                  onDelete: () {
+                    ref.read(taskProvider.notifier).deleteTask(task.id);
+                  },
+                )),
         ],
       ),
     );
@@ -228,10 +228,10 @@ class _TaskListView extends ConsumerWidget {
       margin: const EdgeInsets.all(UIConstants.spacingMD),
       padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withOpacity(0.1),
+        color: AppTheme.primaryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(UIConstants.radiusXL),
         border: Border.all(
-          color: AppTheme.primaryColor.withOpacity(0.3),
+          color: AppTheme.primaryColor.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -240,9 +240,9 @@ class _TaskListView extends ConsumerWidget {
           Text(
             'Your Progress',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: AppTheme.primaryColor,
-            ),
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primaryColor,
+                ),
           ),
           const SizedBox(height: UIConstants.spacingMD),
           Row(
@@ -300,9 +300,9 @@ class _TaskListView extends ConsumerWidget {
         Text(
           value,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: color ?? AppTheme.primaryColor,
-          ),
+                fontWeight: FontWeight.bold,
+                color: color ?? AppTheme.primaryColor,
+              ),
         ),
         Text(
           label,
@@ -359,8 +359,8 @@ class _TaskFilterSheetState extends ConsumerState<_TaskFilterSheet> {
               Text(
                 'Filter Tasks',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               TextButton(
                 onPressed: _clearFilter,
@@ -369,13 +369,13 @@ class _TaskFilterSheetState extends ConsumerState<_TaskFilterSheet> {
             ],
           ),
           const SizedBox(height: UIConstants.spacingLG),
-          
+
           // Status filter
           Text(
             'Status',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: UIConstants.spacingSM),
           Wrap(
@@ -395,15 +395,15 @@ class _TaskFilterSheetState extends ConsumerState<_TaskFilterSheet> {
               );
             }).toList(),
           ),
-          
+
           const SizedBox(height: UIConstants.spacingLG),
-          
+
           // Category filter
           Text(
             'Category',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: UIConstants.spacingSM),
           Wrap(
@@ -423,15 +423,15 @@ class _TaskFilterSheetState extends ConsumerState<_TaskFilterSheet> {
               );
             }).toList(),
           ),
-          
+
           const SizedBox(height: UIConstants.spacingLG),
-          
+
           // Priority filter
           Text(
             'Priority',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: UIConstants.spacingSM),
           Wrap(
@@ -451,17 +451,17 @@ class _TaskFilterSheetState extends ConsumerState<_TaskFilterSheet> {
               );
             }).toList(),
           ),
-          
+
           const SizedBox(height: UIConstants.spacingXL),
-          
+
           ElevatedButton(
             onPressed: _applyFilter,
             child: const Text('Apply Filter'),
           ),
-          
+
           const SizedBox(height: UIConstants.spacingLG),
         ],
       ),
     );
   }
-} 
+}

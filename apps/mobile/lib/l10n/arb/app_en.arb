@@ -1,0 +1,740 @@
+{
+  "@@locale": "en",
+  "@@last_modified": "2024-01-15T00:00:00.000Z",
+
+  "appTitle": "UpCoach",
+  "@appTitle": {
+    "description": "The application title"
+  },
+
+  "welcome": "Welcome",
+  "@welcome": {
+    "description": "Welcome message"
+  },
+
+  "welcomeBack": "Welcome back, {name}!",
+  "@welcomeBack": {
+    "description": "Welcome back message with user name",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "John"
+      }
+    }
+  },
+
+  "loading": "Loading...",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "edit": "Edit",
+  "create": "Create",
+  "update": "Update",
+  "search": "Search",
+  "searchHint": "Search...",
+  "filter": "Filter",
+  "sort": "Sort",
+  "retry": "Retry",
+  "done": "Done",
+  "next": "Next",
+  "back": "Back",
+  "skip": "Skip",
+  "continue_": "Continue",
+  "confirm": "Confirm",
+  "ok": "OK",
+  "yes": "Yes",
+  "no": "No",
+  "close": "Close",
+  "apply": "Apply",
+  "clear": "Clear",
+  "selectAll": "Select All",
+  "deselectAll": "Deselect All",
+  "viewAll": "View All",
+  "seeMore": "See More",
+  "seeLess": "See Less",
+  "showMore": "Show More",
+  "showLess": "Show Less",
+
+  "login": "Login",
+  "logout": "Logout",
+  "register": "Register",
+  "signIn": "Sign In",
+  "signUp": "Sign Up",
+  "signOut": "Sign Out",
+  "forgotPassword": "Forgot Password?",
+  "resetPassword": "Reset Password",
+  "createAccount": "Create Account",
+  "email": "Email",
+  "emailHint": "Enter your email",
+  "password": "Password",
+  "passwordHint": "Enter your password",
+  "confirmPassword": "Confirm Password",
+  "confirmPasswordHint": "Re-enter your password",
+  "newPassword": "New Password",
+  "currentPassword": "Current Password",
+  "rememberMe": "Remember Me",
+  "staySignedIn": "Stay signed in",
+  "orContinueWith": "Or continue with",
+  "continueWithGoogle": "Continue with Google",
+  "continueWithApple": "Continue with Apple",
+  "dontHaveAccount": "Don't have an account?",
+  "alreadyHaveAccount": "Already have an account?",
+  "agreeToTerms": "I agree to the Terms of Service and Privacy Policy",
+  "termsOfService": "Terms of Service",
+  "privacyPolicy": "Privacy Policy",
+  "passwordRequirements": "Password must be at least 8 characters with a number and special character",
+  "invalidEmail": "Please enter a valid email address",
+  "invalidPassword": "Password is too weak",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "emailAlreadyInUse": "This email is already registered",
+  "wrongPassword": "Incorrect password",
+  "userNotFound": "No account found with this email",
+  "tooManyAttempts": "Too many attempts. Please try again later.",
+  "verifyEmail": "Verify your email",
+  "verificationEmailSent": "Verification email sent to {email}",
+  "@verificationEmailSent": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "resendVerificationEmail": "Resend verification email",
+  "checkYourEmail": "Check your email",
+  "passwordResetEmailSent": "Password reset link sent to your email",
+
+  "biometricLogin": "Login with Biometrics",
+  "enableBiometrics": "Enable Biometric Authentication",
+  "useFaceId": "Use Face ID",
+  "useTouchId": "Use Touch ID",
+  "useFingerprint": "Use Fingerprint",
+  "biometricReason": "Authenticate to access UpCoach",
+
+  "twoFactorAuth": "Two-Factor Authentication",
+  "enable2FA": "Enable 2FA",
+  "disable2FA": "Disable 2FA",
+  "enterVerificationCode": "Enter verification code",
+  "verificationCodeSent": "Verification code sent to your phone",
+  "invalidVerificationCode": "Invalid verification code",
+
+  "home": "Home",
+  "dashboard": "Dashboard",
+  "overview": "Overview",
+  "todaysSummary": "Today's Summary",
+  "weeklyProgress": "Weekly Progress",
+  "monthlyProgress": "Monthly Progress",
+  "recentActivity": "Recent Activity",
+  "quickActions": "Quick Actions",
+  "upcomingTasks": "Upcoming Tasks",
+  "todaysHabits": "Today's Habits",
+  "currentStreak": "Current Streak",
+  "longestStreak": "Longest Streak",
+  "totalPoints": "Total Points",
+  "greeting_morning": "Good morning",
+  "greeting_afternoon": "Good afternoon",
+  "greeting_evening": "Good evening",
+  "greeting_night": "Good night",
+
+  "goals": "Goals",
+  "goal": "Goal",
+  "createGoal": "Create Goal",
+  "editGoal": "Edit Goal",
+  "deleteGoal": "Delete Goal",
+  "goalTitle": "Goal Title",
+  "goalTitleHint": "What do you want to achieve?",
+  "goalDescription": "Goal Description",
+  "goalDescriptionHint": "Describe your goal in detail",
+  "targetDate": "Target Date",
+  "startDate": "Start Date",
+  "endDate": "End Date",
+  "category": "Category",
+  "selectCategory": "Select Category",
+  "progress": "Progress",
+  "progressPercent": "{percent}% Complete",
+  "@progressPercent": {
+    "placeholders": {
+      "percent": {"type": "int"}
+    }
+  },
+  "milestones": "Milestones",
+  "addMilestone": "Add Milestone",
+  "noGoals": "No goals yet",
+  "noGoalsDescription": "Create your first goal to start tracking your progress",
+  "goalCompleted": "Goal completed! Congratulations!",
+  "activeGoals": "Active Goals",
+  "completedGoals": "Completed Goals",
+  "archivedGoals": "Archived Goals",
+  "archiveGoal": "Archive Goal",
+
+  "habits": "Habits",
+  "habit": "Habit",
+  "createHabit": "Create Habit",
+  "editHabit": "Edit Habit",
+  "deleteHabit": "Delete Habit",
+  "habitName": "Habit Name",
+  "habitNameHint": "e.g., Morning exercise",
+  "habitDescription": "Habit Description",
+  "frequency": "Frequency",
+  "daily": "Daily",
+  "weekly": "Weekly",
+  "monthly": "Monthly",
+  "custom": "Custom",
+  "daysPerWeek": "Days per week",
+  "timesPerDay": "Times per day",
+  "reminder": "Reminder",
+  "reminderTime": "Reminder Time",
+  "enableReminder": "Enable Reminder",
+  "markAsComplete": "Mark as Complete",
+  "markAsIncomplete": "Mark as Incomplete",
+  "skipToday": "Skip Today",
+  "streak": "Streak",
+  "currentStreakDays": "{days} day streak",
+  "@currentStreakDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "bestStreak": "Best Streak",
+  "completionRate": "Completion Rate",
+  "noHabits": "No habits yet",
+  "noHabitsDescription": "Add your first habit to build a daily routine",
+  "habitCompleted": "Great job! Habit completed!",
+  "habitStreakBroken": "Streak broken. Start again!",
+  "habitStats": "Habit Statistics",
+  "weeklyOverview": "Weekly Overview",
+  "monthlyOverview": "Monthly Overview",
+
+  "tasks": "Tasks",
+  "task": "Task",
+  "createTask": "Create Task",
+  "editTask": "Edit Task",
+  "deleteTask": "Delete Task",
+  "taskTitle": "Task Title",
+  "taskTitleHint": "What needs to be done?",
+  "taskDescription": "Task Description",
+  "dueDate": "Due Date",
+  "dueTime": "Due Time",
+  "priority": "Priority",
+  "priorityHigh": "High",
+  "priorityMedium": "Medium",
+  "priorityLow": "Low",
+  "noPriority": "No Priority",
+  "status": "Status",
+  "statusPending": "Pending",
+  "statusInProgress": "In Progress",
+  "statusCompleted": "Completed",
+  "statusCancelled": "Cancelled",
+  "noTasks": "No tasks yet",
+  "noTasksDescription": "Add tasks to stay organized",
+  "taskCompleted": "Task completed!",
+  "overdueTasks": "Overdue",
+  "todayTasks": "Today",
+  "upcomingTasksLabel": "Upcoming",
+  "completedTasks": "Completed",
+  "allTasks": "All Tasks",
+  "addSubtask": "Add Subtask",
+  "subtasks": "Subtasks",
+
+  "mood": "Mood",
+  "moodTracking": "Mood Tracking",
+  "howAreYouFeeling": "How are you feeling today?",
+  "logMood": "Log Mood",
+  "moodHistory": "Mood History",
+  "moodTrends": "Mood Trends",
+  "moodExcellent": "Excellent",
+  "moodGood": "Good",
+  "moodNeutral": "Neutral",
+  "moodBad": "Bad",
+  "moodTerrible": "Terrible",
+  "addNote": "Add a note",
+  "moodNote": "What's on your mind?",
+  "noMoodEntries": "No mood entries yet",
+  "noMoodEntriesDescription": "Start tracking your mood to see patterns",
+
+  "aiCoach": "AI Coach",
+  "askCoach": "Ask your AI Coach",
+  "typeMessage": "Type a message...",
+  "voiceCoach": "Voice Coach",
+  "startVoiceSession": "Start Voice Session",
+  "endVoiceSession": "End Session",
+  "insights": "Insights",
+  "recommendations": "Recommendations",
+  "aiThinking": "Thinking...",
+  "aiTyping": "AI is typing...",
+  "suggestedQuestions": "Suggested Questions",
+  "conversationHistory": "Conversation History",
+  "newConversation": "New Conversation",
+  "clearConversation": "Clear Conversation",
+
+  "voiceJournal": "Voice Journal",
+  "startRecording": "Start Recording",
+  "stopRecording": "Stop Recording",
+  "pauseRecording": "Pause",
+  "resumeRecording": "Resume",
+  "recording": "Recording...",
+  "recordingPaused": "Recording paused",
+  "saveRecording": "Save Recording",
+  "discardRecording": "Discard Recording",
+  "playRecording": "Play Recording",
+  "pausePlayback": "Pause",
+  "transcription": "Transcription",
+  "transcribing": "Transcribing...",
+  "noRecordings": "No recordings yet",
+  "noRecordingsDescription": "Record your thoughts and reflections",
+
+  "gamification": "Gamification",
+  "achievements": "Achievements",
+  "level": "Level",
+  "levelUp": "Level Up!",
+  "youReachedLevel": "You reached level {level}!",
+  "@youReachedLevel": {
+    "placeholders": {
+      "level": {"type": "int"}
+    }
+  },
+  "points": "Points",
+  "pointsEarned": "+{points} points",
+  "@pointsEarned": {
+    "placeholders": {
+      "points": {"type": "int"}
+    }
+  },
+  "badges": "Badges",
+  "streaks": "Streaks",
+  "leaderboard": "Leaderboard",
+  "challenges": "Challenges",
+  "activeChallenges": "Active Challenges",
+  "completedChallenges": "Completed Challenges",
+  "joinChallenge": "Join Challenge",
+  "leaveChallenge": "Leave Challenge",
+  "rewards": "Rewards",
+  "rewardStore": "Reward Store",
+  "claimReward": "Claim Reward",
+  "rewardClaimed": "Reward claimed!",
+  "notEnoughPoints": "Not enough points",
+  "achievementUnlocked": "Achievement Unlocked!",
+  "youUnlocked": "You unlocked: {achievement}",
+  "@youUnlocked": {
+    "placeholders": {
+      "achievement": {"type": "String"}
+    }
+  },
+  "rank": "Rank",
+  "yourRank": "Your Rank: #{rank}",
+  "@yourRank": {
+    "placeholders": {
+      "rank": {"type": "int"}
+    }
+  },
+
+  "content": "Content",
+  "articles": "Articles",
+  "article": "Article",
+  "readArticle": "Read Article",
+  "saveArticle": "Save Article",
+  "savedArticles": "Saved Articles",
+  "shareArticle": "Share Article",
+  "likeArticle": "Like",
+  "unlikeArticle": "Unlike",
+  "readingTime": "{minutes} min read",
+  "@readingTime": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "relatedArticles": "Related Articles",
+  "noArticles": "No articles available",
+  "browseContent": "Browse Content",
+
+  "marketplace": "Marketplace",
+  "coaches": "Coaches",
+  "findCoach": "Find a Coach",
+  "coachProfile": "Coach Profile",
+  "bookSession": "Book Session",
+  "myBookings": "My Bookings",
+  "upcomingSessions": "Upcoming Sessions",
+  "pastSessions": "Past Sessions",
+  "cancelSession": "Cancel Session",
+  "rescheduleSession": "Reschedule",
+  "sessionDetails": "Session Details",
+  "selectDate": "Select Date",
+  "selectTime": "Select Time",
+  "availableSlots": "Available Slots",
+  "noSlotsAvailable": "No slots available for this date",
+  "sessionBooked": "Session booked successfully!",
+  "sessionCancelled": "Session cancelled",
+  "coachRating": "Rating",
+  "reviews": "Reviews",
+  "writeReview": "Write a Review",
+  "submitReview": "Submit Review",
+  "reviewSubmitted": "Review submitted!",
+  "specializations": "Specializations",
+  "experience": "Experience",
+  "yearsExperience": "{years} years experience",
+  "@yearsExperience": {
+    "placeholders": {
+      "years": {"type": "int"}
+    }
+  },
+  "pricePerSession": "Price per session",
+  "sessionDuration": "{duration} minutes",
+  "@sessionDuration": {
+    "placeholders": {
+      "duration": {"type": "int"}
+    }
+  },
+
+  "messaging": "Messages",
+  "chat": "Chat",
+  "newMessage": "New Message",
+  "sendMessage": "Send",
+  "typeMessageHint": "Type a message...",
+  "noMessages": "No messages yet",
+  "noMessagesDescription": "Start a conversation",
+  "online": "Online",
+  "offline": "Offline",
+  "lastSeen": "Last seen {time}",
+  "@lastSeen": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "typing": "typing...",
+
+  "videoCalls": "Video Calls",
+  "audioCall": "Audio Call",
+  "videoCall": "Video Call",
+  "startCall": "Start Call",
+  "endCall": "End Call",
+  "muteAudio": "Mute",
+  "unmuteAudio": "Unmute",
+  "enableVideo": "Enable Video",
+  "disableVideo": "Disable Video",
+  "switchCamera": "Switch Camera",
+  "incomingCall": "Incoming Call",
+  "outgoingCall": "Calling...",
+  "callEnded": "Call ended",
+  "callDuration": "Duration: {duration}",
+  "@callDuration": {
+    "placeholders": {
+      "duration": {"type": "String"}
+    }
+  },
+  "missedCall": "Missed Call",
+  "callFailed": "Call failed",
+  "reconnecting": "Reconnecting...",
+
+  "community": "Community",
+  "forums": "Forums",
+  "groups": "Groups",
+  "discussions": "Discussions",
+  "newPost": "New Post",
+  "createPost": "Create Post",
+  "replyToPost": "Reply",
+  "likePost": "Like",
+  "sharePost": "Share",
+  "reportPost": "Report",
+  "deletePost": "Delete Post",
+  "comments": "Comments",
+  "noComments": "No comments yet",
+  "addComment": "Add a comment...",
+  "members": "Members",
+  "joinGroup": "Join Group",
+  "leaveGroup": "Leave Group",
+  "groupRules": "Group Rules",
+
+  "profile": "Profile",
+  "editProfile": "Edit Profile",
+  "myProfile": "My Profile",
+  "personalInfo": "Personal Information",
+  "firstName": "First Name",
+  "lastName": "Last Name",
+  "fullName": "Full Name",
+  "username": "Username",
+  "phone": "Phone",
+  "phoneNumber": "Phone Number",
+  "bio": "Bio",
+  "bioHint": "Tell us about yourself",
+  "dateOfBirth": "Date of Birth",
+  "gender": "Gender",
+  "genderMale": "Male",
+  "genderFemale": "Female",
+  "genderOther": "Other",
+  "genderPreferNotToSay": "Prefer not to say",
+  "location": "Location",
+  "timezone": "Timezone",
+  "changePhoto": "Change Photo",
+  "removePhoto": "Remove Photo",
+  "takePhoto": "Take Photo",
+  "chooseFromGallery": "Choose from Gallery",
+  "profileUpdated": "Profile updated successfully",
+
+  "settings": "Settings",
+  "generalSettings": "General",
+  "accountSettings": "Account",
+  "notificationSettings": "Notifications",
+  "appearanceSettings": "Appearance",
+  "privacySettings": "Privacy & Security",
+  "dataSettings": "Data & Storage",
+  "helpSupport": "Help & Support",
+  "about": "About",
+
+  "language": "Language",
+  "selectLanguage": "Select Language",
+  "english": "English",
+  "spanish": "Spanish",
+  "french": "French",
+  "german": "German",
+  "portuguese": "Portuguese",
+  "chinese": "Chinese",
+  "japanese": "Japanese",
+  "arabic": "Arabic",
+  "indonesian": "Indonesian",
+
+  "theme": "Theme",
+  "lightMode": "Light Mode",
+  "darkMode": "Dark Mode",
+  "systemDefault": "System Default",
+
+  "notifications": "Notifications",
+  "pushNotifications": "Push Notifications",
+  "emailNotifications": "Email Notifications",
+  "habitReminders": "Habit Reminders",
+  "taskReminders": "Task Reminders",
+  "sessionReminders": "Session Reminders",
+  "promotionalEmails": "Promotional Emails",
+  "weeklyDigest": "Weekly Digest",
+  "soundEnabled": "Sound",
+  "vibrationEnabled": "Vibration",
+  "doNotDisturb": "Do Not Disturb",
+  "quietHours": "Quiet Hours",
+  "quietHoursStart": "Start Time",
+  "quietHoursEnd": "End Time",
+
+  "privacy": "Privacy",
+  "security": "Security",
+  "changePassword": "Change Password",
+  "deleteAccount": "Delete Account",
+  "deleteAccountWarning": "This action cannot be undone. All your data will be permanently deleted.",
+  "confirmDeleteAccount": "Are you sure you want to delete your account?",
+  "accountDeleted": "Account deleted successfully",
+  "dataExport": "Export My Data",
+  "downloadData": "Download Data",
+  "dataExportRequested": "Data export requested. You'll receive an email when it's ready.",
+  "profileVisibility": "Profile Visibility",
+  "showOnLeaderboard": "Show on Leaderboard",
+  "showActivityStatus": "Show Activity Status",
+  "blockUsers": "Blocked Users",
+  "unblock": "Unblock",
+
+  "offlineMode": "Offline Mode",
+  "offlineAvailable": "Available Offline",
+  "downloadForOffline": "Download for Offline",
+  "syncNow": "Sync Now",
+  "lastSynced": "Last synced: {time}",
+  "@lastSynced": {
+    "placeholders": {
+      "time": {"type": "String"}
+    }
+  },
+  "syncInProgress": "Syncing...",
+  "syncComplete": "Sync complete",
+  "syncFailed": "Sync failed",
+  "noInternetConnection": "No internet connection",
+  "workingOffline": "You're offline. Changes will sync when connected.",
+  "pendingChanges": "{count} pending changes",
+  "@pendingChanges": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "helpCenter": "Help Center",
+  "faq": "FAQ",
+  "contactSupport": "Contact Support",
+  "sendFeedback": "Send Feedback",
+  "reportBug": "Report a Bug",
+  "featureRequest": "Feature Request",
+  "rateApp": "Rate App",
+  "shareApp": "Share App",
+  "followUs": "Follow Us",
+
+  "aboutApp": "About UpCoach",
+  "version": "Version",
+  "versionNumber": "Version {version}",
+  "@versionNumber": {
+    "placeholders": {
+      "version": {"type": "String"}
+    }
+  },
+  "buildNumber": "Build {build}",
+  "@buildNumber": {
+    "placeholders": {
+      "build": {"type": "String"}
+    }
+  },
+  "licenses": "Open Source Licenses",
+  "acknowledgements": "Acknowledgements",
+
+  "subscription": "Subscription",
+  "currentPlan": "Current Plan",
+  "freePlan": "Free",
+  "proPlan": "Pro",
+  "premiumPlan": "Premium",
+  "upgradeToPro": "Upgrade to Pro",
+  "upgradeToPremium": "Upgrade to Premium",
+  "manageSubscription": "Manage Subscription",
+  "cancelSubscription": "Cancel Subscription",
+  "restorePurchases": "Restore Purchases",
+  "purchasesRestored": "Purchases restored successfully",
+  "subscriptionFeatures": "What you get with {plan}",
+  "@subscriptionFeatures": {
+    "placeholders": {
+      "plan": {"type": "String"}
+    }
+  },
+  "billedMonthly": "Billed monthly",
+  "billedYearly": "Billed yearly",
+  "savePercent": "Save {percent}%",
+  "@savePercent": {
+    "placeholders": {
+      "percent": {"type": "int"}
+    }
+  },
+  "freeTrial": "{days} day free trial",
+  "@freeTrial": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "trialEndsIn": "Trial ends in {days} days",
+  "@trialEndsIn": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+
+  "error": "Error",
+  "errorOccurred": "An error occurred",
+  "somethingWentWrong": "Something went wrong",
+  "tryAgain": "Please try again",
+  "errorLoadingData": "Error loading data",
+  "errorSavingData": "Error saving data",
+  "networkError": "Network error. Please check your connection.",
+  "serverError": "Server error. Please try again later.",
+  "sessionExpired": "Session expired. Please login again.",
+  "permissionDenied": "Permission denied",
+  "featureNotAvailable": "This feature is not available",
+  "comingSoon": "Coming soon!",
+
+  "success": "Success",
+  "saveSuccess": "Saved successfully",
+  "deleteSuccess": "Deleted successfully",
+  "updateSuccess": "Updated successfully",
+  "createSuccess": "Created successfully",
+  "copySuccess": "Copied to clipboard",
+  "shareSuccess": "Shared successfully",
+  "uploadSuccess": "Uploaded successfully",
+  "downloadSuccess": "Downloaded successfully",
+
+  "confirmAction": "Confirm",
+  "confirmDelete": "Are you sure you want to delete this?",
+  "confirmLogout": "Are you sure you want to logout?",
+  "confirmCancel": "Are you sure you want to cancel?",
+  "confirmDiscard": "Discard changes?",
+  "unsavedChanges": "You have unsaved changes",
+  "unsavedChangesMessage": "Are you sure you want to leave? Your changes will be lost.",
+  "discardChanges": "Discard Changes",
+  "keepEditing": "Keep Editing",
+
+  "noData": "No data available",
+  "noResults": "No results found",
+  "noResultsFor": "No results for \"{query}\"",
+  "@noResultsFor": {
+    "placeholders": {
+      "query": {"type": "String"}
+    }
+  },
+  "emptyList": "The list is empty",
+  "pullToRefresh": "Pull to refresh",
+  "loadingMore": "Loading more...",
+  "endOfList": "You've reached the end",
+
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "tomorrow": "Tomorrow",
+  "thisWeek": "This Week",
+  "lastWeek": "Last Week",
+  "nextWeek": "Next Week",
+  "thisMonth": "This Month",
+  "lastMonth": "Last Month",
+  "nextMonth": "Next Month",
+  "allTime": "All Time",
+
+  "monday": "Monday",
+  "tuesday": "Tuesday",
+  "wednesday": "Wednesday",
+  "thursday": "Thursday",
+  "friday": "Friday",
+  "saturday": "Saturday",
+  "sunday": "Sunday",
+  "mon": "Mon",
+  "tue": "Tue",
+  "wed": "Wed",
+  "thu": "Thu",
+  "fri": "Fri",
+  "sat": "Sat",
+  "sun": "Sun",
+
+  "january": "January",
+  "february": "February",
+  "march": "March",
+  "april": "April",
+  "may": "May",
+  "june": "June",
+  "july": "July",
+  "august": "August",
+  "september": "September",
+  "october": "October",
+  "november": "November",
+  "december": "December",
+
+  "daysAgo": "{days} days ago",
+  "@daysAgo": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "hoursAgo": "{hours} hours ago",
+  "@hoursAgo": {
+    "placeholders": {
+      "hours": {"type": "int"}
+    }
+  },
+  "minutesAgo": "{minutes} minutes ago",
+  "@minutesAgo": {
+    "placeholders": {
+      "minutes": {"type": "int"}
+    }
+  },
+  "justNow": "Just now",
+
+  "onboarding_title1": "Welcome to UpCoach",
+  "onboarding_desc1": "Your personal coaching companion for achieving your goals",
+  "onboarding_title2": "Track Your Habits",
+  "onboarding_desc2": "Build lasting habits with daily tracking and reminders",
+  "onboarding_title3": "AI-Powered Coaching",
+  "onboarding_desc3": "Get personalized guidance from your AI coach anytime",
+  "onboarding_title4": "Celebrate Progress",
+  "onboarding_desc4": "Earn achievements and compete on the leaderboard",
+  "getStarted": "Get Started",
+  "letsGo": "Let's Go!",
+
+  "progressPhotos": "Progress Photos",
+  "addPhoto": "Add Photo",
+  "viewPhoto": "View Photo",
+  "deletePhoto": "Delete Photo",
+  "noPhotos": "No photos yet",
+  "noPhotosDescription": "Capture your progress journey",
+  "photoSaved": "Photo saved",
+  "comparePhotos": "Compare Photos",
+  "beforeAfter": "Before & After"
+}

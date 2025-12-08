@@ -13,7 +13,7 @@ class HabitService {
   Future<List<Habit>> getAllHabits() async {
     final prefs = await SharedPreferences.getInstance();
     final habitsJson = prefs.getStringList(_habitsKey) ?? [];
-    
+
     return habitsJson.map((jsonString) {
       final json = jsonDecode(jsonString) as Map<String, dynamic>;
       return Habit.fromJson(json);
@@ -22,28 +22,28 @@ class HabitService {
 
   Future<Habit> createHabit(Habit habit) async {
     final existingHabits = await getAllHabits();
-    
+
     final newHabit = habit.copyWith(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       createdAt: DateTime.now(),
     );
-    
+
     existingHabits.add(newHabit);
     await _saveHabits(existingHabits);
-    
+
     return newHabit;
   }
 
   Future<Habit> updateHabit(Habit habit) async {
     final existingHabits = await getAllHabits();
     final index = existingHabits.indexWhere((h) => h.id == habit.id);
-    
+
     if (index != -1) {
       existingHabits[index] = habit.copyWith(updatedAt: DateTime.now());
       await _saveHabits(existingHabits);
       return existingHabits[index];
     }
-    
+
     throw Exception('Habit not found');
   }
 
@@ -51,7 +51,7 @@ class HabitService {
     final existingHabits = await getAllHabits();
     existingHabits.removeWhere((h) => h.id == habitId);
     await _saveHabits(existingHabits);
-    
+
     // Also delete related completions, streaks, and achievements
     await _deleteHabitCompletions(habitId);
     await _deleteHabitStreaks(habitId);
@@ -71,7 +71,7 @@ class HabitService {
   Future<List<HabitCompletion>> getAllCompletions() async {
     final prefs = await SharedPreferences.getInstance();
     final completionsJson = prefs.getStringList(_completionsKey) ?? [];
-    
+
     return completionsJson.map((jsonString) {
       final json = jsonDecode(jsonString) as Map<String, dynamic>;
       return HabitCompletion.fromJson(json);
@@ -101,8 +101,8 @@ class HabitService {
     return allCompletions.where((c) {
       final completionDate = c.completedAt;
       return completionDate.year == date.year &&
-             completionDate.month == date.month &&
-             completionDate.day == date.day;
+          completionDate.month == date.month &&
+          completionDate.day == date.day;
     }).toList();
   }
 
@@ -110,7 +110,7 @@ class HabitService {
   Future<List<HabitStreak>> getAllStreaks() async {
     final prefs = await SharedPreferences.getInstance();
     final streaksJson = prefs.getStringList(_streaksKey) ?? [];
-    
+
     return streaksJson.map((jsonString) {
       final json = jsonDecode(jsonString) as Map<String, dynamic>;
       return HabitStreak.fromJson(json);
@@ -127,7 +127,7 @@ class HabitService {
   Future<void> updateStreak(HabitStreak streak) async {
     final existingStreaks = await getAllStreaks();
     final index = existingStreaks.indexWhere((s) => s.id == streak.id);
-    
+
     if (index != -1) {
       existingStreaks[index] = streak;
       await _saveStreaks(existingStreaks);
@@ -149,7 +149,7 @@ class HabitService {
   Future<List<HabitAchievement>> getAllAchievements() async {
     final prefs = await SharedPreferences.getInstance();
     final achievementsJson = prefs.getStringList(_achievementsKey) ?? [];
-    
+
     return achievementsJson.map((jsonString) {
       final json = jsonDecode(jsonString) as Map<String, dynamic>;
       return HabitAchievement.fromJson(json);
@@ -166,9 +166,10 @@ class HabitService {
   Future<void> markAchievementAsShown(String achievementId) async {
     final existingAchievements = await getAllAchievements();
     final index = existingAchievements.indexWhere((a) => a.id == achievementId);
-    
+
     if (index != -1) {
-      existingAchievements[index] = existingAchievements[index].copyWith(isShown: true);
+      existingAchievements[index] =
+          existingAchievements[index].copyWith(isShown: true);
       await _saveAchievements(existingAchievements);
     }
   }
@@ -187,36 +188,39 @@ class HabitService {
   Future<Map<String, dynamic>> getHabitAnalytics(String habitId) async {
     final completions = await getCompletionsForHabit(habitId);
     final habit = await getHabitById(habitId);
-    
+
     if (habit == null) return {};
-    
+
     final now = DateTime.now();
-    final last30Days = List.generate(30, (index) => 
-      now.subtract(Duration(days: 29 - index)));
-    
+    final last30Days =
+        List.generate(30, (index) => now.subtract(Duration(days: 29 - index)));
+
     final completionsByDay = <DateTime, int>{};
     for (final day in last30Days) {
       final dayCompletions = completions.where((c) {
         final completionDate = c.completedAt;
         return completionDate.year == day.year &&
-               completionDate.month == day.month &&
-               completionDate.day == day.day;
+            completionDate.month == day.month &&
+            completionDate.day == day.day;
       }).length;
       completionsByDay[day] = dayCompletions;
     }
-    
+
     final totalCompletions = completions.length;
-    final daysWithCompletions = completionsByDay.values.where((count) => count > 0).length;
+    final daysWithCompletions =
+        completionsByDay.values.where((count) => count > 0).length;
     final consistencyRate = daysWithCompletions / 30.0;
-    
+
     return {
       'totalCompletions': totalCompletions,
-      'last30DaysCompletions': completionsByDay.values.fold<int>(0, (sum, count) => sum + count),
+      'last30DaysCompletions':
+          completionsByDay.values.fold<int>(0, (sum, count) => sum + count),
       'consistencyRate': consistencyRate,
       'completionsByDay': completionsByDay,
-      'averageCompletionsPerDay': totalCompletions > 0 
-        ? completions.fold<int>(0, (sum, c) => sum + c.value) / totalCompletions
-        : 0.0,
+      'averageCompletionsPerDay': totalCompletions > 0
+          ? completions.fold<int>(0, (sum, c) => sum + c.value) /
+              totalCompletions
+          : 0.0,
     };
   }
 
@@ -224,25 +228,26 @@ class HabitService {
     final habits = await getAllHabits();
     final completions = await getAllCompletions();
     final achievements = await getAllAchievements();
-    
+
     final activeHabits = habits.where((h) => h.isActive).length;
     final totalStreaks = habits.fold<int>(0, (sum, h) => sum + h.currentStreak);
     final averageStreak = activeHabits > 0 ? totalStreaks / activeHabits : 0.0;
-    
+
     final now = DateTime.now();
     final todayCompletions = completions.where((c) {
       final completionDate = c.completedAt;
       return completionDate.year == now.year &&
-             completionDate.month == now.month &&
-             completionDate.day == now.day;
+          completionDate.month == now.month &&
+          completionDate.day == now.day;
     }).length;
-    
+
     final thisWeekCompletions = completions.where((c) {
       final completionDate = c.completedAt;
       final weekStart = now.subtract(Duration(days: now.weekday - 1));
-      return completionDate.isAfter(weekStart.subtract(const Duration(days: 1)));
+      return completionDate
+          .isAfter(weekStart.subtract(const Duration(days: 1)));
     }).length;
-    
+
     return {
       'totalHabits': habits.length,
       'activeHabits': activeHabits,
@@ -260,7 +265,7 @@ class HabitService {
     final completions = await getAllCompletions();
     final streaks = await getAllStreaks();
     final achievements = await getAllAchievements();
-    
+
     return {
       'habits': habits.map((h) => h.toJson()).toList(),
       'completions': completions.map((c) => c.toJson()).toList(),
@@ -280,15 +285,16 @@ class HabitService {
             .toList();
         await _saveHabits(habits);
       }
-      
+
       // Import completions
       if (data['completions'] != null) {
         final completions = (data['completions'] as List)
-            .map((json) => HabitCompletion.fromJson(json as Map<String, dynamic>))
+            .map((json) =>
+                HabitCompletion.fromJson(json as Map<String, dynamic>))
             .toList();
         await _saveCompletions(completions);
       }
-      
+
       // Import streaks
       if (data['streaks'] != null) {
         final streaks = (data['streaks'] as List)
@@ -296,11 +302,12 @@ class HabitService {
             .toList();
         await _saveStreaks(streaks);
       }
-      
+
       // Import achievements
       if (data['achievements'] != null) {
         final achievements = (data['achievements'] as List)
-            .map((json) => HabitAchievement.fromJson(json as Map<String, dynamic>))
+            .map((json) =>
+                HabitAchievement.fromJson(json as Map<String, dynamic>))
             .toList();
         await _saveAchievements(achievements);
       }
@@ -312,27 +319,31 @@ class HabitService {
   // Private helper methods
   Future<void> _saveHabits(List<Habit> habits) async {
     final prefs = await SharedPreferences.getInstance();
-    final habitsJson = habits.map((habit) => jsonEncode(habit.toJson())).toList();
+    final habitsJson =
+        habits.map((habit) => jsonEncode(habit.toJson())).toList();
     await prefs.setStringList(_habitsKey, habitsJson);
   }
 
   Future<void> _saveCompletions(List<HabitCompletion> completions) async {
     final prefs = await SharedPreferences.getInstance();
-    final completionsJson = completions.map((completion) => 
-        jsonEncode(completion.toJson())).toList();
+    final completionsJson = completions
+        .map((completion) => jsonEncode(completion.toJson()))
+        .toList();
     await prefs.setStringList(_completionsKey, completionsJson);
   }
 
   Future<void> _saveStreaks(List<HabitStreak> streaks) async {
     final prefs = await SharedPreferences.getInstance();
-    final streaksJson = streaks.map((streak) => jsonEncode(streak.toJson())).toList();
+    final streaksJson =
+        streaks.map((streak) => jsonEncode(streak.toJson())).toList();
     await prefs.setStringList(_streaksKey, streaksJson);
   }
 
   Future<void> _saveAchievements(List<HabitAchievement> achievements) async {
     final prefs = await SharedPreferences.getInstance();
-    final achievementsJson = achievements.map((achievement) => 
-        jsonEncode(achievement.toJson())).toList();
+    final achievementsJson = achievements
+        .map((achievement) => jsonEncode(achievement.toJson()))
+        .toList();
     await prefs.setStringList(_achievementsKey, achievementsJson);
   }
 
@@ -358,4 +369,4 @@ class HabitService {
 // Provider for HabitService
 final habitServiceProvider = Provider<HabitService>((ref) {
   return HabitService();
-}); 
+});

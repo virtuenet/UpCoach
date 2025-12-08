@@ -94,7 +94,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     try {
       // In a real app, this would call an API
       await Future.delayed(const Duration(seconds: 1));
-      
+
       state = state.copyWith(
         isLoading: false,
       );
@@ -112,7 +112,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     try {
       // In a real app, this would call an API
       await Future.delayed(const Duration(seconds: 1));
-      
+
       // Sign out after account deletion
       await ref.read(authProvider.notifier).signOut();
     } catch (e) {
@@ -132,6 +132,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
   }
 }
 
-final profileProvider = StateNotifierProvider<ProfileNotifier, ProfileState>((ref) {
+final profileProvider =
+    StateNotifierProvider<ProfileNotifier, ProfileState>((ref) {
   return ProfileNotifier(ref);
-}); 
+});

@@ -187,7 +187,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(UIConstants.spacingMD),
-                  color: AppTheme.primaryColor.withOpacity(0.1),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
                   child: Row(
                     children: [
                       Text(
@@ -260,7 +260,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
               builder: (context) => const CreateHabitScreen(),
             ),
           );
-          
+
           if (result == true) {
             habitNotifier.loadHabits();
           }
@@ -281,7 +281,8 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
 
     // Apply category filter
     if (_selectedCategory != null) {
-      habits = habits.where((habit) => habit.category == _selectedCategory).toList();
+      habits =
+          habits.where((habit) => habit.category == _selectedCategory).toList();
     }
 
     if (habits.isEmpty) {
@@ -371,7 +372,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
                     });
                     Navigator.of(context).pop();
                   },
-                  selectedColor: AppTheme.primaryColor.withOpacity(0.2),
+                  selectedColor: AppTheme.primaryColor.withValues(alpha: 0.2),
                   checkmarkColor: AppTheme.primaryColor,
                 );
               }).toList(),
@@ -454,8 +455,9 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
           TextButton(
             onPressed: () async {
               final success = await habitNotifier.deleteHabit(habit.id);
+              if (!context.mounted) return;
               Navigator.of(context).pop();
-              
+
               if (success) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -495,4 +497,4 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen>
         return 'Other';
     }
   }
-} 
+}

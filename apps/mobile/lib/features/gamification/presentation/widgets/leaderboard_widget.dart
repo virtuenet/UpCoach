@@ -10,12 +10,12 @@ class LeaderboardWidget extends StatelessWidget {
   final VoidCallback? onViewAll;
 
   const LeaderboardWidget({
-    Key? key,
+    super.key,
     required this.entries,
     this.selectedPeriod = 'weekly',
     this.onPeriodChanged,
     this.onViewAll,
-  }) : super(key: key);
+  });
 
   Color _getRankColor(String rank) {
     switch (rank) {
@@ -88,16 +88,19 @@ class LeaderboardWidget extends StatelessWidget {
 
   Widget _buildLeaderboardItem(LeaderboardEntry entry) {
     final rankColor = _getRankColor(entry.rank);
-    final isTopThree = int.tryParse(entry.rank) != null && int.parse(entry.rank) <= 3;
+    final isTopThree =
+        int.tryParse(entry.rank) != null && int.parse(entry.rank) <= 3;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isTopThree ? rankColor.withOpacity(0.05) : AppColors.surface,
+        color:
+            isTopThree ? rankColor.withValues(alpha: 0.05) : AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isTopThree ? rankColor.withOpacity(0.3) : AppColors.gray200,
+          color:
+              isTopThree ? rankColor.withValues(alpha: 0.3) : AppColors.gray200,
         ),
       ),
       child: Row(
@@ -219,9 +222,9 @@ class LeaderboardWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: badgeColor.withOpacity(0.1),
+        color: badgeColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: badgeColor.withOpacity(0.3)),
+        border: Border.all(color: badgeColor.withValues(alpha: 0.3)),
       ),
       child: Text(
         badge,

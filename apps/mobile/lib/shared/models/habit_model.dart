@@ -12,9 +12,9 @@ enum HabitFrequency {
 
 enum HabitType {
   simple, // Yes/No completion
-  count,  // Track number of times
-  time,   // Track duration
-  value,  // Track numeric value
+  count, // Track number of times
+  time, // Track duration
+  value, // Track numeric value
 }
 
 enum HabitCategory {
@@ -50,12 +50,12 @@ class Habit with _$Habit {
     @Default(0) int longestStreak,
     @Default(0) int totalCompletions,
     @Default([]) List<int> weekdays, // For weekly habits: [1,2,3,4,5] = Mon-Fri
-    @Default(null) int? customInterval, // For custom frequency
-    @Default(null) DateTime? lastCompletedAt,
-    @Default(null) DateTime? startDate,
-    @Default(null) DateTime? endDate,
+    int? customInterval, // For custom frequency
+    DateTime? lastCompletedAt,
+    DateTime? startDate,
+    DateTime? endDate,
     @Default(false) bool hasReminder,
-    @Default(null) DateTime? reminderTime,
+    DateTime? reminderTime,
     @Default('') String reminderMessage,
   }) = _Habit;
 
@@ -70,11 +70,11 @@ class HabitCompletion with _$HabitCompletion {
     required DateTime completedAt,
     @Default(1) int value,
     @Default('') String notes,
-    @Default(null) int? duration, // In minutes for time-based habits
+    int? duration, // In minutes for time-based habits
     required DateTime createdAt,
   }) = _HabitCompletion;
 
-  factory HabitCompletion.fromJson(Map<String, dynamic> json) => 
+  factory HabitCompletion.fromJson(Map<String, dynamic> json) =>
       _$HabitCompletionFromJson(json);
 }
 
@@ -90,7 +90,7 @@ class HabitStreak with _$HabitStreak {
     required DateTime createdAt,
   }) = _HabitStreak;
 
-  factory HabitStreak.fromJson(Map<String, dynamic> json) => 
+  factory HabitStreak.fromJson(Map<String, dynamic> json) =>
       _$HabitStreakFromJson(json);
 }
 
@@ -108,7 +108,7 @@ class HabitAchievement with _$HabitAchievement {
     @Default(false) bool isShown,
   }) = _HabitAchievement;
 
-  factory HabitAchievement.fromJson(Map<String, dynamic> json) => 
+  factory HabitAchievement.fromJson(Map<String, dynamic> json) =>
       _$HabitAchievementFromJson(json);
 }
 
@@ -123,7 +123,7 @@ class HabitState with _$HabitState {
     @Default(false) bool isSaving,
     String? error,
     Habit? selectedHabit,
-    @Default(null) DateTime? selectedDate,
+    DateTime? selectedDate,
   }) = _HabitState;
 }
 
@@ -134,8 +134,8 @@ extension HabitExtensions on Habit {
     final today = DateTime.now();
     final lastCompleted = lastCompletedAt!;
     return lastCompleted.year == today.year &&
-           lastCompleted.month == today.month &&
-           lastCompleted.day == today.day;
+        lastCompleted.month == today.month &&
+        lastCompleted.day == today.day;
   }
 
   bool isScheduledForDate(DateTime date) {
@@ -159,9 +159,10 @@ extension HabitExtensions on Habit {
         return 'Daily';
       case HabitFrequency.weekly:
         if (weekdays.isEmpty) return 'Weekly';
-        final days = weekdays.map((day) => 
-          ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][day - 1]
-        ).join(', ');
+        final days = weekdays
+            .map((day) =>
+                ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][day - 1])
+            .join(', ');
         return 'Weekly ($days)';
       case HabitFrequency.monthly:
         return 'Monthly';
@@ -187,9 +188,9 @@ extension HabitExtensions on Habit {
     final dayCompletions = completions.where((completion) {
       final completedDate = completion.completedAt;
       return completion.habitId == id &&
-             completedDate.year == date.year &&
-             completedDate.month == date.month &&
-             completedDate.day == date.day;
+          completedDate.year == date.year &&
+          completedDate.month == date.month &&
+          completedDate.day == date.day;
     }).toList();
 
     if (dayCompletions.isEmpty) return 0.0;
@@ -200,12 +201,12 @@ extension HabitExtensions on Habit {
       case HabitType.count:
       case HabitType.value:
         final totalValue = dayCompletions.fold<int>(
-          0, (sum, completion) => sum + completion.value);
+            0, (sum, completion) => sum + completion.value);
         return (totalValue / targetValue).clamp(0.0, 1.0);
       case HabitType.time:
         final totalDuration = dayCompletions.fold<int>(
-          0, (sum, completion) => sum + (completion.duration ?? 0));
+            0, (sum, completion) => sum + (completion.duration ?? 0));
         return (totalDuration / targetValue).clamp(0.0, 1.0);
     }
   }
-} 
+}

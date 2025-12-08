@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/mood_model.dart';
 import '../providers/mood_provider.dart';
-import 'create_mood_screen.dart';
 
 class MoodScreen extends ConsumerStatefulWidget {
   const MoodScreen({super.key});
@@ -47,20 +46,21 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
       body: moodState.isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-              onRefresh: () => ref.read(moodProvider.notifier).loadMoodEntries(),
+              onRefresh: () =>
+                  ref.read(moodProvider.notifier).loadMoodEntries(),
               child: ListView(
                 padding: const EdgeInsets.only(bottom: 80),
                 children: [
                   // Today's Mood Card
                   _buildTodaysMoodCard(todaysMood),
-                  
+
                   // Mood Stats
                   if (moodState.stats != null)
                     _buildStatsCard(moodState.stats!),
-                  
+
                   // Week Overview
                   _buildWeekOverview(moodState.weekMoods),
-                  
+
                   // Recent Moods
                   _buildRecentMoods(moodState.moodEntries),
                 ],
@@ -84,15 +84,21 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: mood != null
-              ? [_getMoodColor(mood.level), _getMoodColor(mood.level).withOpacity(0.7)]
-              : [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity(0.7)],
+              ? [
+                  _getMoodColor(mood.level),
+                  _getMoodColor(mood.level).withValues(alpha: 0.7)
+                ]
+              : [
+                  AppTheme.primaryColor,
+                  AppTheme.primaryColor.withValues(alpha: 0.7)
+                ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(UIConstants.radiusXL),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -108,9 +114,9 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                     Text(
                       'Today\'s Mood',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.edit, color: Colors.white),
@@ -150,8 +156,9 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(UIConstants.radiusXL),
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(
+                                        UIConstants.radiusXL),
                                   ),
                                   child: Text(
                                     MoodModel.getCategoryLabel(category),
@@ -174,7 +181,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                   Text(
                     mood.note!,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 16,
                     ),
                     maxLines: 2,
@@ -194,15 +201,15 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                 Text(
                   'How are you feeling today?',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 const SizedBox(height: UIConstants.spacingSM),
                 Text(
                   'Tap below to log your mood',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 16,
                   ),
                 ),
@@ -222,8 +229,8 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
             Text(
               'Mood Statistics',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
             const SizedBox(height: UIConstants.spacingMD),
             Row(
@@ -255,7 +262,8 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
+  Widget _buildStatItem(
+      String label, String value, IconData icon, Color color) {
     return Column(
       children: [
         Icon(icon, size: 32, color: color),
@@ -293,8 +301,8 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
             Text(
               'This Week',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
             const SizedBox(height: UIConstants.spacingMD),
             Row(
@@ -371,21 +379,21 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
           child: Text(
             'Recent Moods',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+                  fontWeight: FontWeight.w600,
+                ),
           ),
         ),
         ...moods.take(10).map((mood) => _MoodListTile(
-          mood: mood,
-          onTap: () => _navigateToEditMood(mood),
-        )),
+              mood: mood,
+              onTap: () => _navigateToEditMood(mood),
+            )),
       ],
     );
   }
 
   void _showInsightsSheet() {
     final insights = ref.read(moodProvider).insights;
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -406,7 +414,7 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppTheme.textSecondary.withOpacity(0.3),
+                    color: AppTheme.textSecondary.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -415,8 +423,8 @@ class _MoodScreenState extends ConsumerState<MoodScreen> {
               Text(
                 'Mood Insights',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: UIConstants.spacingLG),
               if (insights != null) ...[
@@ -492,7 +500,7 @@ class _MoodListTile extends StatelessWidget {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: _getMoodColor(mood.level).withOpacity(0.2),
+            color: _getMoodColor(mood.level).withValues(alpha: 0.2),
             shape: BoxShape.circle,
           ),
           child: Center(
@@ -544,4 +552,4 @@ class _MoodListTile extends StatelessWidget {
         return Colors.green;
     }
   }
-} 
+}

@@ -21,7 +21,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _milestoneController = TextEditingController();
-  
+
   GoalCategory _category = GoalCategory.personal;
   GoalPriority _priority = GoalPriority.medium;
   DateTime? _targetDate;
@@ -61,7 +61,7 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
       firstDate: DateTime.now().add(const Duration(days: 1)),
       lastDate: DateTime.now().add(const Duration(days: 1825)), // 5 years
     );
-    
+
     if (date != null) {
       setState(() {
         _targetDate = date;
@@ -107,35 +107,37 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
       if (isEditing) {
         // Update existing goal
         await ref.read(goalProvider.notifier).updateGoal(
-          goalId: widget.goalToEdit!.id,
-          title: _titleController.text.trim(),
-          description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
-          category: _category,
-          priority: _priority,
-          targetDate: _targetDate!,
-          milestones: _milestones,
-        );
+              goalId: widget.goalToEdit!.id,
+              title: _titleController.text.trim(),
+              description: _descriptionController.text.trim().isEmpty
+                  ? null
+                  : _descriptionController.text.trim(),
+              category: _category,
+              priority: _priority,
+              targetDate: _targetDate!,
+              milestones: _milestones,
+            );
       } else {
         // Create new goal
         await ref.read(goalProvider.notifier).createGoal(
-          title: _titleController.text.trim(),
-          description: _descriptionController.text.trim().isEmpty
-              ? null
-              : _descriptionController.text.trim(),
-          category: _category,
-          priority: _priority,
-          targetDate: _targetDate!,
-          milestones: _milestones,
-        );
+              title: _titleController.text.trim(),
+              description: _descriptionController.text.trim().isEmpty
+                  ? null
+                  : _descriptionController.text.trim(),
+              category: _category,
+              priority: _priority,
+              targetDate: _targetDate!,
+              milestones: _milestones,
+            );
       }
 
       if (mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(isEditing ? 'Goal updated successfully' : 'Goal created successfully'),
+            content: Text(isEditing
+                ? 'Goal updated successfully'
+                : 'Goal created successfully'),
             backgroundColor: AppTheme.successColor,
           ),
         );
@@ -144,7 +146,8 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to ${widget.goalToEdit != null ? 'update' : 'create'} goal: $e'),
+            content: Text(
+                'Failed to ${widget.goalToEdit != null ? 'update' : 'create'} goal: $e'),
             backgroundColor: AppTheme.errorColor,
           ),
         );
@@ -191,9 +194,9 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
               },
               textCapitalization: TextCapitalization.sentences,
             ),
-            
+
             const SizedBox(height: UIConstants.spacingMD),
-            
+
             // Description
             TextFormField(
               controller: _descriptionController,
@@ -206,15 +209,15 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
               maxLines: 3,
               textCapitalization: TextCapitalization.sentences,
             ),
-            
+
             const SizedBox(height: UIConstants.spacingLG),
-            
+
             // Category
             Text(
               'Category',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
             const SizedBox(height: UIConstants.spacingSM),
             Wrap(
@@ -237,15 +240,15 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                 );
               }).toList(),
             ),
-            
+
             const SizedBox(height: UIConstants.spacingLG),
-            
+
             // Priority
             Text(
               'Priority',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
             const SizedBox(height: UIConstants.spacingSM),
             Wrap(
@@ -261,13 +264,14 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                       });
                     }
                   },
-                  selectedColor: _getPriorityColor(priority).withOpacity(0.3),
+                  selectedColor:
+                      _getPriorityColor(priority).withValues(alpha: 0.3),
                 );
               }).toList(),
             ),
-            
+
             const SizedBox(height: UIConstants.spacingLG),
-            
+
             // Target Date
             InkWell(
               onTap: _selectDate,
@@ -284,18 +288,18 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: UIConstants.spacingLG),
-            
+
             // Milestones
             Text(
               'Milestones',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
             const SizedBox(height: UIConstants.spacingSM),
-            
+
             // Milestone input
             Row(
               children: [
@@ -318,9 +322,9 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: UIConstants.spacingSM),
-            
+
             // Milestones list
             if (_milestones.isEmpty)
               Padding(
@@ -349,9 +353,9 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                   ),
                 );
               }),
-            
+
             const SizedBox(height: UIConstants.spacingXL),
-            
+
             // Create button
             ElevatedButton.icon(
               onPressed: _isLoading ? null : _createGoal,
@@ -366,7 +370,9 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
                   : const Icon(Icons.flag),
               label: Text(_isLoading
                   ? (widget.goalToEdit != null ? 'Updating...' : 'Creating...')
-                  : (widget.goalToEdit != null ? 'Update Goal' : 'Create Goal')),
+                  : (widget.goalToEdit != null
+                      ? 'Update Goal'
+                      : 'Create Goal')),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(48),
               ),
@@ -436,4 +442,4 @@ class _CreateGoalScreenState extends ConsumerState<CreateGoalScreen> {
         return AppTheme.errorColor;
     }
   }
-} 
+}

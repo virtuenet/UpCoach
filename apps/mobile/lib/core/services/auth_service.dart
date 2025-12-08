@@ -25,8 +25,10 @@ class AuthService {
 
   AuthService._internal() {
     _dio.options.baseUrl = AppConstants.apiUrl;
-    _dio.options.connectTimeout = const Duration(seconds: AppConstants.requestTimeoutSeconds);
-    _dio.options.receiveTimeout = const Duration(seconds: AppConstants.requestTimeoutSeconds);
+    _dio.options.connectTimeout =
+        const Duration(seconds: AppConstants.requestTimeoutSeconds);
+    _dio.options.receiveTimeout =
+        const Duration(seconds: AppConstants.requestTimeoutSeconds);
   }
 
   Future<AuthResponse> login({
@@ -43,11 +45,13 @@ class AuthService {
       );
 
       final authResponse = AuthResponse.fromJson(response.data);
-      
+
       // Store tokens securely
-      await _secureStorage.write(key: 'access_token', value: authResponse.accessToken);
-      await _secureStorage.write(key: 'refresh_token', value: authResponse.refreshToken);
-      
+      await _secureStorage.write(
+          key: 'access_token', value: authResponse.accessToken);
+      await _secureStorage.write(
+          key: 'refresh_token', value: authResponse.refreshToken);
+
       return authResponse;
     } on DioException catch (e) {
       throw _handleError(e);
@@ -72,11 +76,13 @@ class AuthService {
       );
 
       final authResponse = AuthResponse.fromJson(response.data);
-      
+
       // Store tokens securely
-      await _secureStorage.write(key: 'access_token', value: authResponse.accessToken);
-      await _secureStorage.write(key: 'refresh_token', value: authResponse.refreshToken);
-      
+      await _secureStorage.write(
+          key: 'access_token', value: authResponse.accessToken);
+      await _secureStorage.write(
+          key: 'refresh_token', value: authResponse.refreshToken);
+
       return authResponse;
     } on DioException catch (e) {
       throw _handleError(e);
@@ -133,11 +139,13 @@ class AuthService {
       );
 
       final authResponse = AuthResponse.fromJson(response.data);
-      
+
       // Update stored tokens
-      await _secureStorage.write(key: 'access_token', value: authResponse.accessToken);
-      await _secureStorage.write(key: 'refresh_token', value: authResponse.refreshToken);
-      
+      await _secureStorage.write(
+          key: 'access_token', value: authResponse.accessToken);
+      await _secureStorage.write(
+          key: 'refresh_token', value: authResponse.refreshToken);
+
       return authResponse;
     } on DioException catch (e) {
       throw _handleError(e);
@@ -183,9 +191,6 @@ class AuthService {
 
       // Authenticate with Google (v7 uses authenticate() instead of signIn())
       final authResult = await googleSignIn.authenticate();
-      if (authResult == null) {
-        throw Exception('Google sign in was cancelled by user');
-      }
 
       // Get user info directly from auth result
       final email = authResult.email;
@@ -193,7 +198,8 @@ class AuthService {
       final photoUrl = authResult.photoUrl;
 
       // Request authorization for scopes to get access token
-      final authorization = await authResult.authorizationClient.authorizeScopes(
+      final authorization =
+          await authResult.authorizationClient.authorizeScopes(
         ['email', 'profile', 'openid'],
       );
 
@@ -211,8 +217,10 @@ class AuthService {
       final authResponse = AuthResponse.fromJson(response.data);
 
       // Store tokens securely
-      await _secureStorage.write(key: 'access_token', value: authResponse.accessToken);
-      await _secureStorage.write(key: 'refresh_token', value: authResponse.refreshToken);
+      await _secureStorage.write(
+          key: 'access_token', value: authResponse.accessToken);
+      await _secureStorage.write(
+          key: 'refresh_token', value: authResponse.refreshToken);
 
       _currentUser = authResponse.user;
       return authResponse;
@@ -227,13 +235,15 @@ class AuthService {
     if (Platform.isAndroid) {
       final clientId = AppConstants.googleAndroidClientId;
       if (clientId.isEmpty) {
-        throw Exception('Google Android Client ID not configured. Please set GOOGLE_ANDROID_CLIENT_ID environment variable.');
+        throw Exception(
+            'Google Android Client ID not configured. Please set GOOGLE_ANDROID_CLIENT_ID environment variable.');
       }
       return clientId;
     } else if (Platform.isIOS) {
       final clientId = AppConstants.googleIOSClientId;
       if (clientId.isEmpty) {
-        throw Exception('Google iOS Client ID not configured. Please set GOOGLE_IOS_CLIENT_ID environment variable.');
+        throw Exception(
+            'Google iOS Client ID not configured. Please set GOOGLE_IOS_CLIENT_ID environment variable.');
       }
       return clientId;
     }
@@ -249,5 +259,3 @@ class AuthService {
     }
   }
 }
-
- 

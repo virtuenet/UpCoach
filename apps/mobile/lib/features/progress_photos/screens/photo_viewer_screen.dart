@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../../shared/models/progress_photo.dart';
-import '../../../shared/widgets/custom_app_bar.dart';
 import '../../../core/theme/app_colors.dart';
 
 class PhotoViewerScreen extends StatefulWidget {
@@ -31,7 +30,8 @@ class PhotoViewerScreen extends StatefulWidget {
 }
 
 class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
-  final TransformationController _transformationController = TransformationController();
+  final TransformationController _transformationController =
+      TransformationController();
   late PageController _pageController;
   late int _currentIndex;
   bool _showOverlay = true;
@@ -204,8 +204,11 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
             ),
             IconButton(
               icon: Icon(
-                _currentPhoto.isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: _currentPhoto.isFavorite ? AppColors.error : Colors.white,
+                _currentPhoto.isFavorite
+                    ? Icons.favorite
+                    : Icons.favorite_border,
+                color:
+                    _currentPhoto.isFavorite ? AppColors.error : Colors.white,
               ),
               onPressed: () {
                 // TODO: Toggle favorite
@@ -246,7 +249,8 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.8),
                       borderRadius: BorderRadius.circular(4),
@@ -270,7 +274,8 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
                   ),
                 ],
               ),
-              if (_currentPhoto.notes != null && _currentPhoto.notes!.isNotEmpty) ...[
+              if (_currentPhoto.notes != null &&
+                  _currentPhoto.notes!.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
                   _currentPhoto.notes!,
@@ -289,7 +294,8 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
                   runSpacing: 4,
                   children: _currentPhoto.tags.map((tag) {
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
@@ -337,7 +343,8 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.delete, color: AppColors.error),
-              title: const Text('Delete', style: TextStyle(color: AppColors.error)),
+              title: const Text('Delete',
+                  style: TextStyle(color: AppColors.error)),
               onTap: () {
                 Navigator.pop(context);
                 _showDeleteConfirmation();

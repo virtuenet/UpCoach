@@ -51,7 +51,7 @@ class HabitStatsOverview extends StatelessWidget {
     }
 
     final overallStats = _calculateOverallStats();
-    
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(UIConstants.spacingMD),
       child: Column(
@@ -79,9 +79,9 @@ class HabitStatsOverview extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: UIConstants.spacingMD),
-          
+
           Row(
             children: [
               Expanded(
@@ -103,9 +103,9 @@ class HabitStatsOverview extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: UIConstants.spacingLG),
-          
+
           // Today's Progress
           const Text(
             'Today\'s Progress',
@@ -119,9 +119,9 @@ class HabitStatsOverview extends StatelessWidget {
             habits: habits,
             completions: completions,
           ),
-          
+
           const SizedBox(height: UIConstants.spacingLG),
-          
+
           // Weekly Activity Chart
           const Text(
             'Weekly Activity',
@@ -135,9 +135,9 @@ class HabitStatsOverview extends StatelessWidget {
             habits: habits,
             completions: completions,
           ),
-          
+
           const SizedBox(height: UIConstants.spacingLG),
-          
+
           // Category Breakdown
           const Text(
             'Category Breakdown',
@@ -148,9 +148,9 @@ class HabitStatsOverview extends StatelessWidget {
           ),
           const SizedBox(height: UIConstants.spacingMD),
           _CategoryBreakdown(habits: habits),
-          
+
           const SizedBox(height: UIConstants.spacingLG),
-          
+
           // Top Performing Habits
           const Text(
             'Top Performing Habits',
@@ -164,9 +164,9 @@ class HabitStatsOverview extends StatelessWidget {
             habits: habits,
             completions: completions,
           ),
-          
+
           const SizedBox(height: UIConstants.spacingLG),
-          
+
           // Recent Achievements
           if (achievements.isNotEmpty) ...[
             const Text(
@@ -188,17 +188,17 @@ class HabitStatsOverview extends StatelessWidget {
     final activeHabits = habits.where((h) => h.isActive).length;
     final totalStreaks = habits.fold<int>(0, (sum, h) => sum + h.currentStreak);
     final totalCompletions = completions.length;
-    
+
     final today = DateTime.now();
-    final todayHabits = habits.where((h) => 
-      h.isActive && h.isScheduledForDate(today)).length;
+    final todayHabits =
+        habits.where((h) => h.isActive && h.isScheduledForDate(today)).length;
     final todayCompletions = completions.where((c) {
       final completionDate = c.completedAt;
       return completionDate.year == today.year &&
-             completionDate.month == today.month &&
-             completionDate.day == today.day;
+          completionDate.month == today.month &&
+          completionDate.day == today.day;
     }).length;
-    
+
     return {
       'activeHabits': activeHabits,
       'totalStreaks': totalStreaks,
@@ -228,9 +228,9 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(UIConstants.spacingMD),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(UIConstants.radiusLG),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,12 +276,13 @@ class _TodayProgressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final today = DateTime.now();
-    final todayHabits = habits.where((h) => 
-      h.isActive && h.isScheduledForDate(today)).toList();
-    
-    final completedHabits = todayHabits.where((habit) => 
-      habit.getProgressForDate(today, completions) >= 1.0).length;
-    
+    final todayHabits =
+        habits.where((h) => h.isActive && h.isScheduledForDate(today)).toList();
+
+    final completedHabits = todayHabits
+        .where((habit) => habit.getProgressForDate(today, completions) >= 1.0)
+        .length;
+
     final totalHabits = todayHabits.length;
     final progress = totalHabits > 0 ? completedHabits / totalHabits : 0.0;
 
@@ -291,7 +292,7 @@ class _TodayProgressCard extends StatelessWidget {
         gradient: LinearGradient(
           colors: [
             AppTheme.primaryColor,
-            AppTheme.primaryColor.withOpacity(0.8),
+            AppTheme.primaryColor.withValues(alpha: 0.8),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -310,7 +311,7 @@ class _TodayProgressCard extends StatelessWidget {
                 child: CircularProgressIndicator(
                   value: progress,
                   strokeWidth: 6,
-                  backgroundColor: Colors.white.withOpacity(0.3),
+                  backgroundColor: Colors.white.withValues(alpha: 0.3),
                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ),
@@ -324,9 +325,9 @@ class _TodayProgressCard extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(width: UIConstants.spacingLG),
-          
+
           // Stats
           Expanded(
             child: Column(
@@ -350,9 +351,9 @@ class _TodayProgressCard extends StatelessWidget {
                 ),
                 const SizedBox(height: UIConstants.spacingXS),
                 Text(
-                  totalHabits == 0 
+                  totalHabits == 0
                       ? 'No habits scheduled for today'
-                      : progress == 1.0 
+                      : progress == 1.0
                           ? '🎉 Perfect day!'
                           : '💪 Keep going!',
                   style: const TextStyle(
@@ -387,10 +388,10 @@ class _WeeklyActivityChart extends StatelessWidget {
       final dayCompletions = completions.where((c) {
         final completionDate = c.completedAt;
         return completionDate.year == date.year &&
-               completionDate.month == date.month &&
-               completionDate.day == date.day;
+            completionDate.month == date.month &&
+            completionDate.day == date.day;
       }).length;
-      
+
       return ChartData(
         ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][date.weekday - 1],
         dayCompletions,
@@ -435,7 +436,8 @@ class _CategoryBreakdown extends StatelessWidget {
     final categoryCount = <HabitCategory, int>{};
     for (final habit in habits) {
       if (habit.isActive) {
-        categoryCount[habit.category] = (categoryCount[habit.category] ?? 0) + 1;
+        categoryCount[habit.category] =
+            (categoryCount[habit.category] ?? 0) + 1;
       }
     }
 
@@ -465,7 +467,7 @@ class _CategoryBreakdown extends StatelessWidget {
           final category = entry.key;
           final count = entry.value;
           final percentage = count / habits.where((h) => h.isActive).length;
-          
+
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: Row(
@@ -571,7 +573,7 @@ class _TopHabits extends StatelessWidget {
   Widget build(BuildContext context) {
     final sortedHabits = habits.where((h) => h.isActive).toList()
       ..sort((a, b) => b.currentStreak.compareTo(a.currentStreak));
-    
+
     final topHabits = sortedHabits.take(5).toList();
 
     if (topHabits.isEmpty) {
@@ -631,7 +633,8 @@ class _TopHabits extends StatelessWidget {
                 ),
                 if (habit.currentStreak > 0)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.orange.shade100,
                       borderRadius: BorderRadius.circular(UIConstants.radiusLG),
@@ -670,7 +673,7 @@ class _RecentAchievements extends StatelessWidget {
   Widget build(BuildContext context) {
     final recentAchievements = achievements
       ..sort((a, b) => b.unlockedAt.compareTo(a.unlockedAt));
-    
+
     final topAchievements = recentAchievements.take(3).toList();
 
     return Container(
@@ -749,4 +752,4 @@ class ChartData {
   ChartData(this.x, this.y);
   final String x;
   final int y;
-} 
+}

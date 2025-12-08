@@ -3,7 +3,8 @@ import '../../../shared/models/progress_photo.dart';
 import '../../../core/services/progress_photos_service.dart';
 
 class ProgressPhotosNotifier extends StateNotifier<ProgressPhotosState> {
-  ProgressPhotosNotifier(this._progressPhotosService) : super(const ProgressPhotosState()) {
+  ProgressPhotosNotifier(this._progressPhotosService)
+      : super(const ProgressPhotosState()) {
     loadPhotos();
   }
 
@@ -11,7 +12,7 @@ class ProgressPhotosNotifier extends StateNotifier<ProgressPhotosState> {
 
   Future<void> loadPhotos() async {
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       final photos = await _progressPhotosService.getAllPhotos();
       state = state.copyWith(
@@ -33,7 +34,7 @@ class ProgressPhotosNotifier extends StateNotifier<ProgressPhotosState> {
     String? notes,
   }) async {
     state = state.copyWith(isSaving: true, error: null);
-    
+
     try {
       final photo = ProgressPhoto(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -44,15 +45,15 @@ class ProgressPhotosNotifier extends StateNotifier<ProgressPhotosState> {
         takenAt: DateTime.now(),
         createdAt: DateTime.now(),
       );
-      
+
       await _progressPhotosService.addPhoto(photo);
       final updatedPhotos = [...state.photos, photo];
-      
+
       state = state.copyWith(
         photos: updatedPhotos,
         isSaving: false,
       );
-      
+
       return true;
     } catch (e) {
       state = state.copyWith(
@@ -65,16 +66,16 @@ class ProgressPhotosNotifier extends StateNotifier<ProgressPhotosState> {
 
   Future<bool> deletePhoto(String photoId) async {
     state = state.copyWith(isSaving: true, error: null);
-    
+
     try {
       await _progressPhotosService.deletePhoto(photoId);
       final updatedPhotos = state.photos.where((p) => p.id != photoId).toList();
-      
+
       state = state.copyWith(
         photos: updatedPhotos,
         isSaving: false,
       );
-      
+
       return true;
     } catch (e) {
       state = state.copyWith(
@@ -87,21 +88,21 @@ class ProgressPhotosNotifier extends StateNotifier<ProgressPhotosState> {
 
   Future<bool> updatePhoto(ProgressPhoto photo) async {
     state = state.copyWith(isSaving: true, error: null);
-    
+
     try {
       await _progressPhotosService.updatePhoto(photo);
       final photoIndex = state.photos.indexWhere((p) => p.id == photo.id);
-      
+
       if (photoIndex != -1) {
         final updatedPhotos = [...state.photos];
         updatedPhotos[photoIndex] = photo;
-        
+
         state = state.copyWith(
           photos: updatedPhotos,
           isSaving: false,
         );
       }
-      
+
       return true;
     } catch (e) {
       state = state.copyWith(
@@ -126,7 +127,7 @@ class ProgressPhotosNotifier extends StateNotifier<ProgressPhotosState> {
     updatedPhotos[photoIndex] = updatedPhoto;
 
     state = state.copyWith(photos: updatedPhotos);
-    
+
     // Update in storage
     _progressPhotosService.updatePhoto(updatedPhoto);
   }
@@ -143,12 +144,12 @@ class ProgressPhotosNotifier extends StateNotifier<ProgressPhotosState> {
     final totalPhotos = state.photos.length;
     final categories = state.photos.map((p) => p.category).toSet().length;
     final favoritePhotos = state.photos.where((p) => p.isFavorite).length;
-    
+
     final now = DateTime.now();
     final thisMonthPhotos = state.photos.where((p) {
       return p.takenAt.year == now.year && p.takenAt.month == now.month;
     }).length;
-    
+
     return {
       'totalPhotos': totalPhotos,
       'categories': categories,
@@ -159,7 +160,8 @@ class ProgressPhotosNotifier extends StateNotifier<ProgressPhotosState> {
 }
 
 // Provider
-final progressPhotosProvider = StateNotifierProvider<ProgressPhotosNotifier, ProgressPhotosState>((ref) {
+final progressPhotosProvider =
+    StateNotifierProvider<ProgressPhotosNotifier, ProgressPhotosState>((ref) {
   final progressPhotosService = ref.read(progressPhotosServiceProvider);
   return ProgressPhotosNotifier(progressPhotosService);
-}); 
+});

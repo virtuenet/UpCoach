@@ -1,0 +1,141 @@
+version: '3.8'
+
+services:
+  # Ollama - Local LLM serving with easy model management
+  ollama:
+    image: ollama/ollama:latest
+    container_name: upcoach-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+      - ./models:/models
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_ORIGINS=*
+      - OLLAMA_NUM_PARALLEL=4
+      - OLLAMA_MAX_LOADED_MODELS=2
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # vLLM - High-performance inference server (production)
+  vllm:
+    image: vllm/vllm-openai:latest
+    container_name: upcoach-vllm
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/models
+      - huggingface_cache:/root/.cache/huggingface
+    environment:
+      - MODEL_NAME=${VLLM_MODEL:-mistralai/Mistral-7B-Instruct-v0.2}
+      - MAX_MODEL_LEN=4096
+      - GPU_MEMORY_UTILIZATION=0.9
+      - TENSOR_PARALLEL_SIZE=1
+    command: >
+      --model ${VLLM_MODEL:-mistralai/Mistral-7B-Instruct-v0.2}
+      --host 0.0.0.0
+      --port 8000
+      --max-model-len 4096
+      --gpu-memory-utilization 0.9
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    profiles:
+      - production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  # LLM Gateway - API proxy with load balancing, caching, rate limiting
+  llm-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    container_name: upcoach-llm-gateway
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    environment:
+      - NODE_ENV=production
+      - OLLAMA_URL=http://ollama:11434
+      - VLLM_URL=http://vllm:8000
+      - REDIS_URL=redis://redis:6379
+      - API_KEY=${LLM_API_KEY}
+      - RATE_LIMIT_RPM=60
+      - CACHE_TTL=3600
+      - DEFAULT_MODEL=mistral
+    depends_on:
+      - ollama
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3100/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # Redis - Response caching and rate limiting
+  redis:
+    image: redis:7-alpine
+    container_name: upcoach-llm-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Model Manager - Download and manage models
+  model-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile.model-manager
+    container_name: upcoach-model-manager
+    volumes:
+      - ollama_data:/root/.ollama
+      - ./models:/models
+      - ./config:/config
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+    depends_on:
+      - ollama
+    profiles:
+      - setup
+
+volumes:
+  ollama_data:
+    driver: local
+  huggingface_cache:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    name: upcoach-llm-network
+    driver: bridge

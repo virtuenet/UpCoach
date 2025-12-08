@@ -16,9 +16,19 @@ public final class GeneratedPluginRegistrant {
   private static final String TAG = "GeneratedPluginRegistrant";
   public static void registerWith(@NonNull FlutterEngine flutterEngine) {
     try {
+      flutterEngine.getPlugins().add(new io.agora.agora_rtc_ng.AgoraRtcNgPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin agora_rtc_engine, io.agora.agora_rtc_ng.AgoraRtcNgPlugin", e);
+    }
+    try {
       flutterEngine.getPlugins().add(new com.llfbandit.app_links.AppLinksPlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin app_links, com.llfbandit.app_links.AppLinksPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new com.spencerccf.app_settings.AppSettingsPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin app_settings, com.spencerccf.app_settings.AppSettingsPlugin", e);
     }
     try {
       flutterEngine.getPlugins().add(new com.ryanheise.audio_session.AudioSessionPlugin());
@@ -81,6 +91,11 @@ public final class GeneratedPluginRegistrant {
       Log.e(TAG, "Error registering plugin firebase_messaging, io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingPlugin", e);
     }
     try {
+      flutterEngine.getPlugins().add(new io.flutter.plugins.firebase.performance.FlutterFirebasePerformancePlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin firebase_performance, io.flutter.plugins.firebase.performance.FlutterFirebasePerformancePlugin", e);
+    }
+    try {
       flutterEngine.getPlugins().add(new com.fluttercandies.flutter_image_compress.ImageCompressPlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin flutter_image_compress_common, com.fluttercandies.flutter_image_compress.ImageCompressPlugin", e);
@@ -89,6 +104,11 @@ public final class GeneratedPluginRegistrant {
       flutterEngine.getPlugins().add(new com.dexterous.flutterlocalnotifications.FlutterLocalNotificationsPlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin flutter_local_notifications, com.dexterous.flutterlocalnotifications.FlutterLocalNotificationsPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new net.jonhanson.flutter_native_splash.FlutterNativeSplashPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin flutter_native_splash, net.jonhanson.flutter_native_splash.FlutterNativeSplashPlugin", e);
     }
     try {
       flutterEngine.getPlugins().add(new io.flutter.plugins.flutter_plugin_android_lifecycle.FlutterAndroidLifecyclePlugin());
@@ -124,6 +144,11 @@ public final class GeneratedPluginRegistrant {
       flutterEngine.getPlugins().add(new dev.flutter.plugins.integration_test.IntegrationTestPlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin integration_test, dev.flutter.plugins.integration_test.IntegrationTestPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new com.agora.iris_method_channel.IrisMethodChannelPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin iris_method_channel, com.agora.iris_method_channel.IrisMethodChannelPlugin", e);
     }
     try {
       flutterEngine.getPlugins().add(new com.github.dart_lang.jni.JniPlugin());
@@ -196,9 +221,24 @@ public final class GeneratedPluginRegistrant {
       Log.e(TAG, "Error registering plugin sqflite_android, com.tekartik.sqflite.SqflitePlugin", e);
     }
     try {
+      flutterEngine.getPlugins().add(new com.flutter.stripe.StripeAndroidPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin stripe_android, com.flutter.stripe.StripeAndroidPlugin", e);
+    }
+    try {
       flutterEngine.getPlugins().add(new io.flutter.plugins.urllauncher.UrlLauncherPlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin url_launcher_android, io.flutter.plugins.urllauncher.UrlLauncherPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new com.benjaminabel.vibration.VibrationPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin vibration, com.benjaminabel.vibration.VibrationPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new dev.fluttercommunity.plus.wakelock.WakelockPlusPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin wakelock_plus, dev.fluttercommunity.plus.wakelock.WakelockPlusPlugin", e);
     }
   }
 }
