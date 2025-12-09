@@ -345,7 +345,6 @@ class _AIInputWidgetState extends State<AIInputWidget> {
       case AttachmentType.video:
         return Icons.videocam;
       case AttachmentType.other:
-      default:
         return Icons.attach_file;
     }
   }

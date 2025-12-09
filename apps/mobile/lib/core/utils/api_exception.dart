@@ -67,7 +67,6 @@ class ApiException implements Exception {
           code = 'BAD_RESPONSE';
           break;
         case DioExceptionType.unknown:
-        default:
           message = error.message ?? 'An unexpected error occurred';
           code = 'UNKNOWN';
       }

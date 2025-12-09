@@ -120,7 +120,6 @@ class AppException implements Exception {
         );
 
       case DioExceptionType.unknown:
-      default:
         if (error.error is SocketException) {
           return AppException(
             message: 'No internet connection',

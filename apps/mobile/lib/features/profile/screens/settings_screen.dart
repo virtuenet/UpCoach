@@ -443,7 +443,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       case OnDeviceModelStatus.error:
         return 'Error: ${state.lastError ?? 'unknown'}';
       case OnDeviceModelStatus.notInstalled:
-      default:
         return '${state.activeModel.sizeMB} MB download required';
     }
   }

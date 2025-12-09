@@ -218,7 +218,7 @@ class GamificationEventService {
     try {
       // Award points via API
       if (_gamificationService != null && points > 0) {
-        await _gamificationService!.addPoints(points, eventType.name);
+        await _gamificationService.addPoints(points, eventType.name);
       }
 
       // Check for achievement unlocks
@@ -367,7 +367,7 @@ class GamificationEventService {
             // Claim achievement via API
             if (_gamificationService != null) {
               try {
-                await _gamificationService!
+                await _gamificationService
                     .claimAchievement(criteria.achievementId);
               } catch (e) {
                 debugPrint('Failed to claim achievement: $e');
