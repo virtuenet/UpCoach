@@ -2,13 +2,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/models/progress_photo.dart';
 import '../../../core/services/progress_photos_service.dart';
 
-class ProgressPhotosNotifier extends StateNotifier<ProgressPhotosState> {
-  ProgressPhotosNotifier(this._progressPhotosService)
-      : super(const ProgressPhotosState()) {
-    loadPhotos();
-  }
+class ProgressPhotosNotifier extends Notifier<ProgressPhotosState> {
+  late final ProgressPhotosService _progressPhotosService;
 
-  final ProgressPhotosService _progressPhotosService;
+  @override
+  ProgressPhotosState build() {
+    _progressPhotosService = ref.read(progressPhotosServiceProvider);
+    loadPhotos();
+    return const ProgressPhotosState();
+  }
 
   Future<void> loadPhotos() async {
     state = state.copyWith(isLoading: true, error: null);
@@ -161,7 +163,4 @@ class ProgressPhotosNotifier extends StateNotifier<ProgressPhotosState> {
 
 // Provider
 final progressPhotosProvider =
-    StateNotifierProvider<ProgressPhotosNotifier, ProgressPhotosState>((ref) {
-  final progressPhotosService = ref.read(progressPhotosServiceProvider);
-  return ProgressPhotosNotifier(progressPhotosService);
-});
+    NotifierProvider<ProgressPhotosNotifier, ProgressPhotosState>(ProgressPhotosNotifier.new);

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import '../performance/performance_monitor.dart';
 import '../performance/firebase_performance_service.dart';
 import '../errors/error_boundary.dart';

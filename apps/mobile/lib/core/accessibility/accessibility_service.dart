@@ -57,7 +57,7 @@ class AccessibilityState {
 }
 
 /// Accessibility settings notifier
-class AccessibilityNotifier extends StateNotifier<AccessibilityState> {
+class AccessibilityNotifier extends Notifier<AccessibilityState> {
   static const String _reduceMotionKey = 'a11y_reduce_motion';
   static const String _highContrastKey = 'a11y_high_contrast';
   static const String _largeTextKey = 'a11y_large_text';
@@ -65,8 +65,10 @@ class AccessibilityNotifier extends StateNotifier<AccessibilityState> {
   static const String _boldTextKey = 'a11y_bold_text';
   static const String _reduceTransparencyKey = 'a11y_reduce_transparency';
 
-  AccessibilityNotifier() : super(const AccessibilityState()) {
+  @override
+  AccessibilityState build() {
     _loadSettings();
+    return const AccessibilityState();
   }
 
   Future<void> _loadSettings() async {
@@ -157,9 +159,8 @@ class AccessibilityNotifier extends StateNotifier<AccessibilityState> {
 
 /// Accessibility provider
 final accessibilityProvider =
-    StateNotifierProvider<AccessibilityNotifier, AccessibilityState>((ref) {
-  return AccessibilityNotifier();
-});
+    NotifierProvider<AccessibilityNotifier, AccessibilityState>(
+        AccessibilityNotifier.new);
 
 /// Provider for reduce motion preference
 final reduceMotionProvider = Provider<bool>((ref) {

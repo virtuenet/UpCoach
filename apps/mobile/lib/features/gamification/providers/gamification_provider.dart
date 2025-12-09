@@ -189,16 +189,23 @@ class GamificationState {
 }
 
 // Gamification Notifier with API integration
-class GamificationNotifier extends StateNotifier<GamificationState> {
-  final GamificationService? _service;
-  final bool _useMockData;
+class GamificationNotifier extends Notifier<GamificationState> {
+  GamificationService? _service;
+  bool _useMockData = false;
 
-  GamificationNotifier({
-    GamificationService? service,
-    bool useMockData = false,
-  })  : _service = service,
-        _useMockData = useMockData || service == null,
-        super(const GamificationState());
+  @override
+  GamificationState build() {
+    // Try to get the service, fall back to mock data if unavailable
+    try {
+      _service = ref.watch(gamificationServiceProvider);
+      _useMockData = false;
+    } catch (_) {
+      // Service not available, will use mock data
+      _service = null;
+      _useMockData = true;
+    }
+    return const GamificationState();
+  }
 
   Future<void> loadAll() async {
     state = state.copyWith(isLoading: true, error: null);
@@ -621,16 +628,7 @@ class GamificationNotifier extends StateNotifier<GamificationState> {
 
 // Providers
 final gamificationProvider =
-    StateNotifierProvider<GamificationNotifier, GamificationState>((ref) {
-  // Try to get the service, fall back to mock data if unavailable
-  GamificationService? service;
-  try {
-    service = ref.watch(gamificationServiceProvider);
-  } catch (_) {
-    // Service not available, will use mock data
-  }
-  return GamificationNotifier(service: service, useMockData: service == null);
-});
+    NotifierProvider<GamificationNotifier, GamificationState>(GamificationNotifier.new);
 
 final userStatsProvider = Provider<UserGamificationStats>((ref) {
   return ref.watch(gamificationProvider).stats;

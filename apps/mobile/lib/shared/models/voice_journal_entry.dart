@@ -4,7 +4,7 @@ part 'voice_journal_entry.freezed.dart';
 part 'voice_journal_entry.g.dart';
 
 @freezed
-class VoiceJournalEntry with _$VoiceJournalEntry {
+abstract class VoiceJournalEntry with _$VoiceJournalEntry {
   const factory VoiceJournalEntry({
     required String id,
     required String title,
@@ -28,7 +28,7 @@ class VoiceJournalEntry with _$VoiceJournalEntry {
 }
 
 @freezed
-class VoiceJournalState with _$VoiceJournalState {
+abstract class VoiceJournalState with _$VoiceJournalState {
   const factory VoiceJournalState({
     @Default([]) List<VoiceJournalEntry> entries,
     @Default(false) bool isLoading,

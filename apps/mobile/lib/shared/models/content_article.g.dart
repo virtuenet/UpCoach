@@ -6,16 +6,17 @@ part of 'content_article.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$ContentArticleImpl _$$ContentArticleImplFromJson(Map<String, dynamic> json) =>
-    _$ContentArticleImpl(
+_ContentArticle _$ContentArticleFromJson(Map<String, dynamic> json) =>
+    _ContentArticle(
       id: (json['id'] as num).toInt(),
       title: json['title'] as String,
       slug: json['slug'] as String,
       summary: json['summary'] as String,
       content: ContentBody.fromJson(json['content'] as Map<String, dynamic>),
       featuredImage: json['featuredImage'] as String?,
-      category:
-          ContentCategory.fromJson(json['category'] as Map<String, dynamic>),
+      category: ContentCategory.fromJson(
+        json['category'] as Map<String, dynamic>,
+      ),
       tags: (json['tags'] as List<dynamic>).map((e) => e as String).toList(),
       author: ContentAuthor.fromJson(json['author'] as Map<String, dynamic>),
       status: json['status'] as String,
@@ -33,8 +34,7 @@ _$ContentArticleImpl _$$ContentArticleImplFromJson(Map<String, dynamic> json) =>
       metadata: json['metadata'] as Map<String, dynamic>?,
     );
 
-Map<String, dynamic> _$$ContentArticleImplToJson(
-        _$ContentArticleImpl instance) =>
+Map<String, dynamic> _$ContentArticleToJson(_ContentArticle instance) =>
     <String, dynamic>{
       'id': instance.id,
       'title': instance.title,
@@ -56,21 +56,16 @@ Map<String, dynamic> _$$ContentArticleImplToJson(
       'metadata': instance.metadata,
     };
 
-_$ContentBodyImpl _$$ContentBodyImplFromJson(Map<String, dynamic> json) =>
-    _$ContentBodyImpl(
-      format: json['format'] as String,
-      body: json['body'] as String,
-    );
+_ContentBody _$ContentBodyFromJson(Map<String, dynamic> json) => _ContentBody(
+  format: json['format'] as String,
+  body: json['body'] as String,
+);
 
-Map<String, dynamic> _$$ContentBodyImplToJson(_$ContentBodyImpl instance) =>
-    <String, dynamic>{
-      'format': instance.format,
-      'body': instance.body,
-    };
+Map<String, dynamic> _$ContentBodyToJson(_ContentBody instance) =>
+    <String, dynamic>{'format': instance.format, 'body': instance.body};
 
-_$ContentCategoryImpl _$$ContentCategoryImplFromJson(
-        Map<String, dynamic> json) =>
-    _$ContentCategoryImpl(
+_ContentCategory _$ContentCategoryFromJson(Map<String, dynamic> json) =>
+    _ContentCategory(
       id: (json['id'] as num).toInt(),
       name: json['name'] as String,
       slug: json['slug'] as String,
@@ -78,8 +73,7 @@ _$ContentCategoryImpl _$$ContentCategoryImplFromJson(
       icon: json['icon'] as String?,
     );
 
-Map<String, dynamic> _$$ContentCategoryImplToJson(
-        _$ContentCategoryImpl instance) =>
+Map<String, dynamic> _$ContentCategoryToJson(_ContentCategory instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
@@ -88,8 +82,8 @@ Map<String, dynamic> _$$ContentCategoryImplToJson(
       'icon': instance.icon,
     };
 
-_$ContentAuthorImpl _$$ContentAuthorImplFromJson(Map<String, dynamic> json) =>
-    _$ContentAuthorImpl(
+_ContentAuthor _$ContentAuthorFromJson(Map<String, dynamic> json) =>
+    _ContentAuthor(
       id: (json['id'] as num).toInt(),
       name: json['name'] as String,
       avatar: json['avatar'] as String?,
@@ -97,7 +91,7 @@ _$ContentAuthorImpl _$$ContentAuthorImplFromJson(Map<String, dynamic> json) =>
       role: json['role'] as String?,
     );
 
-Map<String, dynamic> _$$ContentAuthorImplToJson(_$ContentAuthorImpl instance) =>
+Map<String, dynamic> _$ContentAuthorToJson(_ContentAuthor instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
@@ -106,9 +100,8 @@ Map<String, dynamic> _$$ContentAuthorImplToJson(_$ContentAuthorImpl instance) =>
       'role': instance.role,
     };
 
-_$ArticleListResponseImpl _$$ArticleListResponseImplFromJson(
-        Map<String, dynamic> json) =>
-    _$ArticleListResponseImpl(
+_ArticleListResponse _$ArticleListResponseFromJson(Map<String, dynamic> json) =>
+    _ArticleListResponse(
       articles: (json['articles'] as List<dynamic>)
           .map((e) => ContentArticle.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -118,12 +111,12 @@ _$ArticleListResponseImpl _$$ArticleListResponseImplFromJson(
       perPage: (json['perPage'] as num).toInt(),
     );
 
-Map<String, dynamic> _$$ArticleListResponseImplToJson(
-        _$ArticleListResponseImpl instance) =>
-    <String, dynamic>{
-      'articles': instance.articles,
-      'total': instance.total,
-      'pages': instance.pages,
-      'currentPage': instance.currentPage,
-      'perPage': instance.perPage,
-    };
+Map<String, dynamic> _$ArticleListResponseToJson(
+  _ArticleListResponse instance,
+) => <String, dynamic>{
+  'articles': instance.articles,
+  'total': instance.total,
+  'pages': instance.pages,
+  'currentPage': instance.currentPage,
+  'perPage': instance.perPage,
+};

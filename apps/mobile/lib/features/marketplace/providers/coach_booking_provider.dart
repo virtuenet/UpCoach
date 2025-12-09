@@ -102,12 +102,15 @@ class CoachFilters {
       search != null;
 }
 
-class CoachListNotifier extends StateNotifier<CoachListState> {
-  final CoachBookingService _service;
+class CoachListNotifier extends Notifier<CoachListState> {
+  late final CoachBookingService _service;
 
-  CoachListNotifier(this._service) : super(const CoachListState()) {
+  @override
+  CoachListState build() {
+    _service = ref.watch(coachBookingServiceProvider);
     loadCoaches();
     loadFeaturedCoaches();
+    return const CoachListState();
   }
 
   Future<void> loadCoaches({bool refresh = false}) async {
@@ -259,13 +262,19 @@ class CoachDetailState {
   }
 }
 
-class CoachDetailNotifier extends StateNotifier<CoachDetailState> {
-  final CoachBookingService _service;
-  final int coachId;
+class CoachDetailNotifier extends Notifier<CoachDetailState> {
+  CoachDetailNotifier(this._coachId);
 
-  CoachDetailNotifier(this._service, this.coachId)
-      : super(const CoachDetailState()) {
+  final int _coachId;
+  late final CoachBookingService _service;
+
+  int get coachId => _coachId;
+
+  @override
+  CoachDetailState build() {
+    _service = ref.watch(coachBookingServiceProvider);
     loadCoachDetail();
+    return const CoachDetailState();
   }
 
   Future<void> loadCoachDetail() async {
@@ -415,10 +424,14 @@ class SessionBookingState {
   }
 }
 
-class SessionBookingNotifier extends StateNotifier<SessionBookingState> {
-  final CoachBookingService _service;
+class SessionBookingNotifier extends Notifier<SessionBookingState> {
+  late final CoachBookingService _service;
 
-  SessionBookingNotifier(this._service) : super(const SessionBookingState());
+  @override
+  SessionBookingState build() {
+    _service = ref.watch(coachBookingServiceProvider);
+    return const SessionBookingState();
+  }
 
   void setCoach(CoachProfile coach) {
     state = state.copyWith(coach: coach);
@@ -531,11 +544,14 @@ class MySessionsState {
   }
 }
 
-class MySessionsNotifier extends StateNotifier<MySessionsState> {
-  final CoachBookingService _service;
+class MySessionsNotifier extends Notifier<MySessionsState> {
+  late final CoachBookingService _service;
 
-  MySessionsNotifier(this._service) : super(const MySessionsState()) {
+  @override
+  MySessionsState build() {
+    _service = ref.watch(coachBookingServiceProvider);
     loadData();
+    return const MySessionsState();
   }
 
   Future<void> loadData() async {
@@ -589,29 +605,19 @@ class MySessionsNotifier extends StateNotifier<MySessionsState> {
 // ============================================================================
 
 final coachListProvider =
-    StateNotifierProvider<CoachListNotifier, CoachListState>((ref) {
-  final service = ref.watch(coachBookingServiceProvider);
-  return CoachListNotifier(service);
-});
+    NotifierProvider<CoachListNotifier, CoachListState>(CoachListNotifier.new);
 
 final coachDetailProvider =
-    StateNotifierProvider.family<CoachDetailNotifier, CoachDetailState, int>(
-        (ref, coachId) {
-  final service = ref.watch(coachBookingServiceProvider);
-  return CoachDetailNotifier(service, coachId);
-});
+    NotifierProvider.family<CoachDetailNotifier, CoachDetailState, int>(
+        (coachId) => CoachDetailNotifier(coachId));
 
 final sessionBookingProvider =
-    StateNotifierProvider<SessionBookingNotifier, SessionBookingState>((ref) {
-  final service = ref.watch(coachBookingServiceProvider);
-  return SessionBookingNotifier(service);
-});
+    NotifierProvider<SessionBookingNotifier, SessionBookingState>(
+        SessionBookingNotifier.new);
 
 final mySessionsProvider =
-    StateNotifierProvider<MySessionsNotifier, MySessionsState>((ref) {
-  final service = ref.watch(coachBookingServiceProvider);
-  return MySessionsNotifier(service);
-});
+    NotifierProvider<MySessionsNotifier, MySessionsState>(
+        MySessionsNotifier.new);
 
 // Specializations provider
 final specializationsProvider = FutureProvider<List<String>>((ref) async {

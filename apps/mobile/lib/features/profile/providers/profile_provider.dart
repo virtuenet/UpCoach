@@ -32,11 +32,11 @@ class ProfileState {
 }
 
 // Profile Provider
-class ProfileNotifier extends StateNotifier<ProfileState> {
-  final Ref ref;
-
-  ProfileNotifier(this.ref) : super(const ProfileState()) {
+class ProfileNotifier extends Notifier<ProfileState> {
+  @override
+  ProfileState build() {
     _loadUserProfile();
+    return const ProfileState();
   }
 
   void _loadUserProfile() {
@@ -133,6 +133,4 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
 }
 
 final profileProvider =
-    StateNotifierProvider<ProfileNotifier, ProfileState>((ref) {
-  return ProfileNotifier(ref);
-});
+    NotifierProvider<ProfileNotifier, ProfileState>(ProfileNotifier.new);

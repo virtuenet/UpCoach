@@ -6,9 +6,8 @@ part of 'video_call_models.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$CallTokenResponseImpl _$$CallTokenResponseImplFromJson(
-        Map<String, dynamic> json) =>
-    _$CallTokenResponseImpl(
+_CallTokenResponse _$CallTokenResponseFromJson(Map<String, dynamic> json) =>
+    _CallTokenResponse(
       token: json['token'] as String,
       channelName: json['channelName'] as String,
       uid: (json['uid'] as num).toInt(),
@@ -18,8 +17,7 @@ _$CallTokenResponseImpl _$$CallTokenResponseImplFromJson(
           : DateTime.parse(json['expiresAt'] as String),
     );
 
-Map<String, dynamic> _$$CallTokenResponseImplToJson(
-        _$CallTokenResponseImpl instance) =>
+Map<String, dynamic> _$CallTokenResponseToJson(_CallTokenResponse instance) =>
     <String, dynamic>{
       'token': instance.token,
       'channelName': instance.channelName,
@@ -28,28 +26,28 @@ Map<String, dynamic> _$$CallTokenResponseImplToJson(
       'expiresAt': instance.expiresAt?.toIso8601String(),
     };
 
-_$CallSessionImpl _$$CallSessionImplFromJson(Map<String, dynamic> json) =>
-    _$CallSessionImpl(
-      id: json['id'] as String,
-      coachSessionId: (json['coachSessionId'] as num).toInt(),
-      channelName: json['channelName'] as String,
-      callType: $enumDecode(_$CallTypeEnumMap, json['callType']),
-      status: $enumDecode(_$CallStatusEnumMap, json['status']),
-      startedAt: DateTime.parse(json['startedAt'] as String),
-      endedAt: json['endedAt'] == null
-          ? null
-          : DateTime.parse(json['endedAt'] as String),
-      durationSeconds: (json['durationSeconds'] as num?)?.toInt(),
-      participants: (json['participants'] as List<dynamic>?)
-              ?.map((e) => CallParticipant.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      isRecording: json['isRecording'] as bool? ?? false,
-      recordingUrl: json['recordingUrl'] as String?,
-      metadata: json['metadata'] as Map<String, dynamic>?,
-    );
+_CallSession _$CallSessionFromJson(Map<String, dynamic> json) => _CallSession(
+  id: json['id'] as String,
+  coachSessionId: (json['coachSessionId'] as num).toInt(),
+  channelName: json['channelName'] as String,
+  callType: $enumDecode(_$CallTypeEnumMap, json['callType']),
+  status: $enumDecode(_$CallStatusEnumMap, json['status']),
+  startedAt: DateTime.parse(json['startedAt'] as String),
+  endedAt: json['endedAt'] == null
+      ? null
+      : DateTime.parse(json['endedAt'] as String),
+  durationSeconds: (json['durationSeconds'] as num?)?.toInt(),
+  participants:
+      (json['participants'] as List<dynamic>?)
+          ?.map((e) => CallParticipant.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  isRecording: json['isRecording'] as bool? ?? false,
+  recordingUrl: json['recordingUrl'] as String?,
+  metadata: json['metadata'] as Map<String, dynamic>?,
+);
 
-Map<String, dynamic> _$$CallSessionImplToJson(_$CallSessionImpl instance) =>
+Map<String, dynamic> _$CallSessionToJson(_CallSession instance) =>
     <String, dynamic>{
       'id': instance.id,
       'coachSessionId': instance.coachSessionId,
@@ -65,10 +63,7 @@ Map<String, dynamic> _$$CallSessionImplToJson(_$CallSessionImpl instance) =>
       'metadata': instance.metadata,
     };
 
-const _$CallTypeEnumMap = {
-  CallType.video: 'video',
-  CallType.audio: 'audio',
-};
+const _$CallTypeEnumMap = {CallType.video: 'video', CallType.audio: 'audio'};
 
 const _$CallStatusEnumMap = {
   CallStatus.waiting: 'waiting',
@@ -79,9 +74,8 @@ const _$CallStatusEnumMap = {
   CallStatus.failed: 'failed',
 };
 
-_$CallParticipantImpl _$$CallParticipantImplFromJson(
-        Map<String, dynamic> json) =>
-    _$CallParticipantImpl(
+_CallParticipant _$CallParticipantFromJson(Map<String, dynamic> json) =>
+    _CallParticipant(
       uid: (json['uid'] as num).toInt(),
       odUserId: json['odUserId'] as String,
       displayName: json['displayName'] as String,
@@ -92,8 +86,11 @@ _$CallParticipantImpl _$$CallParticipantImplFromJson(
       isAudioEnabled: json['isAudioEnabled'] as bool? ?? false,
       isSpeaking: json['isSpeaking'] as bool? ?? false,
       isScreenSharing: json['isScreenSharing'] as bool? ?? false,
-      connectionQuality: $enumDecodeNullable(
-              _$ConnectionQualityEnumMap, json['connectionQuality']) ??
+      connectionQuality:
+          $enumDecodeNullable(
+            _$ConnectionQualityEnumMap,
+            json['connectionQuality'],
+          ) ??
           ConnectionQuality.unknown,
       joinedAt: json['joinedAt'] == null
           ? null
@@ -103,24 +100,23 @@ _$CallParticipantImpl _$$CallParticipantImplFromJson(
           : DateTime.parse(json['leftAt'] as String),
     );
 
-Map<String, dynamic> _$$CallParticipantImplToJson(
-        _$CallParticipantImpl instance) =>
-    <String, dynamic>{
-      'uid': instance.uid,
-      'odUserId': instance.odUserId,
-      'displayName': instance.displayName,
-      'profileImageUrl': instance.profileImageUrl,
-      'role': _$ParticipantRoleEnumMap[instance.role]!,
-      'isConnected': instance.isConnected,
-      'isVideoEnabled': instance.isVideoEnabled,
-      'isAudioEnabled': instance.isAudioEnabled,
-      'isSpeaking': instance.isSpeaking,
-      'isScreenSharing': instance.isScreenSharing,
-      'connectionQuality':
-          _$ConnectionQualityEnumMap[instance.connectionQuality]!,
-      'joinedAt': instance.joinedAt?.toIso8601String(),
-      'leftAt': instance.leftAt?.toIso8601String(),
-    };
+Map<String, dynamic> _$CallParticipantToJson(
+  _CallParticipant instance,
+) => <String, dynamic>{
+  'uid': instance.uid,
+  'odUserId': instance.odUserId,
+  'displayName': instance.displayName,
+  'profileImageUrl': instance.profileImageUrl,
+  'role': _$ParticipantRoleEnumMap[instance.role]!,
+  'isConnected': instance.isConnected,
+  'isVideoEnabled': instance.isVideoEnabled,
+  'isAudioEnabled': instance.isAudioEnabled,
+  'isSpeaking': instance.isSpeaking,
+  'isScreenSharing': instance.isScreenSharing,
+  'connectionQuality': _$ConnectionQualityEnumMap[instance.connectionQuality]!,
+  'joinedAt': instance.joinedAt?.toIso8601String(),
+  'leftAt': instance.leftAt?.toIso8601String(),
+};
 
 const _$ParticipantRoleEnumMap = {
   ParticipantRole.host: 'host',
@@ -137,35 +133,29 @@ const _$ConnectionQualityEnumMap = {
   ConnectionQuality.down: 'down',
 };
 
-_$JoinCallRequestImpl _$$JoinCallRequestImplFromJson(
-        Map<String, dynamic> json) =>
-    _$JoinCallRequestImpl(
+_JoinCallRequest _$JoinCallRequestFromJson(Map<String, dynamic> json) =>
+    _JoinCallRequest(
       sessionId: (json['sessionId'] as num).toInt(),
       callType: $enumDecode(_$CallTypeEnumMap, json['callType']),
     );
 
-Map<String, dynamic> _$$JoinCallRequestImplToJson(
-        _$JoinCallRequestImpl instance) =>
+Map<String, dynamic> _$JoinCallRequestToJson(_JoinCallRequest instance) =>
     <String, dynamic>{
       'sessionId': instance.sessionId,
       'callType': _$CallTypeEnumMap[instance.callType]!,
     };
 
-_$EndCallRequestImpl _$$EndCallRequestImplFromJson(Map<String, dynamic> json) =>
-    _$EndCallRequestImpl(
+_EndCallRequest _$EndCallRequestFromJson(Map<String, dynamic> json) =>
+    _EndCallRequest(
       callId: json['callId'] as String,
       reason: json['reason'] as String?,
     );
 
-Map<String, dynamic> _$$EndCallRequestImplToJson(
-        _$EndCallRequestImpl instance) =>
-    <String, dynamic>{
-      'callId': instance.callId,
-      'reason': instance.reason,
-    };
+Map<String, dynamic> _$EndCallRequestToJson(_EndCallRequest instance) =>
+    <String, dynamic>{'callId': instance.callId, 'reason': instance.reason};
 
-_$CallStatisticsImpl _$$CallStatisticsImplFromJson(Map<String, dynamic> json) =>
-    _$CallStatisticsImpl(
+_CallStatistics _$CallStatisticsFromJson(Map<String, dynamic> json) =>
+    _CallStatistics(
       packetLossRate: (json['packetLossRate'] as num?)?.toInt() ?? 0,
       rtt: (json['rtt'] as num?)?.toInt() ?? 0,
       networkQuality: (json['networkQuality'] as num?)?.toInt() ?? 0,
@@ -176,8 +166,7 @@ _$CallStatisticsImpl _$$CallStatisticsImplFromJson(Map<String, dynamic> json) =>
       bitrate: (json['bitrate'] as num?)?.toInt() ?? 0,
     );
 
-Map<String, dynamic> _$$CallStatisticsImplToJson(
-        _$CallStatisticsImpl instance) =>
+Map<String, dynamic> _$CallStatisticsToJson(_CallStatistics instance) =>
     <String, dynamic>{
       'packetLossRate': instance.packetLossRate,
       'rtt': instance.rtt,
@@ -189,16 +178,11 @@ Map<String, dynamic> _$$CallStatisticsImplToJson(
       'bitrate': instance.bitrate,
     };
 
-_$ScreenShareRequestImpl _$$ScreenShareRequestImplFromJson(
-        Map<String, dynamic> json) =>
-    _$ScreenShareRequestImpl(
+_ScreenShareRequest _$ScreenShareRequestFromJson(Map<String, dynamic> json) =>
+    _ScreenShareRequest(
       callId: json['callId'] as String,
       enable: json['enable'] as bool? ?? true,
     );
 
-Map<String, dynamic> _$$ScreenShareRequestImplToJson(
-        _$ScreenShareRequestImpl instance) =>
-    <String, dynamic>{
-      'callId': instance.callId,
-      'enable': instance.enable,
-    };
+Map<String, dynamic> _$ScreenShareRequestToJson(_ScreenShareRequest instance) =>
+    <String, dynamic>{'callId': instance.callId, 'enable': instance.enable};

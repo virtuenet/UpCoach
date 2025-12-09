@@ -4,7 +4,7 @@ part 'content_article.freezed.dart';
 part 'content_article.g.dart';
 
 @freezed
-class ContentArticle with _$ContentArticle {
+abstract class ContentArticle with _$ContentArticle {
   const factory ContentArticle({
     required int id,
     required String title,
@@ -31,7 +31,7 @@ class ContentArticle with _$ContentArticle {
 }
 
 @freezed
-class ContentBody with _$ContentBody {
+abstract class ContentBody with _$ContentBody {
   const factory ContentBody({
     required String format,
     required String body,
@@ -42,7 +42,7 @@ class ContentBody with _$ContentBody {
 }
 
 @freezed
-class ContentCategory with _$ContentCategory {
+abstract class ContentCategory with _$ContentCategory {
   const factory ContentCategory({
     required int id,
     required String name,
@@ -56,7 +56,7 @@ class ContentCategory with _$ContentCategory {
 }
 
 @freezed
-class ContentAuthor with _$ContentAuthor {
+abstract class ContentAuthor with _$ContentAuthor {
   const factory ContentAuthor({
     required int id,
     required String name,
@@ -70,7 +70,7 @@ class ContentAuthor with _$ContentAuthor {
 }
 
 @freezed
-class ArticleListResponse with _$ArticleListResponse {
+abstract class ArticleListResponse with _$ArticleListResponse {
   const factory ArticleListResponse({
     required List<ContentArticle> articles,
     required int total,
@@ -84,7 +84,7 @@ class ArticleListResponse with _$ArticleListResponse {
 }
 
 @freezed
-class ArticleFilters with _$ArticleFilters {
+abstract class ArticleFilters with _$ArticleFilters {
   const ArticleFilters._();
 
   const factory ArticleFilters({

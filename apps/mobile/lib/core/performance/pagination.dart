@@ -71,10 +71,15 @@ class PaginatedResult<T> {
 }
 
 /// Base class for pagination notifiers
-abstract class PaginationNotifier<T> extends StateNotifier<PaginationState<T>> {
+abstract class PaginationNotifier<T> extends Notifier<PaginationState<T>> {
   final int pageSize;
 
-  PaginationNotifier({this.pageSize = 20}) : super(const PaginationState());
+  PaginationNotifier({this.pageSize = 20});
+
+  @override
+  PaginationState<T> build() {
+    return const PaginationState();
+  }
 
   /// Fetch a page of data - implement in subclass
   Future<PaginatedResult<T>> fetchPage(int page, String? cursor);
@@ -176,7 +181,7 @@ extension ScrollControllerPagination on ScrollController {
 
 /// Infinite scroll list widget with Riverpod
 class PaginatedListView<T> extends ConsumerStatefulWidget {
-  final StateNotifierProvider<PaginationNotifier<T>, PaginationState<T>>
+  final NotifierProvider<PaginationNotifier<T>, PaginationState<T>>
       provider;
   final Widget Function(BuildContext context, T item, int index) itemBuilder;
   final Widget Function(BuildContext context)? loadingBuilder;
@@ -319,7 +324,7 @@ class _PaginatedListViewState<T> extends ConsumerState<PaginatedListView<T>> {
 
 /// Sliver version of paginated list for use in CustomScrollView
 class PaginatedSliverList<T> extends ConsumerWidget {
-  final StateNotifierProvider<PaginationNotifier<T>, PaginationState<T>>
+  final NotifierProvider<PaginationNotifier<T>, PaginationState<T>>
       provider;
   final Widget Function(BuildContext context, T item, int index) itemBuilder;
   final Widget Function(BuildContext context)? loadingMoreBuilder;
@@ -361,7 +366,7 @@ class PaginatedSliverList<T> extends ConsumerWidget {
 
 /// Grid version of paginated list
 class PaginatedGridView<T> extends ConsumerStatefulWidget {
-  final StateNotifierProvider<PaginationNotifier<T>, PaginationState<T>>
+  final NotifierProvider<PaginationNotifier<T>, PaginationState<T>>
       provider;
   final Widget Function(BuildContext context, T item, int index) itemBuilder;
   final SliverGridDelegate gridDelegate;

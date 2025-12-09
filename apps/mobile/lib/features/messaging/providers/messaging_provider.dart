@@ -41,15 +41,18 @@ class ConversationsState {
   }
 }
 
-class ConversationsNotifier extends StateNotifier<ConversationsState> {
-  final ChatApiService _apiService;
-  final ChatWebSocketService _wsService;
+class ConversationsNotifier extends Notifier<ConversationsState> {
+  late final ChatApiService _apiService;
+  late final ChatWebSocketService _wsService;
   StreamSubscription<ChatEvent>? _eventSubscription;
 
-  ConversationsNotifier(this._apiService, this._wsService)
-      : super(const ConversationsState()) {
+  @override
+  ConversationsState build() {
+    _apiService = ref.watch(chatApiServiceProvider);
+    _wsService = ref.watch(chatWebSocketServiceProvider);
     _initializeWebSocket();
     loadConversations();
+    return const ConversationsState();
   }
 
   void _initializeWebSocket() {
@@ -298,10 +301,8 @@ class ConversationsNotifier extends StateNotifier<ConversationsState> {
     state = state.copyWith(error: null);
   }
 
-  @override
-  void dispose() {
+  void cleanup() {
     _eventSubscription?.cancel();
-    super.dispose();
   }
 }
 
@@ -353,22 +354,26 @@ class ChatMessagesState {
   }
 }
 
-class ChatMessagesNotifier extends StateNotifier<ChatMessagesState> {
-  final ChatApiService _apiService;
-  final ChatWebSocketService _wsService;
-  final String _currentUserId;
+class ChatMessagesNotifier extends Notifier<ChatMessagesState> {
+  ChatMessagesNotifier(this._conversationId);
+
+  final String _conversationId;
+  late final ChatApiService _apiService;
+  late final ChatWebSocketService _wsService;
+  late final String _currentUserId;
   final Uuid _uuid = const Uuid();
   StreamSubscription<ChatEvent>? _eventSubscription;
   Timer? _typingTimer;
 
-  ChatMessagesNotifier(
-    this._apiService,
-    this._wsService,
-    String conversationId,
-    this._currentUserId,
-  ) : super(ChatMessagesState(conversationId: conversationId)) {
+  @override
+  ChatMessagesState build() {
+    _apiService = ref.watch(chatApiServiceProvider);
+    _wsService = ref.watch(chatWebSocketServiceProvider);
+    // TODO: Get current user ID from auth provider
+    _currentUserId = 'current-user-id';
     _initializeWebSocket();
     loadMessages();
+    return ChatMessagesState(conversationId: _conversationId);
   }
 
   void _initializeWebSocket() {
@@ -743,12 +748,10 @@ class ChatMessagesNotifier extends StateNotifier<ChatMessagesState> {
     state = state.copyWith(error: null);
   }
 
-  @override
-  void dispose() {
+  void cleanup() {
     _typingTimer?.cancel();
     _eventSubscription?.cancel();
     _wsService.leaveConversation(state.conversationId);
-    super.dispose();
   }
 }
 
@@ -757,21 +760,11 @@ class ChatMessagesNotifier extends StateNotifier<ChatMessagesState> {
 // ============================================================================
 
 final conversationsProvider =
-    StateNotifierProvider<ConversationsNotifier, ConversationsState>((ref) {
-  final apiService = ref.watch(chatApiServiceProvider);
-  final wsService = ref.watch(chatWebSocketServiceProvider);
-  return ConversationsNotifier(apiService, wsService);
-});
+    NotifierProvider<ConversationsNotifier, ConversationsState>(
+        ConversationsNotifier.new);
 
-final chatMessagesProvider = StateNotifierProvider.family<ChatMessagesNotifier,
-    ChatMessagesState, String>((ref, conversationId) {
-  final apiService = ref.watch(chatApiServiceProvider);
-  final wsService = ref.watch(chatWebSocketServiceProvider);
-  // TODO: Get current user ID from auth provider
-  const currentUserId = 'current-user-id';
-  return ChatMessagesNotifier(
-      apiService, wsService, conversationId, currentUserId);
-});
+final chatMessagesProvider = NotifierProvider.family<ChatMessagesNotifier,
+    ChatMessagesState, String>((conversationId) => ChatMessagesNotifier(conversationId));
 
 // Helper providers
 final totalUnreadCountProvider = Provider<int>((ref) {

@@ -5,18 +5,19 @@ import '../../../core/services/speech_to_text_service.dart';
 import '../../../core/services/voice_journal_storage_service.dart';
 import 'dart:io';
 
-class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
-  VoiceJournalNotifier(
-    this._voiceRecordingService,
-    this._speechToTextService,
-    this._storageService,
-  ) : super(const VoiceJournalState()) {
-    _init();
-  }
+class VoiceJournalNotifier extends Notifier<VoiceJournalState> {
+  late final VoiceRecordingService _voiceRecordingService;
+  late final SpeechToTextService _speechToTextService;
+  late final VoiceJournalStorageService _storageService;
 
-  final VoiceRecordingService _voiceRecordingService;
-  final SpeechToTextService _speechToTextService;
-  final VoiceJournalStorageService _storageService;
+  @override
+  VoiceJournalState build() {
+    _voiceRecordingService = ref.read(voiceRecordingServiceProvider);
+    _speechToTextService = ref.read(speechToTextServiceProvider);
+    _storageService = ref.read(voiceJournalStorageServiceProvider);
+    _init();
+    return const VoiceJournalState();
+  }
 
   Future<void> _init() async {
     await _voiceRecordingService.initialize();
@@ -363,19 +364,11 @@ class VoiceJournalNotifier extends StateNotifier<VoiceJournalState> {
   }
 
   // Close storage service
-  @override
-  Future<void> dispose() async {
+  Future<void> cleanup() async {
     await _storageService.close();
-    super.dispose();
   }
 }
 
 // Provider
 final voiceJournalProvider =
-    StateNotifierProvider<VoiceJournalNotifier, VoiceJournalState>((ref) {
-  final voiceRecordingService = ref.read(voiceRecordingServiceProvider);
-  final speechToTextService = ref.read(speechToTextServiceProvider);
-  final storageService = ref.read(voiceJournalStorageServiceProvider);
-  return VoiceJournalNotifier(
-      voiceRecordingService, speechToTextService, storageService);
-});
+    NotifierProvider<VoiceJournalNotifier, VoiceJournalState>(VoiceJournalNotifier.new);

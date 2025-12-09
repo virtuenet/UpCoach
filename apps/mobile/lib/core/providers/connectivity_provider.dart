@@ -61,18 +61,21 @@ class ConnectivityState {
 }
 
 /// Notifier for managing connectivity state
-class ConnectivityNotifier extends StateNotifier<ConnectivityState> {
-  final OfflineService _offlineService;
-  final SyncIntegrationService _syncService;
+class ConnectivityNotifier extends Notifier<ConnectivityState> {
+  late final OfflineService _offlineService;
+  late final SyncIntegrationService _syncService;
 
   StreamSubscription<bool>? _connectivitySubscription;
   StreamSubscription<SyncStatus>? _syncStatusSubscription;
   StreamSubscription<List<SyncConflict>>? _conflictsSubscription;
   Timer? _refreshTimer;
 
-  ConnectivityNotifier(this._offlineService, this._syncService)
-      : super(const ConnectivityState()) {
+  @override
+  ConnectivityState build() {
+    _offlineService = ref.watch(offlineServiceProvider);
+    _syncService = ref.watch(syncIntegrationServiceProvider);
     _initialize();
+    return const ConnectivityState();
   }
 
   Future<void> _initialize() async {
@@ -164,13 +167,11 @@ class ConnectivityNotifier extends StateNotifier<ConnectivityState> {
     await _refreshPendingCount();
   }
 
-  @override
-  void dispose() {
+  void cleanup() {
     _connectivitySubscription?.cancel();
     _syncStatusSubscription?.cancel();
     _conflictsSubscription?.cancel();
     _refreshTimer?.cancel();
-    super.dispose();
   }
 }
 
@@ -181,11 +182,7 @@ final offlineServiceProvider = Provider<OfflineService>((ref) {
 
 /// Provider for connectivity state
 final connectivityProvider =
-    StateNotifierProvider<ConnectivityNotifier, ConnectivityState>((ref) {
-  final offlineService = ref.watch(offlineServiceProvider);
-  final syncService = ref.watch(syncIntegrationServiceProvider);
-  return ConnectivityNotifier(offlineService, syncService);
-});
+    NotifierProvider<ConnectivityNotifier, ConnectivityState>(ConnectivityNotifier.new);
 
 /// Simple stream provider for online/offline status
 final isOnlineProvider = StreamProvider<bool>((ref) {

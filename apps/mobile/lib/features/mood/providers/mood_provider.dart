@@ -90,14 +90,16 @@ class MoodState {
 }
 
 // Mood Provider
-class MoodNotifier extends StateNotifier<MoodState> {
-  final MoodService _moodService;
+class MoodNotifier extends Notifier<MoodState> {
+  late final MoodService _moodService;
 
-  MoodNotifier(this._moodService)
-      : super(MoodState(selectedDate: DateTime.now())) {
+  @override
+  MoodState build() {
+    _moodService = ref.watch(moodServiceProvider);
     loadMoodEntries();
     loadStats();
     loadInsights();
+    return MoodState(selectedDate: DateTime.now());
   }
 
   Future<void> loadMoodEntries({
@@ -249,7 +251,4 @@ class MoodNotifier extends StateNotifier<MoodState> {
   }
 }
 
-final moodProvider = StateNotifierProvider<MoodNotifier, MoodState>((ref) {
-  final moodService = ref.watch(moodServiceProvider);
-  return MoodNotifier(moodService);
-});
+final moodProvider = NotifierProvider<MoodNotifier, MoodState>(MoodNotifier.new);

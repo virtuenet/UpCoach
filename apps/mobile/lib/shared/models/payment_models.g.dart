@@ -6,30 +6,30 @@ part of 'payment_models.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$PaymentIntentResponseImpl _$$PaymentIntentResponseImplFromJson(
-        Map<String, dynamic> json) =>
-    _$PaymentIntentResponseImpl(
-      clientSecret: json['clientSecret'] as String,
-      paymentIntentId: json['paymentIntentId'] as String,
-      amount: (json['amount'] as num).toInt(),
-      currency: json['currency'] as String,
-      customerId: json['customerId'] as String?,
-      ephemeralKey: json['ephemeralKey'] as String?,
-    );
+_PaymentIntentResponse _$PaymentIntentResponseFromJson(
+  Map<String, dynamic> json,
+) => _PaymentIntentResponse(
+  clientSecret: json['clientSecret'] as String,
+  paymentIntentId: json['paymentIntentId'] as String,
+  amount: (json['amount'] as num).toInt(),
+  currency: json['currency'] as String,
+  customerId: json['customerId'] as String?,
+  ephemeralKey: json['ephemeralKey'] as String?,
+);
 
-Map<String, dynamic> _$$PaymentIntentResponseImplToJson(
-        _$PaymentIntentResponseImpl instance) =>
-    <String, dynamic>{
-      'clientSecret': instance.clientSecret,
-      'paymentIntentId': instance.paymentIntentId,
-      'amount': instance.amount,
-      'currency': instance.currency,
-      'customerId': instance.customerId,
-      'ephemeralKey': instance.ephemeralKey,
-    };
+Map<String, dynamic> _$PaymentIntentResponseToJson(
+  _PaymentIntentResponse instance,
+) => <String, dynamic>{
+  'clientSecret': instance.clientSecret,
+  'paymentIntentId': instance.paymentIntentId,
+  'amount': instance.amount,
+  'currency': instance.currency,
+  'customerId': instance.customerId,
+  'ephemeralKey': instance.ephemeralKey,
+};
 
-_$PaymentMethodImpl _$$PaymentMethodImplFromJson(Map<String, dynamic> json) =>
-    _$PaymentMethodImpl(
+_PaymentMethod _$PaymentMethodFromJson(Map<String, dynamic> json) =>
+    _PaymentMethod(
       id: json['id'] as String,
       type: json['type'] as String,
       last4: json['last4'] as String?,
@@ -43,7 +43,7 @@ _$PaymentMethodImpl _$$PaymentMethodImplFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['createdAt'] as String),
     );
 
-Map<String, dynamic> _$$PaymentMethodImplToJson(_$PaymentMethodImpl instance) =>
+Map<String, dynamic> _$PaymentMethodToJson(_PaymentMethod instance) =>
     <String, dynamic>{
       'id': instance.id,
       'type': instance.type,
@@ -56,8 +56,8 @@ Map<String, dynamic> _$$PaymentMethodImplToJson(_$PaymentMethodImpl instance) =>
       'createdAt': instance.createdAt?.toIso8601String(),
     };
 
-_$PaymentRecordImpl _$$PaymentRecordImplFromJson(Map<String, dynamic> json) =>
-    _$PaymentRecordImpl(
+_PaymentRecord _$PaymentRecordFromJson(Map<String, dynamic> json) =>
+    _PaymentRecord(
       id: json['id'] as String,
       paymentIntentId: json['paymentIntentId'] as String,
       amount: (json['amount'] as num).toInt(),
@@ -80,7 +80,7 @@ _$PaymentRecordImpl _$$PaymentRecordImplFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['completedAt'] as String),
     );
 
-Map<String, dynamic> _$$PaymentRecordImplToJson(_$PaymentRecordImpl instance) =>
+Map<String, dynamic> _$PaymentRecordToJson(_PaymentRecord instance) =>
     <String, dynamic>{
       'id': instance.id,
       'paymentIntentId': instance.paymentIntentId,
@@ -115,8 +115,8 @@ const _$PaymentTypeEnumMap = {
   PaymentType.subscription: 'subscription',
 };
 
-_$RefundRecordImpl _$$RefundRecordImplFromJson(Map<String, dynamic> json) =>
-    _$RefundRecordImpl(
+_RefundRecord _$RefundRecordFromJson(Map<String, dynamic> json) =>
+    _RefundRecord(
       id: json['id'] as String,
       paymentId: json['paymentId'] as String,
       amount: (json['amount'] as num).toInt(),
@@ -131,7 +131,7 @@ _$RefundRecordImpl _$$RefundRecordImplFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['completedAt'] as String),
     );
 
-Map<String, dynamic> _$$RefundRecordImplToJson(_$RefundRecordImpl instance) =>
+Map<String, dynamic> _$RefundRecordToJson(_RefundRecord instance) =>
     <String, dynamic>{
       'id': instance.id,
       'paymentId': instance.paymentId,
@@ -149,102 +149,99 @@ const _$RefundStatusEnumMap = {
   RefundStatus.failed: 'failed',
 };
 
-_$CreatePaymentIntentRequestImpl _$$CreatePaymentIntentRequestImplFromJson(
-        Map<String, dynamic> json) =>
-    _$CreatePaymentIntentRequestImpl(
-      amount: (json['amount'] as num).toInt(),
-      currency: json['currency'] as String? ?? 'usd',
-      type: $enumDecode(_$PaymentTypeEnumMap, json['type']),
-      sessionId: (json['sessionId'] as num?)?.toInt(),
-      packageId: (json['packageId'] as num?)?.toInt(),
-      description: json['description'] as String?,
-      metadata: json['metadata'] as Map<String, dynamic>?,
-    );
+_CreatePaymentIntentRequest _$CreatePaymentIntentRequestFromJson(
+  Map<String, dynamic> json,
+) => _CreatePaymentIntentRequest(
+  amount: (json['amount'] as num).toInt(),
+  currency: json['currency'] as String? ?? 'usd',
+  type: $enumDecode(_$PaymentTypeEnumMap, json['type']),
+  sessionId: (json['sessionId'] as num?)?.toInt(),
+  packageId: (json['packageId'] as num?)?.toInt(),
+  description: json['description'] as String?,
+  metadata: json['metadata'] as Map<String, dynamic>?,
+);
 
-Map<String, dynamic> _$$CreatePaymentIntentRequestImplToJson(
-        _$CreatePaymentIntentRequestImpl instance) =>
-    <String, dynamic>{
-      'amount': instance.amount,
-      'currency': instance.currency,
-      'type': _$PaymentTypeEnumMap[instance.type]!,
-      'sessionId': instance.sessionId,
-      'packageId': instance.packageId,
-      'description': instance.description,
-      'metadata': instance.metadata,
-    };
+Map<String, dynamic> _$CreatePaymentIntentRequestToJson(
+  _CreatePaymentIntentRequest instance,
+) => <String, dynamic>{
+  'amount': instance.amount,
+  'currency': instance.currency,
+  'type': _$PaymentTypeEnumMap[instance.type]!,
+  'sessionId': instance.sessionId,
+  'packageId': instance.packageId,
+  'description': instance.description,
+  'metadata': instance.metadata,
+};
 
-_$ConfirmPaymentRequestImpl _$$ConfirmPaymentRequestImplFromJson(
-        Map<String, dynamic> json) =>
-    _$ConfirmPaymentRequestImpl(
-      paymentIntentId: json['paymentIntentId'] as String,
-      paymentMethodId: json['paymentMethodId'] as String?,
-    );
+_ConfirmPaymentRequest _$ConfirmPaymentRequestFromJson(
+  Map<String, dynamic> json,
+) => _ConfirmPaymentRequest(
+  paymentIntentId: json['paymentIntentId'] as String,
+  paymentMethodId: json['paymentMethodId'] as String?,
+);
 
-Map<String, dynamic> _$$ConfirmPaymentRequestImplToJson(
-        _$ConfirmPaymentRequestImpl instance) =>
-    <String, dynamic>{
-      'paymentIntentId': instance.paymentIntentId,
-      'paymentMethodId': instance.paymentMethodId,
-    };
+Map<String, dynamic> _$ConfirmPaymentRequestToJson(
+  _ConfirmPaymentRequest instance,
+) => <String, dynamic>{
+  'paymentIntentId': instance.paymentIntentId,
+  'paymentMethodId': instance.paymentMethodId,
+};
 
-_$InvoiceImpl _$$InvoiceImplFromJson(Map<String, dynamic> json) =>
-    _$InvoiceImpl(
-      id: json['id'] as String,
-      invoiceNumber: json['invoiceNumber'] as String,
-      amount: (json['amount'] as num).toInt(),
-      currency: json['currency'] as String,
-      status: $enumDecode(_$PaymentStatusEnumMap, json['status']),
-      customerName: json['customerName'] as String?,
-      customerEmail: json['customerEmail'] as String?,
-      lineItems: (json['lineItems'] as List<dynamic>?)
-              ?.map((e) => InvoiceLineItem.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      taxAmount: (json['taxAmount'] as num?)?.toInt(),
-      taxId: json['taxId'] as String?,
-      pdfUrl: json['pdfUrl'] as String?,
-      hostedInvoiceUrl: json['hostedInvoiceUrl'] as String?,
-      createdAt: json['createdAt'] == null
-          ? null
-          : DateTime.parse(json['createdAt'] as String),
-      dueDate: json['dueDate'] == null
-          ? null
-          : DateTime.parse(json['dueDate'] as String),
-      paidAt: json['paidAt'] == null
-          ? null
-          : DateTime.parse(json['paidAt'] as String),
-    );
+_Invoice _$InvoiceFromJson(Map<String, dynamic> json) => _Invoice(
+  id: json['id'] as String,
+  invoiceNumber: json['invoiceNumber'] as String,
+  amount: (json['amount'] as num).toInt(),
+  currency: json['currency'] as String,
+  status: $enumDecode(_$PaymentStatusEnumMap, json['status']),
+  customerName: json['customerName'] as String?,
+  customerEmail: json['customerEmail'] as String?,
+  lineItems:
+      (json['lineItems'] as List<dynamic>?)
+          ?.map((e) => InvoiceLineItem.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  taxAmount: (json['taxAmount'] as num?)?.toInt(),
+  taxId: json['taxId'] as String?,
+  pdfUrl: json['pdfUrl'] as String?,
+  hostedInvoiceUrl: json['hostedInvoiceUrl'] as String?,
+  createdAt: json['createdAt'] == null
+      ? null
+      : DateTime.parse(json['createdAt'] as String),
+  dueDate: json['dueDate'] == null
+      ? null
+      : DateTime.parse(json['dueDate'] as String),
+  paidAt: json['paidAt'] == null
+      ? null
+      : DateTime.parse(json['paidAt'] as String),
+);
 
-Map<String, dynamic> _$$InvoiceImplToJson(_$InvoiceImpl instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'invoiceNumber': instance.invoiceNumber,
-      'amount': instance.amount,
-      'currency': instance.currency,
-      'status': _$PaymentStatusEnumMap[instance.status]!,
-      'customerName': instance.customerName,
-      'customerEmail': instance.customerEmail,
-      'lineItems': instance.lineItems,
-      'taxAmount': instance.taxAmount,
-      'taxId': instance.taxId,
-      'pdfUrl': instance.pdfUrl,
-      'hostedInvoiceUrl': instance.hostedInvoiceUrl,
-      'createdAt': instance.createdAt?.toIso8601String(),
-      'dueDate': instance.dueDate?.toIso8601String(),
-      'paidAt': instance.paidAt?.toIso8601String(),
-    };
+Map<String, dynamic> _$InvoiceToJson(_Invoice instance) => <String, dynamic>{
+  'id': instance.id,
+  'invoiceNumber': instance.invoiceNumber,
+  'amount': instance.amount,
+  'currency': instance.currency,
+  'status': _$PaymentStatusEnumMap[instance.status]!,
+  'customerName': instance.customerName,
+  'customerEmail': instance.customerEmail,
+  'lineItems': instance.lineItems,
+  'taxAmount': instance.taxAmount,
+  'taxId': instance.taxId,
+  'pdfUrl': instance.pdfUrl,
+  'hostedInvoiceUrl': instance.hostedInvoiceUrl,
+  'createdAt': instance.createdAt?.toIso8601String(),
+  'dueDate': instance.dueDate?.toIso8601String(),
+  'paidAt': instance.paidAt?.toIso8601String(),
+};
 
-_$InvoiceLineItemImpl _$$InvoiceLineItemImplFromJson(
-        Map<String, dynamic> json) =>
-    _$InvoiceLineItemImpl(
+_InvoiceLineItem _$InvoiceLineItemFromJson(Map<String, dynamic> json) =>
+    _InvoiceLineItem(
       description: json['description'] as String,
       quantity: (json['quantity'] as num).toInt(),
       unitAmount: (json['unitAmount'] as num).toInt(),
       amount: (json['amount'] as num).toInt(),
     );
 
-Map<String, dynamic> _$$InvoiceLineItemImplToJson(
-        _$InvoiceLineItemImpl instance) =>
+Map<String, dynamic> _$InvoiceLineItemToJson(_InvoiceLineItem instance) =>
     <String, dynamic>{
       'description': instance.description,
       'quantity': instance.quantity,
@@ -252,31 +249,31 @@ Map<String, dynamic> _$$InvoiceLineItemImplToJson(
       'amount': instance.amount,
     };
 
-_$SetupIntentResponseImpl _$$SetupIntentResponseImplFromJson(
-        Map<String, dynamic> json) =>
-    _$SetupIntentResponseImpl(
+_SetupIntentResponse _$SetupIntentResponseFromJson(Map<String, dynamic> json) =>
+    _SetupIntentResponse(
       clientSecret: json['clientSecret'] as String,
       setupIntentId: json['setupIntentId'] as String,
       customerId: json['customerId'] as String?,
       ephemeralKey: json['ephemeralKey'] as String?,
     );
 
-Map<String, dynamic> _$$SetupIntentResponseImplToJson(
-        _$SetupIntentResponseImpl instance) =>
-    <String, dynamic>{
-      'clientSecret': instance.clientSecret,
-      'setupIntentId': instance.setupIntentId,
-      'customerId': instance.customerId,
-      'ephemeralKey': instance.ephemeralKey,
-    };
+Map<String, dynamic> _$SetupIntentResponseToJson(
+  _SetupIntentResponse instance,
+) => <String, dynamic>{
+  'clientSecret': instance.clientSecret,
+  'setupIntentId': instance.setupIntentId,
+  'customerId': instance.customerId,
+  'ephemeralKey': instance.ephemeralKey,
+};
 
-_$StripeCustomerImpl _$$StripeCustomerImplFromJson(Map<String, dynamic> json) =>
-    _$StripeCustomerImpl(
+_StripeCustomer _$StripeCustomerFromJson(Map<String, dynamic> json) =>
+    _StripeCustomer(
       id: json['id'] as String,
       email: json['email'] as String?,
       name: json['name'] as String?,
       defaultPaymentMethodId: json['defaultPaymentMethodId'] as String?,
-      paymentMethods: (json['paymentMethods'] as List<dynamic>?)
+      paymentMethods:
+          (json['paymentMethods'] as List<dynamic>?)
               ?.map((e) => PaymentMethod.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
@@ -285,8 +282,7 @@ _$StripeCustomerImpl _$$StripeCustomerImplFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['createdAt'] as String),
     );
 
-Map<String, dynamic> _$$StripeCustomerImplToJson(
-        _$StripeCustomerImpl instance) =>
+Map<String, dynamic> _$StripeCustomerToJson(_StripeCustomer instance) =>
     <String, dynamic>{
       'id': instance.id,
       'email': instance.email,

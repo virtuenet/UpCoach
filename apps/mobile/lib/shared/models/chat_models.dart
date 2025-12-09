@@ -53,7 +53,7 @@ enum ConversationType {
 // ============================================================================
 
 @freezed
-class ChatMessage with _$ChatMessage {
+abstract class ChatMessage with _$ChatMessage {
   const ChatMessage._();
 
   const factory ChatMessage({
@@ -147,7 +147,7 @@ class ChatMessage with _$ChatMessage {
 // ============================================================================
 
 @freezed
-class Conversation with _$Conversation {
+abstract class Conversation with _$Conversation {
   const Conversation._();
 
   const factory Conversation({
@@ -254,7 +254,7 @@ class Conversation with _$Conversation {
 // ============================================================================
 
 @freezed
-class ChatParticipant with _$ChatParticipant {
+abstract class ChatParticipant with _$ChatParticipant {
   const ChatParticipant._();
 
   const factory ChatParticipant({
@@ -304,7 +304,7 @@ class ChatParticipant with _$ChatParticipant {
 // ============================================================================
 
 @freezed
-class SendMessageRequest with _$SendMessageRequest {
+abstract class SendMessageRequest with _$SendMessageRequest {
   const factory SendMessageRequest({
     required String conversationId,
     required MessageType type,
@@ -325,7 +325,7 @@ class SendMessageRequest with _$SendMessageRequest {
 // ============================================================================
 
 @freezed
-class CreateConversationRequest with _$CreateConversationRequest {
+abstract class CreateConversationRequest with _$CreateConversationRequest {
   const factory CreateConversationRequest({
     required ConversationType type,
     required List<String> participantIds,
@@ -408,7 +408,7 @@ class TypingIndicator {
 // ============================================================================
 
 @freezed
-class ChatSettings with _$ChatSettings {
+abstract class ChatSettings with _$ChatSettings {
   const factory ChatSettings({
     @Default(true) bool showReadReceipts,
     @Default(true) bool showTypingIndicators,
@@ -426,7 +426,7 @@ class ChatSettings with _$ChatSettings {
 // ============================================================================
 
 @freezed
-class MediaUploadResponse with _$MediaUploadResponse {
+abstract class MediaUploadResponse with _$MediaUploadResponse {
   const factory MediaUploadResponse({
     required String url,
     String? thumbnailUrl,

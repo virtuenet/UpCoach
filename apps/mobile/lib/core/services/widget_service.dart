@@ -243,10 +243,14 @@ final widgetTypeProvider = FutureProvider<String>((ref) async {
   return service.getWidgetType();
 });
 
-class WidgetNotifier extends StateNotifier<String> {
-  final WidgetService _service;
+class WidgetNotifier extends Notifier<String> {
+  late final WidgetService _service;
 
-  WidgetNotifier(this._service, String initialType) : super(initialType);
+  @override
+  String build() {
+    _service = ref.watch(widgetServiceProvider);
+    return 'goals';
+  }
 
   Future<void> setWidgetType(String type) async {
     await _service.setWidgetType(type);
@@ -259,7 +263,4 @@ class WidgetNotifier extends StateNotifier<String> {
 }
 
 final widgetConfigProvider =
-    StateNotifierProvider<WidgetNotifier, String>((ref) {
-  final service = ref.watch(widgetServiceProvider);
-  return WidgetNotifier(service, 'goals');
-});
+    NotifierProvider<WidgetNotifier, String>(WidgetNotifier.new);

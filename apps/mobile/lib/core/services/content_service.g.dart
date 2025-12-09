@@ -6,20 +6,46 @@ part of 'content_service.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$contentServiceHash() => r'e87c849f313c6700964249adf969afafd8a10361';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [contentService].
 @ProviderFor(contentService)
-final contentServiceProvider = AutoDisposeProvider<ContentService>.internal(
-  contentService,
-  name: r'contentServiceProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$contentServiceHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+const contentServiceProvider = ContentServiceProvider._();
 
-typedef ContentServiceRef = AutoDisposeProviderRef<ContentService>;
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+final class ContentServiceProvider
+    extends $FunctionalProvider<ContentService, ContentService, ContentService>
+    with $Provider<ContentService> {
+  const ContentServiceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'contentServiceProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$contentServiceHash();
+
+  @$internal
+  @override
+  $ProviderElement<ContentService> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  ContentService create(Ref ref) {
+    return contentService(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ContentService value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ContentService>(value),
+    );
+  }
+}
+
+String _$contentServiceHash() => r'e87c849f313c6700964249adf969afafd8a10361';

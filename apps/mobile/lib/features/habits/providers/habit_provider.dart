@@ -4,18 +4,27 @@ import '../../../core/services/habit_service.dart';
 import '../../../core/services/notification_scheduler_service.dart';
 import '../../../core/services/gamification_event_service.dart';
 
-class HabitNotifier extends StateNotifier<HabitState> {
-  HabitNotifier(
-    this._habitService,
-    this._notificationScheduler,
-    this._gamificationEventService,
-  ) : super(const HabitState()) {
-    loadHabits();
-  }
+class HabitNotifier extends Notifier<HabitState> {
+  late final HabitService _habitService;
+  late final NotificationSchedulerService _notificationScheduler;
+  GamificationEventService? _gamificationEventService;
 
-  final HabitService _habitService;
-  final NotificationSchedulerService _notificationScheduler;
-  final GamificationEventService? _gamificationEventService;
+  @override
+  HabitState build() {
+    _habitService = ref.read(habitServiceProvider);
+    _notificationScheduler = ref.read(notificationSchedulerProvider);
+
+    // Get gamification service (optional - may not be available)
+    try {
+      _gamificationEventService = ref.read(gamificationEventServiceProvider);
+    } catch (_) {
+      // Gamification service not available
+      _gamificationEventService = null;
+    }
+
+    loadHabits();
+    return const HabitState();
+  }
 
   // Load all habits
   Future<void> loadHabits() async {
@@ -480,18 +489,4 @@ class HabitNotifier extends StateNotifier<HabitState> {
 }
 
 // Provider for HabitNotifier
-final habitProvider = StateNotifierProvider<HabitNotifier, HabitState>((ref) {
-  final habitService = ref.read(habitServiceProvider);
-  final notificationScheduler = ref.read(notificationSchedulerProvider);
-
-  // Get gamification service (optional - may not be available)
-  GamificationEventService? gamificationService;
-  try {
-    gamificationService = ref.read(gamificationEventServiceProvider);
-  } catch (_) {
-    // Gamification service not available
-  }
-
-  return HabitNotifier(
-      habitService, notificationScheduler, gamificationService);
-});
+final habitProvider = NotifierProvider<HabitNotifier, HabitState>(HabitNotifier.new);

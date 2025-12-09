@@ -100,13 +100,16 @@ class VideoCallState {
 // Video Call Notifier
 // ============================================================================
 
-class VideoCallNotifier extends StateNotifier<VideoCallState> {
-  final AgoraCallService _service;
+class VideoCallNotifier extends Notifier<VideoCallState> {
+  late final AgoraCallService _service;
   Timer? _durationTimer;
   StreamSubscription? _eventSubscription;
 
-  VideoCallNotifier(this._service) : super(const VideoCallState()) {
+  @override
+  VideoCallState build() {
+    _service = ref.watch(agoraCallServiceProvider);
     _setupEventListener();
+    return const VideoCallState();
   }
 
   void _setupEventListener() {
@@ -483,11 +486,9 @@ class VideoCallNotifier extends StateNotifier<VideoCallState> {
     state = const VideoCallState();
   }
 
-  @override
-  void dispose() {
+  void cleanup() {
     _stopDurationTimer();
     _eventSubscription?.cancel();
-    super.dispose();
   }
 }
 
@@ -496,10 +497,7 @@ class VideoCallNotifier extends StateNotifier<VideoCallState> {
 // ============================================================================
 
 final videoCallProvider =
-    StateNotifierProvider<VideoCallNotifier, VideoCallState>((ref) {
-  final service = ref.watch(agoraCallServiceProvider);
-  return VideoCallNotifier(service);
-});
+    NotifierProvider<VideoCallNotifier, VideoCallState>(VideoCallNotifier.new);
 
 // Convenience providers
 final isInCallProvider = Provider<bool>((ref) {

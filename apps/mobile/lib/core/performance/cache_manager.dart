@@ -309,7 +309,7 @@ mixin CachedAsyncMixin<T> {
 }
 
 /// Memory-aware data notifier that clears old data automatically
-class MemoryEfficientNotifier<T> extends StateNotifier<AsyncValue<T>> {
+class MemoryEfficientNotifier<T> extends Notifier<AsyncValue<T>> {
   final Future<T> Function() fetchData;
   final Duration staleAfter;
   DateTime? _lastFetch;
@@ -318,8 +318,13 @@ class MemoryEfficientNotifier<T> extends StateNotifier<AsyncValue<T>> {
   MemoryEfficientNotifier({
     required this.fetchData,
     this.staleAfter = const Duration(minutes: 5),
-  }) : super(const AsyncValue.loading()) {
+  }) {
     _fetch();
+  }
+
+  @override
+  AsyncValue<T> build() {
+    return const AsyncValue.loading();
   }
 
   bool get isStale {
@@ -355,10 +360,8 @@ class MemoryEfficientNotifier<T> extends StateNotifier<AsyncValue<T>> {
     }
   }
 
-  @override
-  void dispose() {
+  void cleanup() {
     _staleTimer?.cancel();
-    super.dispose();
   }
 }
 
@@ -432,15 +435,21 @@ class ChunkedDataLoader<T> {
 }
 
 /// Debounced state notifier to prevent excessive updates
-class DebouncedNotifier<T> extends StateNotifier<T> {
+class DebouncedNotifier<T> extends Notifier<T> {
+  final T initialState;
   final Duration debounceTime;
   Timer? _debounceTimer;
   T? _pendingValue;
 
-  DebouncedNotifier(
-    super.state, {
+  DebouncedNotifier({
+    required this.initialState,
     this.debounceTime = const Duration(milliseconds: 300),
   });
+
+  @override
+  T build() {
+    return initialState;
+  }
 
   void updateDebounced(T value) {
     _pendingValue = value;
@@ -459,10 +468,8 @@ class DebouncedNotifier<T> extends StateNotifier<T> {
     state = value;
   }
 
-  @override
-  void dispose() {
+  void cleanup() {
     _debounceTimer?.cancel();
-    super.dispose();
   }
 }
 
@@ -508,24 +515,25 @@ class WeakCache<K, V extends Object> {
 
 /// Provider cache invalidator for Riverpod
 class ProviderCacheInvalidator {
-  final WidgetRef _ref;
+  final Ref _ref;
 
   ProviderCacheInvalidator(this._ref);
 
   /// Invalidate a provider
-  void invalidate<T>(ProviderBase<T> provider) {
+  void invalidate(dynamic provider) {
     _ref.invalidate(provider);
   }
 
   /// Invalidate multiple providers
-  void invalidateAll(List<ProviderBase> providers) {
+  void invalidateAll(List<dynamic> providers) {
     for (final provider in providers) {
       _ref.invalidate(provider);
     }
   }
 
   /// Refresh a provider
-  Future<T> refresh<T>(Refreshable<Future<T>> provider) {
+  /// For async providers, use provider.future or provider.notifier
+  T refresh<T>(dynamic provider) {
     return _ref.refresh(provider);
   }
 }

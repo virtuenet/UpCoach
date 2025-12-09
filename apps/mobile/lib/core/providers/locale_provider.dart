@@ -91,13 +91,14 @@ class LocaleState {
 }
 
 /// Locale notifier for managing app locale
-class LocaleNotifier extends StateNotifier<LocaleState> {
+class LocaleNotifier extends Notifier<LocaleState> {
   static const String _localeKey = 'app_locale';
   static const String _systemLocaleKey = 'use_system_locale';
 
-  LocaleNotifier()
-      : super(const LocaleState(locale: SupportedLocales.english)) {
+  @override
+  LocaleState build() {
     _loadSavedLocale();
+    return const LocaleState(locale: SupportedLocales.english);
   }
 
   /// Load saved locale from preferences
@@ -175,9 +176,7 @@ class LocaleNotifier extends StateNotifier<LocaleState> {
 
 /// Provider for locale state
 final localeProvider =
-    StateNotifierProvider<LocaleNotifier, LocaleState>((ref) {
-  return LocaleNotifier();
-});
+    NotifierProvider<LocaleNotifier, LocaleState>(LocaleNotifier.new);
 
 /// Provider for current locale only
 final currentLocaleProvider = Provider<Locale>((ref) {

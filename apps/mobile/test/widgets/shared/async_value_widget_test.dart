@@ -112,6 +112,7 @@ void main() {
         'should show previous data during refresh when skipLoadingOnRefresh is true',
         (tester) async {
       // Create a refreshing state with previous data
+      // ignore: invalid_use_of_internal_member
       final asyncValue = const AsyncValue<String>.loading().copyWithPrevious(
         const AsyncValue<String>.data('Previous Data'),
       );

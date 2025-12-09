@@ -47,11 +47,14 @@ class OnboardingState {
 // Onboarding Notifier
 // ============================================================================
 
-class OnboardingNotifier extends StateNotifier<OnboardingState> {
-  final OnboardingService _service;
+class OnboardingNotifier extends Notifier<OnboardingState> {
+  late final OnboardingService _service;
 
-  OnboardingNotifier(this._service) : super(const OnboardingState()) {
+  @override
+  OnboardingState build() {
+    _service = ref.watch(onboardingServiceProvider);
     _loadSavedProgress();
+    return const OnboardingState();
   }
 
   Future<void> _loadSavedProgress() async {
@@ -332,10 +335,8 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
 // ============================================================================
 
 final onboardingProvider =
-    StateNotifierProvider<OnboardingNotifier, OnboardingState>((ref) {
-  final service = ref.watch(onboardingServiceProvider);
-  return OnboardingNotifier(service);
-});
+    NotifierProvider<OnboardingNotifier, OnboardingState>(
+        OnboardingNotifier.new);
 
 // Provider to check if onboarding is completed
 final hasCompletedOnboardingProvider = FutureProvider<bool>((ref) async {

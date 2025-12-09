@@ -6,74 +6,76 @@ part of 'coach_models.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$AvailabilitySlotImpl _$$AvailabilitySlotImplFromJson(
-        Map<String, dynamic> json) =>
-    _$AvailabilitySlotImpl(
+_AvailabilitySlot _$AvailabilitySlotFromJson(Map<String, dynamic> json) =>
+    _AvailabilitySlot(
       start: json['start'] as String,
       end: json['end'] as String,
     );
 
-Map<String, dynamic> _$$AvailabilitySlotImplToJson(
-        _$AvailabilitySlotImpl instance) =>
-    <String, dynamic>{
-      'start': instance.start,
-      'end': instance.end,
-    };
+Map<String, dynamic> _$AvailabilitySlotToJson(_AvailabilitySlot instance) =>
+    <String, dynamic>{'start': instance.start, 'end': instance.end};
 
-_$AvailabilityScheduleImpl _$$AvailabilityScheduleImplFromJson(
-        Map<String, dynamic> json) =>
-    _$AvailabilityScheduleImpl(
-      monday: (json['monday'] as List<dynamic>?)
-              ?.map((e) => AvailabilitySlot.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      tuesday: (json['tuesday'] as List<dynamic>?)
-              ?.map((e) => AvailabilitySlot.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      wednesday: (json['wednesday'] as List<dynamic>?)
-              ?.map((e) => AvailabilitySlot.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      thursday: (json['thursday'] as List<dynamic>?)
-              ?.map((e) => AvailabilitySlot.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      friday: (json['friday'] as List<dynamic>?)
-              ?.map((e) => AvailabilitySlot.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      saturday: (json['saturday'] as List<dynamic>?)
-              ?.map((e) => AvailabilitySlot.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-      sunday: (json['sunday'] as List<dynamic>?)
-              ?.map((e) => AvailabilitySlot.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-    );
+_AvailabilitySchedule _$AvailabilityScheduleFromJson(
+  Map<String, dynamic> json,
+) => _AvailabilitySchedule(
+  monday:
+      (json['monday'] as List<dynamic>?)
+          ?.map((e) => AvailabilitySlot.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  tuesday:
+      (json['tuesday'] as List<dynamic>?)
+          ?.map((e) => AvailabilitySlot.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  wednesday:
+      (json['wednesday'] as List<dynamic>?)
+          ?.map((e) => AvailabilitySlot.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  thursday:
+      (json['thursday'] as List<dynamic>?)
+          ?.map((e) => AvailabilitySlot.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  friday:
+      (json['friday'] as List<dynamic>?)
+          ?.map((e) => AvailabilitySlot.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  saturday:
+      (json['saturday'] as List<dynamic>?)
+          ?.map((e) => AvailabilitySlot.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+  sunday:
+      (json['sunday'] as List<dynamic>?)
+          ?.map((e) => AvailabilitySlot.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+);
 
-Map<String, dynamic> _$$AvailabilityScheduleImplToJson(
-        _$AvailabilityScheduleImpl instance) =>
-    <String, dynamic>{
-      'monday': instance.monday,
-      'tuesday': instance.tuesday,
-      'wednesday': instance.wednesday,
-      'thursday': instance.thursday,
-      'friday': instance.friday,
-      'saturday': instance.saturday,
-      'sunday': instance.sunday,
-    };
+Map<String, dynamic> _$AvailabilityScheduleToJson(
+  _AvailabilitySchedule instance,
+) => <String, dynamic>{
+  'monday': instance.monday,
+  'tuesday': instance.tuesday,
+  'wednesday': instance.wednesday,
+  'thursday': instance.thursday,
+  'friday': instance.friday,
+  'saturday': instance.saturday,
+  'sunday': instance.sunday,
+};
 
-_$CertificationImpl _$$CertificationImplFromJson(Map<String, dynamic> json) =>
-    _$CertificationImpl(
+_Certification _$CertificationFromJson(Map<String, dynamic> json) =>
+    _Certification(
       name: json['name'] as String,
       issuer: json['issuer'] as String,
       date: json['date'] as String,
       verificationUrl: json['verificationUrl'] as String?,
     );
 
-Map<String, dynamic> _$$CertificationImplToJson(_$CertificationImpl instance) =>
+Map<String, dynamic> _$CertificationToJson(_Certification instance) =>
     <String, dynamic>{
       'name': instance.name,
       'issuer': instance.issuer,
@@ -81,16 +83,15 @@ Map<String, dynamic> _$$CertificationImplToJson(_$CertificationImpl instance) =>
       'verificationUrl': instance.verificationUrl,
     };
 
-_$SharedResourceImpl _$$SharedResourceImplFromJson(Map<String, dynamic> json) =>
-    _$SharedResourceImpl(
+_SharedResource _$SharedResourceFromJson(Map<String, dynamic> json) =>
+    _SharedResource(
       name: json['name'] as String,
       url: json['url'] as String,
       type: json['type'] as String,
       uploadedAt: DateTime.parse(json['uploadedAt'] as String),
     );
 
-Map<String, dynamic> _$$SharedResourceImplToJson(
-        _$SharedResourceImpl instance) =>
+Map<String, dynamic> _$SharedResourceToJson(_SharedResource instance) =>
     <String, dynamic>{
       'name': instance.name,
       'url': instance.url,
@@ -98,23 +99,26 @@ Map<String, dynamic> _$$SharedResourceImplToJson(
       'uploadedAt': instance.uploadedAt.toIso8601String(),
     };
 
-_$CoachProfileImpl _$$CoachProfileImplFromJson(Map<String, dynamic> json) =>
-    _$CoachProfileImpl(
+_CoachProfile _$CoachProfileFromJson(Map<String, dynamic> json) =>
+    _CoachProfile(
       id: (json['id'] as num).toInt(),
       userId: (json['userId'] as num).toInt(),
       displayName: json['displayName'] as String,
       title: json['title'] as String?,
       bio: json['bio'] as String?,
-      specializations: (json['specializations'] as List<dynamic>?)
+      specializations:
+          (json['specializations'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           const [],
-      certifications: (json['certifications'] as List<dynamic>?)
+      certifications:
+          (json['certifications'] as List<dynamic>?)
               ?.map((e) => Certification.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
       experienceYears: (json['experienceYears'] as num?)?.toInt() ?? 0,
-      languages: (json['languages'] as List<dynamic>?)
+      languages:
+          (json['languages'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           const ['en'],
@@ -127,12 +131,14 @@ _$CoachProfileImpl _$$CoachProfileImplFromJson(Map<String, dynamic> json) =>
       availabilitySchedule: json['availabilitySchedule'] == null
           ? null
           : AvailabilitySchedule.fromJson(
-              json['availabilitySchedule'] as Map<String, dynamic>),
+              json['availabilitySchedule'] as Map<String, dynamic>,
+            ),
       bookingBufferHours: (json['bookingBufferHours'] as num?)?.toInt() ?? 24,
       profileImageUrl: json['profileImageUrl'] as String?,
       coverImageUrl: json['coverImageUrl'] as String?,
       introVideoUrl: json['introVideoUrl'] as String?,
-      galleryImages: (json['galleryImages'] as List<dynamic>?)
+      galleryImages:
+          (json['galleryImages'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           const [],
@@ -145,13 +151,14 @@ _$CoachProfileImpl _$$CoachProfileImplFromJson(Map<String, dynamic> json) =>
       isFeatured: json['isFeatured'] as bool? ?? false,
       isActive: json['isActive'] as bool? ?? true,
       acceptsInsurance: json['acceptsInsurance'] as bool? ?? false,
-      acceptedPaymentMethods: (json['acceptedPaymentMethods'] as List<dynamic>?)
+      acceptedPaymentMethods:
+          (json['acceptedPaymentMethods'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           const ['card'],
       tags:
           (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
-              const [],
+          const [],
       seoSlug: json['seoSlug'] as String?,
       createdAt: json['createdAt'] == null
           ? null
@@ -159,17 +166,19 @@ _$CoachProfileImpl _$$CoachProfileImplFromJson(Map<String, dynamic> json) =>
       updatedAt: json['updatedAt'] == null
           ? null
           : DateTime.parse(json['updatedAt'] as String),
-      packages: (json['packages'] as List<dynamic>?)
+      packages:
+          (json['packages'] as List<dynamic>?)
               ?.map((e) => CoachPackage.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
-      reviews: (json['reviews'] as List<dynamic>?)
+      reviews:
+          (json['reviews'] as List<dynamic>?)
               ?.map((e) => CoachReview.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
     );
 
-Map<String, dynamic> _$$CoachProfileImplToJson(_$CoachProfileImpl instance) =>
+Map<String, dynamic> _$CoachProfileToJson(_CoachProfile instance) =>
     <String, dynamic>{
       'id': instance.id,
       'userId': instance.userId,
@@ -210,15 +219,16 @@ Map<String, dynamic> _$$CoachProfileImplToJson(_$CoachProfileImpl instance) =>
       'reviews': instance.reviews,
     };
 
-_$CoachSessionImpl _$$CoachSessionImplFromJson(Map<String, dynamic> json) =>
-    _$CoachSessionImpl(
+_CoachSession _$CoachSessionFromJson(Map<String, dynamic> json) =>
+    _CoachSession(
       id: (json['id'] as num).toInt(),
       coachId: (json['coachId'] as num).toInt(),
       clientId: (json['clientId'] as num).toInt(),
       title: json['title'] as String,
       description: json['description'] as String?,
       sessionType: $enumDecode(_$SessionTypeEnumMap, json['sessionType']),
-      status: $enumDecodeNullable(_$SessionStatusEnumMap, json['status']) ??
+      status:
+          $enumDecodeNullable(_$SessionStatusEnumMap, json['status']) ??
           SessionStatus.pending,
       scheduledAt: DateTime.parse(json['scheduledAt'] as String),
       durationMinutes: (json['durationMinutes'] as num).toInt(),
@@ -237,11 +247,12 @@ _$CoachSessionImpl _$$CoachSessionImplFromJson(Map<String, dynamic> json) =>
       currency: json['currency'] as String? ?? 'USD',
       paymentStatus:
           $enumDecodeNullable(_$PaymentStatusEnumMap, json['paymentStatus']) ??
-              PaymentStatus.pending,
+          PaymentStatus.pending,
       paymentId: json['paymentId'] as String?,
       coachNotes: json['coachNotes'] as String?,
       clientNotes: json['clientNotes'] as String?,
-      sharedResources: (json['sharedResources'] as List<dynamic>?)
+      sharedResources:
+          (json['sharedResources'] as List<dynamic>?)
               ?.map((e) => SharedResource.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
@@ -265,7 +276,7 @@ _$CoachSessionImpl _$$CoachSessionImplFromJson(Map<String, dynamic> json) =>
           : CoachProfile.fromJson(json['coach'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$$CoachSessionImplToJson(_$CoachSessionImpl instance) =>
+Map<String, dynamic> _$CoachSessionToJson(_CoachSession instance) =>
     <String, dynamic>{
       'id': instance.id,
       'coachId': instance.coachId,
@@ -324,8 +335,8 @@ const _$PaymentStatusEnumMap = {
   PaymentStatus.failed: 'failed',
 };
 
-_$CoachPackageImpl _$$CoachPackageImplFromJson(Map<String, dynamic> json) =>
-    _$CoachPackageImpl(
+_CoachPackage _$CoachPackageFromJson(Map<String, dynamic> json) =>
+    _CoachPackage(
       id: (json['id'] as num).toInt(),
       coachId: (json['coachId'] as num).toInt(),
       name: json['name'] as String,
@@ -349,7 +360,7 @@ _$CoachPackageImpl _$$CoachPackageImplFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['updatedAt'] as String),
     );
 
-Map<String, dynamic> _$$CoachPackageImplToJson(_$CoachPackageImpl instance) =>
+Map<String, dynamic> _$CoachPackageToJson(_CoachPackage instance) =>
     <String, dynamic>{
       'id': instance.id,
       'coachId': instance.coachId,
@@ -369,9 +380,8 @@ Map<String, dynamic> _$$CoachPackageImplToJson(_$CoachPackageImpl instance) =>
       'updatedAt': instance.updatedAt?.toIso8601String(),
     };
 
-_$ClientCoachPackageImpl _$$ClientCoachPackageImplFromJson(
-        Map<String, dynamic> json) =>
-    _$ClientCoachPackageImpl(
+_ClientCoachPackage _$ClientCoachPackageFromJson(Map<String, dynamic> json) =>
+    _ClientCoachPackage(
       id: (json['id'] as num).toInt(),
       packageId: (json['packageId'] as num).toInt(),
       clientId: (json['clientId'] as num).toInt(),
@@ -381,15 +391,15 @@ _$ClientCoachPackageImpl _$$ClientCoachPackageImplFromJson(
       sessionsRemaining: (json['sessionsRemaining'] as num).toInt(),
       paymentId: json['paymentId'] as String?,
       amountPaid: (json['amountPaid'] as num).toDouble(),
-      status: $enumDecodeNullable(_$PackageStatusEnumMap, json['status']) ??
+      status:
+          $enumDecodeNullable(_$PackageStatusEnumMap, json['status']) ??
           PackageStatus.active,
       package: json['package'] == null
           ? null
           : CoachPackage.fromJson(json['package'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$$ClientCoachPackageImplToJson(
-        _$ClientCoachPackageImpl instance) =>
+Map<String, dynamic> _$ClientCoachPackageToJson(_ClientCoachPackage instance) =>
     <String, dynamic>{
       'id': instance.id,
       'packageId': instance.packageId,
@@ -410,38 +420,37 @@ const _$PackageStatusEnumMap = {
   PackageStatus.cancelled: 'cancelled',
 };
 
-_$CoachReviewImpl _$$CoachReviewImplFromJson(Map<String, dynamic> json) =>
-    _$CoachReviewImpl(
-      id: (json['id'] as num).toInt(),
-      coachId: (json['coachId'] as num).toInt(),
-      clientId: (json['clientId'] as num).toInt(),
-      sessionId: (json['sessionId'] as num?)?.toInt(),
-      rating: (json['rating'] as num).toInt(),
-      title: json['title'] as String?,
-      comment: json['comment'] as String,
-      communicationRating: (json['communicationRating'] as num?)?.toInt(),
-      knowledgeRating: (json['knowledgeRating'] as num?)?.toInt(),
-      helpfulnessRating: (json['helpfulnessRating'] as num?)?.toInt(),
-      isVerified: json['isVerified'] as bool? ?? false,
-      isFeatured: json['isFeatured'] as bool? ?? false,
-      isVisible: json['isVisible'] as bool? ?? true,
-      coachResponse: json['coachResponse'] as String?,
-      coachResponseAt: json['coachResponseAt'] == null
-          ? null
-          : DateTime.parse(json['coachResponseAt'] as String),
-      helpfulCount: (json['helpfulCount'] as num?)?.toInt() ?? 0,
-      unhelpfulCount: (json['unhelpfulCount'] as num?)?.toInt() ?? 0,
-      createdAt: json['createdAt'] == null
-          ? null
-          : DateTime.parse(json['createdAt'] as String),
-      updatedAt: json['updatedAt'] == null
-          ? null
-          : DateTime.parse(json['updatedAt'] as String),
-      clientName: json['clientName'] as String?,
-      clientProfileImageUrl: json['clientProfileImageUrl'] as String?,
-    );
+_CoachReview _$CoachReviewFromJson(Map<String, dynamic> json) => _CoachReview(
+  id: (json['id'] as num).toInt(),
+  coachId: (json['coachId'] as num).toInt(),
+  clientId: (json['clientId'] as num).toInt(),
+  sessionId: (json['sessionId'] as num?)?.toInt(),
+  rating: (json['rating'] as num).toInt(),
+  title: json['title'] as String?,
+  comment: json['comment'] as String,
+  communicationRating: (json['communicationRating'] as num?)?.toInt(),
+  knowledgeRating: (json['knowledgeRating'] as num?)?.toInt(),
+  helpfulnessRating: (json['helpfulnessRating'] as num?)?.toInt(),
+  isVerified: json['isVerified'] as bool? ?? false,
+  isFeatured: json['isFeatured'] as bool? ?? false,
+  isVisible: json['isVisible'] as bool? ?? true,
+  coachResponse: json['coachResponse'] as String?,
+  coachResponseAt: json['coachResponseAt'] == null
+      ? null
+      : DateTime.parse(json['coachResponseAt'] as String),
+  helpfulCount: (json['helpfulCount'] as num?)?.toInt() ?? 0,
+  unhelpfulCount: (json['unhelpfulCount'] as num?)?.toInt() ?? 0,
+  createdAt: json['createdAt'] == null
+      ? null
+      : DateTime.parse(json['createdAt'] as String),
+  updatedAt: json['updatedAt'] == null
+      ? null
+      : DateTime.parse(json['updatedAt'] as String),
+  clientName: json['clientName'] as String?,
+  clientProfileImageUrl: json['clientProfileImageUrl'] as String?,
+);
 
-Map<String, dynamic> _$$CoachReviewImplToJson(_$CoachReviewImpl instance) =>
+Map<String, dynamic> _$CoachReviewToJson(_CoachReview instance) =>
     <String, dynamic>{
       'id': instance.id,
       'coachId': instance.coachId,
@@ -466,22 +475,22 @@ Map<String, dynamic> _$$CoachReviewImplToJson(_$CoachReviewImpl instance) =>
       'clientProfileImageUrl': instance.clientProfileImageUrl,
     };
 
-_$ReviewStatsImpl _$$ReviewStatsImplFromJson(Map<String, dynamic> json) =>
-    _$ReviewStatsImpl(
-      totalReviews: (json['totalReviews'] as num?)?.toInt() ?? 0,
-      averageRating: (json['averageRating'] as num?)?.toDouble() ?? 0.0,
-      ratingDistribution:
-          (json['ratingDistribution'] as Map<String, dynamic>?)?.map(
-                (k, e) => MapEntry(k, (e as num).toInt()),
-              ) ??
-              const {},
-      detailedRatings: json['detailedRatings'] == null
-          ? null
-          : DetailedRatings.fromJson(
-              json['detailedRatings'] as Map<String, dynamic>),
-    );
+_ReviewStats _$ReviewStatsFromJson(Map<String, dynamic> json) => _ReviewStats(
+  totalReviews: (json['totalReviews'] as num?)?.toInt() ?? 0,
+  averageRating: (json['averageRating'] as num?)?.toDouble() ?? 0.0,
+  ratingDistribution:
+      (json['ratingDistribution'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(k, (e as num).toInt()),
+      ) ??
+      const {},
+  detailedRatings: json['detailedRatings'] == null
+      ? null
+      : DetailedRatings.fromJson(
+          json['detailedRatings'] as Map<String, dynamic>,
+        ),
+);
 
-Map<String, dynamic> _$$ReviewStatsImplToJson(_$ReviewStatsImpl instance) =>
+Map<String, dynamic> _$ReviewStatsToJson(_ReviewStats instance) =>
     <String, dynamic>{
       'totalReviews': instance.totalReviews,
       'averageRating': instance.averageRating,
@@ -489,38 +498,34 @@ Map<String, dynamic> _$$ReviewStatsImplToJson(_$ReviewStatsImpl instance) =>
       'detailedRatings': instance.detailedRatings,
     };
 
-_$DetailedRatingsImpl _$$DetailedRatingsImplFromJson(
-        Map<String, dynamic> json) =>
-    _$DetailedRatingsImpl(
+_DetailedRatings _$DetailedRatingsFromJson(Map<String, dynamic> json) =>
+    _DetailedRatings(
       communication: (json['communication'] as num?)?.toDouble() ?? 0.0,
       knowledge: (json['knowledge'] as num?)?.toDouble() ?? 0.0,
       helpfulness: (json['helpfulness'] as num?)?.toDouble() ?? 0.0,
     );
 
-Map<String, dynamic> _$$DetailedRatingsImplToJson(
-        _$DetailedRatingsImpl instance) =>
+Map<String, dynamic> _$DetailedRatingsToJson(_DetailedRatings instance) =>
     <String, dynamic>{
       'communication': instance.communication,
       'knowledge': instance.knowledge,
       'helpfulness': instance.helpfulness,
     };
 
-_$TimeSlotImpl _$$TimeSlotImplFromJson(Map<String, dynamic> json) =>
-    _$TimeSlotImpl(
-      startTime: DateTime.parse(json['startTime'] as String),
-      endTime: DateTime.parse(json['endTime'] as String),
-      isAvailable: json['isAvailable'] as bool? ?? true,
-    );
+_TimeSlot _$TimeSlotFromJson(Map<String, dynamic> json) => _TimeSlot(
+  startTime: DateTime.parse(json['startTime'] as String),
+  endTime: DateTime.parse(json['endTime'] as String),
+  isAvailable: json['isAvailable'] as bool? ?? true,
+);
 
-Map<String, dynamic> _$$TimeSlotImplToJson(_$TimeSlotImpl instance) =>
-    <String, dynamic>{
-      'startTime': instance.startTime.toIso8601String(),
-      'endTime': instance.endTime.toIso8601String(),
-      'isAvailable': instance.isAvailable,
-    };
+Map<String, dynamic> _$TimeSlotToJson(_TimeSlot instance) => <String, dynamic>{
+  'startTime': instance.startTime.toIso8601String(),
+  'endTime': instance.endTime.toIso8601String(),
+  'isAvailable': instance.isAvailable,
+};
 
-_$BookingRequestImpl _$$BookingRequestImplFromJson(Map<String, dynamic> json) =>
-    _$BookingRequestImpl(
+_BookingRequest _$BookingRequestFromJson(Map<String, dynamic> json) =>
+    _BookingRequest(
       coachId: (json['coachId'] as num).toInt(),
       title: json['title'] as String,
       description: json['description'] as String?,
@@ -532,8 +537,7 @@ _$BookingRequestImpl _$$BookingRequestImplFromJson(Map<String, dynamic> json) =>
       clientNotes: json['clientNotes'] as String?,
     );
 
-Map<String, dynamic> _$$BookingRequestImplToJson(
-        _$BookingRequestImpl instance) =>
+Map<String, dynamic> _$BookingRequestToJson(_BookingRequest instance) =>
     <String, dynamic>{
       'coachId': instance.coachId,
       'title': instance.title,

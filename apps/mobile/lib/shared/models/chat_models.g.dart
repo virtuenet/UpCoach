@@ -6,48 +6,48 @@ part of 'chat_models.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$ChatMessageImpl _$$ChatMessageImplFromJson(Map<String, dynamic> json) =>
-    _$ChatMessageImpl(
-      id: json['id'] as String,
-      conversationId: json['conversationId'] as String,
-      senderId: json['senderId'] as String,
-      senderName: json['senderName'] as String,
-      senderProfileImageUrl: json['senderProfileImageUrl'] as String?,
-      type: $enumDecode(_$MessageTypeEnumMap, json['type']),
-      content: json['content'] as String,
-      status: $enumDecodeNullable(_$MessageStatusEnumMap, json['status']) ??
-          MessageStatus.sending,
-      mediaUrl: json['mediaUrl'] as String?,
-      thumbnailUrl: json['thumbnailUrl'] as String?,
-      fileName: json['fileName'] as String?,
-      fileSize: (json['fileSize'] as num?)?.toInt(),
-      mediaDuration: (json['mediaDuration'] as num?)?.toInt(),
-      replyToMessageId: json['replyToMessageId'] as String?,
-      replyToMessage: json['replyToMessage'] == null
-          ? null
-          : ChatMessage.fromJson(
-              json['replyToMessage'] as Map<String, dynamic>),
-      reactions: (json['reactions'] as Map<String, dynamic>?)?.map(
-            (k, e) => MapEntry(
-                k, (e as List<dynamic>).map((e) => e as String).toList()),
-          ) ??
-          const {},
-      metadata: json['metadata'] as Map<String, dynamic>?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: json['updatedAt'] == null
-          ? null
-          : DateTime.parse(json['updatedAt'] as String),
-      readAt: json['readAt'] == null
-          ? null
-          : DateTime.parse(json['readAt'] as String),
-      deliveredAt: json['deliveredAt'] == null
-          ? null
-          : DateTime.parse(json['deliveredAt'] as String),
-      isDeleted: json['isDeleted'] as bool? ?? false,
-      isEdited: json['isEdited'] as bool? ?? false,
-    );
+_ChatMessage _$ChatMessageFromJson(Map<String, dynamic> json) => _ChatMessage(
+  id: json['id'] as String,
+  conversationId: json['conversationId'] as String,
+  senderId: json['senderId'] as String,
+  senderName: json['senderName'] as String,
+  senderProfileImageUrl: json['senderProfileImageUrl'] as String?,
+  type: $enumDecode(_$MessageTypeEnumMap, json['type']),
+  content: json['content'] as String,
+  status:
+      $enumDecodeNullable(_$MessageStatusEnumMap, json['status']) ??
+      MessageStatus.sending,
+  mediaUrl: json['mediaUrl'] as String?,
+  thumbnailUrl: json['thumbnailUrl'] as String?,
+  fileName: json['fileName'] as String?,
+  fileSize: (json['fileSize'] as num?)?.toInt(),
+  mediaDuration: (json['mediaDuration'] as num?)?.toInt(),
+  replyToMessageId: json['replyToMessageId'] as String?,
+  replyToMessage: json['replyToMessage'] == null
+      ? null
+      : ChatMessage.fromJson(json['replyToMessage'] as Map<String, dynamic>),
+  reactions:
+      (json['reactions'] as Map<String, dynamic>?)?.map(
+        (k, e) =>
+            MapEntry(k, (e as List<dynamic>).map((e) => e as String).toList()),
+      ) ??
+      const {},
+  metadata: json['metadata'] as Map<String, dynamic>?,
+  createdAt: DateTime.parse(json['createdAt'] as String),
+  updatedAt: json['updatedAt'] == null
+      ? null
+      : DateTime.parse(json['updatedAt'] as String),
+  readAt: json['readAt'] == null
+      ? null
+      : DateTime.parse(json['readAt'] as String),
+  deliveredAt: json['deliveredAt'] == null
+      ? null
+      : DateTime.parse(json['deliveredAt'] as String),
+  isDeleted: json['isDeleted'] as bool? ?? false,
+  isEdited: json['isEdited'] as bool? ?? false,
+);
 
-Map<String, dynamic> _$$ChatMessageImplToJson(_$ChatMessageImpl instance) =>
+Map<String, dynamic> _$ChatMessageToJson(_ChatMessage instance) =>
     <String, dynamic>{
       'id': instance.id,
       'conversationId': instance.conversationId,
@@ -93,8 +93,8 @@ const _$MessageStatusEnumMap = {
   MessageStatus.failed: 'failed',
 };
 
-_$ConversationImpl _$$ConversationImplFromJson(Map<String, dynamic> json) =>
-    _$ConversationImpl(
+_Conversation _$ConversationFromJson(Map<String, dynamic> json) =>
+    _Conversation(
       id: json['id'] as String,
       type: $enumDecode(_$ConversationTypeEnumMap, json['type']),
       title: json['title'] as String?,
@@ -117,13 +117,14 @@ _$ConversationImpl _$$ConversationImplFromJson(Map<String, dynamic> json) =>
       updatedAt: json['updatedAt'] == null
           ? null
           : DateTime.parse(json['updatedAt'] as String),
-      typingUserIds: (json['typingUserIds'] as List<dynamic>?)
+      typingUserIds:
+          (json['typingUserIds'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           const [],
     );
 
-Map<String, dynamic> _$$ConversationImplToJson(_$ConversationImpl instance) =>
+Map<String, dynamic> _$ConversationToJson(_Conversation instance) =>
     <String, dynamic>{
       'id': instance.id,
       'type': _$ConversationTypeEnumMap[instance.type]!,
@@ -148,9 +149,8 @@ const _$ConversationTypeEnumMap = {
   ConversationType.group: 'group',
 };
 
-_$ChatParticipantImpl _$$ChatParticipantImplFromJson(
-        Map<String, dynamic> json) =>
-    _$ChatParticipantImpl(
+_ChatParticipant _$ChatParticipantFromJson(Map<String, dynamic> json) =>
+    _ChatParticipant(
       odUserId: json['odUserId'] as String,
       odUserType: json['odUserType'] as String,
       displayName: json['displayName'] as String,
@@ -165,8 +165,7 @@ _$ChatParticipantImpl _$$ChatParticipantImplFromJson(
           : DateTime.parse(json['joinedAt'] as String),
     );
 
-Map<String, dynamic> _$$ChatParticipantImplToJson(
-        _$ChatParticipantImpl instance) =>
+Map<String, dynamic> _$ChatParticipantToJson(_ChatParticipant instance) =>
     <String, dynamic>{
       'odUserId': instance.odUserId,
       'odUserType': instance.odUserType,
@@ -178,9 +177,8 @@ Map<String, dynamic> _$$ChatParticipantImplToJson(
       'joinedAt': instance.joinedAt?.toIso8601String(),
     };
 
-_$SendMessageRequestImpl _$$SendMessageRequestImplFromJson(
-        Map<String, dynamic> json) =>
-    _$SendMessageRequestImpl(
+_SendMessageRequest _$SendMessageRequestFromJson(Map<String, dynamic> json) =>
+    _SendMessageRequest(
       conversationId: json['conversationId'] as String,
       type: $enumDecode(_$MessageTypeEnumMap, json['type']),
       content: json['content'] as String,
@@ -191,8 +189,7 @@ _$SendMessageRequestImpl _$$SendMessageRequestImplFromJson(
       metadata: json['metadata'] as Map<String, dynamic>?,
     );
 
-Map<String, dynamic> _$$SendMessageRequestImplToJson(
-        _$SendMessageRequestImpl instance) =>
+Map<String, dynamic> _$SendMessageRequestToJson(_SendMessageRequest instance) =>
     <String, dynamic>{
       'conversationId': instance.conversationId,
       'type': _$MessageTypeEnumMap[instance.type]!,
@@ -204,28 +201,28 @@ Map<String, dynamic> _$$SendMessageRequestImplToJson(
       'metadata': instance.metadata,
     };
 
-_$CreateConversationRequestImpl _$$CreateConversationRequestImplFromJson(
-        Map<String, dynamic> json) =>
-    _$CreateConversationRequestImpl(
-      type: $enumDecode(_$ConversationTypeEnumMap, json['type']),
-      participantIds: (json['participantIds'] as List<dynamic>)
-          .map((e) => e as String)
-          .toList(),
-      title: json['title'] as String?,
-      sessionId: (json['sessionId'] as num?)?.toInt(),
-    );
+_CreateConversationRequest _$CreateConversationRequestFromJson(
+  Map<String, dynamic> json,
+) => _CreateConversationRequest(
+  type: $enumDecode(_$ConversationTypeEnumMap, json['type']),
+  participantIds: (json['participantIds'] as List<dynamic>)
+      .map((e) => e as String)
+      .toList(),
+  title: json['title'] as String?,
+  sessionId: (json['sessionId'] as num?)?.toInt(),
+);
 
-Map<String, dynamic> _$$CreateConversationRequestImplToJson(
-        _$CreateConversationRequestImpl instance) =>
-    <String, dynamic>{
-      'type': _$ConversationTypeEnumMap[instance.type]!,
-      'participantIds': instance.participantIds,
-      'title': instance.title,
-      'sessionId': instance.sessionId,
-    };
+Map<String, dynamic> _$CreateConversationRequestToJson(
+  _CreateConversationRequest instance,
+) => <String, dynamic>{
+  'type': _$ConversationTypeEnumMap[instance.type]!,
+  'participantIds': instance.participantIds,
+  'title': instance.title,
+  'sessionId': instance.sessionId,
+};
 
-_$ChatSettingsImpl _$$ChatSettingsImplFromJson(Map<String, dynamic> json) =>
-    _$ChatSettingsImpl(
+_ChatSettings _$ChatSettingsFromJson(Map<String, dynamic> json) =>
+    _ChatSettings(
       showReadReceipts: json['showReadReceipts'] as bool? ?? true,
       showTypingIndicators: json['showTypingIndicators'] as bool? ?? true,
       enableNotifications: json['enableNotifications'] as bool? ?? true,
@@ -233,7 +230,7 @@ _$ChatSettingsImpl _$$ChatSettingsImplFromJson(Map<String, dynamic> json) =>
       muteAllChats: json['muteAllChats'] as bool? ?? false,
     );
 
-Map<String, dynamic> _$$ChatSettingsImplToJson(_$ChatSettingsImpl instance) =>
+Map<String, dynamic> _$ChatSettingsToJson(_ChatSettings instance) =>
     <String, dynamic>{
       'showReadReceipts': instance.showReadReceipts,
       'showTypingIndicators': instance.showTypingIndicators,
@@ -242,9 +239,8 @@ Map<String, dynamic> _$$ChatSettingsImplToJson(_$ChatSettingsImpl instance) =>
       'muteAllChats': instance.muteAllChats,
     };
 
-_$MediaUploadResponseImpl _$$MediaUploadResponseImplFromJson(
-        Map<String, dynamic> json) =>
-    _$MediaUploadResponseImpl(
+_MediaUploadResponse _$MediaUploadResponseFromJson(Map<String, dynamic> json) =>
+    _MediaUploadResponse(
       url: json['url'] as String,
       thumbnailUrl: json['thumbnailUrl'] as String?,
       fileName: json['fileName'] as String,
@@ -255,15 +251,15 @@ _$MediaUploadResponseImpl _$$MediaUploadResponseImplFromJson(
       height: (json['height'] as num?)?.toInt(),
     );
 
-Map<String, dynamic> _$$MediaUploadResponseImplToJson(
-        _$MediaUploadResponseImpl instance) =>
-    <String, dynamic>{
-      'url': instance.url,
-      'thumbnailUrl': instance.thumbnailUrl,
-      'fileName': instance.fileName,
-      'fileSize': instance.fileSize,
-      'mimeType': instance.mimeType,
-      'duration': instance.duration,
-      'width': instance.width,
-      'height': instance.height,
-    };
+Map<String, dynamic> _$MediaUploadResponseToJson(
+  _MediaUploadResponse instance,
+) => <String, dynamic>{
+  'url': instance.url,
+  'thumbnailUrl': instance.thumbnailUrl,
+  'fileName': instance.fileName,
+  'fileSize': instance.fileSize,
+  'mimeType': instance.mimeType,
+  'duration': instance.duration,
+  'width': instance.width,
+  'height': instance.height,
+};

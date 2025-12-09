@@ -3,18 +3,20 @@
 // This file provides utilities for testing with Riverpod providers,
 // including mock containers, override helpers, and async testing utilities.
 
+import 'dart:async' as async;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override, ProviderListenable;
 
 /// Creates a ProviderContainer for unit testing with optional overrides
 ProviderContainer createContainer({
-  List<Override>? overrides,
+  List<Override> overrides = const [],
   ProviderContainer? parent,
   List<ProviderObserver>? observers,
 }) {
   return ProviderContainer(
-    overrides: overrides ?? [],
+    overrides: overrides,
     parent: parent,
     observers: observers ?? [],
   );
@@ -23,14 +25,14 @@ ProviderContainer createContainer({
 /// Creates a testable widget wrapped with ProviderScope
 Widget createRiverpodTestWidget({
   required Widget child,
-  List<Override>? overrides,
+  List<Override> overrides = const [],
   ThemeData? theme,
   Locale? locale,
   List<NavigatorObserver>? navigatorObservers,
   GlobalKey<ScaffoldMessengerState>? scaffoldMessengerKey,
 }) {
   return ProviderScope(
-    overrides: overrides ?? [],
+    overrides: overrides,
     child: MaterialApp(
       home: Scaffold(body: child),
       theme: theme ?? ThemeData.light(),
@@ -44,7 +46,7 @@ Widget createRiverpodTestWidget({
 /// Creates a full app wrapper for integration testing
 Widget createFullAppTestWidget({
   required Widget child,
-  List<Override>? overrides,
+  List<Override> overrides = const [],
   ThemeData? theme,
   ThemeData? darkTheme,
   ThemeMode? themeMode,
@@ -52,7 +54,7 @@ Widget createFullAppTestWidget({
   GlobalKey<ScaffoldMessengerState>? scaffoldMessengerKey,
 }) {
   return ProviderScope(
-    overrides: overrides ?? [],
+    overrides: overrides,
     child: MaterialApp(
       home: child,
       theme: theme ?? ThemeData.light(),
@@ -69,7 +71,7 @@ Widget createFullAppTestWidget({
 Future<void> pumpRiverpodWidget(
   WidgetTester tester,
   Widget widget, {
-  List<Override>? overrides,
+  List<Override> overrides = const [],
   Duration? settleDuration,
 }) async {
   await tester.pumpWidget(
@@ -83,32 +85,31 @@ Future<void> pumpRiverpodWidget(
 }
 
 /// Test observer for tracking provider state changes
-class TestProviderObserver extends ProviderObserver {
+/// Note: In Riverpod 3.x, ProviderObserver uses ProviderObserverContext
+final class TestProviderObserver extends ProviderObserver {
   final List<ProviderEvent> events = [];
 
   @override
   void didAddProvider(
-    ProviderBase<Object?> provider,
+    ProviderObserverContext context,
     Object? value,
-    ProviderContainer container,
   ) {
     events.add(ProviderEvent(
       type: ProviderEventType.add,
-      provider: provider,
+      providerName: context.provider.name ?? 'unnamed',
       value: value,
     ));
   }
 
   @override
   void didUpdateProvider(
-    ProviderBase<Object?> provider,
+    ProviderObserverContext context,
     Object? previousValue,
     Object? newValue,
-    ProviderContainer container,
   ) {
     events.add(ProviderEvent(
       type: ProviderEventType.update,
-      provider: provider,
+      providerName: context.provider.name ?? 'unnamed',
       previousValue: previousValue,
       value: newValue,
     ));
@@ -116,19 +117,18 @@ class TestProviderObserver extends ProviderObserver {
 
   @override
   void didDisposeProvider(
-    ProviderBase<Object?> provider,
-    ProviderContainer container,
+    ProviderObserverContext context,
   ) {
     events.add(ProviderEvent(
       type: ProviderEventType.dispose,
-      provider: provider,
+      providerName: context.provider.name ?? 'unnamed',
     ));
   }
 
   void clear() => events.clear();
 
-  List<ProviderEvent> eventsFor(ProviderBase<Object?> provider) {
-    return events.where((e) => e.provider == provider).toList();
+  List<ProviderEvent> eventsFor(String providerName) {
+    return events.where((e) => e.providerName == providerName).toList();
   }
 }
 
@@ -136,13 +136,13 @@ enum ProviderEventType { add, update, dispose }
 
 class ProviderEvent {
   final ProviderEventType type;
-  final ProviderBase<Object?> provider;
+  final String providerName;
   final Object? previousValue;
   final Object? value;
 
   ProviderEvent({
     required this.type,
-    required this.provider,
+    required this.providerName,
     this.previousValue,
     this.value,
   });
@@ -171,9 +171,14 @@ class AsyncValueTestHelper<T> {
       states.where((s) => s.hasValue).toList();
 }
 
-/// Mock notifier for testing StateNotifierProvider
-class MockStateNotifier<T> extends StateNotifier<T> {
-  MockStateNotifier(super.state);
+/// Mock notifier for testing Notifier providers
+class MockNotifier<T> extends Notifier<T> {
+  MockNotifier(this._initialState);
+
+  final T _initialState;
+
+  @override
+  T build() => _initialState;
 
   void setState(T newState) {
     state = newState;
@@ -226,7 +231,7 @@ Future<T> waitForProviderValue<T>(
   bool Function(T value)? condition,
   Duration timeout = const Duration(seconds: 5),
 }) async {
-  final completer = Completer<T>();
+  final completer = async.Completer<T>();
   final subscription = container.listen<T>(
     provider,
     (previous, next) {
@@ -243,70 +248,4 @@ Future<T> waitForProviderValue<T>(
   } finally {
     subscription.close();
   }
-}
-
-/// Completer for async operations
-class Completer<T> {
-  final _completer = _InternalCompleter<T>();
-
-  bool get isCompleted => _completer.isCompleted;
-  Future<T> get future => _completer.future;
-
-  void complete([T? value]) => _completer.complete(value as T);
-  void completeError(Object error, [StackTrace? stackTrace]) =>
-      _completer.completeError(error, stackTrace);
-}
-
-class _InternalCompleter<T> {
-  final _future = _Completer<T>();
-  bool isCompleted = false;
-
-  Future<T> get future => _future.future;
-
-  void complete(T value) {
-    if (!isCompleted) {
-      isCompleted = true;
-      _future.complete(value);
-    }
-  }
-
-  void completeError(Object error, [StackTrace? stackTrace]) {
-    if (!isCompleted) {
-      isCompleted = true;
-      _future.completeError(error, stackTrace);
-    }
-  }
-}
-
-class _Completer<T> {
-  final _controller = _FutureController<T>();
-
-  Future<T> get future => _controller.future;
-  void complete(T value) => _controller.complete(value);
-  void completeError(Object error, [StackTrace? stackTrace]) =>
-      _controller.completeError(error, stackTrace);
-}
-
-class _FutureController<T> {
-  late final Future<T> future;
-  late final void Function(T) _complete;
-  late final void Function(Object, [StackTrace?]) _completeError;
-
-  _FutureController() {
-    future = Future<T>(() async {
-      final completer = await _waitForCompletion();
-      return completer;
-    });
-  }
-
-  Future<T> _waitForCompletion() async {
-    // This is a simplified implementation
-    // In real code, use dart:async Completer
-    await Future.delayed(Duration.zero);
-    throw UnimplementedError('Use dart:async Completer instead');
-  }
-
-  void complete(T value) => _complete(value);
-  void completeError(Object error, [StackTrace? stackTrace]) =>
-      _completeError(error, stackTrace);
 }

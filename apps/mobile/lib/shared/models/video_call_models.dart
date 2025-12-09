@@ -51,7 +51,7 @@ enum ConnectionQuality {
 // ============================================================================
 
 @freezed
-class CallTokenResponse with _$CallTokenResponse {
+abstract class CallTokenResponse with _$CallTokenResponse {
   const factory CallTokenResponse({
     required String token,
     required String channelName,
@@ -69,7 +69,7 @@ class CallTokenResponse with _$CallTokenResponse {
 // ============================================================================
 
 @freezed
-class CallSession with _$CallSession {
+abstract class CallSession with _$CallSession {
   const CallSession._();
 
   const factory CallSession({
@@ -120,7 +120,7 @@ class CallSession with _$CallSession {
 // ============================================================================
 
 @freezed
-class CallParticipant with _$CallParticipant {
+abstract class CallParticipant with _$CallParticipant {
   const CallParticipant._();
 
   const factory CallParticipant({
@@ -237,7 +237,7 @@ class LocalCallState {
 // ============================================================================
 
 @freezed
-class JoinCallRequest with _$JoinCallRequest {
+abstract class JoinCallRequest with _$JoinCallRequest {
   const factory JoinCallRequest({
     required int sessionId,
     required CallType callType,
@@ -252,7 +252,7 @@ class JoinCallRequest with _$JoinCallRequest {
 // ============================================================================
 
 @freezed
-class EndCallRequest with _$EndCallRequest {
+abstract class EndCallRequest with _$EndCallRequest {
   const factory EndCallRequest({
     required String callId,
     String? reason,
@@ -300,7 +300,7 @@ class CallEvent {
 // ============================================================================
 
 @freezed
-class CallStatistics with _$CallStatistics {
+abstract class CallStatistics with _$CallStatistics {
   const factory CallStatistics({
     @Default(0) int packetLossRate,
     @Default(0) int rtt,
@@ -321,7 +321,7 @@ class CallStatistics with _$CallStatistics {
 // ============================================================================
 
 @freezed
-class ScreenShareRequest with _$ScreenShareRequest {
+abstract class ScreenShareRequest with _$ScreenShareRequest {
   const factory ScreenShareRequest({
     required String callId,
     @Default(true) bool enable,

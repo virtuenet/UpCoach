@@ -123,10 +123,17 @@ final currentLocaleProvider = FutureProvider<Locale>((ref) async {
   return service.getCurrentLocale();
 });
 
-class LanguageNotifier extends StateNotifier<Locale> {
-  final LanguageService _service;
+class LanguageNotifier extends Notifier<Locale> {
+  late final LanguageService _service;
+  final Locale initialLocale;
 
-  LanguageNotifier(this._service, Locale initial) : super(initial);
+  LanguageNotifier({this.initialLocale = const Locale('en')});
+
+  @override
+  Locale build() {
+    _service = ref.watch(languageServiceProvider);
+    return initialLocale;
+  }
 
   Future<void> setLanguage(String languageCode) async {
     await _service.setSelectedLanguage(languageCode);
@@ -138,6 +145,4 @@ class LanguageNotifier extends StateNotifier<Locale> {
   }
 }
 
-final localeProvider = StateNotifierProvider<LanguageNotifier, Locale>((ref) {
-  throw UnimplementedError('localeProvider must be overridden');
-});
+final localeProvider = NotifierProvider<LanguageNotifier, Locale>(LanguageNotifier.new);

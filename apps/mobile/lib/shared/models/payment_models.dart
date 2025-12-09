@@ -45,7 +45,7 @@ enum RefundStatus {
 // ============================================================================
 
 @freezed
-class PaymentIntentResponse with _$PaymentIntentResponse {
+abstract class PaymentIntentResponse with _$PaymentIntentResponse {
   const factory PaymentIntentResponse({
     required String clientSecret,
     required String paymentIntentId,
@@ -64,7 +64,7 @@ class PaymentIntentResponse with _$PaymentIntentResponse {
 // ============================================================================
 
 @freezed
-class PaymentMethod with _$PaymentMethod {
+abstract class PaymentMethod with _$PaymentMethod {
   const PaymentMethod._();
 
   const factory PaymentMethod({
@@ -118,7 +118,7 @@ class PaymentMethod with _$PaymentMethod {
 // ============================================================================
 
 @freezed
-class PaymentRecord with _$PaymentRecord {
+abstract class PaymentRecord with _$PaymentRecord {
   const PaymentRecord._();
 
   const factory PaymentRecord({
@@ -196,7 +196,7 @@ class PaymentRecord with _$PaymentRecord {
 // ============================================================================
 
 @freezed
-class RefundRecord with _$RefundRecord {
+abstract class RefundRecord with _$RefundRecord {
   const RefundRecord._();
 
   const factory RefundRecord({
@@ -235,7 +235,7 @@ class RefundRecord with _$RefundRecord {
 // ============================================================================
 
 @freezed
-class CreatePaymentIntentRequest with _$CreatePaymentIntentRequest {
+abstract class CreatePaymentIntentRequest with _$CreatePaymentIntentRequest {
   const factory CreatePaymentIntentRequest({
     required int amount,
     @Default('usd') String currency,
@@ -255,7 +255,7 @@ class CreatePaymentIntentRequest with _$CreatePaymentIntentRequest {
 // ============================================================================
 
 @freezed
-class ConfirmPaymentRequest with _$ConfirmPaymentRequest {
+abstract class ConfirmPaymentRequest with _$ConfirmPaymentRequest {
   const factory ConfirmPaymentRequest({
     required String paymentIntentId,
     String? paymentMethodId,
@@ -322,7 +322,7 @@ class PaymentResult {
 // ============================================================================
 
 @freezed
-class Invoice with _$Invoice {
+abstract class Invoice with _$Invoice {
   const Invoice._();
 
   const factory Invoice({
@@ -376,7 +376,7 @@ class Invoice with _$Invoice {
 }
 
 @freezed
-class InvoiceLineItem with _$InvoiceLineItem {
+abstract class InvoiceLineItem with _$InvoiceLineItem {
   const InvoiceLineItem._();
 
   const factory InvoiceLineItem({
@@ -405,7 +405,7 @@ class InvoiceLineItem with _$InvoiceLineItem {
 // ============================================================================
 
 @freezed
-class SetupIntentResponse with _$SetupIntentResponse {
+abstract class SetupIntentResponse with _$SetupIntentResponse {
   const factory SetupIntentResponse({
     required String clientSecret,
     required String setupIntentId,
@@ -422,7 +422,7 @@ class SetupIntentResponse with _$SetupIntentResponse {
 // ============================================================================
 
 @freezed
-class StripeCustomer with _$StripeCustomer {
+abstract class StripeCustomer with _$StripeCustomer {
   const factory StripeCustomer({
     required String id,
     String? email,

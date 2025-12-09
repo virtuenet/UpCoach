@@ -6,9 +6,8 @@ part of 'voice_journal_entry.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$VoiceJournalEntryImpl _$$VoiceJournalEntryImplFromJson(
-        Map<String, dynamic> json) =>
-    _$VoiceJournalEntryImpl(
+_VoiceJournalEntry _$VoiceJournalEntryFromJson(Map<String, dynamic> json) =>
+    _VoiceJournalEntry(
       id: json['id'] as String,
       title: json['title'] as String,
       audioFilePath: json['audioFilePath'] as String,
@@ -17,7 +16,7 @@ _$VoiceJournalEntryImpl _$$VoiceJournalEntryImplFromJson(
       emotionalTone: json['emotionalTone'] as String? ?? '',
       tags:
           (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
-              const [],
+          const [],
       summary: json['summary'] as String? ?? '',
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: json['updatedAt'] == null
@@ -30,8 +29,7 @@ _$VoiceJournalEntryImpl _$$VoiceJournalEntryImplFromJson(
       isFavorite: json['isFavorite'] as bool? ?? false,
     );
 
-Map<String, dynamic> _$$VoiceJournalEntryImplToJson(
-        _$VoiceJournalEntryImpl instance) =>
+Map<String, dynamic> _$VoiceJournalEntryToJson(_VoiceJournalEntry instance) =>
     <String, dynamic>{
       'id': instance.id,
       'title': instance.title,

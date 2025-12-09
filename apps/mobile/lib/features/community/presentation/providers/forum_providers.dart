@@ -115,8 +115,11 @@ class ForumState {
 }
 
 // Forum Notifier
-class ForumNotifier extends StateNotifier<ForumState> {
-  ForumNotifier() : super(const ForumState());
+class ForumNotifier extends Notifier<ForumState> {
+  @override
+  ForumState build() {
+    return const ForumState();
+  }
 
   Future<void> loadCategories() async {
     state = state.copyWith(isLoading: true, error: null);
@@ -189,9 +192,7 @@ class ForumNotifier extends StateNotifier<ForumState> {
 }
 
 // Providers
-final forumProvider = StateNotifierProvider<ForumNotifier, ForumState>((ref) {
-  return ForumNotifier();
-});
+final forumProvider = NotifierProvider<ForumNotifier, ForumState>(ForumNotifier.new);
 
 final forumCategoriesProvider =
     FutureProvider<List<ForumCategory>>((ref) async {

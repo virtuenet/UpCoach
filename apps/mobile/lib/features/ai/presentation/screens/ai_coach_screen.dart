@@ -11,12 +11,13 @@ import '../widgets/chat_message_widget.dart';
 import '../widgets/ai_input_widget.dart';
 
 final chatMessagesProvider =
-    StateNotifierProvider<ChatMessagesNotifier, List<AIResponse>>((ref) {
-  return ChatMessagesNotifier();
-});
+    NotifierProvider<ChatMessagesNotifier, List<AIResponse>>(ChatMessagesNotifier.new);
 
-class ChatMessagesNotifier extends StateNotifier<List<AIResponse>> {
-  ChatMessagesNotifier() : super([]);
+class ChatMessagesNotifier extends Notifier<List<AIResponse>> {
+  @override
+  List<AIResponse> build() {
+    return [];
+  }
 
   void addMessage(AIResponse message) {
     state = [...state, message];

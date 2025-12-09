@@ -5,9 +5,7 @@ import '../../core/theme/app_theme.dart';
 
 // Provider for managing loading state
 final loadingOverlayProvider =
-    StateNotifierProvider<LoadingOverlayNotifier, LoadingState>((ref) {
-  return LoadingOverlayNotifier();
-});
+    NotifierProvider<LoadingOverlayNotifier, LoadingState>(LoadingOverlayNotifier.new);
 
 class LoadingState {
   final bool isLoading;
@@ -37,8 +35,11 @@ class LoadingState {
   }
 }
 
-class LoadingOverlayNotifier extends StateNotifier<LoadingState> {
-  LoadingOverlayNotifier() : super(const LoadingState());
+class LoadingOverlayNotifier extends Notifier<LoadingState> {
+  @override
+  LoadingState build() {
+    return const LoadingState();
+  }
 
   void show({String? message, bool canDismiss = false}) {
     state = state.copyWith(

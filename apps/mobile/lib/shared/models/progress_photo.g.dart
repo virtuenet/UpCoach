@@ -6,8 +6,8 @@ part of 'progress_photo.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$ProgressPhotoImpl _$$ProgressPhotoImplFromJson(Map<String, dynamic> json) =>
-    _$ProgressPhotoImpl(
+_ProgressPhoto _$ProgressPhotoFromJson(Map<String, dynamic> json) =>
+    _ProgressPhoto(
       id: json['id'] as String,
       imagePath: json['imagePath'] as String,
       title: json['title'] as String?,
@@ -23,10 +23,10 @@ _$ProgressPhotoImpl _$$ProgressPhotoImplFromJson(Map<String, dynamic> json) =>
       isFavorite: json['isFavorite'] as bool? ?? false,
       tags:
           (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
-              const [],
+          const [],
     );
 
-Map<String, dynamic> _$$ProgressPhotoImplToJson(_$ProgressPhotoImpl instance) =>
+Map<String, dynamic> _$ProgressPhotoToJson(_ProgressPhoto instance) =>
     <String, dynamic>{
       'id': instance.id,
       'imagePath': instance.imagePath,

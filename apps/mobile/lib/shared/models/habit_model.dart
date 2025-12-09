@@ -30,7 +30,7 @@ enum HabitCategory {
 }
 
 @freezed
-class Habit with _$Habit {
+abstract class Habit with _$Habit {
   const factory Habit({
     required String id,
     required String name,
@@ -63,7 +63,7 @@ class Habit with _$Habit {
 }
 
 @freezed
-class HabitCompletion with _$HabitCompletion {
+abstract class HabitCompletion with _$HabitCompletion {
   const factory HabitCompletion({
     required String id,
     required String habitId,
@@ -79,7 +79,7 @@ class HabitCompletion with _$HabitCompletion {
 }
 
 @freezed
-class HabitStreak with _$HabitStreak {
+abstract class HabitStreak with _$HabitStreak {
   const factory HabitStreak({
     required String id,
     required String habitId,
@@ -95,7 +95,7 @@ class HabitStreak with _$HabitStreak {
 }
 
 @freezed
-class HabitAchievement with _$HabitAchievement {
+abstract class HabitAchievement with _$HabitAchievement {
   const factory HabitAchievement({
     required String id,
     required String habitId,
@@ -113,7 +113,7 @@ class HabitAchievement with _$HabitAchievement {
 }
 
 @freezed
-class HabitState with _$HabitState {
+abstract class HabitState with _$HabitState {
   const factory HabitState({
     @Default([]) List<Habit> habits,
     @Default([]) List<HabitCompletion> completions,

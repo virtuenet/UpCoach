@@ -76,14 +76,17 @@ class ContentError extends ContentState {
 }
 
 // Content notifier for managing article list state
-class ContentNotifier extends StateNotifier<ContentState> {
-  final ContentService _service;
+class ContentNotifier extends Notifier<ContentState> {
+  late final ContentService _service;
   int _currentPage = 1;
   ArticleFilters? _currentFilters;
   List<ContentArticle> _allArticles = [];
 
-  ContentNotifier(this._service) : super(const ContentLoading()) {
+  @override
+  ContentState build() {
+    _service = ref.watch(contentServiceProvider);
     loadArticles();
+    return const ContentLoading();
   }
 
   Future<void> loadArticles() async {
@@ -158,10 +161,7 @@ class ContentNotifier extends StateNotifier<ContentState> {
 
 // Content notifier provider
 final contentNotifierProvider =
-    StateNotifierProvider<ContentNotifier, ContentState>((ref) {
-  final service = ref.watch(contentServiceProvider);
-  return ContentNotifier(service);
-});
+    NotifierProvider<ContentNotifier, ContentState>(ContentNotifier.new);
 
 // Saved articles provider
 @riverpod

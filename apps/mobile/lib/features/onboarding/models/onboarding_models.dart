@@ -81,7 +81,7 @@ enum AvailabilityPreference {
 // ============================================================================
 
 @freezed
-class OnboardingProfile with _$OnboardingProfile {
+abstract class OnboardingProfile with _$OnboardingProfile {
   const factory OnboardingProfile({
     String? firstName,
     String? lastName,
@@ -101,7 +101,7 @@ class OnboardingProfile with _$OnboardingProfile {
 }
 
 @freezed
-class OnboardingGoals with _$OnboardingGoals {
+abstract class OnboardingGoals with _$OnboardingGoals {
   const factory OnboardingGoals({
     @Default([]) List<CoachingGoal> selectedGoals,
     @Default(ExperienceLevel.beginner) ExperienceLevel experienceLevel,
@@ -117,7 +117,7 @@ class OnboardingGoals with _$OnboardingGoals {
 }
 
 @freezed
-class CoachPreferences with _$CoachPreferences {
+abstract class CoachPreferences with _$CoachPreferences {
   const factory CoachPreferences({
     @Default([]) List<String> preferredSpecializations,
     @Default(SessionPreference.any) SessionPreference sessionPreference,
@@ -134,7 +134,7 @@ class CoachPreferences with _$CoachPreferences {
 }
 
 @freezed
-class OnboardingData with _$OnboardingData {
+abstract class OnboardingData with _$OnboardingData {
   const OnboardingData._();
 
   const factory OnboardingData({
@@ -177,7 +177,7 @@ class OnboardingData with _$OnboardingData {
 }
 
 @freezed
-class RecommendedCoach with _$RecommendedCoach {
+abstract class RecommendedCoach with _$RecommendedCoach {
   const factory RecommendedCoach({
     required int id,
     required String displayName,

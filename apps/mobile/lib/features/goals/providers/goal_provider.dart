@@ -61,12 +61,15 @@ class GoalState {
 }
 
 // Goal Provider
-class GoalNotifier extends StateNotifier<GoalState> {
-  final GoalService _goalService;
+class GoalNotifier extends Notifier<GoalState> {
+  late final GoalService _goalService;
 
-  GoalNotifier(this._goalService) : super(const GoalState()) {
+  @override
+  GoalState build() {
+    _goalService = ref.watch(goalServiceProvider);
     loadGoals();
     loadStats();
+    return const GoalState();
   }
 
   Future<void> loadGoals({GoalStatus? status, GoalCategory? category}) async {
@@ -245,7 +248,4 @@ class GoalNotifier extends StateNotifier<GoalState> {
   }
 }
 
-final goalProvider = StateNotifierProvider<GoalNotifier, GoalState>((ref) {
-  final goalService = ref.watch(goalServiceProvider);
-  return GoalNotifier(goalService);
-});
+final goalProvider = NotifierProvider<GoalNotifier, GoalState>(GoalNotifier.new);

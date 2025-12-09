@@ -6,18 +6,17 @@ part of 'ai_response.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$AIResponseImpl _$$AIResponseImplFromJson(Map<String, dynamic> json) =>
-    _$AIResponseImpl(
-      content: json['content'] as String,
-      sessionId: json['sessionId'] as String,
-      role: json['role'] as String? ?? 'assistant',
-      metadata: json['metadata'] as Map<String, dynamic>?,
-      timestamp: json['timestamp'] == null
-          ? null
-          : DateTime.parse(json['timestamp'] as String),
-    );
+_AIResponse _$AIResponseFromJson(Map<String, dynamic> json) => _AIResponse(
+  content: json['content'] as String,
+  sessionId: json['sessionId'] as String,
+  role: json['role'] as String? ?? 'assistant',
+  metadata: json['metadata'] as Map<String, dynamic>?,
+  timestamp: json['timestamp'] == null
+      ? null
+      : DateTime.parse(json['timestamp'] as String),
+);
 
-Map<String, dynamic> _$$AIResponseImplToJson(_$AIResponseImpl instance) =>
+Map<String, dynamic> _$AIResponseToJson(_AIResponse instance) =>
     <String, dynamic>{
       'content': instance.content,
       'sessionId': instance.sessionId,
@@ -26,9 +25,8 @@ Map<String, dynamic> _$$AIResponseImplToJson(_$AIResponseImpl instance) =>
       'timestamp': instance.timestamp?.toIso8601String(),
     };
 
-_$AIRecommendationImpl _$$AIRecommendationImplFromJson(
-        Map<String, dynamic> json) =>
-    _$AIRecommendationImpl(
+_AIRecommendation _$AIRecommendationFromJson(Map<String, dynamic> json) =>
+    _AIRecommendation(
       id: json['id'] as String,
       type: json['type'] as String,
       title: json['title'] as String,
@@ -41,8 +39,7 @@ _$AIRecommendationImpl _$$AIRecommendationImplFromJson(
           : DateTime.parse(json['createdAt'] as String),
     );
 
-Map<String, dynamic> _$$AIRecommendationImplToJson(
-        _$AIRecommendationImpl instance) =>
+Map<String, dynamic> _$AIRecommendationToJson(_AIRecommendation instance) =>
     <String, dynamic>{
       'id': instance.id,
       'type': instance.type,
@@ -54,20 +51,21 @@ Map<String, dynamic> _$$AIRecommendationImplToJson(
       'createdAt': instance.createdAt?.toIso8601String(),
     };
 
-_$AIPredictionImpl _$$AIPredictionImplFromJson(Map<String, dynamic> json) =>
-    _$AIPredictionImpl(
+_AIPrediction _$AIPredictionFromJson(Map<String, dynamic> json) =>
+    _AIPrediction(
       type: json['type'] as String,
       probability: (json['probability'] as num).toDouble(),
       description: json['description'] as String,
       predictedDate: json['predictedDate'] == null
           ? null
           : DateTime.parse(json['predictedDate'] as String),
-      factors:
-          (json['factors'] as List<dynamic>?)?.map((e) => e as String).toList(),
+      factors: (json['factors'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
       metadata: json['metadata'] as Map<String, dynamic>?,
     );
 
-Map<String, dynamic> _$$AIPredictionImplToJson(_$AIPredictionImpl instance) =>
+Map<String, dynamic> _$AIPredictionToJson(_AIPrediction instance) =>
     <String, dynamic>{
       'type': instance.type,
       'probability': instance.probability,
@@ -77,8 +75,8 @@ Map<String, dynamic> _$$AIPredictionImplToJson(_$AIPredictionImpl instance) =>
       'metadata': instance.metadata,
     };
 
-_$VoiceAnalysisImpl _$$VoiceAnalysisImplFromJson(Map<String, dynamic> json) =>
-    _$VoiceAnalysisImpl(
+_VoiceAnalysis _$VoiceAnalysisFromJson(Map<String, dynamic> json) =>
+    _VoiceAnalysis(
       sessionId: json['sessionId'] as String,
       emotions: (json['emotions'] as Map<String, dynamic>).map(
         (k, e) => MapEntry(k, (e as num).toDouble()),
@@ -95,7 +93,7 @@ _$VoiceAnalysisImpl _$$VoiceAnalysisImplFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['analyzedAt'] as String),
     );
 
-Map<String, dynamic> _$$VoiceAnalysisImplToJson(_$VoiceAnalysisImpl instance) =>
+Map<String, dynamic> _$VoiceAnalysisToJson(_VoiceAnalysis instance) =>
     <String, dynamic>{
       'sessionId': instance.sessionId,
       'emotions': instance.emotions,
@@ -107,8 +105,8 @@ Map<String, dynamic> _$$VoiceAnalysisImplToJson(_$VoiceAnalysisImpl instance) =>
       'analyzedAt': instance.analyzedAt?.toIso8601String(),
     };
 
-_$LearningPathImpl _$$LearningPathImplFromJson(Map<String, dynamic> json) =>
-    _$LearningPathImpl(
+_LearningPath _$LearningPathFromJson(Map<String, dynamic> json) =>
+    _LearningPath(
       id: json['id'] as String,
       topic: json['topic'] as String,
       modules: (json['modules'] as List<dynamic>)
@@ -125,7 +123,7 @@ _$LearningPathImpl _$$LearningPathImplFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['completedAt'] as String),
     );
 
-Map<String, dynamic> _$$LearningPathImplToJson(_$LearningPathImpl instance) =>
+Map<String, dynamic> _$LearningPathToJson(_LearningPath instance) =>
     <String, dynamic>{
       'id': instance.id,
       'topic': instance.topic,
@@ -137,8 +135,8 @@ Map<String, dynamic> _$$LearningPathImplToJson(_$LearningPathImpl instance) =>
       'completedAt': instance.completedAt?.toIso8601String(),
     };
 
-_$LearningModuleImpl _$$LearningModuleImplFromJson(Map<String, dynamic> json) =>
-    _$LearningModuleImpl(
+_LearningModule _$LearningModuleFromJson(Map<String, dynamic> json) =>
+    _LearningModule(
       id: json['id'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
@@ -150,8 +148,7 @@ _$LearningModuleImpl _$$LearningModuleImplFromJson(Map<String, dynamic> json) =>
       content: json['content'] as Map<String, dynamic>?,
     );
 
-Map<String, dynamic> _$$LearningModuleImplToJson(
-        _$LearningModuleImpl instance) =>
+Map<String, dynamic> _$LearningModuleToJson(_LearningModule instance) =>
     <String, dynamic>{
       'id': instance.id,
       'title': instance.title,

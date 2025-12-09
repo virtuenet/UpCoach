@@ -1,5 +1,5 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,2915 +9,2884 @@ part of 'payment_models.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-PaymentIntentResponse _$PaymentIntentResponseFromJson(
-    Map<String, dynamic> json) {
-  return _PaymentIntentResponse.fromJson(json);
-}
 
 /// @nodoc
 mixin _$PaymentIntentResponse {
-  String get clientSecret => throw _privateConstructorUsedError;
-  String get paymentIntentId => throw _privateConstructorUsedError;
-  int get amount => throw _privateConstructorUsedError;
-  String get currency => throw _privateConstructorUsedError;
-  String? get customerId => throw _privateConstructorUsedError;
-  String? get ephemeralKey => throw _privateConstructorUsedError;
 
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
-  $PaymentIntentResponseCopyWith<PaymentIntentResponse> get copyWith =>
-      throw _privateConstructorUsedError;
+ String get clientSecret; String get paymentIntentId; int get amount; String get currency; String? get customerId; String? get ephemeralKey;
+/// Create a copy of PaymentIntentResponse
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$PaymentIntentResponseCopyWith<PaymentIntentResponse> get copyWith => _$PaymentIntentResponseCopyWithImpl<PaymentIntentResponse>(this as PaymentIntentResponse, _$identity);
+
+  /// Serializes this PaymentIntentResponse to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PaymentIntentResponse&&(identical(other.clientSecret, clientSecret) || other.clientSecret == clientSecret)&&(identical(other.paymentIntentId, paymentIntentId) || other.paymentIntentId == paymentIntentId)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.customerId, customerId) || other.customerId == customerId)&&(identical(other.ephemeralKey, ephemeralKey) || other.ephemeralKey == ephemeralKey));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,clientSecret,paymentIntentId,amount,currency,customerId,ephemeralKey);
+
+@override
+String toString() {
+  return 'PaymentIntentResponse(clientSecret: $clientSecret, paymentIntentId: $paymentIntentId, amount: $amount, currency: $currency, customerId: $customerId, ephemeralKey: $ephemeralKey)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $PaymentIntentResponseCopyWith<$Res> {
-  factory $PaymentIntentResponseCopyWith(PaymentIntentResponse value,
-          $Res Function(PaymentIntentResponse) then) =
-      _$PaymentIntentResponseCopyWithImpl<$Res, PaymentIntentResponse>;
-  @useResult
-  $Res call(
-      {String clientSecret,
-      String paymentIntentId,
-      int amount,
-      String currency,
-      String? customerId,
-      String? ephemeralKey});
-}
+abstract mixin class $PaymentIntentResponseCopyWith<$Res>  {
+  factory $PaymentIntentResponseCopyWith(PaymentIntentResponse value, $Res Function(PaymentIntentResponse) _then) = _$PaymentIntentResponseCopyWithImpl;
+@useResult
+$Res call({
+ String clientSecret, String paymentIntentId, int amount, String currency, String? customerId, String? ephemeralKey
+});
 
+
+
+
+}
 /// @nodoc
-class _$PaymentIntentResponseCopyWithImpl<$Res,
-        $Val extends PaymentIntentResponse>
+class _$PaymentIntentResponseCopyWithImpl<$Res>
     implements $PaymentIntentResponseCopyWith<$Res> {
-  _$PaymentIntentResponseCopyWithImpl(this._value, this._then);
+  _$PaymentIntentResponseCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final PaymentIntentResponse _self;
+  final $Res Function(PaymentIntentResponse) _then;
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? clientSecret = null,
-    Object? paymentIntentId = null,
-    Object? amount = null,
-    Object? currency = null,
-    Object? customerId = freezed,
-    Object? ephemeralKey = freezed,
-  }) {
-    return _then(_value.copyWith(
-      clientSecret: null == clientSecret
-          ? _value.clientSecret
-          : clientSecret // ignore: cast_nullable_to_non_nullable
-              as String,
-      paymentIntentId: null == paymentIntentId
-          ? _value.paymentIntentId
-          : paymentIntentId // ignore: cast_nullable_to_non_nullable
-              as String,
-      amount: null == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as int,
-      currency: null == currency
-          ? _value.currency
-          : currency // ignore: cast_nullable_to_non_nullable
-              as String,
-      customerId: freezed == customerId
-          ? _value.customerId
-          : customerId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      ephemeralKey: freezed == ephemeralKey
-          ? _value.ephemeralKey
-          : ephemeralKey // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
-  }
+/// Create a copy of PaymentIntentResponse
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? clientSecret = null,Object? paymentIntentId = null,Object? amount = null,Object? currency = null,Object? customerId = freezed,Object? ephemeralKey = freezed,}) {
+  return _then(_self.copyWith(
+clientSecret: null == clientSecret ? _self.clientSecret : clientSecret // ignore: cast_nullable_to_non_nullable
+as String,paymentIntentId: null == paymentIntentId ? _self.paymentIntentId : paymentIntentId // ignore: cast_nullable_to_non_nullable
+as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as int,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,customerId: freezed == customerId ? _self.customerId : customerId // ignore: cast_nullable_to_non_nullable
+as String?,ephemeralKey: freezed == ephemeralKey ? _self.ephemeralKey : ephemeralKey // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
 }
 
-/// @nodoc
-abstract class _$$PaymentIntentResponseImplCopyWith<$Res>
-    implements $PaymentIntentResponseCopyWith<$Res> {
-  factory _$$PaymentIntentResponseImplCopyWith(
-          _$PaymentIntentResponseImpl value,
-          $Res Function(_$PaymentIntentResponseImpl) then) =
-      __$$PaymentIntentResponseImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String clientSecret,
-      String paymentIntentId,
-      int amount,
-      String currency,
-      String? customerId,
-      String? ephemeralKey});
 }
 
-/// @nodoc
-class __$$PaymentIntentResponseImplCopyWithImpl<$Res>
-    extends _$PaymentIntentResponseCopyWithImpl<$Res,
-        _$PaymentIntentResponseImpl>
-    implements _$$PaymentIntentResponseImplCopyWith<$Res> {
-  __$$PaymentIntentResponseImplCopyWithImpl(_$PaymentIntentResponseImpl _value,
-      $Res Function(_$PaymentIntentResponseImpl) _then)
-      : super(_value, _then);
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? clientSecret = null,
-    Object? paymentIntentId = null,
-    Object? amount = null,
-    Object? currency = null,
-    Object? customerId = freezed,
-    Object? ephemeralKey = freezed,
-  }) {
-    return _then(_$PaymentIntentResponseImpl(
-      clientSecret: null == clientSecret
-          ? _value.clientSecret
-          : clientSecret // ignore: cast_nullable_to_non_nullable
-              as String,
-      paymentIntentId: null == paymentIntentId
-          ? _value.paymentIntentId
-          : paymentIntentId // ignore: cast_nullable_to_non_nullable
-              as String,
-      amount: null == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as int,
-      currency: null == currency
-          ? _value.currency
-          : currency // ignore: cast_nullable_to_non_nullable
-              as String,
-      customerId: freezed == customerId
-          ? _value.customerId
-          : customerId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      ephemeralKey: freezed == ephemeralKey
-          ? _value.ephemeralKey
-          : ephemeralKey // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
+/// Adds pattern-matching-related methods to [PaymentIntentResponse].
+extension PaymentIntentResponsePatterns on PaymentIntentResponse {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _PaymentIntentResponse value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _PaymentIntentResponse() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _PaymentIntentResponse value)  $default,){
+final _that = this;
+switch (_that) {
+case _PaymentIntentResponse():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _PaymentIntentResponse value)?  $default,){
+final _that = this;
+switch (_that) {
+case _PaymentIntentResponse() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String clientSecret,  String paymentIntentId,  int amount,  String currency,  String? customerId,  String? ephemeralKey)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _PaymentIntentResponse() when $default != null:
+return $default(_that.clientSecret,_that.paymentIntentId,_that.amount,_that.currency,_that.customerId,_that.ephemeralKey);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String clientSecret,  String paymentIntentId,  int amount,  String currency,  String? customerId,  String? ephemeralKey)  $default,) {final _that = this;
+switch (_that) {
+case _PaymentIntentResponse():
+return $default(_that.clientSecret,_that.paymentIntentId,_that.amount,_that.currency,_that.customerId,_that.ephemeralKey);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String clientSecret,  String paymentIntentId,  int amount,  String currency,  String? customerId,  String? ephemeralKey)?  $default,) {final _that = this;
+switch (_that) {
+case _PaymentIntentResponse() when $default != null:
+return $default(_that.clientSecret,_that.paymentIntentId,_that.amount,_that.currency,_that.customerId,_that.ephemeralKey);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$PaymentIntentResponseImpl implements _PaymentIntentResponse {
-  const _$PaymentIntentResponseImpl(
-      {required this.clientSecret,
-      required this.paymentIntentId,
-      required this.amount,
-      required this.currency,
-      this.customerId,
-      this.ephemeralKey});
 
-  factory _$PaymentIntentResponseImpl.fromJson(Map<String, dynamic> json) =>
-      _$$PaymentIntentResponseImplFromJson(json);
+class _PaymentIntentResponse implements PaymentIntentResponse {
+  const _PaymentIntentResponse({required this.clientSecret, required this.paymentIntentId, required this.amount, required this.currency, this.customerId, this.ephemeralKey});
+  factory _PaymentIntentResponse.fromJson(Map<String, dynamic> json) => _$PaymentIntentResponseFromJson(json);
 
-  @override
-  final String clientSecret;
-  @override
-  final String paymentIntentId;
-  @override
-  final int amount;
-  @override
-  final String currency;
-  @override
-  final String? customerId;
-  @override
-  final String? ephemeralKey;
+@override final  String clientSecret;
+@override final  String paymentIntentId;
+@override final  int amount;
+@override final  String currency;
+@override final  String? customerId;
+@override final  String? ephemeralKey;
 
-  @override
-  String toString() {
-    return 'PaymentIntentResponse(clientSecret: $clientSecret, paymentIntentId: $paymentIntentId, amount: $amount, currency: $currency, customerId: $customerId, ephemeralKey: $ephemeralKey)';
-  }
+/// Create a copy of PaymentIntentResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$PaymentIntentResponseCopyWith<_PaymentIntentResponse> get copyWith => __$PaymentIntentResponseCopyWithImpl<_PaymentIntentResponse>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$PaymentIntentResponseImpl &&
-            (identical(other.clientSecret, clientSecret) ||
-                other.clientSecret == clientSecret) &&
-            (identical(other.paymentIntentId, paymentIntentId) ||
-                other.paymentIntentId == paymentIntentId) &&
-            (identical(other.amount, amount) || other.amount == amount) &&
-            (identical(other.currency, currency) ||
-                other.currency == currency) &&
-            (identical(other.customerId, customerId) ||
-                other.customerId == customerId) &&
-            (identical(other.ephemeralKey, ephemeralKey) ||
-                other.ephemeralKey == ephemeralKey));
-  }
-
-  @JsonKey(ignore: true)
-  @override
-  int get hashCode => Object.hash(runtimeType, clientSecret, paymentIntentId,
-      amount, currency, customerId, ephemeralKey);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$PaymentIntentResponseImplCopyWith<_$PaymentIntentResponseImpl>
-      get copyWith => __$$PaymentIntentResponseImplCopyWithImpl<
-          _$PaymentIntentResponseImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$PaymentIntentResponseImplToJson(
-      this,
-    );
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$PaymentIntentResponseToJson(this, );
 }
 
-abstract class _PaymentIntentResponse implements PaymentIntentResponse {
-  const factory _PaymentIntentResponse(
-      {required final String clientSecret,
-      required final String paymentIntentId,
-      required final int amount,
-      required final String currency,
-      final String? customerId,
-      final String? ephemeralKey}) = _$PaymentIntentResponseImpl;
-
-  factory _PaymentIntentResponse.fromJson(Map<String, dynamic> json) =
-      _$PaymentIntentResponseImpl.fromJson;
-
-  @override
-  String get clientSecret;
-  @override
-  String get paymentIntentId;
-  @override
-  int get amount;
-  @override
-  String get currency;
-  @override
-  String? get customerId;
-  @override
-  String? get ephemeralKey;
-  @override
-  @JsonKey(ignore: true)
-  _$$PaymentIntentResponseImplCopyWith<_$PaymentIntentResponseImpl>
-      get copyWith => throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PaymentIntentResponse&&(identical(other.clientSecret, clientSecret) || other.clientSecret == clientSecret)&&(identical(other.paymentIntentId, paymentIntentId) || other.paymentIntentId == paymentIntentId)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.customerId, customerId) || other.customerId == customerId)&&(identical(other.ephemeralKey, ephemeralKey) || other.ephemeralKey == ephemeralKey));
 }
 
-PaymentMethod _$PaymentMethodFromJson(Map<String, dynamic> json) {
-  return _PaymentMethod.fromJson(json);
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,clientSecret,paymentIntentId,amount,currency,customerId,ephemeralKey);
+
+@override
+String toString() {
+  return 'PaymentIntentResponse(clientSecret: $clientSecret, paymentIntentId: $paymentIntentId, amount: $amount, currency: $currency, customerId: $customerId, ephemeralKey: $ephemeralKey)';
 }
+
+
+}
+
+/// @nodoc
+abstract mixin class _$PaymentIntentResponseCopyWith<$Res> implements $PaymentIntentResponseCopyWith<$Res> {
+  factory _$PaymentIntentResponseCopyWith(_PaymentIntentResponse value, $Res Function(_PaymentIntentResponse) _then) = __$PaymentIntentResponseCopyWithImpl;
+@override @useResult
+$Res call({
+ String clientSecret, String paymentIntentId, int amount, String currency, String? customerId, String? ephemeralKey
+});
+
+
+
+
+}
+/// @nodoc
+class __$PaymentIntentResponseCopyWithImpl<$Res>
+    implements _$PaymentIntentResponseCopyWith<$Res> {
+  __$PaymentIntentResponseCopyWithImpl(this._self, this._then);
+
+  final _PaymentIntentResponse _self;
+  final $Res Function(_PaymentIntentResponse) _then;
+
+/// Create a copy of PaymentIntentResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? clientSecret = null,Object? paymentIntentId = null,Object? amount = null,Object? currency = null,Object? customerId = freezed,Object? ephemeralKey = freezed,}) {
+  return _then(_PaymentIntentResponse(
+clientSecret: null == clientSecret ? _self.clientSecret : clientSecret // ignore: cast_nullable_to_non_nullable
+as String,paymentIntentId: null == paymentIntentId ? _self.paymentIntentId : paymentIntentId // ignore: cast_nullable_to_non_nullable
+as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as int,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,customerId: freezed == customerId ? _self.customerId : customerId // ignore: cast_nullable_to_non_nullable
+as String?,ephemeralKey: freezed == ephemeralKey ? _self.ephemeralKey : ephemeralKey // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
 
 /// @nodoc
 mixin _$PaymentMethod {
-  String get id => throw _privateConstructorUsedError;
-  String get type => throw _privateConstructorUsedError;
-  String? get last4 => throw _privateConstructorUsedError;
-  String? get brand => throw _privateConstructorUsedError;
-  int? get expiryMonth => throw _privateConstructorUsedError;
-  int? get expiryYear => throw _privateConstructorUsedError;
-  String? get cardholderName => throw _privateConstructorUsedError;
-  bool get isDefault => throw _privateConstructorUsedError;
-  DateTime? get createdAt => throw _privateConstructorUsedError;
 
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
-  $PaymentMethodCopyWith<PaymentMethod> get copyWith =>
-      throw _privateConstructorUsedError;
+ String get id; String get type; String? get last4; String? get brand; int? get expiryMonth; int? get expiryYear; String? get cardholderName; bool get isDefault; DateTime? get createdAt;
+/// Create a copy of PaymentMethod
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$PaymentMethodCopyWith<PaymentMethod> get copyWith => _$PaymentMethodCopyWithImpl<PaymentMethod>(this as PaymentMethod, _$identity);
+
+  /// Serializes this PaymentMethod to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PaymentMethod&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.last4, last4) || other.last4 == last4)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.expiryMonth, expiryMonth) || other.expiryMonth == expiryMonth)&&(identical(other.expiryYear, expiryYear) || other.expiryYear == expiryYear)&&(identical(other.cardholderName, cardholderName) || other.cardholderName == cardholderName)&&(identical(other.isDefault, isDefault) || other.isDefault == isDefault)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,type,last4,brand,expiryMonth,expiryYear,cardholderName,isDefault,createdAt);
+
+@override
+String toString() {
+  return 'PaymentMethod(id: $id, type: $type, last4: $last4, brand: $brand, expiryMonth: $expiryMonth, expiryYear: $expiryYear, cardholderName: $cardholderName, isDefault: $isDefault, createdAt: $createdAt)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $PaymentMethodCopyWith<$Res> {
-  factory $PaymentMethodCopyWith(
-          PaymentMethod value, $Res Function(PaymentMethod) then) =
-      _$PaymentMethodCopyWithImpl<$Res, PaymentMethod>;
-  @useResult
-  $Res call(
-      {String id,
-      String type,
-      String? last4,
-      String? brand,
-      int? expiryMonth,
-      int? expiryYear,
-      String? cardholderName,
-      bool isDefault,
-      DateTime? createdAt});
-}
+abstract mixin class $PaymentMethodCopyWith<$Res>  {
+  factory $PaymentMethodCopyWith(PaymentMethod value, $Res Function(PaymentMethod) _then) = _$PaymentMethodCopyWithImpl;
+@useResult
+$Res call({
+ String id, String type, String? last4, String? brand, int? expiryMonth, int? expiryYear, String? cardholderName, bool isDefault, DateTime? createdAt
+});
 
+
+
+
+}
 /// @nodoc
-class _$PaymentMethodCopyWithImpl<$Res, $Val extends PaymentMethod>
+class _$PaymentMethodCopyWithImpl<$Res>
     implements $PaymentMethodCopyWith<$Res> {
-  _$PaymentMethodCopyWithImpl(this._value, this._then);
+  _$PaymentMethodCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final PaymentMethod _self;
+  final $Res Function(PaymentMethod) _then;
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? type = null,
-    Object? last4 = freezed,
-    Object? brand = freezed,
-    Object? expiryMonth = freezed,
-    Object? expiryYear = freezed,
-    Object? cardholderName = freezed,
-    Object? isDefault = null,
-    Object? createdAt = freezed,
-  }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      type: null == type
-          ? _value.type
-          : type // ignore: cast_nullable_to_non_nullable
-              as String,
-      last4: freezed == last4
-          ? _value.last4
-          : last4 // ignore: cast_nullable_to_non_nullable
-              as String?,
-      brand: freezed == brand
-          ? _value.brand
-          : brand // ignore: cast_nullable_to_non_nullable
-              as String?,
-      expiryMonth: freezed == expiryMonth
-          ? _value.expiryMonth
-          : expiryMonth // ignore: cast_nullable_to_non_nullable
-              as int?,
-      expiryYear: freezed == expiryYear
-          ? _value.expiryYear
-          : expiryYear // ignore: cast_nullable_to_non_nullable
-              as int?,
-      cardholderName: freezed == cardholderName
-          ? _value.cardholderName
-          : cardholderName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isDefault: null == isDefault
-          ? _value.isDefault
-          : isDefault // ignore: cast_nullable_to_non_nullable
-              as bool,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ) as $Val);
-  }
+/// Create a copy of PaymentMethod
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? type = null,Object? last4 = freezed,Object? brand = freezed,Object? expiryMonth = freezed,Object? expiryYear = freezed,Object? cardholderName = freezed,Object? isDefault = null,Object? createdAt = freezed,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as String,last4: freezed == last4 ? _self.last4 : last4 // ignore: cast_nullable_to_non_nullable
+as String?,brand: freezed == brand ? _self.brand : brand // ignore: cast_nullable_to_non_nullable
+as String?,expiryMonth: freezed == expiryMonth ? _self.expiryMonth : expiryMonth // ignore: cast_nullable_to_non_nullable
+as int?,expiryYear: freezed == expiryYear ? _self.expiryYear : expiryYear // ignore: cast_nullable_to_non_nullable
+as int?,cardholderName: freezed == cardholderName ? _self.cardholderName : cardholderName // ignore: cast_nullable_to_non_nullable
+as String?,isDefault: null == isDefault ? _self.isDefault : isDefault // ignore: cast_nullable_to_non_nullable
+as bool,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
+  ));
 }
 
-/// @nodoc
-abstract class _$$PaymentMethodImplCopyWith<$Res>
-    implements $PaymentMethodCopyWith<$Res> {
-  factory _$$PaymentMethodImplCopyWith(
-          _$PaymentMethodImpl value, $Res Function(_$PaymentMethodImpl) then) =
-      __$$PaymentMethodImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String id,
-      String type,
-      String? last4,
-      String? brand,
-      int? expiryMonth,
-      int? expiryYear,
-      String? cardholderName,
-      bool isDefault,
-      DateTime? createdAt});
 }
 
-/// @nodoc
-class __$$PaymentMethodImplCopyWithImpl<$Res>
-    extends _$PaymentMethodCopyWithImpl<$Res, _$PaymentMethodImpl>
-    implements _$$PaymentMethodImplCopyWith<$Res> {
-  __$$PaymentMethodImplCopyWithImpl(
-      _$PaymentMethodImpl _value, $Res Function(_$PaymentMethodImpl) _then)
-      : super(_value, _then);
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? type = null,
-    Object? last4 = freezed,
-    Object? brand = freezed,
-    Object? expiryMonth = freezed,
-    Object? expiryYear = freezed,
-    Object? cardholderName = freezed,
-    Object? isDefault = null,
-    Object? createdAt = freezed,
-  }) {
-    return _then(_$PaymentMethodImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      type: null == type
-          ? _value.type
-          : type // ignore: cast_nullable_to_non_nullable
-              as String,
-      last4: freezed == last4
-          ? _value.last4
-          : last4 // ignore: cast_nullable_to_non_nullable
-              as String?,
-      brand: freezed == brand
-          ? _value.brand
-          : brand // ignore: cast_nullable_to_non_nullable
-              as String?,
-      expiryMonth: freezed == expiryMonth
-          ? _value.expiryMonth
-          : expiryMonth // ignore: cast_nullable_to_non_nullable
-              as int?,
-      expiryYear: freezed == expiryYear
-          ? _value.expiryYear
-          : expiryYear // ignore: cast_nullable_to_non_nullable
-              as int?,
-      cardholderName: freezed == cardholderName
-          ? _value.cardholderName
-          : cardholderName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isDefault: null == isDefault
-          ? _value.isDefault
-          : isDefault // ignore: cast_nullable_to_non_nullable
-              as bool,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ));
-  }
+/// Adds pattern-matching-related methods to [PaymentMethod].
+extension PaymentMethodPatterns on PaymentMethod {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _PaymentMethod value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _PaymentMethod() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _PaymentMethod value)  $default,){
+final _that = this;
+switch (_that) {
+case _PaymentMethod():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _PaymentMethod value)?  $default,){
+final _that = this;
+switch (_that) {
+case _PaymentMethod() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String type,  String? last4,  String? brand,  int? expiryMonth,  int? expiryYear,  String? cardholderName,  bool isDefault,  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _PaymentMethod() when $default != null:
+return $default(_that.id,_that.type,_that.last4,_that.brand,_that.expiryMonth,_that.expiryYear,_that.cardholderName,_that.isDefault,_that.createdAt);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String type,  String? last4,  String? brand,  int? expiryMonth,  int? expiryYear,  String? cardholderName,  bool isDefault,  DateTime? createdAt)  $default,) {final _that = this;
+switch (_that) {
+case _PaymentMethod():
+return $default(_that.id,_that.type,_that.last4,_that.brand,_that.expiryMonth,_that.expiryYear,_that.cardholderName,_that.isDefault,_that.createdAt);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String type,  String? last4,  String? brand,  int? expiryMonth,  int? expiryYear,  String? cardholderName,  bool isDefault,  DateTime? createdAt)?  $default,) {final _that = this;
+switch (_that) {
+case _PaymentMethod() when $default != null:
+return $default(_that.id,_that.type,_that.last4,_that.brand,_that.expiryMonth,_that.expiryYear,_that.cardholderName,_that.isDefault,_that.createdAt);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$PaymentMethodImpl extends _PaymentMethod {
-  const _$PaymentMethodImpl(
-      {required this.id,
-      required this.type,
-      this.last4,
-      this.brand,
-      this.expiryMonth,
-      this.expiryYear,
-      this.cardholderName,
-      this.isDefault = false,
-      this.createdAt})
-      : super._();
 
-  factory _$PaymentMethodImpl.fromJson(Map<String, dynamic> json) =>
-      _$$PaymentMethodImplFromJson(json);
+class _PaymentMethod extends PaymentMethod {
+  const _PaymentMethod({required this.id, required this.type, this.last4, this.brand, this.expiryMonth, this.expiryYear, this.cardholderName, this.isDefault = false, this.createdAt}): super._();
+  factory _PaymentMethod.fromJson(Map<String, dynamic> json) => _$PaymentMethodFromJson(json);
 
-  @override
-  final String id;
-  @override
-  final String type;
-  @override
-  final String? last4;
-  @override
-  final String? brand;
-  @override
-  final int? expiryMonth;
-  @override
-  final int? expiryYear;
-  @override
-  final String? cardholderName;
-  @override
-  @JsonKey()
-  final bool isDefault;
-  @override
-  final DateTime? createdAt;
+@override final  String id;
+@override final  String type;
+@override final  String? last4;
+@override final  String? brand;
+@override final  int? expiryMonth;
+@override final  int? expiryYear;
+@override final  String? cardholderName;
+@override@JsonKey() final  bool isDefault;
+@override final  DateTime? createdAt;
 
-  @override
-  String toString() {
-    return 'PaymentMethod(id: $id, type: $type, last4: $last4, brand: $brand, expiryMonth: $expiryMonth, expiryYear: $expiryYear, cardholderName: $cardholderName, isDefault: $isDefault, createdAt: $createdAt)';
-  }
+/// Create a copy of PaymentMethod
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$PaymentMethodCopyWith<_PaymentMethod> get copyWith => __$PaymentMethodCopyWithImpl<_PaymentMethod>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$PaymentMethodImpl &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.type, type) || other.type == type) &&
-            (identical(other.last4, last4) || other.last4 == last4) &&
-            (identical(other.brand, brand) || other.brand == brand) &&
-            (identical(other.expiryMonth, expiryMonth) ||
-                other.expiryMonth == expiryMonth) &&
-            (identical(other.expiryYear, expiryYear) ||
-                other.expiryYear == expiryYear) &&
-            (identical(other.cardholderName, cardholderName) ||
-                other.cardholderName == cardholderName) &&
-            (identical(other.isDefault, isDefault) ||
-                other.isDefault == isDefault) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
-  }
-
-  @JsonKey(ignore: true)
-  @override
-  int get hashCode => Object.hash(runtimeType, id, type, last4, brand,
-      expiryMonth, expiryYear, cardholderName, isDefault, createdAt);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$PaymentMethodImplCopyWith<_$PaymentMethodImpl> get copyWith =>
-      __$$PaymentMethodImplCopyWithImpl<_$PaymentMethodImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$PaymentMethodImplToJson(
-      this,
-    );
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$PaymentMethodToJson(this, );
 }
 
-abstract class _PaymentMethod extends PaymentMethod {
-  const factory _PaymentMethod(
-      {required final String id,
-      required final String type,
-      final String? last4,
-      final String? brand,
-      final int? expiryMonth,
-      final int? expiryYear,
-      final String? cardholderName,
-      final bool isDefault,
-      final DateTime? createdAt}) = _$PaymentMethodImpl;
-  const _PaymentMethod._() : super._();
-
-  factory _PaymentMethod.fromJson(Map<String, dynamic> json) =
-      _$PaymentMethodImpl.fromJson;
-
-  @override
-  String get id;
-  @override
-  String get type;
-  @override
-  String? get last4;
-  @override
-  String? get brand;
-  @override
-  int? get expiryMonth;
-  @override
-  int? get expiryYear;
-  @override
-  String? get cardholderName;
-  @override
-  bool get isDefault;
-  @override
-  DateTime? get createdAt;
-  @override
-  @JsonKey(ignore: true)
-  _$$PaymentMethodImplCopyWith<_$PaymentMethodImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PaymentMethod&&(identical(other.id, id) || other.id == id)&&(identical(other.type, type) || other.type == type)&&(identical(other.last4, last4) || other.last4 == last4)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.expiryMonth, expiryMonth) || other.expiryMonth == expiryMonth)&&(identical(other.expiryYear, expiryYear) || other.expiryYear == expiryYear)&&(identical(other.cardholderName, cardholderName) || other.cardholderName == cardholderName)&&(identical(other.isDefault, isDefault) || other.isDefault == isDefault)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
-PaymentRecord _$PaymentRecordFromJson(Map<String, dynamic> json) {
-  return _PaymentRecord.fromJson(json);
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,type,last4,brand,expiryMonth,expiryYear,cardholderName,isDefault,createdAt);
+
+@override
+String toString() {
+  return 'PaymentMethod(id: $id, type: $type, last4: $last4, brand: $brand, expiryMonth: $expiryMonth, expiryYear: $expiryYear, cardholderName: $cardholderName, isDefault: $isDefault, createdAt: $createdAt)';
 }
+
+
+}
+
+/// @nodoc
+abstract mixin class _$PaymentMethodCopyWith<$Res> implements $PaymentMethodCopyWith<$Res> {
+  factory _$PaymentMethodCopyWith(_PaymentMethod value, $Res Function(_PaymentMethod) _then) = __$PaymentMethodCopyWithImpl;
+@override @useResult
+$Res call({
+ String id, String type, String? last4, String? brand, int? expiryMonth, int? expiryYear, String? cardholderName, bool isDefault, DateTime? createdAt
+});
+
+
+
+
+}
+/// @nodoc
+class __$PaymentMethodCopyWithImpl<$Res>
+    implements _$PaymentMethodCopyWith<$Res> {
+  __$PaymentMethodCopyWithImpl(this._self, this._then);
+
+  final _PaymentMethod _self;
+  final $Res Function(_PaymentMethod) _then;
+
+/// Create a copy of PaymentMethod
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? type = null,Object? last4 = freezed,Object? brand = freezed,Object? expiryMonth = freezed,Object? expiryYear = freezed,Object? cardholderName = freezed,Object? isDefault = null,Object? createdAt = freezed,}) {
+  return _then(_PaymentMethod(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as String,last4: freezed == last4 ? _self.last4 : last4 // ignore: cast_nullable_to_non_nullable
+as String?,brand: freezed == brand ? _self.brand : brand // ignore: cast_nullable_to_non_nullable
+as String?,expiryMonth: freezed == expiryMonth ? _self.expiryMonth : expiryMonth // ignore: cast_nullable_to_non_nullable
+as int?,expiryYear: freezed == expiryYear ? _self.expiryYear : expiryYear // ignore: cast_nullable_to_non_nullable
+as int?,cardholderName: freezed == cardholderName ? _self.cardholderName : cardholderName // ignore: cast_nullable_to_non_nullable
+as String?,isDefault: null == isDefault ? _self.isDefault : isDefault // ignore: cast_nullable_to_non_nullable
+as bool,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
+  ));
+}
+
+
+}
+
 
 /// @nodoc
 mixin _$PaymentRecord {
-  String get id => throw _privateConstructorUsedError;
-  String get paymentIntentId => throw _privateConstructorUsedError;
-  int get amount => throw _privateConstructorUsedError;
-  String get currency => throw _privateConstructorUsedError;
-  PaymentStatus get status => throw _privateConstructorUsedError;
-  PaymentType get type => throw _privateConstructorUsedError; // Related entity
-  int? get sessionId => throw _privateConstructorUsedError;
-  int? get packageId => throw _privateConstructorUsedError;
-  int? get subscriptionId =>
-      throw _privateConstructorUsedError; // Stripe details
-  String? get paymentMethodId => throw _privateConstructorUsedError;
-  String? get receiptUrl => throw _privateConstructorUsedError;
-  String? get failureMessage => throw _privateConstructorUsedError; // Metadata
-  String? get description => throw _privateConstructorUsedError;
-  Map<String, dynamic>? get metadata =>
-      throw _privateConstructorUsedError; // Timestamps
-  DateTime? get createdAt => throw _privateConstructorUsedError;
-  DateTime? get completedAt => throw _privateConstructorUsedError;
 
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
-  $PaymentRecordCopyWith<PaymentRecord> get copyWith =>
-      throw _privateConstructorUsedError;
+ String get id; String get paymentIntentId; int get amount; String get currency; PaymentStatus get status; PaymentType get type;// Related entity
+ int? get sessionId; int? get packageId; int? get subscriptionId;// Stripe details
+ String? get paymentMethodId; String? get receiptUrl; String? get failureMessage;// Metadata
+ String? get description; Map<String, dynamic>? get metadata;// Timestamps
+ DateTime? get createdAt; DateTime? get completedAt;
+/// Create a copy of PaymentRecord
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$PaymentRecordCopyWith<PaymentRecord> get copyWith => _$PaymentRecordCopyWithImpl<PaymentRecord>(this as PaymentRecord, _$identity);
+
+  /// Serializes this PaymentRecord to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PaymentRecord&&(identical(other.id, id) || other.id == id)&&(identical(other.paymentIntentId, paymentIntentId) || other.paymentIntentId == paymentIntentId)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.status, status) || other.status == status)&&(identical(other.type, type) || other.type == type)&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.packageId, packageId) || other.packageId == packageId)&&(identical(other.subscriptionId, subscriptionId) || other.subscriptionId == subscriptionId)&&(identical(other.paymentMethodId, paymentMethodId) || other.paymentMethodId == paymentMethodId)&&(identical(other.receiptUrl, receiptUrl) || other.receiptUrl == receiptUrl)&&(identical(other.failureMessage, failureMessage) || other.failureMessage == failureMessage)&&(identical(other.description, description) || other.description == description)&&const DeepCollectionEquality().equals(other.metadata, metadata)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,paymentIntentId,amount,currency,status,type,sessionId,packageId,subscriptionId,paymentMethodId,receiptUrl,failureMessage,description,const DeepCollectionEquality().hash(metadata),createdAt,completedAt);
+
+@override
+String toString() {
+  return 'PaymentRecord(id: $id, paymentIntentId: $paymentIntentId, amount: $amount, currency: $currency, status: $status, type: $type, sessionId: $sessionId, packageId: $packageId, subscriptionId: $subscriptionId, paymentMethodId: $paymentMethodId, receiptUrl: $receiptUrl, failureMessage: $failureMessage, description: $description, metadata: $metadata, createdAt: $createdAt, completedAt: $completedAt)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $PaymentRecordCopyWith<$Res> {
-  factory $PaymentRecordCopyWith(
-          PaymentRecord value, $Res Function(PaymentRecord) then) =
-      _$PaymentRecordCopyWithImpl<$Res, PaymentRecord>;
-  @useResult
-  $Res call(
-      {String id,
-      String paymentIntentId,
-      int amount,
-      String currency,
-      PaymentStatus status,
-      PaymentType type,
-      int? sessionId,
-      int? packageId,
-      int? subscriptionId,
-      String? paymentMethodId,
-      String? receiptUrl,
-      String? failureMessage,
-      String? description,
-      Map<String, dynamic>? metadata,
-      DateTime? createdAt,
-      DateTime? completedAt});
-}
+abstract mixin class $PaymentRecordCopyWith<$Res>  {
+  factory $PaymentRecordCopyWith(PaymentRecord value, $Res Function(PaymentRecord) _then) = _$PaymentRecordCopyWithImpl;
+@useResult
+$Res call({
+ String id, String paymentIntentId, int amount, String currency, PaymentStatus status, PaymentType type, int? sessionId, int? packageId, int? subscriptionId, String? paymentMethodId, String? receiptUrl, String? failureMessage, String? description, Map<String, dynamic>? metadata, DateTime? createdAt, DateTime? completedAt
+});
 
+
+
+
+}
 /// @nodoc
-class _$PaymentRecordCopyWithImpl<$Res, $Val extends PaymentRecord>
+class _$PaymentRecordCopyWithImpl<$Res>
     implements $PaymentRecordCopyWith<$Res> {
-  _$PaymentRecordCopyWithImpl(this._value, this._then);
+  _$PaymentRecordCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final PaymentRecord _self;
+  final $Res Function(PaymentRecord) _then;
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? paymentIntentId = null,
-    Object? amount = null,
-    Object? currency = null,
-    Object? status = null,
-    Object? type = null,
-    Object? sessionId = freezed,
-    Object? packageId = freezed,
-    Object? subscriptionId = freezed,
-    Object? paymentMethodId = freezed,
-    Object? receiptUrl = freezed,
-    Object? failureMessage = freezed,
-    Object? description = freezed,
-    Object? metadata = freezed,
-    Object? createdAt = freezed,
-    Object? completedAt = freezed,
-  }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      paymentIntentId: null == paymentIntentId
-          ? _value.paymentIntentId
-          : paymentIntentId // ignore: cast_nullable_to_non_nullable
-              as String,
-      amount: null == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as int,
-      currency: null == currency
-          ? _value.currency
-          : currency // ignore: cast_nullable_to_non_nullable
-              as String,
-      status: null == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as PaymentStatus,
-      type: null == type
-          ? _value.type
-          : type // ignore: cast_nullable_to_non_nullable
-              as PaymentType,
-      sessionId: freezed == sessionId
-          ? _value.sessionId
-          : sessionId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      packageId: freezed == packageId
-          ? _value.packageId
-          : packageId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      subscriptionId: freezed == subscriptionId
-          ? _value.subscriptionId
-          : subscriptionId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      paymentMethodId: freezed == paymentMethodId
-          ? _value.paymentMethodId
-          : paymentMethodId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      receiptUrl: freezed == receiptUrl
-          ? _value.receiptUrl
-          : receiptUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      failureMessage: freezed == failureMessage
-          ? _value.failureMessage
-          : failureMessage // ignore: cast_nullable_to_non_nullable
-              as String?,
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String?,
-      metadata: freezed == metadata
-          ? _value.metadata
-          : metadata // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      completedAt: freezed == completedAt
-          ? _value.completedAt
-          : completedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ) as $Val);
-  }
+/// Create a copy of PaymentRecord
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? paymentIntentId = null,Object? amount = null,Object? currency = null,Object? status = null,Object? type = null,Object? sessionId = freezed,Object? packageId = freezed,Object? subscriptionId = freezed,Object? paymentMethodId = freezed,Object? receiptUrl = freezed,Object? failureMessage = freezed,Object? description = freezed,Object? metadata = freezed,Object? createdAt = freezed,Object? completedAt = freezed,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,paymentIntentId: null == paymentIntentId ? _self.paymentIntentId : paymentIntentId // ignore: cast_nullable_to_non_nullable
+as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as int,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as PaymentStatus,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as PaymentType,sessionId: freezed == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
+as int?,packageId: freezed == packageId ? _self.packageId : packageId // ignore: cast_nullable_to_non_nullable
+as int?,subscriptionId: freezed == subscriptionId ? _self.subscriptionId : subscriptionId // ignore: cast_nullable_to_non_nullable
+as int?,paymentMethodId: freezed == paymentMethodId ? _self.paymentMethodId : paymentMethodId // ignore: cast_nullable_to_non_nullable
+as String?,receiptUrl: freezed == receiptUrl ? _self.receiptUrl : receiptUrl // ignore: cast_nullable_to_non_nullable
+as String?,failureMessage: freezed == failureMessage ? _self.failureMessage : failureMessage // ignore: cast_nullable_to_non_nullable
+as String?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,metadata: freezed == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,completedAt: freezed == completedAt ? _self.completedAt : completedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
+  ));
 }
 
-/// @nodoc
-abstract class _$$PaymentRecordImplCopyWith<$Res>
-    implements $PaymentRecordCopyWith<$Res> {
-  factory _$$PaymentRecordImplCopyWith(
-          _$PaymentRecordImpl value, $Res Function(_$PaymentRecordImpl) then) =
-      __$$PaymentRecordImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String id,
-      String paymentIntentId,
-      int amount,
-      String currency,
-      PaymentStatus status,
-      PaymentType type,
-      int? sessionId,
-      int? packageId,
-      int? subscriptionId,
-      String? paymentMethodId,
-      String? receiptUrl,
-      String? failureMessage,
-      String? description,
-      Map<String, dynamic>? metadata,
-      DateTime? createdAt,
-      DateTime? completedAt});
 }
 
-/// @nodoc
-class __$$PaymentRecordImplCopyWithImpl<$Res>
-    extends _$PaymentRecordCopyWithImpl<$Res, _$PaymentRecordImpl>
-    implements _$$PaymentRecordImplCopyWith<$Res> {
-  __$$PaymentRecordImplCopyWithImpl(
-      _$PaymentRecordImpl _value, $Res Function(_$PaymentRecordImpl) _then)
-      : super(_value, _then);
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? paymentIntentId = null,
-    Object? amount = null,
-    Object? currency = null,
-    Object? status = null,
-    Object? type = null,
-    Object? sessionId = freezed,
-    Object? packageId = freezed,
-    Object? subscriptionId = freezed,
-    Object? paymentMethodId = freezed,
-    Object? receiptUrl = freezed,
-    Object? failureMessage = freezed,
-    Object? description = freezed,
-    Object? metadata = freezed,
-    Object? createdAt = freezed,
-    Object? completedAt = freezed,
-  }) {
-    return _then(_$PaymentRecordImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      paymentIntentId: null == paymentIntentId
-          ? _value.paymentIntentId
-          : paymentIntentId // ignore: cast_nullable_to_non_nullable
-              as String,
-      amount: null == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as int,
-      currency: null == currency
-          ? _value.currency
-          : currency // ignore: cast_nullable_to_non_nullable
-              as String,
-      status: null == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as PaymentStatus,
-      type: null == type
-          ? _value.type
-          : type // ignore: cast_nullable_to_non_nullable
-              as PaymentType,
-      sessionId: freezed == sessionId
-          ? _value.sessionId
-          : sessionId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      packageId: freezed == packageId
-          ? _value.packageId
-          : packageId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      subscriptionId: freezed == subscriptionId
-          ? _value.subscriptionId
-          : subscriptionId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      paymentMethodId: freezed == paymentMethodId
-          ? _value.paymentMethodId
-          : paymentMethodId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      receiptUrl: freezed == receiptUrl
-          ? _value.receiptUrl
-          : receiptUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      failureMessage: freezed == failureMessage
-          ? _value.failureMessage
-          : failureMessage // ignore: cast_nullable_to_non_nullable
-              as String?,
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String?,
-      metadata: freezed == metadata
-          ? _value._metadata
-          : metadata // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      completedAt: freezed == completedAt
-          ? _value.completedAt
-          : completedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ));
-  }
+/// Adds pattern-matching-related methods to [PaymentRecord].
+extension PaymentRecordPatterns on PaymentRecord {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _PaymentRecord value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _PaymentRecord() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _PaymentRecord value)  $default,){
+final _that = this;
+switch (_that) {
+case _PaymentRecord():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _PaymentRecord value)?  $default,){
+final _that = this;
+switch (_that) {
+case _PaymentRecord() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String paymentIntentId,  int amount,  String currency,  PaymentStatus status,  PaymentType type,  int? sessionId,  int? packageId,  int? subscriptionId,  String? paymentMethodId,  String? receiptUrl,  String? failureMessage,  String? description,  Map<String, dynamic>? metadata,  DateTime? createdAt,  DateTime? completedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _PaymentRecord() when $default != null:
+return $default(_that.id,_that.paymentIntentId,_that.amount,_that.currency,_that.status,_that.type,_that.sessionId,_that.packageId,_that.subscriptionId,_that.paymentMethodId,_that.receiptUrl,_that.failureMessage,_that.description,_that.metadata,_that.createdAt,_that.completedAt);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String paymentIntentId,  int amount,  String currency,  PaymentStatus status,  PaymentType type,  int? sessionId,  int? packageId,  int? subscriptionId,  String? paymentMethodId,  String? receiptUrl,  String? failureMessage,  String? description,  Map<String, dynamic>? metadata,  DateTime? createdAt,  DateTime? completedAt)  $default,) {final _that = this;
+switch (_that) {
+case _PaymentRecord():
+return $default(_that.id,_that.paymentIntentId,_that.amount,_that.currency,_that.status,_that.type,_that.sessionId,_that.packageId,_that.subscriptionId,_that.paymentMethodId,_that.receiptUrl,_that.failureMessage,_that.description,_that.metadata,_that.createdAt,_that.completedAt);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String paymentIntentId,  int amount,  String currency,  PaymentStatus status,  PaymentType type,  int? sessionId,  int? packageId,  int? subscriptionId,  String? paymentMethodId,  String? receiptUrl,  String? failureMessage,  String? description,  Map<String, dynamic>? metadata,  DateTime? createdAt,  DateTime? completedAt)?  $default,) {final _that = this;
+switch (_that) {
+case _PaymentRecord() when $default != null:
+return $default(_that.id,_that.paymentIntentId,_that.amount,_that.currency,_that.status,_that.type,_that.sessionId,_that.packageId,_that.subscriptionId,_that.paymentMethodId,_that.receiptUrl,_that.failureMessage,_that.description,_that.metadata,_that.createdAt,_that.completedAt);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$PaymentRecordImpl extends _PaymentRecord {
-  const _$PaymentRecordImpl(
-      {required this.id,
-      required this.paymentIntentId,
-      required this.amount,
-      required this.currency,
-      required this.status,
-      required this.type,
-      this.sessionId,
-      this.packageId,
-      this.subscriptionId,
-      this.paymentMethodId,
-      this.receiptUrl,
-      this.failureMessage,
-      this.description,
-      final Map<String, dynamic>? metadata,
-      this.createdAt,
-      this.completedAt})
-      : _metadata = metadata,
-        super._();
 
-  factory _$PaymentRecordImpl.fromJson(Map<String, dynamic> json) =>
-      _$$PaymentRecordImplFromJson(json);
+class _PaymentRecord extends PaymentRecord {
+  const _PaymentRecord({required this.id, required this.paymentIntentId, required this.amount, required this.currency, required this.status, required this.type, this.sessionId, this.packageId, this.subscriptionId, this.paymentMethodId, this.receiptUrl, this.failureMessage, this.description, final  Map<String, dynamic>? metadata, this.createdAt, this.completedAt}): _metadata = metadata,super._();
+  factory _PaymentRecord.fromJson(Map<String, dynamic> json) => _$PaymentRecordFromJson(json);
 
-  @override
-  final String id;
-  @override
-  final String paymentIntentId;
-  @override
-  final int amount;
-  @override
-  final String currency;
-  @override
-  final PaymentStatus status;
-  @override
-  final PaymentType type;
+@override final  String id;
+@override final  String paymentIntentId;
+@override final  int amount;
+@override final  String currency;
+@override final  PaymentStatus status;
+@override final  PaymentType type;
 // Related entity
-  @override
-  final int? sessionId;
-  @override
-  final int? packageId;
-  @override
-  final int? subscriptionId;
+@override final  int? sessionId;
+@override final  int? packageId;
+@override final  int? subscriptionId;
 // Stripe details
-  @override
-  final String? paymentMethodId;
-  @override
-  final String? receiptUrl;
-  @override
-  final String? failureMessage;
+@override final  String? paymentMethodId;
+@override final  String? receiptUrl;
+@override final  String? failureMessage;
 // Metadata
-  @override
-  final String? description;
-  final Map<String, dynamic>? _metadata;
-  @override
-  Map<String, dynamic>? get metadata {
-    final value = _metadata;
-    if (value == null) return null;
-    if (_metadata is EqualUnmodifiableMapView) return _metadata;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(value);
-  }
+@override final  String? description;
+ final  Map<String, dynamic>? _metadata;
+@override Map<String, dynamic>? get metadata {
+  final value = _metadata;
+  if (value == null) return null;
+  if (_metadata is EqualUnmodifiableMapView) return _metadata;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(value);
+}
 
 // Timestamps
-  @override
-  final DateTime? createdAt;
-  @override
-  final DateTime? completedAt;
+@override final  DateTime? createdAt;
+@override final  DateTime? completedAt;
 
-  @override
-  String toString() {
-    return 'PaymentRecord(id: $id, paymentIntentId: $paymentIntentId, amount: $amount, currency: $currency, status: $status, type: $type, sessionId: $sessionId, packageId: $packageId, subscriptionId: $subscriptionId, paymentMethodId: $paymentMethodId, receiptUrl: $receiptUrl, failureMessage: $failureMessage, description: $description, metadata: $metadata, createdAt: $createdAt, completedAt: $completedAt)';
-  }
+/// Create a copy of PaymentRecord
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$PaymentRecordCopyWith<_PaymentRecord> get copyWith => __$PaymentRecordCopyWithImpl<_PaymentRecord>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$PaymentRecordImpl &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.paymentIntentId, paymentIntentId) ||
-                other.paymentIntentId == paymentIntentId) &&
-            (identical(other.amount, amount) || other.amount == amount) &&
-            (identical(other.currency, currency) ||
-                other.currency == currency) &&
-            (identical(other.status, status) || other.status == status) &&
-            (identical(other.type, type) || other.type == type) &&
-            (identical(other.sessionId, sessionId) ||
-                other.sessionId == sessionId) &&
-            (identical(other.packageId, packageId) ||
-                other.packageId == packageId) &&
-            (identical(other.subscriptionId, subscriptionId) ||
-                other.subscriptionId == subscriptionId) &&
-            (identical(other.paymentMethodId, paymentMethodId) ||
-                other.paymentMethodId == paymentMethodId) &&
-            (identical(other.receiptUrl, receiptUrl) ||
-                other.receiptUrl == receiptUrl) &&
-            (identical(other.failureMessage, failureMessage) ||
-                other.failureMessage == failureMessage) &&
-            (identical(other.description, description) ||
-                other.description == description) &&
-            const DeepCollectionEquality().equals(other._metadata, _metadata) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt) &&
-            (identical(other.completedAt, completedAt) ||
-                other.completedAt == completedAt));
-  }
-
-  @JsonKey(ignore: true)
-  @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      paymentIntentId,
-      amount,
-      currency,
-      status,
-      type,
-      sessionId,
-      packageId,
-      subscriptionId,
-      paymentMethodId,
-      receiptUrl,
-      failureMessage,
-      description,
-      const DeepCollectionEquality().hash(_metadata),
-      createdAt,
-      completedAt);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$PaymentRecordImplCopyWith<_$PaymentRecordImpl> get copyWith =>
-      __$$PaymentRecordImplCopyWithImpl<_$PaymentRecordImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$PaymentRecordImplToJson(
-      this,
-    );
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$PaymentRecordToJson(this, );
 }
 
-abstract class _PaymentRecord extends PaymentRecord {
-  const factory _PaymentRecord(
-      {required final String id,
-      required final String paymentIntentId,
-      required final int amount,
-      required final String currency,
-      required final PaymentStatus status,
-      required final PaymentType type,
-      final int? sessionId,
-      final int? packageId,
-      final int? subscriptionId,
-      final String? paymentMethodId,
-      final String? receiptUrl,
-      final String? failureMessage,
-      final String? description,
-      final Map<String, dynamic>? metadata,
-      final DateTime? createdAt,
-      final DateTime? completedAt}) = _$PaymentRecordImpl;
-  const _PaymentRecord._() : super._();
-
-  factory _PaymentRecord.fromJson(Map<String, dynamic> json) =
-      _$PaymentRecordImpl.fromJson;
-
-  @override
-  String get id;
-  @override
-  String get paymentIntentId;
-  @override
-  int get amount;
-  @override
-  String get currency;
-  @override
-  PaymentStatus get status;
-  @override
-  PaymentType get type;
-  @override // Related entity
-  int? get sessionId;
-  @override
-  int? get packageId;
-  @override
-  int? get subscriptionId;
-  @override // Stripe details
-  String? get paymentMethodId;
-  @override
-  String? get receiptUrl;
-  @override
-  String? get failureMessage;
-  @override // Metadata
-  String? get description;
-  @override
-  Map<String, dynamic>? get metadata;
-  @override // Timestamps
-  DateTime? get createdAt;
-  @override
-  DateTime? get completedAt;
-  @override
-  @JsonKey(ignore: true)
-  _$$PaymentRecordImplCopyWith<_$PaymentRecordImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PaymentRecord&&(identical(other.id, id) || other.id == id)&&(identical(other.paymentIntentId, paymentIntentId) || other.paymentIntentId == paymentIntentId)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.status, status) || other.status == status)&&(identical(other.type, type) || other.type == type)&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.packageId, packageId) || other.packageId == packageId)&&(identical(other.subscriptionId, subscriptionId) || other.subscriptionId == subscriptionId)&&(identical(other.paymentMethodId, paymentMethodId) || other.paymentMethodId == paymentMethodId)&&(identical(other.receiptUrl, receiptUrl) || other.receiptUrl == receiptUrl)&&(identical(other.failureMessage, failureMessage) || other.failureMessage == failureMessage)&&(identical(other.description, description) || other.description == description)&&const DeepCollectionEquality().equals(other._metadata, _metadata)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt));
 }
 
-RefundRecord _$RefundRecordFromJson(Map<String, dynamic> json) {
-  return _RefundRecord.fromJson(json);
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,paymentIntentId,amount,currency,status,type,sessionId,packageId,subscriptionId,paymentMethodId,receiptUrl,failureMessage,description,const DeepCollectionEquality().hash(_metadata),createdAt,completedAt);
+
+@override
+String toString() {
+  return 'PaymentRecord(id: $id, paymentIntentId: $paymentIntentId, amount: $amount, currency: $currency, status: $status, type: $type, sessionId: $sessionId, packageId: $packageId, subscriptionId: $subscriptionId, paymentMethodId: $paymentMethodId, receiptUrl: $receiptUrl, failureMessage: $failureMessage, description: $description, metadata: $metadata, createdAt: $createdAt, completedAt: $completedAt)';
 }
+
+
+}
+
+/// @nodoc
+abstract mixin class _$PaymentRecordCopyWith<$Res> implements $PaymentRecordCopyWith<$Res> {
+  factory _$PaymentRecordCopyWith(_PaymentRecord value, $Res Function(_PaymentRecord) _then) = __$PaymentRecordCopyWithImpl;
+@override @useResult
+$Res call({
+ String id, String paymentIntentId, int amount, String currency, PaymentStatus status, PaymentType type, int? sessionId, int? packageId, int? subscriptionId, String? paymentMethodId, String? receiptUrl, String? failureMessage, String? description, Map<String, dynamic>? metadata, DateTime? createdAt, DateTime? completedAt
+});
+
+
+
+
+}
+/// @nodoc
+class __$PaymentRecordCopyWithImpl<$Res>
+    implements _$PaymentRecordCopyWith<$Res> {
+  __$PaymentRecordCopyWithImpl(this._self, this._then);
+
+  final _PaymentRecord _self;
+  final $Res Function(_PaymentRecord) _then;
+
+/// Create a copy of PaymentRecord
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? paymentIntentId = null,Object? amount = null,Object? currency = null,Object? status = null,Object? type = null,Object? sessionId = freezed,Object? packageId = freezed,Object? subscriptionId = freezed,Object? paymentMethodId = freezed,Object? receiptUrl = freezed,Object? failureMessage = freezed,Object? description = freezed,Object? metadata = freezed,Object? createdAt = freezed,Object? completedAt = freezed,}) {
+  return _then(_PaymentRecord(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,paymentIntentId: null == paymentIntentId ? _self.paymentIntentId : paymentIntentId // ignore: cast_nullable_to_non_nullable
+as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as int,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as PaymentStatus,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as PaymentType,sessionId: freezed == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
+as int?,packageId: freezed == packageId ? _self.packageId : packageId // ignore: cast_nullable_to_non_nullable
+as int?,subscriptionId: freezed == subscriptionId ? _self.subscriptionId : subscriptionId // ignore: cast_nullable_to_non_nullable
+as int?,paymentMethodId: freezed == paymentMethodId ? _self.paymentMethodId : paymentMethodId // ignore: cast_nullable_to_non_nullable
+as String?,receiptUrl: freezed == receiptUrl ? _self.receiptUrl : receiptUrl // ignore: cast_nullable_to_non_nullable
+as String?,failureMessage: freezed == failureMessage ? _self.failureMessage : failureMessage // ignore: cast_nullable_to_non_nullable
+as String?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,metadata: freezed == metadata ? _self._metadata : metadata // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,completedAt: freezed == completedAt ? _self.completedAt : completedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
+  ));
+}
+
+
+}
+
 
 /// @nodoc
 mixin _$RefundRecord {
-  String get id => throw _privateConstructorUsedError;
-  String get paymentId => throw _privateConstructorUsedError;
-  int get amount => throw _privateConstructorUsedError;
-  String get currency => throw _privateConstructorUsedError;
-  RefundStatus get status => throw _privateConstructorUsedError;
-  String? get reason => throw _privateConstructorUsedError;
-  DateTime? get createdAt => throw _privateConstructorUsedError;
-  DateTime? get completedAt => throw _privateConstructorUsedError;
 
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
-  $RefundRecordCopyWith<RefundRecord> get copyWith =>
-      throw _privateConstructorUsedError;
+ String get id; String get paymentId; int get amount; String get currency; RefundStatus get status; String? get reason; DateTime? get createdAt; DateTime? get completedAt;
+/// Create a copy of RefundRecord
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$RefundRecordCopyWith<RefundRecord> get copyWith => _$RefundRecordCopyWithImpl<RefundRecord>(this as RefundRecord, _$identity);
+
+  /// Serializes this RefundRecord to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RefundRecord&&(identical(other.id, id) || other.id == id)&&(identical(other.paymentId, paymentId) || other.paymentId == paymentId)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.status, status) || other.status == status)&&(identical(other.reason, reason) || other.reason == reason)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,paymentId,amount,currency,status,reason,createdAt,completedAt);
+
+@override
+String toString() {
+  return 'RefundRecord(id: $id, paymentId: $paymentId, amount: $amount, currency: $currency, status: $status, reason: $reason, createdAt: $createdAt, completedAt: $completedAt)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $RefundRecordCopyWith<$Res> {
-  factory $RefundRecordCopyWith(
-          RefundRecord value, $Res Function(RefundRecord) then) =
-      _$RefundRecordCopyWithImpl<$Res, RefundRecord>;
-  @useResult
-  $Res call(
-      {String id,
-      String paymentId,
-      int amount,
-      String currency,
-      RefundStatus status,
-      String? reason,
-      DateTime? createdAt,
-      DateTime? completedAt});
-}
+abstract mixin class $RefundRecordCopyWith<$Res>  {
+  factory $RefundRecordCopyWith(RefundRecord value, $Res Function(RefundRecord) _then) = _$RefundRecordCopyWithImpl;
+@useResult
+$Res call({
+ String id, String paymentId, int amount, String currency, RefundStatus status, String? reason, DateTime? createdAt, DateTime? completedAt
+});
 
+
+
+
+}
 /// @nodoc
-class _$RefundRecordCopyWithImpl<$Res, $Val extends RefundRecord>
+class _$RefundRecordCopyWithImpl<$Res>
     implements $RefundRecordCopyWith<$Res> {
-  _$RefundRecordCopyWithImpl(this._value, this._then);
+  _$RefundRecordCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final RefundRecord _self;
+  final $Res Function(RefundRecord) _then;
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? paymentId = null,
-    Object? amount = null,
-    Object? currency = null,
-    Object? status = null,
-    Object? reason = freezed,
-    Object? createdAt = freezed,
-    Object? completedAt = freezed,
-  }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      paymentId: null == paymentId
-          ? _value.paymentId
-          : paymentId // ignore: cast_nullable_to_non_nullable
-              as String,
-      amount: null == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as int,
-      currency: null == currency
-          ? _value.currency
-          : currency // ignore: cast_nullable_to_non_nullable
-              as String,
-      status: null == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as RefundStatus,
-      reason: freezed == reason
-          ? _value.reason
-          : reason // ignore: cast_nullable_to_non_nullable
-              as String?,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      completedAt: freezed == completedAt
-          ? _value.completedAt
-          : completedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ) as $Val);
-  }
+/// Create a copy of RefundRecord
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? paymentId = null,Object? amount = null,Object? currency = null,Object? status = null,Object? reason = freezed,Object? createdAt = freezed,Object? completedAt = freezed,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,paymentId: null == paymentId ? _self.paymentId : paymentId // ignore: cast_nullable_to_non_nullable
+as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as int,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as RefundStatus,reason: freezed == reason ? _self.reason : reason // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,completedAt: freezed == completedAt ? _self.completedAt : completedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
+  ));
 }
 
-/// @nodoc
-abstract class _$$RefundRecordImplCopyWith<$Res>
-    implements $RefundRecordCopyWith<$Res> {
-  factory _$$RefundRecordImplCopyWith(
-          _$RefundRecordImpl value, $Res Function(_$RefundRecordImpl) then) =
-      __$$RefundRecordImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String id,
-      String paymentId,
-      int amount,
-      String currency,
-      RefundStatus status,
-      String? reason,
-      DateTime? createdAt,
-      DateTime? completedAt});
 }
 
-/// @nodoc
-class __$$RefundRecordImplCopyWithImpl<$Res>
-    extends _$RefundRecordCopyWithImpl<$Res, _$RefundRecordImpl>
-    implements _$$RefundRecordImplCopyWith<$Res> {
-  __$$RefundRecordImplCopyWithImpl(
-      _$RefundRecordImpl _value, $Res Function(_$RefundRecordImpl) _then)
-      : super(_value, _then);
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? paymentId = null,
-    Object? amount = null,
-    Object? currency = null,
-    Object? status = null,
-    Object? reason = freezed,
-    Object? createdAt = freezed,
-    Object? completedAt = freezed,
-  }) {
-    return _then(_$RefundRecordImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      paymentId: null == paymentId
-          ? _value.paymentId
-          : paymentId // ignore: cast_nullable_to_non_nullable
-              as String,
-      amount: null == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as int,
-      currency: null == currency
-          ? _value.currency
-          : currency // ignore: cast_nullable_to_non_nullable
-              as String,
-      status: null == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as RefundStatus,
-      reason: freezed == reason
-          ? _value.reason
-          : reason // ignore: cast_nullable_to_non_nullable
-              as String?,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      completedAt: freezed == completedAt
-          ? _value.completedAt
-          : completedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ));
-  }
+/// Adds pattern-matching-related methods to [RefundRecord].
+extension RefundRecordPatterns on RefundRecord {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _RefundRecord value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _RefundRecord() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _RefundRecord value)  $default,){
+final _that = this;
+switch (_that) {
+case _RefundRecord():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _RefundRecord value)?  $default,){
+final _that = this;
+switch (_that) {
+case _RefundRecord() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String paymentId,  int amount,  String currency,  RefundStatus status,  String? reason,  DateTime? createdAt,  DateTime? completedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _RefundRecord() when $default != null:
+return $default(_that.id,_that.paymentId,_that.amount,_that.currency,_that.status,_that.reason,_that.createdAt,_that.completedAt);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String paymentId,  int amount,  String currency,  RefundStatus status,  String? reason,  DateTime? createdAt,  DateTime? completedAt)  $default,) {final _that = this;
+switch (_that) {
+case _RefundRecord():
+return $default(_that.id,_that.paymentId,_that.amount,_that.currency,_that.status,_that.reason,_that.createdAt,_that.completedAt);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String paymentId,  int amount,  String currency,  RefundStatus status,  String? reason,  DateTime? createdAt,  DateTime? completedAt)?  $default,) {final _that = this;
+switch (_that) {
+case _RefundRecord() when $default != null:
+return $default(_that.id,_that.paymentId,_that.amount,_that.currency,_that.status,_that.reason,_that.createdAt,_that.completedAt);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$RefundRecordImpl extends _RefundRecord {
-  const _$RefundRecordImpl(
-      {required this.id,
-      required this.paymentId,
-      required this.amount,
-      required this.currency,
-      required this.status,
-      this.reason,
-      this.createdAt,
-      this.completedAt})
-      : super._();
 
-  factory _$RefundRecordImpl.fromJson(Map<String, dynamic> json) =>
-      _$$RefundRecordImplFromJson(json);
+class _RefundRecord extends RefundRecord {
+  const _RefundRecord({required this.id, required this.paymentId, required this.amount, required this.currency, required this.status, this.reason, this.createdAt, this.completedAt}): super._();
+  factory _RefundRecord.fromJson(Map<String, dynamic> json) => _$RefundRecordFromJson(json);
 
-  @override
-  final String id;
-  @override
-  final String paymentId;
-  @override
-  final int amount;
-  @override
-  final String currency;
-  @override
-  final RefundStatus status;
-  @override
-  final String? reason;
-  @override
-  final DateTime? createdAt;
-  @override
-  final DateTime? completedAt;
+@override final  String id;
+@override final  String paymentId;
+@override final  int amount;
+@override final  String currency;
+@override final  RefundStatus status;
+@override final  String? reason;
+@override final  DateTime? createdAt;
+@override final  DateTime? completedAt;
 
-  @override
-  String toString() {
-    return 'RefundRecord(id: $id, paymentId: $paymentId, amount: $amount, currency: $currency, status: $status, reason: $reason, createdAt: $createdAt, completedAt: $completedAt)';
-  }
+/// Create a copy of RefundRecord
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$RefundRecordCopyWith<_RefundRecord> get copyWith => __$RefundRecordCopyWithImpl<_RefundRecord>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$RefundRecordImpl &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.paymentId, paymentId) ||
-                other.paymentId == paymentId) &&
-            (identical(other.amount, amount) || other.amount == amount) &&
-            (identical(other.currency, currency) ||
-                other.currency == currency) &&
-            (identical(other.status, status) || other.status == status) &&
-            (identical(other.reason, reason) || other.reason == reason) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt) &&
-            (identical(other.completedAt, completedAt) ||
-                other.completedAt == completedAt));
-  }
-
-  @JsonKey(ignore: true)
-  @override
-  int get hashCode => Object.hash(runtimeType, id, paymentId, amount, currency,
-      status, reason, createdAt, completedAt);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$RefundRecordImplCopyWith<_$RefundRecordImpl> get copyWith =>
-      __$$RefundRecordImplCopyWithImpl<_$RefundRecordImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$RefundRecordImplToJson(
-      this,
-    );
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$RefundRecordToJson(this, );
 }
 
-abstract class _RefundRecord extends RefundRecord {
-  const factory _RefundRecord(
-      {required final String id,
-      required final String paymentId,
-      required final int amount,
-      required final String currency,
-      required final RefundStatus status,
-      final String? reason,
-      final DateTime? createdAt,
-      final DateTime? completedAt}) = _$RefundRecordImpl;
-  const _RefundRecord._() : super._();
-
-  factory _RefundRecord.fromJson(Map<String, dynamic> json) =
-      _$RefundRecordImpl.fromJson;
-
-  @override
-  String get id;
-  @override
-  String get paymentId;
-  @override
-  int get amount;
-  @override
-  String get currency;
-  @override
-  RefundStatus get status;
-  @override
-  String? get reason;
-  @override
-  DateTime? get createdAt;
-  @override
-  DateTime? get completedAt;
-  @override
-  @JsonKey(ignore: true)
-  _$$RefundRecordImplCopyWith<_$RefundRecordImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RefundRecord&&(identical(other.id, id) || other.id == id)&&(identical(other.paymentId, paymentId) || other.paymentId == paymentId)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.status, status) || other.status == status)&&(identical(other.reason, reason) || other.reason == reason)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt));
 }
 
-CreatePaymentIntentRequest _$CreatePaymentIntentRequestFromJson(
-    Map<String, dynamic> json) {
-  return _CreatePaymentIntentRequest.fromJson(json);
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,paymentId,amount,currency,status,reason,createdAt,completedAt);
+
+@override
+String toString() {
+  return 'RefundRecord(id: $id, paymentId: $paymentId, amount: $amount, currency: $currency, status: $status, reason: $reason, createdAt: $createdAt, completedAt: $completedAt)';
 }
+
+
+}
+
+/// @nodoc
+abstract mixin class _$RefundRecordCopyWith<$Res> implements $RefundRecordCopyWith<$Res> {
+  factory _$RefundRecordCopyWith(_RefundRecord value, $Res Function(_RefundRecord) _then) = __$RefundRecordCopyWithImpl;
+@override @useResult
+$Res call({
+ String id, String paymentId, int amount, String currency, RefundStatus status, String? reason, DateTime? createdAt, DateTime? completedAt
+});
+
+
+
+
+}
+/// @nodoc
+class __$RefundRecordCopyWithImpl<$Res>
+    implements _$RefundRecordCopyWith<$Res> {
+  __$RefundRecordCopyWithImpl(this._self, this._then);
+
+  final _RefundRecord _self;
+  final $Res Function(_RefundRecord) _then;
+
+/// Create a copy of RefundRecord
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? paymentId = null,Object? amount = null,Object? currency = null,Object? status = null,Object? reason = freezed,Object? createdAt = freezed,Object? completedAt = freezed,}) {
+  return _then(_RefundRecord(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,paymentId: null == paymentId ? _self.paymentId : paymentId // ignore: cast_nullable_to_non_nullable
+as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as int,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as RefundStatus,reason: freezed == reason ? _self.reason : reason // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,completedAt: freezed == completedAt ? _self.completedAt : completedAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
+  ));
+}
+
+
+}
+
 
 /// @nodoc
 mixin _$CreatePaymentIntentRequest {
-  int get amount => throw _privateConstructorUsedError;
-  String get currency => throw _privateConstructorUsedError;
-  PaymentType get type => throw _privateConstructorUsedError;
-  int? get sessionId => throw _privateConstructorUsedError;
-  int? get packageId => throw _privateConstructorUsedError;
-  String? get description => throw _privateConstructorUsedError;
-  Map<String, dynamic>? get metadata => throw _privateConstructorUsedError;
 
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
-  $CreatePaymentIntentRequestCopyWith<CreatePaymentIntentRequest>
-      get copyWith => throw _privateConstructorUsedError;
+ int get amount; String get currency; PaymentType get type; int? get sessionId; int? get packageId; String? get description; Map<String, dynamic>? get metadata;
+/// Create a copy of CreatePaymentIntentRequest
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$CreatePaymentIntentRequestCopyWith<CreatePaymentIntentRequest> get copyWith => _$CreatePaymentIntentRequestCopyWithImpl<CreatePaymentIntentRequest>(this as CreatePaymentIntentRequest, _$identity);
+
+  /// Serializes this CreatePaymentIntentRequest to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CreatePaymentIntentRequest&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.type, type) || other.type == type)&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.packageId, packageId) || other.packageId == packageId)&&(identical(other.description, description) || other.description == description)&&const DeepCollectionEquality().equals(other.metadata, metadata));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,amount,currency,type,sessionId,packageId,description,const DeepCollectionEquality().hash(metadata));
+
+@override
+String toString() {
+  return 'CreatePaymentIntentRequest(amount: $amount, currency: $currency, type: $type, sessionId: $sessionId, packageId: $packageId, description: $description, metadata: $metadata)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $CreatePaymentIntentRequestCopyWith<$Res> {
-  factory $CreatePaymentIntentRequestCopyWith(CreatePaymentIntentRequest value,
-          $Res Function(CreatePaymentIntentRequest) then) =
-      _$CreatePaymentIntentRequestCopyWithImpl<$Res,
-          CreatePaymentIntentRequest>;
-  @useResult
-  $Res call(
-      {int amount,
-      String currency,
-      PaymentType type,
-      int? sessionId,
-      int? packageId,
-      String? description,
-      Map<String, dynamic>? metadata});
-}
+abstract mixin class $CreatePaymentIntentRequestCopyWith<$Res>  {
+  factory $CreatePaymentIntentRequestCopyWith(CreatePaymentIntentRequest value, $Res Function(CreatePaymentIntentRequest) _then) = _$CreatePaymentIntentRequestCopyWithImpl;
+@useResult
+$Res call({
+ int amount, String currency, PaymentType type, int? sessionId, int? packageId, String? description, Map<String, dynamic>? metadata
+});
 
+
+
+
+}
 /// @nodoc
-class _$CreatePaymentIntentRequestCopyWithImpl<$Res,
-        $Val extends CreatePaymentIntentRequest>
+class _$CreatePaymentIntentRequestCopyWithImpl<$Res>
     implements $CreatePaymentIntentRequestCopyWith<$Res> {
-  _$CreatePaymentIntentRequestCopyWithImpl(this._value, this._then);
+  _$CreatePaymentIntentRequestCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final CreatePaymentIntentRequest _self;
+  final $Res Function(CreatePaymentIntentRequest) _then;
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? amount = null,
-    Object? currency = null,
-    Object? type = null,
-    Object? sessionId = freezed,
-    Object? packageId = freezed,
-    Object? description = freezed,
-    Object? metadata = freezed,
-  }) {
-    return _then(_value.copyWith(
-      amount: null == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as int,
-      currency: null == currency
-          ? _value.currency
-          : currency // ignore: cast_nullable_to_non_nullable
-              as String,
-      type: null == type
-          ? _value.type
-          : type // ignore: cast_nullable_to_non_nullable
-              as PaymentType,
-      sessionId: freezed == sessionId
-          ? _value.sessionId
-          : sessionId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      packageId: freezed == packageId
-          ? _value.packageId
-          : packageId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String?,
-      metadata: freezed == metadata
-          ? _value.metadata
-          : metadata // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
-    ) as $Val);
-  }
+/// Create a copy of CreatePaymentIntentRequest
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? amount = null,Object? currency = null,Object? type = null,Object? sessionId = freezed,Object? packageId = freezed,Object? description = freezed,Object? metadata = freezed,}) {
+  return _then(_self.copyWith(
+amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as int,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as PaymentType,sessionId: freezed == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
+as int?,packageId: freezed == packageId ? _self.packageId : packageId // ignore: cast_nullable_to_non_nullable
+as int?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,metadata: freezed == metadata ? _self.metadata : metadata // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,
+  ));
 }
 
-/// @nodoc
-abstract class _$$CreatePaymentIntentRequestImplCopyWith<$Res>
-    implements $CreatePaymentIntentRequestCopyWith<$Res> {
-  factory _$$CreatePaymentIntentRequestImplCopyWith(
-          _$CreatePaymentIntentRequestImpl value,
-          $Res Function(_$CreatePaymentIntentRequestImpl) then) =
-      __$$CreatePaymentIntentRequestImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {int amount,
-      String currency,
-      PaymentType type,
-      int? sessionId,
-      int? packageId,
-      String? description,
-      Map<String, dynamic>? metadata});
 }
 
-/// @nodoc
-class __$$CreatePaymentIntentRequestImplCopyWithImpl<$Res>
-    extends _$CreatePaymentIntentRequestCopyWithImpl<$Res,
-        _$CreatePaymentIntentRequestImpl>
-    implements _$$CreatePaymentIntentRequestImplCopyWith<$Res> {
-  __$$CreatePaymentIntentRequestImplCopyWithImpl(
-      _$CreatePaymentIntentRequestImpl _value,
-      $Res Function(_$CreatePaymentIntentRequestImpl) _then)
-      : super(_value, _then);
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? amount = null,
-    Object? currency = null,
-    Object? type = null,
-    Object? sessionId = freezed,
-    Object? packageId = freezed,
-    Object? description = freezed,
-    Object? metadata = freezed,
-  }) {
-    return _then(_$CreatePaymentIntentRequestImpl(
-      amount: null == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as int,
-      currency: null == currency
-          ? _value.currency
-          : currency // ignore: cast_nullable_to_non_nullable
-              as String,
-      type: null == type
-          ? _value.type
-          : type // ignore: cast_nullable_to_non_nullable
-              as PaymentType,
-      sessionId: freezed == sessionId
-          ? _value.sessionId
-          : sessionId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      packageId: freezed == packageId
-          ? _value.packageId
-          : packageId // ignore: cast_nullable_to_non_nullable
-              as int?,
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String?,
-      metadata: freezed == metadata
-          ? _value._metadata
-          : metadata // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
-    ));
-  }
+/// Adds pattern-matching-related methods to [CreatePaymentIntentRequest].
+extension CreatePaymentIntentRequestPatterns on CreatePaymentIntentRequest {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _CreatePaymentIntentRequest value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _CreatePaymentIntentRequest() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _CreatePaymentIntentRequest value)  $default,){
+final _that = this;
+switch (_that) {
+case _CreatePaymentIntentRequest():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _CreatePaymentIntentRequest value)?  $default,){
+final _that = this;
+switch (_that) {
+case _CreatePaymentIntentRequest() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int amount,  String currency,  PaymentType type,  int? sessionId,  int? packageId,  String? description,  Map<String, dynamic>? metadata)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _CreatePaymentIntentRequest() when $default != null:
+return $default(_that.amount,_that.currency,_that.type,_that.sessionId,_that.packageId,_that.description,_that.metadata);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int amount,  String currency,  PaymentType type,  int? sessionId,  int? packageId,  String? description,  Map<String, dynamic>? metadata)  $default,) {final _that = this;
+switch (_that) {
+case _CreatePaymentIntentRequest():
+return $default(_that.amount,_that.currency,_that.type,_that.sessionId,_that.packageId,_that.description,_that.metadata);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int amount,  String currency,  PaymentType type,  int? sessionId,  int? packageId,  String? description,  Map<String, dynamic>? metadata)?  $default,) {final _that = this;
+switch (_that) {
+case _CreatePaymentIntentRequest() when $default != null:
+return $default(_that.amount,_that.currency,_that.type,_that.sessionId,_that.packageId,_that.description,_that.metadata);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$CreatePaymentIntentRequestImpl implements _CreatePaymentIntentRequest {
-  const _$CreatePaymentIntentRequestImpl(
-      {required this.amount,
-      this.currency = 'usd',
-      required this.type,
-      this.sessionId,
-      this.packageId,
-      this.description,
-      final Map<String, dynamic>? metadata})
-      : _metadata = metadata;
 
-  factory _$CreatePaymentIntentRequestImpl.fromJson(
-          Map<String, dynamic> json) =>
-      _$$CreatePaymentIntentRequestImplFromJson(json);
+class _CreatePaymentIntentRequest implements CreatePaymentIntentRequest {
+  const _CreatePaymentIntentRequest({required this.amount, this.currency = 'usd', required this.type, this.sessionId, this.packageId, this.description, final  Map<String, dynamic>? metadata}): _metadata = metadata;
+  factory _CreatePaymentIntentRequest.fromJson(Map<String, dynamic> json) => _$CreatePaymentIntentRequestFromJson(json);
 
-  @override
-  final int amount;
-  @override
-  @JsonKey()
-  final String currency;
-  @override
-  final PaymentType type;
-  @override
-  final int? sessionId;
-  @override
-  final int? packageId;
-  @override
-  final String? description;
-  final Map<String, dynamic>? _metadata;
-  @override
-  Map<String, dynamic>? get metadata {
-    final value = _metadata;
-    if (value == null) return null;
-    if (_metadata is EqualUnmodifiableMapView) return _metadata;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(value);
-  }
-
-  @override
-  String toString() {
-    return 'CreatePaymentIntentRequest(amount: $amount, currency: $currency, type: $type, sessionId: $sessionId, packageId: $packageId, description: $description, metadata: $metadata)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$CreatePaymentIntentRequestImpl &&
-            (identical(other.amount, amount) || other.amount == amount) &&
-            (identical(other.currency, currency) ||
-                other.currency == currency) &&
-            (identical(other.type, type) || other.type == type) &&
-            (identical(other.sessionId, sessionId) ||
-                other.sessionId == sessionId) &&
-            (identical(other.packageId, packageId) ||
-                other.packageId == packageId) &&
-            (identical(other.description, description) ||
-                other.description == description) &&
-            const DeepCollectionEquality().equals(other._metadata, _metadata));
-  }
-
-  @JsonKey(ignore: true)
-  @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      amount,
-      currency,
-      type,
-      sessionId,
-      packageId,
-      description,
-      const DeepCollectionEquality().hash(_metadata));
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$CreatePaymentIntentRequestImplCopyWith<_$CreatePaymentIntentRequestImpl>
-      get copyWith => __$$CreatePaymentIntentRequestImplCopyWithImpl<
-          _$CreatePaymentIntentRequestImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$CreatePaymentIntentRequestImplToJson(
-      this,
-    );
-  }
+@override final  int amount;
+@override@JsonKey() final  String currency;
+@override final  PaymentType type;
+@override final  int? sessionId;
+@override final  int? packageId;
+@override final  String? description;
+ final  Map<String, dynamic>? _metadata;
+@override Map<String, dynamic>? get metadata {
+  final value = _metadata;
+  if (value == null) return null;
+  if (_metadata is EqualUnmodifiableMapView) return _metadata;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(value);
 }
 
-abstract class _CreatePaymentIntentRequest
-    implements CreatePaymentIntentRequest {
-  const factory _CreatePaymentIntentRequest(
-      {required final int amount,
-      final String currency,
-      required final PaymentType type,
-      final int? sessionId,
-      final int? packageId,
-      final String? description,
-      final Map<String, dynamic>? metadata}) = _$CreatePaymentIntentRequestImpl;
 
-  factory _CreatePaymentIntentRequest.fromJson(Map<String, dynamic> json) =
-      _$CreatePaymentIntentRequestImpl.fromJson;
+/// Create a copy of CreatePaymentIntentRequest
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$CreatePaymentIntentRequestCopyWith<_CreatePaymentIntentRequest> get copyWith => __$CreatePaymentIntentRequestCopyWithImpl<_CreatePaymentIntentRequest>(this, _$identity);
 
-  @override
-  int get amount;
-  @override
-  String get currency;
-  @override
-  PaymentType get type;
-  @override
-  int? get sessionId;
-  @override
-  int? get packageId;
-  @override
-  String? get description;
-  @override
-  Map<String, dynamic>? get metadata;
-  @override
-  @JsonKey(ignore: true)
-  _$$CreatePaymentIntentRequestImplCopyWith<_$CreatePaymentIntentRequestImpl>
-      get copyWith => throw _privateConstructorUsedError;
+@override
+Map<String, dynamic> toJson() {
+  return _$CreatePaymentIntentRequestToJson(this, );
 }
 
-ConfirmPaymentRequest _$ConfirmPaymentRequestFromJson(
-    Map<String, dynamic> json) {
-  return _ConfirmPaymentRequest.fromJson(json);
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CreatePaymentIntentRequest&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.type, type) || other.type == type)&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.packageId, packageId) || other.packageId == packageId)&&(identical(other.description, description) || other.description == description)&&const DeepCollectionEquality().equals(other._metadata, _metadata));
 }
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,amount,currency,type,sessionId,packageId,description,const DeepCollectionEquality().hash(_metadata));
+
+@override
+String toString() {
+  return 'CreatePaymentIntentRequest(amount: $amount, currency: $currency, type: $type, sessionId: $sessionId, packageId: $packageId, description: $description, metadata: $metadata)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$CreatePaymentIntentRequestCopyWith<$Res> implements $CreatePaymentIntentRequestCopyWith<$Res> {
+  factory _$CreatePaymentIntentRequestCopyWith(_CreatePaymentIntentRequest value, $Res Function(_CreatePaymentIntentRequest) _then) = __$CreatePaymentIntentRequestCopyWithImpl;
+@override @useResult
+$Res call({
+ int amount, String currency, PaymentType type, int? sessionId, int? packageId, String? description, Map<String, dynamic>? metadata
+});
+
+
+
+
+}
+/// @nodoc
+class __$CreatePaymentIntentRequestCopyWithImpl<$Res>
+    implements _$CreatePaymentIntentRequestCopyWith<$Res> {
+  __$CreatePaymentIntentRequestCopyWithImpl(this._self, this._then);
+
+  final _CreatePaymentIntentRequest _self;
+  final $Res Function(_CreatePaymentIntentRequest) _then;
+
+/// Create a copy of CreatePaymentIntentRequest
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? amount = null,Object? currency = null,Object? type = null,Object? sessionId = freezed,Object? packageId = freezed,Object? description = freezed,Object? metadata = freezed,}) {
+  return _then(_CreatePaymentIntentRequest(
+amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as int,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
+as PaymentType,sessionId: freezed == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
+as int?,packageId: freezed == packageId ? _self.packageId : packageId // ignore: cast_nullable_to_non_nullable
+as int?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String?,metadata: freezed == metadata ? _self._metadata : metadata // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,
+  ));
+}
+
+
+}
+
 
 /// @nodoc
 mixin _$ConfirmPaymentRequest {
-  String get paymentIntentId => throw _privateConstructorUsedError;
-  String? get paymentMethodId => throw _privateConstructorUsedError;
 
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
-  $ConfirmPaymentRequestCopyWith<ConfirmPaymentRequest> get copyWith =>
-      throw _privateConstructorUsedError;
+ String get paymentIntentId; String? get paymentMethodId;
+/// Create a copy of ConfirmPaymentRequest
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ConfirmPaymentRequestCopyWith<ConfirmPaymentRequest> get copyWith => _$ConfirmPaymentRequestCopyWithImpl<ConfirmPaymentRequest>(this as ConfirmPaymentRequest, _$identity);
+
+  /// Serializes this ConfirmPaymentRequest to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ConfirmPaymentRequest&&(identical(other.paymentIntentId, paymentIntentId) || other.paymentIntentId == paymentIntentId)&&(identical(other.paymentMethodId, paymentMethodId) || other.paymentMethodId == paymentMethodId));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,paymentIntentId,paymentMethodId);
+
+@override
+String toString() {
+  return 'ConfirmPaymentRequest(paymentIntentId: $paymentIntentId, paymentMethodId: $paymentMethodId)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $ConfirmPaymentRequestCopyWith<$Res> {
-  factory $ConfirmPaymentRequestCopyWith(ConfirmPaymentRequest value,
-          $Res Function(ConfirmPaymentRequest) then) =
-      _$ConfirmPaymentRequestCopyWithImpl<$Res, ConfirmPaymentRequest>;
-  @useResult
-  $Res call({String paymentIntentId, String? paymentMethodId});
-}
+abstract mixin class $ConfirmPaymentRequestCopyWith<$Res>  {
+  factory $ConfirmPaymentRequestCopyWith(ConfirmPaymentRequest value, $Res Function(ConfirmPaymentRequest) _then) = _$ConfirmPaymentRequestCopyWithImpl;
+@useResult
+$Res call({
+ String paymentIntentId, String? paymentMethodId
+});
 
+
+
+
+}
 /// @nodoc
-class _$ConfirmPaymentRequestCopyWithImpl<$Res,
-        $Val extends ConfirmPaymentRequest>
+class _$ConfirmPaymentRequestCopyWithImpl<$Res>
     implements $ConfirmPaymentRequestCopyWith<$Res> {
-  _$ConfirmPaymentRequestCopyWithImpl(this._value, this._then);
+  _$ConfirmPaymentRequestCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final ConfirmPaymentRequest _self;
+  final $Res Function(ConfirmPaymentRequest) _then;
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? paymentIntentId = null,
-    Object? paymentMethodId = freezed,
-  }) {
-    return _then(_value.copyWith(
-      paymentIntentId: null == paymentIntentId
-          ? _value.paymentIntentId
-          : paymentIntentId // ignore: cast_nullable_to_non_nullable
-              as String,
-      paymentMethodId: freezed == paymentMethodId
-          ? _value.paymentMethodId
-          : paymentMethodId // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
-  }
+/// Create a copy of ConfirmPaymentRequest
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? paymentIntentId = null,Object? paymentMethodId = freezed,}) {
+  return _then(_self.copyWith(
+paymentIntentId: null == paymentIntentId ? _self.paymentIntentId : paymentIntentId // ignore: cast_nullable_to_non_nullable
+as String,paymentMethodId: freezed == paymentMethodId ? _self.paymentMethodId : paymentMethodId // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
 }
 
-/// @nodoc
-abstract class _$$ConfirmPaymentRequestImplCopyWith<$Res>
-    implements $ConfirmPaymentRequestCopyWith<$Res> {
-  factory _$$ConfirmPaymentRequestImplCopyWith(
-          _$ConfirmPaymentRequestImpl value,
-          $Res Function(_$ConfirmPaymentRequestImpl) then) =
-      __$$ConfirmPaymentRequestImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({String paymentIntentId, String? paymentMethodId});
 }
 
-/// @nodoc
-class __$$ConfirmPaymentRequestImplCopyWithImpl<$Res>
-    extends _$ConfirmPaymentRequestCopyWithImpl<$Res,
-        _$ConfirmPaymentRequestImpl>
-    implements _$$ConfirmPaymentRequestImplCopyWith<$Res> {
-  __$$ConfirmPaymentRequestImplCopyWithImpl(_$ConfirmPaymentRequestImpl _value,
-      $Res Function(_$ConfirmPaymentRequestImpl) _then)
-      : super(_value, _then);
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? paymentIntentId = null,
-    Object? paymentMethodId = freezed,
-  }) {
-    return _then(_$ConfirmPaymentRequestImpl(
-      paymentIntentId: null == paymentIntentId
-          ? _value.paymentIntentId
-          : paymentIntentId // ignore: cast_nullable_to_non_nullable
-              as String,
-      paymentMethodId: freezed == paymentMethodId
-          ? _value.paymentMethodId
-          : paymentMethodId // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
+/// Adds pattern-matching-related methods to [ConfirmPaymentRequest].
+extension ConfirmPaymentRequestPatterns on ConfirmPaymentRequest {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ConfirmPaymentRequest value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _ConfirmPaymentRequest() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ConfirmPaymentRequest value)  $default,){
+final _that = this;
+switch (_that) {
+case _ConfirmPaymentRequest():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ConfirmPaymentRequest value)?  $default,){
+final _that = this;
+switch (_that) {
+case _ConfirmPaymentRequest() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String paymentIntentId,  String? paymentMethodId)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _ConfirmPaymentRequest() when $default != null:
+return $default(_that.paymentIntentId,_that.paymentMethodId);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String paymentIntentId,  String? paymentMethodId)  $default,) {final _that = this;
+switch (_that) {
+case _ConfirmPaymentRequest():
+return $default(_that.paymentIntentId,_that.paymentMethodId);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String paymentIntentId,  String? paymentMethodId)?  $default,) {final _that = this;
+switch (_that) {
+case _ConfirmPaymentRequest() when $default != null:
+return $default(_that.paymentIntentId,_that.paymentMethodId);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$ConfirmPaymentRequestImpl implements _ConfirmPaymentRequest {
-  const _$ConfirmPaymentRequestImpl(
-      {required this.paymentIntentId, this.paymentMethodId});
 
-  factory _$ConfirmPaymentRequestImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ConfirmPaymentRequestImplFromJson(json);
+class _ConfirmPaymentRequest implements ConfirmPaymentRequest {
+  const _ConfirmPaymentRequest({required this.paymentIntentId, this.paymentMethodId});
+  factory _ConfirmPaymentRequest.fromJson(Map<String, dynamic> json) => _$ConfirmPaymentRequestFromJson(json);
 
-  @override
-  final String paymentIntentId;
-  @override
-  final String? paymentMethodId;
+@override final  String paymentIntentId;
+@override final  String? paymentMethodId;
 
-  @override
-  String toString() {
-    return 'ConfirmPaymentRequest(paymentIntentId: $paymentIntentId, paymentMethodId: $paymentMethodId)';
-  }
+/// Create a copy of ConfirmPaymentRequest
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ConfirmPaymentRequestCopyWith<_ConfirmPaymentRequest> get copyWith => __$ConfirmPaymentRequestCopyWithImpl<_ConfirmPaymentRequest>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$ConfirmPaymentRequestImpl &&
-            (identical(other.paymentIntentId, paymentIntentId) ||
-                other.paymentIntentId == paymentIntentId) &&
-            (identical(other.paymentMethodId, paymentMethodId) ||
-                other.paymentMethodId == paymentMethodId));
-  }
-
-  @JsonKey(ignore: true)
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, paymentIntentId, paymentMethodId);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$ConfirmPaymentRequestImplCopyWith<_$ConfirmPaymentRequestImpl>
-      get copyWith => __$$ConfirmPaymentRequestImplCopyWithImpl<
-          _$ConfirmPaymentRequestImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ConfirmPaymentRequestImplToJson(
-      this,
-    );
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$ConfirmPaymentRequestToJson(this, );
 }
 
-abstract class _ConfirmPaymentRequest implements ConfirmPaymentRequest {
-  const factory _ConfirmPaymentRequest(
-      {required final String paymentIntentId,
-      final String? paymentMethodId}) = _$ConfirmPaymentRequestImpl;
-
-  factory _ConfirmPaymentRequest.fromJson(Map<String, dynamic> json) =
-      _$ConfirmPaymentRequestImpl.fromJson;
-
-  @override
-  String get paymentIntentId;
-  @override
-  String? get paymentMethodId;
-  @override
-  @JsonKey(ignore: true)
-  _$$ConfirmPaymentRequestImplCopyWith<_$ConfirmPaymentRequestImpl>
-      get copyWith => throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ConfirmPaymentRequest&&(identical(other.paymentIntentId, paymentIntentId) || other.paymentIntentId == paymentIntentId)&&(identical(other.paymentMethodId, paymentMethodId) || other.paymentMethodId == paymentMethodId));
 }
 
-Invoice _$InvoiceFromJson(Map<String, dynamic> json) {
-  return _Invoice.fromJson(json);
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,paymentIntentId,paymentMethodId);
+
+@override
+String toString() {
+  return 'ConfirmPaymentRequest(paymentIntentId: $paymentIntentId, paymentMethodId: $paymentMethodId)';
 }
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ConfirmPaymentRequestCopyWith<$Res> implements $ConfirmPaymentRequestCopyWith<$Res> {
+  factory _$ConfirmPaymentRequestCopyWith(_ConfirmPaymentRequest value, $Res Function(_ConfirmPaymentRequest) _then) = __$ConfirmPaymentRequestCopyWithImpl;
+@override @useResult
+$Res call({
+ String paymentIntentId, String? paymentMethodId
+});
+
+
+
+
+}
+/// @nodoc
+class __$ConfirmPaymentRequestCopyWithImpl<$Res>
+    implements _$ConfirmPaymentRequestCopyWith<$Res> {
+  __$ConfirmPaymentRequestCopyWithImpl(this._self, this._then);
+
+  final _ConfirmPaymentRequest _self;
+  final $Res Function(_ConfirmPaymentRequest) _then;
+
+/// Create a copy of ConfirmPaymentRequest
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? paymentIntentId = null,Object? paymentMethodId = freezed,}) {
+  return _then(_ConfirmPaymentRequest(
+paymentIntentId: null == paymentIntentId ? _self.paymentIntentId : paymentIntentId // ignore: cast_nullable_to_non_nullable
+as String,paymentMethodId: freezed == paymentMethodId ? _self.paymentMethodId : paymentMethodId // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
 
 /// @nodoc
 mixin _$Invoice {
-  String get id => throw _privateConstructorUsedError;
-  String get invoiceNumber => throw _privateConstructorUsedError;
-  int get amount => throw _privateConstructorUsedError;
-  String get currency => throw _privateConstructorUsedError;
-  PaymentStatus get status =>
-      throw _privateConstructorUsedError; // Customer details
-  String? get customerName => throw _privateConstructorUsedError;
-  String? get customerEmail => throw _privateConstructorUsedError; // Line items
-  List<InvoiceLineItem> get lineItems =>
-      throw _privateConstructorUsedError; // Tax
-  int? get taxAmount => throw _privateConstructorUsedError;
-  String? get taxId => throw _privateConstructorUsedError; // URLs
-  String? get pdfUrl => throw _privateConstructorUsedError;
-  String? get hostedInvoiceUrl =>
-      throw _privateConstructorUsedError; // Timestamps
-  DateTime? get createdAt => throw _privateConstructorUsedError;
-  DateTime? get dueDate => throw _privateConstructorUsedError;
-  DateTime? get paidAt => throw _privateConstructorUsedError;
 
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
-  $InvoiceCopyWith<Invoice> get copyWith => throw _privateConstructorUsedError;
+ String get id; String get invoiceNumber; int get amount; String get currency; PaymentStatus get status;// Customer details
+ String? get customerName; String? get customerEmail;// Line items
+ List<InvoiceLineItem> get lineItems;// Tax
+ int? get taxAmount; String? get taxId;// URLs
+ String? get pdfUrl; String? get hostedInvoiceUrl;// Timestamps
+ DateTime? get createdAt; DateTime? get dueDate; DateTime? get paidAt;
+/// Create a copy of Invoice
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$InvoiceCopyWith<Invoice> get copyWith => _$InvoiceCopyWithImpl<Invoice>(this as Invoice, _$identity);
+
+  /// Serializes this Invoice to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Invoice&&(identical(other.id, id) || other.id == id)&&(identical(other.invoiceNumber, invoiceNumber) || other.invoiceNumber == invoiceNumber)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.status, status) || other.status == status)&&(identical(other.customerName, customerName) || other.customerName == customerName)&&(identical(other.customerEmail, customerEmail) || other.customerEmail == customerEmail)&&const DeepCollectionEquality().equals(other.lineItems, lineItems)&&(identical(other.taxAmount, taxAmount) || other.taxAmount == taxAmount)&&(identical(other.taxId, taxId) || other.taxId == taxId)&&(identical(other.pdfUrl, pdfUrl) || other.pdfUrl == pdfUrl)&&(identical(other.hostedInvoiceUrl, hostedInvoiceUrl) || other.hostedInvoiceUrl == hostedInvoiceUrl)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.paidAt, paidAt) || other.paidAt == paidAt));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,invoiceNumber,amount,currency,status,customerName,customerEmail,const DeepCollectionEquality().hash(lineItems),taxAmount,taxId,pdfUrl,hostedInvoiceUrl,createdAt,dueDate,paidAt);
+
+@override
+String toString() {
+  return 'Invoice(id: $id, invoiceNumber: $invoiceNumber, amount: $amount, currency: $currency, status: $status, customerName: $customerName, customerEmail: $customerEmail, lineItems: $lineItems, taxAmount: $taxAmount, taxId: $taxId, pdfUrl: $pdfUrl, hostedInvoiceUrl: $hostedInvoiceUrl, createdAt: $createdAt, dueDate: $dueDate, paidAt: $paidAt)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $InvoiceCopyWith<$Res> {
-  factory $InvoiceCopyWith(Invoice value, $Res Function(Invoice) then) =
-      _$InvoiceCopyWithImpl<$Res, Invoice>;
-  @useResult
-  $Res call(
-      {String id,
-      String invoiceNumber,
-      int amount,
-      String currency,
-      PaymentStatus status,
-      String? customerName,
-      String? customerEmail,
-      List<InvoiceLineItem> lineItems,
-      int? taxAmount,
-      String? taxId,
-      String? pdfUrl,
-      String? hostedInvoiceUrl,
-      DateTime? createdAt,
-      DateTime? dueDate,
-      DateTime? paidAt});
-}
+abstract mixin class $InvoiceCopyWith<$Res>  {
+  factory $InvoiceCopyWith(Invoice value, $Res Function(Invoice) _then) = _$InvoiceCopyWithImpl;
+@useResult
+$Res call({
+ String id, String invoiceNumber, int amount, String currency, PaymentStatus status, String? customerName, String? customerEmail, List<InvoiceLineItem> lineItems, int? taxAmount, String? taxId, String? pdfUrl, String? hostedInvoiceUrl, DateTime? createdAt, DateTime? dueDate, DateTime? paidAt
+});
 
+
+
+
+}
 /// @nodoc
-class _$InvoiceCopyWithImpl<$Res, $Val extends Invoice>
+class _$InvoiceCopyWithImpl<$Res>
     implements $InvoiceCopyWith<$Res> {
-  _$InvoiceCopyWithImpl(this._value, this._then);
+  _$InvoiceCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final Invoice _self;
+  final $Res Function(Invoice) _then;
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? invoiceNumber = null,
-    Object? amount = null,
-    Object? currency = null,
-    Object? status = null,
-    Object? customerName = freezed,
-    Object? customerEmail = freezed,
-    Object? lineItems = null,
-    Object? taxAmount = freezed,
-    Object? taxId = freezed,
-    Object? pdfUrl = freezed,
-    Object? hostedInvoiceUrl = freezed,
-    Object? createdAt = freezed,
-    Object? dueDate = freezed,
-    Object? paidAt = freezed,
-  }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      invoiceNumber: null == invoiceNumber
-          ? _value.invoiceNumber
-          : invoiceNumber // ignore: cast_nullable_to_non_nullable
-              as String,
-      amount: null == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as int,
-      currency: null == currency
-          ? _value.currency
-          : currency // ignore: cast_nullable_to_non_nullable
-              as String,
-      status: null == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as PaymentStatus,
-      customerName: freezed == customerName
-          ? _value.customerName
-          : customerName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      customerEmail: freezed == customerEmail
-          ? _value.customerEmail
-          : customerEmail // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lineItems: null == lineItems
-          ? _value.lineItems
-          : lineItems // ignore: cast_nullable_to_non_nullable
-              as List<InvoiceLineItem>,
-      taxAmount: freezed == taxAmount
-          ? _value.taxAmount
-          : taxAmount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      taxId: freezed == taxId
-          ? _value.taxId
-          : taxId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      pdfUrl: freezed == pdfUrl
-          ? _value.pdfUrl
-          : pdfUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      hostedInvoiceUrl: freezed == hostedInvoiceUrl
-          ? _value.hostedInvoiceUrl
-          : hostedInvoiceUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      dueDate: freezed == dueDate
-          ? _value.dueDate
-          : dueDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      paidAt: freezed == paidAt
-          ? _value.paidAt
-          : paidAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ) as $Val);
-  }
+/// Create a copy of Invoice
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? invoiceNumber = null,Object? amount = null,Object? currency = null,Object? status = null,Object? customerName = freezed,Object? customerEmail = freezed,Object? lineItems = null,Object? taxAmount = freezed,Object? taxId = freezed,Object? pdfUrl = freezed,Object? hostedInvoiceUrl = freezed,Object? createdAt = freezed,Object? dueDate = freezed,Object? paidAt = freezed,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,invoiceNumber: null == invoiceNumber ? _self.invoiceNumber : invoiceNumber // ignore: cast_nullable_to_non_nullable
+as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as int,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as PaymentStatus,customerName: freezed == customerName ? _self.customerName : customerName // ignore: cast_nullable_to_non_nullable
+as String?,customerEmail: freezed == customerEmail ? _self.customerEmail : customerEmail // ignore: cast_nullable_to_non_nullable
+as String?,lineItems: null == lineItems ? _self.lineItems : lineItems // ignore: cast_nullable_to_non_nullable
+as List<InvoiceLineItem>,taxAmount: freezed == taxAmount ? _self.taxAmount : taxAmount // ignore: cast_nullable_to_non_nullable
+as int?,taxId: freezed == taxId ? _self.taxId : taxId // ignore: cast_nullable_to_non_nullable
+as String?,pdfUrl: freezed == pdfUrl ? _self.pdfUrl : pdfUrl // ignore: cast_nullable_to_non_nullable
+as String?,hostedInvoiceUrl: freezed == hostedInvoiceUrl ? _self.hostedInvoiceUrl : hostedInvoiceUrl // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,dueDate: freezed == dueDate ? _self.dueDate : dueDate // ignore: cast_nullable_to_non_nullable
+as DateTime?,paidAt: freezed == paidAt ? _self.paidAt : paidAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
+  ));
 }
 
-/// @nodoc
-abstract class _$$InvoiceImplCopyWith<$Res> implements $InvoiceCopyWith<$Res> {
-  factory _$$InvoiceImplCopyWith(
-          _$InvoiceImpl value, $Res Function(_$InvoiceImpl) then) =
-      __$$InvoiceImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String id,
-      String invoiceNumber,
-      int amount,
-      String currency,
-      PaymentStatus status,
-      String? customerName,
-      String? customerEmail,
-      List<InvoiceLineItem> lineItems,
-      int? taxAmount,
-      String? taxId,
-      String? pdfUrl,
-      String? hostedInvoiceUrl,
-      DateTime? createdAt,
-      DateTime? dueDate,
-      DateTime? paidAt});
 }
 
-/// @nodoc
-class __$$InvoiceImplCopyWithImpl<$Res>
-    extends _$InvoiceCopyWithImpl<$Res, _$InvoiceImpl>
-    implements _$$InvoiceImplCopyWith<$Res> {
-  __$$InvoiceImplCopyWithImpl(
-      _$InvoiceImpl _value, $Res Function(_$InvoiceImpl) _then)
-      : super(_value, _then);
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? invoiceNumber = null,
-    Object? amount = null,
-    Object? currency = null,
-    Object? status = null,
-    Object? customerName = freezed,
-    Object? customerEmail = freezed,
-    Object? lineItems = null,
-    Object? taxAmount = freezed,
-    Object? taxId = freezed,
-    Object? pdfUrl = freezed,
-    Object? hostedInvoiceUrl = freezed,
-    Object? createdAt = freezed,
-    Object? dueDate = freezed,
-    Object? paidAt = freezed,
-  }) {
-    return _then(_$InvoiceImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      invoiceNumber: null == invoiceNumber
-          ? _value.invoiceNumber
-          : invoiceNumber // ignore: cast_nullable_to_non_nullable
-              as String,
-      amount: null == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as int,
-      currency: null == currency
-          ? _value.currency
-          : currency // ignore: cast_nullable_to_non_nullable
-              as String,
-      status: null == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as PaymentStatus,
-      customerName: freezed == customerName
-          ? _value.customerName
-          : customerName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      customerEmail: freezed == customerEmail
-          ? _value.customerEmail
-          : customerEmail // ignore: cast_nullable_to_non_nullable
-              as String?,
-      lineItems: null == lineItems
-          ? _value._lineItems
-          : lineItems // ignore: cast_nullable_to_non_nullable
-              as List<InvoiceLineItem>,
-      taxAmount: freezed == taxAmount
-          ? _value.taxAmount
-          : taxAmount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      taxId: freezed == taxId
-          ? _value.taxId
-          : taxId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      pdfUrl: freezed == pdfUrl
-          ? _value.pdfUrl
-          : pdfUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      hostedInvoiceUrl: freezed == hostedInvoiceUrl
-          ? _value.hostedInvoiceUrl
-          : hostedInvoiceUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      dueDate: freezed == dueDate
-          ? _value.dueDate
-          : dueDate // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      paidAt: freezed == paidAt
-          ? _value.paidAt
-          : paidAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ));
-  }
+/// Adds pattern-matching-related methods to [Invoice].
+extension InvoicePatterns on Invoice {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _Invoice value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _Invoice() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _Invoice value)  $default,){
+final _that = this;
+switch (_that) {
+case _Invoice():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _Invoice value)?  $default,){
+final _that = this;
+switch (_that) {
+case _Invoice() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String invoiceNumber,  int amount,  String currency,  PaymentStatus status,  String? customerName,  String? customerEmail,  List<InvoiceLineItem> lineItems,  int? taxAmount,  String? taxId,  String? pdfUrl,  String? hostedInvoiceUrl,  DateTime? createdAt,  DateTime? dueDate,  DateTime? paidAt)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _Invoice() when $default != null:
+return $default(_that.id,_that.invoiceNumber,_that.amount,_that.currency,_that.status,_that.customerName,_that.customerEmail,_that.lineItems,_that.taxAmount,_that.taxId,_that.pdfUrl,_that.hostedInvoiceUrl,_that.createdAt,_that.dueDate,_that.paidAt);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String invoiceNumber,  int amount,  String currency,  PaymentStatus status,  String? customerName,  String? customerEmail,  List<InvoiceLineItem> lineItems,  int? taxAmount,  String? taxId,  String? pdfUrl,  String? hostedInvoiceUrl,  DateTime? createdAt,  DateTime? dueDate,  DateTime? paidAt)  $default,) {final _that = this;
+switch (_that) {
+case _Invoice():
+return $default(_that.id,_that.invoiceNumber,_that.amount,_that.currency,_that.status,_that.customerName,_that.customerEmail,_that.lineItems,_that.taxAmount,_that.taxId,_that.pdfUrl,_that.hostedInvoiceUrl,_that.createdAt,_that.dueDate,_that.paidAt);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String invoiceNumber,  int amount,  String currency,  PaymentStatus status,  String? customerName,  String? customerEmail,  List<InvoiceLineItem> lineItems,  int? taxAmount,  String? taxId,  String? pdfUrl,  String? hostedInvoiceUrl,  DateTime? createdAt,  DateTime? dueDate,  DateTime? paidAt)?  $default,) {final _that = this;
+switch (_that) {
+case _Invoice() when $default != null:
+return $default(_that.id,_that.invoiceNumber,_that.amount,_that.currency,_that.status,_that.customerName,_that.customerEmail,_that.lineItems,_that.taxAmount,_that.taxId,_that.pdfUrl,_that.hostedInvoiceUrl,_that.createdAt,_that.dueDate,_that.paidAt);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$InvoiceImpl extends _Invoice {
-  const _$InvoiceImpl(
-      {required this.id,
-      required this.invoiceNumber,
-      required this.amount,
-      required this.currency,
-      required this.status,
-      this.customerName,
-      this.customerEmail,
-      final List<InvoiceLineItem> lineItems = const [],
-      this.taxAmount,
-      this.taxId,
-      this.pdfUrl,
-      this.hostedInvoiceUrl,
-      this.createdAt,
-      this.dueDate,
-      this.paidAt})
-      : _lineItems = lineItems,
-        super._();
 
-  factory _$InvoiceImpl.fromJson(Map<String, dynamic> json) =>
-      _$$InvoiceImplFromJson(json);
+class _Invoice extends Invoice {
+  const _Invoice({required this.id, required this.invoiceNumber, required this.amount, required this.currency, required this.status, this.customerName, this.customerEmail, final  List<InvoiceLineItem> lineItems = const [], this.taxAmount, this.taxId, this.pdfUrl, this.hostedInvoiceUrl, this.createdAt, this.dueDate, this.paidAt}): _lineItems = lineItems,super._();
+  factory _Invoice.fromJson(Map<String, dynamic> json) => _$InvoiceFromJson(json);
 
-  @override
-  final String id;
-  @override
-  final String invoiceNumber;
-  @override
-  final int amount;
-  @override
-  final String currency;
-  @override
-  final PaymentStatus status;
+@override final  String id;
+@override final  String invoiceNumber;
+@override final  int amount;
+@override final  String currency;
+@override final  PaymentStatus status;
 // Customer details
-  @override
-  final String? customerName;
-  @override
-  final String? customerEmail;
+@override final  String? customerName;
+@override final  String? customerEmail;
 // Line items
-  final List<InvoiceLineItem> _lineItems;
+ final  List<InvoiceLineItem> _lineItems;
 // Line items
-  @override
-  @JsonKey()
-  List<InvoiceLineItem> get lineItems {
-    if (_lineItems is EqualUnmodifiableListView) return _lineItems;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_lineItems);
-  }
+@override@JsonKey() List<InvoiceLineItem> get lineItems {
+  if (_lineItems is EqualUnmodifiableListView) return _lineItems;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_lineItems);
+}
 
 // Tax
-  @override
-  final int? taxAmount;
-  @override
-  final String? taxId;
+@override final  int? taxAmount;
+@override final  String? taxId;
 // URLs
-  @override
-  final String? pdfUrl;
-  @override
-  final String? hostedInvoiceUrl;
+@override final  String? pdfUrl;
+@override final  String? hostedInvoiceUrl;
 // Timestamps
-  @override
-  final DateTime? createdAt;
-  @override
-  final DateTime? dueDate;
-  @override
-  final DateTime? paidAt;
+@override final  DateTime? createdAt;
+@override final  DateTime? dueDate;
+@override final  DateTime? paidAt;
 
-  @override
-  String toString() {
-    return 'Invoice(id: $id, invoiceNumber: $invoiceNumber, amount: $amount, currency: $currency, status: $status, customerName: $customerName, customerEmail: $customerEmail, lineItems: $lineItems, taxAmount: $taxAmount, taxId: $taxId, pdfUrl: $pdfUrl, hostedInvoiceUrl: $hostedInvoiceUrl, createdAt: $createdAt, dueDate: $dueDate, paidAt: $paidAt)';
-  }
+/// Create a copy of Invoice
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$InvoiceCopyWith<_Invoice> get copyWith => __$InvoiceCopyWithImpl<_Invoice>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$InvoiceImpl &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.invoiceNumber, invoiceNumber) ||
-                other.invoiceNumber == invoiceNumber) &&
-            (identical(other.amount, amount) || other.amount == amount) &&
-            (identical(other.currency, currency) ||
-                other.currency == currency) &&
-            (identical(other.status, status) || other.status == status) &&
-            (identical(other.customerName, customerName) ||
-                other.customerName == customerName) &&
-            (identical(other.customerEmail, customerEmail) ||
-                other.customerEmail == customerEmail) &&
-            const DeepCollectionEquality()
-                .equals(other._lineItems, _lineItems) &&
-            (identical(other.taxAmount, taxAmount) ||
-                other.taxAmount == taxAmount) &&
-            (identical(other.taxId, taxId) || other.taxId == taxId) &&
-            (identical(other.pdfUrl, pdfUrl) || other.pdfUrl == pdfUrl) &&
-            (identical(other.hostedInvoiceUrl, hostedInvoiceUrl) ||
-                other.hostedInvoiceUrl == hostedInvoiceUrl) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt) &&
-            (identical(other.dueDate, dueDate) || other.dueDate == dueDate) &&
-            (identical(other.paidAt, paidAt) || other.paidAt == paidAt));
-  }
-
-  @JsonKey(ignore: true)
-  @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      invoiceNumber,
-      amount,
-      currency,
-      status,
-      customerName,
-      customerEmail,
-      const DeepCollectionEquality().hash(_lineItems),
-      taxAmount,
-      taxId,
-      pdfUrl,
-      hostedInvoiceUrl,
-      createdAt,
-      dueDate,
-      paidAt);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$InvoiceImplCopyWith<_$InvoiceImpl> get copyWith =>
-      __$$InvoiceImplCopyWithImpl<_$InvoiceImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$InvoiceImplToJson(
-      this,
-    );
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$InvoiceToJson(this, );
 }
 
-abstract class _Invoice extends Invoice {
-  const factory _Invoice(
-      {required final String id,
-      required final String invoiceNumber,
-      required final int amount,
-      required final String currency,
-      required final PaymentStatus status,
-      final String? customerName,
-      final String? customerEmail,
-      final List<InvoiceLineItem> lineItems,
-      final int? taxAmount,
-      final String? taxId,
-      final String? pdfUrl,
-      final String? hostedInvoiceUrl,
-      final DateTime? createdAt,
-      final DateTime? dueDate,
-      final DateTime? paidAt}) = _$InvoiceImpl;
-  const _Invoice._() : super._();
-
-  factory _Invoice.fromJson(Map<String, dynamic> json) = _$InvoiceImpl.fromJson;
-
-  @override
-  String get id;
-  @override
-  String get invoiceNumber;
-  @override
-  int get amount;
-  @override
-  String get currency;
-  @override
-  PaymentStatus get status;
-  @override // Customer details
-  String? get customerName;
-  @override
-  String? get customerEmail;
-  @override // Line items
-  List<InvoiceLineItem> get lineItems;
-  @override // Tax
-  int? get taxAmount;
-  @override
-  String? get taxId;
-  @override // URLs
-  String? get pdfUrl;
-  @override
-  String? get hostedInvoiceUrl;
-  @override // Timestamps
-  DateTime? get createdAt;
-  @override
-  DateTime? get dueDate;
-  @override
-  DateTime? get paidAt;
-  @override
-  @JsonKey(ignore: true)
-  _$$InvoiceImplCopyWith<_$InvoiceImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Invoice&&(identical(other.id, id) || other.id == id)&&(identical(other.invoiceNumber, invoiceNumber) || other.invoiceNumber == invoiceNumber)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.status, status) || other.status == status)&&(identical(other.customerName, customerName) || other.customerName == customerName)&&(identical(other.customerEmail, customerEmail) || other.customerEmail == customerEmail)&&const DeepCollectionEquality().equals(other._lineItems, _lineItems)&&(identical(other.taxAmount, taxAmount) || other.taxAmount == taxAmount)&&(identical(other.taxId, taxId) || other.taxId == taxId)&&(identical(other.pdfUrl, pdfUrl) || other.pdfUrl == pdfUrl)&&(identical(other.hostedInvoiceUrl, hostedInvoiceUrl) || other.hostedInvoiceUrl == hostedInvoiceUrl)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.paidAt, paidAt) || other.paidAt == paidAt));
 }
 
-InvoiceLineItem _$InvoiceLineItemFromJson(Map<String, dynamic> json) {
-  return _InvoiceLineItem.fromJson(json);
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,invoiceNumber,amount,currency,status,customerName,customerEmail,const DeepCollectionEquality().hash(_lineItems),taxAmount,taxId,pdfUrl,hostedInvoiceUrl,createdAt,dueDate,paidAt);
+
+@override
+String toString() {
+  return 'Invoice(id: $id, invoiceNumber: $invoiceNumber, amount: $amount, currency: $currency, status: $status, customerName: $customerName, customerEmail: $customerEmail, lineItems: $lineItems, taxAmount: $taxAmount, taxId: $taxId, pdfUrl: $pdfUrl, hostedInvoiceUrl: $hostedInvoiceUrl, createdAt: $createdAt, dueDate: $dueDate, paidAt: $paidAt)';
 }
+
+
+}
+
+/// @nodoc
+abstract mixin class _$InvoiceCopyWith<$Res> implements $InvoiceCopyWith<$Res> {
+  factory _$InvoiceCopyWith(_Invoice value, $Res Function(_Invoice) _then) = __$InvoiceCopyWithImpl;
+@override @useResult
+$Res call({
+ String id, String invoiceNumber, int amount, String currency, PaymentStatus status, String? customerName, String? customerEmail, List<InvoiceLineItem> lineItems, int? taxAmount, String? taxId, String? pdfUrl, String? hostedInvoiceUrl, DateTime? createdAt, DateTime? dueDate, DateTime? paidAt
+});
+
+
+
+
+}
+/// @nodoc
+class __$InvoiceCopyWithImpl<$Res>
+    implements _$InvoiceCopyWith<$Res> {
+  __$InvoiceCopyWithImpl(this._self, this._then);
+
+  final _Invoice _self;
+  final $Res Function(_Invoice) _then;
+
+/// Create a copy of Invoice
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? invoiceNumber = null,Object? amount = null,Object? currency = null,Object? status = null,Object? customerName = freezed,Object? customerEmail = freezed,Object? lineItems = null,Object? taxAmount = freezed,Object? taxId = freezed,Object? pdfUrl = freezed,Object? hostedInvoiceUrl = freezed,Object? createdAt = freezed,Object? dueDate = freezed,Object? paidAt = freezed,}) {
+  return _then(_Invoice(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,invoiceNumber: null == invoiceNumber ? _self.invoiceNumber : invoiceNumber // ignore: cast_nullable_to_non_nullable
+as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as int,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as PaymentStatus,customerName: freezed == customerName ? _self.customerName : customerName // ignore: cast_nullable_to_non_nullable
+as String?,customerEmail: freezed == customerEmail ? _self.customerEmail : customerEmail // ignore: cast_nullable_to_non_nullable
+as String?,lineItems: null == lineItems ? _self._lineItems : lineItems // ignore: cast_nullable_to_non_nullable
+as List<InvoiceLineItem>,taxAmount: freezed == taxAmount ? _self.taxAmount : taxAmount // ignore: cast_nullable_to_non_nullable
+as int?,taxId: freezed == taxId ? _self.taxId : taxId // ignore: cast_nullable_to_non_nullable
+as String?,pdfUrl: freezed == pdfUrl ? _self.pdfUrl : pdfUrl // ignore: cast_nullable_to_non_nullable
+as String?,hostedInvoiceUrl: freezed == hostedInvoiceUrl ? _self.hostedInvoiceUrl : hostedInvoiceUrl // ignore: cast_nullable_to_non_nullable
+as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,dueDate: freezed == dueDate ? _self.dueDate : dueDate // ignore: cast_nullable_to_non_nullable
+as DateTime?,paidAt: freezed == paidAt ? _self.paidAt : paidAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
+  ));
+}
+
+
+}
+
 
 /// @nodoc
 mixin _$InvoiceLineItem {
-  String get description => throw _privateConstructorUsedError;
-  int get quantity => throw _privateConstructorUsedError;
-  int get unitAmount => throw _privateConstructorUsedError;
-  int get amount => throw _privateConstructorUsedError;
 
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
-  $InvoiceLineItemCopyWith<InvoiceLineItem> get copyWith =>
-      throw _privateConstructorUsedError;
+ String get description; int get quantity; int get unitAmount; int get amount;
+/// Create a copy of InvoiceLineItem
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$InvoiceLineItemCopyWith<InvoiceLineItem> get copyWith => _$InvoiceLineItemCopyWithImpl<InvoiceLineItem>(this as InvoiceLineItem, _$identity);
+
+  /// Serializes this InvoiceLineItem to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is InvoiceLineItem&&(identical(other.description, description) || other.description == description)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitAmount, unitAmount) || other.unitAmount == unitAmount)&&(identical(other.amount, amount) || other.amount == amount));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,description,quantity,unitAmount,amount);
+
+@override
+String toString() {
+  return 'InvoiceLineItem(description: $description, quantity: $quantity, unitAmount: $unitAmount, amount: $amount)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $InvoiceLineItemCopyWith<$Res> {
-  factory $InvoiceLineItemCopyWith(
-          InvoiceLineItem value, $Res Function(InvoiceLineItem) then) =
-      _$InvoiceLineItemCopyWithImpl<$Res, InvoiceLineItem>;
-  @useResult
-  $Res call({String description, int quantity, int unitAmount, int amount});
-}
+abstract mixin class $InvoiceLineItemCopyWith<$Res>  {
+  factory $InvoiceLineItemCopyWith(InvoiceLineItem value, $Res Function(InvoiceLineItem) _then) = _$InvoiceLineItemCopyWithImpl;
+@useResult
+$Res call({
+ String description, int quantity, int unitAmount, int amount
+});
 
+
+
+
+}
 /// @nodoc
-class _$InvoiceLineItemCopyWithImpl<$Res, $Val extends InvoiceLineItem>
+class _$InvoiceLineItemCopyWithImpl<$Res>
     implements $InvoiceLineItemCopyWith<$Res> {
-  _$InvoiceLineItemCopyWithImpl(this._value, this._then);
+  _$InvoiceLineItemCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final InvoiceLineItem _self;
+  final $Res Function(InvoiceLineItem) _then;
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? description = null,
-    Object? quantity = null,
-    Object? unitAmount = null,
-    Object? amount = null,
-  }) {
-    return _then(_value.copyWith(
-      description: null == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String,
-      quantity: null == quantity
-          ? _value.quantity
-          : quantity // ignore: cast_nullable_to_non_nullable
-              as int,
-      unitAmount: null == unitAmount
-          ? _value.unitAmount
-          : unitAmount // ignore: cast_nullable_to_non_nullable
-              as int,
-      amount: null == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as int,
-    ) as $Val);
-  }
+/// Create a copy of InvoiceLineItem
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? description = null,Object? quantity = null,Object? unitAmount = null,Object? amount = null,}) {
+  return _then(_self.copyWith(
+description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
+as int,unitAmount: null == unitAmount ? _self.unitAmount : unitAmount // ignore: cast_nullable_to_non_nullable
+as int,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
 }
 
-/// @nodoc
-abstract class _$$InvoiceLineItemImplCopyWith<$Res>
-    implements $InvoiceLineItemCopyWith<$Res> {
-  factory _$$InvoiceLineItemImplCopyWith(_$InvoiceLineItemImpl value,
-          $Res Function(_$InvoiceLineItemImpl) then) =
-      __$$InvoiceLineItemImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({String description, int quantity, int unitAmount, int amount});
 }
 
-/// @nodoc
-class __$$InvoiceLineItemImplCopyWithImpl<$Res>
-    extends _$InvoiceLineItemCopyWithImpl<$Res, _$InvoiceLineItemImpl>
-    implements _$$InvoiceLineItemImplCopyWith<$Res> {
-  __$$InvoiceLineItemImplCopyWithImpl(
-      _$InvoiceLineItemImpl _value, $Res Function(_$InvoiceLineItemImpl) _then)
-      : super(_value, _then);
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? description = null,
-    Object? quantity = null,
-    Object? unitAmount = null,
-    Object? amount = null,
-  }) {
-    return _then(_$InvoiceLineItemImpl(
-      description: null == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String,
-      quantity: null == quantity
-          ? _value.quantity
-          : quantity // ignore: cast_nullable_to_non_nullable
-              as int,
-      unitAmount: null == unitAmount
-          ? _value.unitAmount
-          : unitAmount // ignore: cast_nullable_to_non_nullable
-              as int,
-      amount: null == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as int,
-    ));
-  }
+/// Adds pattern-matching-related methods to [InvoiceLineItem].
+extension InvoiceLineItemPatterns on InvoiceLineItem {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _InvoiceLineItem value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _InvoiceLineItem() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _InvoiceLineItem value)  $default,){
+final _that = this;
+switch (_that) {
+case _InvoiceLineItem():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _InvoiceLineItem value)?  $default,){
+final _that = this;
+switch (_that) {
+case _InvoiceLineItem() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String description,  int quantity,  int unitAmount,  int amount)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _InvoiceLineItem() when $default != null:
+return $default(_that.description,_that.quantity,_that.unitAmount,_that.amount);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String description,  int quantity,  int unitAmount,  int amount)  $default,) {final _that = this;
+switch (_that) {
+case _InvoiceLineItem():
+return $default(_that.description,_that.quantity,_that.unitAmount,_that.amount);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String description,  int quantity,  int unitAmount,  int amount)?  $default,) {final _that = this;
+switch (_that) {
+case _InvoiceLineItem() when $default != null:
+return $default(_that.description,_that.quantity,_that.unitAmount,_that.amount);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$InvoiceLineItemImpl extends _InvoiceLineItem {
-  const _$InvoiceLineItemImpl(
-      {required this.description,
-      required this.quantity,
-      required this.unitAmount,
-      required this.amount})
-      : super._();
 
-  factory _$InvoiceLineItemImpl.fromJson(Map<String, dynamic> json) =>
-      _$$InvoiceLineItemImplFromJson(json);
+class _InvoiceLineItem extends InvoiceLineItem {
+  const _InvoiceLineItem({required this.description, required this.quantity, required this.unitAmount, required this.amount}): super._();
+  factory _InvoiceLineItem.fromJson(Map<String, dynamic> json) => _$InvoiceLineItemFromJson(json);
 
-  @override
-  final String description;
-  @override
-  final int quantity;
-  @override
-  final int unitAmount;
-  @override
-  final int amount;
+@override final  String description;
+@override final  int quantity;
+@override final  int unitAmount;
+@override final  int amount;
 
-  @override
-  String toString() {
-    return 'InvoiceLineItem(description: $description, quantity: $quantity, unitAmount: $unitAmount, amount: $amount)';
-  }
+/// Create a copy of InvoiceLineItem
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$InvoiceLineItemCopyWith<_InvoiceLineItem> get copyWith => __$InvoiceLineItemCopyWithImpl<_InvoiceLineItem>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$InvoiceLineItemImpl &&
-            (identical(other.description, description) ||
-                other.description == description) &&
-            (identical(other.quantity, quantity) ||
-                other.quantity == quantity) &&
-            (identical(other.unitAmount, unitAmount) ||
-                other.unitAmount == unitAmount) &&
-            (identical(other.amount, amount) || other.amount == amount));
-  }
-
-  @JsonKey(ignore: true)
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, description, quantity, unitAmount, amount);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$InvoiceLineItemImplCopyWith<_$InvoiceLineItemImpl> get copyWith =>
-      __$$InvoiceLineItemImplCopyWithImpl<_$InvoiceLineItemImpl>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$InvoiceLineItemImplToJson(
-      this,
-    );
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$InvoiceLineItemToJson(this, );
 }
 
-abstract class _InvoiceLineItem extends InvoiceLineItem {
-  const factory _InvoiceLineItem(
-      {required final String description,
-      required final int quantity,
-      required final int unitAmount,
-      required final int amount}) = _$InvoiceLineItemImpl;
-  const _InvoiceLineItem._() : super._();
-
-  factory _InvoiceLineItem.fromJson(Map<String, dynamic> json) =
-      _$InvoiceLineItemImpl.fromJson;
-
-  @override
-  String get description;
-  @override
-  int get quantity;
-  @override
-  int get unitAmount;
-  @override
-  int get amount;
-  @override
-  @JsonKey(ignore: true)
-  _$$InvoiceLineItemImplCopyWith<_$InvoiceLineItemImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _InvoiceLineItem&&(identical(other.description, description) || other.description == description)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.unitAmount, unitAmount) || other.unitAmount == unitAmount)&&(identical(other.amount, amount) || other.amount == amount));
 }
 
-SetupIntentResponse _$SetupIntentResponseFromJson(Map<String, dynamic> json) {
-  return _SetupIntentResponse.fromJson(json);
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,description,quantity,unitAmount,amount);
+
+@override
+String toString() {
+  return 'InvoiceLineItem(description: $description, quantity: $quantity, unitAmount: $unitAmount, amount: $amount)';
 }
+
+
+}
+
+/// @nodoc
+abstract mixin class _$InvoiceLineItemCopyWith<$Res> implements $InvoiceLineItemCopyWith<$Res> {
+  factory _$InvoiceLineItemCopyWith(_InvoiceLineItem value, $Res Function(_InvoiceLineItem) _then) = __$InvoiceLineItemCopyWithImpl;
+@override @useResult
+$Res call({
+ String description, int quantity, int unitAmount, int amount
+});
+
+
+
+
+}
+/// @nodoc
+class __$InvoiceLineItemCopyWithImpl<$Res>
+    implements _$InvoiceLineItemCopyWith<$Res> {
+  __$InvoiceLineItemCopyWithImpl(this._self, this._then);
+
+  final _InvoiceLineItem _self;
+  final $Res Function(_InvoiceLineItem) _then;
+
+/// Create a copy of InvoiceLineItem
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? description = null,Object? quantity = null,Object? unitAmount = null,Object? amount = null,}) {
+  return _then(_InvoiceLineItem(
+description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
+as String,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
+as int,unitAmount: null == unitAmount ? _self.unitAmount : unitAmount // ignore: cast_nullable_to_non_nullable
+as int,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
 
 /// @nodoc
 mixin _$SetupIntentResponse {
-  String get clientSecret => throw _privateConstructorUsedError;
-  String get setupIntentId => throw _privateConstructorUsedError;
-  String? get customerId => throw _privateConstructorUsedError;
-  String? get ephemeralKey => throw _privateConstructorUsedError;
 
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
-  $SetupIntentResponseCopyWith<SetupIntentResponse> get copyWith =>
-      throw _privateConstructorUsedError;
+ String get clientSecret; String get setupIntentId; String? get customerId; String? get ephemeralKey;
+/// Create a copy of SetupIntentResponse
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$SetupIntentResponseCopyWith<SetupIntentResponse> get copyWith => _$SetupIntentResponseCopyWithImpl<SetupIntentResponse>(this as SetupIntentResponse, _$identity);
+
+  /// Serializes this SetupIntentResponse to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SetupIntentResponse&&(identical(other.clientSecret, clientSecret) || other.clientSecret == clientSecret)&&(identical(other.setupIntentId, setupIntentId) || other.setupIntentId == setupIntentId)&&(identical(other.customerId, customerId) || other.customerId == customerId)&&(identical(other.ephemeralKey, ephemeralKey) || other.ephemeralKey == ephemeralKey));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,clientSecret,setupIntentId,customerId,ephemeralKey);
+
+@override
+String toString() {
+  return 'SetupIntentResponse(clientSecret: $clientSecret, setupIntentId: $setupIntentId, customerId: $customerId, ephemeralKey: $ephemeralKey)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $SetupIntentResponseCopyWith<$Res> {
-  factory $SetupIntentResponseCopyWith(
-          SetupIntentResponse value, $Res Function(SetupIntentResponse) then) =
-      _$SetupIntentResponseCopyWithImpl<$Res, SetupIntentResponse>;
-  @useResult
-  $Res call(
-      {String clientSecret,
-      String setupIntentId,
-      String? customerId,
-      String? ephemeralKey});
-}
+abstract mixin class $SetupIntentResponseCopyWith<$Res>  {
+  factory $SetupIntentResponseCopyWith(SetupIntentResponse value, $Res Function(SetupIntentResponse) _then) = _$SetupIntentResponseCopyWithImpl;
+@useResult
+$Res call({
+ String clientSecret, String setupIntentId, String? customerId, String? ephemeralKey
+});
 
+
+
+
+}
 /// @nodoc
-class _$SetupIntentResponseCopyWithImpl<$Res, $Val extends SetupIntentResponse>
+class _$SetupIntentResponseCopyWithImpl<$Res>
     implements $SetupIntentResponseCopyWith<$Res> {
-  _$SetupIntentResponseCopyWithImpl(this._value, this._then);
+  _$SetupIntentResponseCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final SetupIntentResponse _self;
+  final $Res Function(SetupIntentResponse) _then;
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? clientSecret = null,
-    Object? setupIntentId = null,
-    Object? customerId = freezed,
-    Object? ephemeralKey = freezed,
-  }) {
-    return _then(_value.copyWith(
-      clientSecret: null == clientSecret
-          ? _value.clientSecret
-          : clientSecret // ignore: cast_nullable_to_non_nullable
-              as String,
-      setupIntentId: null == setupIntentId
-          ? _value.setupIntentId
-          : setupIntentId // ignore: cast_nullable_to_non_nullable
-              as String,
-      customerId: freezed == customerId
-          ? _value.customerId
-          : customerId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      ephemeralKey: freezed == ephemeralKey
-          ? _value.ephemeralKey
-          : ephemeralKey // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
-  }
+/// Create a copy of SetupIntentResponse
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? clientSecret = null,Object? setupIntentId = null,Object? customerId = freezed,Object? ephemeralKey = freezed,}) {
+  return _then(_self.copyWith(
+clientSecret: null == clientSecret ? _self.clientSecret : clientSecret // ignore: cast_nullable_to_non_nullable
+as String,setupIntentId: null == setupIntentId ? _self.setupIntentId : setupIntentId // ignore: cast_nullable_to_non_nullable
+as String,customerId: freezed == customerId ? _self.customerId : customerId // ignore: cast_nullable_to_non_nullable
+as String?,ephemeralKey: freezed == ephemeralKey ? _self.ephemeralKey : ephemeralKey // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
 }
 
-/// @nodoc
-abstract class _$$SetupIntentResponseImplCopyWith<$Res>
-    implements $SetupIntentResponseCopyWith<$Res> {
-  factory _$$SetupIntentResponseImplCopyWith(_$SetupIntentResponseImpl value,
-          $Res Function(_$SetupIntentResponseImpl) then) =
-      __$$SetupIntentResponseImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String clientSecret,
-      String setupIntentId,
-      String? customerId,
-      String? ephemeralKey});
 }
 
-/// @nodoc
-class __$$SetupIntentResponseImplCopyWithImpl<$Res>
-    extends _$SetupIntentResponseCopyWithImpl<$Res, _$SetupIntentResponseImpl>
-    implements _$$SetupIntentResponseImplCopyWith<$Res> {
-  __$$SetupIntentResponseImplCopyWithImpl(_$SetupIntentResponseImpl _value,
-      $Res Function(_$SetupIntentResponseImpl) _then)
-      : super(_value, _then);
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? clientSecret = null,
-    Object? setupIntentId = null,
-    Object? customerId = freezed,
-    Object? ephemeralKey = freezed,
-  }) {
-    return _then(_$SetupIntentResponseImpl(
-      clientSecret: null == clientSecret
-          ? _value.clientSecret
-          : clientSecret // ignore: cast_nullable_to_non_nullable
-              as String,
-      setupIntentId: null == setupIntentId
-          ? _value.setupIntentId
-          : setupIntentId // ignore: cast_nullable_to_non_nullable
-              as String,
-      customerId: freezed == customerId
-          ? _value.customerId
-          : customerId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      ephemeralKey: freezed == ephemeralKey
-          ? _value.ephemeralKey
-          : ephemeralKey // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
+/// Adds pattern-matching-related methods to [SetupIntentResponse].
+extension SetupIntentResponsePatterns on SetupIntentResponse {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _SetupIntentResponse value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _SetupIntentResponse() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _SetupIntentResponse value)  $default,){
+final _that = this;
+switch (_that) {
+case _SetupIntentResponse():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _SetupIntentResponse value)?  $default,){
+final _that = this;
+switch (_that) {
+case _SetupIntentResponse() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String clientSecret,  String setupIntentId,  String? customerId,  String? ephemeralKey)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _SetupIntentResponse() when $default != null:
+return $default(_that.clientSecret,_that.setupIntentId,_that.customerId,_that.ephemeralKey);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String clientSecret,  String setupIntentId,  String? customerId,  String? ephemeralKey)  $default,) {final _that = this;
+switch (_that) {
+case _SetupIntentResponse():
+return $default(_that.clientSecret,_that.setupIntentId,_that.customerId,_that.ephemeralKey);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String clientSecret,  String setupIntentId,  String? customerId,  String? ephemeralKey)?  $default,) {final _that = this;
+switch (_that) {
+case _SetupIntentResponse() when $default != null:
+return $default(_that.clientSecret,_that.setupIntentId,_that.customerId,_that.ephemeralKey);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$SetupIntentResponseImpl implements _SetupIntentResponse {
-  const _$SetupIntentResponseImpl(
-      {required this.clientSecret,
-      required this.setupIntentId,
-      this.customerId,
-      this.ephemeralKey});
 
-  factory _$SetupIntentResponseImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SetupIntentResponseImplFromJson(json);
+class _SetupIntentResponse implements SetupIntentResponse {
+  const _SetupIntentResponse({required this.clientSecret, required this.setupIntentId, this.customerId, this.ephemeralKey});
+  factory _SetupIntentResponse.fromJson(Map<String, dynamic> json) => _$SetupIntentResponseFromJson(json);
 
-  @override
-  final String clientSecret;
-  @override
-  final String setupIntentId;
-  @override
-  final String? customerId;
-  @override
-  final String? ephemeralKey;
+@override final  String clientSecret;
+@override final  String setupIntentId;
+@override final  String? customerId;
+@override final  String? ephemeralKey;
 
-  @override
-  String toString() {
-    return 'SetupIntentResponse(clientSecret: $clientSecret, setupIntentId: $setupIntentId, customerId: $customerId, ephemeralKey: $ephemeralKey)';
-  }
+/// Create a copy of SetupIntentResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$SetupIntentResponseCopyWith<_SetupIntentResponse> get copyWith => __$SetupIntentResponseCopyWithImpl<_SetupIntentResponse>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$SetupIntentResponseImpl &&
-            (identical(other.clientSecret, clientSecret) ||
-                other.clientSecret == clientSecret) &&
-            (identical(other.setupIntentId, setupIntentId) ||
-                other.setupIntentId == setupIntentId) &&
-            (identical(other.customerId, customerId) ||
-                other.customerId == customerId) &&
-            (identical(other.ephemeralKey, ephemeralKey) ||
-                other.ephemeralKey == ephemeralKey));
-  }
-
-  @JsonKey(ignore: true)
-  @override
-  int get hashCode => Object.hash(
-      runtimeType, clientSecret, setupIntentId, customerId, ephemeralKey);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$SetupIntentResponseImplCopyWith<_$SetupIntentResponseImpl> get copyWith =>
-      __$$SetupIntentResponseImplCopyWithImpl<_$SetupIntentResponseImpl>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$SetupIntentResponseImplToJson(
-      this,
-    );
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$SetupIntentResponseToJson(this, );
 }
 
-abstract class _SetupIntentResponse implements SetupIntentResponse {
-  const factory _SetupIntentResponse(
-      {required final String clientSecret,
-      required final String setupIntentId,
-      final String? customerId,
-      final String? ephemeralKey}) = _$SetupIntentResponseImpl;
-
-  factory _SetupIntentResponse.fromJson(Map<String, dynamic> json) =
-      _$SetupIntentResponseImpl.fromJson;
-
-  @override
-  String get clientSecret;
-  @override
-  String get setupIntentId;
-  @override
-  String? get customerId;
-  @override
-  String? get ephemeralKey;
-  @override
-  @JsonKey(ignore: true)
-  _$$SetupIntentResponseImplCopyWith<_$SetupIntentResponseImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SetupIntentResponse&&(identical(other.clientSecret, clientSecret) || other.clientSecret == clientSecret)&&(identical(other.setupIntentId, setupIntentId) || other.setupIntentId == setupIntentId)&&(identical(other.customerId, customerId) || other.customerId == customerId)&&(identical(other.ephemeralKey, ephemeralKey) || other.ephemeralKey == ephemeralKey));
 }
 
-StripeCustomer _$StripeCustomerFromJson(Map<String, dynamic> json) {
-  return _StripeCustomer.fromJson(json);
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,clientSecret,setupIntentId,customerId,ephemeralKey);
+
+@override
+String toString() {
+  return 'SetupIntentResponse(clientSecret: $clientSecret, setupIntentId: $setupIntentId, customerId: $customerId, ephemeralKey: $ephemeralKey)';
 }
+
+
+}
+
+/// @nodoc
+abstract mixin class _$SetupIntentResponseCopyWith<$Res> implements $SetupIntentResponseCopyWith<$Res> {
+  factory _$SetupIntentResponseCopyWith(_SetupIntentResponse value, $Res Function(_SetupIntentResponse) _then) = __$SetupIntentResponseCopyWithImpl;
+@override @useResult
+$Res call({
+ String clientSecret, String setupIntentId, String? customerId, String? ephemeralKey
+});
+
+
+
+
+}
+/// @nodoc
+class __$SetupIntentResponseCopyWithImpl<$Res>
+    implements _$SetupIntentResponseCopyWith<$Res> {
+  __$SetupIntentResponseCopyWithImpl(this._self, this._then);
+
+  final _SetupIntentResponse _self;
+  final $Res Function(_SetupIntentResponse) _then;
+
+/// Create a copy of SetupIntentResponse
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? clientSecret = null,Object? setupIntentId = null,Object? customerId = freezed,Object? ephemeralKey = freezed,}) {
+  return _then(_SetupIntentResponse(
+clientSecret: null == clientSecret ? _self.clientSecret : clientSecret // ignore: cast_nullable_to_non_nullable
+as String,setupIntentId: null == setupIntentId ? _self.setupIntentId : setupIntentId // ignore: cast_nullable_to_non_nullable
+as String,customerId: freezed == customerId ? _self.customerId : customerId // ignore: cast_nullable_to_non_nullable
+as String?,ephemeralKey: freezed == ephemeralKey ? _self.ephemeralKey : ephemeralKey // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
 
 /// @nodoc
 mixin _$StripeCustomer {
-  String get id => throw _privateConstructorUsedError;
-  String? get email => throw _privateConstructorUsedError;
-  String? get name => throw _privateConstructorUsedError;
-  String? get defaultPaymentMethodId => throw _privateConstructorUsedError;
-  List<PaymentMethod> get paymentMethods => throw _privateConstructorUsedError;
-  DateTime? get createdAt => throw _privateConstructorUsedError;
 
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
-  $StripeCustomerCopyWith<StripeCustomer> get copyWith =>
-      throw _privateConstructorUsedError;
+ String get id; String? get email; String? get name; String? get defaultPaymentMethodId; List<PaymentMethod> get paymentMethods; DateTime? get createdAt;
+/// Create a copy of StripeCustomer
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$StripeCustomerCopyWith<StripeCustomer> get copyWith => _$StripeCustomerCopyWithImpl<StripeCustomer>(this as StripeCustomer, _$identity);
+
+  /// Serializes this StripeCustomer to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is StripeCustomer&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.name, name) || other.name == name)&&(identical(other.defaultPaymentMethodId, defaultPaymentMethodId) || other.defaultPaymentMethodId == defaultPaymentMethodId)&&const DeepCollectionEquality().equals(other.paymentMethods, paymentMethods)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,email,name,defaultPaymentMethodId,const DeepCollectionEquality().hash(paymentMethods),createdAt);
+
+@override
+String toString() {
+  return 'StripeCustomer(id: $id, email: $email, name: $name, defaultPaymentMethodId: $defaultPaymentMethodId, paymentMethods: $paymentMethods, createdAt: $createdAt)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $StripeCustomerCopyWith<$Res> {
-  factory $StripeCustomerCopyWith(
-          StripeCustomer value, $Res Function(StripeCustomer) then) =
-      _$StripeCustomerCopyWithImpl<$Res, StripeCustomer>;
-  @useResult
-  $Res call(
-      {String id,
-      String? email,
-      String? name,
-      String? defaultPaymentMethodId,
-      List<PaymentMethod> paymentMethods,
-      DateTime? createdAt});
-}
+abstract mixin class $StripeCustomerCopyWith<$Res>  {
+  factory $StripeCustomerCopyWith(StripeCustomer value, $Res Function(StripeCustomer) _then) = _$StripeCustomerCopyWithImpl;
+@useResult
+$Res call({
+ String id, String? email, String? name, String? defaultPaymentMethodId, List<PaymentMethod> paymentMethods, DateTime? createdAt
+});
 
+
+
+
+}
 /// @nodoc
-class _$StripeCustomerCopyWithImpl<$Res, $Val extends StripeCustomer>
+class _$StripeCustomerCopyWithImpl<$Res>
     implements $StripeCustomerCopyWith<$Res> {
-  _$StripeCustomerCopyWithImpl(this._value, this._then);
+  _$StripeCustomerCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final StripeCustomer _self;
+  final $Res Function(StripeCustomer) _then;
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? email = freezed,
-    Object? name = freezed,
-    Object? defaultPaymentMethodId = freezed,
-    Object? paymentMethods = null,
-    Object? createdAt = freezed,
-  }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      defaultPaymentMethodId: freezed == defaultPaymentMethodId
-          ? _value.defaultPaymentMethodId
-          : defaultPaymentMethodId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      paymentMethods: null == paymentMethods
-          ? _value.paymentMethods
-          : paymentMethods // ignore: cast_nullable_to_non_nullable
-              as List<PaymentMethod>,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ) as $Val);
-  }
+/// Create a copy of StripeCustomer
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = freezed,Object? name = freezed,Object? defaultPaymentMethodId = freezed,Object? paymentMethods = null,Object? createdAt = freezed,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String?,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String?,defaultPaymentMethodId: freezed == defaultPaymentMethodId ? _self.defaultPaymentMethodId : defaultPaymentMethodId // ignore: cast_nullable_to_non_nullable
+as String?,paymentMethods: null == paymentMethods ? _self.paymentMethods : paymentMethods // ignore: cast_nullable_to_non_nullable
+as List<PaymentMethod>,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
+  ));
 }
 
-/// @nodoc
-abstract class _$$StripeCustomerImplCopyWith<$Res>
-    implements $StripeCustomerCopyWith<$Res> {
-  factory _$$StripeCustomerImplCopyWith(_$StripeCustomerImpl value,
-          $Res Function(_$StripeCustomerImpl) then) =
-      __$$StripeCustomerImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String id,
-      String? email,
-      String? name,
-      String? defaultPaymentMethodId,
-      List<PaymentMethod> paymentMethods,
-      DateTime? createdAt});
 }
 
-/// @nodoc
-class __$$StripeCustomerImplCopyWithImpl<$Res>
-    extends _$StripeCustomerCopyWithImpl<$Res, _$StripeCustomerImpl>
-    implements _$$StripeCustomerImplCopyWith<$Res> {
-  __$$StripeCustomerImplCopyWithImpl(
-      _$StripeCustomerImpl _value, $Res Function(_$StripeCustomerImpl) _then)
-      : super(_value, _then);
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? id = null,
-    Object? email = freezed,
-    Object? name = freezed,
-    Object? defaultPaymentMethodId = freezed,
-    Object? paymentMethods = null,
-    Object? createdAt = freezed,
-  }) {
-    return _then(_$StripeCustomerImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      defaultPaymentMethodId: freezed == defaultPaymentMethodId
-          ? _value.defaultPaymentMethodId
-          : defaultPaymentMethodId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      paymentMethods: null == paymentMethods
-          ? _value._paymentMethods
-          : paymentMethods // ignore: cast_nullable_to_non_nullable
-              as List<PaymentMethod>,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-    ));
-  }
+/// Adds pattern-matching-related methods to [StripeCustomer].
+extension StripeCustomerPatterns on StripeCustomer {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _StripeCustomer value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _StripeCustomer() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _StripeCustomer value)  $default,){
+final _that = this;
+switch (_that) {
+case _StripeCustomer():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _StripeCustomer value)?  $default,){
+final _that = this;
+switch (_that) {
+case _StripeCustomer() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String? email,  String? name,  String? defaultPaymentMethodId,  List<PaymentMethod> paymentMethods,  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _StripeCustomer() when $default != null:
+return $default(_that.id,_that.email,_that.name,_that.defaultPaymentMethodId,_that.paymentMethods,_that.createdAt);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String? email,  String? name,  String? defaultPaymentMethodId,  List<PaymentMethod> paymentMethods,  DateTime? createdAt)  $default,) {final _that = this;
+switch (_that) {
+case _StripeCustomer():
+return $default(_that.id,_that.email,_that.name,_that.defaultPaymentMethodId,_that.paymentMethods,_that.createdAt);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String? email,  String? name,  String? defaultPaymentMethodId,  List<PaymentMethod> paymentMethods,  DateTime? createdAt)?  $default,) {final _that = this;
+switch (_that) {
+case _StripeCustomer() when $default != null:
+return $default(_that.id,_that.email,_that.name,_that.defaultPaymentMethodId,_that.paymentMethods,_that.createdAt);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$StripeCustomerImpl implements _StripeCustomer {
-  const _$StripeCustomerImpl(
-      {required this.id,
-      this.email,
-      this.name,
-      this.defaultPaymentMethodId,
-      final List<PaymentMethod> paymentMethods = const [],
-      this.createdAt})
-      : _paymentMethods = paymentMethods;
 
-  factory _$StripeCustomerImpl.fromJson(Map<String, dynamic> json) =>
-      _$$StripeCustomerImplFromJson(json);
+class _StripeCustomer implements StripeCustomer {
+  const _StripeCustomer({required this.id, this.email, this.name, this.defaultPaymentMethodId, final  List<PaymentMethod> paymentMethods = const [], this.createdAt}): _paymentMethods = paymentMethods;
+  factory _StripeCustomer.fromJson(Map<String, dynamic> json) => _$StripeCustomerFromJson(json);
 
-  @override
-  final String id;
-  @override
-  final String? email;
-  @override
-  final String? name;
-  @override
-  final String? defaultPaymentMethodId;
-  final List<PaymentMethod> _paymentMethods;
-  @override
-  @JsonKey()
-  List<PaymentMethod> get paymentMethods {
-    if (_paymentMethods is EqualUnmodifiableListView) return _paymentMethods;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_paymentMethods);
-  }
-
-  @override
-  final DateTime? createdAt;
-
-  @override
-  String toString() {
-    return 'StripeCustomer(id: $id, email: $email, name: $name, defaultPaymentMethodId: $defaultPaymentMethodId, paymentMethods: $paymentMethods, createdAt: $createdAt)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$StripeCustomerImpl &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.email, email) || other.email == email) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.defaultPaymentMethodId, defaultPaymentMethodId) ||
-                other.defaultPaymentMethodId == defaultPaymentMethodId) &&
-            const DeepCollectionEquality()
-                .equals(other._paymentMethods, _paymentMethods) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
-  }
-
-  @JsonKey(ignore: true)
-  @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      email,
-      name,
-      defaultPaymentMethodId,
-      const DeepCollectionEquality().hash(_paymentMethods),
-      createdAt);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$StripeCustomerImplCopyWith<_$StripeCustomerImpl> get copyWith =>
-      __$$StripeCustomerImplCopyWithImpl<_$StripeCustomerImpl>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$StripeCustomerImplToJson(
-      this,
-    );
-  }
+@override final  String id;
+@override final  String? email;
+@override final  String? name;
+@override final  String? defaultPaymentMethodId;
+ final  List<PaymentMethod> _paymentMethods;
+@override@JsonKey() List<PaymentMethod> get paymentMethods {
+  if (_paymentMethods is EqualUnmodifiableListView) return _paymentMethods;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_paymentMethods);
 }
 
-abstract class _StripeCustomer implements StripeCustomer {
-  const factory _StripeCustomer(
-      {required final String id,
-      final String? email,
-      final String? name,
-      final String? defaultPaymentMethodId,
-      final List<PaymentMethod> paymentMethods,
-      final DateTime? createdAt}) = _$StripeCustomerImpl;
+@override final  DateTime? createdAt;
 
-  factory _StripeCustomer.fromJson(Map<String, dynamic> json) =
-      _$StripeCustomerImpl.fromJson;
+/// Create a copy of StripeCustomer
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$StripeCustomerCopyWith<_StripeCustomer> get copyWith => __$StripeCustomerCopyWithImpl<_StripeCustomer>(this, _$identity);
 
-  @override
-  String get id;
-  @override
-  String? get email;
-  @override
-  String? get name;
-  @override
-  String? get defaultPaymentMethodId;
-  @override
-  List<PaymentMethod> get paymentMethods;
-  @override
-  DateTime? get createdAt;
-  @override
-  @JsonKey(ignore: true)
-  _$$StripeCustomerImplCopyWith<_$StripeCustomerImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+Map<String, dynamic> toJson() {
+  return _$StripeCustomerToJson(this, );
 }
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _StripeCustomer&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.name, name) || other.name == name)&&(identical(other.defaultPaymentMethodId, defaultPaymentMethodId) || other.defaultPaymentMethodId == defaultPaymentMethodId)&&const DeepCollectionEquality().equals(other._paymentMethods, _paymentMethods)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,email,name,defaultPaymentMethodId,const DeepCollectionEquality().hash(_paymentMethods),createdAt);
+
+@override
+String toString() {
+  return 'StripeCustomer(id: $id, email: $email, name: $name, defaultPaymentMethodId: $defaultPaymentMethodId, paymentMethods: $paymentMethods, createdAt: $createdAt)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$StripeCustomerCopyWith<$Res> implements $StripeCustomerCopyWith<$Res> {
+  factory _$StripeCustomerCopyWith(_StripeCustomer value, $Res Function(_StripeCustomer) _then) = __$StripeCustomerCopyWithImpl;
+@override @useResult
+$Res call({
+ String id, String? email, String? name, String? defaultPaymentMethodId, List<PaymentMethod> paymentMethods, DateTime? createdAt
+});
+
+
+
+
+}
+/// @nodoc
+class __$StripeCustomerCopyWithImpl<$Res>
+    implements _$StripeCustomerCopyWith<$Res> {
+  __$StripeCustomerCopyWithImpl(this._self, this._then);
+
+  final _StripeCustomer _self;
+  final $Res Function(_StripeCustomer) _then;
+
+/// Create a copy of StripeCustomer
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = freezed,Object? name = freezed,Object? defaultPaymentMethodId = freezed,Object? paymentMethods = null,Object? createdAt = freezed,}) {
+  return _then(_StripeCustomer(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String?,name: freezed == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String?,defaultPaymentMethodId: freezed == defaultPaymentMethodId ? _self.defaultPaymentMethodId : defaultPaymentMethodId // ignore: cast_nullable_to_non_nullable
+as String?,paymentMethods: null == paymentMethods ? _self._paymentMethods : paymentMethods // ignore: cast_nullable_to_non_nullable
+as List<PaymentMethod>,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,
+  ));
+}
+
+
+}
+
+// dart format on

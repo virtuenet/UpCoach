@@ -4,7 +4,7 @@ part 'ai_response.freezed.dart';
 part 'ai_response.g.dart';
 
 @freezed
-class AIResponse with _$AIResponse {
+abstract class AIResponse with _$AIResponse {
   const factory AIResponse({
     required String content,
     required String sessionId,
@@ -18,7 +18,7 @@ class AIResponse with _$AIResponse {
 }
 
 @freezed
-class AIRecommendation with _$AIRecommendation {
+abstract class AIRecommendation with _$AIRecommendation {
   const factory AIRecommendation({
     required String id,
     required String type,
@@ -35,7 +35,7 @@ class AIRecommendation with _$AIRecommendation {
 }
 
 @freezed
-class AIPrediction with _$AIPrediction {
+abstract class AIPrediction with _$AIPrediction {
   const factory AIPrediction({
     required String type,
     required double probability,
@@ -50,7 +50,7 @@ class AIPrediction with _$AIPrediction {
 }
 
 @freezed
-class VoiceAnalysis with _$VoiceAnalysis {
+abstract class VoiceAnalysis with _$VoiceAnalysis {
   const factory VoiceAnalysis({
     required String sessionId,
     required Map<String, double> emotions,
@@ -67,7 +67,7 @@ class VoiceAnalysis with _$VoiceAnalysis {
 }
 
 @freezed
-class LearningPath with _$LearningPath {
+abstract class LearningPath with _$LearningPath {
   const factory LearningPath({
     required String id,
     required String topic,
@@ -84,7 +84,7 @@ class LearningPath with _$LearningPath {
 }
 
 @freezed
-class LearningModule with _$LearningModule {
+abstract class LearningModule with _$LearningModule {
   const factory LearningModule({
     required String id,
     required String title,

@@ -6,9 +6,8 @@ part of 'onboarding_models.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$OnboardingProfileImpl _$$OnboardingProfileImplFromJson(
-        Map<String, dynamic> json) =>
-    _$OnboardingProfileImpl(
+_OnboardingProfile _$OnboardingProfileFromJson(Map<String, dynamic> json) =>
+    _OnboardingProfile(
       firstName: json['firstName'] as String?,
       lastName: json['lastName'] as String?,
       displayName: json['displayName'] as String?,
@@ -24,8 +23,7 @@ _$OnboardingProfileImpl _$$OnboardingProfileImplFromJson(
       bio: json['bio'] as String?,
     );
 
-Map<String, dynamic> _$$OnboardingProfileImplToJson(
-        _$OnboardingProfileImpl instance) =>
+Map<String, dynamic> _$OnboardingProfileToJson(_OnboardingProfile instance) =>
     <String, dynamic>{
       'firstName': instance.firstName,
       'lastName': instance.lastName,
@@ -40,15 +38,18 @@ Map<String, dynamic> _$$OnboardingProfileImplToJson(
       'bio': instance.bio,
     };
 
-_$OnboardingGoalsImpl _$$OnboardingGoalsImplFromJson(
-        Map<String, dynamic> json) =>
-    _$OnboardingGoalsImpl(
-      selectedGoals: (json['selectedGoals'] as List<dynamic>?)
+_OnboardingGoals _$OnboardingGoalsFromJson(Map<String, dynamic> json) =>
+    _OnboardingGoals(
+      selectedGoals:
+          (json['selectedGoals'] as List<dynamic>?)
               ?.map((e) => $enumDecode(_$CoachingGoalEnumMap, e))
               .toList() ??
           const [],
-      experienceLevel: $enumDecodeNullable(
-              _$ExperienceLevelEnumMap, json['experienceLevel']) ??
+      experienceLevel:
+          $enumDecodeNullable(
+            _$ExperienceLevelEnumMap,
+            json['experienceLevel'],
+          ) ??
           ExperienceLevel.beginner,
       primaryGoalDescription: json['primaryGoalDescription'] as String?,
       currentChallenges: json['currentChallenges'] as String?,
@@ -57,11 +58,11 @@ _$OnboardingGoalsImpl _$$OnboardingGoalsImplFromJson(
       previousCoachingExperience: json['previousCoachingExperience'] as String?,
     );
 
-Map<String, dynamic> _$$OnboardingGoalsImplToJson(
-        _$OnboardingGoalsImpl instance) =>
+Map<String, dynamic> _$OnboardingGoalsToJson(_OnboardingGoals instance) =>
     <String, dynamic>{
-      'selectedGoals':
-          instance.selectedGoals.map((e) => _$CoachingGoalEnumMap[e]!).toList(),
+      'selectedGoals': instance.selectedGoals
+          .map((e) => _$CoachingGoalEnumMap[e]!)
+          .toList(),
       'experienceLevel': _$ExperienceLevelEnumMap[instance.experienceLevel]!,
       'primaryGoalDescription': instance.primaryGoalDescription,
       'currentChallenges': instance.currentChallenges,
@@ -91,25 +92,28 @@ const _$ExperienceLevelEnumMap = {
   ExperienceLevel.advanced: 'advanced',
 };
 
-_$CoachPreferencesImpl _$$CoachPreferencesImplFromJson(
-        Map<String, dynamic> json) =>
-    _$CoachPreferencesImpl(
+_CoachPreferences _$CoachPreferencesFromJson(Map<String, dynamic> json) =>
+    _CoachPreferences(
       preferredSpecializations:
           (json['preferredSpecializations'] as List<dynamic>?)
-                  ?.map((e) => e as String)
-                  .toList() ??
-              const [],
-      sessionPreference: $enumDecodeNullable(
-              _$SessionPreferenceEnumMap, json['sessionPreference']) ??
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      sessionPreference:
+          $enumDecodeNullable(
+            _$SessionPreferenceEnumMap,
+            json['sessionPreference'],
+          ) ??
           SessionPreference.any,
       availabilityPreferences:
           (json['availabilityPreferences'] as List<dynamic>?)
-                  ?.map((e) => $enumDecode(_$AvailabilityPreferenceEnumMap, e))
-                  .toList() ??
-              const [],
+              ?.map((e) => $enumDecode(_$AvailabilityPreferenceEnumMap, e))
+              .toList() ??
+          const [],
       maxBudgetPerSession: (json['maxBudgetPerSession'] as num?)?.toDouble(),
       currency: json['currency'] as String? ?? 'USD',
-      preferredLanguages: (json['preferredLanguages'] as List<dynamic>?)
+      preferredLanguages:
+          (json['preferredLanguages'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           const [],
@@ -117,21 +121,20 @@ _$CoachPreferencesImpl _$$CoachPreferencesImplFromJson(
       requiresCertified: json['requiresCertified'] as bool? ?? false,
     );
 
-Map<String, dynamic> _$$CoachPreferencesImplToJson(
-        _$CoachPreferencesImpl instance) =>
-    <String, dynamic>{
-      'preferredSpecializations': instance.preferredSpecializations,
-      'sessionPreference':
-          _$SessionPreferenceEnumMap[instance.sessionPreference]!,
-      'availabilityPreferences': instance.availabilityPreferences
-          .map((e) => _$AvailabilityPreferenceEnumMap[e]!)
-          .toList(),
-      'maxBudgetPerSession': instance.maxBudgetPerSession,
-      'currency': instance.currency,
-      'preferredLanguages': instance.preferredLanguages,
-      'genderPreference': instance.genderPreference,
-      'requiresCertified': instance.requiresCertified,
-    };
+Map<String, dynamic> _$CoachPreferencesToJson(
+  _CoachPreferences instance,
+) => <String, dynamic>{
+  'preferredSpecializations': instance.preferredSpecializations,
+  'sessionPreference': _$SessionPreferenceEnumMap[instance.sessionPreference]!,
+  'availabilityPreferences': instance.availabilityPreferences
+      .map((e) => _$AvailabilityPreferenceEnumMap[e]!)
+      .toList(),
+  'maxBudgetPerSession': instance.maxBudgetPerSession,
+  'currency': instance.currency,
+  'preferredLanguages': instance.preferredLanguages,
+  'genderPreference': instance.genderPreference,
+  'requiresCertified': instance.requiresCertified,
+};
 
 const _$SessionPreferenceEnumMap = {
   SessionPreference.video: 'video',
@@ -148,11 +151,11 @@ const _$AvailabilityPreferenceEnumMap = {
   AvailabilityPreference.flexible: 'flexible',
 };
 
-_$OnboardingDataImpl _$$OnboardingDataImplFromJson(Map<String, dynamic> json) =>
-    _$OnboardingDataImpl(
+_OnboardingData _$OnboardingDataFromJson(Map<String, dynamic> json) =>
+    _OnboardingData(
       currentStep:
           $enumDecodeNullable(_$OnboardingStepEnumMap, json['currentStep']) ??
-              OnboardingStep.welcome,
+          OnboardingStep.welcome,
       profile: json['profile'] == null
           ? const OnboardingProfile()
           : OnboardingProfile.fromJson(json['profile'] as Map<String, dynamic>),
@@ -162,7 +165,8 @@ _$OnboardingDataImpl _$$OnboardingDataImplFromJson(Map<String, dynamic> json) =>
       coachPreferences: json['coachPreferences'] == null
           ? const CoachPreferences()
           : CoachPreferences.fromJson(
-              json['coachPreferences'] as Map<String, dynamic>),
+              json['coachPreferences'] as Map<String, dynamic>,
+            ),
       notificationsEnabled: json['notificationsEnabled'] as bool? ?? false,
       marketingEmailsEnabled: json['marketingEmailsEnabled'] as bool? ?? false,
       completedAt: json['completedAt'] == null
@@ -170,8 +174,7 @@ _$OnboardingDataImpl _$$OnboardingDataImplFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['completedAt'] as String),
     );
 
-Map<String, dynamic> _$$OnboardingDataImplToJson(
-        _$OnboardingDataImpl instance) =>
+Map<String, dynamic> _$OnboardingDataToJson(_OnboardingData instance) =>
     <String, dynamic>{
       'currentStep': _$OnboardingStepEnumMap[instance.currentStep]!,
       'profile': instance.profile,
@@ -191,13 +194,13 @@ const _$OnboardingStepEnumMap = {
   OnboardingStep.completed: 'completed',
 };
 
-_$RecommendedCoachImpl _$$RecommendedCoachImplFromJson(
-        Map<String, dynamic> json) =>
-    _$RecommendedCoachImpl(
+_RecommendedCoach _$RecommendedCoachFromJson(Map<String, dynamic> json) =>
+    _RecommendedCoach(
       id: (json['id'] as num).toInt(),
       displayName: json['displayName'] as String,
       profileImageUrl: json['profileImageUrl'] as String?,
-      specializations: (json['specializations'] as List<dynamic>?)
+      specializations:
+          (json['specializations'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           const [],
@@ -209,8 +212,7 @@ _$RecommendedCoachImpl _$$RecommendedCoachImplFromJson(
       matchScore: (json['matchScore'] as num?)?.toDouble() ?? 0.0,
     );
 
-Map<String, dynamic> _$$RecommendedCoachImplToJson(
-        _$RecommendedCoachImpl instance) =>
+Map<String, dynamic> _$RecommendedCoachToJson(_RecommendedCoach instance) =>
     <String, dynamic>{
       'id': instance.id,
       'displayName': instance.displayName,

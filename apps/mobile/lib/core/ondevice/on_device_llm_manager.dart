@@ -16,14 +16,15 @@ const _prefsModelPathKey = 'on_device_llm_model_path';
 const _prefsLastUpdatedKey = 'on_device_llm_last_updated';
 const _prefsAutoDownloadKey = 'on_device_llm_auto_download';
 
-class OnDeviceLlmManager extends StateNotifier<OnDeviceLlmState> {
-  OnDeviceLlmManager(Dio dio, this._engine)
-      : super(OnDeviceLlmState.initial()) {
-    // dio parameter reserved for future API download implementation
-    _hydrate();
-  }
+class OnDeviceLlmManager extends Notifier<OnDeviceLlmState> {
+  late final OnDeviceLlmEngine _engine;
 
-  final OnDeviceLlmEngine _engine;
+  @override
+  OnDeviceLlmState build() {
+    _engine = OnDeviceLlmEngine();
+    _hydrate();
+    return OnDeviceLlmState.initial();
+  }
   CancelToken? _downloadToken;
 
   Future<void> _hydrate() async {
@@ -182,8 +183,5 @@ class OnDeviceLlmManager extends StateNotifier<OnDeviceLlmState> {
 }
 
 final onDeviceLlmManagerProvider =
-    StateNotifierProvider<OnDeviceLlmManager, OnDeviceLlmState>((ref) {
-  final dio = Dio();
-  final engine = OnDeviceLlmEngine();
-  return OnDeviceLlmManager(dio, engine);
-});
+    NotifierProvider<OnDeviceLlmManager, OnDeviceLlmState>(
+        OnDeviceLlmManager.new);

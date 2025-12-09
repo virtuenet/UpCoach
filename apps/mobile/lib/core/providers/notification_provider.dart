@@ -84,9 +84,9 @@ class NotificationSettings {
 }
 
 /// Notification state notifier
-class NotificationNotifier extends StateNotifier<NotificationSettings> {
-  final FirebaseService _firebaseService;
-  final ApiService _apiService;
+class NotificationNotifier extends Notifier<NotificationSettings> {
+  late final FirebaseService _firebaseService;
+  late final ApiService _apiService;
 
   static const String _prefsKey = 'notification_settings';
 
@@ -99,9 +99,12 @@ class NotificationNotifier extends StateNotifier<NotificationSettings> {
   static const String _topicAchievements = 'achievements';
   static const String _topicGeneral = 'general';
 
-  NotificationNotifier(this._firebaseService, this._apiService)
-      : super(const NotificationSettings()) {
+  @override
+  NotificationSettings build() {
+    _firebaseService = ref.watch(firebaseServiceProvider);
+    _apiService = ref.watch(apiServiceProvider);
     _initialize();
+    return const NotificationSettings();
   }
 
   Future<void> _initialize() async {
@@ -348,11 +351,7 @@ final firebaseServiceProvider = Provider<FirebaseService>((ref) {
 
 /// Provider for notification settings
 final notificationProvider =
-    StateNotifierProvider<NotificationNotifier, NotificationSettings>((ref) {
-  final firebaseService = ref.watch(firebaseServiceProvider);
-  final apiService = ref.watch(apiServiceProvider);
-  return NotificationNotifier(firebaseService, apiService);
-});
+    NotifierProvider<NotificationNotifier, NotificationSettings>(NotificationNotifier.new);
 
 /// Provider for checking if push notifications are permitted
 final pushPermissionProvider = FutureProvider<bool>((ref) async {

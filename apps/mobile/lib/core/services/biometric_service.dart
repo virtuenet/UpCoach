@@ -131,11 +131,14 @@ final availableBiometricsProvider =
   return service.getAvailableBiometrics();
 });
 
-class BiometricAuthNotifier extends StateNotifier<bool> {
-  final BiometricService _service;
+class BiometricAuthNotifier extends Notifier<bool> {
+  late final BiometricService _service;
 
-  BiometricAuthNotifier(this._service) : super(false) {
+  @override
+  bool build() {
+    _service = ref.watch(biometricServiceProvider);
     _checkInitialAuth();
+    return false;
   }
 
   Future<void> _checkInitialAuth() async {
@@ -158,7 +161,4 @@ class BiometricAuthNotifier extends StateNotifier<bool> {
 }
 
 final biometricAuthProvider =
-    StateNotifierProvider<BiometricAuthNotifier, bool>((ref) {
-  final service = ref.watch(biometricServiceProvider);
-  return BiometricAuthNotifier(service);
-});
+    NotifierProvider<BiometricAuthNotifier, bool>(BiometricAuthNotifier.new);

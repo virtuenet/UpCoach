@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:upcoach_mobile/core/theme/app_colors.dart';
 import 'package:upcoach_mobile/shared/constants/ui_constants.dart';

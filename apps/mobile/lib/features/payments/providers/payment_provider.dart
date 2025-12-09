@@ -76,11 +76,14 @@ class PaymentState {
 // Payment Notifier
 // ============================================================================
 
-class PaymentNotifier extends StateNotifier<PaymentState> {
-  final StripePaymentService _service;
+class PaymentNotifier extends Notifier<PaymentState> {
+  late final StripePaymentService _service;
 
-  PaymentNotifier(this._service) : super(const PaymentState()) {
+  @override
+  PaymentState build() {
+    _service = ref.watch(stripePaymentServiceProvider);
     _initialize();
+    return const PaymentState();
   }
 
   Future<void> _initialize() async {
@@ -375,10 +378,7 @@ class PaymentNotifier extends StateNotifier<PaymentState> {
 // ============================================================================
 
 final paymentProvider =
-    StateNotifierProvider<PaymentNotifier, PaymentState>((ref) {
-  final service = ref.watch(stripePaymentServiceProvider);
-  return PaymentNotifier(service);
-});
+    NotifierProvider<PaymentNotifier, PaymentState>(PaymentNotifier.new);
 
 // Convenience providers
 final paymentMethodsProvider = Provider<List<PaymentMethod>>((ref) {
@@ -452,10 +452,14 @@ class CheckoutState {
   }
 }
 
-class CheckoutNotifier extends StateNotifier<CheckoutState> {
-  final StripePaymentService _service;
+class CheckoutNotifier extends Notifier<CheckoutState> {
+  late final StripePaymentService _service;
 
-  CheckoutNotifier(this._service) : super(const CheckoutState());
+  @override
+  CheckoutState build() {
+    _service = ref.watch(stripePaymentServiceProvider);
+    return const CheckoutState();
+  }
 
   void setCheckoutDetails({
     required int amount,
@@ -511,7 +515,4 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
 }
 
 final checkoutProvider =
-    StateNotifierProvider<CheckoutNotifier, CheckoutState>((ref) {
-  final service = ref.watch(stripePaymentServiceProvider);
-  return CheckoutNotifier(service);
-});
+    NotifierProvider<CheckoutNotifier, CheckoutState>(CheckoutNotifier.new);

@@ -45,12 +45,14 @@ class ChatState {
 }
 
 // Chat Provider
-class ChatNotifier extends StateNotifier<ChatState> {
-  final ChatService _chatService;
-  final Ref _ref;
+class ChatNotifier extends Notifier<ChatState> {
+  late final ChatService _chatService;
 
-  ChatNotifier(this._chatService, this._ref) : super(const ChatState()) {
+  @override
+  ChatState build() {
+    _chatService = ref.watch(chatServiceProvider);
     loadConversations();
+    return const ChatState();
   }
 
   Future<void> loadConversations() async {
@@ -150,7 +152,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
       );
       _addMessageToCurrentConversation(aiPlaceholder);
 
-      final onDeviceManager = _ref.read(onDeviceLlmManagerProvider.notifier);
+      final onDeviceManager = ref.read(onDeviceLlmManagerProvider.notifier);
       final localReply = await onDeviceManager.maybeGenerate(content.trim());
       if (localReply != null) {
         _updateMessageInCurrentConversation(
@@ -275,7 +277,4 @@ class ChatNotifier extends StateNotifier<ChatState> {
   }
 }
 
-final chatProvider = StateNotifierProvider<ChatNotifier, ChatState>((ref) {
-  final chatService = ref.watch(chatServiceProvider);
-  return ChatNotifier(chatService, ref);
-});
+final chatProvider = NotifierProvider<ChatNotifier, ChatState>(ChatNotifier.new);

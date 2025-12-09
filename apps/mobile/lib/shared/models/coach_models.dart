@@ -56,7 +56,7 @@ enum PackageStatus {
 // ============================================================================
 
 @freezed
-class AvailabilitySlot with _$AvailabilitySlot {
+abstract class AvailabilitySlot with _$AvailabilitySlot {
   const factory AvailabilitySlot({
     required String start,
     required String end,
@@ -67,7 +67,7 @@ class AvailabilitySlot with _$AvailabilitySlot {
 }
 
 @freezed
-class AvailabilitySchedule with _$AvailabilitySchedule {
+abstract class AvailabilitySchedule with _$AvailabilitySchedule {
   const factory AvailabilitySchedule({
     @Default([]) List<AvailabilitySlot> monday,
     @Default([]) List<AvailabilitySlot> tuesday,
@@ -83,7 +83,7 @@ class AvailabilitySchedule with _$AvailabilitySchedule {
 }
 
 @freezed
-class Certification with _$Certification {
+abstract class Certification with _$Certification {
   const factory Certification({
     required String name,
     required String issuer,
@@ -96,7 +96,7 @@ class Certification with _$Certification {
 }
 
 @freezed
-class SharedResource with _$SharedResource {
+abstract class SharedResource with _$SharedResource {
   const factory SharedResource({
     required String name,
     required String url,
@@ -113,7 +113,7 @@ class SharedResource with _$SharedResource {
 // ============================================================================
 
 @freezed
-class CoachProfile with _$CoachProfile {
+abstract class CoachProfile with _$CoachProfile {
   const CoachProfile._();
 
   const factory CoachProfile({
@@ -227,7 +227,7 @@ class CoachProfile with _$CoachProfile {
 // ============================================================================
 
 @freezed
-class CoachSession with _$CoachSession {
+abstract class CoachSession with _$CoachSession {
   const CoachSession._();
 
   const factory CoachSession({
@@ -374,7 +374,7 @@ class CoachSession with _$CoachSession {
 // ============================================================================
 
 @freezed
-class CoachPackage with _$CoachPackage {
+abstract class CoachPackage with _$CoachPackage {
   const CoachPackage._();
 
   const factory CoachPackage({
@@ -453,7 +453,7 @@ class CoachPackage with _$CoachPackage {
 // ============================================================================
 
 @freezed
-class ClientCoachPackage with _$ClientCoachPackage {
+abstract class ClientCoachPackage with _$ClientCoachPackage {
   const ClientCoachPackage._();
 
   const factory ClientCoachPackage({
@@ -500,7 +500,7 @@ class ClientCoachPackage with _$ClientCoachPackage {
 // ============================================================================
 
 @freezed
-class CoachReview with _$CoachReview {
+abstract class CoachReview with _$CoachReview {
   const CoachReview._();
 
   const factory CoachReview({
@@ -580,7 +580,7 @@ class CoachReview with _$CoachReview {
 // ============================================================================
 
 @freezed
-class ReviewStats with _$ReviewStats {
+abstract class ReviewStats with _$ReviewStats {
   const factory ReviewStats({
     @Default(0) int totalReviews,
     @Default(0.0) double averageRating,
@@ -593,7 +593,7 @@ class ReviewStats with _$ReviewStats {
 }
 
 @freezed
-class DetailedRatings with _$DetailedRatings {
+abstract class DetailedRatings with _$DetailedRatings {
   const factory DetailedRatings({
     @Default(0.0) double communication,
     @Default(0.0) double knowledge,
@@ -623,7 +623,7 @@ class CoachReviewsResult {
 // ============================================================================
 
 @freezed
-class TimeSlot with _$TimeSlot {
+abstract class TimeSlot with _$TimeSlot {
   const factory TimeSlot({
     required DateTime startTime,
     required DateTime endTime,
@@ -639,7 +639,7 @@ class TimeSlot with _$TimeSlot {
 // ============================================================================
 
 @freezed
-class BookingRequest with _$BookingRequest {
+abstract class BookingRequest with _$BookingRequest {
   const factory BookingRequest({
     required int coachId,
     required String title,

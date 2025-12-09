@@ -4,7 +4,7 @@ part 'progress_photo.freezed.dart';
 part 'progress_photo.g.dart';
 
 @freezed
-class ProgressPhoto with _$ProgressPhoto {
+abstract class ProgressPhoto with _$ProgressPhoto {
   const factory ProgressPhoto({
     required String id,
     required String imagePath,
@@ -23,7 +23,7 @@ class ProgressPhoto with _$ProgressPhoto {
 }
 
 @freezed
-class ProgressPhotosState with _$ProgressPhotosState {
+abstract class ProgressPhotosState with _$ProgressPhotosState {
   const factory ProgressPhotosState({
     @Default([]) List<ProgressPhoto> photos,
     @Default(false) bool isLoading,

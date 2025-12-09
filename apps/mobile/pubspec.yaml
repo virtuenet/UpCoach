@@ -4,8 +4,8 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.4.0 <4.0.0'
-  flutter: '>=3.22.0'
+  sdk: '>=3.8.0 <4.0.0'
+  flutter: '>=3.24.0'
 
 dependencies:
   flutter:
@@ -22,13 +22,13 @@ dependencies:
   lottie: ^3.3.2
 
   # State Management
-  flutter_riverpod: ^2.4.0
-  riverpod_annotation: ^2.3.0
+  flutter_riverpod: ^3.0.3
+  riverpod_annotation: ^3.0.3
   get_it: ^9.2.0
 
   # Navigation
   go_router: ^17.0.0
-  auto_route: ^9.3.0+1
+  auto_route: ^10.2.0
 
   # Audio & Voice
   record: ^6.1.2
@@ -54,9 +54,9 @@ dependencies:
   path: ^1.8.3
 
   # Serialization & JSON
-  json_annotation: ^4.8.1
+  json_annotation: ^4.9.0
   equatable: ^2.0.5
-  freezed_annotation: ^2.4.1
+  freezed_annotation: ^3.1.0
 
   # Permissions & Security
   permission_handler: ^12.0.1
@@ -75,7 +75,7 @@ dependencies:
   purchases_flutter: ^9.9.9
 
   # Payments
-  flutter_stripe: ^11.5.0
+  flutter_stripe: ^12.1.1
 
   # Video/Audio Calling
   agora_rtc_engine: ^6.3.2
@@ -150,11 +150,11 @@ dev_dependencies:
 
   # Code Generation
   build_runner: ^2.4.7
-  json_serializable: ^6.7.1
-  freezed: ^2.4.6
-  auto_route_generator: ^9.0.0
-  retrofit_generator: ^8.2.1
-  riverpod_generator: ^2.3.0
+  json_serializable: ^6.11.2
+  freezed: ^3.2.2
+  auto_route_generator: ^10.2.4
+  retrofit_generator: ^10.0.0
+  riverpod_generator: ^3.0.3
 
   # Linting & Analysis
   flutter_lints: ^6.0.0
