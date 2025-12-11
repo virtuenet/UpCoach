@@ -90,6 +90,34 @@ void main() {
       });
     });
 
+    group('SyncType parsing and persistence', () {
+      test('parseSyncType returns full for null or unknown', () {
+        expect(syncHandler.parseSyncTypeForTesting(null), SyncType.full);
+        expect(syncHandler.parseSyncTypeForTesting('invalid'), SyncType.full);
+        expect(syncHandler.parseSyncTypeForTesting('habits'), SyncType.habits);
+      });
+
+      test('storePendingSyncRequest deduplicates entries', () async {
+        await syncHandler.storePendingSyncForTesting(SyncType.tasks);
+        await syncHandler.storePendingSyncForTesting(SyncType.tasks);
+
+        final prefs = await SharedPreferences.getInstance();
+        final pending = prefs.getStringList('pending_syncs') ?? [];
+
+        expect(pending, equals(['tasks']));
+      });
+
+      test('updateLastSyncTimestamp persists retrievable timestamp', () async {
+        await syncHandler.updateLastSyncTimestampForTesting(SyncType.goals);
+        final ts =
+            await syncHandler.getLastSyncTimestampForTesting(SyncType.goals);
+
+        expect(ts, isNotNull);
+        expect(ts!.isBefore(DateTime.now().add(const Duration(seconds: 1))),
+            isTrue);
+      });
+    });
+
     group('Sync Results Stream Tests', () {
       test('syncResults stream emits events', () async {
         final events = <SyncResult>[];
