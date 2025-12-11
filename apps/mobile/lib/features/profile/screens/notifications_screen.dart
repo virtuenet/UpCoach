@@ -37,7 +37,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                         ? const SizedBox.shrink()
                         : _buildPermissionBanner(),
                     loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
+                    error: (_, _) => const SizedBox.shrink(),
                   ),
 
                   // Error Banner

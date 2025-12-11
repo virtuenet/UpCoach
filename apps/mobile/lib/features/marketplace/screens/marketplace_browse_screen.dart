@@ -365,7 +365,7 @@ class _MarketplaceBrowseScreenState
                             }).toList(),
                           ),
                           loading: () => const CircularProgressIndicator(),
-                          error: (_, __) => const Text('Failed to load'),
+                          error: (_, _) => const Text('Failed to load'),
                         );
                       },
                     ),

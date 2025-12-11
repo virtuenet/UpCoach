@@ -123,11 +123,11 @@ class _BiometricSettingsScreenState
                     contentPadding: EdgeInsets.zero,
                   ),
                   loading: () => const CircularProgressIndicator(),
-                  error: (_, __) => const Text('Error loading settings'),
+                  error: (_, _) => const Text('Error loading settings'),
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) =>
+              error: (_, _) =>
                   const Text('Error checking biometric availability'),
             ),
           ],
@@ -252,7 +252,7 @@ class _BiometricSettingsScreenState
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => const Text('Error loading biometric methods'),
+              error: (_, _) => const Text('Error loading biometric methods'),
             ),
           ],
         ),

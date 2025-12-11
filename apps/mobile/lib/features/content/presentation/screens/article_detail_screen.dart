@@ -314,7 +314,7 @@ class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
                             ),
                           ),
                         },
-                        onLinkTap: (url, _, __) {
+                        onLinkTap: (url, _, _) {
                           if (url != null) {
                             // Handle link tap
                             context.push('/web-view?url=$url');

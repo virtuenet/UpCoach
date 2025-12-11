@@ -168,7 +168,7 @@ class _CoachMatchingStepState extends State<CoachMatchingStep> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: widget.recommendedCoaches.length,
-                separatorBuilder: (_, __) =>
+                separatorBuilder: (_, _) =>
                     const SizedBox(width: UIConstants.spacingMD),
                 itemBuilder: (context, index) {
                   final coach = widget.recommendedCoaches[index];

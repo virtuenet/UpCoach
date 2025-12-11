@@ -142,7 +142,7 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
               ),
             ),
             loading: () => const ShimmerLoading(height: 50),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
           ),
 
           // Featured section
@@ -195,7 +195,7 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
                 child: ShimmerLoading(width: 280, height: 200),
               ),
             ),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
           ),
         ),
       ],

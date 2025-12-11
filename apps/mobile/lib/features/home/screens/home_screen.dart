@@ -995,7 +995,7 @@ class HomeScreen extends ConsumerWidget {
               return ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: challenges.length,
-                separatorBuilder: (_, __) =>
+                separatorBuilder: (_, _) =>
                     const SizedBox(width: UIConstants.spacingMD),
                 itemBuilder: (context, index) {
                   final challenge = challenges[index];
@@ -1184,7 +1184,7 @@ class HomeScreen extends ConsumerWidget {
               return ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: highlights.length,
-                separatorBuilder: (_, __) =>
+                separatorBuilder: (_, _) =>
                     const SizedBox(width: UIConstants.spacingMD),
                 itemBuilder: (context, index) {
                   final highlight = highlights[index];
@@ -1685,7 +1685,7 @@ class _MicroChallengeSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.separated(
       scrollDirection: Axis.horizontal,
-      itemBuilder: (_, __) => SizedBox(
+      itemBuilder: (_, _) => SizedBox(
         width: 240,
         child: Card(
           child: Padding(
@@ -1746,7 +1746,7 @@ class _MicroChallengeSkeleton extends StatelessWidget {
           ),
         ),
       ),
-      separatorBuilder: (_, __) => const SizedBox(width: UIConstants.spacingMD),
+      separatorBuilder: (_, _) => const SizedBox(width: UIConstants.spacingMD),
       itemCount: 3,
     );
   }
@@ -1870,8 +1870,8 @@ class _HighlightSkeleton extends StatelessWidget {
     return ListView.separated(
       scrollDirection: Axis.horizontal,
       itemCount: 2,
-      separatorBuilder: (_, __) => const SizedBox(width: UIConstants.spacingMD),
-      itemBuilder: (_, __) => SizedBox(
+      separatorBuilder: (_, _) => const SizedBox(width: UIConstants.spacingMD),
+      itemBuilder: (_, _) => SizedBox(
         width: 240,
         child: Card(
           child: Padding(
