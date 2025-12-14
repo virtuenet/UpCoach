@@ -26,6 +26,10 @@ class ApiConstants {
   static const String voiceJournals = '/voice-journals';
   static const String voiceJournalUpload = '/voice-journals/upload';
 
+  // Speech-to-text endpoints
+  static const String speechTranscribe = '/speech/transcribe';
+  static const String speechLanguages = '/speech/languages';
+
   // Local LLM endpoints
   static const String localLlmQuery = '/local-llm/query';
   static const String localLlmStatus = '/local-llm/status';
@@ -88,6 +92,8 @@ class ApiConstants {
   static const String callsRecordingStop = '/calls/recording/stop';
   static const String callsScreenShare = '/calls/screen-share';
   static const String callsParticipants = '/calls/participants'; // /:callId
+  static const String callsConversation = '/calls/conversation'; // Conversation-based calls
+  static const String callsConversationToken = '/calls/conversation/token'; // Token for conversation calls
 
   // Chat/Messaging endpoints
   static const String chatConversations = '/chat/conversations';

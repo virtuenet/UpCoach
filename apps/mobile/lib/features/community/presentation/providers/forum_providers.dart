@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../services/forum_service.dart';
 
 // Forum Categories
 class ForumCategory {
@@ -116,44 +117,21 @@ class ForumState {
 
 // Forum Notifier
 class ForumNotifier extends Notifier<ForumState> {
+  late ForumService _forumService;
+
   @override
   ForumState build() {
+    _forumService = ref.watch(forumServiceProvider);
     return const ForumState();
   }
 
   Future<void> loadCategories() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // TODO: Implement API call
-      await Future.delayed(const Duration(milliseconds: 500));
+      final categories = await _forumService.getCategories();
       state = state.copyWith(
         isLoading: false,
-        categories: [
-          const ForumCategory(
-            id: '1',
-            name: 'General Discussion',
-            description: 'Talk about anything related to personal development',
-            icon: 'chat',
-            threadCount: 150,
-            memberCount: 500,
-          ),
-          const ForumCategory(
-            id: '2',
-            name: 'Goal Setting',
-            description: 'Share and discuss your goals',
-            icon: 'flag',
-            threadCount: 89,
-            memberCount: 320,
-          ),
-          const ForumCategory(
-            id: '3',
-            name: 'Habits & Routines',
-            description: 'Build better habits together',
-            icon: 'repeat',
-            threadCount: 67,
-            memberCount: 280,
-          ),
-        ],
+        categories: categories,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -164,9 +142,8 @@ class ForumNotifier extends Notifier<ForumState> {
     state = state.copyWith(
         isLoading: true, error: null, selectedCategoryId: categoryId);
     try {
-      // TODO: Implement API call
-      await Future.delayed(const Duration(milliseconds: 500));
-      state = state.copyWith(isLoading: false, threads: []);
+      final response = await _forumService.getThreads(categoryId: categoryId);
+      state = state.copyWith(isLoading: false, threads: response.threads);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
@@ -175,9 +152,8 @@ class ForumNotifier extends Notifier<ForumState> {
   Future<void> loadActivityFeed() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // TODO: Implement API call
-      await Future.delayed(const Duration(milliseconds: 500));
-      state = state.copyWith(isLoading: false, activityFeed: []);
+      final activityFeed = await _forumService.getActivityFeed();
+      state = state.copyWith(isLoading: false, activityFeed: activityFeed);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
@@ -260,7 +236,6 @@ class CommunityGroup {
 
 final communityGroupsProvider =
     FutureProvider<List<CommunityGroup>>((ref) async {
-  // TODO: Implement API call to fetch community groups
-  await Future.delayed(const Duration(milliseconds: 300));
-  return [];
+  final forumService = ref.watch(forumServiceProvider);
+  return forumService.getCommunityGroups();
 });

@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:meta/meta.dart';
 
 import 'api_service.dart';
 
@@ -368,7 +367,10 @@ class BackgroundSyncHandler {
     if (existing != null) {
       try {
         map = jsonDecode(existing) as Map<String, dynamic>;
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('Failed to parse existing sync timestamps: $e');
+        // Continue with empty map if parsing fails
+      }
     }
 
     map[type.name] = DateTime.now().toIso8601String();

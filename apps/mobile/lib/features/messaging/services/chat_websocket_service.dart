@@ -5,13 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../../../core/constants/api_constants.dart';
 import '../../../core/services/api_service.dart';
+import '../../../core/storage/secure_storage.dart';
 import '../../../shared/models/chat_models.dart';
 
 /// WebSocket service for real-time chat messaging
 class ChatWebSocketService {
-  // TODO: Use for auth token retrieval in _getWebSocketUrl
+  /// Reserved for future HTTP fallback when WebSocket is unavailable
   // ignore: unused_field
   final ApiService _apiService;
+  final SecureStorage _secureStorage;
 
   WebSocketChannel? _channel;
   StreamSubscription? _subscription;
@@ -35,7 +37,7 @@ class ChatWebSocketService {
       StreamController<bool>.broadcast();
   Stream<bool> get connectionStatus => _connectionController.stream;
 
-  ChatWebSocketService(this._apiService);
+  ChatWebSocketService(this._apiService, this._secureStorage);
 
   bool get isConnected => _isConnected;
 
@@ -90,12 +92,17 @@ class ChatWebSocketService {
   }
 
   Future<String> _getWebSocketUrl() async {
-    // Get WebSocket URL from ApiConstants
     final wsUrl = ApiConstants.wsUrl;
-    // TODO: Get token from auth provider
-    // For now, we'll connect without token in the URL
-    // The actual token should be sent via the auth header
-    return '$wsUrl/ws/chat';
+    final token = await _secureStorage.getAccessToken();
+
+    if (token == null || token.isEmpty) {
+      throw Exception('No authentication token available for WebSocket connection');
+    }
+
+    // Pass token as query parameter for WebSocket authentication
+    // URL encode the token to handle special characters
+    final encodedToken = Uri.encodeComponent(token);
+    return '$wsUrl/ws/chat?token=$encodedToken';
   }
 
   void _startPingTimer() {
@@ -337,10 +344,16 @@ class ChatWebSocketService {
   }
 }
 
+// Provider for SecureStorage
+final secureStorageProvider = Provider<SecureStorage>((ref) {
+  return SecureStorage();
+});
+
 // Provider for ChatWebSocketService
 final chatWebSocketServiceProvider = Provider<ChatWebSocketService>((ref) {
   final apiService = ref.watch(apiServiceProvider);
-  final service = ChatWebSocketService(apiService);
+  final secureStorage = ref.watch(secureStorageProvider);
+  final service = ChatWebSocketService(apiService, secureStorage);
 
   ref.onDispose(() {
     service.dispose();

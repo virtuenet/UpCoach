@@ -49,6 +49,19 @@ class TaskService {
     }
   }
 
+  /// Get a single task by ID
+  Future<TaskModel?> getTaskById(String taskId) async {
+    try {
+      final response = await _dio.get('/tasks/$taskId');
+      return TaskModel.fromJson(response.data);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return null;
+      }
+      throw _handleError(e);
+    }
+  }
+
   Future<TaskModel> createTask({
     required String title,
     String? description,

@@ -26,6 +26,7 @@ import 'core/errors/error_boundary.dart';
 import 'core/accessibility/accessibility_wrapper.dart';
 import 'shared/widgets/loading_overlay.dart';
 import 'l10n/app_localizations.dart';
+import 'features/health/health.dart';
 
 /// Background message handler - must be top-level function
 @pragma('vm:entry-point')
@@ -46,24 +47,29 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase first
-  await Firebase.initializeApp();
+  // Initialize Firebase first (log and continue if unavailable so UI can still load)
+  final firebaseReady = await _initFirebaseSafe();
 
   // Initialize error handling (catches all errors after this point)
   ErrorHandler().initialize();
 
-  // Initialize analytics services
-  await AnalyticsService().initialize();
-  await FirebasePerformanceService().initialize();
-  AnalyticsDashboardService().initialize();
+  // Initialize analytics/performance only if Firebase is ready
+  if (firebaseReady) {
+    await AnalyticsService().initialize();
+    await FirebasePerformanceService().initialize();
+    AnalyticsDashboardService().initialize();
 
-  // Set up background message handler
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    // Set up background message handler
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  }
 
-  // Initialize unified push notification handler
-  // This initializes Firebase services, scheduler, and call notifications
+  // Initialize unified push notification handler only if Firebase is ready
   final pushHandler = PushNotificationHandler();
-  await pushHandler.initialize();
+  if (firebaseReady) {
+    await pushHandler.initialize();
+  } else {
+    debugPrint('⚠️ Firebase not initialized; skipping push handler init');
+  }
 
   // Initialize background sync handler
   final syncHandler = BackgroundSyncHandler();
@@ -83,6 +89,9 @@ void main() async {
   await SyncService().initialize();
   await SyncIntegrationService().initialize();
   await SupabaseService.initialize();
+
+  // Initialize health service
+  await HealthService().initialize();
 
   // Process any pending sync requests from when app was closed
   await syncHandler.processPendingSyncs();
@@ -117,6 +126,16 @@ void main() async {
       );
     },
   );
+}
+
+Future<bool> _initFirebaseSafe() async {
+  try {
+    await Firebase.initializeApp();
+    return true;
+  } catch (e, st) {
+    debugPrint('⚠️ Firebase.initializeApp failed: $e\n$st');
+    return false;
+  }
 }
 
 class UpCoachApp extends ConsumerStatefulWidget {

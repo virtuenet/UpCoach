@@ -4,6 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'goal_service.dart';
+import 'task_service.dart';
+
 /// Supported deep link types
 enum DeepLinkType {
   // Authentication
@@ -407,7 +410,8 @@ class DeepLinkService {
       // Social
       case DeepLinkType.profile:
         if (data.entityId != null) {
-          // TODO: Navigate to specific user profile
+          // Navigate to specific user profile
+          // For now, just go to own profile - public profiles would need a dedicated route
           _router!.go('/profile');
         } else {
           _router!.go('/profile');
@@ -448,8 +452,8 @@ class DeepLinkService {
 
       case DeepLinkType.goals:
         if (data.entityId != null) {
-          // TODO: Navigate to specific goal - need to fetch goal first
-          _router!.go('/goals');
+          // Navigate to specific goal - fetch goal data first
+          _navigateToGoal(data.entityId!);
         } else {
           _router!.go('/goals');
         }
@@ -457,8 +461,8 @@ class DeepLinkService {
 
       case DeepLinkType.tasks:
         if (data.entityId != null) {
-          // TODO: Navigate to specific task - need to fetch task first
-          _router!.go('/tasks');
+          // Navigate to specific task - fetch task data first
+          _navigateToTask(data.entityId!);
         } else {
           _router!.go('/tasks');
         }
@@ -512,6 +516,46 @@ class DeepLinkService {
         debugPrint('Unknown deep link type, navigating to home');
         _router!.go('/home');
         break;
+    }
+  }
+
+  /// Navigate to a specific goal by fetching its data first
+  Future<void> _navigateToGoal(String goalId) async {
+    if (_router == null) return;
+
+    try {
+      final goalService = GoalService();
+      final goal = await goalService.getGoalById(goalId);
+
+      if (goal != null) {
+        _router!.go('/goals/$goalId', extra: goal);
+      } else {
+        debugPrint('Goal not found: $goalId');
+        _router!.go('/goals');
+      }
+    } catch (e) {
+      debugPrint('Error fetching goal for deep link: $e');
+      _router!.go('/goals');
+    }
+  }
+
+  /// Navigate to a specific task by fetching its data first
+  Future<void> _navigateToTask(String taskId) async {
+    if (_router == null) return;
+
+    try {
+      final taskService = TaskService();
+      final task = await taskService.getTaskById(taskId);
+
+      if (task != null) {
+        _router!.go('/tasks/$taskId', extra: task);
+      } else {
+        debugPrint('Task not found: $taskId');
+        _router!.go('/tasks');
+      }
+    } catch (e) {
+      debugPrint('Error fetching task for deep link: $e');
+      _router!.go('/tasks');
     }
   }
 

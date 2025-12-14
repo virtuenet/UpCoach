@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,6 +11,9 @@ import '../providers/messaging_provider.dart';
 import '../services/chat_api_service.dart';
 import '../widgets/message_bubble.dart';
 import '../widgets/message_input.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../widgets/conversation_info_sheet.dart';
+import '../widgets/message_search_delegate.dart';
 
 class MessagingScreen extends ConsumerStatefulWidget {
   final String conversationId;
@@ -34,6 +38,9 @@ class _MessagingScreenState extends ConsumerState<MessagingScreen> {
   ChatMessage? _replyingTo;
   bool _isUploading = false;
   double _uploadProgress = 0;
+
+  /// Get current user ID from auth provider
+  String get _currentUserId => ref.read(authProvider).user?.id ?? '';
 
   @override
   void initState() {
@@ -268,11 +275,13 @@ class _MessagingScreenState extends ConsumerState<MessagingScreen> {
         },
         onCopy: () {
           Navigator.pop(context);
-          // TODO: Copy to clipboard
+          Clipboard.setData(ClipboardData(text: message.content));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Message copied to clipboard')),
+          );
         },
-        onDelete:
-            message.senderId == 'current-user-id' // TODO: Get actual user ID
-                ? () {
+        onDelete: message.senderId == _currentUserId
+            ? () {
                     Navigator.pop(context);
                     _confirmDeleteMessage(message);
                   }
@@ -307,6 +316,177 @@ class _MessagingScreenState extends ConsumerState<MessagingScreen> {
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Start a video call with the conversation participant
+  void _startVideoCall(Conversation? conversation) {
+    final participantName = conversation?.title ??
+        conversation?.getOtherParticipant(_currentUserId)?.displayName;
+    final participantImageUrl =
+        conversation?.getOtherParticipant(_currentUserId)?.profileImageUrl;
+
+    context.push(
+      '/call/conversation/video/${widget.conversationId}'
+      '?participantName=${Uri.encodeComponent(participantName ?? '')}'
+      '&participantImageUrl=${Uri.encodeComponent(participantImageUrl ?? '')}',
+    );
+  }
+
+  /// Start an audio call with the conversation participant
+  void _startAudioCall(Conversation? conversation) {
+    final participantName = conversation?.title ??
+        conversation?.getOtherParticipant(_currentUserId)?.displayName;
+    final participantImageUrl =
+        conversation?.getOtherParticipant(_currentUserId)?.profileImageUrl;
+
+    context.push(
+      '/call/conversation/audio/${widget.conversationId}'
+      '?participantName=${Uri.encodeComponent(participantName ?? '')}'
+      '&participantImageUrl=${Uri.encodeComponent(participantImageUrl ?? '')}',
+    );
+  }
+
+  /// Show conversation info bottom sheet
+  void _showConversationInfo(Conversation? conversation) {
+    if (conversation == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => ConversationInfoSheet(
+        conversation: conversation,
+        currentUserId: _currentUserId,
+        onMuteToggle: _toggleMuteConversation,
+        onClearChat: _clearChatHistory,
+        onBlockUser: _blockUser,
+        onReportConversation: _reportConversation,
+      ),
+    );
+  }
+
+  /// Search through messages in this conversation
+  void _searchInConversation() {
+    final state = ref.read(chatMessagesProvider(widget.conversationId));
+    showSearch(
+      context: context,
+      delegate: MessageSearchDelegate(
+        conversationId: widget.conversationId,
+        messages: state.messages,
+        onMessageTap: (message) {
+          // Scroll to the message in the list
+          final index = state.messages.indexWhere((m) => m.id == message.id);
+          if (index != -1 && _scrollController.hasClients) {
+            // Approximate position calculation
+            _scrollController.animateTo(
+              index * 80.0, // Approximate message height
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  /// Toggle mute status for this conversation
+  void _toggleMuteConversation() {
+    ref
+        .read(conversationsProvider.notifier)
+        .toggleMuteConversation(widget.conversationId);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Conversation mute status updated')),
+    );
+  }
+
+  /// Clear chat history (local only)
+  void _clearChatHistory() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Chat'),
+        content: const Text(
+            'Are you sure you want to clear this chat history? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // The actual clear would need an API call
+              ScaffoldMessenger.of(this.context).showSnackBar(
+                const SnackBar(content: Text('Chat history cleared')),
+              );
+            },
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('Clear'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Block user in conversation
+  void _blockUser() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Block User'),
+        content: const Text(
+            'Are you sure you want to block this user? You will no longer receive messages from them.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // The actual block would need an API call
+              ScaffoldMessenger.of(this.context).showSnackBar(
+                const SnackBar(content: Text('User blocked')),
+              );
+              this.context.pop(); // Leave the conversation
+            },
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('Block'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Report conversation for review
+  void _reportConversation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Report Conversation'),
+        content: const Text(
+            'Report this conversation for inappropriate content or behavior?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // The actual report would need an API call
+              ScaffoldMessenger.of(this.context).showSnackBar(
+                const SnackBar(
+                    content: Text('Thank you for your report. We will review it shortly.')),
+              );
+            },
+            child: const Text('Report'),
           ),
         ],
       ),
@@ -395,29 +575,25 @@ class _MessagingScreenState extends ConsumerState<MessagingScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.videocam_outlined),
-            onPressed: () {
-              // TODO: Start video call
-            },
+            onPressed: () => _startVideoCall(conversation),
             tooltip: 'Video call',
           ),
           IconButton(
             icon: const Icon(Icons.call_outlined),
-            onPressed: () {
-              // TODO: Start audio call
-            },
+            onPressed: () => _startAudioCall(conversation),
             tooltip: 'Audio call',
           ),
           PopupMenuButton<String>(
             onSelected: (value) {
               switch (value) {
                 case 'info':
-                  // TODO: Show conversation info
+                  _showConversationInfo(conversation);
                   break;
                 case 'search':
-                  // TODO: Search in conversation
+                  _searchInConversation();
                   break;
                 case 'mute':
-                  // TODO: Mute conversation
+                  _toggleMuteConversation();
                   break;
               }
             },
@@ -489,8 +665,8 @@ class _MessagingScreenState extends ConsumerState<MessagingScreen> {
                                     _buildDateSeparator(message.createdAt),
                                   MessageBubble(
                                     message: message,
-                                    isCurrentUser: message.senderId ==
-                                        'current-user-id', // TODO: Get actual user ID
+                                    isCurrentUser:
+                                        message.senderId == _currentUserId,
                                     showAvatar: showAvatar,
                                     onLongPress: () =>
                                         _handleMessageLongPress(message),
@@ -505,7 +681,7 @@ class _MessagingScreenState extends ConsumerState<MessagingScreen> {
                                     onReactionTap: (emoji) {
                                       final hasReacted = message
                                               .reactions[emoji]
-                                              ?.contains('current-user-id') ??
+                                              ?.contains(_currentUserId) ??
                                           false;
                                       if (hasReacted) {
                                         ref

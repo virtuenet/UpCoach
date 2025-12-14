@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
+import '../../../core/config/feature_flags.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/models/progress_photo.dart';
 import '../providers/progress_photos_provider.dart';
@@ -324,20 +325,40 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen>
   }
 
   void _showAddCategoryDialog() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Add category feature coming soon!')),
-    );
+    if (!ref.read(isFeatureEnabledProvider(Feature.progressPhotoCategories))) {
+      _showComingSoonSnackBar('Photo Categories');
+      return;
+    }
+    // TODO: Implement category dialog when feature is enabled
   }
 
   void _showSettingsDialog() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Settings coming soon!')),
-    );
+    if (!ref.read(isFeatureEnabledProvider(Feature.progressPhotoSettings))) {
+      _showComingSoonSnackBar('Photo Settings');
+      return;
+    }
+    // TODO: Implement settings dialog when feature is enabled
   }
 
   void _exportPhotos() {
+    if (!ref.read(isFeatureEnabledProvider(Feature.progressPhotoExport))) {
+      _showComingSoonSnackBar('Photo Export');
+      return;
+    }
+    // TODO: Implement export when feature is enabled
+  }
+
+  void _showComingSoonSnackBar(String featureName) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Export feature coming soon!')),
+      SnackBar(
+        content: Text('$featureName is coming soon!'),
+        action: SnackBarAction(
+          label: 'Learn More',
+          onPressed: () {
+            // Could navigate to a "Coming Soon" features page
+          },
+        ),
+      ),
     );
   }
 }

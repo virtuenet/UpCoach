@@ -39,6 +39,7 @@ dependencies:
 
   # Networking & API
   http: ^1.6.0
+  http_parser: ^4.1.2
   dio: ^5.3.3
   retrofit: ^4.9.1
   connectivity_plus: ^7.0.0
@@ -63,6 +64,8 @@ dependencies:
   package_info_plus: ^9.0.0
   flutter_secure_storage: ^10.0.0
   crypto: ^3.0.7
+  encrypt: ^5.0.3
+  pointycastle: ^3.9.1
   local_auth: ^3.0.0
 
   # Notifications
@@ -138,6 +141,11 @@ dependencies:
 
   # Deep Linking
   app_links: ^6.3.3
+
+  # Health & Fitness Integration
+  health: ^13.2.1                    # Apple Health + Google Health Connect
+  flutter_web_auth_2: ^4.0.0         # OAuth2 flows for wearable APIs
+  workmanager: ^0.5.2                # Background sync tasks
 
   # Testing & Development
   integration_test:

@@ -90,7 +90,17 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
       setState(() {
         _calendarPermissionGranted = result.isSuccess && (result.data ?? false);
       });
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Failed to request calendar permissions: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not request calendar permissions'),
+            backgroundColor: Colors.red.shade400,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _addTestEvent() async {
@@ -113,7 +123,17 @@ class _WidgetSettingsScreenState extends ConsumerState<WidgetSettingsScreen> {
           const SnackBar(content: Text('Calendar event created')),
         );
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Failed to create calendar event: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not create calendar event'),
+            backgroundColor: Colors.red.shade400,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildEnableCard(AppLocalizations l10n, AsyncValue<bool> isEnabled) {

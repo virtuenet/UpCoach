@@ -622,8 +622,15 @@ class _HabitSettingsScreenState extends ConsumerState<HabitSettingsScreen> {
   void _showFeatureComingSoon(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$feature coming soon!'),
+        content: Text('$feature is coming soon!'),
         backgroundColor: AppTheme.primaryColor,
+        action: SnackBarAction(
+          label: 'Learn More',
+          textColor: Colors.white,
+          onPressed: () {
+            // Could navigate to "Coming Soon" features page
+          },
+        ),
       ),
     );
   }

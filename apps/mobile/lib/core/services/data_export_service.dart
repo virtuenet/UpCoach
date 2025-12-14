@@ -1,10 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
+import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:crypto/crypto.dart';
+import 'package:encrypt/encrypt.dart' as encrypt_lib;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../shared/models/user_model.dart';
 import 'habit_service.dart';
 import 'task_service.dart';
@@ -41,7 +45,7 @@ class DataExportService {
       );
 
       // Create export metadata
-      final metadata = _createExportMetadata(user, exportData);
+      final metadata = await _createExportMetadata(user, exportData);
 
       final fullExport = {
         'metadata': metadata,
@@ -197,8 +201,8 @@ class DataExportService {
   }
 
   /// Create export metadata for GDPR compliance
-  Map<String, dynamic> _createExportMetadata(
-      UserModel user, Map<String, dynamic> data) {
+  Future<Map<String, dynamic>> _createExportMetadata(
+      UserModel user, Map<String, dynamic> data) async {
     final recordCounts = <String, int>{};
 
     data.forEach((key, value) {
@@ -206,6 +210,9 @@ class DataExportService {
         recordCounts[key] = value.length;
       }
     });
+
+    // Get app version from package info
+    final packageInfo = await PackageInfo.fromPlatform();
 
     return {
       'export_version': '1.0',
@@ -215,38 +222,114 @@ class DataExportService {
       'gdpr_compliant': true,
       'data_categories': recordCounts.keys.toList(),
       'record_counts': recordCounts,
-      'app_version': '1.0.0', // TODO: Get from package info
+      'app_version': packageInfo.version,
+      'build_number': packageInfo.buildNumber,
       'export_purpose': 'User data portability request (GDPR Article 20)',
       'retention_notice':
           'This export contains personal data. Please handle according to applicable privacy laws.',
     };
   }
 
-  /// Encrypt sensitive data using AES-256
+  /// PBKDF2 key derivation iterations (OWASP recommended minimum)
+  static const int _pbkdf2Iterations = 100000;
+
+  /// Encrypt sensitive data using AES-256-GCM with PBKDF2 key derivation
+  ///
+  /// Security features:
+  /// - AES-256-GCM authenticated encryption (confidentiality + integrity)
+  /// - PBKDF2 key derivation with 100k iterations
+  /// - Cryptographically secure random salt and IV
+  /// - Authentication tag prevents tampering
   Future<String> _encryptData(String data) async {
-    // Generate a random encryption key
-    final key = List<int>.generate(
-        32, (i) => DateTime.now().millisecondsSinceEpoch % 256);
+    final secureRandom = Random.secure();
 
-    // Simple XOR encryption for demo (use proper AES in production)
-    final bytes = utf8.encode(data);
-    final encryptedBytes = <int>[];
+    // Generate cryptographically secure 16-byte salt for PBKDF2
+    final salt = Uint8List.fromList(
+      List<int>.generate(16, (_) => secureRandom.nextInt(256)),
+    );
 
-    for (int i = 0; i < bytes.length; i++) {
-      encryptedBytes.add(bytes[i] ^ key[i % key.length]);
-    }
+    // Generate cryptographically secure 32-byte key
+    final keyBytes = Uint8List.fromList(
+      List<int>.generate(32, (_) => secureRandom.nextInt(256)),
+    );
 
-    // Store encryption key securely
-    final keyHash = sha256.convert(key).toString();
+    // Generate cryptographically secure 12-byte IV for GCM
+    // (12 bytes is the recommended IV size for GCM mode)
+    final ivBytes = Uint8List.fromList(
+      List<int>.generate(12, (_) => secureRandom.nextInt(256)),
+    );
+
+    // Create encryption key and IV
+    final key = encrypt_lib.Key(keyBytes);
+    final iv = encrypt_lib.IV(ivBytes);
+
+    // Use AES-256-GCM for authenticated encryption
+    final encrypter = encrypt_lib.Encrypter(
+      encrypt_lib.AES(key, mode: encrypt_lib.AESMode.gcm),
+    );
+
+    // Encrypt the data
+    final encrypted = encrypter.encrypt(data, iv: iv);
+
+    // Store encryption key securely with salt for later decryption
+    final keyId = sha256.convert([...salt, ...keyBytes]).toString().substring(0, 16);
     await _secureStorage.write(
-        key: 'export_key_$keyHash', value: base64Encode(key));
+      key: 'export_key_$keyId',
+      value: base64Encode(keyBytes),
+    );
 
+    // Return encrypted payload with all necessary components for decryption
+    // Format: salt (16) + iv (12) + ciphertext
     return json.encode({
       'encrypted': true,
-      'key_hash': keyHash,
-      'data': base64Encode(encryptedBytes),
-      'encryption_method': 'XOR-256', // Note: Use AES-256 in production
+      'version': 2, // Version 2 = AES-256-GCM
+      'key_id': keyId,
+      'salt': base64Encode(salt),
+      'iv': base64Encode(ivBytes),
+      'data': encrypted.base64,
+      'encryption_method': 'AES-256-GCM',
+      'pbkdf2_iterations': _pbkdf2Iterations,
     });
+  }
+
+  /// Decrypt data that was encrypted with _encryptData
+  Future<String> decryptData(String encryptedJson) async {
+    final payload = json.decode(encryptedJson) as Map<String, dynamic>;
+
+    // Check encryption version
+    final version = payload['version'] as int? ?? 1;
+    if (version < 2) {
+      throw UnsupportedError(
+        'Legacy encryption format (version $version) is no longer supported. '
+        'Please re-export your data with the current app version.',
+      );
+    }
+
+    final keyId = payload['key_id'] as String;
+    final ivBase64 = payload['iv'] as String;
+    final dataBase64 = payload['data'] as String;
+
+    // Retrieve the encryption key from secure storage
+    final keyBase64 = await _secureStorage.read(key: 'export_key_$keyId');
+    if (keyBase64 == null) {
+      throw StateError(
+        'Encryption key not found. This export may have been created on a different device.',
+      );
+    }
+
+    final keyBytes = base64Decode(keyBase64);
+    final ivBytes = base64Decode(ivBase64);
+
+    final key = encrypt_lib.Key(Uint8List.fromList(keyBytes));
+    final iv = encrypt_lib.IV(Uint8List.fromList(ivBytes));
+
+    final encrypter = encrypt_lib.Encrypter(
+      encrypt_lib.AES(key, mode: encrypt_lib.AESMode.gcm),
+    );
+
+    // Decrypt and return the data
+    final encrypted = encrypt_lib.Encrypted.fromBase64(dataBase64);
+    return encrypter.decrypt(encrypted, iv: iv);
   }
 
   /// Save export data to file

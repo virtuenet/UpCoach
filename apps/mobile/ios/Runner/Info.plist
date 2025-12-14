@@ -78,12 +78,19 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>UpCoach uses your location to provide location-based coaching features.</string>
 
+	<!-- HealthKit -->
+	<key>NSHealthShareUsageDescription</key>
+	<string>UpCoach uses your health data to provide personalized coaching insights, track your wellness progress, and calculate readiness scores based on sleep, activity, and recovery metrics.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>UpCoach can write workout and mindfulness data to Apple Health to keep your health records complete.</string>
+
 	<!-- Background Modes -->
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
 		<string>remote-notification</string>
 		<string>audio</string>
+		<string>processing</string>
 	</array>
 
 	<!-- Deep Linking -->

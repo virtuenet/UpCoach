@@ -52,15 +52,18 @@ import '../../features/marketplace/screens/marketplace_browse_screen.dart';
 import '../../features/marketplace/screens/coach_detail_screen.dart';
 import '../../features/marketplace/screens/session_booking_screen.dart';
 import '../../features/marketplace/screens/my_sessions_screen.dart';
+import '../../features/marketplace/screens/coach_reviews_screen.dart';
 import '../../features/gamification/presentation/screens/gamification_screen.dart';
 import '../../features/payments/screens/payment_history_screen.dart';
 import '../../features/payments/screens/payment_methods_screen.dart';
 import '../../features/payments/screens/checkout_screen.dart';
 import '../../features/video_call/screens/video_call_screen.dart';
 import '../../features/video_call/screens/audio_call_screen.dart';
+import '../../features/video_call/screens/conversation_call_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../shared/models/video_call_models.dart';
 import '../../features/legal/legal.dart';
+import '../../features/health/health.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -202,6 +205,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/settings/accessibility',
         builder: (context, state) => const AccessibilitySettingsScreen(),
       ),
+      GoRoute(
+        path: '/settings/health',
+        builder: (context, state) => const HealthIntegrationsScreen(),
+      ),
 
       // Mood Routes
       GoRoute(
@@ -328,6 +335,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/marketplace/my-sessions',
         builder: (context, state) => const MySessionsScreen(),
       ),
+      GoRoute(
+        path: '/marketplace/coach/:id/reviews',
+        builder: (context, state) {
+          final coachId = int.parse(state.pathParameters['id']!);
+          final extra = state.extra as Map<String, dynamic>?;
+          return CoachReviewsScreen(
+            coachId: coachId,
+            coachName: extra?['coachName'] as String?,
+          );
+        },
+      ),
 
       // Payment Routes
       GoRoute(
@@ -394,6 +412,38 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             sessionId: sessionId,
             coachName: coachName,
             coachImageUrl: coachImageUrl,
+          );
+        },
+      ),
+
+      // Conversation-based Call Routes (peer-to-peer from messaging)
+      GoRoute(
+        path: '/call/conversation/video/:conversationId',
+        builder: (context, state) {
+          final conversationId = state.pathParameters['conversationId']!;
+          final participantName = state.uri.queryParameters['participantName'];
+          final participantImageUrl =
+              state.uri.queryParameters['participantImageUrl'];
+          return ConversationCallScreen(
+            conversationId: conversationId,
+            callType: CallType.video,
+            participantName: participantName,
+            participantImageUrl: participantImageUrl,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/call/conversation/audio/:conversationId',
+        builder: (context, state) {
+          final conversationId = state.pathParameters['conversationId']!;
+          final participantName = state.uri.queryParameters['participantName'];
+          final participantImageUrl =
+              state.uri.queryParameters['participantImageUrl'];
+          return ConversationCallScreen(
+            conversationId: conversationId,
+            callType: CallType.audio,
+            participantName: participantName,
+            participantImageUrl: participantImageUrl,
           );
         },
       ),

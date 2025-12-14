@@ -1,4 +1,94 @@
-import 'dart:io' show Platform;
+import 'dart:io' show File, Platform;
+import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
+
+/// Exception thrown when model integrity verification fails
+class ModelIntegrityException implements Exception {
+  final String message;
+  const ModelIntegrityException(this.message);
+
+  @override
+  String toString() => 'ModelIntegrityException: $message';
+}
+
+/// Validates on-device model integrity before use
+class OnDeviceModelValidator {
+  /// Checks if a checksum is a placeholder value
+  static bool isPlaceholderChecksum(String checksum) {
+    return checksum.contains('placeholder') ||
+        checksum.isEmpty ||
+        !checksum.startsWith('sha256:') ||
+        checksum.length < 70; // sha256: (7) + 64 hex chars = 71 minimum
+  }
+
+  /// Verifies model file integrity against expected checksum
+  ///
+  /// Returns true if verification passes.
+  /// In debug mode, logs a warning for placeholder checksums and returns true.
+  /// In release mode, throws [ModelIntegrityException] for placeholder checksums.
+  static Future<bool> verifyModelIntegrity(
+    File modelFile,
+    String expectedChecksum,
+  ) async {
+    // Check if checksum is a placeholder
+    if (isPlaceholderChecksum(expectedChecksum)) {
+      if (kDebugMode) {
+        debugPrint(
+          'WARNING: Model checksum verification skipped - placeholder value detected. '
+          'Ensure real checksums are added before production deployment.',
+        );
+        return true;
+      } else {
+        throw const ModelIntegrityException(
+          'Invalid model checksum in production. '
+          'Model files must have valid SHA256 checksums for security.',
+        );
+      }
+    }
+
+    // Verify file exists
+    if (!await modelFile.exists()) {
+      throw ModelIntegrityException(
+        'Model file not found: ${modelFile.path}',
+      );
+    }
+
+    // Calculate actual checksum
+    final bytes = await modelFile.readAsBytes();
+    final digest = sha256.convert(bytes);
+    final actualChecksum = 'sha256:$digest';
+
+    // Compare checksums
+    if (actualChecksum != expectedChecksum) {
+      throw ModelIntegrityException(
+        'Model integrity check failed.\n'
+        'Expected: $expectedChecksum\n'
+        'Actual: $actualChecksum\n'
+        'The model file may be corrupted or tampered with.',
+      );
+    }
+
+    debugPrint('Model integrity verified: ${modelFile.path}');
+    return true;
+  }
+
+  /// Validates all available models have proper checksums (for CI/CD)
+  static List<String> validateModelChecksums(List<OnDeviceModel> models) {
+    final issues = <String>[];
+
+    for (final model in models) {
+      if (isPlaceholderChecksum(model.checksum)) {
+        issues.add('${model.id}: ONNX checksum is placeholder');
+      }
+      if (model.coremlChecksum != null &&
+          isPlaceholderChecksum(model.coremlChecksum!)) {
+        issues.add('${model.id}: CoreML checksum is placeholder');
+      }
+    }
+
+    return issues;
+  }
+}
 
 /// Represents an on-device LLM model configuration
 class OnDeviceModel {
@@ -13,6 +103,8 @@ class OnDeviceModel {
     required this.capabilities,
     required this.maxContextLength,
     required this.minRamGB,
+    this.coremlUrl,
+    this.coremlChecksum,
     this.avgTokensPerSecond = 15,
     this.priority = 1,
   });
@@ -38,6 +130,12 @@ class OnDeviceModel {
   /// SHA256 checksum for integrity verification
   final String checksum;
 
+  /// Optional CoreML model URL for iOS (better performance on Apple Silicon)
+  final String? coremlUrl;
+
+  /// Optional CoreML model checksum
+  final String? coremlChecksum;
+
   /// List of model capabilities
   final List<String> capabilities;
 
@@ -62,6 +160,23 @@ class OnDeviceModel {
   bool isCompatibleWithDevice({required double deviceRamGB}) {
     return deviceRamGB >= minRamGB;
   }
+
+  /// Verify the integrity of a downloaded model file
+  ///
+  /// Uses [OnDeviceModelValidator.verifyModelIntegrity] to check
+  /// the file's SHA256 hash against the expected checksum.
+  Future<bool> verifyFile(File modelFile) async {
+    final expectedChecksum = Platform.isIOS && coremlChecksum != null
+        ? coremlChecksum!
+        : checksum;
+    return OnDeviceModelValidator.verifyModelIntegrity(modelFile, expectedChecksum);
+  }
+
+  /// Check if this model has placeholder checksums (not production-ready)
+  bool get hasPlaceholderChecksum =>
+      OnDeviceModelValidator.isPlaceholderChecksum(checksum) ||
+      (coremlChecksum != null &&
+          OnDeviceModelValidator.isPlaceholderChecksum(coremlChecksum!));
 }
 
 /// Model capability types
@@ -79,6 +194,25 @@ class ModelCapability {
 // =============================================================================
 // Available Models
 // =============================================================================
+//
+// SECURITY: Model checksums below are placeholders for development.
+//
+// Before production deployment:
+// 1. Generate real SHA256 checksums for each model file:
+//      macOS/Linux: shasum -a 256 model-file.onnx
+//      Windows:     certutil -hashfile model-file.onnx SHA256
+//
+// 2. Update both ONNX and CoreML checksums for each model.
+//
+// 3. Run validation check:
+//      final issues = OnDeviceModelValidator.validateModelChecksums(availableModels);
+//      assert(issues.isEmpty, 'Model checksums missing: $issues');
+//
+// IMPORTANT: In release builds, [OnDeviceModelValidator.verifyModelIntegrity]
+// will REJECT models with placeholder checksums to prevent using unverified files.
+//
+// Model files should be hosted at https://models.upcoach.com/edge/
+// =============================================================================
 
 /// TinyLlama 1.1B - Default balanced model for coaching conversations
 const tinyLlama1BModel = OnDeviceModel(
@@ -89,6 +223,9 @@ const tinyLlama1BModel = OnDeviceModel(
   downloadUrl: 'https://models.upcoach.com/edge/tinyllama-1.1b-q4.onnx',
   sizeMB: 580,
   checksum: 'sha256:placeholder-update-with-real-hash',
+  // CoreML version for iOS - better performance on Apple Silicon
+  coremlUrl: 'https://models.upcoach.com/edge/tinyllama-1.1b-q4.mlmodelc.zip',
+  coremlChecksum: 'sha256:placeholder-update-with-real-coreml-hash',
   capabilities: [
     ModelCapability.conversational,
     ModelCapability.coaching,
@@ -216,14 +353,21 @@ OnDeviceModel selectModelForUseCase(String useCase) {
 
 /// Get platform-specific model URL
 String getPlatformModelUrl(OnDeviceModel model) {
-  if (Platform.isIOS) {
-    // iOS can use CoreML format if available
-    // TODO: Check if CoreML version exists and return coremlUrl:
-    // final coremlUrl = model.downloadUrl.replaceAll('.onnx', '.mlmodelc.zip');
-    return model.downloadUrl; // Fall back to ONNX for now
+  if (Platform.isIOS && model.coremlUrl != null) {
+    // iOS uses CoreML format for better performance on Apple Silicon
+    return model.coremlUrl!;
   } else if (Platform.isAndroid) {
     // Android uses ONNX or TFLite
     return model.downloadUrl;
   }
+  // Fall back to ONNX for all platforms
   return model.downloadUrl;
+}
+
+/// Get platform-specific model checksum
+String getPlatformModelChecksum(OnDeviceModel model) {
+  if (Platform.isIOS && model.coremlChecksum != null) {
+    return model.coremlChecksum!;
+  }
+  return model.checksum;
 }

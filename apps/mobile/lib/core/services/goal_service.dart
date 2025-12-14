@@ -41,6 +41,19 @@ class GoalService {
     }
   }
 
+  /// Get a single goal by ID
+  Future<GoalModel?> getGoalById(String goalId) async {
+    try {
+      final response = await _dio.get('/goals/$goalId');
+      return GoalModel.fromJson(response.data);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return null;
+      }
+      throw _handleError(e);
+    }
+  }
+
   Future<GoalModel> createGoal({
     required String title,
     String? description,

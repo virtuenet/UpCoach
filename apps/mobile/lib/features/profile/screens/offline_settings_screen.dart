@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../../core/config/feature_flags.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/constants/ui_constants.dart';
 import '../../../shared/widgets/custom_app_bar.dart';
@@ -802,16 +803,24 @@ class _OfflineSettingsScreenState extends ConsumerState<OfflineSettingsScreen> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Implement file picker for import
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Import from file coming soon'),
-                ),
-              );
-            },
-            child: const Text('Select File'),
+            onPressed: ref.read(isFeatureEnabledProvider(Feature.offlineImport))
+                ? () {
+                    Navigator.pop(context);
+                    // TODO: Implement file picker for import when feature is enabled
+                  }
+                : () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Import from file is coming soon!'),
+                      ),
+                    );
+                  },
+            child: Text(
+              ref.read(isFeatureEnabledProvider(Feature.offlineImport))
+                  ? 'Select File'
+                  : 'Coming Soon',
+            ),
           ),
         ],
       ),

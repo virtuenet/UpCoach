@@ -267,6 +267,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
 
         const Divider(),
 
+        _buildSectionHeader('Health & Fitness'),
+        ListTile(
+          leading: const Icon(Icons.favorite_outline),
+          title: const Text('Health Integrations'),
+          subtitle: const Text('Connect wearables & health apps'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push('/settings/health'),
+        ),
+
+        const Divider(),
+
         _buildSectionHeader('Language'),
         Consumer(
           builder: (context, ref, child) {

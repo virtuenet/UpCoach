@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/models/chat_models.dart';
 import '../providers/messaging_provider.dart';
+import '../services/user_search_service.dart';
 
 class ConversationsScreen extends ConsumerStatefulWidget {
   const ConversationsScreen({super.key});
@@ -444,17 +446,126 @@ class _NewConversationSheet extends ConsumerStatefulWidget {
 }
 
 class _NewConversationSheetState extends ConsumerState<_NewConversationSheet> {
-  // TODO: Add contact/user search functionality
-  final List<Map<String, String>> _sampleContacts = [
-    {'id': '1', 'name': 'John Coach', 'image': ''},
-    {'id': '2', 'name': 'Sarah Trainer', 'image': ''},
-    {'id': '3', 'name': 'Mike Client', 'image': ''},
-  ];
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounceTimer;
+
+  List<UserContact> _searchResults = [];
+  List<UserContact> _suggestedContacts = [];
+  bool _isSearching = false;
+  bool _isLoadingSuggestions = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSuggestedContacts();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadSuggestedContacts() async {
+    try {
+      final searchService = ref.read(userSearchServiceProvider);
+      final suggestions = await searchService.getSuggestedContacts();
+      if (mounted) {
+        setState(() {
+          _suggestedContacts = suggestions;
+          _isLoadingSuggestions = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingSuggestions = false;
+          // Don't show error for suggestions - just show empty state
+        });
+      }
+    }
+  }
+
+  void _onSearchChanged(String query) {
+    // Cancel previous timer
+    _debounceTimer?.cancel();
+
+    if (query.isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
+        _error = null;
+      });
+      return;
+    }
+
+    if (query.length < 2) {
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
+      });
+      return;
+    }
+
+    setState(() => _isSearching = true);
+
+    // Debounce search to avoid excessive API calls
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () async {
+      try {
+        final searchService = ref.read(userSearchServiceProvider);
+        final results = await searchService.searchUsers(
+          query: query,
+          limit: 20,
+          excludeCurrentUser: true,
+        );
+
+        if (mounted && _searchController.text == query) {
+          setState(() {
+            _searchResults = results;
+            _isSearching = false;
+            _error = null;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isSearching = false;
+            _error = 'Search failed. Please try again.';
+          });
+        }
+      }
+    });
+  }
+
+  Future<void> _startConversation(UserContact contact) async {
+    final navigator = Navigator.of(context);
+    final router = GoRouter.of(context);
+
+    navigator.pop();
+    final conversation = await ref
+        .read(conversationsProvider.notifier)
+        .createDirectConversation(contact.id);
+    if (conversation != null && mounted) {
+      router.push('/messaging/${conversation.id}', extra: conversation);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final displayContacts = _searchController.text.isNotEmpty
+        ? _searchResults
+        : _suggestedContacts;
+    final isLoading = _searchController.text.isNotEmpty
+        ? _isSearching
+        : _isLoadingSuggestions;
+
     return Container(
       padding: const EdgeInsets.all(20),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.75,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -477,11 +588,21 @@ class _NewConversationSheetState extends ConsumerState<_NewConversationSheet> {
           ),
           const SizedBox(height: 16),
 
-          // Search contacts
+          // Search input
           TextField(
+            controller: _searchController,
             decoration: InputDecoration(
               hintText: 'Search people...',
               prefixIcon: const Icon(Icons.search),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                        _onSearchChanged('');
+                      },
+                    )
+                  : null,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -489,13 +610,15 @@ class _NewConversationSheetState extends ConsumerState<_NewConversationSheet> {
               filled: true,
               fillColor: AppColors.gray100,
             ),
+            onChanged: _onSearchChanged,
+            autofocus: true,
           ),
           const SizedBox(height: 16),
 
-          // Sample contacts list
-          const Text(
-            'Suggested',
-            style: TextStyle(
+          // Section header
+          Text(
+            _searchController.text.isNotEmpty ? 'Results' : 'Suggested',
+            style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: AppColors.gray600,
@@ -503,38 +626,187 @@ class _NewConversationSheetState extends ConsumerState<_NewConversationSheet> {
           ),
           const SizedBox(height: 12),
 
-          ...List.generate(_sampleContacts.length, (index) {
-            final contact = _sampleContacts[index];
-            return ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: CircleAvatar(
-                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                child: Text(
-                  contact['name']![0],
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+          // Error message
+          if (_error != null)
+            Container(
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.error_outline, color: AppColors.error, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _error!,
+                      style: TextStyle(color: AppColors.error, fontSize: 14),
+                    ),
                   ),
+                ],
+              ),
+            ),
+
+          // Loading indicator
+          if (isLoading)
+            const Padding(
+              padding: EdgeInsets.all(20),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          // Empty state
+          else if (displayContacts.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.person_search,
+                      size: 48,
+                      color: AppColors.gray300,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      _searchController.text.isNotEmpty
+                          ? 'No users found'
+                          : 'No suggestions available',
+                      style: const TextStyle(
+                        color: AppColors.gray500,
+                        fontSize: 14,
+                      ),
+                    ),
+                    if (_searchController.text.isNotEmpty &&
+                        _searchController.text.length < 2)
+                      const Text(
+                        'Type at least 2 characters to search',
+                        style: TextStyle(
+                          color: AppColors.gray400,
+                          fontSize: 12,
+                        ),
+                      ),
+                  ],
                 ),
               ),
-              title: Text(contact['name']!),
-              onTap: () async {
-                Navigator.pop(context);
-                final conversation = await ref
-                    .read(conversationsProvider.notifier)
-                    .createDirectConversation(contact['id']!);
-                if (conversation != null && context.mounted) {
-                  context.push('/messaging/${conversation.id}',
-                      extra: conversation);
-                }
-              },
-            );
-          }),
+            )
+          // Contacts list
+          else
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: displayContacts.length,
+                itemBuilder: (context, index) {
+                  final contact = displayContacts[index];
+                  return _ContactListTile(
+                    contact: contact,
+                    onTap: () => _startConversation(contact),
+                  );
+                },
+              ),
+            ),
 
           const SizedBox(height: 16),
         ],
       ),
     );
+  }
+}
+
+class _ContactListTile extends StatelessWidget {
+  final UserContact contact;
+  final VoidCallback onTap;
+
+  const _ContactListTile({
+    required this.contact,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Stack(
+        children: [
+          CircleAvatar(
+            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+            backgroundImage:
+                contact.avatarUrl != null ? NetworkImage(contact.avatarUrl!) : null,
+            child: contact.avatarUrl == null
+                ? Text(
+                    _getInitials(contact.displayName),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  )
+                : null,
+          ),
+          if (contact.isOnline)
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: AppColors.success,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+              ),
+            ),
+        ],
+      ),
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(
+              contact.displayName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (contact.isCoach)
+            Container(
+              margin: const EdgeInsets.only(left: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                'Coach',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+        ],
+      ),
+      subtitle: contact.email != null
+          ? Text(
+              contact.email!,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.gray500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            )
+          : null,
+      onTap: onTap,
+    );
+  }
+
+  String _getInitials(String name) {
+    final parts = name.split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return name.substring(0, name.length >= 2 ? 2 : 1).toUpperCase();
   }
 }
 

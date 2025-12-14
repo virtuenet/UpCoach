@@ -7,6 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:vibration/vibration.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../../shared/models/video_call_models.dart';
 
 /// Service for managing call notifications and ringing
@@ -506,16 +507,46 @@ class CallNotificationService {
   // Call Screen Wake Lock
   // ============================================================================
 
+  bool _wakelockEnabled = false;
+
   /// Keep screen on during call
   Future<void> enableCallWakeLock() async {
-    // This would typically use wakelock_plus package
-    // Placeholder for implementation
-    debugPrint('Enabling call wake lock');
+    if (_wakelockEnabled) return;
+
+    try {
+      await WakelockPlus.enable();
+      _wakelockEnabled = true;
+      debugPrint('Call wake lock enabled');
+    } catch (e) {
+      debugPrint('Error enabling call wake lock: $e');
+    }
   }
 
   /// Disable screen wake lock
   Future<void> disableCallWakeLock() async {
-    debugPrint('Disabling call wake lock');
+    if (!_wakelockEnabled) return;
+
+    try {
+      // Check if wakelock is actually enabled before disabling
+      final isEnabled = await WakelockPlus.enabled;
+      if (isEnabled) {
+        await WakelockPlus.disable();
+      }
+      _wakelockEnabled = false;
+      debugPrint('Call wake lock disabled');
+    } catch (e) {
+      debugPrint('Error disabling call wake lock: $e');
+    }
+  }
+
+  /// Check if wake lock is currently enabled
+  Future<bool> isWakeLockEnabled() async {
+    try {
+      return await WakelockPlus.enabled;
+    } catch (e) {
+      debugPrint('Error checking wake lock status: $e');
+      return false;
+    }
   }
 
   // ============================================================================
@@ -545,6 +576,7 @@ class CallNotificationService {
 
   Future<void> dispose() async {
     await stopRinging();
+    await disableCallWakeLock();
     await _ringtonePlayer.dispose();
     await _ringbackPlayer.dispose();
     await _endCallPlayer.dispose();

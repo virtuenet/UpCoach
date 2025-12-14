@@ -3,6 +3,7 @@ import 'package:upcoach_mobile/shared/constants/ui_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/config/feature_flags.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/constants/app_text_styles.dart';
 
@@ -429,12 +430,23 @@ class _HelpCenterScreenState extends ConsumerState<HelpCenterScreen> {
             ListTile(
               leading: const Icon(Icons.chat),
               title: const Text('Live Chat'),
-              subtitle: const Text('Chat with our support team'),
+              subtitle: Text(
+                ref.read(isFeatureEnabledProvider(Feature.liveChatSupport))
+                    ? 'Chat with our support team'
+                    : 'Coming soon',
+              ),
+              enabled: ref.read(isFeatureEnabledProvider(Feature.liveChatSupport)),
               onTap: () {
                 context.pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Live chat coming soon')),
-                );
+                if (ref.read(isFeatureEnabledProvider(Feature.liveChatSupport))) {
+                  // TODO: Launch live chat when feature is enabled
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Live chat support is coming soon!'),
+                    ),
+                  );
+                }
               },
             ),
             ListTile(

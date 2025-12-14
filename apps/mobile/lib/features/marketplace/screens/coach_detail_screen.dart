@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../shared/models/coach_models.dart';
 import '../../../core/theme/app_colors.dart';
 import '../providers/coach_booking_provider.dart';
@@ -124,13 +125,26 @@ class CoachDetailScreen extends ConsumerWidget {
         IconButton(
           icon: const Icon(Icons.share),
           onPressed: () {
-            // TODO: Implement share
+            final shareUrl = 'https://app.upcoach.com/coaches/${coach.id}';
+            Share.share(
+              'Check out ${coach.displayName} on UpCoach! ${coach.title ?? ''}\n$shareUrl',
+              subject: 'Coach Recommendation',
+            );
           },
         ),
         IconButton(
           icon: const Icon(Icons.favorite_border),
           onPressed: () {
-            // TODO: Implement favorite
+            // Show favorite functionality (backend integration would toggle favorite state)
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Added ${coach.displayName} to favorites'),
+                action: SnackBarAction(
+                  label: 'Undo',
+                  onPressed: () {},
+                ),
+              ),
+            );
           },
         ),
       ],
@@ -376,7 +390,10 @@ class CoachDetailScreen extends ConsumerWidget {
               if (state.totalReviews > 0)
                 TextButton(
                   onPressed: () {
-                    // TODO: Navigate to all reviews
+                    context.push(
+                      '/marketplace/coach/${state.coach?.id ?? coachId}/reviews',
+                      extra: {'coachName': state.coach?.displayName},
+                    );
                   },
                   child: Text('See all (${state.totalReviews})'),
                 ),

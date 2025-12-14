@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../shared/models/progress_photo.dart';
 import '../../../core/theme/app_colors.dart';
+import '../providers/progress_photos_provider.dart';
 
-class PhotoViewerScreen extends StatefulWidget {
+class PhotoViewerScreen extends ConsumerStatefulWidget {
   final List<ProgressPhoto> photos;
   final int initialIndex;
 
@@ -26,22 +29,24 @@ class PhotoViewerScreen extends StatefulWidget {
   }
 
   @override
-  State<PhotoViewerScreen> createState() => _PhotoViewerScreenState();
+  ConsumerState<PhotoViewerScreen> createState() => _PhotoViewerScreenState();
 }
 
-class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
+class _PhotoViewerScreenState extends ConsumerState<PhotoViewerScreen> {
   final TransformationController _transformationController =
       TransformationController();
   late PageController _pageController;
   late int _currentIndex;
   bool _showOverlay = true;
+  late List<ProgressPhoto> _photos;
 
-  ProgressPhoto get _currentPhoto => widget.photos[_currentIndex];
+  ProgressPhoto get _currentPhoto => _photos[_currentIndex];
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    _photos = List.from(widget.photos);
     _pageController = PageController(initialPage: _currentIndex);
   }
 
@@ -54,6 +59,20 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch for changes in the provider to update local state
+    ref.listen<ProgressPhotosState>(progressPhotosProvider, (previous, next) {
+      // Update local photos list when provider changes
+      final updatedPhotos = <ProgressPhoto>[];
+      for (final photo in _photos) {
+        final updated = next.photos.firstWhere(
+          (p) => p.id == photo.id,
+          orElse: () => photo,
+        );
+        updatedPhotos.add(updated);
+      }
+      setState(() => _photos = updatedPhotos);
+    });
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: GestureDetector(
@@ -64,10 +83,10 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
           fit: StackFit.expand,
           children: [
             // Image viewer with PageView for gallery support
-            widget.photos.length > 1
+            _photos.length > 1
                 ? PageView.builder(
                     controller: _pageController,
-                    itemCount: widget.photos.length,
+                    itemCount: _photos.length,
                     onPageChanged: (index) {
                       setState(() => _currentIndex = index);
                     },
@@ -77,7 +96,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
                         minScale: 0.5,
                         maxScale: 4.0,
                         child: Center(
-                          child: _buildImage(widget.photos[index]),
+                          child: _buildImage(_photos[index]),
                         ),
                       );
                     },
@@ -107,14 +126,14 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
                 child: _buildBottomOverlay(),
               ),
             // Page indicator for gallery
-            if (_showOverlay && widget.photos.length > 1)
+            if (_showOverlay && _photos.length > 1)
               Positioned(
                 bottom: 120,
                 left: 0,
                 right: 0,
                 child: Center(
                   child: Text(
-                    '${_currentIndex + 1} / ${widget.photos.length}',
+                    '${_currentIndex + 1} / ${_photos.length}',
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 14,
@@ -210,9 +229,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
                 color:
                     _currentPhoto.isFavorite ? AppColors.error : Colors.white,
               ),
-              onPressed: () {
-                // TODO: Toggle favorite
-              },
+              onPressed: _toggleFavorite,
             ),
             IconButton(
               icon: const Icon(Icons.more_vert, color: Colors.white),
@@ -318,6 +335,48 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
     );
   }
 
+  void _toggleFavorite() {
+    ref.read(progressPhotosProvider.notifier).toggleFavorite(_currentPhoto.id);
+    // Update local state immediately for responsive UI
+    setState(() {
+      _photos[_currentIndex] = _currentPhoto.copyWith(
+        isFavorite: !_currentPhoto.isFavorite,
+      );
+    });
+  }
+
+  Future<void> _sharePhoto() async {
+    final photo = _currentPhoto;
+    final imagePath = photo.imagePath;
+
+    try {
+      if (imagePath.startsWith('http')) {
+        // For network images, share the URL
+        await Share.share(
+          'Check out my progress photo!\n$imagePath',
+          subject: photo.title ?? 'Progress Photo',
+        );
+      } else {
+        // For local files, share the file
+        final file = XFile(imagePath);
+        await Share.shareXFiles(
+          [file],
+          text: photo.title ?? 'My progress photo',
+          subject: 'Progress Photo',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to share photo: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   void _showOptionsMenu() {
     showModalBottomSheet(
       context: context,
@@ -330,7 +389,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
               title: const Text('Share'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Share photo
+                _sharePhoto();
               },
             ),
             ListTile(
@@ -338,7 +397,7 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
               title: const Text('Edit'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Edit photo details
+                _showEditDialog();
               },
             ),
             ListTile(
@@ -349,6 +408,182 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
                 Navigator.pop(context);
                 _showDeleteConfirmation();
               },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showEditDialog() {
+    final photo = _currentPhoto;
+    final titleController = TextEditingController(text: photo.title ?? '');
+    final notesController = TextEditingController(text: photo.notes ?? '');
+    String selectedCategory = photo.category;
+    List<String> tags = List.from(photo.tags);
+    final tagController = TextEditingController();
+
+    final categories = [
+      'General',
+      'Front',
+      'Back',
+      'Side',
+      'Arms',
+      'Legs',
+      'Core',
+      'Before/After',
+    ];
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Edit Photo Details'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(
+                    labelText: 'Title',
+                    hintText: 'Enter a title for this photo',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: selectedCategory,
+                  decoration: const InputDecoration(
+                    labelText: 'Category',
+                  ),
+                  items: categories.map((category) {
+                    return DropdownMenuItem(
+                      value: category,
+                      child: Text(category),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setDialogState(() => selectedCategory = value);
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: notesController,
+                  decoration: const InputDecoration(
+                    labelText: 'Notes',
+                    hintText: 'Add any notes about this photo',
+                  ),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Tags',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    ...tags.map((tag) {
+                      return Chip(
+                        label: Text(tag),
+                        deleteIcon: const Icon(Icons.close, size: 16),
+                        onDeleted: () {
+                          setDialogState(() => tags.remove(tag));
+                        },
+                      );
+                    }),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: tagController,
+                        decoration: const InputDecoration(
+                          hintText: 'Add tag',
+                          isDense: true,
+                        ),
+                        onSubmitted: (value) {
+                          if (value.isNotEmpty && !tags.contains(value)) {
+                            setDialogState(() {
+                              tags.add(value);
+                              tagController.clear();
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add),
+                      onPressed: () {
+                        final value = tagController.text.trim();
+                        if (value.isNotEmpty && !tags.contains(value)) {
+                          setDialogState(() {
+                            tags.add(value);
+                            tagController.clear();
+                          });
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final updatedPhoto = photo.copyWith(
+                  title: titleController.text.isEmpty
+                      ? null
+                      : titleController.text,
+                  category: selectedCategory,
+                  notes: notesController.text.isEmpty
+                      ? null
+                      : notesController.text,
+                  tags: tags,
+                  updatedAt: DateTime.now(),
+                );
+
+                final success = await ref
+                    .read(progressPhotosProvider.notifier)
+                    .updatePhoto(updatedPhoto);
+
+                if (!context.mounted) return;
+
+                if (success) {
+                  setState(() {
+                    _photos[_currentIndex] = updatedPhoto;
+                  });
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Photo updated successfully'),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Failed to update photo'),
+                      backgroundColor: AppColors.error,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Save'),
             ),
           ],
         ),
@@ -368,9 +603,28 @@ class _PhotoViewerScreenState extends State<PhotoViewerScreen> {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
+              final photoId = _currentPhoto.id;
+              final navigator = Navigator.of(this.context);
+              final scaffoldMessenger = ScaffoldMessenger.of(this.context);
               Navigator.pop(context);
-              Navigator.pop(context, true); // Return true to indicate deletion
+
+              final success = await ref
+                  .read(progressPhotosProvider.notifier)
+                  .deletePhoto(photoId);
+
+              if (!mounted) return;
+
+              if (success) {
+                navigator.pop(true); // Return true to indicate deletion
+              } else {
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Failed to delete photo'),
+                    backgroundColor: AppColors.error,
+                  ),
+                );
+              }
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: const Text('Delete'),

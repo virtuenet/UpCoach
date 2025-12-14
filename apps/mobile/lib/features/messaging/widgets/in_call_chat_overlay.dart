@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/models/chat_models.dart';
 import '../providers/messaging_provider.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class InCallChatOverlay extends ConsumerStatefulWidget {
   final String conversationId;
@@ -208,10 +209,12 @@ class _InCallChatOverlayState extends ConsumerState<InCallChatOverlay>
                               itemCount: state.messages.length,
                               itemBuilder: (context, index) {
                                 final message = state.messages[index];
+                                final currentUserId =
+                                    ref.read(authProvider).user?.id ?? '';
                                 return _InCallMessageBubble(
                                   message: message,
-                                  isCurrentUser: message.senderId ==
-                                      'current-user-id', // TODO: Get actual user ID
+                                  isCurrentUser:
+                                      message.senderId == currentUserId,
                                 );
                               },
                             ),

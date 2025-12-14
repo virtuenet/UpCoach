@@ -28,9 +28,10 @@ import CoreML
     // Register Flutter plugins
     GeneratedPluginRegistrant.register(with: self)
 
-    // Register On-Device LLM Plugin
-    if let registrar = self.registrar(forPlugin: "OnDeviceLLMPlugin") {
-      OnDeviceLLMPlugin.register(with: registrar)
+    // Register On-Device LLM Plugin if present (optional dependency)
+    if let registrar = self.registrar(forPlugin: "OnDeviceLLMPlugin"),
+       let pluginClass = NSClassFromString("OnDeviceLLMPlugin") as? FlutterPlugin.Type {
+      pluginClass.register(with: registrar)
     }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)

@@ -315,6 +315,81 @@ class VideoCallNotifier extends Notifier<VideoCallState> {
     }
   }
 
+  /// Join a conversation-based call (peer-to-peer from messaging)
+  Future<bool> joinConversationCall({
+    required String conversationId,
+    required CallType callType,
+  }) async {
+    state = state.copyWith(
+      isJoining: true,
+      clearError: true,
+      status: CallStatus.connecting,
+      callType: callType,
+    );
+
+    try {
+      // Request permissions
+      final hasPermissions =
+          await _service.requestPermissions(callType: callType);
+      if (!hasPermissions) {
+        state = state.copyWith(
+          isJoining: false,
+          error: 'Camera/microphone permission denied',
+          status: CallStatus.failed,
+        );
+        return false;
+      }
+
+      // Get call token from server for conversation-based call
+      final tokenResponse =
+          await _service.getConversationCallToken(conversationId, callType);
+
+      // Initialize Agora with app ID
+      await _service.initialize(tokenResponse.appId);
+
+      // Join Agora channel
+      await _service.joinCall(
+        token: tokenResponse.token,
+        channelName: tokenResponse.channelName,
+        uid: tokenResponse.uid,
+        callType: callType,
+      );
+
+      // Notify server
+      final callSession =
+          await _service.notifyJoinConversationCall(conversationId, callType);
+
+      // Enable wakelock to keep screen on
+      await WakelockPlus.enable();
+
+      // Start duration timer
+      _startDurationTimer();
+
+      state = state.copyWith(
+        isJoining: false,
+        status: CallStatus.connected,
+        tokenResponse: tokenResponse,
+        callSession: callSession,
+        localState: LocalCallState(
+          isMuted: false,
+          isVideoOff: callType == CallType.audio,
+          isSpeakerOn: true,
+          isFrontCamera: true,
+        ),
+      );
+
+      return true;
+    } catch (e) {
+      debugPrint('Error joining conversation call: $e');
+      state = state.copyWith(
+        isJoining: false,
+        status: CallStatus.failed,
+        error: e.toString(),
+      );
+      return false;
+    }
+  }
+
   Future<void> leaveCall() async {
     if (state.isLeaving) return;
 

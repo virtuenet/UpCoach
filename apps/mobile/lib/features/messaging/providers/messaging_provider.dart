@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../../shared/models/chat_models.dart';
 import '../services/chat_websocket_service.dart';
 import '../services/chat_api_service.dart';
+import '../../auth/providers/auth_provider.dart';
 
 // ============================================================================
 // Conversations State & Provider
@@ -369,8 +370,9 @@ class ChatMessagesNotifier extends Notifier<ChatMessagesState> {
   ChatMessagesState build() {
     _apiService = ref.watch(chatApiServiceProvider);
     _wsService = ref.watch(chatWebSocketServiceProvider);
-    // TODO: Get current user ID from auth provider
-    _currentUserId = 'current-user-id';
+    // Get current user ID from auth provider
+    final authState = ref.watch(authProvider);
+    _currentUserId = authState.user?.id ?? '';
     _initializeWebSocket();
     loadMessages();
     return ChatMessagesState(conversationId: _conversationId);

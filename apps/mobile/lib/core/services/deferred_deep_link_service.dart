@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../analytics/analytics_service.dart';
 import 'deep_link_service.dart';
 
 /// Storage key for pending deep link
@@ -176,7 +177,6 @@ class DeferredDeepLinkService {
 
   /// Track attribution for analytics
   Future<void> trackAttribution(DeferredDeepLinkData data) async {
-    // This would integrate with your analytics service
     debugPrint('Tracking deferred link attribution:');
     debugPrint('  - Type: ${data.linkData.type}');
     debugPrint('  - Campaign: ${data.campaignId}');
@@ -184,14 +184,29 @@ class DeferredDeepLinkService {
     debugPrint('  - Medium: ${data.medium}');
     debugPrint('  - UTM Params: ${data.utmParams}');
 
-    // TODO: Send to analytics service
-    // analyticsService.trackEvent('deferred_deep_link_processed', {
-    //   'link_type': data.linkData.type.name,
-    //   'campaign_id': data.campaignId,
-    //   'source': data.source,
-    //   'medium': data.medium,
-    //   ...data.utmParams,
-    // });
+    // Track with Firebase Analytics via AnalyticsService
+    final analytics = AnalyticsService();
+    await analytics.trackDeepLink(
+      linkType: 'deferred_${data.linkData.type.name}',
+      entityId: data.linkData.entityId,
+      source: data.source,
+      campaign: data.campaignId,
+    );
+
+    // Track additional UTM parameters as a separate event for detailed attribution
+    if (data.utmParams.isNotEmpty || data.medium != null) {
+      await analytics.trackEvent(
+        AnalyticsEvent.deepLinkOpen,
+        parameters: {
+          'link_type': 'deferred_${data.linkData.type.name}',
+          'is_deferred': true,
+          'time_since_save_hours':
+              DateTime.now().difference(data.timestamp).inHours,
+          if (data.medium != null) 'utm_medium': data.medium!,
+          ...data.utmParams,
+        },
+      );
+    }
   }
 
   void dispose() {

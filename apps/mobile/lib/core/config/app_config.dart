@@ -23,6 +23,17 @@ class AppConfig {
   final String stripePublishableKey;
   final String agoraAppId;
   final String revenueCatApiKey;
+  // Health Integration OAuth credentials
+  final String technogymClientId;
+  final String technogymClientSecret;
+  final String fitbitClientId;
+  final String fitbitClientSecret;
+  final String garminConsumerKey;
+  final String garminConsumerSecret;
+  final String whoopClientId;
+  final String whoopClientSecret;
+  final String ouraClientId;
+  final String ouraClientSecret;
 
   const AppConfig({
     required this.environment,
@@ -39,6 +50,17 @@ class AppConfig {
     this.stripePublishableKey = '',
     this.agoraAppId = '',
     this.revenueCatApiKey = '',
+    // Health integrations - set via --dart-define or environment
+    this.technogymClientId = const String.fromEnvironment('TECHNOGYM_CLIENT_ID'),
+    this.technogymClientSecret = const String.fromEnvironment('TECHNOGYM_CLIENT_SECRET'),
+    this.fitbitClientId = const String.fromEnvironment('FITBIT_CLIENT_ID'),
+    this.fitbitClientSecret = const String.fromEnvironment('FITBIT_CLIENT_SECRET'),
+    this.garminConsumerKey = const String.fromEnvironment('GARMIN_CONSUMER_KEY'),
+    this.garminConsumerSecret = const String.fromEnvironment('GARMIN_CONSUMER_SECRET'),
+    this.whoopClientId = const String.fromEnvironment('WHOOP_CLIENT_ID'),
+    this.whoopClientSecret = const String.fromEnvironment('WHOOP_CLIENT_SECRET'),
+    this.ouraClientId = const String.fromEnvironment('OURA_CLIENT_ID'),
+    this.ouraClientSecret = const String.fromEnvironment('OURA_CLIENT_SECRET'),
   });
 
   /// Development configuration

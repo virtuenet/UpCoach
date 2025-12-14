@@ -175,6 +175,44 @@ class AgoraCallService {
     }
   }
 
+  /// Get call token for conversation-based calls (peer-to-peer)
+  Future<CallTokenResponse> getConversationCallToken(
+      String conversationId, CallType callType) async {
+    try {
+      final response = await _apiService.post(
+        ApiConstants.callsConversationToken,
+        data: {
+          'conversationId': conversationId,
+          'callType': callType.name,
+        },
+      );
+      final data = response.data as Map<String, dynamic>;
+      return CallTokenResponse.fromJson(data);
+    } catch (e) {
+      debugPrint('Error getting conversation call token: $e');
+      rethrow;
+    }
+  }
+
+  /// Notify server that user started a conversation call
+  Future<CallSession> notifyJoinConversationCall(
+      String conversationId, CallType callType) async {
+    try {
+      final response = await _apiService.post(
+        ApiConstants.callsConversation,
+        data: {
+          'conversationId': conversationId,
+          'callType': callType.name,
+        },
+      );
+      final data = response.data as Map<String, dynamic>;
+      return CallSession.fromJson(data['call'] as Map<String, dynamic>);
+    } catch (e) {
+      debugPrint('Error notifying join conversation call: $e');
+      rethrow;
+    }
+  }
+
   // ============================================================================
   // Join/Leave Call
   // ============================================================================

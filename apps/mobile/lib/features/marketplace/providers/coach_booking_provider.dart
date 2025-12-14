@@ -598,6 +598,18 @@ class MySessionsNotifier extends Notifier<MySessionsState> {
       return false;
     }
   }
+
+  Future<bool> rescheduleSession(int sessionId,
+      {required DateTime newScheduledAt}) async {
+    try {
+      await _service.rescheduleSession(sessionId,
+          newScheduledAt: newScheduledAt);
+      await loadData();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }
 
 // ============================================================================

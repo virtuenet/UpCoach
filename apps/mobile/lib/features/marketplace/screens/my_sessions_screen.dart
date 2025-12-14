@@ -220,7 +220,7 @@ class _UpcomingSessionsTab extends ConsumerWidget {
   }
 }
 
-class _UpcomingSessionCard extends StatelessWidget {
+class _UpcomingSessionCard extends ConsumerWidget {
   final CoachSession session;
   final VoidCallback onCancel;
   final VoidCallback? onJoinVideo;
@@ -234,7 +234,7 @@ class _UpcomingSessionCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isToday = _isToday(session.scheduledAt);
     final isTomorrow = _isTomorrow(session.scheduledAt);
 
@@ -366,9 +366,7 @@ class _UpcomingSessionCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: () {
-                            // TODO: Reschedule
-                          },
+                          onPressed: () => _showRescheduleDialog(context, ref),
                           child: const Text('Reschedule'),
                         ),
                       ),
@@ -395,6 +393,114 @@ class _UpcomingSessionCard extends StatelessWidget {
     return date.year == tomorrow.year &&
         date.month == tomorrow.month &&
         date.day == tomorrow.day;
+  }
+
+  void _showRescheduleDialog(BuildContext context, WidgetRef ref) {
+    DateTime selectedDate = session.scheduledAt;
+    TimeOfDay selectedTime = TimeOfDay.fromDateTime(session.scheduledAt);
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Reschedule Session'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Select a new date and time for your session with ${session.coach?.displayName ?? 'your coach'}.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 24),
+              // Date picker
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.calendar_today),
+                title: const Text('Date'),
+                subtitle: Text(
+                  DateFormat('EEEE, MMMM d, yyyy').format(selectedDate),
+                ),
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: selectedDate,
+                    firstDate: DateTime.now().add(const Duration(days: 2)),
+                    lastDate: DateTime.now().add(const Duration(days: 90)),
+                  );
+                  if (date != null) {
+                    setState(() => selectedDate = date);
+                  }
+                },
+              ),
+              const Divider(),
+              // Time picker
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.access_time),
+                title: const Text('Time'),
+                subtitle: Text(selectedTime.format(context)),
+                onTap: () async {
+                  final time = await showTimePicker(
+                    context: context,
+                    initialTime: selectedTime,
+                  );
+                  if (time != null) {
+                    setState(() => selectedTime = time);
+                  }
+                },
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Note: Rescheduling is subject to coach availability.',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                final newScheduledAt = DateTime(
+                  selectedDate.year,
+                  selectedDate.month,
+                  selectedDate.day,
+                  selectedTime.hour,
+                  selectedTime.minute,
+                );
+
+                final success = await ref
+                    .read(mySessionsProvider.notifier)
+                    .rescheduleSession(
+                      session.id,
+                      newScheduledAt: newScheduledAt,
+                    );
+
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        success
+                            ? 'Session rescheduled successfully'
+                            : 'Failed to reschedule session',
+                      ),
+                      backgroundColor: success ? AppColors.success : AppColors.error,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Reschedule'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -669,13 +775,13 @@ class _PackagesTab extends ConsumerWidget {
   }
 }
 
-class _PackageCard extends StatelessWidget {
+class _PackageCard extends ConsumerWidget {
   final ClientCoachPackage clientPackage;
 
   const _PackageCard({required this.clientPackage});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final package = clientPackage.package;
 
     return Card(
@@ -751,9 +857,7 @@ class _PackageCard extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // TODO: Book using package
-                  },
+                  onPressed: () => _bookUsingPackage(context, ref),
                   child: const Text('Use Package'),
                 ),
               ),
@@ -762,6 +866,25 @@ class _PackageCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _bookUsingPackage(BuildContext context, WidgetRef ref) {
+    final package = clientPackage.package;
+    if (package == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Package information unavailable'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    // Set the package in the booking provider
+    ref.read(sessionBookingProvider.notifier).setPackage(package);
+
+    // Navigate to booking screen with the coach ID from the package
+    context.push('/marketplace/book/${package.coachId}');
   }
 }
 

@@ -153,6 +153,12 @@ class GamificationState {
   final String? error;
   final String selectedLeaderboardPeriod;
 
+  /// Indicates data is from cache/fallback, not live API
+  final bool isUsingFallbackData;
+
+  /// When the data was last successfully fetched from API
+  final DateTime? lastApiUpdate;
+
   const GamificationState({
     this.stats = const UserGamificationStats(),
     this.achievements = const [],
@@ -162,6 +168,8 @@ class GamificationState {
     this.isLoading = false,
     this.error,
     this.selectedLeaderboardPeriod = 'weekly',
+    this.isUsingFallbackData = false,
+    this.lastApiUpdate,
   });
 
   GamificationState copyWith({
@@ -173,6 +181,8 @@ class GamificationState {
     bool? isLoading,
     String? error,
     String? selectedLeaderboardPeriod,
+    bool? isUsingFallbackData,
+    DateTime? lastApiUpdate,
   }) {
     return GamificationState(
       stats: stats ?? this.stats,
@@ -184,6 +194,8 @@ class GamificationState {
       error: error,
       selectedLeaderboardPeriod:
           selectedLeaderboardPeriod ?? this.selectedLeaderboardPeriod,
+      isUsingFallbackData: isUsingFallbackData ?? this.isUsingFallbackData,
+      lastApiUpdate: lastApiUpdate ?? this.lastApiUpdate,
     );
   }
 }
@@ -191,24 +203,24 @@ class GamificationState {
 // Gamification Notifier with API integration
 class GamificationNotifier extends Notifier<GamificationState> {
   GamificationService? _service;
-  bool _useMockData = false;
+  bool _serviceUnavailable = false;
 
   @override
   GamificationState build() {
-    // Try to get the service, fall back to mock data if unavailable
+    // Try to get the service
     try {
       _service = ref.watch(gamificationServiceProvider);
-      _useMockData = false;
-    } catch (_) {
-      // Service not available, will use mock data
+      _serviceUnavailable = false;
+    } catch (e) {
+      // Service not available - log but don't silently use mock data
       _service = null;
-      _useMockData = true;
+      _serviceUnavailable = true;
     }
     return const GamificationState();
   }
 
   Future<void> loadAll() async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, error: null, isUsingFallbackData: false);
     try {
       await Future.wait([
         loadStats(),
@@ -217,140 +229,129 @@ class GamificationNotifier extends Notifier<GamificationState> {
         loadRewards(),
         loadChallenges(),
       ]);
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(
+        isLoading: false,
+        lastApiUpdate: state.isUsingFallbackData ? null : DateTime.now(),
+      );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
   Future<void> loadStats() async {
-    try {
-      if (_useMockData || _service == null) {
-        await Future.delayed(const Duration(milliseconds: 300));
-        state = state.copyWith(
-          stats: const UserGamificationStats(
-            totalPoints: 2500,
-            currentPoints: 2500,
-            currentStreak: 7,
-            bestStreak: 14,
-            achievementsUnlocked: 12,
-            totalAchievements: 50,
-            currentRank: 42,
-            rank: 42,
-            tier: 'Silver',
-            pointsToNextTier: 500,
-            level: 5,
-            levelProgress: 65.0,
-            nextLevelPoints: 3000,
-          ),
-        );
-        return;
-      }
+    // If service is unavailable at initialization, show error instead of mock data
+    if (_serviceUnavailable || _service == null) {
+      state = state.copyWith(
+        error: 'Gamification service unavailable. Please check your connection.',
+        isUsingFallbackData: true,
+      );
+      return;
+    }
 
+    try {
       final stats = await _service!.getUserStats();
-      state = state.copyWith(stats: stats);
+      state = state.copyWith(
+        stats: stats,
+        isUsingFallbackData: false,
+        lastApiUpdate: DateTime.now(),
+      );
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      // On API error, show error to user instead of silently using mock data
+      state = state.copyWith(
+        error: 'Failed to load gamification stats. Pull to refresh.',
+        isUsingFallbackData: true,
+      );
     }
   }
 
   Future<void> loadAchievements({String? category, bool? unlockedOnly}) async {
-    try {
-      if (_useMockData || _service == null) {
-        await Future.delayed(const Duration(milliseconds: 300));
-        state = state.copyWith(achievements: _getMockAchievements());
-        return;
-      }
+    if (_serviceUnavailable || _service == null) {
+      state = state.copyWith(isUsingFallbackData: true);
+      return;
+    }
 
+    try {
       final achievements = await _service!.getAchievements(
         category: category,
         unlockedOnly: unlockedOnly,
       );
       state = state.copyWith(achievements: achievements);
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(
+        error: 'Failed to load achievements. Pull to refresh.',
+        isUsingFallbackData: true,
+      );
     }
   }
 
   Future<void> loadLeaderboard({String period = 'weekly'}) async {
     state = state.copyWith(selectedLeaderboardPeriod: period);
-    try {
-      if (_useMockData || _service == null) {
-        await Future.delayed(const Duration(milliseconds: 300));
-        state = state.copyWith(leaderboard: _getMockLeaderboard());
-        return;
-      }
 
+    if (_serviceUnavailable || _service == null) {
+      state = state.copyWith(isUsingFallbackData: true);
+      return;
+    }
+
+    try {
       final leaderboard = await _service!.getLeaderboard(period: period);
       state = state.copyWith(leaderboard: leaderboard);
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(
+        error: 'Failed to load leaderboard. Pull to refresh.',
+        isUsingFallbackData: true,
+      );
     }
   }
 
   Future<void> loadRewards({String? category, bool? availableOnly}) async {
-    try {
-      if (_useMockData || _service == null) {
-        await Future.delayed(const Duration(milliseconds: 300));
-        state = state.copyWith(rewards: _getMockRewards());
-        return;
-      }
+    if (_serviceUnavailable || _service == null) {
+      state = state.copyWith(isUsingFallbackData: true);
+      return;
+    }
 
+    try {
       final rewards = await _service!.getRewards(
         category: category,
         availableOnly: availableOnly,
       );
       state = state.copyWith(rewards: rewards);
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(
+        error: 'Failed to load rewards. Pull to refresh.',
+        isUsingFallbackData: true,
+      );
     }
   }
 
   Future<void> loadChallenges({String? status, String? type}) async {
-    try {
-      if (_useMockData || _service == null) {
-        await Future.delayed(const Duration(milliseconds: 300));
-        state = state.copyWith(challenges: _getMockChallenges());
-        return;
-      }
+    if (_serviceUnavailable || _service == null) {
+      state = state.copyWith(isUsingFallbackData: true);
+      return;
+    }
 
+    try {
       final challenges = await _service!.getChallenges(
         status: status,
         type: type,
       );
       state = state.copyWith(challenges: challenges);
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(
+        error: 'Failed to load challenges. Pull to refresh.',
+        isUsingFallbackData: true,
+      );
     }
   }
 
   Future<bool> redeemReward(String rewardId) async {
-    try {
-      if (_useMockData || _service == null) {
-        await Future.delayed(const Duration(milliseconds: 500));
-        // Update local state to reflect redeemed reward
-        final currentPoints = state.stats.currentPoints;
-        final reward = state.rewards.firstWhere((r) => r.id == rewardId);
-        state = state.copyWith(
-          stats: UserGamificationStats(
-            totalPoints: state.stats.totalPoints,
-            currentPoints: currentPoints - reward.cost,
-            currentStreak: state.stats.currentStreak,
-            bestStreak: state.stats.bestStreak,
-            achievementsUnlocked: state.stats.achievementsUnlocked,
-            totalAchievements: state.stats.totalAchievements,
-            currentRank: state.stats.currentRank,
-            rank: state.stats.rank,
-            tier: state.stats.tier,
-            pointsToNextTier: state.stats.pointsToNextTier,
-            level: state.stats.level,
-            levelProgress: state.stats.levelProgress,
-            nextLevelPoints: state.stats.nextLevelPoints,
-          ),
-        );
-        return true;
-      }
+    if (_serviceUnavailable || _service == null) {
+      state = state.copyWith(
+        error: 'Cannot redeem reward while offline.',
+      );
+      return false;
+    }
 
+    try {
       final result = await _service!.redeemReward(rewardId);
       if (result) {
         await loadStats(); // Refresh stats after redemption
@@ -358,272 +359,60 @@ class GamificationNotifier extends Notifier<GamificationState> {
       }
       return result;
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: 'Failed to redeem reward: ${e.toString()}');
       return false;
     }
   }
 
   Future<void> claimAchievement(String achievementId) async {
-    try {
-      if (_useMockData || _service == null) {
-        await Future.delayed(const Duration(milliseconds: 300));
-        await loadAchievements();
-        return;
-      }
+    if (_serviceUnavailable || _service == null) {
+      state = state.copyWith(
+        error: 'Cannot claim achievement while offline.',
+      );
+      return;
+    }
 
+    try {
       await _service!.claimAchievement(achievementId);
       await loadAchievements();
       await loadStats(); // Refresh stats after claiming
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: 'Failed to claim achievement: ${e.toString()}');
     }
   }
 
   Future<void> joinChallenge(String challengeId) async {
-    try {
-      if (_useMockData || _service == null) {
-        await Future.delayed(const Duration(milliseconds: 300));
-        // Update challenge status locally
-        final challenges = state.challenges.map((c) {
-          if (c.id == challengeId) {
-            return Challenge(
-              id: c.id,
-              name: c.name,
-              description: c.description,
-              type: c.type,
-              requiredProgress: c.requiredProgress,
-              currentProgress: c.currentProgress,
-              rewardPoints: c.rewardPoints,
-              participationStatus: 'active',
-              startDate: c.startDate,
-              endDate: c.endDate,
-            );
-          }
-          return c;
-        }).toList();
-        state = state.copyWith(challenges: challenges);
-        return;
-      }
+    if (_serviceUnavailable || _service == null) {
+      state = state.copyWith(
+        error: 'Cannot join challenge while offline.',
+      );
+      return;
+    }
 
+    try {
       await _service!.joinChallenge(challengeId);
       await loadChallenges();
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: 'Failed to join challenge: ${e.toString()}');
     }
   }
 
   Future<void> updateChallengeProgress(String challengeId, int progress) async {
-    try {
-      if (_useMockData || _service == null) {
-        await Future.delayed(const Duration(milliseconds: 300));
-        final challenges = state.challenges.map((c) {
-          if (c.id == challengeId) {
-            return Challenge(
-              id: c.id,
-              name: c.name,
-              description: c.description,
-              type: c.type,
-              requiredProgress: c.requiredProgress,
-              currentProgress: progress,
-              rewardPoints: c.rewardPoints,
-              participationStatus: c.participationStatus,
-              startDate: c.startDate,
-              endDate: c.endDate,
-            );
-          }
-          return c;
-        }).toList();
-        state = state.copyWith(challenges: challenges);
-        return;
-      }
+    if (_serviceUnavailable || _service == null) {
+      state = state.copyWith(
+        error: 'Cannot update progress while offline.',
+      );
+      return;
+    }
 
+    try {
       await _service!.updateChallengeProgress(challengeId, progress);
       await loadChallenges();
     } catch (e) {
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: 'Failed to update progress: ${e.toString()}');
     }
   }
 
-  // Mock data helpers
-  List<Achievement> _getMockAchievements() {
-    return const [
-      Achievement(
-        id: '1',
-        name: 'First Steps',
-        description: 'Complete your first goal',
-        icon: 'flag',
-        category: 'Goals',
-        requiredProgress: 1,
-        currentProgress: 1,
-        isUnlocked: true,
-        rewardPoints: 50,
-      ),
-      Achievement(
-        id: '2',
-        name: 'Streak Master',
-        description: 'Maintain a 7-day streak',
-        icon: 'fire',
-        category: 'Habits',
-        requiredProgress: 7,
-        currentProgress: 7,
-        isUnlocked: true,
-        rewardPoints: 100,
-      ),
-      Achievement(
-        id: '3',
-        name: 'Goal Crusher',
-        description: 'Complete 10 goals',
-        icon: 'trophy',
-        category: 'Goals',
-        requiredProgress: 10,
-        currentProgress: 6,
-        isUnlocked: false,
-        rewardPoints: 200,
-      ),
-      Achievement(
-        id: '4',
-        name: 'Early Bird',
-        description: 'Complete a habit before 7 AM for 5 days',
-        icon: 'clock',
-        category: 'Habits',
-        requiredProgress: 5,
-        currentProgress: 3,
-        isUnlocked: false,
-        rewardPoints: 150,
-      ),
-      Achievement(
-        id: '5',
-        name: 'Knowledge Seeker',
-        description: 'Read 20 articles',
-        icon: 'book',
-        category: 'Learning',
-        requiredProgress: 20,
-        currentProgress: 8,
-        isUnlocked: false,
-        rewardPoints: 100,
-      ),
-    ];
-  }
-
-  List<LeaderboardEntry> _getMockLeaderboard() {
-    return const [
-      LeaderboardEntry(
-        id: '1',
-        rank: '1',
-        userName: 'TopPerformer',
-        points: 5000,
-        streak: 30,
-        badge: 'Gold',
-      ),
-      LeaderboardEntry(
-        id: '2',
-        rank: '2',
-        userName: 'GoalGetter',
-        points: 4500,
-        streak: 21,
-        badge: 'Silver',
-      ),
-      LeaderboardEntry(
-        id: '3',
-        rank: '3',
-        userName: 'HabitHero',
-        points: 4200,
-        streak: 28,
-        badge: 'Bronze',
-      ),
-      LeaderboardEntry(
-        id: '4',
-        rank: '4',
-        userName: 'StreakStar',
-        points: 3800,
-        streak: 14,
-      ),
-      LeaderboardEntry(
-        id: '5',
-        rank: '5',
-        userName: 'ProgressPro',
-        points: 3500,
-        streak: 10,
-      ),
-    ];
-  }
-
-  List<Reward> _getMockRewards() {
-    return const [
-      Reward(
-        id: '1',
-        name: 'Premium Theme',
-        description: 'Unlock a custom app theme',
-        image: 'theme',
-        cost: 500,
-        category: 'Customization',
-      ),
-      Reward(
-        id: '2',
-        name: 'Badge: Champion',
-        description: 'Show off your dedication',
-        image: 'badge',
-        cost: 1000,
-        category: 'Badges',
-      ),
-      Reward(
-        id: '3',
-        name: 'Custom Avatar',
-        description: 'Unlock exclusive avatar options',
-        image: 'avatar',
-        cost: 750,
-        category: 'Customization',
-      ),
-      Reward(
-        id: '4',
-        name: 'Premium Feature',
-        description: 'Early access to new features',
-        image: 'feature',
-        cost: 2000,
-        category: 'Features',
-      ),
-    ];
-  }
-
-  List<Challenge> _getMockChallenges() {
-    return [
-      Challenge(
-        id: '1',
-        name: '7-Day Fitness',
-        description: 'Complete 7 workouts in a week',
-        type: 'weekly',
-        requiredProgress: 7,
-        currentProgress: 3,
-        rewardPoints: 200,
-        participationStatus: 'active',
-        startDate: DateTime.now().subtract(const Duration(days: 3)),
-        endDate: DateTime.now().add(const Duration(days: 4)),
-      ),
-      Challenge(
-        id: '2',
-        name: 'Daily Meditation',
-        description: 'Meditate for 30 days',
-        type: 'monthly',
-        requiredProgress: 30,
-        currentProgress: 0,
-        rewardPoints: 500,
-        startDate: DateTime.now(),
-        endDate: DateTime.now().add(const Duration(days: 30)),
-      ),
-      Challenge(
-        id: '3',
-        name: 'Reading Sprint',
-        description: 'Read 5 articles this week',
-        type: 'weekly',
-        requiredProgress: 5,
-        currentProgress: 2,
-        rewardPoints: 150,
-        participationStatus: 'active',
-        startDate: DateTime.now().subtract(const Duration(days: 2)),
-        endDate: DateTime.now().add(const Duration(days: 5)),
-      ),
-    ];
-  }
 }
 
 // Providers
@@ -660,4 +449,14 @@ final gamificationErrorProvider = Provider<String?>((ref) {
 
 final selectedLeaderboardPeriodProvider = Provider<String>((ref) {
   return ref.watch(gamificationProvider).selectedLeaderboardPeriod;
+});
+
+/// Provider to check if gamification is using fallback/cached data
+final isUsingFallbackDataProvider = Provider<bool>((ref) {
+  return ref.watch(gamificationProvider).isUsingFallbackData;
+});
+
+/// Provider for last successful API update time
+final lastGamificationUpdateProvider = Provider<DateTime?>((ref) {
+  return ref.watch(gamificationProvider).lastApiUpdate;
 });
