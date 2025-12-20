@@ -22,6 +22,7 @@ import { notFoundHandler } from './middleware/notFoundHandler';
 import { apiLimiter, webhookLimiter } from './middleware/rateLimiter';
 import { securityHeaders, ctMonitor, securityReportHandler } from './middleware/securityHeaders';
 import { setupRoutes } from './routes';
+import { initializeLarkService, isLarkConfigured } from './services/lark';
 import { dataDogService } from './services/monitoring/DataDogService';
 import { sentryService } from './services/monitoring/SentryService';
 import { redis } from './services/redis';
@@ -122,6 +123,19 @@ export function createApp(): ReturnType<typeof express> {
       statsdHost: config.monitoring.datadog.statsdHost,
       statsdPort: config.monitoring.datadog.statsdPort,
     });
+  }
+
+  // Initialize Lark integration if configured
+  if (isLarkConfigured()) {
+    initializeLarkService({
+      appId: config.lark.appId,
+      appSecret: config.lark.appSecret,
+      encryptKey: config.lark.encryptKey || undefined,
+      verificationToken: config.lark.verificationToken || undefined,
+      defaultChatId: config.lark.defaultChatId || undefined,
+      environment: config.env,
+    });
+    logger.info('Lark integration initialized');
   }
 
   const app = express();

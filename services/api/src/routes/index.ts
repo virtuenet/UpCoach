@@ -34,6 +34,7 @@ import voiceJournalRoutes from './voiceJournal';
 import localLLMRouter from './localLLM';
 import publicLandingRoutes from './public/landing';
 import publicMobileContentRoutes from './public/mobile';
+import larkRoutes from './lark';
 
 // API v2 imports
 import v2Routes from './v2';
@@ -116,6 +117,9 @@ export const setupRoutes = (app: Application): void => {
 
   // Enterprise routes (mixed public and protected)
   app.use(`${apiPrefix}/enterprise`, enterpriseRoutes);
+
+  // Lark integration routes (webhook is public, others protected)
+  app.use(`${apiPrefix}/lark`, larkRoutes);
 
   // API info endpoint
   app.get(`${apiPrefix}`, (_req, res) => {

@@ -131,6 +131,13 @@ const envSchema = z.object({
     .optional()
     .default('false'),
 
+  // Lark Integration Configuration
+  LARK_APP_ID: z.string().optional(),
+  LARK_APP_SECRET: z.string().optional(),
+  LARK_ENCRYPT_KEY: z.string().optional(),
+  LARK_VERIFICATION_TOKEN: z.string().optional(),
+  LARK_DEFAULT_CHAT_ID: z.string().optional(),
+
   // Monitoring Configuration
   SENTRY_DSN: z.string().optional(),
   SENTRY_ENVIRONMENT: z.string().optional(),
@@ -218,7 +225,13 @@ const env: Record<string, any> = envResult.success ? envResult.data : {
   DATADOG_SITE: process.env.DATADOG_SITE || 'datadoghq.com',
   DATADOG_ENV: process.env.DATADOG_ENV || 'test',
   DATADOG_SERVICE: process.env.DATADOG_SERVICE || 'upcoach-backend',
-  DATADOG_VERSION: process.env.DATADOG_VERSION || '1.0.0'
+  DATADOG_VERSION: process.env.DATADOG_VERSION || '1.0.0',
+  // Lark
+  LARK_APP_ID: process.env.LARK_APP_ID || '',
+  LARK_APP_SECRET: process.env.LARK_APP_SECRET || '',
+  LARK_ENCRYPT_KEY: process.env.LARK_ENCRYPT_KEY || '',
+  LARK_VERIFICATION_TOKEN: process.env.LARK_VERIFICATION_TOKEN || '',
+  LARK_DEFAULT_CHAT_ID: process.env.LARK_DEFAULT_CHAT_ID || '',
 };
 
 // Validate secrets in production
@@ -395,6 +408,15 @@ export const config = {
     },
   },
 
+  // Lark Integration
+  lark: {
+    appId: env.LARK_APP_ID || '',
+    appSecret: env.LARK_APP_SECRET || '',
+    encryptKey: env.LARK_ENCRYPT_KEY || '',
+    verificationToken: env.LARK_VERIFICATION_TOKEN || '',
+    defaultChatId: env.LARK_DEFAULT_CHAT_ID || '',
+  },
+
   // Feature flags
   features: {
     enablePushNotifications: !!env.FCM_SERVER_KEY,
@@ -402,6 +424,7 @@ export const config = {
     enableAnalytics: !!env.ANALYTICS_API_KEY,
     enableSupabase: !!(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY),
     enableClaude: !!env.CLAUDE_API_KEY,
+    enableLark: !!(env.LARK_APP_ID && env.LARK_APP_SECRET),
   },
 } as const;
 
