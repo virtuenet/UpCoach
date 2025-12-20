@@ -28,6 +28,7 @@ import BackupRecoveryPage from './pages/BackupRecoveryPage';
 import TiersListPage from './pages/financial/TiersListPage';
 import TierEditPage from './pages/financial/TierEditPage';
 import TierPricingPage from './pages/financial/TierPricingPage';
+import RealtimeDashboard from './pages/RealtimeDashboard';
 import Layout from './components/Layout';
 import SessionWrapper from './components/SessionWrapper';
 // Basic theme and styling imports removed for compatibility
@@ -116,7 +117,10 @@ function App() {
                     <Route path="/system/security" element={<SecuritySettingsPage />} />
                     <Route path="/system/integrations" element={<IntegrationsPage />} />
                     <Route path="/system/backup" element={<BackupRecoveryPage />} />
-                    
+
+                    {/* Real-time Monitoring */}
+                    <Route path="/realtime" element={<RealtimeDashboard />} />
+
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </Layout>

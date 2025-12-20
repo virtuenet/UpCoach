@@ -37,6 +37,7 @@ import publicMobileContentRoutes from './public/mobile';
 import larkRoutes from './lark';
 import intelligenceRoutes from './intelligence';
 import modelsRoutes from './models';
+import realtimeRoutes from './realtime';
 
 // API v2 imports
 import v2Routes from './v2';
@@ -129,6 +130,9 @@ export const setupRoutes = (app: Application): void => {
   // ML Models routes (registry, deployment, drift detection, predictions)
   app.use(`${apiPrefix}/models`, modelsRoutes);
 
+  // Real-time routes (predictions, streaming, engagement, safety)
+  app.use(`${apiPrefix}/realtime`, realtimeRoutes);
+
   // API info endpoint
   app.get(`${apiPrefix}`, (_req, res) => {
     (res as unknown).json({
@@ -219,6 +223,18 @@ export const setupRoutes = (app: Application): void => {
           votePost: 'POST /api/forum/posts/:postId/vote',
           editPost: 'PUT /api/forum/posts/:postId',
           deletePost: 'DELETE /api/forum/posts/:postId',
+        },
+        realtime: {
+          predictions: 'POST /api/realtime/predictions',
+          batchPredictions: 'POST /api/realtime/predictions/batch',
+          streamStart: 'POST /api/realtime/stream/start',
+          streamEvents: 'GET /api/realtime/stream/:streamId/events',
+          streamCancel: 'POST /api/realtime/stream/:streamId/cancel',
+          engagementMetrics: 'GET /api/realtime/engagement/metrics',
+          churnAlerts: 'GET /api/realtime/engagement/churn-alerts',
+          safetyCheck: 'POST /api/realtime/safety/check',
+          safetyDetections: 'GET /api/realtime/safety/detections',
+          health: 'GET /api/realtime/health',
         },
       },
       status: 'operational',
