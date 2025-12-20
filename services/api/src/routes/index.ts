@@ -36,6 +36,7 @@ import publicLandingRoutes from './public/landing';
 import publicMobileContentRoutes from './public/mobile';
 import larkRoutes from './lark';
 import intelligenceRoutes from './intelligence';
+import modelsRoutes from './models';
 
 // API v2 imports
 import v2Routes from './v2';
@@ -124,6 +125,9 @@ export const setupRoutes = (app: Application): void => {
 
   // Intelligence routes (anomaly detection, NL queries)
   app.use(`${apiPrefix}/intelligence`, authMiddleware, tenantContextMiddleware, intelligenceRoutes);
+
+  // ML Models routes (registry, deployment, drift detection, predictions)
+  app.use(`${apiPrefix}/models`, modelsRoutes);
 
   // API info endpoint
   app.get(`${apiPrefix}`, (_req, res) => {
