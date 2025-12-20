@@ -29,6 +29,8 @@ import TiersListPage from './pages/financial/TiersListPage';
 import TierEditPage from './pages/financial/TierEditPage';
 import TierPricingPage from './pages/financial/TierPricingPage';
 import RealtimeDashboard from './pages/RealtimeDashboard';
+import ModelDeploymentPage from './pages/deployment/ModelDeploymentPage';
+import ModelHealthPage from './pages/deployment/ModelHealthPage';
 import Layout from './components/Layout';
 import SessionWrapper from './components/SessionWrapper';
 // Basic theme and styling imports removed for compatibility
@@ -120,6 +122,10 @@ function App() {
 
                     {/* Real-time Monitoring */}
                     <Route path="/realtime" element={<RealtimeDashboard />} />
+
+                    {/* ML Model Deployment */}
+                    <Route path="/deployment" element={<ModelDeploymentPage />} />
+                    <Route path="/deployment/health" element={<ModelHealthPage />} />
 
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
