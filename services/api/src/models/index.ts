@@ -32,6 +32,9 @@ import {
   ReportStatus,
   ReportFormat,
 } from './financial/FinancialReport';
+import { SubscriptionTier } from './financial/SubscriptionTier';
+import { TierPricing, BillingInterval as TierBillingInterval } from './financial/TierPricing';
+import { TierAuditLog, AuditEntityType, AuditAction } from './financial/TierAuditLog';
 // Temporarily commented out - will be initialized via modelInitializer.ts
 // import { FinancialSnapshot, SnapshotPeriod } from './financial/FinancialSnapshot';
 // import { RevenueAnalytics } from './financial/RevenueAnalytics';
@@ -98,6 +101,13 @@ export {
   ReportStatus,
   ReportFormat,
   // RevenueAnalytics, // Temporarily commented - initialized via modelInitializer.ts
+  // Tier Management Models
+  SubscriptionTier,
+  TierPricing,
+  TierBillingInterval,
+  TierAuditLog,
+  AuditEntityType,
+  AuditAction,
 };
 export { Experiment } from './experiments/Experiment';
 // export { ExperimentAssignment } from './experiments/ExperimentAssignment';

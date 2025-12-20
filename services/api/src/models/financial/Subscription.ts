@@ -2,6 +2,15 @@ import { Model, DataTypes, Optional, Association } from 'sequelize';
 
 import { sequelize } from '../../config/sequelize';
 import { User } from '../User';
+import { tierService } from '../../services/financial/TierService';
+import { logger } from '../../utils/logger';
+
+/**
+ * Feature configuration flag.
+ * Set to 'database' to read from the new tier management system.
+ * Set to 'hardcoded' to use the original hardcoded values.
+ */
+const TIER_CONFIG_SOURCE = process.env.TIER_CONFIG_SOURCE || 'database';
 
 export enum SubscriptionStatus {
   ACTIVE = 'active',
@@ -170,6 +179,16 @@ export class Subscription
     return this.amount;
   }
 
+  /**
+   * Get the features for this subscription's plan.
+   *
+   * DUAL-READ MODE:
+   * 1. If TIER_CONFIG_SOURCE is 'database', try to read from the tier database first
+   * 2. Fall back to hardcoded values if database lookup fails or returns null
+   * 3. If TIER_CONFIG_SOURCE is 'hardcoded', use hardcoded values only
+   *
+   * This allows gradual migration from hardcoded to database-driven tier configuration.
+   */
   get planFeatures(): {
     maxCoaches: number;
     maxGoals: number;
@@ -181,6 +200,48 @@ export class Subscription
     hasPrioritySupport: boolean;
     hasCustomBranding: boolean;
     hasApiAccess: boolean;
+    hasSsoIntegration?: boolean;
+    hasDedicatedSupport?: boolean;
+  } {
+    // Try database-driven configuration first
+    if (TIER_CONFIG_SOURCE === 'database') {
+      try {
+        const dbFeatures = tierService.getCachedFeatures(this.plan);
+        if (dbFeatures) {
+          return dbFeatures;
+        }
+        // Cache miss - log a warning but continue with fallback
+        logger.debug(
+          `Tier features cache miss for plan "${this.plan}", using hardcoded fallback`
+        );
+      } catch (error) {
+        // Log error but continue with fallback
+        logger.warn(
+          `Failed to get tier features from database for plan "${this.plan}": ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      }
+    }
+
+    // Fallback to hardcoded values
+    return this.getHardcodedPlanFeatures();
+  }
+
+  /**
+   * Original hardcoded plan features (used as fallback)
+   */
+  private getHardcodedPlanFeatures(): {
+    maxCoaches: number;
+    maxGoals: number;
+    maxChatsPerDay: number;
+    hasVoiceJournaling: boolean;
+    hasProgressPhotos: boolean;
+    hasAdvancedAnalytics: boolean;
+    hasTeamFeatures: boolean;
+    hasPrioritySupport: boolean;
+    hasCustomBranding: boolean;
+    hasApiAccess: boolean;
+    hasSsoIntegration: boolean;
+    hasDedicatedSupport: boolean;
   } {
     switch (this.plan) {
       case SubscriptionPlan.FREE:
@@ -195,6 +256,8 @@ export class Subscription
           hasPrioritySupport: false,
           hasCustomBranding: false,
           hasApiAccess: false,
+          hasSsoIntegration: false,
+          hasDedicatedSupport: false,
         };
       case SubscriptionPlan.BASIC:
         return {
@@ -208,6 +271,8 @@ export class Subscription
           hasPrioritySupport: false,
           hasCustomBranding: false,
           hasApiAccess: false,
+          hasSsoIntegration: false,
+          hasDedicatedSupport: false,
         };
       case SubscriptionPlan.PRO:
         return {
@@ -221,6 +286,8 @@ export class Subscription
           hasPrioritySupport: true,
           hasCustomBranding: false,
           hasApiAccess: true,
+          hasSsoIntegration: false,
+          hasDedicatedSupport: false,
         };
       case SubscriptionPlan.TEAM:
         return {
@@ -234,6 +301,8 @@ export class Subscription
           hasPrioritySupport: true,
           hasCustomBranding: true,
           hasApiAccess: true,
+          hasSsoIntegration: false,
+          hasDedicatedSupport: false,
         };
       case SubscriptionPlan.ENTERPRISE:
         return {
@@ -247,9 +316,13 @@ export class Subscription
           hasPrioritySupport: true,
           hasCustomBranding: true,
           hasApiAccess: true,
+          hasSsoIntegration: true,
+          hasDedicatedSupport: true,
         };
       default:
-        return this.planFeatures; // TypeScript exhaustiveness check
+        // TypeScript exhaustiveness check
+        const _exhaustiveCheck: never = this.plan;
+        return _exhaustiveCheck;
     }
   }
 

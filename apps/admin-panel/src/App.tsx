@@ -25,6 +25,9 @@ import GeneralSettingsPage from './pages/GeneralSettingsPage';
 import SecuritySettingsPage from './pages/SecuritySettingsPage';
 import IntegrationsPage from './pages/IntegrationsPage';
 import BackupRecoveryPage from './pages/BackupRecoveryPage';
+import TiersListPage from './pages/financial/TiersListPage';
+import TierEditPage from './pages/financial/TierEditPage';
+import TierPricingPage from './pages/financial/TierPricingPage';
 import Layout from './components/Layout';
 import SessionWrapper from './components/SessionWrapper';
 // Basic theme and styling imports removed for compatibility
@@ -102,6 +105,10 @@ function App() {
                     <Route path="/financial/revenue" element={<RevenuePage />} />
                     <Route path="/financial/subscriptions" element={<SubscriptionsPage />} />
                     <Route path="/financial/transactions" element={<TransactionsPage />} />
+                    <Route path="/financial/tiers" element={<TiersListPage />} />
+                    <Route path="/financial/tiers/new" element={<TierEditPage />} />
+                    <Route path="/financial/tiers/:id" element={<TierEditPage />} />
+                    <Route path="/financial/tiers/:id/pricing" element={<TierPricingPage />} />
                     
                     {/* System Configuration */}
                     <Route path="/system" element={<SystemConfigPage />} />
