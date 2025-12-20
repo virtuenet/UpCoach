@@ -423,4 +423,406 @@ export class LarkClient {
   getAppId(): string {
     return this.config.appId;
   }
+
+  // ============================================================================
+  // Extended Bitable API (for BitableService)
+  // ============================================================================
+
+  /**
+   * List records from a Bitable table with advanced options
+   */
+  async listBitableRecords<T = Record<string, unknown>>(options: {
+    appToken: string;
+    tableId: string;
+    filter?: {
+      conjunction?: 'and' | 'or';
+      conditions?: Array<{
+        field_name: string;
+        operator: string;
+        value?: unknown;
+      }>;
+    };
+    sort?: Array<{ field_name: string; desc?: boolean }>;
+    pageSize?: number;
+    pageToken?: string;
+  }): Promise<{
+    code: number;
+    msg: string;
+    data: {
+      has_more: boolean;
+      page_token?: string;
+      total: number;
+      items: Array<{ record_id: string; fields: T }>;
+    };
+  }> {
+    const params = new URLSearchParams();
+    if (options.pageSize) params.set('page_size', String(options.pageSize));
+    if (options.pageToken) params.set('page_token', options.pageToken);
+    if (options.filter) params.set('filter', JSON.stringify(options.filter));
+    if (options.sort) params.set('sort', JSON.stringify(options.sort));
+
+    const response = await this.request<{
+      has_more: boolean;
+      page_token?: string;
+      total: number;
+      items: Array<{ record_id: string; fields: T }>;
+    }>(
+      'GET',
+      `/bitable/v1/apps/${options.appToken}/tables/${options.tableId}/records?${params.toString()}`
+    );
+
+    return {
+      code: 0,
+      msg: 'success',
+      data: response.data!,
+    };
+  }
+
+  /**
+   * Create a record in a Bitable table (extended version with options object)
+   */
+  async createBitableRecordEx(options: {
+    appToken: string;
+    tableId: string;
+    fields: Record<string, unknown>;
+  }): Promise<{
+    code: number;
+    msg: string;
+    data: {
+      record: { record_id: string; fields: Record<string, unknown> };
+    };
+  }> {
+    const response = await this.request<{ record: { record_id: string; fields: Record<string, unknown> } }>(
+      'POST',
+      `/bitable/v1/apps/${options.appToken}/tables/${options.tableId}/records`,
+      { fields: options.fields }
+    );
+
+    return {
+      code: 0,
+      msg: 'success',
+      data: response.data!,
+    };
+  }
+
+  /**
+   * Update a record in a Bitable table (extended version with options object)
+   */
+  async updateBitableRecordEx(options: {
+    appToken: string;
+    tableId: string;
+    recordId: string;
+    fields: Record<string, unknown>;
+  }): Promise<{
+    code: number;
+    msg: string;
+    data: {
+      record: { record_id: string; fields: Record<string, unknown> };
+    };
+  }> {
+    const response = await this.request<{ record: { record_id: string; fields: Record<string, unknown> } }>(
+      'PUT',
+      `/bitable/v1/apps/${options.appToken}/tables/${options.tableId}/records/${options.recordId}`,
+      { fields: options.fields }
+    );
+
+    return {
+      code: 0,
+      msg: 'success',
+      data: response.data!,
+    };
+  }
+
+  // ============================================================================
+  // Task API
+  // ============================================================================
+
+  /**
+   * Create a task
+   */
+  async createTask(task: {
+    summary: string;
+    description?: string;
+    due?: {
+      date?: string;
+      timestamp?: string;
+      is_all_day?: boolean;
+      timezone?: string;
+    };
+    origin?: {
+      platform_i18n_name?: { zh_cn?: string; en_us?: string };
+      href?: { url?: string; title?: string };
+    };
+    extra?: string;
+    members?: Array<{ id?: string; type?: 'user'; role?: 'assignee' | 'follower' }>;
+    tasklists?: Array<{ tasklist_guid?: string; section_guid?: string }>;
+    reminders?: Array<{ relative_fire_minute: number }>;
+    start?: { timestamp?: string; is_all_day?: boolean; timezone?: string };
+    [key: string]: unknown;
+  }): Promise<{
+    code: number;
+    msg: string;
+    data?: {
+      task?: {
+        guid: string;
+        summary: string;
+        [key: string]: unknown;
+      };
+    };
+  }> {
+    const response = await this.request<{ task?: { guid: string; summary: string } }>(
+      'POST',
+      '/task/v2/tasks',
+      task
+    );
+
+    return {
+      code: 0,
+      msg: 'success',
+      data: response.data,
+    };
+  }
+
+  /**
+   * Get a task by ID
+   */
+  async getTask(taskId: string): Promise<{
+    code: number;
+    msg: string;
+    data?: {
+      task?: {
+        guid: string;
+        summary: string;
+        [key: string]: unknown;
+      };
+    };
+  }> {
+    const response = await this.request<{ task?: { guid: string; summary: string } }>(
+      'GET',
+      `/task/v2/tasks/${taskId}`
+    );
+
+    return {
+      code: 0,
+      msg: 'success',
+      data: response.data,
+    };
+  }
+
+  /**
+   * Update a task
+   */
+  async updateTask(
+    taskId: string,
+    updates: Partial<{
+      summary: string;
+      description: string;
+      due: { timestamp?: string; is_all_day?: boolean };
+      completed_at: string;
+      [key: string]: unknown;
+    }>
+  ): Promise<{
+    code: number;
+    msg: string;
+    data?: {
+      task?: {
+        guid: string;
+        summary: string;
+        [key: string]: unknown;
+      };
+    };
+  }> {
+    const response = await this.request<{ task?: { guid: string; summary: string } }>(
+      'PATCH',
+      `/task/v2/tasks/${taskId}`,
+      updates
+    );
+
+    return {
+      code: 0,
+      msg: 'success',
+      data: response.data,
+    };
+  }
+
+  /**
+   * Complete a task
+   */
+  async completeTask(taskId: string): Promise<void> {
+    await this.request('POST', `/task/v2/tasks/${taskId}/complete`);
+  }
+
+  // ============================================================================
+  // Approval API
+  // ============================================================================
+
+  /**
+   * Create an approval instance
+   */
+  async createApprovalInstance(request: {
+    approvalCode: string;
+    userId: string;
+    form: string;
+    nodeApproverIds?: string[];
+    ccUserIds?: string[];
+    uuid?: string;
+  }): Promise<{
+    code: number;
+    msg: string;
+    data?: {
+      instance_code: string;
+    };
+  }> {
+    const response = await this.request<{ instance_code: string }>(
+      'POST',
+      '/approval/v4/instances',
+      {
+        approval_code: request.approvalCode,
+        user_id: request.userId,
+        form: request.form,
+        node_approver_user_id_list: request.nodeApproverIds,
+        cc_user_id_list: request.ccUserIds,
+        uuid: request.uuid,
+      }
+    );
+
+    return {
+      code: 0,
+      msg: 'success',
+      data: response.data,
+    };
+  }
+
+  /**
+   * Get approval instance details
+   */
+  async getApprovalInstance(instanceCode: string): Promise<{
+    code: number;
+    msg: string;
+    data?: {
+      approval_code: string;
+      approval_name: string;
+      instance_code: string;
+      user_id: string;
+      status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELED' | 'DELETED';
+      form: Record<string, unknown>[];
+      timeline: Array<{
+        type: string;
+        createTime: string;
+        userId?: string;
+        comment?: string;
+        ext?: string;
+      }>;
+      create_time: string;
+      update_time: string;
+    };
+  }> {
+    const response = await this.request<{
+      approval_code: string;
+      approval_name: string;
+      instance_code: string;
+      user_id: string;
+      status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELED' | 'DELETED';
+      form: Record<string, unknown>[];
+      timeline: Array<{
+        type: string;
+        createTime: string;
+        userId?: string;
+        comment?: string;
+        ext?: string;
+      }>;
+      create_time: string;
+      update_time: string;
+    }>(
+      'GET',
+      `/approval/v4/instances/${instanceCode}`
+    );
+
+    return {
+      code: 0,
+      msg: 'success',
+      data: response.data,
+    };
+  }
+
+  /**
+   * Cancel an approval instance
+   */
+  async cancelApprovalInstance(instanceCode: string, userId: string): Promise<void> {
+    await this.request(
+      'POST',
+      `/approval/v4/instances/${instanceCode}/cancel`,
+      { user_id: userId }
+    );
+  }
+
+  /**
+   * List approval instances
+   */
+  async listApprovalInstances(options: {
+    approvalCode: string;
+    status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELED' | 'DELETED';
+    pageSize?: number;
+    pageToken?: string;
+  }): Promise<{
+    code: number;
+    msg: string;
+    data?: {
+      instance_list: Array<{
+        approvalCode: string;
+        approvalName: string;
+        instanceCode: string;
+        userId: string;
+        status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELED' | 'DELETED';
+        form: Record<string, unknown>[];
+        timeline: Array<{
+          type: string;
+          createTime: string;
+          userId?: string;
+          comment?: string;
+        }>;
+        createTime: string;
+        updateTime: string;
+      }>;
+      has_more: boolean;
+      page_token?: string;
+    };
+  }> {
+    const params = new URLSearchParams({
+      approval_code: options.approvalCode,
+    });
+    if (options.status) params.set('status', options.status);
+    if (options.pageSize) params.set('page_size', String(options.pageSize));
+    if (options.pageToken) params.set('page_token', options.pageToken);
+
+    const response = await this.request<{
+      instance_list: Array<{
+        approvalCode: string;
+        approvalName: string;
+        instanceCode: string;
+        userId: string;
+        status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELED' | 'DELETED';
+        form: Record<string, unknown>[];
+        timeline: Array<{
+          type: string;
+          createTime: string;
+          userId?: string;
+          comment?: string;
+        }>;
+        createTime: string;
+        updateTime: string;
+      }>;
+      has_more: boolean;
+      page_token?: string;
+    }>(
+      'GET',
+      `/approval/v4/instances?${params.toString()}`
+    );
+
+    return {
+      code: 0,
+      msg: 'success',
+      data: response.data,
+    };
+  }
 }

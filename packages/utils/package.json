@@ -15,7 +15,6 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@types/react-router-dom": "^5.3.3",
     "date-fns": "^2.30.0"
   },
   "devDependencies": {

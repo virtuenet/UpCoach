@@ -12,13 +12,14 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "isolatedModules": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "types": ["node"]
   },
   "include": ["src", "src/*.d.ts"],
   "exclude": ["node_modules", "dist", "**/*.test.*", "**/*.spec.*", "src/test-utils/**", "src/tests/**"],

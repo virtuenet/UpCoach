@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@pact-foundation/pact": "^12.1.0",
-    "@types/react-router-dom": "^5.3.3",
     "ajv": "^8.12.0",
     "zod": "^3.22.4"
   },
