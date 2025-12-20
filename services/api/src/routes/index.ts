@@ -35,6 +35,7 @@ import localLLMRouter from './localLLM';
 import publicLandingRoutes from './public/landing';
 import publicMobileContentRoutes from './public/mobile';
 import larkRoutes from './lark';
+import intelligenceRoutes from './intelligence';
 
 // API v2 imports
 import v2Routes from './v2';
@@ -120,6 +121,9 @@ export const setupRoutes = (app: Application): void => {
 
   // Lark integration routes (webhook is public, others protected)
   app.use(`${apiPrefix}/lark`, larkRoutes);
+
+  // Intelligence routes (anomaly detection, NL queries)
+  app.use(`${apiPrefix}/intelligence`, authMiddleware, tenantContextMiddleware, intelligenceRoutes);
 
   // API info endpoint
   app.get(`${apiPrefix}`, (_req, res) => {
