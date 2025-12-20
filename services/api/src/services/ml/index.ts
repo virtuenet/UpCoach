@@ -120,3 +120,9 @@ export {
 
 // ==================== Prediction Engines ====================
 export * from './predictions';
+
+// ==================== Deployment Services ====================
+export * from './deployment';
+
+// ==================== Mobile ML Services ====================
+export * from './mobile';

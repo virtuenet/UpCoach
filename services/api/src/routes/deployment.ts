@@ -192,7 +192,10 @@ router.get('/canary/:id', (req: Request, res: Response) => {
 router.get('/canary', (req: Request, res: Response) => {
   try {
     const status = req.query.status as string | undefined;
-    const deployments = canaryDeploymentService.listDeployments(status as 'canary' | 'partial' | 'full' | 'completed' | 'rolled_back');
+    const allDeployments = canaryDeploymentService.getAllDeployments();
+    const deployments = status
+      ? allDeployments.filter(d => d.currentStage === status || d.status === status)
+      : allDeployments;
     res.json({ success: true, deployments });
   } catch (error) {
     res.status(500).json({
@@ -266,7 +269,10 @@ router.get('/shadow/:id/analysis', (req: Request, res: Response) => {
 router.get('/shadow', (req: Request, res: Response) => {
   try {
     const status = req.query.status as string | undefined;
-    const deployments = shadowDeploymentService.listShadowDeployments(status as 'active' | 'stopped' | 'completed');
+    const allDeployments = shadowDeploymentService.getAllShadows();
+    const deployments = status
+      ? allDeployments.filter(d => d.status === status)
+      : allDeployments;
     res.json({ success: true, deployments });
   } catch (error) {
     res.status(500).json({
@@ -373,7 +379,10 @@ router.post('/experiments/:id/conversion', (req: Request, res: Response) => {
 router.get('/experiments', (req: Request, res: Response) => {
   try {
     const status = req.query.status as string | undefined;
-    const experiments = trafficSplitter.listExperiments(status as 'draft' | 'running' | 'paused' | 'completed');
+    const allExperiments = trafficSplitter.getAllExperiments();
+    const experiments = status
+      ? allExperiments.filter(e => e.status === status)
+      : allExperiments;
     res.json({ success: true, experiments });
   } catch (error) {
     res.status(500).json({

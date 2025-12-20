@@ -38,6 +38,7 @@ import larkRoutes from './lark';
 import intelligenceRoutes from './intelligence';
 import modelsRoutes from './models';
 import realtimeRoutes from './realtime';
+import deploymentRoutes from './deployment';
 
 // API v2 imports
 import v2Routes from './v2';
@@ -132,6 +133,9 @@ export const setupRoutes = (app: Application): void => {
 
   // Real-time routes (predictions, streaming, engagement, safety)
   app.use(`${apiPrefix}/realtime`, realtimeRoutes);
+
+  // ML Model Deployment routes (serving, canary, shadow, quantization, mobile, health)
+  app.use(`${apiPrefix}/deployment`, authMiddleware, tenantContextMiddleware, deploymentRoutes);
 
   // API info endpoint
   app.get(`${apiPrefix}`, (_req, res) => {
@@ -235,6 +239,72 @@ export const setupRoutes = (app: Application): void => {
           safetyCheck: 'POST /api/realtime/safety/check',
           safetyDetections: 'GET /api/realtime/safety/detections',
           health: 'GET /api/realtime/health',
+        },
+        deployment: {
+          models: {
+            load: 'POST /api/deployment/models/load',
+            unload: 'POST /api/deployment/models/unload',
+            predict: 'POST /api/deployment/models/predict',
+            predictBatch: 'POST /api/deployment/models/predict/batch',
+            stats: 'GET /api/deployment/models/stats',
+          },
+          canary: {
+            start: 'POST /api/deployment/canary/start',
+            promote: 'POST /api/deployment/canary/:id/promote',
+            rollback: 'POST /api/deployment/canary/:id/rollback',
+            get: 'GET /api/deployment/canary/:id',
+            list: 'GET /api/deployment/canary',
+          },
+          shadow: {
+            start: 'POST /api/deployment/shadow/start',
+            stop: 'POST /api/deployment/shadow/:id/stop',
+            analysis: 'GET /api/deployment/shadow/:id/analysis',
+            list: 'GET /api/deployment/shadow',
+          },
+          experiments: {
+            create: 'POST /api/deployment/experiments',
+            start: 'POST /api/deployment/experiments/:id/start',
+            stop: 'POST /api/deployment/experiments/:id/stop',
+            results: 'GET /api/deployment/experiments/:id/results',
+            conversion: 'POST /api/deployment/experiments/:id/conversion',
+            list: 'GET /api/deployment/experiments',
+          },
+          quantization: {
+            register: 'POST /api/deployment/quantization/register',
+            quantize: 'POST /api/deployment/quantization/quantize',
+            get: 'GET /api/deployment/quantization/:id',
+            benchmark: 'GET /api/deployment/quantization/:id/benchmark',
+            recommend: 'POST /api/deployment/quantization/recommend',
+            stats: 'GET /api/deployment/quantization/stats',
+          },
+          mobile: {
+            register: 'POST /api/deployment/mobile/models',
+            list: 'GET /api/deployment/mobile/models',
+            get: 'GET /api/deployment/mobile/models/:id',
+            download: 'POST /api/deployment/mobile/models/download',
+            checkUpdates: 'POST /api/deployment/mobile/models/check-updates',
+            compatibility: 'POST /api/deployment/mobile/models/compatibility',
+            stats: 'GET /api/deployment/mobile/stats',
+          },
+          monitoring: {
+            register: 'POST /api/deployment/monitoring/register',
+            metrics: 'POST /api/deployment/monitoring/metrics',
+            alerts: 'GET /api/deployment/monitoring/alerts',
+            acknowledgeAlert: 'POST /api/deployment/monitoring/alerts/:id/acknowledge',
+            drift: 'GET /api/deployment/monitoring/drift/:modelId/:version',
+            sla: 'GET /api/deployment/monitoring/sla/:modelId/:version',
+            stats: 'GET /api/deployment/monitoring/stats',
+          },
+          health: {
+            register: 'POST /api/deployment/health/checks',
+            modelHealth: 'GET /api/deployment/health/models/:modelId',
+            aggregated: 'GET /api/deployment/health/aggregated',
+            liveness: 'GET /api/deployment/health/liveness/:modelId',
+            readiness: 'GET /api/deployment/health/readiness/:modelId',
+            healingRules: 'POST /api/deployment/health/healing/rules',
+            healingEvents: 'GET /api/deployment/health/healing/events',
+            stats: 'GET /api/deployment/health/stats',
+          },
         },
       },
       status: 'operational',

@@ -13,6 +13,8 @@ const navigationItems = [
   { label: 'Users', path: '/users' },
   { label: 'Analytics', path: '/analytics' },
   { label: 'Financial', path: '/financial' },
+  { label: 'Real-time', path: '/realtime' },
+  { label: 'Deployment', path: '/deployment' },
   { label: 'Settings', path: '/settings' },
 ];
 
