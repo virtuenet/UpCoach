@@ -16,3 +16,12 @@ export 'network_security.dart';
 
 // Database Encryption
 export 'database_encryption.dart';
+
+// Biometric Authentication
+export 'biometric_auth_service.dart';
+
+// Device Attestation (Play Integrity / App Attest)
+export 'device_attestation_service.dart';
+
+// Session Security
+export 'session_security_service.dart';
