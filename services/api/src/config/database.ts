@@ -4,6 +4,11 @@ import { sequelize } from './sequelize';
 // Re-export sequelize for compatibility
 export { sequelize };
 
+// Get sequelize instance (for services that need it)
+export function getSequelize() {
+  return sequelize;
+}
+
 // Initialize database connection
 export async function initializeDatabase(): Promise<void> {
   try {

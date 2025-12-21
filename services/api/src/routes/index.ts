@@ -41,6 +41,7 @@ import realtimeRoutes from './realtime';
 import deploymentRoutes from './deployment';
 import tiersRoutes from './tiers';
 import subscriptionsRoutes from './subscriptions';
+import syncRoutes from './sync';
 
 // API v2 imports
 import v2Routes from './v2';
@@ -144,6 +145,9 @@ export const setupRoutes = (app: Application): void => {
 
   // Subscriptions routes (RevenueCat integration, receipt validation, entitlements)
   app.use(`${apiPrefix}/subscriptions`, subscriptionsRoutes);
+
+  // Sync routes (offline sync, delta sync, conflict resolution)
+  app.use(`${apiPrefix}/sync`, syncRoutes);
 
   // API info endpoint
   app.get(`${apiPrefix}`, (_req, res) => {
@@ -343,6 +347,15 @@ export const setupRoutes = (app: Application): void => {
           checkEntitlement: 'POST /api/subscriptions/check-entitlement',
           webhookRevenueCat: 'POST /api/subscriptions/webhook/revenuecat',
           managementUrl: 'GET /api/subscriptions/management-url',
+        },
+        sync: {
+          batch: 'POST /api/sync/batch',
+          delta: 'POST /api/sync/delta',
+          status: 'GET /api/sync/status',
+          full: 'POST /api/sync/full',
+          push: 'POST /api/sync/push',
+          pull: 'POST /api/sync/pull',
+          resolveConflict: 'POST /api/sync/resolve-conflict',
         },
       },
       status: 'operational',
