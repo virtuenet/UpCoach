@@ -95,6 +95,11 @@ const envSchema = z.object({
     .string()
     .optional(),
 
+  // RevenueCat Configuration
+  REVENUECAT_API_KEY: z.string().optional(),
+  REVENUECAT_WEBHOOK_AUTH_KEY: z.string().optional(),
+  REVENUECAT_PROJECT_ID: z.string().optional(),
+
   // Email Configuration (for notifications)
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.string().optional(),
@@ -343,6 +348,13 @@ export const config = {
     webhookSecret: env.STRIPE_WEBHOOK_SECRET || '',
   },
 
+  // RevenueCat
+  revenueCat: {
+    apiKey: env.REVENUECAT_API_KEY || '',
+    webhookAuthKey: env.REVENUECAT_WEBHOOK_AUTH_KEY || '',
+    projectId: env.REVENUECAT_PROJECT_ID || '',
+  },
+
   // Email
   email: {
     host: env.SMTP_HOST,
@@ -425,6 +437,7 @@ export const config = {
     enableSupabase: !!(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY),
     enableClaude: !!env.CLAUDE_API_KEY,
     enableLark: !!(env.LARK_APP_ID && env.LARK_APP_SECRET),
+    enableRevenueCat: !!env.REVENUECAT_API_KEY,
   },
 } as const;
 

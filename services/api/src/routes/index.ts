@@ -40,6 +40,7 @@ import modelsRoutes from './models';
 import realtimeRoutes from './realtime';
 import deploymentRoutes from './deployment';
 import tiersRoutes from './tiers';
+import subscriptionsRoutes from './subscriptions';
 
 // API v2 imports
 import v2Routes from './v2';
@@ -140,6 +141,9 @@ export const setupRoutes = (app: Application): void => {
 
   // Subscription Tiers routes (admin - tier/pricing management with Stripe sync)
   app.use(`${apiPrefix}/tiers`, tiersRoutes);
+
+  // Subscriptions routes (RevenueCat integration, receipt validation, entitlements)
+  app.use(`${apiPrefix}/subscriptions`, subscriptionsRoutes);
 
   // API info endpoint
   app.get(`${apiPrefix}`, (_req, res) => {
@@ -331,6 +335,14 @@ export const setupRoutes = (app: Application): void => {
             import: 'POST /api/tiers/stripe/import',
             status: 'GET /api/tiers/stripe/status',
           },
+        },
+        subscriptions: {
+          current: 'GET /api/subscriptions/current',
+          sync: 'POST /api/subscriptions/sync',
+          validateReceipt: 'POST /api/subscriptions/validate-receipt',
+          checkEntitlement: 'POST /api/subscriptions/check-entitlement',
+          webhookRevenueCat: 'POST /api/subscriptions/webhook/revenuecat',
+          managementUrl: 'GET /api/subscriptions/management-url',
         },
       },
       status: 'operational',
