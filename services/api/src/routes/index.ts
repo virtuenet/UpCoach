@@ -45,6 +45,7 @@ import syncRoutes from './sync';
 import analyticsRoutes from './analytics';
 import recommendationsRoutes from './recommendations';
 import monitoringRoutes from './monitoring';
+import i18nRoutes from './i18n';
 
 // API v2 imports
 import v2Routes from './v2';
@@ -160,6 +161,9 @@ export const setupRoutes = (app: Application): void => {
 
   // Monitoring routes (system health, performance, alerts, errors, audit)
   app.use(`${apiPrefix}/monitoring`, monitoringRoutes);
+
+  // i18n routes (translations, locales, formatting, content localization)
+  app.use(`${apiPrefix}/i18n`, i18nRoutes);
 
   // API info endpoint
   app.get(`${apiPrefix}`, (_req, res) => {
