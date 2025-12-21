@@ -83,10 +83,10 @@ void main() {
     });
 
     test('fromJson handles missing score with default', () {
-      final json = {
+      final json = <String, dynamic>{
         'id': 'readiness-001',
         'day': '2024-01-15',
-        'contributors': {},
+        'contributors': <String, dynamic>{},
       };
 
       final readiness = OuraDailyReadiness.fromJson(json);
