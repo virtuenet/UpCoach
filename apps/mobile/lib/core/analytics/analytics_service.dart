@@ -1,7 +1,18 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+/// Check if Firebase is initialized
+bool get _isFirebaseInitialized {
+  try {
+    Firebase.app();
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
 
 /// Analytics event types for consistent tracking
 enum AnalyticsEvent {
@@ -132,9 +143,10 @@ class AnalyticsService {
   factory AnalyticsService() => _instance;
   AnalyticsService._internal();
 
-  late final FirebaseAnalytics _analytics;
-  late final FirebaseCrashlytics _crashlytics;
+  FirebaseAnalytics? _analytics;
+  FirebaseCrashlytics? _crashlytics;
   bool _isInitialized = false;
+  bool _firebaseAvailable = false;
   String? _userId;
   final Map<String, dynamic> _sessionProperties = {};
 
@@ -142,28 +154,40 @@ class AnalyticsService {
   Future<void> initialize() async {
     if (_isInitialized) return;
 
-    _analytics = FirebaseAnalytics.instance;
-    _crashlytics = FirebaseCrashlytics.instance;
+    // Check if Firebase is available
+    _firebaseAvailable = _isFirebaseInitialized;
+
+    if (_firebaseAvailable) {
+      _analytics = FirebaseAnalytics.instance;
+      _crashlytics = FirebaseCrashlytics.instance;
+    } else {
+      debugPrint('⚠️ Firebase not available - Analytics will log locally only');
+    }
+
     _isInitialized = true;
 
     // Log app open event
     await trackEvent(AnalyticsEvent.appOpen);
 
-    debugPrint('✅ AnalyticsService initialized');
+    debugPrint('✅ AnalyticsService initialized (Firebase: $_firebaseAvailable)');
   }
 
   /// Set user ID for tracking
   Future<void> setUserId(String? userId) async {
     _userId = userId;
-    await _analytics.setUserId(id: userId);
-    await _crashlytics.setUserIdentifier(userId ?? '');
+    if (_firebaseAvailable) {
+      await _analytics?.setUserId(id: userId);
+      await _crashlytics?.setUserIdentifier(userId ?? '');
+    }
     debugPrint('📊 User ID set: $userId');
   }
 
   /// Set user property
   Future<void> setUserProperty(UserProperty property, String? value) async {
     final propertyName = property.name;
-    await _analytics.setUserProperty(name: propertyName, value: value);
+    if (_firebaseAvailable) {
+      await _analytics?.setUserProperty(name: propertyName, value: value);
+    }
     _sessionProperties[propertyName] = value;
     debugPrint('📊 User property set: $propertyName = $value');
   }
@@ -193,7 +217,9 @@ class AnalyticsService {
     };
 
     try {
-      await _analytics.logEvent(name: eventName, parameters: eventParams);
+      if (_firebaseAvailable) {
+        await _analytics?.logEvent(name: eventName, parameters: eventParams);
+      }
       debugPrint('📊 Event tracked: $eventName');
     } catch (e) {
       debugPrint('❌ Failed to track event: $e');
@@ -207,10 +233,12 @@ class AnalyticsService {
     Map<String, dynamic>? parameters,
   }) async {
     try {
-      await _analytics.logScreenView(
-        screenName: screenName,
-        screenClass: screenClass ?? screenName,
-      );
+      if (_firebaseAvailable) {
+        await _analytics?.logScreenView(
+          screenName: screenName,
+          screenClass: screenClass ?? screenName,
+        );
+      }
 
       // Also track as custom event for more details
       await trackEvent(
@@ -237,13 +265,15 @@ class AnalyticsService {
     Map<String, dynamic>? parameters,
   }) async {
     try {
-      // Log to Crashlytics
-      await _crashlytics.recordError(
-        error,
-        stackTrace,
-        reason: reason,
-        fatal: fatal,
-      );
+      // Log to Crashlytics (only if Firebase is available)
+      if (_firebaseAvailable) {
+        await _crashlytics?.recordError(
+          error,
+          stackTrace,
+          reason: reason,
+          fatal: fatal,
+        );
+      }
 
       // Also track as analytics event
       await trackEvent(
@@ -305,7 +335,9 @@ class AnalyticsService {
     required String method,
     bool success = true,
   }) async {
-    await _analytics.logLogin(loginMethod: method);
+    if (_firebaseAvailable) {
+      await _analytics?.logLogin(loginMethod: method);
+    }
     await trackEvent(
       AnalyticsEvent.login,
       parameters: {'method': method, 'success': success},
@@ -316,7 +348,9 @@ class AnalyticsService {
     required String method,
     bool success = true,
   }) async {
-    await _analytics.logSignUp(signUpMethod: method);
+    if (_firebaseAvailable) {
+      await _analytics?.logSignUp(signUpMethod: method);
+    }
     await trackEvent(
       AnalyticsEvent.signUp,
       parameters: {'method': method, 'success': success},
@@ -434,17 +468,19 @@ class AnalyticsService {
     required double price,
     required String currency,
   }) async {
-    await _analytics.logBeginCheckout(
-      value: price,
-      currency: currency,
-      items: [
-        AnalyticsEventItem(
-          itemId: itemId,
-          itemName: itemName,
-          price: price,
-        ),
-      ],
-    );
+    if (_firebaseAvailable) {
+      await _analytics?.logBeginCheckout(
+        value: price,
+        currency: currency,
+        items: [
+          AnalyticsEventItem(
+            itemId: itemId,
+            itemName: itemName,
+            price: price,
+          ),
+        ],
+      );
+    }
     await trackEvent(
       AnalyticsEvent.purchaseStart,
       parameters: {
@@ -463,18 +499,20 @@ class AnalyticsService {
     required String itemId,
     required String itemName,
   }) async {
-    await _analytics.logPurchase(
-      transactionId: transactionId,
-      value: value,
-      currency: currency,
-      items: [
-        AnalyticsEventItem(
-          itemId: itemId,
-          itemName: itemName,
-          price: value,
-        ),
-      ],
-    );
+    if (_firebaseAvailable) {
+      await _analytics?.logPurchase(
+        transactionId: transactionId,
+        value: value,
+        currency: currency,
+        items: [
+          AnalyticsEventItem(
+            itemId: itemId,
+            itemName: itemName,
+            price: value,
+          ),
+        ],
+      );
+    }
     await trackEvent(
       AnalyticsEvent.purchaseComplete,
       parameters: {

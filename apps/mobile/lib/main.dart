@@ -27,11 +27,12 @@ import 'core/accessibility/accessibility_wrapper.dart';
 import 'shared/widgets/loading_overlay.dart';
 import 'l10n/app_localizations.dart';
 import 'features/health/health.dart';
+import 'firebase_options.dart';
 
 /// Background message handler - must be top-level function
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   debugPrint('📬 Background message: ${message.messageId}');
 
   // Handle silent sync in background
@@ -130,7 +131,9 @@ void main() async {
 
 Future<bool> _initFirebaseSafe() async {
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     return true;
   } catch (e, st) {
     debugPrint('⚠️ Firebase.initializeApp failed: $e\n$st');

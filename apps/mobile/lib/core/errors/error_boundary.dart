@@ -1,8 +1,19 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import '../analytics/analytics_service.dart';
+
+/// Check if Firebase is initialized
+bool get _isFirebaseInitialized {
+  try {
+    Firebase.app();
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
 
 /// Error information for display and reporting
 class ErrorInfo {
@@ -72,8 +83,10 @@ class ErrorHandler {
 
     _recordError(errorInfo);
 
-    // Report to Crashlytics
-    FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+    // Report to Crashlytics (only if Firebase is initialized)
+    if (_isFirebaseInitialized) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+    }
 
     // In debug mode, also print to console
     if (kDebugMode) {
@@ -92,8 +105,10 @@ class ErrorHandler {
 
     _recordError(errorInfo);
 
-    // Report to Crashlytics
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    // Report to Crashlytics (only if Firebase is initialized)
+    if (_isFirebaseInitialized) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    }
   }
 
   /// Record a non-fatal error
@@ -112,13 +127,15 @@ class ErrorHandler {
 
     _recordError(errorInfo);
 
-    // Report to Crashlytics
-    FirebaseCrashlytics.instance.recordError(
-      error,
-      stackTrace,
-      reason: context,
-      fatal: fatal,
-    );
+    // Report to Crashlytics (only if Firebase is initialized)
+    if (_isFirebaseInitialized) {
+      FirebaseCrashlytics.instance.recordError(
+        error,
+        stackTrace,
+        reason: context,
+        fatal: fatal,
+      );
+    }
 
     // Track in analytics
     AnalyticsService().trackError(
@@ -146,7 +163,11 @@ class ErrorHandler {
 
   /// Log a message to Crashlytics
   void log(String message) {
-    FirebaseCrashlytics.instance.log(message);
+    if (_isFirebaseInitialized) {
+      FirebaseCrashlytics.instance.log(message);
+    } else {
+      debugPrint('📝 Log: $message');
+    }
   }
 
   /// Clear recent errors

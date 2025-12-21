@@ -1,9 +1,20 @@
 import 'dart:async';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import 'performance_monitor.dart';
+
+/// Check if Firebase is initialized
+bool get _isFirebaseInitialized {
+  try {
+    Firebase.app();
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
 
 /// Firebase Performance service for comprehensive app performance monitoring
 class FirebasePerformanceService {
@@ -26,6 +37,12 @@ class FirebasePerformanceService {
   /// Initialize Firebase Performance
   Future<void> initialize() async {
     if (_isInitialized) return;
+
+    // Check if Firebase is available
+    if (!_isFirebaseInitialized) {
+      debugPrint('⚠️ Firebase not available - Performance monitoring disabled');
+      return;
+    }
 
     try {
       _performance = FirebasePerformance.instance;
