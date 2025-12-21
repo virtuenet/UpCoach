@@ -6,6 +6,7 @@ import {
   CreationOptional,
   Sequelize,
   Association,
+  Op,
 } from 'sequelize';
 
 import type { TierPricing } from './TierPricing';
@@ -18,8 +19,8 @@ import type { TierPricing } from './TierPricing';
  * Enables admin control over tiers and features.
  */
 export class SubscriptionTier extends Model<
-  InferAttributes<SubscriptionTier>,
-  InferCreationAttributes<SubscriptionTier>
+  InferAttributes<SubscriptionTier, { omit: 'planFeatures' | 'isUnlimited' | 'featureCount' }>,
+  InferCreationAttributes<SubscriptionTier, { omit: 'planFeatures' | 'isUnlimited' | 'featureCount' }>
 > {
   // Primary fields
   declare id: CreationOptional<string>;
@@ -288,7 +289,7 @@ SubscriptionTier.initializeModel = function (sequelizeInstance: Sequelize) {
           unique: true,
           fields: ['stripe_product_id'],
           where: {
-            stripe_product_id: { [DataTypes.Op?.ne ?? 'ne']: null },
+            stripe_product_id: { [Op.ne]: null },
           },
         },
       ],

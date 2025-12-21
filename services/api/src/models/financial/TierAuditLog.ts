@@ -39,8 +39,8 @@ export enum AuditAction {
  * Required for compliance and debugging.
  */
 export class TierAuditLog extends Model<
-  InferAttributes<TierAuditLog>,
-  InferCreationAttributes<TierAuditLog>
+  InferAttributes<TierAuditLog, { omit: 'changeDescription' | 'isSignificantChange' }>,
+  InferCreationAttributes<TierAuditLog, { omit: 'changeDescription' | 'isSignificantChange' }>
 > {
   // Primary fields
   declare id: CreationOptional<string>;

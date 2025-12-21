@@ -56,12 +56,28 @@ export interface AuditContext {
 }
 
 /**
+ * Type for tier features
+ */
+type TierFeatures = {
+  maxCoaches: number;
+  maxGoals: number;
+  maxChatsPerDay: number;
+  hasVoiceJournaling: boolean;
+  hasProgressPhotos: boolean;
+  hasAdvancedAnalytics: boolean;
+  hasTeamFeatures: boolean;
+  hasPrioritySupport: boolean;
+  hasCustomBranding: boolean;
+  hasApiAccess: boolean;
+};
+
+/**
  * Cached tier features for quick lookups
  */
 const tierFeaturesCache = new Map<
   string,
   {
-    features: ReturnType<SubscriptionTier['planFeatures']>;
+    features: TierFeatures;
     expiresAt: number;
   }
 >();
@@ -419,7 +435,7 @@ export class TierService {
    * Get cached tier features for a tier name
    * Used by Subscription.planFeatures for dual-read mode
    */
-  getCachedFeatures(tierName: string): ReturnType<SubscriptionTier['planFeatures']> | null {
+  getCachedFeatures(tierName: string): TierFeatures | null {
     const cached = tierFeaturesCache.get(tierName.toLowerCase());
     if (cached && cached.expiresAt > Date.now()) {
       return cached.features;

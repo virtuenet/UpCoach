@@ -619,7 +619,7 @@ router.put(
     body('isActive').optional().isBoolean(),
     body('trialDays').optional().isInt({ min: 0, max: 365 }),
     body('discountPercentage').optional().isFloat({ min: 0, max: 100 }),
-    body('discountValidUntil').optional().isISO8601().or(body('discountValidUntil').isIn([null])),
+    body('discountValidUntil').optional({ nullable: true }).isISO8601(),
   ],
   validateRequest,
   async (req: AuthorizedRequest, res: Response) => {

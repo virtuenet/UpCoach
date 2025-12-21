@@ -7,6 +7,7 @@ import {
   Sequelize,
   Association,
   ForeignKey,
+  Op,
 } from 'sequelize';
 
 import type { SubscriptionTier } from './SubscriptionTier';
@@ -28,8 +29,8 @@ export enum BillingInterval {
  * Integrates with Stripe price objects.
  */
 export class TierPricing extends Model<
-  InferAttributes<TierPricing>,
-  InferCreationAttributes<TierPricing>
+  InferAttributes<TierPricing, { omit: 'amountInDollars' | 'monthlyEquivalent' | 'annualEquivalent' | 'savingsPercentage' | 'isDiscountActive' | 'effectiveAmount' }>,
+  InferCreationAttributes<TierPricing, { omit: 'amountInDollars' | 'monthlyEquivalent' | 'annualEquivalent' | 'savingsPercentage' | 'isDiscountActive' | 'effectiveAmount' }>
 > {
   // Primary fields
   declare id: CreationOptional<string>;
@@ -275,7 +276,7 @@ TierPricing.initializeModel = function (sequelizeInstance: Sequelize) {
           unique: true,
           fields: ['stripe_price_id'],
           where: {
-            stripe_price_id: { [DataTypes.Op?.ne ?? 'ne']: null },
+            stripe_price_id: { [Op.ne]: null },
           },
         },
       ],

@@ -39,6 +39,7 @@ import intelligenceRoutes from './intelligence';
 import modelsRoutes from './models';
 import realtimeRoutes from './realtime';
 import deploymentRoutes from './deployment';
+import tiersRoutes from './tiers';
 
 // API v2 imports
 import v2Routes from './v2';
@@ -136,6 +137,9 @@ export const setupRoutes = (app: Application): void => {
 
   // ML Model Deployment routes (serving, canary, shadow, quantization, mobile, health)
   app.use(`${apiPrefix}/deployment`, authMiddleware, tenantContextMiddleware, deploymentRoutes);
+
+  // Subscription Tiers routes (admin - tier/pricing management with Stripe sync)
+  app.use(`${apiPrefix}/tiers`, tiersRoutes);
 
   // API info endpoint
   app.get(`${apiPrefix}`, (_req, res) => {
@@ -304,6 +308,28 @@ export const setupRoutes = (app: Application): void => {
             healingRules: 'POST /api/deployment/health/healing/rules',
             healingEvents: 'GET /api/deployment/health/healing/events',
             stats: 'GET /api/deployment/health/stats',
+          },
+        },
+        tiers: {
+          list: 'GET /api/tiers',
+          get: 'GET /api/tiers/:id',
+          create: 'POST /api/tiers',
+          update: 'PUT /api/tiers/:id',
+          delete: 'DELETE /api/tiers/:id',
+          pricing: {
+            list: 'GET /api/tiers/:tierId/pricing',
+            create: 'POST /api/tiers/:tierId/pricing',
+            update: 'PUT /api/tiers/pricing/:id',
+            delete: 'DELETE /api/tiers/pricing/:id',
+          },
+          stripe: {
+            sync: 'POST /api/tiers/:id/stripe/sync',
+            syncAll: 'POST /api/tiers/stripe/sync-all',
+            link: 'POST /api/tiers/:id/stripe/link',
+            unlink: 'POST /api/tiers/:id/stripe/unlink',
+            products: 'GET /api/tiers/stripe/products',
+            import: 'POST /api/tiers/stripe/import',
+            status: 'GET /api/tiers/stripe/status',
           },
         },
       },
