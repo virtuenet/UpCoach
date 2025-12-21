@@ -42,6 +42,8 @@ import deploymentRoutes from './deployment';
 import tiersRoutes from './tiers';
 import subscriptionsRoutes from './subscriptions';
 import syncRoutes from './sync';
+import analyticsRoutes from './analytics';
+import recommendationsRoutes from './recommendations';
 
 // API v2 imports
 import v2Routes from './v2';
@@ -148,6 +150,12 @@ export const setupRoutes = (app: Application): void => {
 
   // Sync routes (offline sync, delta sync, conflict resolution)
   app.use(`${apiPrefix}/sync`, syncRoutes);
+
+  // Analytics routes (coach, revenue, engagement analytics)
+  app.use(`${apiPrefix}/analytics/v3`, authMiddleware, tenantContextMiddleware, analyticsRoutes);
+
+  // Recommendations routes (AI-powered personalized recommendations)
+  app.use(`${apiPrefix}/recommendations`, authMiddleware, tenantContextMiddleware, recommendationsRoutes);
 
   // API info endpoint
   app.get(`${apiPrefix}`, (_req, res) => {
