@@ -31,6 +31,8 @@ import TierPricingPage from './pages/financial/TierPricingPage';
 import RealtimeDashboard from './pages/RealtimeDashboard';
 import ModelDeploymentPage from './pages/deployment/ModelDeploymentPage';
 import ModelHealthPage from './pages/deployment/ModelHealthPage';
+import SystemMonitoring from './pages/SystemMonitoring';
+import PerformanceDashboard from './pages/PerformanceDashboard';
 import Layout from './components/Layout';
 import SessionWrapper from './components/SessionWrapper';
 // Basic theme and styling imports removed for compatibility
@@ -126,6 +128,10 @@ function App() {
                     {/* ML Model Deployment */}
                     <Route path="/deployment" element={<ModelDeploymentPage />} />
                     <Route path="/deployment/health" element={<ModelHealthPage />} />
+
+                    {/* System Monitoring & Performance */}
+                    <Route path="/monitoring" element={<SystemMonitoring />} />
+                    <Route path="/monitoring/performance" element={<PerformanceDashboard />} />
 
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>

@@ -44,6 +44,7 @@ import subscriptionsRoutes from './subscriptions';
 import syncRoutes from './sync';
 import analyticsRoutes from './analytics';
 import recommendationsRoutes from './recommendations';
+import monitoringRoutes from './monitoring';
 
 // API v2 imports
 import v2Routes from './v2';
@@ -156,6 +157,9 @@ export const setupRoutes = (app: Application): void => {
 
   // Recommendations routes (AI-powered personalized recommendations)
   app.use(`${apiPrefix}/recommendations`, authMiddleware, tenantContextMiddleware, recommendationsRoutes);
+
+  // Monitoring routes (system health, performance, alerts, errors, audit)
+  app.use(`${apiPrefix}/monitoring`, monitoringRoutes);
 
   // API info endpoint
   app.get(`${apiPrefix}`, (_req, res) => {
