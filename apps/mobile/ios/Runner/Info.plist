@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -20,10 +22,64 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.upcoach.upcoach-mobile</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>upcoach</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSCalendarsUsageDescription</key>
+	<string>UpCoach needs calendar access to sync your coaching sessions and habit reminders.</string>
+	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+	<string>UpCoach needs calendar access to add coaching sessions and habit reminders.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>UpCoach needs camera access to capture photos for your profile and progress tracking.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>UpCoach uses Face ID for secure and quick authentication.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>UpCoach uses your health data to provide personalized coaching insights, track your wellness progress, and calculate readiness scores based on sleep, activity, and recovery metrics.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>UpCoach can write workout and mindfulness data to Apple Health to keep your health records complete.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>UpCoach uses your location to provide location-based coaching features.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>UpCoach needs microphone access for voice journaling and audio recordings.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>UpCoach needs permission to save photos to your library.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>UpCoach needs photo library access to select images for your profile and progress tracking.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>UpCoach uses speech recognition for voice journaling transcription.</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+		<string>audio</string>
+		<string>processing</string>
+		<string>push-to-talk</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -41,91 +97,10 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-
-	<!-- Camera Permission -->
-	<key>NSCameraUsageDescription</key>
-	<string>UpCoach needs camera access to capture photos for your profile and progress tracking.</string>
-
-	<!-- Photo Library Permissions -->
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>UpCoach needs photo library access to select images for your profile and progress tracking.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>UpCoach needs permission to save photos to your library.</string>
-
-	<!-- Microphone Permission -->
-	<key>NSMicrophoneUsageDescription</key>
-	<string>UpCoach needs microphone access for voice journaling and audio recordings.</string>
-
-	<!-- Speech Recognition -->
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>UpCoach uses speech recognition for voice journaling transcription.</string>
-
-	<!-- Calendar Permissions -->
-	<key>NSCalendarsUsageDescription</key>
-	<string>UpCoach needs calendar access to sync your coaching sessions and habit reminders.</string>
-	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
-	<string>UpCoach needs calendar access to add coaching sessions and habit reminders.</string>
-
-	<!-- Face ID / Touch ID -->
-	<key>NSFaceIDUsageDescription</key>
-	<string>UpCoach uses Face ID for secure and quick authentication.</string>
-
-	<!-- Location (if needed for location-based features) -->
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>UpCoach uses your location to provide location-based coaching features.</string>
-
-	<!-- HealthKit -->
-	<key>NSHealthShareUsageDescription</key>
-	<string>UpCoach uses your health data to provide personalized coaching insights, track your wellness progress, and calculate readiness scores based on sleep, activity, and recovery metrics.</string>
-	<key>NSHealthUpdateUsageDescription</key>
-	<string>UpCoach can write workout and mindfulness data to Apple Health to keep your health records complete.</string>
-
-	<!-- Background Modes -->
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>fetch</string>
-		<string>remote-notification</string>
-		<string>audio</string>
-		<string>processing</string>
-	</array>
-
-	<!-- Deep Linking -->
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>com.upcoach.upcoach-mobile</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>upcoach</string>
-			</array>
-		</dict>
-	</array>
-
-	<!-- Universal Links -->
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:upcoach.com</string>
 		<string>applinks:www.upcoach.com</string>
 	</array>
-
-	<!-- App Transport Security -->
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<false/>
-		<key>NSAllowsLocalNetworking</key>
-		<true/>
-	</dict>
-
-	<!-- Firebase -->
-	<key>FirebaseAppDelegateProxyEnabled</key>
-	<false/>
 </dict>
 </plist>
