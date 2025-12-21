@@ -1,0 +1,210 @@
+# UpCoach Alert Rules
+
+groups:
+  - name: upcoach.api
+    rules:
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: "High API error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+
+      # High Latency
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "High API latency detected"
+          description: "P95 latency is {{ $value | humanizeDuration }} (threshold: 2s)"
+
+      # API Down
+      - alert: APIDown
+        expr: up{job="upcoach-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: api
+        annotations:
+          summary: "UpCoach API is down"
+          description: "API service has been unreachable for more than 1 minute"
+
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes / 1024 / 1024 / 1024 > 2
+        for: 10m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "High memory usage on API"
+          description: "API memory usage is {{ $value | humanize }}GB (threshold: 2GB)"
+
+      # Low Request Rate (potential issue)
+      - alert: LowRequestRate
+        expr: sum(rate(http_requests_total[5m])) < 0.1 and sum(rate(http_requests_total[1h])) > 1
+        for: 15m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "Unusually low request rate"
+          description: "Request rate dropped to {{ $value | humanize }} req/s"
+
+  - name: upcoach.database
+    rules:
+      # Database Connection Issues
+      - alert: DatabaseConnectionsHigh
+        expr: pg_stat_activity_count / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "Database connections approaching limit"
+          description: "Using {{ $value | humanizePercentage }} of max connections"
+
+      # Database Down
+      - alert: DatabaseDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: database
+        annotations:
+          summary: "PostgreSQL database is down"
+          description: "Database has been unreachable for more than 1 minute"
+
+      # Slow Queries
+      - alert: SlowQueries
+        expr: rate(pg_stat_statements_seconds_total[5m]) / rate(pg_stat_statements_calls_total[5m]) > 1
+        for: 10m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "Slow database queries detected"
+          description: "Average query time is {{ $value | humanizeDuration }}"
+
+      # Low Disk Space
+      - alert: DatabaseLowDiskSpace
+        expr: pg_database_size_bytes / 1024 / 1024 / 1024 > 40
+        for: 30m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "Database disk usage is high"
+          description: "Database size is {{ $value | humanize }}GB"
+
+  - name: upcoach.redis
+    rules:
+      # Redis Down
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Redis is down"
+          description: "Redis has been unreachable for more than 1 minute"
+
+      # Redis Memory High
+      - alert: RedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis memory usage is high"
+          description: "Using {{ $value | humanizePercentage }} of max memory"
+
+      # Redis Rejected Connections
+      - alert: RedisRejectedConnections
+        expr: increase(redis_rejected_connections_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis rejecting connections"
+          description: "{{ $value }} connections rejected in last 5 minutes"
+
+  - name: upcoach.infrastructure
+    rules:
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value | humanize }}%"
+
+      # Low Disk Space
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 10
+        for: 5m
+        labels:
+          severity: critical
+          service: infrastructure
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Only {{ $value | humanize }}% disk space remaining"
+
+      # High Memory Usage (System)
+      - alert: HighSystemMemory
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        for: 10m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "High system memory usage"
+          description: "Memory usage is {{ $value | humanize }}%"
+
+  - name: upcoach.business
+    rules:
+      # User Registration Spike
+      - alert: UserRegistrationSpike
+        expr: rate(upcoach_user_registrations_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: info
+          service: business
+        annotations:
+          summary: "High user registration rate"
+          description: "{{ $value | humanize }} registrations/sec"
+
+      # Payment Failures
+      - alert: PaymentFailures
+        expr: rate(upcoach_payment_failures_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: business
+        annotations:
+          summary: "Elevated payment failure rate"
+          description: "{{ $value | humanize }} payment failures/sec"
+
+      # AI Service Errors
+      - alert: AIServiceErrors
+        expr: rate(upcoach_ai_errors_total[5m]) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          service: ai
+        annotations:
+          summary: "High AI service error rate"
+          description: "{{ $value | humanize }} AI errors/sec"

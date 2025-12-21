@@ -1,0 +1,1493 @@
+openapi: 3.1.0
+info:
+  title: UpCoach API
+  description: |
+    UpCoach is a comprehensive coaching platform that combines AI-powered insights
+    with habit tracking, goal management, and wellness monitoring.
+
+    ## Authentication
+    All API endpoints (except public ones) require authentication via JWT tokens.
+    Include the token in the Authorization header: `Bearer <token>`
+
+    ## Rate Limiting
+    - Standard tier: 100 requests/minute
+    - Premium tier: 500 requests/minute
+    - Enterprise tier: Unlimited
+
+    ## Versioning
+    The API is versioned via URL path (e.g., `/api/v1/`). Breaking changes will
+    increment the major version.
+  version: 1.0.0
+  contact:
+    name: UpCoach Support
+    email: support@upcoach.app
+    url: https://upcoach.app/support
+  license:
+    name: Proprietary
+    url: https://upcoach.app/terms
+
+servers:
+  - url: https://api.upcoach.app/api/v1
+    description: Production server
+  - url: https://api-staging.upcoach.app/api/v1
+    description: Staging server
+  - url: http://localhost:3000/api/v1
+    description: Development server
+
+tags:
+  - name: Authentication
+    description: User authentication and authorization
+  - name: Users
+    description: User profile management
+  - name: Habits
+    description: Habit tracking and management
+  - name: Goals
+    description: Goal setting and progress tracking
+  - name: Sessions
+    description: Coaching sessions
+  - name: AI
+    description: AI-powered features
+  - name: Wellness
+    description: Wellness data and integrations
+  - name: Subscriptions
+    description: Subscription and billing management
+  - name: Analytics
+    description: User analytics and insights
+
+paths:
+  # ==========================================
+  # Authentication
+  # ==========================================
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register a new user
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login with email and password
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/refresh:
+    post:
+      tags: [Authentication]
+      summary: Refresh access token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      summary: Logout and invalidate tokens
+      operationId: logoutUser
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Logged out successfully
+
+  /auth/forgot-password:
+    post:
+      tags: [Authentication]
+      summary: Request password reset
+      operationId: forgotPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Reset email sent (if email exists)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /auth/reset-password:
+    post:
+      tags: [Authentication]
+      summary: Reset password with token
+      operationId: resetPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password]
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+                  minLength: 8
+      responses:
+        '200':
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  # ==========================================
+  # Users
+  # ==========================================
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Get current user profile
+      operationId: getCurrentUser
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    patch:
+      tags: [Users]
+      summary: Update current user profile
+      operationId: updateCurrentUser
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+    delete:
+      tags: [Users]
+      summary: Delete current user account
+      operationId: deleteCurrentUser
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Account deleted
+
+  /users/me/preferences:
+    get:
+      tags: [Users]
+      summary: Get user preferences
+      operationId: getUserPreferences
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User preferences
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferences'
+
+    put:
+      tags: [Users]
+      summary: Update user preferences
+      operationId: updateUserPreferences
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPreferences'
+      responses:
+        '200':
+          description: Preferences updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferences'
+
+  # ==========================================
+  # Habits
+  # ==========================================
+  /habits:
+    get:
+      tags: [Habits]
+      summary: List all habits
+      operationId: listHabits
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, paused, completed, archived]
+        - name: category
+          in: query
+          schema:
+            type: string
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: List of habits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HabitListResponse'
+
+    post:
+      tags: [Habits]
+      summary: Create a new habit
+      operationId: createHabit
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateHabitRequest'
+      responses:
+        '201':
+          description: Habit created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Habit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /habits/{habitId}:
+    get:
+      tags: [Habits]
+      summary: Get habit by ID
+      operationId: getHabit
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/HabitIdParam'
+      responses:
+        '200':
+          description: Habit details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Habit'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Habits]
+      summary: Update habit
+      operationId: updateHabit
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/HabitIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateHabitRequest'
+      responses:
+        '200':
+          description: Habit updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Habit'
+
+    delete:
+      tags: [Habits]
+      summary: Delete habit
+      operationId: deleteHabit
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/HabitIdParam'
+      responses:
+        '204':
+          description: Habit deleted
+
+  /habits/{habitId}/completions:
+    get:
+      tags: [Habits]
+      summary: Get habit completions
+      operationId: getHabitCompletions
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/HabitIdParam'
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Habit completions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HabitCompletionListResponse'
+
+    post:
+      tags: [Habits]
+      summary: Log habit completion
+      operationId: logHabitCompletion
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/HabitIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogCompletionRequest'
+      responses:
+        '201':
+          description: Completion logged
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HabitCompletion'
+
+  # ==========================================
+  # Goals
+  # ==========================================
+  /goals:
+    get:
+      tags: [Goals]
+      summary: List all goals
+      operationId: listGoals
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, completed, abandoned]
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [short_term, medium_term, long_term]
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: List of goals
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoalListResponse'
+
+    post:
+      tags: [Goals]
+      summary: Create a new goal
+      operationId: createGoal
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGoalRequest'
+      responses:
+        '201':
+          description: Goal created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+
+  /goals/{goalId}:
+    get:
+      tags: [Goals]
+      summary: Get goal by ID
+      operationId: getGoal
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GoalIdParam'
+      responses:
+        '200':
+          description: Goal details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Goals]
+      summary: Update goal
+      operationId: updateGoal
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GoalIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGoalRequest'
+      responses:
+        '200':
+          description: Goal updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+
+    delete:
+      tags: [Goals]
+      summary: Delete goal
+      operationId: deleteGoal
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GoalIdParam'
+      responses:
+        '204':
+          description: Goal deleted
+
+  /goals/{goalId}/milestones:
+    get:
+      tags: [Goals]
+      summary: Get goal milestones
+      operationId: getGoalMilestones
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GoalIdParam'
+      responses:
+        '200':
+          description: Goal milestones
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MilestoneListResponse'
+
+    post:
+      tags: [Goals]
+      summary: Create milestone
+      operationId: createMilestone
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/GoalIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMilestoneRequest'
+      responses:
+        '201':
+          description: Milestone created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Milestone'
+
+  # ==========================================
+  # AI Features
+  # ==========================================
+  /ai/chat:
+    post:
+      tags: [AI]
+      summary: Chat with AI coach
+      operationId: chatWithAI
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIChatRequest'
+      responses:
+        '200':
+          description: AI response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIChatResponse'
+
+  /ai/insights:
+    get:
+      tags: [AI]
+      summary: Get AI-generated insights
+      operationId: getAIInsights
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [habits, goals, wellness, all]
+          description: Type of insights to retrieve
+      responses:
+        '200':
+          description: AI insights
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIInsightsResponse'
+
+  /ai/recommendations:
+    get:
+      tags: [AI]
+      summary: Get personalized recommendations
+      operationId: getRecommendations
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Personalized recommendations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationsResponse'
+
+  # ==========================================
+  # Wellness
+  # ==========================================
+  /wellness/summary:
+    get:
+      tags: [Wellness]
+      summary: Get wellness summary
+      operationId: getWellnessSummary
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Wellness summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WellnessSummary'
+
+  /wellness/integrations:
+    get:
+      tags: [Wellness]
+      summary: List wellness integrations
+      operationId: listWellnessIntegrations
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of integrations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IntegrationListResponse'
+
+  /wellness/integrations/{provider}/connect:
+    post:
+      tags: [Wellness]
+      summary: Connect wellness provider
+      operationId: connectWellnessProvider
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [oura, fitbit, apple_health, google_fit]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnectProviderRequest'
+      responses:
+        '200':
+          description: Provider connected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Integration'
+
+  # ==========================================
+  # Subscriptions
+  # ==========================================
+  /subscriptions/current:
+    get:
+      tags: [Subscriptions]
+      summary: Get current subscription
+      operationId: getCurrentSubscription
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+
+  /subscriptions/plans:
+    get:
+      tags: [Subscriptions]
+      summary: List available plans
+      operationId: listPlans
+      responses:
+        '200':
+          description: Available plans
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanListResponse'
+
+  /subscriptions/subscribe:
+    post:
+      tags: [Subscriptions]
+      summary: Subscribe to a plan
+      operationId: subscribe
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscribeRequest'
+      responses:
+        '200':
+          description: Subscription created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+
+  /subscriptions/cancel:
+    post:
+      tags: [Subscriptions]
+      summary: Cancel subscription
+      operationId: cancelSubscription
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Subscription cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+
+  # ==========================================
+  # Analytics
+  # ==========================================
+  /analytics/dashboard:
+    get:
+      tags: [Analytics]
+      summary: Get dashboard analytics
+      operationId: getDashboardAnalytics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [week, month, quarter, year]
+            default: month
+      responses:
+        '200':
+          description: Dashboard analytics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardAnalytics'
+
+  /analytics/progress:
+    get:
+      tags: [Analytics]
+      summary: Get progress analytics
+      operationId: getProgressAnalytics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Progress analytics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressAnalytics'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    LimitParam:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    HabitIdParam:
+      name: habitId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    GoalIdParam:
+      name: goalId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    # Common
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+
+    # Auth
+    RegisterRequest:
+      type: object
+      required: [email, password, name]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        name:
+          type: string
+          minLength: 2
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        expiresIn:
+          type: integer
+        user:
+          $ref: '#/components/schemas/User'
+
+    # User
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        avatarUrl:
+          type: string
+          format: uri
+        timezone:
+          type: string
+        subscriptionTier:
+          type: string
+          enum: [free, premium, enterprise]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        avatarUrl:
+          type: string
+          format: uri
+        timezone:
+          type: string
+
+    UserPreferences:
+      type: object
+      properties:
+        notifications:
+          type: object
+          properties:
+            push:
+              type: boolean
+            email:
+              type: boolean
+            habitReminders:
+              type: boolean
+            weeklyDigest:
+              type: boolean
+        theme:
+          type: string
+          enum: [light, dark, system]
+        language:
+          type: string
+
+    # Habits
+    Habit:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        frequency:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: [daily, weekly, custom]
+            daysOfWeek:
+              type: array
+              items:
+                type: integer
+            timesPerPeriod:
+              type: integer
+        reminder:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+            time:
+              type: string
+              format: time
+        streak:
+          type: integer
+        completionRate:
+          type: number
+        status:
+          type: string
+          enum: [active, paused, completed, archived]
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateHabitRequest:
+      type: object
+      required: [name, frequency]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        frequency:
+          type: object
+          required: [type]
+          properties:
+            type:
+              type: string
+              enum: [daily, weekly, custom]
+            daysOfWeek:
+              type: array
+              items:
+                type: integer
+            timesPerPeriod:
+              type: integer
+        reminder:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+            time:
+              type: string
+              format: time
+
+    UpdateHabitRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        frequency:
+          type: object
+        reminder:
+          type: object
+        status:
+          type: string
+          enum: [active, paused, completed, archived]
+
+    HabitListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Habit'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    HabitCompletion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        habitId:
+          type: string
+          format: uuid
+        completedAt:
+          type: string
+          format: date-time
+        value:
+          type: number
+        notes:
+          type: string
+
+    LogCompletionRequest:
+      type: object
+      properties:
+        completedAt:
+          type: string
+          format: date-time
+        value:
+          type: number
+        notes:
+          type: string
+
+    HabitCompletionListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/HabitCompletion'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    # Goals
+    Goal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [short_term, medium_term, long_term]
+        status:
+          type: string
+          enum: [active, completed, abandoned]
+        progress:
+          type: number
+          minimum: 0
+          maximum: 100
+        targetDate:
+          type: string
+          format: date
+        milestones:
+          type: array
+          items:
+            $ref: '#/components/schemas/Milestone'
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateGoalRequest:
+      type: object
+      required: [title, type]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [short_term, medium_term, long_term]
+        targetDate:
+          type: string
+          format: date
+
+    UpdateGoalRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [active, completed, abandoned]
+        progress:
+          type: number
+        targetDate:
+          type: string
+          format: date
+
+    GoalListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Goal'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    Milestone:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        targetDate:
+          type: string
+          format: date
+        completed:
+          type: boolean
+        completedAt:
+          type: string
+          format: date-time
+
+    CreateMilestoneRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        targetDate:
+          type: string
+          format: date
+
+    MilestoneListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Milestone'
+
+    # AI
+    AIChatRequest:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+        context:
+          type: string
+          enum: [general, habits, goals, wellness]
+        conversationId:
+          type: string
+
+    AIChatResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        conversationId:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+
+    AIInsightsResponse:
+      type: object
+      properties:
+        insights:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              title:
+                type: string
+              description:
+                type: string
+              actionable:
+                type: boolean
+              priority:
+                type: string
+                enum: [low, medium, high]
+
+    RecommendationsResponse:
+      type: object
+      properties:
+        recommendations:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [habit, goal, wellness]
+              title:
+                type: string
+              description:
+                type: string
+              reason:
+                type: string
+
+    # Wellness
+    WellnessSummary:
+      type: object
+      properties:
+        overallScore:
+          type: number
+        sleep:
+          type: object
+          properties:
+            averageDuration:
+              type: number
+            quality:
+              type: number
+        activity:
+          type: object
+          properties:
+            steps:
+              type: number
+            activeMinutes:
+              type: number
+        readiness:
+          type: object
+          properties:
+            score:
+              type: number
+
+    Integration:
+      type: object
+      properties:
+        id:
+          type: string
+        provider:
+          type: string
+        status:
+          type: string
+          enum: [connected, disconnected, error]
+        lastSyncAt:
+          type: string
+          format: date-time
+
+    IntegrationListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Integration'
+
+    ConnectProviderRequest:
+      type: object
+      required: [authCode]
+      properties:
+        authCode:
+          type: string
+
+    # Subscriptions
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: string
+        plan:
+          type: string
+          enum: [free, premium, enterprise]
+        status:
+          type: string
+          enum: [active, cancelled, expired]
+        currentPeriodStart:
+          type: string
+          format: date-time
+        currentPeriodEnd:
+          type: string
+          format: date-time
+        cancelAtPeriodEnd:
+          type: boolean
+
+    Plan:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+        interval:
+          type: string
+          enum: [month, year]
+        features:
+          type: array
+          items:
+            type: string
+
+    PlanListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Plan'
+
+    SubscribeRequest:
+      type: object
+      required: [planId]
+      properties:
+        planId:
+          type: string
+        paymentMethodId:
+          type: string
+
+    # Analytics
+    DashboardAnalytics:
+      type: object
+      properties:
+        habitCompletionRate:
+          type: number
+        goalProgress:
+          type: number
+        streakDays:
+          type: integer
+        totalHabitsCompleted:
+          type: integer
+        wellnessScore:
+          type: number
+
+    ProgressAnalytics:
+      type: object
+      properties:
+        habitTrends:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              completionRate:
+                type: number
+        goalProgress:
+          type: array
+          items:
+            type: object
+            properties:
+              goalId:
+                type: string
+              progress:
+                type: number
+        streakHistory:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              streak:
+                type: integer
+
+security:
+  - bearerAuth: []
