@@ -1,0 +1,71 @@
+# UpCoach Production Environment Configuration
+# Copy this file to terraform.tfvars and fill in the values
+
+# ===========================================
+# General Configuration
+# ===========================================
+environment = "production"
+project_name = "upcoach"
+
+# ===========================================
+# AWS Configuration
+# ===========================================
+aws_region = "us-east-1"
+vpc_cidr = "10.0.0.0/16"
+
+# ===========================================
+# GCP Configuration
+# ===========================================
+gcp_project_id = "upcoach-production"
+gcp_region = "us-central1"
+
+# ===========================================
+# Railway Configuration
+# ===========================================
+railway_token = "your-railway-api-token"
+railway_project_id = "your-railway-project-id"
+
+# ===========================================
+# Vercel Configuration
+# ===========================================
+vercel_token = "your-vercel-api-token"
+vercel_team_id = "your-vercel-team-id"
+vercel_admin_project_id = "your-admin-panel-project-id"
+
+# ===========================================
+# Database Configuration
+# ===========================================
+db_instance_class = "db.t3.medium"
+db_allocated_storage = 100
+db_name = "upcoach"
+db_username = "upcoach_admin"
+db_password = "your-secure-database-password"
+
+# ===========================================
+# Redis Configuration
+# ===========================================
+redis_node_type = "cache.t3.small"
+redis_num_cache_nodes = 2
+
+# ===========================================
+# API Configuration
+# ===========================================
+jwt_secret = "your-jwt-secret-key"
+stripe_secret_key = "sk_live_..."
+stripe_public_key = "pk_live_..."
+stripe_webhook_secret = "whsec_..."
+openai_api_key = "sk-..."
+api_sentry_dsn = "https://xxx@sentry.io/xxx"
+admin_sentry_dsn = "https://xxx@sentry.io/xxx"
+
+# ===========================================
+# CDN Configuration
+# ===========================================
+cdn_domain_aliases = ["cdn.upcoach.app", "assets.upcoach.app"]
+ssl_certificate_arn = "arn:aws:acm:us-east-1:123456789:certificate/xxx"
+
+# ===========================================
+# Monitoring Configuration
+# ===========================================
+log_retention_days = 90
+alert_email = "alerts@upcoach.app"

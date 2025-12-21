@@ -1,0 +1,356 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 6 * * 1' # Weekly security scan
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: '3.24.0'
+  NODE_VERSION: '20'
+  JAVA_VERSION: '17'
+
+jobs:
+  # ============================================
+  # Code Quality & Linting
+  # ============================================
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install API dependencies
+        working-directory: services/api
+        run: npm ci
+
+      - name: Install Admin Panel dependencies
+        working-directory: apps/admin-panel
+        run: npm ci
+
+      - name: Lint API
+        working-directory: services/api
+        run: npm run lint
+
+      - name: Lint Admin Panel
+        working-directory: apps/admin-panel
+        run: npm run lint
+
+      - name: Flutter pub get
+        working-directory: apps/mobile
+        run: flutter pub get
+
+      - name: Flutter analyze
+        working-directory: apps/mobile
+        run: flutter analyze --no-fatal-infos
+
+      - name: Dart format check
+        working-directory: apps/mobile
+        run: dart format --set-exit-if-changed .
+
+  # ============================================
+  # Mobile Unit Tests
+  # ============================================
+  mobile-tests:
+    name: Mobile Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        working-directory: apps/mobile
+        run: flutter pub get
+
+      - name: Run unit tests
+        working-directory: apps/mobile
+        run: flutter test --coverage --reporter=github
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: apps/mobile/coverage/lcov.info
+          flags: mobile
+          name: mobile-coverage
+          fail_ci_if_error: false
+
+  # ============================================
+  # API Tests
+  # ============================================
+  api-tests:
+    name: API Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: upcoach_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'services/api/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: services/api
+        run: npm ci
+
+      - name: Run tests
+        working-directory: services/api
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/upcoach_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-secret-key
+          NODE_ENV: test
+        run: npm test -- --coverage
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: services/api/coverage/lcov.info
+          flags: api
+          name: api-coverage
+          fail_ci_if_error: false
+
+  # ============================================
+  # Admin Panel Tests
+  # ============================================
+  admin-tests:
+    name: Admin Panel Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'apps/admin-panel/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: apps/admin-panel
+        run: npm ci
+
+      - name: Run tests
+        working-directory: apps/admin-panel
+        run: npm test -- --coverage --watchAll=false
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: apps/admin-panel/coverage/lcov.info
+          flags: admin
+          name: admin-coverage
+          fail_ci_if_error: false
+
+  # ============================================
+  # Build Verification
+  # ============================================
+  build-mobile:
+    name: Build Mobile (Android)
+    runs-on: ubuntu-latest
+    needs: [mobile-tests]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        working-directory: apps/mobile
+        run: flutter pub get
+
+      - name: Build Android APK (debug)
+        working-directory: apps/mobile
+        run: flutter build apk --debug
+
+  build-api:
+    name: Build API
+    runs-on: ubuntu-latest
+    needs: [api-tests]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'services/api/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: services/api
+        run: npm ci
+
+      - name: Build
+        working-directory: services/api
+        run: npm run build
+
+      - name: Type check
+        working-directory: services/api
+        run: npm run type-check
+
+  build-admin:
+    name: Build Admin Panel
+    runs-on: ubuntu-latest
+    needs: [admin-tests]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: 'apps/admin-panel/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: apps/admin-panel
+        run: npm ci
+
+      - name: Build
+        working-directory: apps/admin-panel
+        run: npm run build
+
+  # ============================================
+  # Security Scanning
+  # ============================================
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run npm audit (API)
+        working-directory: services/api
+        run: npm audit --audit-level=high || true
+
+      - name: Run npm audit (Admin)
+        working-directory: apps/admin-panel
+        run: npm audit --audit-level=high || true
+
+  # ============================================
+  # Dependency Review (PRs only)
+  # ============================================
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+  # ============================================
+  # All Checks Passed
+  # ============================================
+  ci-success:
+    name: CI Success
+    runs-on: ubuntu-latest
+    needs: [build-mobile, build-api, build-admin, security-scan]
+    if: always()
+    steps:
+      - name: Check all jobs passed
+        run: |
+          if [[ "${{ needs.build-mobile.result }}" == "success" && \
+                "${{ needs.build-api.result }}" == "success" && \
+                "${{ needs.build-admin.result }}" == "success" && \
+                "${{ needs.security-scan.result }}" == "success" ]]; then
+            echo "All CI checks passed!"
+            exit 0
+          else
+            echo "Some CI checks failed"
+            exit 1
+          fi

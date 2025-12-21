@@ -1,0 +1,471 @@
+name: Release Management
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.2.3)'
+        required: true
+        type: string
+      release_type:
+        description: 'Release type'
+        required: true
+        type: choice
+        options:
+          - stable
+          - beta
+          - alpha
+      platforms:
+        description: 'Platforms to release'
+        required: true
+        type: choice
+        options:
+          - all
+          - mobile-only
+          - api-only
+          - admin-only
+
+env:
+  FLUTTER_VERSION: '3.24.0'
+  NODE_VERSION: '20'
+  JAVA_VERSION: '17'
+
+jobs:
+  # ============================================
+  # Prepare Release
+  # ============================================
+  prepare:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      release_type: ${{ steps.version.outputs.release_type }}
+      release_mobile: ${{ steps.platforms.outputs.mobile }}
+      release_api: ${{ steps.platforms.outputs.api }}
+      release_admin: ${{ steps.platforms.outputs.admin }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ inputs.version }}"
+            RELEASE_TYPE="${{ inputs.release_type }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/v}"
+            if [[ "$VERSION" == *"-beta"* ]]; then
+              RELEASE_TYPE="beta"
+            elif [[ "$VERSION" == *"-alpha"* ]]; then
+              RELEASE_TYPE="alpha"
+            else
+              RELEASE_TYPE="stable"
+            fi
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "release_type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION, Type: $RELEASE_TYPE"
+
+      - name: Determine platforms
+        id: platforms
+        run: |
+          PLATFORMS="${{ inputs.platforms || 'all' }}"
+          if [[ "$PLATFORMS" == "all" || "$PLATFORMS" == "mobile-only" ]]; then
+            echo "mobile=true" >> $GITHUB_OUTPUT
+          else
+            echo "mobile=false" >> $GITHUB_OUTPUT
+          fi
+          if [[ "$PLATFORMS" == "all" || "$PLATFORMS" == "api-only" ]]; then
+            echo "api=true" >> $GITHUB_OUTPUT
+          else
+            echo "api=false" >> $GITHUB_OUTPUT
+          fi
+          if [[ "$PLATFORMS" == "all" || "$PLATFORMS" == "admin-only" ]]; then
+            echo "admin=true" >> $GITHUB_OUTPUT
+          else
+            echo "admin=false" >> $GITHUB_OUTPUT
+          fi
+
+  # ============================================
+  # Run All Tests
+  # ============================================
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: prepare
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Run API tests
+        working-directory: services/api
+        run: |
+          npm ci
+          npm test
+
+      - name: Run Admin tests
+        working-directory: apps/admin-panel
+        run: |
+          npm ci
+          npm test -- --watchAll=false
+
+      - name: Run Mobile tests
+        working-directory: apps/mobile
+        run: |
+          flutter pub get
+          flutter test
+
+  # ============================================
+  # Build Mobile Apps
+  # ============================================
+  build-android:
+    name: Build Android
+    runs-on: ubuntu-latest
+    needs: [prepare, test]
+    if: needs.prepare.outputs.release_mobile == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Android signing
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > apps/mobile/android/upload-keystore.jks
+          echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" > apps/mobile/android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> apps/mobile/android/key.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> apps/mobile/android/key.properties
+          echo "storeFile=../upload-keystore.jks" >> apps/mobile/android/key.properties
+
+      - name: Build Android App Bundle
+        working-directory: apps/mobile
+        run: |
+          flutter pub get
+          flutter build appbundle --release --build-number=${{ github.run_number }}
+
+      - name: Upload Android artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-${{ needs.prepare.outputs.version }}
+          path: apps/mobile/build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+    needs: [prepare, test]
+    if: needs.prepare.outputs.release_mobile == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Setup code signing
+        uses: apple-actions/import-codesign-certs@v2
+        with:
+          p12-file-base64: ${{ secrets.IOS_DISTRIBUTION_CERT_BASE64 }}
+          p12-password: ${{ secrets.IOS_DISTRIBUTION_CERT_PASSWORD }}
+
+      - name: Install provisioning profile
+        run: |
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}" | base64 -d > ~/Library/MobileDevice/Provisioning\ Profiles/upcoach.mobileprovision
+
+      - name: Build iOS
+        working-directory: apps/mobile
+        run: |
+          flutter pub get
+          flutter build ipa --release --build-number=${{ github.run_number }} --export-options-plist=ios/ExportOptions.plist
+
+      - name: Upload iOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-release-${{ needs.prepare.outputs.version }}
+          path: apps/mobile/build/ios/ipa/*.ipa
+          retention-days: 30
+
+  # ============================================
+  # Build & Deploy API
+  # ============================================
+  deploy-api:
+    name: Deploy API
+    runs-on: ubuntu-latest
+    needs: [prepare, test]
+    if: needs.prepare.outputs.release_api == 'true'
+    environment:
+      name: ${{ needs.prepare.outputs.release_type == 'stable' && 'production' || 'staging' }}
+      url: ${{ needs.prepare.outputs.release_type == 'stable' && 'https://api.upcoach.app' || 'https://api-staging.upcoach.app' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Railway
+        uses: railwayapp/railway-action@v0.5.1
+        with:
+          token: ${{ secrets.RAILWAY_TOKEN }}
+          service: upcoach-api-${{ needs.prepare.outputs.release_type == 'stable' && 'production' || 'staging' }}
+          environment: ${{ needs.prepare.outputs.release_type == 'stable' && 'production' || 'staging' }}
+
+      - name: Run database migrations
+        run: |
+          # Wait for deployment
+          sleep 30
+          # Trigger migration endpoint or run migration command
+          curl -X POST "$API_URL/admin/migrate" \
+            -H "Authorization: Bearer ${{ secrets.ADMIN_API_KEY }}" \
+            -H "Content-Type: application/json"
+        env:
+          API_URL: ${{ needs.prepare.outputs.release_type == 'stable' && 'https://api.upcoach.app' || 'https://api-staging.upcoach.app' }}
+
+  # ============================================
+  # Build & Deploy Admin Panel
+  # ============================================
+  deploy-admin:
+    name: Deploy Admin Panel
+    runs-on: ubuntu-latest
+    needs: [prepare, test]
+    if: needs.prepare.outputs.release_admin == 'true'
+    environment:
+      name: ${{ needs.prepare.outputs.release_type == 'stable' && 'production' || 'staging' }}
+      url: ${{ needs.prepare.outputs.release_type == 'stable' && 'https://admin.upcoach.app' || 'https://admin-staging.upcoach.app' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Deploy to Vercel
+        working-directory: apps/admin-panel
+        run: |
+          npm ci
+          if [[ "${{ needs.prepare.outputs.release_type }}" == "stable" ]]; then
+            vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
+          else
+            vercel --token=${{ secrets.VERCEL_TOKEN }}
+          fi
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_ADMIN_PROJECT_ID }}
+
+  # ============================================
+  # Publish to App Stores
+  # ============================================
+  publish-android:
+    name: Publish to Play Store
+    runs-on: ubuntu-latest
+    needs: [prepare, build-android]
+    if: needs.prepare.outputs.release_type == 'stable'
+    environment:
+      name: production
+      url: https://play.google.com/store/apps/details?id=app.upcoach
+    steps:
+      - name: Download Android artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: android-release-${{ needs.prepare.outputs.version }}
+
+      - name: Publish to Play Store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
+          packageName: app.upcoach
+          releaseFiles: app-release.aab
+          track: ${{ needs.prepare.outputs.release_type == 'stable' && 'production' || 'beta' }}
+          status: completed
+
+  publish-ios:
+    name: Publish to App Store
+    runs-on: macos-latest
+    needs: [prepare, build-ios]
+    if: needs.prepare.outputs.release_type == 'stable'
+    environment:
+      name: production
+      url: https://apps.apple.com/app/upcoach/id123456789
+    steps:
+      - name: Download iOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-release-${{ needs.prepare.outputs.version }}
+
+      - name: Upload to App Store Connect
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: '*.ipa'
+          issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          api-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          api-private-key: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+
+  # ============================================
+  # Create GitHub Release
+  # ============================================
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [prepare, build-android, build-ios, deploy-api, deploy-admin]
+    if: always() && needs.prepare.result == 'success'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          # Generate changelog
+          if [ -n "$PREV_TAG" ]; then
+            CHANGELOG=$(git log $PREV_TAG..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          else
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges -20)
+          fi
+
+          # Escape for GitHub Actions
+          CHANGELOG="${CHANGELOG//'%'/'%25'}"
+          CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
+          CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
+
+          echo "changelog=$CHANGELOG" >> $GITHUB_OUTPUT
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+        continue-on-error: true
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.prepare.outputs.version }}
+          name: UpCoach v${{ needs.prepare.outputs.version }}
+          body: |
+            ## Release v${{ needs.prepare.outputs.version }}
+
+            **Release Type:** ${{ needs.prepare.outputs.release_type }}
+
+            ### Changes
+            ${{ steps.changelog.outputs.changelog }}
+
+            ### Deployment Status
+            - API: ${{ needs.deploy-api.result || 'skipped' }}
+            - Admin Panel: ${{ needs.deploy-admin.result || 'skipped' }}
+            - Android: ${{ needs.build-android.result || 'skipped' }}
+            - iOS: ${{ needs.build-ios.result || 'skipped' }}
+
+            ### Assets
+            Download the mobile apps from the artifacts below or from the respective app stores.
+          files: |
+            release-artifacts/**/*
+          draft: ${{ needs.prepare.outputs.release_type == 'alpha' }}
+          prerelease: ${{ needs.prepare.outputs.release_type != 'stable' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================
+  # Notify on Release
+  # ============================================
+  notify:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    needs: [prepare, create-release]
+    if: always() && needs.create-release.result == 'success'
+    steps:
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "🚀 UpCoach v${{ needs.prepare.outputs.version }} Released!"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Release Type:*\n${{ needs.prepare.outputs.release_type }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Triggered by:*\n${{ github.actor }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Release"
+                      },
+                      "url": "https://github.com/${{ github.repository }}/releases/tag/v${{ needs.prepare.outputs.version }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+        continue-on-error: true
+
+      - name: Send Discord notification
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          title: "UpCoach v${{ needs.prepare.outputs.version }} Released!"
+          description: "A new ${{ needs.prepare.outputs.release_type }} release has been published."
+          color: 0x00ff00
+          url: "https://github.com/${{ github.repository }}/releases/tag/v${{ needs.prepare.outputs.version }}"
+        continue-on-error: true
