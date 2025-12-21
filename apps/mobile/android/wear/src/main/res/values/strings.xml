@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">UpCoach</string>
+    <string name="tile_habits_label">Habits</string>
+    <string name="tile_streak_label">Streak</string>
+</resources>

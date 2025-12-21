@@ -9,5 +9,8 @@ class MainActivity : FlutterActivity() {
 
         // Register On-Device LLM Plugin
         flutterEngine.plugins.add(OnDeviceLLMPlugin())
+
+        // Register Wear OS Data Layer Plugin for watch connectivity
+        flutterEngine.plugins.add(WearDataLayerPlugin())
     }
 }

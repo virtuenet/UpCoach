@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget Labels -->
+    <string name="widget_habits_label">UpCoach Habits</string>
+    <string name="widget_streak_label">UpCoach Streak</string>
+    <string name="widget_progress_label">UpCoach Progress</string>
+
+    <!-- Widget Descriptions -->
+    <string name="widget_habits_description">Display your pending habits and check them off</string>
+    <string name="widget_streak_description">Track your streak and gamification stats</string>
+    <string name="widget_progress_description">Compact daily progress indicator</string>
+</resources>

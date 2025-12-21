@@ -1,0 +1,44 @@
+{
+  "images" : [
+    {
+      "idiom" : "watch",
+      "scale" : "2x",
+      "screen-width" : "38mm",
+      "size" : "24x24"
+    },
+    {
+      "idiom" : "watch",
+      "scale" : "2x",
+      "screen-width" : "40mm",
+      "size" : "27.5x27.5"
+    },
+    {
+      "idiom" : "watch",
+      "scale" : "2x",
+      "screen-width" : "41mm",
+      "size" : "29x29"
+    },
+    {
+      "idiom" : "watch",
+      "scale" : "2x",
+      "screen-width" : "44mm",
+      "size" : "30x30"
+    },
+    {
+      "idiom" : "watch",
+      "scale" : "2x",
+      "screen-width" : "45mm",
+      "size" : "32x32"
+    },
+    {
+      "idiom" : "watch",
+      "scale" : "2x",
+      "screen-width" : "49mm",
+      "size" : "33x33"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

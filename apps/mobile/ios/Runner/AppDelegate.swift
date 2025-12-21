@@ -2,6 +2,7 @@ import Flutter
 import UIKit
 import UserNotifications
 import CoreML
+import WatchConnectivity
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -32,6 +33,11 @@ import CoreML
     if let registrar = self.registrar(forPlugin: "OnDeviceLLMPlugin"),
        let pluginClass = NSClassFromString("OnDeviceLLMPlugin") as? FlutterPlugin.Type {
       pluginClass.register(with: registrar)
+    }
+
+    // Register Watch Connectivity Plugin for Apple Watch support
+    if let registrar = self.registrar(forPlugin: "WatchConnectivityPlugin") {
+      WatchConnectivityPlugin.register(with: registrar)
     }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
