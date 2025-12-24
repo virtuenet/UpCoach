@@ -46,6 +46,8 @@ import analyticsRoutes from './analytics';
 import recommendationsRoutes from './recommendations';
 import monitoringRoutes from './monitoring';
 import i18nRoutes from './i18n';
+import erpRoutes from './erp';
+import flasherpWebhookRoutes from './webhooks/flasherp';
 
 // API v2 imports
 import v2Routes from './v2';
@@ -164,6 +166,12 @@ export const setupRoutes = (app: Application): void => {
 
   // i18n routes (translations, locales, formatting, content localization)
   app.use(`${apiPrefix}/i18n`, i18nRoutes);
+
+  // FlashERP Integration routes (admin - ERP configuration and sync management)
+  app.use(`${apiPrefix}/erp`, erpRoutes);
+
+  // FlashERP Webhook routes (public webhook receiver)
+  app.use(`${apiPrefix}/webhooks/flasherp`, flasherpWebhookRoutes);
 
   // API info endpoint
   app.get(`${apiPrefix}`, (_req, res) => {

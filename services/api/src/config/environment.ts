@@ -160,6 +160,13 @@ const envSchema = z.object({
   DATADOG_STATSD_PORT: z.string().optional(),
   DATADOG_SERVICE: z.string().optional().default('upcoach-backend'),
   DATADOG_VERSION: z.string().optional().default('1.0.0'),
+
+  // FlashERP Integration Configuration
+  FLASHERP_ENABLED: z.string().optional().default('false'),
+  FLASHERP_API_KEY: z.string().optional(),
+  FLASHERP_API_SECRET: z.string().optional(),
+  FLASHERP_BASE_URL: z.string().optional().default('https://api.flasherp.com/v1'),
+  FLASHERP_WEBHOOK_SECRET: z.string().optional(),
 });
 
 // Validate environment variables
@@ -237,6 +244,12 @@ const env: Record<string, any> = envResult.success ? envResult.data : {
   LARK_ENCRYPT_KEY: process.env.LARK_ENCRYPT_KEY || '',
   LARK_VERIFICATION_TOKEN: process.env.LARK_VERIFICATION_TOKEN || '',
   LARK_DEFAULT_CHAT_ID: process.env.LARK_DEFAULT_CHAT_ID || '',
+  // FlashERP
+  FLASHERP_ENABLED: process.env.FLASHERP_ENABLED || 'false',
+  FLASHERP_API_KEY: process.env.FLASHERP_API_KEY || '',
+  FLASHERP_API_SECRET: process.env.FLASHERP_API_SECRET || '',
+  FLASHERP_BASE_URL: process.env.FLASHERP_BASE_URL || 'https://api.flasherp.com/v1',
+  FLASHERP_WEBHOOK_SECRET: process.env.FLASHERP_WEBHOOK_SECRET || '',
 };
 
 // Validate secrets in production
@@ -429,6 +442,15 @@ export const config = {
     defaultChatId: env.LARK_DEFAULT_CHAT_ID || '',
   },
 
+  // FlashERP Integration
+  flashERP: {
+    enabled: String(env.FLASHERP_ENABLED || '').toLowerCase() === 'true',
+    apiKey: env.FLASHERP_API_KEY || '',
+    apiSecret: env.FLASHERP_API_SECRET || '',
+    baseURL: env.FLASHERP_BASE_URL || 'https://api.flasherp.com/v1',
+    webhookSecret: env.FLASHERP_WEBHOOK_SECRET || '',
+  },
+
   // Feature flags
   features: {
     enablePushNotifications: !!env.FCM_SERVER_KEY,
@@ -438,6 +460,7 @@ export const config = {
     enableClaude: !!env.CLAUDE_API_KEY,
     enableLark: !!(env.LARK_APP_ID && env.LARK_APP_SECRET),
     enableRevenueCat: !!env.REVENUECAT_API_KEY,
+    enableFlashERP: String(env.FLASHERP_ENABLED || '').toLowerCase() === 'true',
   },
 } as const;
 

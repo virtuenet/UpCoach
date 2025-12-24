@@ -13,6 +13,8 @@ import {
   BillingEventSource,
 } from '../../models';
 import { logger } from '../../utils/logger';
+import { flashERPService } from '../erp/FlashERPService';
+import { config } from '../../config/environment';
 
 // Notification types for financial events
 interface NotificationData {
@@ -223,7 +225,7 @@ export class StripeWebhookService {
     }
 
     // Create transaction record
-    await Transaction.create({
+    const transaction = await Transaction.create({
       userId: user.id,
       stripeTransactionId: paymentIntent.id,
       type: TransactionType.PAYMENT,
@@ -233,6 +235,16 @@ export class StripeWebhookService {
       paymentMethod: PaymentMethod.CARD,
       description: paymentIntent.description || 'Payment',
     });
+
+    // Sync to FlashERP (non-blocking)
+    if (config.flashERP.enabled) {
+      flashERPService.syncTransaction(transaction.id).catch((err) => {
+        logger.error('FlashERP transaction sync failed (non-blocking)', {
+          transactionId: transaction.id,
+          error: err.message,
+        });
+      });
+    }
 
     // Create billing event
     await BillingEvent.create({
@@ -344,6 +356,16 @@ export class StripeWebhookService {
         ? new Date(stripeSubscription.trial_end * 1000)
         : undefined,
     });
+
+    // Sync to FlashERP (non-blocking)
+    if (config.flashERP.enabled) {
+      flashERPService.syncSubscription(subscription.id).catch((err) => {
+        logger.error('FlashERP subscription sync failed (non-blocking)', {
+          subscriptionId: subscription.id,
+          error: err.message,
+        });
+      });
+    }
 
     // Create billing event
     await BillingEvent.create({
