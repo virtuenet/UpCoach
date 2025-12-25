@@ -1,0 +1,724 @@
+openapi: 3.0.3
+info:
+  title: UpCoach Backend API
+  description: |
+    Personal coaching and development platform API with comprehensive features including:
+    - Authentication & Authorization (JWT, OAuth2, SAML, MFA)
+    - User Management & Profiles
+    - Habit & Goal Tracking
+    - AI-Powered Coaching
+    - Financial Management (Stripe, RevenueCat)
+    - Real-time Analytics & Monitoring
+    - Multi-tenant Support
+    - FlashERP Integration
+    - Mobile Sync & Offline Support
+  version: 1.0.0
+  contact:
+    name: UpCoach Development Team
+    email: dev@upcoach.com
+  license:
+    name: Proprietary
+    url: https://upcoach.com/license
+
+servers:
+  - url: https://api.upcoach.com
+    description: Production server
+  - url: https://staging-api.upcoach.com
+    description: Staging server
+  - url: http://localhost:3001
+    description: Local development server
+
+tags:
+  - name: Authentication
+    description: User authentication, registration, and session management
+  - name: Users
+    description: User profile management and preferences
+  - name: Habits
+    description: Habit tracking and management
+  - name: Goals
+    description: Goal setting and progress tracking
+  - name: Tasks
+    description: Task management and to-do lists
+  - name: AI
+    description: AI-powered coaching and analytics
+  - name: Analytics
+    description: Platform analytics and insights
+  - name: Financial
+    description: Payments, subscriptions, and billing
+  - name: Notifications
+    description: Push notifications and alerts
+  - name: Monitoring
+    description: System health and performance monitoring
+  - name: FlashERP
+    description: FlashERP integration for financial data sync
+  - name: Mobile
+    description: Mobile-specific endpoints and sync
+  - name: Admin
+    description: Administrative operations
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /api/auth/login
+
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for server-to-server communication
+
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://api.upcoach.com/api/auth/oauth/authorize
+          tokenUrl: https://api.upcoach.com/api/auth/oauth/token
+          scopes:
+            read: Read access to user data
+            write: Write access to user data
+            admin: Administrative access
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        name:
+          type: string
+          example: John Doe
+        role:
+          type: string
+          enum: [user, coach, admin]
+          example: user
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Habit:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Morning Meditation
+        description:
+          type: string
+          example: 10 minutes of mindfulness meditation
+        frequency:
+          type: string
+          enum: [daily, weekly, custom]
+        streak:
+          type: integer
+          example: 15
+        createdAt:
+          type: string
+          format: date-time
+
+    Goal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: Complete Marathon Training
+        description:
+          type: string
+        targetDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [active, completed, archived]
+        progress:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          example: 67.5
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Bad Request
+        message:
+          type: string
+          example: Invalid input parameters
+        statusCode:
+          type: integer
+          example: 400
+        timestamp:
+          type: string
+          format: date-time
+
+  responses:
+    UnauthorizedError:
+      description: Authentication token is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Unauthorized
+            message: Invalid or expired token
+            statusCode: 401
+
+    ForbiddenError:
+      description: User does not have permission to access this resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    ValidationError:
+      description: Input validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+paths:
+  # Authentication Endpoints
+  /api/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: Create a new user account with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - name
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                name:
+                  type: string
+      responses:
+        '201':
+          description: User successfully registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+                    description: JWT authentication token
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Email already registered
+
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login user
+      description: Authenticate user with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+                  refreshToken:
+                    type: string
+        '401':
+          description: Invalid credentials
+
+  # Habits Endpoints
+  /api/habits:
+    get:
+      tags:
+        - Habits
+      summary: Get user habits
+      description: Retrieve all habits for the authenticated user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, archived]
+      responses:
+        '200':
+          description: List of habits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Habit'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    post:
+      tags:
+        - Habits
+      summary: Create new habit
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - frequency
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                frequency:
+                  type: string
+                  enum: [daily, weekly, custom]
+      responses:
+        '201':
+          description: Habit created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Habit'
+
+  /api/habits/{id}:
+    get:
+      tags:
+        - Habits
+      summary: Get habit by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Habit details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Habit'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+    put:
+      tags:
+        - Habits
+      summary: Update habit
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                frequency:
+                  type: string
+      responses:
+        '200':
+          description: Habit updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Habit'
+
+    delete:
+      tags:
+        - Habits
+      summary: Delete habit
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Habit deleted
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /api/habits/{id}/check-in:
+    post:
+      tags:
+        - Habits
+      summary: Check in habit
+      description: Mark habit as completed for today
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Check-in recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  streak:
+                    type: integer
+                  completedAt:
+                    type: string
+                    format: date-time
+
+  # Goals Endpoints
+  /api/goals:
+    get:
+      tags:
+        - Goals
+      summary: Get user goals
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, completed, archived]
+      responses:
+        '200':
+          description: List of goals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Goal'
+
+    post:
+      tags:
+        - Goals
+      summary: Create new goal
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                targetDate:
+                  type: string
+                  format: date
+      responses:
+        '201':
+          description: Goal created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Goal'
+
+  # AI Coaching Endpoints
+  /api/ai/coaching:
+    post:
+      tags:
+        - AI
+      summary: Get AI coaching advice
+      description: Request personalized coaching recommendations from AI
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: How can I improve my morning routine?
+                context:
+                  type: object
+                  properties:
+                    userId:
+                      type: string
+                    currentHabits:
+                      type: array
+                      items:
+                        type: string
+      responses:
+        '200':
+          description: AI coaching response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                  suggestions:
+                    type: array
+                    items:
+                      type: string
+                  confidence:
+                    type: number
+                    format: float
+
+  # Analytics Endpoints
+  /api/analytics/dashboard:
+    get:
+      tags:
+        - Analytics
+      summary: Get dashboard analytics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [7d, 30d, 90d, 1y]
+            default: 30d
+      responses:
+        '200':
+          description: Dashboard analytics data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  activeUsers:
+                    type: integer
+                  habitCompletionRate:
+                    type: number
+                    format: float
+                  goalProgress:
+                    type: number
+                    format: float
+                  streaks:
+                    type: object
+
+  # FlashERP Integration Endpoints
+  /api/erp/config:
+    get:
+      tags:
+        - FlashERP
+      summary: Get FlashERP configuration
+      description: Retrieve current FlashERP integration configuration (Admin only)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: ERP configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  isEnabled:
+                    type: boolean
+                  baseURL:
+                    type: string
+                  syncInterval:
+                    type: integer
+                  healthStatus:
+                    type: string
+                    enum: [healthy, degraded, down]
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+    put:
+      tags:
+        - FlashERP
+      summary: Update FlashERP configuration
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                apiKey:
+                  type: string
+                apiSecret:
+                  type: string
+                isEnabled:
+                  type: boolean
+                syncInterval:
+                  type: integer
+      responses:
+        '200':
+          description: Configuration updated
+
+  /api/erp/sync/transaction/{id}:
+    post:
+      tags:
+        - FlashERP
+      summary: Sync transaction to FlashERP
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Sync initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  syncId:
+                    type: string
+
+  # Monitoring Endpoints
+  /api/health:
+    get:
+      tags:
+        - Monitoring
+      summary: Health check endpoint
+      description: Check API health status
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  uptime:
+                    type: number
+                  timestamp:
+                    type: string
+                    format: date-time
+                  services:
+                    type: object
+                    properties:
+                      database:
+                        type: string
+                        example: connected
+                      redis:
+                        type: string
+                        example: connected
+
+  /api/monitoring/metrics:
+    get:
+      tags:
+        - Monitoring
+      summary: Get system metrics
+      description: Retrieve Prometheus-compatible metrics
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: System metrics in Prometheus format
+          content:
+            text/plain:
+              schema:
+                type: string
+
+security:
+  - BearerAuth: []
