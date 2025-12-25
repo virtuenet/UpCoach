@@ -1,0 +1,249 @@
+# Fastfile for UpCoach Mobile App
+# Automates app store submission and deployment
+
+default_platform(:ios)
+
+###############################################################################
+# iOS Platform
+###############################################################################
+
+platform :ios do
+  desc "Build and deploy iOS app to TestFlight"
+  lane :beta do
+    # Ensure clean git state
+    ensure_git_status_clean
+
+    # Increment build number
+    increment_build_number(
+      xcodeproj: "./ios/Runner.xcodeproj"
+    )
+
+    # Build the app
+    build_app(
+      workspace: "./ios/Runner.xcworkspace",
+      scheme: "Runner",
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: {
+          "com.upcoach.app" => "match AppStore com.upcoach.app"
+        }
+      }
+    )
+
+    # Upload to TestFlight
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      distribute_external: false,
+      changelog: "Bug fixes and performance improvements"
+    )
+
+    # Commit version bump
+    commit_version_bump(
+      xcodeproj: "./ios/Runner.xcodeproj",
+      message: "Version bump for TestFlight"
+    )
+
+    # Push to repository
+    push_to_git_remote
+  end
+
+  desc "Build and deploy iOS app to App Store"
+  lane :release do
+    # Ensure clean git state
+    ensure_git_status_clean
+
+    # Increment version
+    increment_version_number(
+      xcodeproj: "./ios/Runner.xcodeproj"
+    )
+
+    increment_build_number(
+      xcodeproj: "./ios/Runner.xcodeproj"
+    )
+
+    # Build the app
+    build_app(
+      workspace: "./ios/Runner.xcworkspace",
+      scheme: "Runner",
+      configuration: "Release",
+      export_method: "app-store"
+    )
+
+    # Upload to App Store
+    upload_to_app_store(
+      force: true,
+      submit_for_review: false,
+      automatic_release: false,
+      skip_metadata: false,
+      skip_screenshots: false,
+      precheck_include_in_app_purchases: false
+    )
+
+    # Commit and tag
+    commit_version_bump(
+      xcodeproj: "./ios/Runner.xcodeproj",
+      message: "Version bump for App Store release"
+    )
+
+    add_git_tag(
+      tag: "ios/v#{get_version_number(xcodeproj: './ios/Runner.xcodeproj')}"
+    )
+
+    push_to_git_remote(
+      tags: true
+    )
+  end
+
+  desc "Run iOS tests"
+  lane :test do
+    run_tests(
+      workspace: "./ios/Runner.xcworkspace",
+      scheme: "Runner",
+      device: "iPhone 15 Pro",
+      code_coverage: true
+    )
+  end
+
+  desc "Take iOS screenshots"
+  lane :screenshots do
+    capture_screenshots(
+      workspace: "./ios/Runner.xcworkspace",
+      scheme: "Runner",
+      devices: [
+        "iPhone 15 Pro Max",
+        "iPhone 15 Pro",
+        "iPhone SE (3rd generation)",
+        "iPad Pro (12.9-inch) (6th generation)"
+      ]
+    )
+  end
+end
+
+###############################################################################
+# Android Platform
+###############################################################################
+
+platform :android do
+  desc "Build and deploy Android app to Google Play Internal Testing"
+  lane :beta do
+    # Increment version code
+    increment_version_code(
+      gradle_file_path: "./android/app/build.gradle"
+    )
+
+    # Build the app
+    gradle(
+      task: "clean bundleRelease",
+      project_dir: "./android",
+      properties: {
+        "android.injected.signing.store.file" => ENV["ANDROID_KEYSTORE_PATH"],
+        "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
+        "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
+        "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"]
+      }
+    )
+
+    # Upload to Google Play Internal Testing
+    upload_to_play_store(
+      track: "internal",
+      aab: "./android/app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+
+    # Git commit
+    git_commit(
+      path: "./android/app/build.gradle",
+      message: "Version bump for Google Play Internal Testing"
+    )
+  end
+
+  desc "Build and deploy Android app to Google Play Production"
+  lane :release do
+    # Increment version
+    increment_version_code(
+      gradle_file_path: "./android/app/build.gradle"
+    )
+
+    increment_version_name(
+      gradle_file_path: "./android/app/build.gradle"
+    )
+
+    # Build the app
+    gradle(
+      task: "clean bundleRelease",
+      project_dir: "./android"
+    )
+
+    # Upload to Google Play
+    upload_to_play_store(
+      track: "production",
+      aab: "./android/app/build/outputs/bundle/release/app-release.aab",
+      rollout: "0.1",  # Staged rollout starting at 10%
+      skip_upload_metadata: false,
+      skip_upload_images: false,
+      skip_upload_screenshots: false
+    )
+
+    # Git commit and tag
+    git_commit(
+      path: "./android/app/build.gradle",
+      message: "Version bump for Google Play Production"
+    )
+
+    version_name = get_version_name(
+      gradle_file_path: "./android/app/build.gradle"
+    )
+
+    add_git_tag(
+      tag: "android/v#{version_name}"
+    )
+
+    push_to_git_remote(
+      tags: true
+    )
+  end
+
+  desc "Run Android tests"
+  lane :test do
+    gradle(
+      task: "test",
+      project_dir: "./android"
+    )
+  end
+
+  desc "Take Android screenshots"
+  lane :screenshots do
+    # Requires Screengrab setup
+    screengrab(
+      locales: ['en-US'],
+      clear_previous_screenshots: true
+    )
+  end
+end
+
+###############################################################################
+# Cross-Platform
+###############################################################################
+
+desc "Run Flutter tests"
+lane :flutter_test do
+  sh("flutter test --coverage")
+end
+
+desc "Build Flutter for all platforms"
+lane :build_all do
+  flutter_test
+
+  platform :ios do
+    test
+    beta
+  end
+
+  platform :android do
+    test
+    beta
+  end
+end
