@@ -162,7 +162,7 @@ export interface PaginationParams {
   sourceType?: string;
 }
 
-export interface Paginated Response<T> {
+export interface PaginatedResponse<T> {
   data: T[];
   pagination: {
     page: number;

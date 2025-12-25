@@ -29,6 +29,7 @@ import TiersListPage from './pages/financial/TiersListPage';
 import TierEditPage from './pages/financial/TierEditPage';
 import TierPricingPage from './pages/financial/TierPricingPage';
 import RealtimeDashboard from './pages/RealtimeDashboard';
+import FlashErpConfigPage from './pages/FlashErpConfigPage';
 import ModelDeploymentPage from './pages/deployment/ModelDeploymentPage';
 import ModelHealthPage from './pages/deployment/ModelHealthPage';
 import SystemMonitoring from './pages/SystemMonitoring';
@@ -120,6 +121,7 @@ function App() {
                     <Route path="/system/general" element={<GeneralSettingsPage />} />
                     <Route path="/system/security" element={<SecuritySettingsPage />} />
                     <Route path="/system/integrations" element={<IntegrationsPage />} />
+                    <Route path="/system/flasherp" element={<FlashErpConfigPage />} />
                     <Route path="/system/backup" element={<BackupRecoveryPage />} />
 
                     {/* Real-time Monitoring */}
