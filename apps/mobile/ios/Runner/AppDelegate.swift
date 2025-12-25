@@ -29,6 +29,11 @@ import WatchConnectivity
     // Register Flutter plugins
     GeneratedPluginRegistrant.register(with: self)
 
+    // Register widget method channels
+    if let controller = window?.rootViewController as? FlutterViewController {
+      WidgetMethodChannelHandler.shared.registerChannels(with: controller.binaryMessenger)
+    }
+
     // Register On-Device LLM Plugin if present (optional dependency)
     if let registrar = self.registrar(forPlugin: "OnDeviceLLMPlugin"),
        let pluginClass = NSClassFromString("OnDeviceLLMPlugin") as? FlutterPlugin.Type {

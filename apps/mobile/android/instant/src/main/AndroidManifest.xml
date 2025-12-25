@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:name=".InstantApp"
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.UpCoach"
+        tools:targetApi="31">
+
+        <!-- Main instant app activity -->
+        <activity
+            android:name=".QuickCheckInActivity"
+            android:exported="true"
+            android:theme="@style/Theme.UpCoach.NoActionBar">
+
+            <!-- App Links for instant app -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- Handle URLs like: https://upcoach.app/instant/habits/morning-workout -->
+                <data
+                    android:scheme="https"
+                    android:host="upcoach.app"
+                    android:pathPrefix="/instant/habits" />
+            </intent-filter>
+
+            <!-- Handle QR code deep links -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="upcoach"
+                    android:host="instant"
+                    android:pathPrefix="/checkin" />
+            </intent-filter>
+        </activity>
+
+        <!-- Install prompt activity -->
+        <activity
+            android:name="com.google.android.gms.instantapps.InstantAppsActivity"
+            android:theme="@style/Theme.UpCoach.Transparent" />
+
+    </application>
+
+</manifest>

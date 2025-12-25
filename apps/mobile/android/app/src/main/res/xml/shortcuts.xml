@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Check In Habit Shortcut -->
+    <capability android:name="actions.intent.CREATE_HABIT_CHECKIN">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.upcoach.app"
+            android:targetClass="com.upcoach.app.MainActivity">
+            <url-template android:value="upcoach://habits/{habit_name}/checkin" />
+            <parameter
+                android:name="habit.name"
+                android:key="habit_name" />
+        </intent>
+    </capability>
+
+    <!-- View Progress Shortcut -->
+    <capability android:name="actions.intent.GET_HABIT_PROGRESS">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.upcoach.app"
+            android:targetClass="com.upcoach.app.MainActivity">
+            <url-template android:value="upcoach://habits/progress" />
+        </intent>
+    </capability>
+
+    <!-- Start Habit Session Shortcut -->
+    <capability android:name="actions.intent.START_HABIT_SESSION">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.upcoach.app"
+            android:targetClass="com.upcoach.app.MainActivity">
+            <url-template android:value="upcoach://habits/{habit_name}/session?duration={duration}" />
+            <parameter
+                android:name="habit.name"
+                android:key="habit_name" />
+            <parameter
+                android:name="session.duration"
+                android:key="duration" />
+        </intent>
+    </capability>
+
+    <!-- Get Streak Info Shortcut -->
+    <capability android:name="actions.intent.GET_STREAK_INFO">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.upcoach.app"
+            android:targetClass="com.upcoach.app.MainActivity">
+            <url-template android:value="upcoach://streaks" />
+        </intent>
+    </capability>
+
+    <!-- App Shortcuts (Long-press menu) -->
+    <shortcut
+        android:shortcutId="check_in"
+        android:enabled="true"
+        android:icon="@drawable/ic_checkmark"
+        android:shortcutShortLabel="@string/shortcut_check_in_short"
+        android:shortcutLongLabel="@string/shortcut_check_in_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.upcoach.app"
+            android:targetClass="com.upcoach.app.MainActivity"
+            android:data="upcoach://habits/quick-checkin" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="view_progress"
+        android:enabled="true"
+        android:icon="@drawable/ic_progress"
+        android:shortcutShortLabel="@string/shortcut_progress_short"
+        android:shortcutLongLabel="@string/shortcut_progress_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.upcoach.app"
+            android:targetClass="com.upcoach.app.MainActivity"
+            android:data="upcoach://habits/progress" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="today_habits"
+        android:enabled="true"
+        android:icon="@drawable/ic_today"
+        android:shortcutShortLabel="@string/shortcut_today_short"
+        android:shortcutLongLabel="@string/shortcut_today_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.upcoach.app"
+            android:targetClass="com.upcoach.app.MainActivity"
+            android:data="upcoach://habits/today" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+</shortcuts>

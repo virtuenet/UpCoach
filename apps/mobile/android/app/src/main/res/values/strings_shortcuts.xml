@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Shortcuts -->
+    <string name="shortcut_check_in_short">Check In</string>
+    <string name="shortcut_check_in_long">Quick Check-In Habit</string>
+
+    <string name="shortcut_progress_short">Progress</string>
+    <string name="shortcut_progress_long">View My Progress</string>
+
+    <string name="shortcut_today_short">Today</string>
+    <string name="shortcut_today_long">Today\'s Habits</string>
+
+    <!-- Google Assistant Actions -->
+    <string name="action_check_in">Check in my habit</string>
+    <string name="action_view_progress">Show my habit progress</string>
+    <string name="action_start_session">Start a habit session</string>
+    <string name="action_get_streak">Show my streak</string>
+</resources>
