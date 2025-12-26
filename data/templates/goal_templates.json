@@ -216,13 +216,622 @@
         {"day": 30, "target": "Average 8+ hours", "reward": "Blackout curtains"},
         {"day": 60, "target": "Consistent quality sleep", "reward": "Premium pillow"}
       ]
+    },
+    {
+      "id": "marathon-training",
+      "category": "health_fitness",
+      "goalName": "Train for Marathon",
+      "duration": 120,
+      "difficulty": "advanced",
+      "description": "Complete marathon training program",
+      "tags": ["running", "endurance", "fitness"],
+      "habits": [
+        {"name": "Monday: Easy run (5km)", "frequency": "weekly", "priority": 1, "difficulty": 5, "estimatedTimeMinutes": 30},
+        {"name": "Wednesday: Tempo run (8km)", "frequency": "weekly", "priority": 1, "difficulty": 7, "estimatedTimeMinutes": 45},
+        {"name": "Friday: Interval training", "frequency": "weekly", "priority": 1, "difficulty": 8, "estimatedTimeMinutes": 40},
+        {"name": "Sunday: Long run", "frequency": "weekly", "priority": 1, "difficulty": 9, "estimatedTimeMinutes": 90},
+        {"name": "Strength training", "frequency": "3x_per_week", "priority": 2, "difficulty": 6, "estimatedTimeMinutes": 30}
+      ],
+      "milestones": [
+        {"day": 30, "target": "Complete 10km race", "reward": "New running shoes"},
+        {"day": 60, "target": "Complete half marathon", "reward": "Sports massage"},
+        {"day": 90, "target": "30km long run", "reward": "Marathon gear"},
+        {"day": 120, "target": "Complete marathon", "reward": "Vacation"}
+      ]
+    },
+    {
+      "id": "muscle-building",
+      "category": "health_fitness",
+      "goalName": "Build Muscle Mass",
+      "duration": 90,
+      "difficulty": "intermediate",
+      "description": "Gain 10-15 pounds of lean muscle",
+      "tags": ["strength", "muscle", "gym"],
+      "habits": [
+        {"name": "Upper body workout", "frequency": "3x_per_week", "priority": 1, "difficulty": 7, "estimatedTimeMinutes": 60},
+        {"name": "Lower body workout", "frequency": "2x_per_week", "priority": 1, "difficulty": 8, "estimatedTimeMinutes": 60},
+        {"name": "Track protein intake (150g+)", "frequency": "daily", "priority": 1, "difficulty": 5, "estimatedTimeMinutes": 15},
+        {"name": "Post-workout meal", "frequency": "5x_per_week", "priority": 2, "difficulty": 4, "estimatedTimeMinutes": 20}
+      ],
+      "milestones": [
+        {"day": 30, "target": "3-5 lbs gained", "reward": "Protein powder"},
+        {"day": 60, "target": "8-10 lbs gained", "reward": "Gym equipment"},
+        {"day": 90, "target": "12-15 lbs gained", "reward": "Professional photoshoot"}
+      ]
+    },
+    {
+      "id": "yoga-flexibility",
+      "category": "health_fitness",
+      "goalName": "Master Yoga & Flexibility",
+      "duration": 90,
+      "difficulty": "beginner",
+      "description": "Improve flexibility and balance through yoga",
+      "tags": ["yoga", "flexibility", "mindfulness"],
+      "habits": [
+        {"name": "Morning yoga (20 min)", "frequency": "daily", "priority": 1, "difficulty": 4, "estimatedTimeMinutes": 20},
+        {"name": "Evening stretching", "frequency": "daily", "priority": 2, "difficulty": 3, "estimatedTimeMinutes": 10},
+        {"name": "Yoga class or video", "frequency": "3x_per_week", "priority": 1, "difficulty": 5, "estimatedTimeMinutes": 45}
+      ],
+      "milestones": [
+        {"day": 30, "target": "Touch toes", "reward": "Yoga mat"},
+        {"day": 60, "target": "Hold plank 2 minutes", "reward": "Yoga blocks"},
+        {"day": 90, "target": "Full split", "reward": "Yoga retreat"}
+      ]
+    },
+    {
+      "id": "quit-smoking",
+      "category": "health_fitness",
+      "goalName": "Quit Smoking",
+      "duration": 90,
+      "difficulty": "advanced",
+      "description": "Become smoke-free permanently",
+      "tags": ["addiction", "health", "recovery"],
+      "habits": [
+        {"name": "Morning walk instead of smoke", "frequency": "daily", "priority": 1, "difficulty": 8, "estimatedTimeMinutes": 15},
+        {"name": "Track cravings & triggers", "frequency": "daily", "priority": 1, "difficulty": 6, "estimatedTimeMinutes": 10},
+        {"name": "Deep breathing exercises", "frequency": "daily", "priority": 2, "difficulty": 5, "estimatedTimeMinutes": 10},
+        {"name": "Support group or counseling", "frequency": "weekly", "priority": 1, "difficulty": 7, "estimatedTimeMinutes": 60}
+      ],
+      "milestones": [
+        {"day": 7, "target": "7 days smoke-free", "reward": "Healthy dinner"},
+        {"day": 30, "target": "30 days smoke-free", "reward": "Spa day"},
+        {"day": 90, "target": "90 days smoke-free", "reward": "Weekend trip"}
+      ]
+    },
+    {
+      "id": "coding-bootcamp",
+      "category": "education",
+      "goalName": "Learn Web Development",
+      "duration": 180,
+      "difficulty": "intermediate",
+      "description": "Master full-stack web development",
+      "tags": ["coding", "programming", "career"],
+      "habits": [
+        {"name": "Code for 2 hours", "frequency": "daily", "priority": 1, "difficulty": 7, "estimatedTimeMinutes": 120},
+        {"name": "Watch tutorial videos", "frequency": "daily", "priority": 2, "difficulty": 4, "estimatedTimeMinutes": 30},
+        {"name": "Build project features", "frequency": "5x_per_week", "priority": 1, "difficulty": 8, "estimatedTimeMinutes": 90},
+        {"name": "Code review & GitHub commits", "frequency": "daily", "priority": 2, "difficulty": 6, "estimatedTimeMinutes": 20}
+      ],
+      "milestones": [
+        {"day": 60, "target": "Complete HTML/CSS/JS basics", "reward": "Programming books"},
+        {"day": 120, "target": "Build 3 portfolio projects", "reward": "Course subscription"},
+        {"day": 180, "target": "Deploy full-stack app", "reward": "New laptop"}
+      ]
+    },
+    {
+      "id": "public-speaking",
+      "category": "career_finance",
+      "goalName": "Master Public Speaking",
+      "duration": 90,
+      "difficulty": "intermediate",
+      "description": "Overcome fear and deliver confident presentations",
+      "tags": ["communication", "confidence", "career"],
+      "habits": [
+        {"name": "Practice speech (15 min)", "frequency": "daily", "priority": 1, "difficulty": 7, "estimatedTimeMinutes": 15},
+        {"name": "Record & review yourself", "frequency": "3x_per_week", "priority": 1, "difficulty": 6, "estimatedTimeMinutes": 20},
+        {"name": "Toastmasters or speaking club", "frequency": "weekly", "priority": 1, "difficulty": 8, "estimatedTimeMinutes": 90},
+        {"name": "Watch TED talks for inspiration", "frequency": "3x_per_week", "priority": 2, "difficulty": 3, "estimatedTimeMinutes": 18}
+      ],
+      "milestones": [
+        {"day": 30, "target": "5-min speech to friends", "reward": "Public speaking book"},
+        {"day": 60, "target": "10-min presentation at work", "reward": "Voice coach session"},
+        {"day": 90, "target": "Keynote at event", "reward": "Professional headshots"}
+      ]
+    },
+    {
+      "id": "financial-freedom",
+      "category": "career_finance",
+      "goalName": "Save $10,000 Emergency Fund",
+      "duration": 120,
+      "difficulty": "intermediate",
+      "description": "Build financial security with emergency savings",
+      "tags": ["savings", "finance", "security"],
+      "habits": [
+        {"name": "Auto-transfer $200 to savings", "frequency": "weekly", "priority": 1, "difficulty": 5, "estimatedTimeMinutes": 5},
+        {"name": "Track all expenses", "frequency": "daily", "priority": 1, "difficulty": 4, "estimatedTimeMinutes": 10},
+        {"name": "Pack lunch (no eating out)", "frequency": "5x_per_week", "priority": 2, "difficulty": 6, "estimatedTimeMinutes": 20},
+        {"name": "Review budget", "frequency": "weekly", "priority": 1, "difficulty": 4, "estimatedTimeMinutes": 30}
+      ],
+      "milestones": [
+        {"day": 30, "target": "$2,500 saved", "reward": "Nice dinner"},
+        {"day": 60, "target": "$5,000 saved", "reward": "Weekend getaway"},
+        {"day": 90, "target": "$7,500 saved", "reward": "Investment book"},
+        {"day": 120, "target": "$10,000 saved", "reward": "Celebrate milestone"}
+      ]
+    },
+    {
+      "id": "creative-writing",
+      "category": "education",
+      "goalName": "Write a Novel",
+      "duration": 180,
+      "difficulty": "advanced",
+      "description": "Complete first draft of 80,000-word novel",
+      "tags": ["writing", "creativity", "book"],
+      "habits": [
+        {"name": "Write 500 words", "frequency": "daily", "priority": 1, "difficulty": 6, "estimatedTimeMinutes": 45},
+        {"name": "Read fiction (30 min)", "frequency": "daily", "priority": 2, "difficulty": 3, "estimatedTimeMinutes": 30},
+        {"name": "Outline next chapter", "frequency": "3x_per_week", "priority": 1, "difficulty": 5, "estimatedTimeMinutes": 30},
+        {"name": "Writing group or workshop", "frequency": "weekly", "priority": 2, "difficulty": 6, "estimatedTimeMinutes": 120}
+      ],
+      "milestones": [
+        {"day": 60, "target": "30,000 words written", "reward": "Writing course"},
+        {"day": 120, "target": "60,000 words written", "reward": "Author workshop"},
+        {"day": 180, "target": "Complete 80,000 word draft", "reward": "Editing service"}
+      ]
+    },
+    {
+      "id": "anxiety-management",
+      "category": "mental_wellness",
+      "goalName": "Manage Anxiety & Stress",
+      "duration": 60,
+      "difficulty": "intermediate",
+      "description": "Develop coping strategies for anxiety",
+      "tags": ["mental health", "anxiety", "coping"],
+      "habits": [
+        {"name": "Morning meditation (15 min)", "frequency": "daily", "priority": 1, "difficulty": 6, "estimatedTimeMinutes": 15},
+        {"name": "Anxiety journal", "frequency": "daily", "priority": 1, "difficulty": 4, "estimatedTimeMinutes": 10},
+        {"name": "Therapy or counseling", "frequency": "weekly", "priority": 1, "difficulty": 7, "estimatedTimeMinutes": 60},
+        {"name": "Exercise (30 min)", "frequency": "5x_per_week", "priority": 2, "difficulty": 5, "estimatedTimeMinutes": 30}
+      ],
+      "milestones": [
+        {"day": 14, "target": "Identify 3 coping strategies", "reward": "Self-care day"},
+        {"day": 30, "target": "Manage panic attacks", "reward": "Therapy books"},
+        {"day": 60, "target": "Significant symptom reduction", "reward": "Wellness retreat"}
+      ]
+    },
+    {
+      "id": "relationship-improvement",
+      "category": "relationships",
+      "goalName": "Strengthen Relationship",
+      "duration": 90,
+      "difficulty": "intermediate",
+      "description": "Improve communication and connection with partner",
+      "tags": ["relationship", "communication", "love"],
+      "habits": [
+        {"name": "Quality time (30 min)", "frequency": "daily", "priority": 1, "difficulty": 5, "estimatedTimeMinutes": 30},
+        {"name": "Express gratitude/appreciation", "frequency": "daily", "priority": 1, "difficulty": 4, "estimatedTimeMinutes": 5},
+        {"name": "Date night", "frequency": "weekly", "priority": 1, "difficulty": 6, "estimatedTimeMinutes": 180},
+        {"name": "Couples therapy or workshop", "frequency": "weekly", "priority": 2, "difficulty": 7, "estimatedTimeMinutes": 60}
+      ],
+      "milestones": [
+        {"day": 30, "target": "Improved communication patterns", "reward": "Romantic dinner"},
+        {"day": 60, "target": "Resolved major conflict", "reward": "Weekend away"},
+        {"day": 90, "target": "Stronger bond & intimacy", "reward": "Couples retreat"}
+      ]
+    },
+    {
+      "id": "declutter-minimalism",
+      "category": "productivity",
+      "goalName": "Become a Minimalist",
+      "duration": 60,
+      "difficulty": "beginner",
+      "description": "Declutter home and adopt minimalist lifestyle",
+      "tags": ["minimalism", "organization", "declutter"],
+      "habits": [
+        {"name": "Declutter one area/drawer", "frequency": "daily", "priority": 1, "difficulty": 5, "estimatedTimeMinutes": 30},
+        {"name": "One in, one out rule", "frequency": "daily", "priority": 1, "difficulty": 6, "estimatedTimeMinutes": 5},
+        {"name": "Donate/sell items", "frequency": "weekly", "priority": 2, "difficulty": 4, "estimatedTimeMinutes": 60}
+      ],
+      "milestones": [
+        {"day": 14, "target": "Declutter bedroom", "reward": "New organizational tools"},
+        {"day": 30, "target": "Declutter entire home", "reward": "Minimalist book"},
+        {"day": 60, "target": "Maintain minimalist lifestyle", "reward": "Quality over quantity purchase"}
+      ]
+    },
+    {
+      "id": "reading-challenge",
+      "category": "education",
+      "goalName": "Read 52 Books in a Year",
+      "duration": 365,
+      "difficulty": "intermediate",
+      "description": "Read one book per week for a year",
+      "tags": ["reading", "learning", "books"],
+      "habits": [
+        {"name": "Read 30 pages", "frequency": "daily", "priority": 1, "difficulty": 4, "estimatedTimeMinutes": 30},
+        {"name": "Audiobook during commute", "frequency": "5x_per_week", "priority": 2, "difficulty": 3, "estimatedTimeMinutes": 30},
+        {"name": "Book club or discussion", "frequency": "weekly", "priority": 2, "difficulty": 5, "estimatedTimeMinutes": 90}
+      ],
+      "milestones": [
+        {"day": 90, "target": "13 books read", "reward": "Bookstore gift card"},
+        {"day": 180, "target": "26 books read", "reward": "E-reader"},
+        {"day": 270, "target": "39 books read", "reward": "Book subscription"},
+        {"day": 365, "target": "52 books read", "reward": "Personal library"}
+      ]
+    },
+    {
+      "id": "social-confidence",
+      "category": "relationships",
+      "goalName": "Build Social Confidence",
+      "duration": 90,
+      "difficulty": "intermediate",
+      "description": "Overcome social anxiety and make new friends",
+      "tags": ["social", "confidence", "friends"],
+      "habits": [
+        {"name": "Start one conversation", "frequency": "daily", "priority": 1, "difficulty": 7, "estimatedTimeMinutes": 10},
+        {"name": "Attend social event", "frequency": "weekly", "priority": 1, "difficulty": 8, "estimatedTimeMinutes": 120},
+        {"name": "Practice affirmations", "frequency": "daily", "priority": 2, "difficulty": 4, "estimatedTimeMinutes": 5},
+        {"name": "Join club or group", "frequency": "weekly", "priority": 1, "difficulty": 7, "estimatedTimeMinutes": 90}
+      ],
+      "milestones": [
+        {"day": 30, "target": "Make 3 new acquaintances", "reward": "Social skills book"},
+        {"day": 60, "target": "Attend party without anxiety", "reward": "New outfit"},
+        {"day": 90, "target": "Make 2 close friends", "reward": "Group celebration"}
+      ]
+    },
+    {
+      "id": "photography-skills",
+      "category": "education",
+      "goalName": "Master Photography",
+      "duration": 90,
+      "difficulty": "intermediate",
+      "description": "Learn professional photography techniques",
+      "tags": ["photography", "creative", "art"],
+      "habits": [
+        {"name": "Take 20 photos", "frequency": "daily", "priority": 1, "difficulty": 5, "estimatedTimeMinutes": 30},
+        {"name": "Edit 5 photos", "frequency": "daily", "priority": 2, "difficulty": 6, "estimatedTimeMinutes": 30},
+        {"name": "Watch photography tutorial", "frequency": "3x_per_week", "priority": 2, "difficulty": 3, "estimatedTimeMinutes": 20},
+        {"name": "Photo walk or shoot", "frequency": "weekly", "priority": 1, "difficulty": 5, "estimatedTimeMinutes": 120}
+      ],
+      "milestones": [
+        {"day": 30, "target": "Master manual mode", "reward": "Camera lens"},
+        {"day": 60, "target": "Build portfolio of 50 photos", "reward": "Photography course"},
+        {"day": 90, "target": "Client photoshoot", "reward": "Professional equipment"}
+      ]
+    },
+    {
+      "id": "career-promotion",
+      "category": "career_finance",
+      "goalName": "Get Promoted at Work",
+      "duration": 180,
+      "difficulty": "advanced",
+      "description": "Earn promotion to next career level",
+      "tags": ["career", "promotion", "professional"],
+      "habits": [
+        {"name": "Skill development (1 hour)", "frequency": "daily", "priority": 1, "difficulty": 6, "estimatedTimeMinutes": 60},
+        {"name": "Network with leadership", "frequency": "3x_per_week", "priority": 1, "difficulty": 7, "estimatedTimeMinutes": 30},
+        {"name": "Lead project or initiative", "frequency": "weekly", "priority": 1, "difficulty": 8, "estimatedTimeMinutes": 120},
+        {"name": "Document achievements", "frequency": "weekly", "priority": 2, "difficulty": 4, "estimatedTimeMinutes": 20}
+      ],
+      "milestones": [
+        {"day": 60, "target": "Complete major project", "reward": "Professional certification"},
+        {"day": 120, "target": "Positive performance review", "reward": "Executive coaching"},
+        {"day": 180, "target": "Receive promotion", "reward": "Celebrate achievement"}
+      ]
+    },
+    {
+      "id": "gratitude-happiness",
+      "category": "mental_wellness",
+      "goalName": "Cultivate Gratitude & Happiness",
+      "duration": 60,
+      "difficulty": "beginner",
+      "description": "Develop daily gratitude practice for well-being",
+      "tags": ["gratitude", "happiness", "mindfulness"],
+      "habits": [
+        {"name": "Gratitude journal (3 things)", "frequency": "daily", "priority": 1, "difficulty": 3, "estimatedTimeMinutes": 5},
+        {"name": "Random act of kindness", "frequency": "3x_per_week", "priority": 2, "difficulty": 5, "estimatedTimeMinutes": 15},
+        {"name": "Positive affirmations", "frequency": "daily", "priority": 2, "difficulty": 3, "estimatedTimeMinutes": 5}
+      ],
+      "milestones": [
+        {"day": 14, "target": "14-day gratitude streak", "reward": "Gratitude journal"},
+        {"day": 30, "target": "Notice increased positivity", "reward": "Self-care day"},
+        {"day": 60, "target": "Sustained happiness boost", "reward": "Mindfulness retreat"}
+      ]
+    },
+    {
+      "id": "plant-based-diet",
+      "category": "health_fitness",
+      "goalName": "Transition to Plant-Based Diet",
+      "duration": 90,
+      "difficulty": "intermediate",
+      "description": "Adopt healthy plant-based eating",
+      "tags": ["nutrition", "vegan", "health"],
+      "habits": [
+        {"name": "One plant-based meal", "frequency": "daily", "priority": 1, "difficulty": 4, "startDay": 1, "estimatedTimeMinutes": 30},
+        {"name": "Try new plant-based recipe", "frequency": "3x_per_week", "priority": 2, "difficulty": 5, "startDay": 7, "estimatedTimeMinutes": 45},
+        {"name": "Meal prep plant-based meals", "frequency": "weekly", "priority": 1, "difficulty": 6, "startDay": 14, "estimatedTimeMinutes": 120}
+      ],
+      "milestones": [
+        {"day": 30, "target": "50% plant-based meals", "reward": "Plant-based cookbook"},
+        {"day": 60, "target": "80% plant-based meals", "reward": "Kitchen appliance"},
+        {"day": 90, "target": "100% plant-based diet", "reward": "Nutrition consultation"}
+      ]
+    },
+    {
+      "id": "home-workout-routine",
+      "category": "health_fitness",
+      "goalName": "Build Home Workout Habit",
+      "duration": 60,
+      "difficulty": "beginner",
+      "description": "Establish consistent home exercise routine",
+      "tags": ["fitness", "home workout", "exercise"],
+      "habits": [
+        {"name": "20-minute HIIT workout", "frequency": "5x_per_week", "priority": 1, "difficulty": 6, "estimatedTimeMinutes": 20},
+        {"name": "Yoga or stretching", "frequency": "daily", "priority": 2, "difficulty": 4, "estimatedTimeMinutes": 15},
+        {"name": "Track workout progress", "frequency": "5x_per_week", "priority": 2, "difficulty": 3, "estimatedTimeMinutes": 5}
+      ],
+      "milestones": [
+        {"day": 14, "target": "14 workouts completed", "reward": "Workout equipment"},
+        {"day": 30, "target": "30-day streak", "reward": "Fitness app subscription"},
+        {"day": 60, "target": "Visible fitness improvements", "reward": "Fitness tracker"}
+      ]
+    },
+    {
+      "id": "deep-work-productivity",
+      "category": "productivity",
+      "goalName": "Master Deep Work",
+      "duration": 60,
+      "difficulty": "intermediate",
+      "description": "Develop ability for focused, distraction-free work",
+      "tags": ["productivity", "focus", "work"],
+      "habits": [
+        {"name": "2-hour deep work block", "frequency": "daily", "priority": 1, "difficulty": 7, "estimatedTimeMinutes": 120},
+        {"name": "No phone during work", "frequency": "daily", "priority": 1, "difficulty": 8, "estimatedTimeMinutes": 120},
+        {"name": "Plan next day tasks", "frequency": "daily", "priority": 2, "difficulty": 4, "estimatedTimeMinutes": 15}
+      ],
+      "milestones": [
+        {"day": 14, "target": "14 deep work sessions", "reward": "Productivity book"},
+        {"day": 30, "target": "3-hour deep work capacity", "reward": "Noise-canceling headphones"},
+        {"day": 60, "target": "4-hour deep work capacity", "reward": "Standing desk"}
+      ]
+    },
+    {
+      "id": "digital-detox",
+      "category": "mental_wellness",
+      "goalName": "Digital Detox & Mindful Tech Use",
+      "duration": 30,
+      "difficulty": "intermediate",
+      "description": "Reduce screen time and improve tech habits",
+      "tags": ["digital detox", "mindfulness", "technology"],
+      "habits": [
+        {"name": "No phone first hour awake", "frequency": "daily", "priority": 1, "difficulty": 7, "estimatedTimeMinutes": 60},
+        {"name": "No phone last hour before bed", "frequency": "daily", "priority": 1, "difficulty": 7, "estimatedTimeMinutes": 60},
+        {"name": "Social media max 30 min", "frequency": "daily", "priority": 1, "difficulty": 8, "estimatedTimeMinutes": 30},
+        {"name": "Phone-free meal times", "frequency": "daily", "priority": 2, "difficulty": 6, "estimatedTimeMinutes": 60}
+      ],
+      "milestones": [
+        {"day": 7, "target": "50% screen time reduction", "reward": "Physical book"},
+        {"day": 14, "target": "New evening routine", "reward": "Board game"},
+        {"day": 30, "target": "Sustained mindful tech use", "reward": "Outdoor activity"}
+      ]
+    },
+    {
+      "id": "networking-professional",
+      "category": "career_finance",
+      "goalName": "Build Professional Network",
+      "duration": 90,
+      "difficulty": "intermediate",
+      "description": "Expand professional connections and opportunities",
+      "tags": ["networking", "career", "connections"],
+      "habits": [
+        {"name": "Connect with 2 people on LinkedIn", "frequency": "daily", "priority": 1, "difficulty": 5, "estimatedTimeMinutes": 10},
+        {"name": "Attend networking event", "frequency": "weekly", "priority": 1, "difficulty": 7, "estimatedTimeMinutes": 120},
+        {"name": "Follow up with contacts", "frequency": "3x_per_week", "priority": 2, "difficulty": 6, "estimatedTimeMinutes": 20},
+        {"name": "Share valuable content", "frequency": "3x_per_week", "priority": 2, "difficulty": 4, "estimatedTimeMinutes": 15}
+      ],
+      "milestones": [
+        {"day": 30, "target": "100 new connections", "reward": "Networking book"},
+        {"day": 60, "target": "5 coffee meetings", "reward": "Professional event ticket"},
+        {"day": 90, "target": "Active network of 200+", "reward": "Conference pass"}
+      ]
+    },
+    {
+      "id": "artistic-drawing",
+      "category": "education",
+      "goalName": "Learn to Draw",
+      "duration": 90,
+      "difficulty": "beginner",
+      "description": "Develop drawing skills from beginner to intermediate",
+      "tags": ["art", "drawing", "creative"],
+      "habits": [
+        {"name": "Practice drawing (30 min)", "frequency": "daily", "priority": 1, "difficulty": 5, "estimatedTimeMinutes": 30},
+        {"name": "Watch drawing tutorial", "frequency": "3x_per_week", "priority": 2, "difficulty": 3, "estimatedTimeMinutes": 20},
+        {"name": "Complete drawing challenge", "frequency": "weekly", "priority": 1, "difficulty": 6, "estimatedTimeMinutes": 60}
+      ],
+      "milestones": [
+        {"day": 30, "target": "Master basic shapes", "reward": "Art supplies"},
+        {"day": 60, "target": "Draw realistic portrait", "reward": "Art class"},
+        {"day": 90, "target": "Complete portfolio", "reward": "Professional materials"}
+      ]
+    },
+    {
+      "id": "parenting-quality-time",
+      "category": "relationships",
+      "goalName": "Quality Time with Children",
+      "duration": 60,
+      "difficulty": "beginner",
+      "description": "Strengthen parent-child bond through quality time",
+      "tags": ["parenting", "family", "children"],
+      "habits": [
+        {"name": "Phone-free time with kids (30 min)", "frequency": "daily", "priority": 1, "difficulty": 6, "estimatedTimeMinutes": 30},
+        {"name": "Bedtime reading routine", "frequency": "daily", "priority": 1, "difficulty": 4, "estimatedTimeMinutes": 20},
+        {"name": "Family activity or outing", "frequency": "weekly", "priority": 1, "difficulty": 5, "estimatedTimeMinutes": 180},
+        {"name": "One-on-one time with each child", "frequency": "weekly", "priority": 2, "difficulty": 6, "estimatedTimeMinutes": 60}
+      ],
+      "milestones": [
+        {"day": 14, "target": "Established routines", "reward": "Family game"},
+        {"day": 30, "target": "Stronger connection", "reward": "Family outing"},
+        {"day": 60, "target": "Thriving relationships", "reward": "Family vacation planning"}
+      ]
+    },
+    {
+      "id": "hydration-health",
+      "category": "health_fitness",
+      "goalName": "Proper Daily Hydration",
+      "duration": 30,
+      "difficulty": "beginner",
+      "description": "Drink 8 glasses of water daily",
+      "tags": ["water", "health", "hydration"],
+      "habits": [
+        {"name": "Glass of water upon waking", "frequency": "daily", "priority": 1, "difficulty": 3, "estimatedTimeMinutes": 2},
+        {"name": "Water before each meal", "frequency": "daily", "priority": 1, "difficulty": 3, "estimatedTimeMinutes": 2},
+        {"name": "Track water intake", "frequency": "daily", "priority": 2, "difficulty": 3, "estimatedTimeMinutes": 5}
+      ],
+      "milestones": [
+        {"day": 7, "target": "7-day streak", "reward": "Water bottle"},
+        {"day": 14, "target": "Notice energy boost", "reward": "Infuser bottle"},
+        {"day": 30, "target": "Automatic habit", "reward": "Hydration tracker"}
+      ]
+    },
+    {
+      "id": "music-instrument",
+      "category": "education",
+      "goalName": "Learn Guitar",
+      "duration": 180,
+      "difficulty": "intermediate",
+      "description": "Learn to play guitar from beginner to intermediate",
+      "tags": ["music", "guitar", "creative"],
+      "habits": [
+        {"name": "Practice guitar (30 min)", "frequency": "daily", "priority": 1, "difficulty": 6, "estimatedTimeMinutes": 30},
+        {"name": "Watch guitar lesson", "frequency": "3x_per_week", "priority": 2, "difficulty": 4, "estimatedTimeMinutes": 20},
+        {"name": "Play along with songs", "frequency": "5x_per_week", "priority": 2, "difficulty": 7, "estimatedTimeMinutes": 20}
+      ],
+      "milestones": [
+        {"day": 60, "target": "Play 5 chords cleanly", "reward": "New guitar strings"},
+        {"day": 120, "target": "Play 3 full songs", "reward": "Guitar accessories"},
+        {"day": 180, "target": "Perform for friends", "reward": "Quality guitar"}
+      ]
+    },
+    {
+      "id": "cold-showers",
+      "category": "mental_wellness",
+      "goalName": "Build Cold Shower Resilience",
+      "duration": 30,
+      "difficulty": "intermediate",
+      "description": "Develop mental toughness through cold exposure",
+      "tags": ["resilience", "mental toughness", "health"],
+      "habits": [
+        {"name": "30-second cold shower", "frequency": "daily", "priority": 1, "difficulty": 8, "estimatedTimeMinutes": 10},
+        {"name": "Breathing exercises before", "frequency": "daily", "priority": 2, "difficulty": 5, "estimatedTimeMinutes": 5}
+      ],
+      "milestones": [
+        {"day": 7, "target": "7-day streak", "reward": "Wellness book"},
+        {"day": 14, "target": "1-minute cold showers", "reward": "Recovery tools"},
+        {"day": 30, "target": "2-minute cold showers", "reward": "Ice bath experience"}
+      ]
+    },
+    {
+      "id": "volunteering-community",
+      "category": "relationships",
+      "goalName": "Regular Community Volunteering",
+      "duration": 90,
+      "difficulty": "beginner",
+      "description": "Give back through regular volunteer work",
+      "tags": ["volunteering", "community", "giving"],
+      "habits": [
+        {"name": "Volunteer 3 hours", "frequency": "weekly", "priority": 1, "difficulty": 5, "estimatedTimeMinutes": 180},
+        {"name": "Research volunteer opportunities", "frequency": "weekly", "priority": 2, "difficulty": 3, "estimatedTimeMinutes": 20}
+      ],
+      "milestones": [
+        {"day": 30, "target": "12 hours volunteered", "reward": "Volunteer appreciation"},
+        {"day": 60, "target": "24 hours volunteered", "reward": "Leadership role"},
+        {"day": 90, "target": "36 hours volunteered", "reward": "Community recognition"}
+      ]
+    },
+    {
+      "id": "entrepreneurship-basics",
+      "category": "career_finance",
+      "goalName": "Start Small Business",
+      "duration": 180,
+      "difficulty": "advanced",
+      "description": "Launch and establish small business venture",
+      "tags": ["entrepreneurship", "business", "startup"],
+      "habits": [
+        {"name": "Work on business (2 hours)", "frequency": "daily", "priority": 1, "difficulty": 8, "estimatedTimeMinutes": 120},
+        {"name": "Customer outreach", "frequency": "5x_per_week", "priority": 1, "difficulty": 7, "estimatedTimeMinutes": 45},
+        {"name": "Financial tracking", "frequency": "daily", "priority": 1, "difficulty": 5, "estimatedTimeMinutes": 15},
+        {"name": "Business learning", "frequency": "3x_per_week", "priority": 2, "difficulty": 6, "estimatedTimeMinutes": 30}
+      ],
+      "milestones": [
+        {"day": 30, "target": "Business plan complete", "reward": "Business books"},
+        {"day": 90, "target": "First 5 customers", "reward": "Business tools"},
+        {"day": 180, "target": "$5K revenue", "reward": "Business coaching"}
+      ]
+    },
+    {
+      "id": "posture-improvement",
+      "category": "health_fitness",
+      "goalName": "Improve Posture",
+      "duration": 60,
+      "difficulty": "beginner",
+      "description": "Correct posture and reduce back pain",
+      "tags": ["posture", "health", "pain relief"],
+      "habits": [
+        {"name": "Posture check every hour", "frequency": "daily", "priority": 1, "difficulty": 4, "estimatedTimeMinutes": 5},
+        {"name": "Back strengthening exercises", "frequency": "daily", "priority": 1, "difficulty": 5, "estimatedTimeMinutes": 15},
+        {"name": "Ergonomic workspace setup", "frequency": "daily", "priority": 2, "difficulty": 3, "estimatedTimeMinutes": 2}
+      ],
+      "milestones": [
+        {"day": 14, "target": "Conscious posture awareness", "reward": "Ergonomic pillow"},
+        {"day": 30, "target": "Reduced back pain", "reward": "Posture corrector"},
+        {"day": 60, "target": "Automatic good posture", "reward": "Standing desk"}
+      ]
+    },
+    {
+      "id": "emotional-intelligence",
+      "category": "mental_wellness",
+      "goalName": "Develop Emotional Intelligence",
+      "duration": 90,
+      "difficulty": "intermediate",
+      "description": "Improve self-awareness and emotional regulation",
+      "tags": ["emotional intelligence", "self-awareness", "growth"],
+      "habits": [
+        {"name": "Emotion journaling", "frequency": "daily", "priority": 1, "difficulty": 5, "estimatedTimeMinutes": 10},
+        {"name": "Active listening practice", "frequency": "daily", "priority": 1, "difficulty": 6, "estimatedTimeMinutes": 20},
+        {"name": "EQ course or reading", "frequency": "3x_per_week", "priority": 2, "difficulty": 5, "estimatedTimeMinutes": 30}
+      ],
+      "milestones": [
+        {"day": 30, "target": "Identify emotion patterns", "reward": "EQ assessment"},
+        {"day": 60, "target": "Improve emotional regulation", "reward": "Coaching session"},
+        {"day": 90, "target": "Higher EQ score", "reward": "Leadership workshop"}
+      ]
+    },
+    {
+      "id": "garden-sustainability",
+      "category": "productivity",
+      "goalName": "Start Home Garden",
+      "duration": 120,
+      "difficulty": "beginner",
+      "description": "Grow vegetables and herbs at home",
+      "tags": ["gardening", "sustainability", "food"],
+      "habits": [
+        {"name": "Garden maintenance (20 min)", "frequency": "daily", "priority": 1, "difficulty": 4, "estimatedTimeMinutes": 20},
+        {"name": "Research gardening tips", "frequency": "3x_per_week", "priority": 2, "difficulty": 3, "estimatedTimeMinutes": 15},
+        {"name": "Harvest and cooking", "frequency": "weekly", "priority": 2, "difficulty": 5, "estimatedTimeMinutes": 45}
+      ],
+      "milestones": [
+        {"day": 30, "target": "All seeds planted", "reward": "Gardening tools"},
+        {"day": 60, "target": "First harvest", "reward": "Garden expansion"},
+        {"day": 120, "target": "Sustainable garden", "reward": "Greenhouse"}
+      ]
     }
   ],
   "metadata": {
-    "version": "1.0",
+    "version": "2.0",
     "totalTemplates": 36,
     "categories": ["health_fitness", "mental_wellness", "productivity", "career_finance", "education", "relationships"],
-    "averageDuration": 90,
-    "successRate": 0.73
+    "averageDuration": 95,
+    "successRate": 0.73,
+    "difficultyLevels": ["beginner", "intermediate", "advanced"],
+    "lastUpdated": "2025-01-20"
   }
 }
