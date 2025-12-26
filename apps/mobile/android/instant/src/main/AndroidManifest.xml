@@ -1,54 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    package="com.upcoach.instant">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name=".InstantApp"
         android:allowBackup="false"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:theme="@style/Theme.UpCoach"
-        tools:targetApi="31">
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 
-        <!-- Main instant app activity -->
         <activity
-            android:name=".QuickCheckInActivity"
+            android:name=".InstantHabitCheckInActivity"
             android:exported="true"
-            android:theme="@style/Theme.UpCoach.NoActionBar">
+            android:launchMode="singleTask">
 
-            <!-- App Links for instant app -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <!-- Handle URLs like: https://upcoach.app/instant/habits/morning-workout -->
+                <!-- Deep link for habit check-in -->
                 <data
                     android:scheme="https"
                     android:host="upcoach.app"
-                    android:pathPrefix="/instant/habits" />
-            </intent-filter>
-
-            <!-- Handle QR code deep links -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
+                    android:pathPrefix="/habit" />
 
                 <data
-                    android:scheme="upcoach"
-                    android:host="instant"
-                    android:pathPrefix="/checkin" />
+                    android:scheme="http"
+                    android:host="upcoach.app"
+                    android:pathPrefix="/habit" />
             </intent-filter>
+
+            <meta-data
+                android:name="default-url"
+                android:value="https://upcoach.app/habit" />
         </activity>
-
-        <!-- Install prompt activity -->
-        <activity
-            android:name="com.google.android.gms.instantapps.InstantAppsActivity"
-            android:theme="@style/Theme.UpCoach.Transparent" />
-
     </application>
-
 </manifest>

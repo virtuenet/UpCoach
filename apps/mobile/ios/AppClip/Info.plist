@@ -5,7 +5,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
-    <string>UpCoach Quick Check-In</string>
+    <string>UpCoach Check-In</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -27,10 +27,8 @@
         <key>NSAppClipRequestLocationConfirmation</key>
         <false/>
     </dict>
-    <key>NSUserActivityTypes</key>
-    <array>
-        <string>NSUserActivityTypeBrowsingWeb</string>
-    </array>
+    <key>NSCameraUsageDescription</key>
+    <string>We need camera access to scan QR codes for habit check-ins</string>
     <key>UIApplicationSceneManifest</key>
     <dict>
         <key>UIApplicationSupportsMultipleScenes</key>
@@ -38,10 +36,5 @@
     </dict>
     <key>UILaunchScreen</key>
     <dict/>
-    <key>NSAppTransportSecurity</key>
-    <dict>
-        <key>NSAllowsArbitraryLoads</key>
-        <false/>
-    </dict>
 </dict>
 </plist>
