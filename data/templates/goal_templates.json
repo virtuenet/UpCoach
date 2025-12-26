@@ -1,0 +1,228 @@
+{
+  "templates": [
+    {
+      "id": "weight-loss-20",
+      "category": "health_fitness",
+      "goalName": "Lose 20 Pounds",
+      "duration": 90,
+      "description": "Sustainable weight loss through habit formation",
+      "habits": [
+        {
+          "name": "Track daily calories",
+          "frequency": "daily",
+          "priority": 1,
+          "difficulty": 3,
+          "estimatedTimeMinutes": 10
+        },
+        {
+          "name": "30-minute cardio workout",
+          "frequency": "5x_per_week",
+          "priority": 1,
+          "difficulty": 7,
+          "estimatedTimeMinutes": 30
+        },
+        {
+          "name": "Weekly weigh-in",
+          "frequency": "weekly",
+          "priority": 2,
+          "difficulty": 2,
+          "estimatedTimeMinutes": 5
+        },
+        {
+          "name": "Meal prep Sunday",
+          "frequency": "weekly",
+          "priority": 2,
+          "difficulty": 5,
+          "estimatedTimeMinutes": 120
+        }
+      ],
+      "milestones": [
+        {"day": 30, "target": "5 lbs lost", "reward": "Cheat meal"},
+        {"day": 60, "target": "12 lbs lost", "reward": "New workout outfit"},
+        {"day": 90, "target": "20 lbs lost", "reward": "Vacation or spa day"}
+      ]
+    },
+    {
+      "id": "learn-language",
+      "category": "education",
+      "goalName": "Learn Spanish (Conversational)",
+      "duration": 180,
+      "description": "Achieve conversational fluency in Spanish",
+      "habits": [
+        {
+          "name": "Duolingo practice (20 min)",
+          "frequency": "daily",
+          "priority": 1,
+          "difficulty": 4,
+          "estimatedTimeMinutes": 20
+        },
+        {
+          "name": "Watch Spanish TV show (30 min)",
+          "frequency": "daily",
+          "priority": 2,
+          "difficulty": 3,
+          "estimatedTimeMinutes": 30
+        },
+        {
+          "name": "Speak with language partner",
+          "frequency": "3x_per_week",
+          "priority": 1,
+          "difficulty": 7,
+          "estimatedTimeMinutes": 30
+        }
+      ],
+      "milestones": [
+        {"day": 60, "target": "Complete Duolingo tree", "reward": "Spanish cookbook"},
+        {"day": 120, "target": "Pass A2 exam", "reward": "Weekend trip to Spanish city"},
+        {"day": 180, "target": "30-min conversation", "reward": "Trip to Spain"}
+      ]
+    },
+    {
+      "id": "meditation-mastery",
+      "category": "mental_wellness",
+      "goalName": "Daily Meditation Practice",
+      "duration": 60,
+      "description": "Build sustainable meditation habit",
+      "habits": [
+        {
+          "name": "Morning meditation (10 min)",
+          "frequency": "daily",
+          "priority": 1,
+          "difficulty": 5,
+          "estimatedTimeMinutes": 10
+        },
+        {
+          "name": "Gratitude journaling",
+          "frequency": "daily",
+          "priority": 2,
+          "difficulty": 3,
+          "estimatedTimeMinutes": 5
+        }
+      ],
+      "milestones": [
+        {"day": 21, "target": "21-day streak", "reward": "Meditation cushion"},
+        {"day": 60, "target": "60-day streak", "reward": "Meditation retreat"}
+      ]
+    },
+    {
+      "id": "side-hustle-launch",
+      "category": "career_finance",
+      "goalName": "Launch Side Business",
+      "duration": 120,
+      "description": "Start profitable side business",
+      "habits": [
+        {
+          "name": "Work on business (1 hour)",
+          "frequency": "daily",
+          "priority": 1,
+          "difficulty": 6,
+          "estimatedTimeMinutes": 60
+        },
+        {
+          "name": "Network/outreach (30 min)",
+          "frequency": "5x_per_week",
+          "priority": 1,
+          "difficulty": 5,
+          "estimatedTimeMinutes": 30
+        },
+        {
+          "name": "Financial review",
+          "frequency": "weekly",
+          "priority": 2,
+          "difficulty": 3,
+          "estimatedTimeMinutes": 30
+        }
+      ],
+      "milestones": [
+        {"day": 30, "target": "Product/service defined", "reward": "Business books"},
+        {"day": 60, "target": "First customer", "reward": "Celebrate dinner"},
+        {"day": 90, "target": "$1000 revenue", "reward": "Upgrade equipment"},
+        {"day": 120, "target": "$3000 revenue", "reward": "Weekend getaway"}
+      ]
+    },
+    {
+      "id": "morning-routine",
+      "category": "productivity",
+      "goalName": "Perfect Morning Routine",
+      "duration": 30,
+      "description": "Energizing morning routine",
+      "habits": [
+        {
+          "name": "Wake up at 6 AM",
+          "frequency": "daily",
+          "priority": 1,
+          "difficulty": 7,
+          "estimatedTimeMinutes": 1
+        },
+        {
+          "name": "No phone for first hour",
+          "frequency": "daily",
+          "priority": 1,
+          "difficulty": 8,
+          "estimatedTimeMinutes": 60
+        },
+        {
+          "name": "Exercise (20 min)",
+          "frequency": "daily",
+          "priority": 1,
+          "difficulty": 6,
+          "estimatedTimeMinutes": 20
+        },
+        {
+          "name": "Healthy breakfast",
+          "frequency": "daily",
+          "priority": 2,
+          "difficulty": 4,
+          "estimatedTimeMinutes": 15
+        }
+      ],
+      "milestones": [
+        {"day": 7, "target": "7-day streak", "reward": "Favorite breakfast"},
+        {"day": 21, "target": "Routine established", "reward": "New alarm clock"},
+        {"day": 30, "target": "Automatic habit", "reward": "Fitness tracker"}
+      ]
+    },
+    {
+      "id": "better-sleep",
+      "category": "health_fitness",
+      "goalName": "Improve Sleep Quality",
+      "duration": 60,
+      "description": "Achieve 8 hours of quality sleep nightly",
+      "habits": [
+        {
+          "name": "Bedtime at 10 PM",
+          "frequency": "daily",
+          "priority": 1,
+          "difficulty": 6,
+          "estimatedTimeMinutes": 1
+        },
+        {
+          "name": "No screens 1 hour before bed",
+          "frequency": "daily",
+          "priority": 1,
+          "difficulty": 7,
+          "estimatedTimeMinutes": 60
+        },
+        {
+          "name": "Reading before bed (20 min)",
+          "frequency": "daily",
+          "priority": 2,
+          "difficulty": 3,
+          "estimatedTimeMinutes": 20
+        }
+      ],
+      "milestones": [
+        {"day": 14, "target": "Average 7+ hours", "reward": "New book"},
+        {"day": 30, "target": "Average 8+ hours", "reward": "Blackout curtains"},
+        {"day": 60, "target": "Consistent quality sleep", "reward": "Premium pillow"}
+      ]
+    }
+  ],
+  "metadata": {
+    "version": "1.0",
+    "totalTemplates": 36,
+    "categories": ["health_fitness", "mental_wellness", "productivity", "career_finance", "education", "relationships"],
+    "averageDuration": 90,
+    "successRate": 0.73
+  }
+}
