@@ -1,94 +1,121 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Google Assistant Actions Configuration (Phase 10)
+    
+    Enables "Hey Google" voice commands for UpCoach:
+    - "Hey Google, check in my habit on UpCoach"
+    - "Hey Google, show my goals on UpCoach"
+    - "Hey Google, log my mood on UpCoach"
+-->
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    
     <!-- Check In Habit Shortcut -->
-    <capability android:name="actions.intent.CREATE_HABIT_CHECKIN">
-        <intent
-            android:action="android.intent.action.VIEW"
-            android:targetPackage="com.upcoach.app"
-            android:targetClass="com.upcoach.app.MainActivity">
-            <url-template android:value="upcoach://habits/{habit_name}/checkin" />
-            <parameter
-                android:name="habit.name"
-                android:key="habit_name" />
-        </intent>
-    </capability>
-
-    <!-- View Progress Shortcut -->
-    <capability android:name="actions.intent.GET_HABIT_PROGRESS">
-        <intent
-            android:action="android.intent.action.VIEW"
-            android:targetPackage="com.upcoach.app"
-            android:targetClass="com.upcoach.app.MainActivity">
-            <url-template android:value="upcoach://habits/progress" />
-        </intent>
-    </capability>
-
-    <!-- Start Habit Session Shortcut -->
-    <capability android:name="actions.intent.START_HABIT_SESSION">
-        <intent
-            android:action="android.intent.action.VIEW"
-            android:targetPackage="com.upcoach.app"
-            android:targetClass="com.upcoach.app.MainActivity">
-            <url-template android:value="upcoach://habits/{habit_name}/session?duration={duration}" />
-            <parameter
-                android:name="habit.name"
-                android:key="habit_name" />
-            <parameter
-                android:name="session.duration"
-                android:key="duration" />
-        </intent>
-    </capability>
-
-    <!-- Get Streak Info Shortcut -->
-    <capability android:name="actions.intent.GET_STREAK_INFO">
-        <intent
-            android:action="android.intent.action.VIEW"
-            android:targetPackage="com.upcoach.app"
-            android:targetClass="com.upcoach.app.MainActivity">
-            <url-template android:value="upcoach://streaks" />
-        </intent>
-    </capability>
-
-    <!-- App Shortcuts (Long-press menu) -->
     <shortcut
-        android:shortcutId="check_in"
+        android:shortcutId="check_in_habit"
         android:enabled="true"
-        android:icon="@drawable/ic_checkmark"
+        android:icon="@drawable/ic_check_circle"
         android:shortcutShortLabel="@string/shortcut_check_in_short"
         android:shortcutLongLabel="@string/shortcut_check_in_long">
+        
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetPackage="com.upcoach.app"
-            android:targetClass="com.upcoach.app.MainActivity"
-            android:data="upcoach://habits/quick-checkin" />
-        <categories android:name="android.shortcut.conversation" />
+            android:targetPackage="com.upcoach.mobile"
+            android:targetClass="com.upcoach.mobile.MainActivity"
+            android:data="upcoach://habits/checkin" />
+        
+        <capability-binding android:key="actions.intent.CHECK_IN_HABIT">
+            <parameter
+                android:name="habit.name"
+                android:key="habitName"
+                android:mimeType="text/plain" />
+        </capability-binding>
     </shortcut>
-
+    
+    <!-- View Goals Shortcut -->
+    <shortcut
+        android:shortcutId="view_goals"
+        android:enabled="true"
+        android:icon="@drawable/ic_target"
+        android:shortcutShortLabel="@string/shortcut_view_goals_short"
+        android:shortcutLongLabel="@string/shortcut_view_goals_long">
+        
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.upcoach.mobile"
+            android:targetClass="com.upcoach.mobile.MainActivity"
+            android:data="upcoach://goals" />
+        
+        <capability-binding android:key="actions.intent.VIEW_GOALS">
+            <parameter
+                android:name="goal.type"
+                android:key="goalType"
+                android:mimeType="text/plain" />
+        </capability-binding>
+    </shortcut>
+    
+    <!-- Log Mood Shortcut -->
+    <shortcut
+        android:shortcutId="log_mood"
+        android:enabled="true"
+        android:icon="@drawable/ic_mood"
+        android:shortcutShortLabel="@string/shortcut_log_mood_short"
+        android:shortcutLongLabel="@string/shortcut_log_mood_long">
+        
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.upcoach.mobile"
+            android:targetClass="com.upcoach.mobile.MainActivity"
+            android:data="upcoach://mood/log" />
+        
+        <capability-binding android:key="actions.intent.LOG_MOOD">
+            <parameter
+                android:name="mood.type"
+                android:key="moodType"
+                android:mimeType="text/plain" />
+            <parameter
+                android:name="mood.notes"
+                android:key="notes"
+                android:mimeType="text/plain" />
+        </capability-binding>
+    </shortcut>
+    
+    <!-- Track Water Intake Shortcut -->
+    <shortcut
+        android:shortcutId="track_water"
+        android:enabled="true"
+        android:icon="@drawable/ic_water"
+        android:shortcutShortLabel="@string/shortcut_track_water_short"
+        android:shortcutLongLabel="@string/shortcut_track_water_long">
+        
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.upcoach.mobile"
+            android:targetClass="com.upcoach.mobile.MainActivity"
+            android:data="upcoach://habits/water" />
+        
+        <capability-binding android:key="actions.intent.TRACK_WATER">
+            <parameter
+                android:name="water.amount"
+                android:key="amount"
+                android:mimeType="text/plain" />
+        </capability-binding>
+    </shortcut>
+    
+    <!-- View Progress Shortcut -->
     <shortcut
         android:shortcutId="view_progress"
         android:enabled="true"
-        android:icon="@drawable/ic_progress"
-        android:shortcutShortLabel="@string/shortcut_progress_short"
-        android:shortcutLongLabel="@string/shortcut_progress_long">
+        android:icon="@drawable/ic_chart"
+        android:shortcutShortLabel="@string/shortcut_view_progress_short"
+        android:shortcutLongLabel="@string/shortcut_view_progress_long">
+        
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetPackage="com.upcoach.app"
-            android:targetClass="com.upcoach.app.MainActivity"
-            android:data="upcoach://habits/progress" />
-        <categories android:name="android.shortcut.conversation" />
+            android:targetPackage="com.upcoach.mobile"
+            android:targetClass="com.upcoach.mobile.MainActivity"
+            android:data="upcoach://dashboard" />
+        
+        <capability-binding android:key="actions.intent.VIEW_PROGRESS" />
     </shortcut>
-
-    <shortcut
-        android:shortcutId="today_habits"
-        android:enabled="true"
-        android:icon="@drawable/ic_today"
-        android:shortcutShortLabel="@string/shortcut_today_short"
-        android:shortcutLongLabel="@string/shortcut_today_long">
-        <intent
-            android:action="android.intent.action.VIEW"
-            android:targetPackage="com.upcoach.app"
-            android:targetClass="com.upcoach.app.MainActivity"
-            android:data="upcoach://habits/today" />
-        <categories android:name="android.shortcut.conversation" />
-    </shortcut>
+    
 </shortcuts>
