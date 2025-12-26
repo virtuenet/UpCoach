@@ -1,0 +1,457 @@
+# ============================================================================
+# Phase 8: AI-Powered Coaching Assistant & Personalization Engine
+# GraphQL Schema Extensions
+# ============================================================================
+
+# ============================================================================
+# Personalization Types
+# ============================================================================
+
+type UserProfile {
+  id: ID!
+  userId: ID!
+  embedding: [Float!]!
+  personalityType: String
+  coachingTonePreference: CoachingTone!
+  optimalCheckinTimes: [Int!]!
+  engagementScore: Float!
+  churnRiskScore: Float!
+  lastUpdated: DateTime!
+}
+
+enum CoachingTone {
+  SUPPORTIVE
+  CHALLENGING
+  ANALYTICAL
+}
+
+type Recommendation {
+  id: ID!
+  userId: ID!
+  itemType: RecommendationType!
+  itemId: String!
+  score: Float!
+  reason: String!
+  metadata: JSON
+  clicked: Boolean
+  dismissed: Boolean
+  createdAt: DateTime!
+}
+
+enum RecommendationType {
+  GOAL
+  HABIT
+  CONTENT
+  RESOURCE
+}
+
+input RecommendationRequest {
+  itemType: RecommendationType!
+  limit: Int
+  excludeIds: [ID!]
+  contextualFactors: ContextualFactorsInput
+}
+
+input ContextualFactorsInput {
+  timeOfDay: Int
+  dayOfWeek: Int
+  currentMood: String
+  recentActivity: [String!]
+}
+
+# ============================================================================
+# AI Coaching Assistant Types
+# ============================================================================
+
+type Conversation {
+  id: ID!
+  userId: ID!
+  messages: [ChatMessage!]!
+  context: ConversationContext!
+  intent: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ChatMessage {
+  id: ID!
+  conversationId: ID!
+  role: MessageRole!
+  content: String!
+  intent: String
+  sentiment: Float
+  timestamp: DateTime!
+  metadata: JSON
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+type ConversationContext {
+  currentGoals: [ID!]
+  recentHabits: [ID!]
+  mood: String
+  energyLevel: Int
+  timezone: String
+  coachingTone: CoachingTone
+}
+
+type ChatResponse {
+  conversationId: ID!
+  message: String!
+  intent: String!
+  suggestedActions: [SuggestedAction!]
+  metadata: JSON
+}
+
+type SuggestedAction {
+  type: String!
+  label: String!
+  action: String!
+  data: JSON
+}
+
+input ChatRequest {
+  message: String!
+  conversationId: ID
+  context: ConversationContextInput
+}
+
+input ConversationContextInput {
+  currentGoals: [ID!]
+  recentHabits: [ID!]
+  mood: String
+  energyLevel: Int
+  timezone: String
+  coachingTone: CoachingTone
+}
+
+# ============================================================================
+# Smart Intervention Types
+# ============================================================================
+
+type Intervention {
+  id: ID!
+  userId: ID!
+  triggerEvent: String!
+  interventionType: InterventionType!
+  priority: InterventionPriority!
+  message: String!
+  deliveredAt: DateTime
+  responseAction: String
+  effective: Boolean
+  abTestVariant: String
+  metadata: JSON
+  createdAt: DateTime!
+}
+
+enum InterventionType {
+  PUSH_NOTIFICATION
+  EMAIL
+  IN_APP
+  SMS
+}
+
+enum InterventionPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+# ============================================================================
+# Goal Decomposition Types
+# ============================================================================
+
+type GoalPlan {
+  goalId: ID!
+  milestones: [AutoMilestone!]!
+  suggestedHabits: [SuggestedHabit!]!
+  estimatedCompletion: DateTime!
+  dependencies: [ID!]
+  confidence: Float!
+}
+
+type AutoMilestone {
+  title: String!
+  description: String!
+  order: Int!
+  estimatedDuration: Int!
+  targetDate: DateTime
+  metrics: MilestoneMetrics
+}
+
+type MilestoneMetrics {
+  type: String!
+  target: Float!
+  unit: String!
+}
+
+type SuggestedHabit {
+  name: String!
+  category: HabitCategory!
+  frequency: HabitFrequency!
+  description: String!
+  rationale: String!
+  priority: SuggestedPriority!
+}
+
+enum SuggestedPriority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+type GoalAnalysis {
+  isSmartGoal: Boolean!
+  specific: Boolean!
+  measurable: Boolean!
+  achievable: Boolean!
+  relevant: Boolean!
+  timeBound: Boolean!
+  suggestions: [String!]!
+  category: String!
+  difficulty: DifficultyLevel!
+}
+
+enum DifficultyLevel {
+  EASY
+  MEDIUM
+  HARD
+  EXPERT
+}
+
+# ============================================================================
+# Sentiment & Mood Tracking Types
+# ============================================================================
+
+type MoodEntry {
+  id: ID!
+  userId: ID!
+  mood: String!
+  sentimentScore: Float!
+  emotions: EmotionScores!
+  journalEntry: String
+  createdAt: DateTime!
+}
+
+type EmotionScores {
+  joy: Float!
+  sadness: Float!
+  anger: Float!
+  fear: Float!
+  surprise: Float!
+  disgust: Float!
+  neutral: Float!
+}
+
+type MoodTrend {
+  period: String!
+  averageSentiment: Float!
+  dominantEmotion: String!
+  totalEntries: Int!
+  trend: TrendDirection!
+}
+
+enum TrendDirection {
+  IMPROVING
+  DECLINING
+  STABLE
+}
+
+type SentimentResult {
+  score: Float!
+  label: SentimentLabel!
+  confidence: Float!
+  emotions: EmotionScores!
+}
+
+enum SentimentLabel {
+  VERY_NEGATIVE
+  NEGATIVE
+  NEUTRAL
+  POSITIVE
+  VERY_POSITIVE
+}
+
+# ============================================================================
+# Predictive Insights Types
+# ============================================================================
+
+type PredictiveInsights {
+  userId: ID!
+  goalSuccessProbabilities: [GoalSuccessPrediction!]!
+  optimalCheckinTimes: [Int!]!
+  streakPredictions: [StreakPrediction!]!
+  riskWarnings: [RiskWarning!]!
+  peerComparisons: [PeerComparison!]!
+}
+
+type GoalSuccessPrediction {
+  goalId: ID!
+  probability: Float!
+  estimatedCompletionDate: DateTime!
+  confidence: Float!
+  factors: [String!]!
+}
+
+type StreakPrediction {
+  habitId: ID!
+  predictedStreak: Int!
+  probabilityOfContinuing: Float!
+  milestoneDate: DateTime!
+}
+
+type RiskWarning {
+  type: String!
+  severity: InterventionPriority!
+  message: String!
+  recommendations: [String!]!
+}
+
+type PeerComparison {
+  metric: String!
+  userValue: Float!
+  percentile: Int!
+  message: String!
+}
+
+# ============================================================================
+# Extended Query Operations
+# ============================================================================
+
+extend type Query {
+  # Personalization
+  getUserProfile: UserProfile!
+  getRecommendedGoals(request: RecommendationRequest): [Recommendation!]!
+  getRecommendedHabits(request: RecommendationRequest): [Recommendation!]!
+  getPersonalizedFeed(limit: Int): [Recommendation!]!
+
+  # AI Coaching
+  getConversation(conversationId: ID!): Conversation!
+  getConversationHistory(limit: Int): [Conversation!]!
+
+  # Interventions
+  getInterventions(status: String): [Intervention!]!
+  getInterventionAnalytics(period: StatisticsPeriod!): InterventionAnalytics!
+
+  # Goal Breakdown
+  analyzeGoal(goalId: ID!): GoalAnalysis!
+  getGoalPlan(goalId: ID!): GoalPlan
+
+  # Sentiment & Mood
+  getMoodEntries(period: StatisticsPeriod!): [MoodEntry!]!
+  getMoodTrends(period: StatisticsPeriod!): [MoodTrend!]!
+
+  # Predictive Insights
+  getPredictiveInsights: PredictiveInsights!
+}
+
+# ============================================================================
+# Extended Mutation Operations
+# ============================================================================
+
+extend type Mutation {
+  # Personalization
+  updateUserProfile(updates: UserProfileInput!): UserProfile!
+  trackRecommendationInteraction(
+    recommendationId: ID!
+    interactionType: InteractionType!
+  ): Boolean!
+
+  # AI Coaching
+  sendChatMessage(request: ChatRequest!): ChatResponse!
+
+  # Interventions
+  dismissIntervention(interventionId: ID!): Boolean!
+  respondToIntervention(
+    interventionId: ID!
+    action: String!
+  ): Boolean!
+
+  # Goal Breakdown
+  generateGoalPlan(goalId: ID!): GoalPlan!
+
+  # Sentiment & Mood
+  logMood(mood: String!, journalEntry: String): MoodEntry!
+  analyzeSentiment(text: String!): SentimentResult!
+
+  # Coaching Preferences
+  updateCoachingPreferences(
+    tone: CoachingTone
+    reminderStyle: String
+  ): UserProfile!
+}
+
+# ============================================================================
+# Extended Subscription Operations
+# ============================================================================
+
+extend type Subscription {
+  # Real-time interventions
+  interventionReceived: Intervention!
+
+  # AI chat responses
+  chatResponseReceived(conversationId: ID!): ChatMessage!
+
+  # Mood tracking
+  moodEntryCreated: MoodEntry!
+}
+
+# ============================================================================
+# Input Types
+# ============================================================================
+
+input UserProfileInput {
+  personalityType: String
+  coachingTonePreference: CoachingTone
+  optimalCheckinTimes: [Int!]
+  engagementScore: Float
+  churnRiskScore: Float
+}
+
+enum InteractionType {
+  CLICK
+  DISMISS
+  CREATE
+}
+
+# ============================================================================
+# Analytics Types
+# ============================================================================
+
+type InterventionAnalytics {
+  period: StatisticsPeriod!
+  totalInterventions: Int!
+  deliveredInterventions: Int!
+  effectiveInterventions: Int!
+  responseRate: Float!
+  byType: [InterventionTypeMetric!]!
+  byPriority: [InterventionPriorityMetric!]!
+  abTestResults: [ABTestResult!]!
+}
+
+type InterventionTypeMetric {
+  type: InterventionType!
+  count: Int!
+  responseRate: Float!
+  effectivenessRate: Float!
+}
+
+type InterventionPriorityMetric {
+  priority: InterventionPriority!
+  count: Int!
+  responseRate: Float!
+}
+
+type ABTestResult {
+  variant: String!
+  impressions: Int!
+  clicks: Int!
+  conversions: Int!
+  conversionRate: Float!
+  confidence: Float!
+}
