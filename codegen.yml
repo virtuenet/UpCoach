@@ -1,0 +1,43 @@
+overwrite: true
+schema: "services/api/src/graphql/schema.graphql"
+documents: null
+generates:
+  # TypeScript Types for Backend
+  services/api/src/graphql/generated/types.ts:
+    plugins:
+      - "typescript"
+      - "typescript-resolvers"
+    config:
+      useIndexSignature: true
+      contextType: "../apolloServer#GraphQLContext"
+      mappers:
+        User: "../models/User#User"
+        Tenant: "../models/Tenant#Tenant"
+        Goal: "../models/Goal#Goal"
+        Habit: "../models/Habit#Habit"
+
+  # React Hooks for Frontend (Admin Panel)
+  apps/admin-panel/src/generated/graphql.tsx:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-react-apollo"
+    config:
+      withHooks: true
+      withComponent: false
+      withHOC: false
+      apolloReactHooksImportFrom: "@apollo/client"
+
+  # TypeScript SDK for External Developers
+  packages/graphql-client/src/generated/sdk.ts:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-graphql-request"
+    config:
+      rawRequest: false
+
+  # Introspection JSON
+  services/api/src/graphql/generated/schema.json:
+    plugins:
+      - "introspection"

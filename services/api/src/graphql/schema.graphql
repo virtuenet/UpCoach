@@ -1,0 +1,689 @@
+# UpCoach GraphQL Schema
+# Unified API for all 251 services with field-level permissions
+
+scalar DateTime
+scalar JSON
+scalar Upload
+
+# ============================================================================
+# Authentication & Authorization
+# ============================================================================
+
+type User {
+  id: ID!
+  email: String!
+  firstName: String!
+  lastName: String!
+  role: UserRole!
+  avatar: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
+  # Relationships
+  tenant: Tenant
+  goals: [Goal!]!
+  habits: [Habit!]!
+  achievements: [Achievement!]!
+  subscriptions: [Subscription!]!
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  COACH
+  MEMBER
+  VIEWER
+}
+
+type AuthPayload {
+  token: String!
+  refreshToken: String!
+  user: User!
+  expiresIn: Int!
+}
+
+# ============================================================================
+# Multi-Tenancy
+# ============================================================================
+
+type Tenant {
+  id: ID!
+  name: String!
+  slug: String!
+  customDomain: String
+  branding: TenantBranding!
+  features: [FeatureFlag!]!
+  subscription: TenantSubscription
+  members: [TenantMember!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type TenantBranding {
+  primaryColor: String!
+  secondaryColor: String!
+  logo: String
+  fontFamily: String
+  customCss: String
+}
+
+type TenantMember {
+  id: ID!
+  user: User!
+  role: UserRole!
+  joinedAt: DateTime!
+}
+
+type FeatureFlag {
+  key: String!
+  enabled: Boolean!
+  metadata: JSON
+}
+
+type TenantSubscription {
+  tier: SubscriptionTier!
+  status: SubscriptionStatus!
+  currentPeriodStart: DateTime!
+  currentPeriodEnd: DateTime!
+  cancelAtPeriodEnd: Boolean!
+}
+
+enum SubscriptionTier {
+  FREE
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  UNPAID
+}
+
+# ============================================================================
+# Goals & Habits
+# ============================================================================
+
+type Goal {
+  id: ID!
+  title: String!
+  description: String
+  status: GoalStatus!
+  category: GoalCategory!
+  targetDate: DateTime
+  progress: Float!
+  milestones: [Milestone!]!
+  habits: [Habit!]!
+  owner: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum GoalStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum GoalCategory {
+  HEALTH
+  CAREER
+  FINANCE
+  RELATIONSHIPS
+  PERSONAL_GROWTH
+  OTHER
+}
+
+type Milestone {
+  id: ID!
+  title: String!
+  description: String
+  dueDate: DateTime
+  completed: Boolean!
+  completedAt: DateTime
+  goal: Goal!
+}
+
+type Habit {
+  id: ID!
+  name: String!
+  description: String
+  frequency: HabitFrequency!
+  streak: Int!
+  longestStreak: Int!
+  totalCheckins: Int!
+  category: HabitCategory!
+  reminderTime: String
+  goal: Goal
+  owner: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+
+  # Analytics
+  checkins(startDate: DateTime, endDate: DateTime): [HabitCheckin!]!
+  statistics(period: StatisticsPeriod!): HabitStatistics!
+}
+
+enum HabitFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  CUSTOM
+}
+
+enum HabitCategory {
+  EXERCISE
+  NUTRITION
+  MEDITATION
+  READING
+  PRODUCTIVITY
+  SOCIAL
+  OTHER
+}
+
+enum StatisticsPeriod {
+  WEEK
+  MONTH
+  QUARTER
+  YEAR
+  ALL_TIME
+}
+
+type HabitCheckin {
+  id: ID!
+  habit: Habit!
+  checkedInAt: DateTime!
+  note: String
+  mood: Int
+  location: String
+}
+
+type HabitStatistics {
+  totalCheckins: Int!
+  currentStreak: Int!
+  longestStreak: Int!
+  completionRate: Float!
+  averageMood: Float
+  checkinsByDayOfWeek: [DayStatistic!]!
+  checkinsByHour: [HourStatistic!]!
+}
+
+type DayStatistic {
+  dayOfWeek: Int!
+  count: Int!
+}
+
+type HourStatistic {
+  hour: Int!
+  count: Int!
+}
+
+# ============================================================================
+# Gamification
+# ============================================================================
+
+type Achievement {
+  id: ID!
+  title: String!
+  description: String!
+  icon: String!
+  points: Int!
+  rarity: AchievementRarity!
+  unlockedAt: DateTime
+  progress: Float!
+  requirement: Int!
+}
+
+enum AchievementRarity {
+  COMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+type Leaderboard {
+  period: LeaderboardPeriod!
+  entries: [LeaderboardEntry!]!
+}
+
+enum LeaderboardPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+  ALL_TIME
+}
+
+type LeaderboardEntry {
+  rank: Int!
+  user: User!
+  score: Int!
+  change: Int
+}
+
+# ============================================================================
+# Analytics & Insights
+# ============================================================================
+
+type UserAnalytics {
+  userId: ID!
+  totalGoals: Int!
+  completedGoals: Int!
+  activeHabits: Int!
+  totalCheckins: Int!
+  averageStreak: Float!
+  longestStreak: Int!
+  pointsEarned: Int!
+  level: Int!
+  activityHeatmap: [ActivityDay!]!
+  productivityScore: Float!
+}
+
+type ActivityDay {
+  date: String!
+  count: Int!
+  intensity: Float!
+}
+
+type ComplianceMetrics {
+  overallScore: Float!
+  passingControls: Int!
+  totalControls: Int!
+  evidenceCollected: Int!
+  lastUpdated: DateTime!
+  controlsByCategory: [ControlCategoryMetric!]!
+}
+
+type ControlCategoryMetric {
+  category: String!
+  passing: Int!
+  total: Int!
+  score: Float!
+}
+
+# ============================================================================
+# Integrations & Webhooks
+# ============================================================================
+
+type Integration {
+  id: ID!
+  provider: IntegrationProvider!
+  status: IntegrationStatus!
+  connectedAt: DateTime!
+  lastSyncAt: DateTime
+  config: JSON
+}
+
+enum IntegrationProvider {
+  GOOGLE_CALENDAR
+  NOTION
+  SLACK
+  ZAPIER
+  STRIPE
+  GITHUB
+  SENTRY
+}
+
+enum IntegrationStatus {
+  CONNECTED
+  DISCONNECTED
+  ERROR
+  PENDING
+}
+
+type Webhook {
+  id: ID!
+  url: String!
+  events: [WebhookEvent!]!
+  secret: String!
+  active: Boolean!
+  failureCount: Int!
+  lastDeliveredAt: DateTime
+  createdAt: DateTime!
+}
+
+enum WebhookEvent {
+  GOAL_CREATED
+  GOAL_UPDATED
+  GOAL_COMPLETED
+  HABIT_CREATED
+  HABIT_CHECKED_IN
+  ACHIEVEMENT_UNLOCKED
+  USER_REGISTERED
+  SUBSCRIPTION_UPDATED
+}
+
+type WebhookDelivery {
+  id: ID!
+  webhook: Webhook!
+  event: WebhookEvent!
+  payload: JSON!
+  responseStatus: Int
+  responseBody: String
+  deliveredAt: DateTime!
+  success: Boolean!
+}
+
+# ============================================================================
+# Compliance
+# ============================================================================
+
+type ComplianceControl {
+  id: ID!
+  controlId: String!
+  controlName: String!
+  category: String!
+  status: ControlStatus!
+  evidenceCount: Int!
+  lastExecuted: DateTime
+  complianceScore: Float!
+}
+
+enum ControlStatus {
+  PASSING
+  FAILING
+  WARNING
+  PENDING
+}
+
+type Policy {
+  id: ID!
+  name: String!
+  version: String!
+  status: PolicyStatus!
+  content: String!
+  publishedAt: DateTime
+  acceptanceRate: Float!
+}
+
+enum PolicyStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+type Vendor {
+  id: ID!
+  name: String!
+  website: String!
+  contactEmail: String!
+  riskScore: Float!
+  riskLevel: RiskLevel!
+  lastAssessedAt: DateTime
+  nextReassessmentAt: DateTime
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+# ============================================================================
+# Subscriptions (Real-time)
+# ============================================================================
+
+type Subscription {
+  habitCheckedIn(userId: ID!): HabitCheckin!
+  goalUpdated(userId: ID!): Goal!
+  achievementUnlocked(userId: ID!): Achievement!
+  complianceScoreUpdated(tenantId: ID!): ComplianceMetrics!
+}
+
+# ============================================================================
+# Queries
+# ============================================================================
+
+type Query {
+  # Authentication
+  me: User!
+
+  # Users
+  user(id: ID!): User
+  users(
+    limit: Int = 20
+    offset: Int = 0
+    role: UserRole
+    search: String
+  ): UserConnection!
+
+  # Tenants
+  tenant(id: ID!): Tenant
+  tenants(limit: Int = 20, offset: Int = 0): TenantConnection!
+
+  # Goals
+  goal(id: ID!): Goal
+  goals(
+    limit: Int = 20
+    offset: Int = 0
+    status: GoalStatus
+    category: GoalCategory
+    userId: ID
+  ): GoalConnection!
+
+  # Habits
+  habit(id: ID!): Habit
+  habits(
+    limit: Int = 20
+    offset: Int = 0
+    category: HabitCategory
+    userId: ID
+  ): HabitConnection!
+
+  # Analytics
+  userAnalytics(userId: ID!, period: StatisticsPeriod!): UserAnalytics!
+  complianceMetrics(tenantId: ID!): ComplianceMetrics!
+
+  # Gamification
+  achievements(userId: ID!): [Achievement!]!
+  leaderboard(period: LeaderboardPeriod!, limit: Int = 100): Leaderboard!
+
+  # Integrations
+  integrations(tenantId: ID!): [Integration!]!
+  integration(id: ID!): Integration
+
+  # Webhooks
+  webhooks(tenantId: ID!): [Webhook!]!
+  webhook(id: ID!): Webhook
+  webhookDeliveries(webhookId: ID!, limit: Int = 50): [WebhookDelivery!]!
+
+  # Compliance
+  complianceControls(tenantId: ID!): [ComplianceControl!]!
+  policies(tenantId: ID!, status: PolicyStatus): [Policy!]!
+  vendors(tenantId: ID!): [Vendor!]!
+}
+
+# ============================================================================
+# Mutations
+# ============================================================================
+
+type Mutation {
+  # Authentication
+  login(email: String!, password: String!): AuthPayload!
+  register(
+    email: String!
+    password: String!
+    firstName: String!
+    lastName: String!
+  ): AuthPayload!
+  refreshToken(refreshToken: String!): AuthPayload!
+  logout: Boolean!
+
+  # Goals
+  createGoal(input: CreateGoalInput!): Goal!
+  updateGoal(id: ID!, input: UpdateGoalInput!): Goal!
+  deleteGoal(id: ID!): Boolean!
+  completeGoal(id: ID!): Goal!
+
+  # Habits
+  createHabit(input: CreateHabitInput!): Habit!
+  updateHabit(id: ID!, input: UpdateHabitInput!): Habit!
+  deleteHabit(id: ID!): Boolean!
+  checkInHabit(habitId: ID!, note: String, mood: Int): HabitCheckin!
+
+  # Milestones
+  createMilestone(goalId: ID!, input: CreateMilestoneInput!): Milestone!
+  updateMilestone(id: ID!, input: UpdateMilestoneInput!): Milestone!
+  completeMilestone(id: ID!): Milestone!
+  deleteMilestone(id: ID!): Boolean!
+
+  # Tenants
+  createTenant(input: CreateTenantInput!): Tenant!
+  updateTenant(id: ID!, input: UpdateTenantInput!): Tenant!
+  updateTenantBranding(tenantId: ID!, input: TenantBrandingInput!): Tenant!
+
+  # Integrations
+  connectIntegration(
+    provider: IntegrationProvider!
+    config: JSON!
+  ): Integration!
+  disconnectIntegration(id: ID!): Boolean!
+  syncIntegration(id: ID!): Integration!
+
+  # Webhooks
+  createWebhook(input: CreateWebhookInput!): Webhook!
+  updateWebhook(id: ID!, input: UpdateWebhookInput!): Webhook!
+  deleteWebhook(id: ID!): Boolean!
+  testWebhook(id: ID!): WebhookDelivery!
+
+  # Compliance
+  acceptPolicy(policyId: ID!): Boolean!
+  assessVendor(vendorId: ID!, questionnaire: JSON!): Vendor!
+}
+
+# ============================================================================
+# Input Types
+# ============================================================================
+
+input CreateGoalInput {
+  title: String!
+  description: String
+  category: GoalCategory!
+  targetDate: DateTime
+}
+
+input UpdateGoalInput {
+  title: String
+  description: String
+  status: GoalStatus
+  category: GoalCategory
+  targetDate: DateTime
+}
+
+input CreateHabitInput {
+  name: String!
+  description: String
+  frequency: HabitFrequency!
+  category: HabitCategory!
+  reminderTime: String
+  goalId: ID
+}
+
+input UpdateHabitInput {
+  name: String
+  description: String
+  frequency: HabitFrequency
+  category: HabitCategory
+  reminderTime: String
+}
+
+input CreateMilestoneInput {
+  title: String!
+  description: String
+  dueDate: DateTime
+}
+
+input UpdateMilestoneInput {
+  title: String
+  description: String
+  dueDate: DateTime
+  completed: Boolean
+}
+
+input CreateTenantInput {
+  name: String!
+  slug: String!
+}
+
+input UpdateTenantInput {
+  name: String
+  customDomain: String
+}
+
+input TenantBrandingInput {
+  primaryColor: String
+  secondaryColor: String
+  logo: Upload
+  fontFamily: String
+  customCss: String
+}
+
+input CreateWebhookInput {
+  url: String!
+  events: [WebhookEvent!]!
+  secret: String
+}
+
+input UpdateWebhookInput {
+  url: String
+  events: [WebhookEvent!]
+  active: Boolean
+}
+
+# ============================================================================
+# Connection Types (Pagination)
+# ============================================================================
+
+type UserConnection {
+  edges: [UserEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type UserEdge {
+  node: User!
+  cursor: String!
+}
+
+type GoalConnection {
+  edges: [GoalEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type GoalEdge {
+  node: Goal!
+  cursor: String!
+}
+
+type HabitConnection {
+  edges: [HabitEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type HabitEdge {
+  node: Habit!
+  cursor: String!
+}
+
+type TenantConnection {
+  edges: [TenantEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type TenantEdge {
+  node: Tenant!
+  cursor: String!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
