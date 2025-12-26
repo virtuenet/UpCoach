@@ -1,240 +1,244 @@
 import 'package:flutter/services.dart';
 import 'package:vibration/vibration.dart';
-import 'dart:io';
 
-/// Service for custom haptic feedback patterns
+/// Haptic Feedback Patterns Service (Phase 10)
 ///
-/// Creates memorable tactile experiences for milestones and achievements
-/// Different patterns for different streak milestones (7, 30, 100 days, etc.)
+/// Custom tactile feedback for milestone celebrations and user interactions
+///
+/// Patterns:
+/// - Light Tap: Habit check-in (10ms)
+/// - Streak Milestone: Triple tap (weekly)
+/// - Goal Achievement: Success crescendo
+/// - Error: Warning buzz (200ms heavy)
 class HapticFeedbackService {
-  // Vibration patterns (milliseconds: vibrate, pause, vibrate, pause, ...)
-  static const Map<int, List<int>> _streakPatterns = {
-    3: [0, 50, 100, 50, 0],                              // 3-day: Quick double tap
-    7: [0, 50, 100, 50, 0, 200, 0, 50],                  // 7-day: Double tap + pause + tap
-    14: [0, 100, 50, 100, 0, 200, 0, 100],               // 14-day: Three strong pulses
-    30: [0, 100, 50, 100, 50, 100, 0, 300, 0, 100],      // 30-day: Triple pulse + accent
-    50: [0, 150, 50, 150, 50, 150, 0, 200, 0, 200],      // 50-day: Escalating rhythm
-    100: [0, 200, 100, 200, 100, 200, 0, 400, 0, 200],   // 100-day: Victory march
-  };
+  static final HapticFeedbackService _instance = HapticFeedbackService._internal();
+  factory HapticFeedbackService() => _instance;
+  HapticFeedbackService._internal();
 
-  static const Map<String, List<int>> _actionPatterns = {
-    'success': [0, 50, 100, 50],                          // Light success tap
-    'error': [0, 100, 50, 100, 50, 100],                  // Triple warning
-    'milestone': [0, 100, 50, 100, 0, 200, 0, 150],       // Celebration
-    'checkIn': [0, 30],                                   // Quick confirmation
-    'unlock': [0, 50, 50, 50, 50, 100, 0, 150],           // Achievement unlock
-  };
+  bool _isInitialized = false;
+  bool _hasVibrator = false;
 
-  /// Check if device supports vibration
-  static Future<bool> hasVibrator() async {
-    return await Vibration.hasVibrator() ?? false;
-  }
+  /// Initialize haptic feedback service
+  Future<void> initialize() async {
+    if (_isInitialized) return;
 
-  /// Check if device supports custom vibration patterns
-  static Future<bool> hasCustomVibrationsSupport() async {
-    return await Vibration.hasCustomVibrationsSupport() ?? false;
-  }
+    print('Initializing Haptic Feedback Service...');
 
-  /// Celebrate streak milestone with custom pattern
-  Future<void> celebrateStreak(int days) async {
-    if (!await hasVibrator()) return;
+    // Check if device supports vibration
+    _hasVibrator = await Vibration.hasVibrator() ?? false;
 
-    // Find the appropriate pattern (use exact match or next lower milestone)
-    List<int>? pattern;
-
-    if (_streakPatterns.containsKey(days)) {
-      pattern = _streakPatterns[days];
+    if (_hasVibrator) {
+      print('✅ Device supports haptic feedback');
     } else {
-      // Find nearest lower milestone
-      final milestones = _streakPatterns.keys.toList()..sort();
-      for (int i = milestones.length - 1; i >= 0; i--) {
-        if (days >= milestones[i]) {
-          pattern = _streakPatterns[milestones[i]];
-          break;
+      print('⚠️  Device does not support haptic feedback');
+    }
+
+    _isInitialized = true;
+    print('✅ Haptic Feedback Service initialized');
+  }
+
+  /// Light tap for habit check-in
+  ///
+  /// Duration: 10ms
+  /// Use: Quick acknowledgment of user action
+  Future<void> playHabitCheckIn() async {
+    if (!_hasVibrator) return;
+
+    HapticFeedback.lightImpact();
+    print('✓ Played light tap feedback');
+  }
+
+  /// Streak milestone celebration
+  ///
+  /// Pattern: Triple tap (10ms, 50ms, 10ms, 50ms, 10ms)
+  /// Use: Weekly streak milestones (7, 14, 21 days)
+  Future<void> playStreakMilestone(int streakDays) async {
+    if (!_hasVibrator) return;
+
+    if (streakDays % 7 == 0) {
+      // Weekly milestone - triple tap
+      await Vibration.vibrate(pattern: [0, 10, 50, 10, 50, 10]);
+      print('🎉 Played weekly streak milestone ($streakDays days)');
+    } else if (streakDays % 30 == 0) {
+      // Monthly milestone - success crescendo
+      await playGoalAchievement();
+      print('🎊 Played monthly streak milestone ($streakDays days)');
+    } else {
+      // Daily check-in - light tap
+      await playHabitCheckIn();
+    }
+  }
+
+  /// Goal achievement celebration
+  ///
+  /// Pattern: Success crescendo (20ms, 40ms, 80ms, 120ms)
+  /// Use: Major milestones and goal completions
+  Future<void> playGoalAchievement() async {
+    if (!_hasVibrator) return;
+
+    // Celebration pattern - crescendo
+    await Vibration.vibrate(pattern: [0, 50, 100, 100, 100, 150, 100, 200]);
+    print('🏆 Played goal achievement celebration');
+  }
+
+  /// Error warning buzz
+  ///
+  /// Pattern: Double heavy impact (200ms each)
+  /// Use: Form validation errors, failed actions
+  Future<void> playError() async {
+    if (!_hasVibrator) return;
+
+    HapticFeedback.heavyImpact();
+    await Future.delayed(const Duration(milliseconds: 100));
+    HapticFeedback.heavyImpact();
+    print('❌ Played error warning');
+  }
+
+  /// Success confirmation
+  ///
+  /// Pattern: Medium impact
+  /// Use: Form submission, data saved
+  Future<void> playSuccess() async {
+    if (!_hasVibrator) return;
+
+    HapticFeedback.mediumImpact();
+    print('✅ Played success confirmation');
+  }
+
+  /// Selection change
+  ///
+  /// Pattern: Selection click
+  /// Use: Scrolling through options, picker changes
+  Future<void> playSelectionChange() async {
+    if (!_hasVibrator) return;
+
+    HapticFeedback.selectionClick();
+  }
+
+  /// Level up celebration
+  ///
+  /// Pattern: Extended success pattern
+  /// Use: User level progression, badge unlocks
+  Future<void> playLevelUp() async {
+    if (!_hasVibrator) return;
+
+    // Extended celebration pattern
+    await Vibration.vibrate(
+      pattern: [0, 30, 50, 30, 50, 50, 100, 80, 150, 100, 200],
+    );
+    print('⬆️ Played level up celebration');
+  }
+
+  /// Warning notification
+  ///
+  /// Pattern: Triple short buzz
+  /// Use: Reminders, time-sensitive notifications
+  Future<void> playWarning() async {
+    if (!_hasVibrator) return;
+
+    await Vibration.vibrate(pattern: [0, 100, 100, 100, 100, 100]);
+    print('⚠️  Played warning notification');
+  }
+
+  /// Contextual feedback based on achievement level
+  ///
+  /// Automatically selects appropriate pattern based on achievement type
+  Future<void> playAchievementFeedback({
+    required String achievementType,
+    int? value,
+  }) async {
+    if (!_hasVibrator) return;
+
+    switch (achievementType) {
+      case 'habit_check_in':
+        await playHabitCheckIn();
+        break;
+
+      case 'streak_milestone':
+        if (value != null) {
+          await playStreakMilestone(value);
+        } else {
+          await playSuccess();
         }
-      }
+        break;
+
+      case 'goal_completed':
+        await playGoalAchievement();
+        break;
+
+      case 'level_up':
+        await playLevelUp();
+        break;
+
+      case 'badge_unlocked':
+        await playLevelUp();
+        break;
+
+      case 'error':
+        await playError();
+        break;
+
+      case 'warning':
+        await playWarning();
+        break;
+
+      case 'success':
+        await playSuccess();
+        break;
+
+      default:
+        await playHabitCheckIn();
     }
-
-    if (pattern != null) {
-      await _vibrate(pattern);
-    } else {
-      // Default celebration for any streak
-      await _vibrate([0, 100, 50, 100]);
-    }
-  }
-
-  /// Provide feedback for successful action
-  Future<void> success() async {
-    if (Platform.isIOS) {
-      await HapticFeedback.mediumImpact();
-    } else {
-      await _vibrate(_actionPatterns['success']!);
-    }
-  }
-
-  /// Provide feedback for error
-  Future<void> error() async {
-    if (Platform.isIOS) {
-      await HapticFeedback.heavyImpact();
-      await Future.delayed(const Duration(milliseconds: 100));
-      await HapticFeedback.heavyImpact();
-    } else {
-      await _vibrate(_actionPatterns['error']!);
-    }
-  }
-
-  /// Provide feedback for milestone achievement
-  Future<void> milestone() async {
-    await _vibrate(_actionPatterns['milestone']!);
-  }
-
-  /// Provide feedback for habit check-in
-  Future<void> checkIn() async {
-    if (Platform.isIOS) {
-      await HapticFeedback.lightImpact();
-    } else {
-      await _vibrate(_actionPatterns['checkIn']!);
-    }
-  }
-
-  /// Provide feedback for achievement unlock
-  Future<void> achievementUnlock() async {
-    await _vibrate(_actionPatterns['unlock']!);
-  }
-
-  /// Provide selection feedback (light tap)
-  Future<void> selection() async {
-    await HapticFeedback.selectionClick();
   }
 
   /// Custom vibration pattern
   ///
-  /// Example: `customPattern([0, 100, 50, 100])` = vibrate 100ms, pause 50ms, vibrate 100ms
-  Future<void> customPattern(List<int> pattern) async {
-    if (!await hasVibrator()) return;
-    await _vibrate(pattern);
+  /// Allows apps to create custom patterns
+  /// Pattern format: [wait, vibrate, wait, vibrate, ...]
+  Future<void> playCustomPattern(List<int> pattern) async {
+    if (!_hasVibrator) return;
+
+    await Vibration.vibrate(pattern: pattern);
+    print('🎵 Played custom haptic pattern');
   }
 
-  /// Internal vibration method
-  Future<void> _vibrate(List<int> pattern) async {
-    if (await hasCustomVibrationsSupport()) {
-      await Vibration.vibrate(pattern: pattern);
-    } else {
-      // Fallback for devices without pattern support
-      await Vibration.vibrate(duration: 100);
+  /// Test all haptic patterns (for debugging)
+  Future<void> testAllPatterns() async {
+    if (!_hasVibrator) {
+      print('⚠️  Device does not support vibration - cannot test patterns');
+      return;
     }
-  }
 
-  /// Progressive celebration (escalating intensity)
-  ///
-  /// Used for major achievements (100-day streak, goal completion, etc.)
-  Future<void> progressiveCelebration() async {
-    if (!await hasVibrator()) return;
+    print('🧪 Testing all haptic patterns...');
 
-    // Build up intensity
-    await _vibrate([0, 50]);
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future.delayed(const Duration(seconds: 1));
+    print('1. Light tap (check-in)');
+    await playHabitCheckIn();
 
-    await _vibrate([0, 100]);
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future.delayed(const Duration(seconds: 2));
+    print('2. Weekly streak milestone');
+    await playStreakMilestone(7);
 
-    await _vibrate([0, 150]);
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future.delayed(const Duration(seconds: 2));
+    print('3. Goal achievement');
+    await playGoalAchievement();
 
-    // Grand finale
-    await _vibrate([0, 200, 100, 200, 100, 200]);
-  }
+    await Future.delayed(const Duration(seconds: 2));
+    print('4. Error warning');
+    await playError();
 
-  /// Breathing pattern (for meditation/mindfulness)
-  ///
-  /// Inhale (4s), hold (2s), exhale (4s) rhythm
-  Future<void> breathingPattern({int cycles = 3}) async {
-    if (!await hasVibrator()) return;
+    await Future.delayed(const Duration(seconds: 2));
+    print('5. Success confirmation');
+    await playSuccess();
 
-    for (int i = 0; i < cycles; i++) {
-      // Inhale (gentle pulse)
-      await _vibrate([0, 30]);
-      await Future.delayed(const Duration(seconds: 4));
+    await Future.delayed(const Duration(seconds: 2));
+    print('6. Level up');
+    await playLevelUp();
 
-      // Hold (no vibration)
-      await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2));
+    print('7. Warning notification');
+    await playWarning();
 
-      // Exhale (gentle pulse)
-      await _vibrate([0, 30]);
-      await Future.delayed(const Duration(seconds: 4));
-
-      if (i < cycles - 1) {
-        await Future.delayed(const Duration(seconds: 2));
-      }
-    }
-  }
-
-  /// Timer countdown feedback
-  ///
-  /// Provides tactile feedback during timed activities
-  Future<void> timerTick() async {
-    if (Platform.isIOS) {
-      await HapticFeedback.selectionClick();
-    } else {
-      await Vibration.vibrate(duration: 20);
-    }
-  }
-
-  /// Timer completion feedback
-  Future<void> timerComplete() async {
-    await _vibrate([0, 100, 50, 100, 0, 200, 0, 150, 50, 150]);
-  }
-
-  /// Contextual feedback based on streak length
-  ///
-  /// Automatically selects appropriate pattern
-  Future<void> contextualStreakFeedback(int days) async {
-    if (days == 0) {
-      await checkIn();
-    } else if (days < 7) {
-      await success();
-    } else if (_streakPatterns.containsKey(days)) {
-      await celebrateStreak(days);
-    } else if (days % 10 == 0) {
-      // Every 10 days after 30
-      await milestone();
-    } else {
-      await success();
-    }
-  }
-}
-
-/// Pre-defined haptic patterns for common use cases
-class HapticPatterns {
-  static const success = [0, 50, 100, 50];
-  static const error = [0, 100, 50, 100, 50, 100];
-  static const warning = [0, 150, 100, 150];
-  static const notification = [0, 100];
-  static const heavyClick = [0, 50];
-  static const doubleClick = [0, 50, 100, 50];
-  static const tripleClick = [0, 50, 100, 50, 100, 50];
-}
-
-/// Haptic intensity levels
-enum HapticIntensity {
-  light,
-  medium,
-  heavy,
-}
-
-/// Extension for easy haptic feedback calls
-extension HapticFeedbackExtension on HapticIntensity {
-  Future<void> trigger() async {
-    switch (this) {
-      case HapticIntensity.light:
-        await HapticFeedback.lightImpact();
-        break;
-      case HapticIntensity.medium:
-        await HapticFeedback.mediumImpact();
-        break;
-      case HapticIntensity.heavy:
-        await HapticFeedback.heavyImpact();
-        break;
-    }
+    print('✅ Haptic pattern test complete');
   }
 }

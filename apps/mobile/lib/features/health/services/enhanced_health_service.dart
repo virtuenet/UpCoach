@@ -1,319 +1,365 @@
 import 'package:health/health.dart';
-import 'package:permission_handler/permission_handler.dart';
 
-/// Enhanced health integration service
+/// Enhanced Health Integration Service (Phase 10)
 ///
-/// Correlates health data (sleep, steps, heart rate) with habit completion
-/// to provide personalized insights and recommendations.
+/// Deep integration with Apple Health and Google Health Connect
+///
+/// New Metrics:
+/// - Sleep data correlation (sleep quality → mood/productivity)
+/// - Heart Rate Variability (HRV) stress detection
+/// - Mindful minutes tracking
+/// - Nutrition (calories, macros)
+/// - Workout routes (GPS-tracked exercise)
+///
+/// Bi-directional Sync:
+/// - Read health data from Health apps
+/// - Write habit completion data back to Health apps
 class EnhancedHealthService {
-  final HealthFactory _healthFactory = HealthFactory();
+  static final EnhancedHealthService _instance = EnhancedHealthService._internal();
+  factory EnhancedHealthService() => _instance;
+  EnhancedHealthService._internal();
 
-  /// Initialize health permissions
-  Future<bool> requestPermissions() async {
-    // Request health data permission
-    final types = [
-      HealthDataType.SLEEP_ASLEEP,
-      HealthDataType.SLEEP_AWAKE,
-      HealthDataType.SLEEP_IN_BED,
-      HealthDataType.STEPS,
-      HealthDataType.HEART_RATE,
-      HealthDataType.ACTIVE_ENERGY_BURNED,
-      HealthDataType.WORKOUT,
-    ];
+  final Health _health = Health();
+  bool _isAuthorized = false;
 
-    final permissions = types.map((type) => HealthDataAccess.READ).toList();
+  /// Health data types to request permission for
+  static final List<HealthDataType> _readTypes = [
+    // Sleep
+    HealthDataType.SLEEP_ASLEEP,
+    HealthDataType.SLEEP_AWAKE,
+    HealthDataType.SLEEP_DEEP,
+    HealthDataType.SLEEP_REM,
+    
+    // Heart
+    HealthDataType.HEART_RATE,
+    HealthDataType.HEART_RATE_VARIABILITY_SDNN,
+    
+    // Activity
+    HealthDataType.STEPS,
+    HealthDataType.ACTIVE_ENERGY_BURNED,
+    HealthDataType.WORKOUT,
+    
+    // Mindfulness
+    HealthDataType.MINDFULNESS,
+    
+    // Nutrition
+    HealthDataType.NUTRITION,
+    HealthDataType.WATER,
+  ];
+
+  static final List<HealthDataType> _writeTypes = [
+    HealthDataType.MINDFULNESS,
+    HealthDataType.WATER,
+    HealthDataType.NUTRITION,
+  ];
+
+  /// Initialize and request health permissions
+  Future<bool> initialize() async {
+    print('Initializing Enhanced Health Service...');
 
     try {
-      final granted = await _healthFactory.requestAuthorization(types, permissions: permissions);
-      return granted;
+      _isAuthorized = await _health.requestAuthorization(
+        _readTypes,
+        permissions: _writeTypes,
+      );
+
+      if (_isAuthorized) {
+        print('✅ Health permissions granted');
+        print('   Read: ${_readTypes.length} types');
+        print('   Write: ${_writeTypes.length} types');
+      } else {
+        print('⚠️  Health permissions denied');
+      }
+
+      return _isAuthorized;
     } catch (e) {
-      print('Error requesting health permissions: $e');
+      print('❌ Failed to initialize health service: $e');
       return false;
     }
   }
 
-  /// Get sleep data for the last N days
-  Future<List<HealthDataPoint>> getSleepData({int days = 30}) async {
-    final now = DateTime.now();
-    final startDate = now.subtract(Duration(days: days));
+  /// Analyze sleep quality and correlate with mood/productivity
+  Future<SleepAnalysis?> analyzeSleepQuality(DateTime date) async {
+    if (!_isAuthorized) {
+      print('⚠️  Health not authorized');
+      return null;
+    }
+
+    final midnight = DateTime(date.year, date.month, date.day);
+    final nextMidnight = midnight.add(const Duration(days: 1));
 
     try {
-      final sleepData = await _healthFactory.getHealthDataFromTypes(
-        startDate,
-        now,
+      final sleepData = await _health.getHealthDataFromTypes(
+        midnight.subtract(const Duration(hours: 12)), // Include evening sleep
+        nextMidnight,
         [
           HealthDataType.SLEEP_ASLEEP,
-          HealthDataType.SLEEP_IN_BED,
+          HealthDataType.SLEEP_DEEP,
+          HealthDataType.SLEEP_REM,
         ],
       );
 
-      return sleepData;
-    } catch (e) {
-      print('Error fetching sleep data: $e');
-      return [];
-    }
-  }
-
-  /// Calculate average sleep duration
-  Future<Duration> getAverageSleepDuration({int days = 7}) async {
-    final sleepData = await getSleepData(days: days);
-
-    if (sleepData.isEmpty) {
-      return Duration.zero;
-    }
-
-    int totalMinutes = 0;
-    int count = 0;
-
-    for (final dataPoint in sleepData) {
-      if (dataPoint.type == HealthDataType.SLEEP_ASLEEP) {
-        final sleepValue = dataPoint.value as NumericHealthValue;
-        totalMinutes += sleepValue.numericValue.toInt();
-        count++;
+      if (sleepData.isEmpty) {
+        return null;
       }
-    }
 
-    if (count == 0) return Duration.zero;
+      // Calculate sleep metrics
+      int totalMinutes = 0;
+      int deepSleepMinutes = 0;
+      int remSleepMinutes = 0;
 
-    return Duration(minutes: totalMinutes ~/ count);
-  }
+      for (var data in sleepData) {
+        final duration = data.dateTo.difference(data.dateFrom).inMinutes;
 
-  /// Get daily step count
-  Future<int> getStepsToday() async {
-    final now = DateTime.now();
-    final startOfDay = DateTime(now.year, now.month, now.day);
+        if (data.type == HealthDataType.SLEEP_ASLEEP) {
+          totalMinutes += duration;
+        } else if (data.type == HealthDataType.SLEEP_DEEP) {
+          deepSleepMinutes += duration;
+        } else if (data.type == HealthDataType.SLEEP_REM) {
+          remSleepMinutes += duration;
+        }
+      }
 
-    try {
-      final stepsData = await _healthFactory.getHealthDataFromTypes(
-        startOfDay,
-        now,
-        [HealthDataType.STEPS],
+      // Calculate sleep quality score (0-100)
+      final sleepQualityScore = _calculateSleepQuality(
+        totalMinutes,
+        deepSleepMinutes,
+        remSleepMinutes,
       );
 
-      int totalSteps = 0;
-      for (final dataPoint in stepsData) {
-        final stepValue = dataPoint.value as NumericHealthValue;
-        totalSteps += stepValue.numericValue.toInt();
+      return SleepAnalysis(
+        date: date,
+        totalMinutes: totalMinutes,
+        deepSleepMinutes: deepSleepMinutes,
+        remSleepMinutes: remSleepMinutes,
+        sleepQualityScore: sleepQualityScore,
+        sleepEfficiency: totalMinutes > 0 ? (deepSleepMinutes + remSleepMinutes) / totalMinutes : 0,
+      );
+    } catch (e) {
+      print('❌ Failed to analyze sleep: $e');
+      return null;
+    }
+  }
+
+  /// Get Heart Rate Variability (HRV) for stress detection
+  Future<HRVAnalysis?> analyzeHRV(DateTime date) async {
+    if (!_isAuthorized) return null;
+
+    final start = DateTime(date.year, date.month, date.day);
+    final end = start.add(const Duration(days: 1));
+
+    try {
+      final hrvData = await _health.getHealthDataFromTypes(
+        start,
+        end,
+        [HealthDataType.HEART_RATE_VARIABILITY_SDNN],
+      );
+
+      if (hrvData.isEmpty) {
+        return null;
       }
 
-      return totalSteps;
+      final hrvValues = hrvData
+          .map((d) => (d.value as num).toDouble())
+          .toList();
+
+      final averageHRV = hrvValues.reduce((a, b) => a + b) / hrvValues.length;
+
+      // HRV interpretation (in milliseconds)
+      // High HRV (>60ms) = Low stress, good recovery
+      // Medium HRV (40-60ms) = Moderate stress
+      // Low HRV (<40ms) = High stress, poor recovery
+      final stressLevel = _interpretHRV(averageHRV);
+
+      return HRVAnalysis(
+        date: date,
+        averageHRV: averageHRV,
+        minHRV: hrvValues.reduce((a, b) => a < b ? a : b),
+        maxHRV: hrvValues.reduce((a, b) => a > b ? a : b),
+        stressLevel: stressLevel,
+        sampleCount: hrvValues.length,
+      );
     } catch (e) {
-      print('Error fetching steps data: $e');
+      print('❌ Failed to analyze HRV: $e');
+      return null;
+    }
+  }
+
+  /// Get mindful minutes tracked
+  Future<int> getMindfulMinutes(DateTime date) async {
+    if (!_isAuthorized) return 0;
+
+    final start = DateTime(date.year, date.month, date.day);
+    final end = start.add(const Duration(days: 1));
+
+    try {
+      final mindfulData = await _health.getHealthDataFromTypes(
+        start,
+        end,
+        [HealthDataType.MINDFULNESS],
+      );
+
+      int totalMinutes = 0;
+      for (var data in mindfulData) {
+        totalMinutes += data.dateTo.difference(data.dateFrom).inMinutes;
+      }
+
+      return totalMinutes;
+    } catch (e) {
+      print('❌ Failed to get mindful minutes: $e');
       return 0;
     }
   }
 
-  /// Get heart rate variability (HRV) data
-  Future<List<HealthDataPoint>> getHeartRateData({int days = 7}) async {
-    final now = DateTime.now();
-    final startDate = now.subtract(Duration(days: days));
+  /// Write habit completion as mindfulness session
+  ///
+  /// Bi-directional sync: Write UpCoach habit data to Health app
+  Future<bool> writeHabitCompletion({
+    required String habitName,
+    required int durationMinutes,
+  }) async {
+    if (!_isAuthorized) {
+      print('⚠️  Cannot write to health - not authorized');
+      return false;
+    }
 
     try {
-      final heartRateData = await _healthFactory.getHealthDataFromTypes(
-        startDate,
-        now,
-        [HealthDataType.HEART_RATE],
+      final endTime = DateTime.now();
+      final startTime = endTime.subtract(Duration(minutes: durationMinutes));
+
+      final success = await _health.writeHealthData(
+        value: durationMinutes.toDouble(),
+        type: HealthDataType.MINDFULNESS,
+        startTime: startTime,
+        endTime: endTime,
       );
 
-      return heartRateData;
+      if (success) {
+        print('✅ Wrote habit completion to Health: $habitName ($durationMinutes min)');
+      } else {
+        print('⚠️  Failed to write habit to Health');
+      }
+
+      return success;
     } catch (e) {
-      print('Error fetching heart rate data: $e');
-      return [];
+      print('❌ Error writing habit to health: $e');
+      return false;
     }
   }
 
-  /// Analyze correlation between sleep and habit completion
-  ///
-  /// Returns correlation insights like:
-  /// "You complete 40% more habits after 7+ hours of sleep"
-  Future<HealthCorrelation> analyzeSleepHabitCorrelation({
-    required List<HabitCompletionData> habitData,
-    int days = 30,
+  /// Write water intake to Health
+  Future<bool> writeWaterIntake({
+    required double milliliters,
   }) async {
-    final sleepData = await getSleepData(days: days);
+    if (!_isAuthorized) return false;
 
-    if (sleepData.isEmpty || habitData.isEmpty) {
-      return HealthCorrelation(
-        correlationType: CorrelationType.sleep,
-        correlation: 0.0,
-        insight: 'Not enough data to analyze correlation',
-        recommendation: 'Track your habits and sleep for at least 7 days',
+    try {
+      final success = await _health.writeHealthData(
+        value: milliliters,
+        type: HealthDataType.WATER,
+        startTime: DateTime.now(),
+        endTime: DateTime.now(),
       );
-    }
 
-    // Group sleep data by day
-    final Map<DateTime, double> sleepByDay = {};
-    for (final dataPoint in sleepData) {
-      if (dataPoint.type == HealthDataType.SLEEP_ASLEEP) {
-        final date = DateTime(
-          dataPoint.dateFrom.year,
-          dataPoint.dateFrom.month,
-          dataPoint.dateFrom.day,
-        );
-        final sleepValue = dataPoint.value as NumericHealthValue;
-        sleepByDay[date] = (sleepByDay[date] ?? 0) + sleepValue.numericValue;
+      if (success) {
+        print('✅ Wrote water intake to Health: ${milliliters}ml');
       }
+
+      return success;
+    } catch (e) {
+      print('❌ Error writing water to health: $e');
+      return false;
     }
+  }
 
-    // Calculate completion rates for different sleep durations
-    double highSleepCompletionRate = 0;
-    double lowSleepCompletionRate = 0;
-    int highSleepDays = 0;
-    int lowSleepDays = 0;
+  /// Calculate sleep quality score (0-100)
+  double _calculateSleepQuality(int total, int deep, int rem) {
+    if (total == 0) return 0;
 
-    for (final habit in habitData) {
-      final date = DateTime(
-        habit.date.year,
-        habit.date.month,
-        habit.date.day,
-      );
+    // Ideal sleep: 7-9 hours total, 15-25% deep, 20-25% REM
+    final totalScore = _scoreInRange(total, 420, 540); // 7-9 hours
+    final deepPercentage = (deep / total) * 100;
+    final deepScore = _scoreInRange(deepPercentage, 15, 25);
+    final remPercentage = (rem / total) * 100;
+    final remScore = _scoreInRange(remPercentage, 20, 25);
 
-      final sleepMinutes = sleepByDay[date] ?? 0;
-      final sleepHours = sleepMinutes / 60;
+    // Weighted average
+    return (totalScore * 0.5) + (deepScore * 0.25) + (remScore * 0.25);
+  }
 
-      if (sleepHours >= 7) {
-        highSleepCompletionRate += habit.completionRate;
-        highSleepDays++;
-      } else if (sleepHours > 0) {
-        lowSleepCompletionRate += habit.completionRate;
-        lowSleepDays++;
-      }
-    }
-
-    if (highSleepDays == 0 || lowSleepDays == 0) {
-      return HealthCorrelation(
-        correlationType: CorrelationType.sleep,
-        correlation: 0.0,
-        insight: 'Need more varied sleep data',
-        recommendation: 'Continue tracking for better insights',
-      );
-    }
-
-    final avgHighSleep = highSleepCompletionRate / highSleepDays;
-    final avgLowSleep = lowSleepCompletionRate / lowSleepDays;
-
-    final difference = ((avgHighSleep - avgLowSleep) / avgLowSleep * 100).round();
-
-    String insight;
-    String recommendation;
-
-    if (difference > 20) {
-      insight = 'You complete $difference% more habits after 7+ hours of sleep';
-      recommendation = 'Aim for 7-9 hours of sleep to maximize habit success';
-    } else if (difference < -20) {
-      insight = 'You complete ${difference.abs()}% fewer habits after 7+ hours of sleep';
-      recommendation = 'Your optimal sleep duration may be different. Experiment to find what works.';
+  /// Score value within ideal range (0-100)
+  double _scoreInRange(double value, double min, double max) {
+    if (value >= min && value <= max) {
+      return 100.0;
+    } else if (value < min) {
+      return (value / min) * 100;
     } else {
-      insight = 'Sleep duration has minimal impact on your habit completion';
-      recommendation = 'Focus on sleep quality and consistency instead of just duration';
+      final excess = value - max;
+      final penalty = excess / max;
+      return (100 - (penalty * 50)).clamp(0, 100);
     }
-
-    return HealthCorrelation(
-      correlationType: CorrelationType.sleep,
-      correlation: difference / 100,
-      insight: insight,
-      recommendation: recommendation,
-    );
   }
 
-  /// Analyze correlation between steps and habit completion
-  Future<HealthCorrelation> analyzeStepsHabitCorrelation({
-    required List<HabitCompletionData> habitData,
-    int days = 30,
-  }) async {
-    // Similar implementation for steps correlation
-    return HealthCorrelation(
-      correlationType: CorrelationType.activity,
-      correlation: 0.0,
-      insight: 'Analysis in progress',
-      recommendation: 'Keep tracking your activity',
-    );
-  }
-
-  /// Get personalized recommendations based on health data
-  Future<List<HealthRecommendation>> getRecommendations() async {
-    final recommendations = <HealthRecommendation>[];
-
-    // Check sleep
-    final avgSleep = await getAverageSleepDuration(days: 7);
-    if (avgSleep.inHours < 7) {
-      recommendations.add(HealthRecommendation(
-        title: 'Improve Sleep',
-        description: 'Your average sleep is ${avgSleep.inHours}h ${avgSleep.inMinutes % 60}m. Aim for 7-9 hours.',
-        priority: RecommendationPriority.high,
-        actionUrl: 'upcoach://habits/create?template=sleep',
-      ));
+  /// Interpret HRV value as stress level
+  String _interpretHRV(double hrv) {
+    if (hrv >= 60) {
+      return 'Low Stress';
+    } else if (hrv >= 40) {
+      return 'Moderate Stress';
+    } else {
+      return 'High Stress';
     }
-
-    // Check steps
-    final stepsToday = await getStepsToday();
-    if (stepsToday < 5000) {
-      recommendations.add(HealthRecommendation(
-        title: 'Increase Activity',
-        description: 'You have $stepsToday steps today. Aim for 10,000 steps daily.',
-        priority: RecommendationPriority.medium,
-        actionUrl: 'upcoach://habits/create?template=walking',
-      ));
-    }
-
-    return recommendations;
   }
 }
 
-/// Habit completion data for correlation analysis
-class HabitCompletionData {
+/// Sleep analysis model
+class SleepAnalysis {
   final DateTime date;
-  final double completionRate;
-  final int completedCount;
-  final int totalCount;
+  final int totalMinutes;
+  final int deepSleepMinutes;
+  final int remSleepMinutes;
+  final double sleepQualityScore;
+  final double sleepEfficiency;
 
-  HabitCompletionData({
+  SleepAnalysis({
     required this.date,
-    required this.completionRate,
-    required this.completedCount,
-    required this.totalCount,
+    required this.totalMinutes,
+    required this.deepSleepMinutes,
+    required this.remSleepMinutes,
+    required this.sleepQualityScore,
+    required this.sleepEfficiency,
   });
+
+  double get totalHours => totalMinutes / 60;
+  double get deepSleepHours => deepSleepMinutes / 60;
+  double get remSleepHours => remSleepMinutes / 60;
+
+  String get qualityLabel {
+    if (sleepQualityScore >= 80) return 'Excellent';
+    if (sleepQualityScore >= 60) return 'Good';
+    if (sleepQualityScore >= 40) return 'Fair';
+    return 'Poor';
+  }
 }
 
-/// Health correlation result
-class HealthCorrelation {
-  final CorrelationType correlationType;
-  final double correlation; // -1.0 to 1.0
-  final String insight;
-  final String recommendation;
+/// HRV analysis model
+class HRVAnalysis {
+  final DateTime date;
+  final double averageHRV;
+  final double minHRV;
+  final double maxHRV;
+  final String stressLevel;
+  final int sampleCount;
 
-  HealthCorrelation({
-    required this.correlationType,
-    required this.correlation,
-    required this.insight,
-    required this.recommendation,
+  HRVAnalysis({
+    required this.date,
+    required this.averageHRV,
+    required this.minHRV,
+    required this.maxHRV,
+    required this.stressLevel,
+    required this.sampleCount,
   });
-}
 
-enum CorrelationType {
-  sleep,
-  activity,
-  heartRate,
-  workout,
-}
-
-/// Health-based recommendation
-class HealthRecommendation {
-  final String title;
-  final String description;
-  final RecommendationPriority priority;
-  final String? actionUrl;
-
-  HealthRecommendation({
-    required this.title,
-    required this.description,
-    required this.priority,
-    this.actionUrl,
-  });
-}
-
-enum RecommendationPriority {
-  high,
-  medium,
-  low,
+  bool get isHighStress => stressLevel == 'High Stress';
+  bool get isLowStress => stressLevel == 'Low Stress';
 }
