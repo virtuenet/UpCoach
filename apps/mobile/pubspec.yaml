@@ -147,6 +147,10 @@ dependencies:
   flutter_web_auth_2: ^4.0.0         # OAuth2 flows for wearable APIs
   workmanager: ^0.5.2                # Background sync tasks
 
+  # Machine Learning & On-Device AI (Phase 9)
+  tflite_flutter: ^0.10.4            # TensorFlow Lite for Android/iOS
+  tflite_flutter_helper: ^0.3.1      # Image preprocessing utilities
+
   # Testing & Development
   integration_test:
     sdk: flutter
@@ -186,6 +190,7 @@ flutter:
     - assets/sounds/
     - assets/animations/
     - assets/data/
+    - assets/models/                   # Phase 9: ML models (TFLite, Core ML)
 
   # Fonts
   fonts:

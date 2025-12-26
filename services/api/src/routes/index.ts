@@ -48,6 +48,7 @@ import monitoringRoutes from './monitoring';
 import i18nRoutes from './i18n';
 import erpRoutes from './erp';
 import flasherpWebhookRoutes from './webhooks/flasherp';
+import modelRegistryRoutes from './model-registry';
 
 // API v2 imports
 import v2Routes from './v2';
@@ -172,6 +173,9 @@ export const setupRoutes = (app: Application): void => {
 
   // FlashERP Webhook routes (public webhook receiver)
   app.use(`${apiPrefix}/webhooks/flasherp`, flasherpWebhookRoutes);
+
+  // Model Registry routes (Phase 9 - On-Device ML)
+  app.use(`${apiPrefix}/models`, modelRegistryRoutes);
 
   // API info endpoint
   app.get(`${apiPrefix}`, (_req, res) => {
