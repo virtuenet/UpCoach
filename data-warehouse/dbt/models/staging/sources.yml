@@ -1,0 +1,71 @@
+version: 2
+
+sources:
+  - name: upcoach
+    description: "UpCoach production PostgreSQL database"
+    database: upcoach_raw
+    schema: public
+    tables:
+      - name: users
+        description: "User accounts"
+        columns:
+          - name: id
+            description: "Primary key"
+            tests:
+              - unique
+              - not_null
+
+      - name: habits
+        description: "User habits"
+        columns:
+          - name: id
+            tests:
+              - unique
+              - not_null
+          - name: user_id
+            tests:
+              - not_null
+
+      - name: habit_checkins
+        description: "Habit check-in events"
+        columns:
+          - name: id
+            tests:
+              - unique
+              - not_null
+
+      - name: goals
+        description: "User goals"
+
+      - name: user_sessions
+        description: "User login sessions"
+
+      - name: subscriptions
+        description: "User subscriptions"
+
+      - name: payments
+        description: "Payment transactions"
+
+      - name: coaches
+        description: "Coach accounts"
+
+      - name: coaching_sessions
+        description: "One-on-one coaching sessions"
+
+      - name: ai_decisions
+        description: "AI decision engine logs"
+
+      - name: intervention_deliveries
+        description: "Intervention delivery logs"
+
+      - name: in_app_prompts
+        description: "In-app coaching prompts"
+
+      - name: notifications
+        description: "Push notifications sent"
+
+      - name: analytics_events
+        description: "Custom analytics events"
+
+      - name: tenants
+        description: "Multi-tenant organizations"

@@ -1,0 +1,45 @@
+# dbt profiles configuration
+# Supports Snowflake and Amazon Redshift
+
+upcoach:
+  target: dev
+  outputs:
+    dev:
+      type: "{{ env_var('DBT_WAREHOUSE_TYPE', 'snowflake') }}"
+
+      # Snowflake configuration
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: "{{ env_var('SNOWFLAKE_ROLE', 'TRANSFORMER') }}"
+      database: "{{ env_var('SNOWFLAKE_DATABASE', 'UPCOACH') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE', 'TRANSFORMING') }}"
+      schema: "{{ env_var('SNOWFLAKE_SCHEMA', 'dev') }}"
+      threads: 4
+      client_session_keep_alive: False
+
+    prod:
+      type: "{{ env_var('DBT_WAREHOUSE_TYPE', 'snowflake') }}"
+
+      # Snowflake production
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: "{{ env_var('SNOWFLAKE_ROLE', 'TRANSFORMER') }}"
+      database: "{{ env_var('SNOWFLAKE_DATABASE', 'UPCOACH') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE', 'TRANSFORMING') }}"
+      schema: prod
+      threads: 8
+      client_session_keep_alive: False
+
+    redshift:
+      type: redshift
+      host: "{{ env_var('REDSHIFT_HOST') }}"
+      port: 5439
+      user: "{{ env_var('REDSHIFT_USER') }}"
+      password: "{{ env_var('REDSHIFT_PASSWORD') }}"
+      dbname: "{{ env_var('REDSHIFT_DATABASE', 'upcoach') }}"
+      schema: "{{ env_var('REDSHIFT_SCHEMA', 'analytics') }}"
+      threads: 4
+      keepalives_idle: 240
+      connect_timeout: 10

@@ -1,0 +1,92 @@
+name: 'upcoach_analytics'
+version: '1.0.0'
+config-version: 2
+
+profile: 'upcoach'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  upcoach_analytics:
+    # Staging models - raw data from source
+    staging:
+      +materialized: view
+      +schema: staging
+      +tags:
+        - "staging"
+        - "hourly"
+
+    # Intermediate models - business logic
+    intermediate:
+      +materialized: ephemeral
+      +schema: intermediate
+      +tags:
+        - "intermediate"
+
+    # Mart models - analytics-ready tables
+    marts:
+      +materialized: table
+      +schema: marts
+      +tags:
+        - "marts"
+        - "daily"
+
+      # Dimension tables
+      dimensions:
+        +materialized: table
+        +tags:
+          - "dimensions"
+
+      # Fact tables - incremental loads
+      facts:
+        +materialized: incremental
+        +on_schema_change: "append_new_columns"
+        +tags:
+          - "facts"
+          - "incremental"
+
+      # Metrics - aggregated KPIs
+      metrics:
+        +materialized: table
+        +tags:
+          - "metrics"
+          - "daily"
+
+# Seeds configuration
+seeds:
+  upcoach_analytics:
+    +schema: seeds
+    +tags:
+      - "seeds"
+
+# Snapshots configuration
+snapshots:
+  upcoach_analytics:
+    +target_schema: snapshots
+    +strategy: timestamp
+    +unique_key: id
+    +updated_at: updated_at
+
+# Variables
+vars:
+  # Date range for incremental models
+  start_date: '2024-01-01'
+
+  # Lookback windows
+  retention_days: 30
+  cohort_analysis_months: 12
+
+  # Thresholds
+  min_checkins_for_analysis: 5
+  active_user_session_days: 30
+  churn_definition_days: 30
