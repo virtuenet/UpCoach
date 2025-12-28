@@ -1,0 +1,24 @@
+{
+  "name": "@upcoach/i18n-config",
+  "version": "1.0.0",
+  "description": "Internationalization and localization configuration for UpCoach platform",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "i18n",
+    "l10n",
+    "internationalization",
+    "localization",
+    "upcoach"
+  ],
+  "author": "UpCoach",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "welcome": "Bienvenue sur UpCoach",
+  "save": "Enregistrer",
+  "cancel": "Annuler",
+  "delete": "Supprimer",
+  "edit": "Modifier",
+  "create": "Créer",
+  "update": "Mettre à jour",
+  "search": "Rechercher",
+  "filter": "Filtrer",
+  "loading": "Chargement...",
+  "error": "Erreur",
+  "success": "Succès",
+  "yes": "Oui",
+  "no": "Non",
+  "ok": "OK",
+  "back": "Retour",
+  "next": "Suivant",
+  "done": "Terminé",
+  "close": "Fermer"
+}

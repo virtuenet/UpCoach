@@ -1,0 +1,21 @@
+{
+  "welcome": "Welcome to UpCoach",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "edit": "Edit",
+  "create": "Create",
+  "update": "Update",
+  "search": "Search",
+  "filter": "Filter",
+  "loading": "Loading...",
+  "error": "Error",
+  "success": "Success",
+  "yes": "Yes",
+  "no": "No",
+  "ok": "OK",
+  "back": "Back",
+  "next": "Next",
+  "done": "Done",
+  "close": "Close"
+}
