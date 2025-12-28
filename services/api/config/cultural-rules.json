@@ -1,0 +1,498 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2024-12-28",
+  "description": "Cultural adaptation rules for UpCoach platform - Phase 14 Week 3",
+  "locales": {
+    "en-US": {
+      "culturalNorms": {
+        "formality": "informal",
+        "directness": "direct",
+        "individualismScore": 91,
+        "powerDistance": 40,
+        "uncertaintyAvoidance": 46,
+        "masculinity": 62
+      },
+      "communication": {
+        "preferredTone": "friendly",
+        "useEmojis": true,
+        "formalPronouns": false,
+        "titles": "optional"
+      },
+      "motivationalStyle": {
+        "emphasis": "individual_achievement",
+        "competitiveLanguage": true,
+        "collaborativeLanguage": false,
+        "examples": [
+          "You've got this!",
+          "Great job reaching your goal!",
+          "Keep up the amazing work!",
+          "You're crushing it!"
+        ]
+      },
+      "colorPreferences": {
+        "success": "#10B981",
+        "warning": "#F59E0B",
+        "error": "#EF4444",
+        "primary": "#3B82F6"
+      },
+      "dateTimePreferences": {
+        "dateFormat": "MM/dd/yyyy",
+        "timeFormat": "12h",
+        "firstDayOfWeek": 0,
+        "weekendDays": [0, 6]
+      },
+      "numberPreferences": {
+        "decimalSeparator": ".",
+        "thousandsSeparator": ",",
+        "currencySymbolPosition": "before"
+      },
+      "contentAdaptations": {
+        "workLifeBalance": "moderate",
+        "hierarchyRespect": "low",
+        "groupOrientation": "individual",
+        "riskTaking": "encouraged"
+      }
+    },
+    "es-ES": {
+      "culturalNorms": {
+        "formality": "mixed",
+        "directness": "indirect",
+        "individualismScore": 51,
+        "powerDistance": 57,
+        "uncertaintyAvoidance": 86,
+        "masculinity": 42
+      },
+      "communication": {
+        "preferredTone": "warm",
+        "useEmojis": true,
+        "formalPronouns": true,
+        "titles": "important"
+      },
+      "motivationalStyle": {
+        "emphasis": "group_achievement",
+        "competitiveLanguage": false,
+        "collaborativeLanguage": true,
+        "examples": [
+          "¡Excelente trabajo en equipo!",
+          "Estamos muy orgullosos de ti",
+          "Sigue así, lo estás haciendo muy bien",
+          "Tu esfuerzo está dando frutos"
+        ]
+      },
+      "colorPreferences": {
+        "success": "#10B981",
+        "warning": "#F59E0B",
+        "error": "#EF4444",
+        "primary": "#EC4899"
+      },
+      "dateTimePreferences": {
+        "dateFormat": "dd/MM/yyyy",
+        "timeFormat": "24h",
+        "firstDayOfWeek": 1,
+        "weekendDays": [0, 6]
+      },
+      "numberPreferences": {
+        "decimalSeparator": ",",
+        "thousandsSeparator": ".",
+        "currencySymbolPosition": "after"
+      },
+      "contentAdaptations": {
+        "workLifeBalance": "high_priority",
+        "hierarchyRespect": "moderate",
+        "groupOrientation": "balanced",
+        "riskTaking": "cautious"
+      }
+    },
+    "pt-BR": {
+      "culturalNorms": {
+        "formality": "informal",
+        "directness": "indirect",
+        "individualismScore": 38,
+        "powerDistance": 69,
+        "uncertaintyAvoidance": 76,
+        "masculinity": 49
+      },
+      "communication": {
+        "preferredTone": "friendly_warm",
+        "useEmojis": true,
+        "formalPronouns": false,
+        "titles": "moderate"
+      },
+      "motivationalStyle": {
+        "emphasis": "group_harmony",
+        "competitiveLanguage": false,
+        "collaborativeLanguage": true,
+        "examples": [
+          "Parabéns pelo seu progresso!",
+          "Você está indo muito bem!",
+          "Continue assim, estamos juntos!",
+          "Seu esforço faz a diferença!"
+        ]
+      },
+      "colorPreferences": {
+        "success": "#10B981",
+        "warning": "#F59E0B",
+        "error": "#EF4444",
+        "primary": "#16A34A"
+      },
+      "dateTimePreferences": {
+        "dateFormat": "dd/MM/yyyy",
+        "timeFormat": "24h",
+        "firstDayOfWeek": 0,
+        "weekendDays": [0, 6]
+      },
+      "numberPreferences": {
+        "decimalSeparator": ",",
+        "thousandsSeparator": ".",
+        "currencySymbolPosition": "before"
+      },
+      "contentAdaptations": {
+        "workLifeBalance": "very_high_priority",
+        "hierarchyRespect": "high",
+        "groupOrientation": "collective",
+        "riskTaking": "moderate"
+      }
+    },
+    "fr-FR": {
+      "culturalNorms": {
+        "formality": "formal",
+        "directness": "direct",
+        "individualismScore": 71,
+        "powerDistance": 68,
+        "uncertaintyAvoidance": 86,
+        "masculinity": 43
+      },
+      "communication": {
+        "preferredTone": "professional",
+        "useEmojis": false,
+        "formalPronouns": true,
+        "titles": "very_important"
+      },
+      "motivationalStyle": {
+        "emphasis": "quality_excellence",
+        "competitiveLanguage": false,
+        "collaborativeLanguage": false,
+        "examples": [
+          "Excellent travail!",
+          "Vous faites des progrès remarquables",
+          "Continuez sur cette voie",
+          "Votre engagement est exemplaire"
+        ]
+      },
+      "colorPreferences": {
+        "success": "#10B981",
+        "warning": "#F59E0B",
+        "error": "#EF4444",
+        "primary": "#6366F1"
+      },
+      "dateTimePreferences": {
+        "dateFormat": "dd/MM/yyyy",
+        "timeFormat": "24h",
+        "firstDayOfWeek": 1,
+        "weekendDays": [0, 6]
+      },
+      "numberPreferences": {
+        "decimalSeparator": ",",
+        "thousandsSeparator": " ",
+        "currencySymbolPosition": "after"
+      },
+      "contentAdaptations": {
+        "workLifeBalance": "very_high_priority",
+        "hierarchyRespect": "high",
+        "groupOrientation": "individual",
+        "riskTaking": "cautious"
+      }
+    },
+    "de-DE": {
+      "culturalNorms": {
+        "formality": "formal",
+        "directness": "very_direct",
+        "individualismScore": 67,
+        "powerDistance": 35,
+        "uncertaintyAvoidance": 65,
+        "masculinity": 66
+      },
+      "communication": {
+        "preferredTone": "professional_direct",
+        "useEmojis": false,
+        "formalPronouns": true,
+        "titles": "very_important"
+      },
+      "motivationalStyle": {
+        "emphasis": "precision_efficiency",
+        "competitiveLanguage": false,
+        "collaborativeLanguage": true,
+        "examples": [
+          "Ausgezeichnete Arbeit!",
+          "Sie machen großartige Fortschritte",
+          "Weiter so!",
+          "Ihr Engagement ist vorbildlich"
+        ]
+      },
+      "colorPreferences": {
+        "success": "#10B981",
+        "warning": "#F59E0B",
+        "error": "#EF4444",
+        "primary": "#1E40AF"
+      },
+      "dateTimePreferences": {
+        "dateFormat": "dd.MM.yyyy",
+        "timeFormat": "24h",
+        "firstDayOfWeek": 1,
+        "weekendDays": [0, 6]
+      },
+      "numberPreferences": {
+        "decimalSeparator": ",",
+        "thousandsSeparator": ".",
+        "currencySymbolPosition": "after"
+      },
+      "contentAdaptations": {
+        "workLifeBalance": "high_priority",
+        "hierarchyRespect": "low",
+        "groupOrientation": "individual",
+        "riskTaking": "structured"
+      }
+    },
+    "ja-JP": {
+      "culturalNorms": {
+        "formality": "very_formal",
+        "directness": "very_indirect",
+        "individualismScore": 46,
+        "powerDistance": 54,
+        "uncertaintyAvoidance": 92,
+        "masculinity": 95
+      },
+      "communication": {
+        "preferredTone": "respectful_humble",
+        "useEmojis": true,
+        "formalPronouns": true,
+        "titles": "extremely_important"
+      },
+      "motivationalStyle": {
+        "emphasis": "group_harmony_improvement",
+        "competitiveLanguage": false,
+        "collaborativeLanguage": true,
+        "examples": [
+          "素晴らしい進歩ですね",
+          "お疲れ様です",
+          "頑張ってください",
+          "とても良い結果です"
+        ]
+      },
+      "colorPreferences": {
+        "success": "#10B981",
+        "warning": "#F59E0B",
+        "error": "#EF4444",
+        "primary": "#DC2626"
+      },
+      "dateTimePreferences": {
+        "dateFormat": "yyyy/MM/dd",
+        "timeFormat": "24h",
+        "firstDayOfWeek": 0,
+        "weekendDays": [0, 6]
+      },
+      "numberPreferences": {
+        "decimalSeparator": ".",
+        "thousandsSeparator": ",",
+        "currencySymbolPosition": "before"
+      },
+      "contentAdaptations": {
+        "workLifeBalance": "work_priority",
+        "hierarchyRespect": "very_high",
+        "groupOrientation": "collective",
+        "riskTaking": "very_cautious"
+      }
+    },
+    "zh-CN": {
+      "culturalNorms": {
+        "formality": "formal",
+        "directness": "indirect",
+        "individualismScore": 20,
+        "powerDistance": 80,
+        "uncertaintyAvoidance": 30,
+        "masculinity": 66
+      },
+      "communication": {
+        "preferredTone": "respectful_harmonious",
+        "useEmojis": true,
+        "formalPronouns": true,
+        "titles": "extremely_important"
+      },
+      "motivationalStyle": {
+        "emphasis": "collective_achievement",
+        "competitiveLanguage": true,
+        "collaborativeLanguage": true,
+        "examples": [
+          "做得很好!",
+          "继续加油!",
+          "你的努力很值得!",
+          "取得了很大的进步!"
+        ]
+      },
+      "colorPreferences": {
+        "success": "#10B981",
+        "warning": "#F59E0B",
+        "error": "#EF4444",
+        "primary": "#DC2626"
+      },
+      "dateTimePreferences": {
+        "dateFormat": "yyyy/MM/dd",
+        "timeFormat": "24h",
+        "firstDayOfWeek": 1,
+        "weekendDays": [0, 6]
+      },
+      "numberPreferences": {
+        "decimalSeparator": ".",
+        "thousandsSeparator": ",",
+        "currencySymbolPosition": "before"
+      },
+      "contentAdaptations": {
+        "workLifeBalance": "work_priority",
+        "hierarchyRespect": "very_high",
+        "groupOrientation": "collective",
+        "riskTaking": "moderate"
+      }
+    },
+    "ar-SA": {
+      "culturalNorms": {
+        "formality": "very_formal",
+        "directness": "indirect",
+        "individualismScore": 25,
+        "powerDistance": 95,
+        "uncertaintyAvoidance": 80,
+        "masculinity": 60
+      },
+      "communication": {
+        "preferredTone": "respectful_honorific",
+        "useEmojis": false,
+        "formalPronouns": true,
+        "titles": "extremely_important"
+      },
+      "motivationalStyle": {
+        "emphasis": "family_community",
+        "competitiveLanguage": false,
+        "collaborativeLanguage": true,
+        "examples": [
+          "عمل ممتاز!",
+          "أحسنت!",
+          "استمر في التقدم!",
+          "نجاح باهر!"
+        ]
+      },
+      "colorPreferences": {
+        "success": "#10B981",
+        "warning": "#F59E0B",
+        "error": "#EF4444",
+        "primary": "#16A34A"
+      },
+      "dateTimePreferences": {
+        "dateFormat": "dd/MM/yyyy",
+        "timeFormat": "12h",
+        "firstDayOfWeek": 6,
+        "weekendDays": [5, 6]
+      },
+      "numberPreferences": {
+        "decimalSeparator": ".",
+        "thousandsSeparator": ",",
+        "currencySymbolPosition": "after"
+      },
+      "contentAdaptations": {
+        "workLifeBalance": "family_priority",
+        "hierarchyRespect": "extremely_high",
+        "groupOrientation": "collective",
+        "riskTaking": "very_cautious"
+      }
+    }
+  },
+  "contentGuidelines": {
+    "habits": {
+      "en-US": {
+        "preferredCategories": ["productivity", "fitness", "mindfulness", "learning"],
+        "avoidTopics": [],
+        "emphasisAreas": ["personal_growth", "efficiency", "results"]
+      },
+      "es-ES": {
+        "preferredCategories": ["family_time", "social_connection", "health", "learning"],
+        "avoidTopics": ["excessive_work"],
+        "emphasisAreas": ["balance", "relationships", "wellbeing"]
+      },
+      "pt-BR": {
+        "preferredCategories": ["social_connection", "celebration", "fitness", "creativity"],
+        "avoidTopics": ["strict_discipline"],
+        "emphasisAreas": ["joy", "community", "flexibility"]
+      },
+      "fr-FR": {
+        "preferredCategories": ["culture", "cuisine", "intellectual_pursuits", "leisure"],
+        "avoidTopics": ["productivity_obsession"],
+        "emphasisAreas": ["quality_of_life", "refinement", "balance"]
+      },
+      "de-DE": {
+        "preferredCategories": ["efficiency", "organization", "outdoor_activities", "learning"],
+        "avoidTopics": ["superficial_goals"],
+        "emphasisAreas": ["structure", "thoroughness", "sustainability"]
+      },
+      "ja-JP": {
+        "preferredCategories": ["self_improvement", "skill_mastery", "health", "mindfulness"],
+        "avoidTopics": ["individual_over_group"],
+        "emphasisAreas": ["continuous_improvement", "discipline", "harmony"]
+      }
+    },
+    "notifications": {
+      "en-US": {
+        "tone": "enthusiastic",
+        "length": "short",
+        "callToAction": "direct"
+      },
+      "es-ES": {
+        "tone": "warm_encouraging",
+        "length": "medium",
+        "callToAction": "polite"
+      },
+      "pt-BR": {
+        "tone": "friendly_casual",
+        "length": "medium",
+        "callToAction": "inviting"
+      },
+      "fr-FR": {
+        "tone": "professional",
+        "length": "detailed",
+        "callToAction": "respectful"
+      },
+      "de-DE": {
+        "tone": "professional_clear",
+        "length": "concise",
+        "callToAction": "direct"
+      },
+      "ja-JP": {
+        "tone": "humble_respectful",
+        "length": "brief",
+        "callToAction": "subtle"
+      }
+    }
+  },
+  "visualAdaptations": {
+    "iconography": {
+      "universal": ["checkmark", "star", "heart", "trophy"],
+      "avoid": {
+        "ar-SA": ["thumbs_up_left_hand", "dog_imagery"],
+        "zh-CN": ["skull", "number_4"],
+        "ja-JP": ["number_4", "number_9"]
+      }
+    },
+    "imagery": {
+      "en-US": ["individual_achievement", "action_shots", "technology"],
+      "es-ES": ["family_gatherings", "outdoor_scenes", "warmth"],
+      "pt-BR": ["celebrations", "groups", "nature", "beaches"],
+      "fr-FR": ["elegance", "culture", "sophistication"],
+      "de-DE": ["nature", "precision", "structure"],
+      "ja-JP": ["harmony", "seasons", "minimalism", "tradition"],
+      "ar-SA": ["family", "community", "modesty", "tradition"]
+    }
+  },
+  "tabooTopics": {
+    "universal": ["politics", "religion_criticism"],
+    "ar-SA": ["alcohol", "gambling", "mixed_gender_imagery"],
+    "zh-CN": ["political_topics", "taiwan_independence"],
+    "ja-JP": ["direct_criticism", "public_failure"]
+  }
+}

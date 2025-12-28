@@ -1,0 +1,503 @@
+[
+  {
+    "referenceId": "habit-001-meditation",
+    "type": "habit_template",
+    "defaultLocale": "en-US",
+    "translations": {
+      "en-US": {
+        "title": "Daily Meditation",
+        "description": "Practice mindfulness and reduce stress through daily meditation",
+        "content": {
+          "category": "mindfulness",
+          "icon": "meditation",
+          "defaultFrequency": "daily",
+          "defaultGoal": 10,
+          "unit": "minutes",
+          "tips": [
+            "Start with just 5 minutes if you're a beginner",
+            "Find a quiet, comfortable space",
+            "Focus on your breath",
+            "Don't judge your thoughts, just observe them"
+          ],
+          "commonChallenges": [
+            "Finding time in busy schedule",
+            "Restless mind",
+            "Falling asleep during meditation"
+          ],
+          "motivationalQuotes": [
+            "The mind is everything. What you think you become.",
+            "Meditation is not about stopping thoughts, but recognizing that we are more than our thoughts."
+          ]
+        }
+      },
+      "es-ES": {
+        "title": "Meditación Diaria",
+        "description": "Practica mindfulness y reduce el estrés a través de la meditación diaria",
+        "content": {
+          "category": "mindfulness",
+          "icon": "meditation",
+          "defaultFrequency": "daily",
+          "defaultGoal": 10,
+          "unit": "minutos",
+          "tips": [
+            "Comienza con solo 5 minutos si eres principiante",
+            "Encuentra un espacio tranquilo y cómodo",
+            "Concéntrate en tu respiración",
+            "No juzgues tus pensamientos, solo obsérvalos"
+          ],
+          "commonChallenges": [
+            "Encontrar tiempo en una agenda ocupada",
+            "Mente inquieta",
+            "Quedarse dormido durante la meditación"
+          ],
+          "motivationalQuotes": [
+            "La mente lo es todo. En lo que piensas te conviertes.",
+            "La meditación no se trata de detener los pensamientos, sino de reconocer que somos más que nuestros pensamientos."
+          ]
+        }
+      },
+      "pt-BR": {
+        "title": "Meditação Diária",
+        "description": "Pratique mindfulness e reduza o estresse através da meditação diária",
+        "content": {
+          "category": "mindfulness",
+          "icon": "meditation",
+          "defaultFrequency": "daily",
+          "defaultGoal": 10,
+          "unit": "minutos",
+          "tips": [
+            "Comece com apenas 5 minutos se você é iniciante",
+            "Encontre um espaço tranquilo e confortável",
+            "Concentre-se na sua respiração",
+            "Não julgue seus pensamentos, apenas observe-os"
+          ],
+          "commonChallenges": [
+            "Encontrar tempo na agenda ocupada",
+            "Mente agitada",
+            "Adormecer durante a meditação"
+          ],
+          "motivationalQuotes": [
+            "A mente é tudo. No que você pensa, você se torna.",
+            "Meditação não é sobre parar os pensamentos, mas reconhecer que somos mais do que nossos pensamentos."
+          ]
+        }
+      },
+      "fr-FR": {
+        "title": "Méditation Quotidienne",
+        "description": "Pratiquez la pleine conscience et réduisez le stress grâce à la méditation quotidienne",
+        "content": {
+          "category": "mindfulness",
+          "icon": "meditation",
+          "defaultFrequency": "daily",
+          "defaultGoal": 10,
+          "unit": "minutes",
+          "tips": [
+            "Commencez avec seulement 5 minutes si vous êtes débutant",
+            "Trouvez un espace calme et confortable",
+            "Concentrez-vous sur votre respiration",
+            "Ne jugez pas vos pensées, observez-les simplement"
+          ],
+          "commonChallenges": [
+            "Trouver du temps dans un emploi du temps chargé",
+            "Esprit agité",
+            "S'endormir pendant la méditation"
+          ],
+          "motivationalQuotes": [
+            "L'esprit est tout. Ce que vous pensez, vous le devenez.",
+            "La méditation ne consiste pas à arrêter les pensées, mais à reconnaître que nous sommes plus que nos pensées."
+          ]
+        }
+      },
+      "de-DE": {
+        "title": "Tägliche Meditation",
+        "description": "Praktizieren Sie Achtsamkeit und reduzieren Sie Stress durch tägliche Meditation",
+        "content": {
+          "category": "mindfulness",
+          "icon": "meditation",
+          "defaultFrequency": "daily",
+          "defaultGoal": 10,
+          "unit": "Minuten",
+          "tips": [
+            "Beginnen Sie mit nur 5 Minuten, wenn Sie Anfänger sind",
+            "Finden Sie einen ruhigen, bequemen Raum",
+            "Konzentrieren Sie sich auf Ihren Atem",
+            "Beurteilen Sie Ihre Gedanken nicht, beobachten Sie sie nur"
+          ],
+          "commonChallenges": [
+            "Zeit im vollen Terminkalender finden",
+            "Unruhiger Geist",
+            "Während der Meditation einschlafen"
+          ],
+          "motivationalQuotes": [
+            "Der Geist ist alles. Was Sie denken, werden Sie.",
+            "Meditation bedeutet nicht, Gedanken zu stoppen, sondern zu erkennen, dass wir mehr sind als unsere Gedanken."
+          ]
+        }
+      },
+      "ja-JP": {
+        "title": "毎日の瞑想",
+        "description": "マインドフルネスを実践し、毎日の瞑想でストレスを軽減します",
+        "content": {
+          "category": "mindfulness",
+          "icon": "meditation",
+          "defaultFrequency": "daily",
+          "defaultGoal": 10,
+          "unit": "分",
+          "tips": [
+            "初心者の場合は5分から始めてください",
+            "静かで快適な場所を見つけてください",
+            "呼吸に集中してください",
+            "思考を判断せず、ただ観察してください"
+          ],
+          "commonChallenges": [
+            "忙しいスケジュールの中で時間を見つけること",
+            "落ち着かない心",
+            "瞑想中に眠ってしまうこと"
+          ],
+          "motivationalQuotes": [
+            "心がすべてです。あなたが考えることが、あなたになります。",
+            "瞑想は思考を止めることではなく、私たちが思考以上の存在であることを認識することです。"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "referenceId": "habit-002-exercise",
+    "type": "habit_template",
+    "defaultLocale": "en-US",
+    "translations": {
+      "en-US": {
+        "title": "Daily Exercise",
+        "description": "Stay active and healthy with regular physical activity",
+        "content": {
+          "category": "fitness",
+          "icon": "exercise",
+          "defaultFrequency": "daily",
+          "defaultGoal": 30,
+          "unit": "minutes",
+          "tips": [
+            "Choose activities you enjoy",
+            "Start slow and gradually increase intensity",
+            "Mix cardio and strength training",
+            "Listen to your body and rest when needed"
+          ],
+          "commonChallenges": [
+            "Lack of motivation",
+            "Time constraints",
+            "Gym intimidation",
+            "Soreness and fatigue"
+          ],
+          "motivationalQuotes": [
+            "The only bad workout is the one that didn't happen.",
+            "Take care of your body. It's the only place you have to live."
+          ]
+        }
+      },
+      "es-ES": {
+        "title": "Ejercicio Diario",
+        "description": "Mantente activo y saludable con actividad física regular",
+        "content": {
+          "category": "fitness",
+          "icon": "exercise",
+          "defaultFrequency": "daily",
+          "defaultGoal": 30,
+          "unit": "minutos",
+          "tips": [
+            "Elige actividades que disfrutes",
+            "Comienza despacio y aumenta la intensidad gradualmente",
+            "Combina cardio y entrenamiento de fuerza",
+            "Escucha a tu cuerpo y descansa cuando sea necesario"
+          ],
+          "commonChallenges": [
+            "Falta de motivación",
+            "Limitaciones de tiempo",
+            "Intimidación del gimnasio",
+            "Dolor y fatiga"
+          ],
+          "motivationalQuotes": [
+            "El único mal entrenamiento es el que no sucedió.",
+            "Cuida tu cuerpo. Es el único lugar que tienes para vivir."
+          ]
+        }
+      },
+      "pt-BR": {
+        "title": "Exercício Diário",
+        "description": "Mantenha-se ativo e saudável com atividade física regular",
+        "content": {
+          "category": "fitness",
+          "icon": "exercise",
+          "defaultFrequency": "daily",
+          "defaultGoal": 30,
+          "unit": "minutos",
+          "tips": [
+            "Escolha atividades que você goste",
+            "Comece devagar e aumente a intensidade gradualmente",
+            "Misture cardio e treino de força",
+            "Ouça seu corpo e descanse quando necessário"
+          ],
+          "commonChallenges": [
+            "Falta de motivação",
+            "Restrições de tempo",
+            "Intimidação da academia",
+            "Dor e fadiga"
+          ],
+          "motivationalQuotes": [
+            "O único treino ruim é aquele que não aconteceu.",
+            "Cuide do seu corpo. É o único lugar que você tem para viver."
+          ]
+        }
+      },
+      "fr-FR": {
+        "title": "Exercice Quotidien",
+        "description": "Restez actif et en bonne santé avec une activité physique régulière",
+        "content": {
+          "category": "fitness",
+          "icon": "exercise",
+          "defaultFrequency": "daily",
+          "defaultGoal": 30,
+          "unit": "minutes",
+          "tips": [
+            "Choisissez des activités que vous aimez",
+            "Commencez lentement et augmentez progressivement l'intensité",
+            "Mélangez cardio et musculation",
+            "Écoutez votre corps et reposez-vous si nécessaire"
+          ],
+          "commonChallenges": [
+            "Manque de motivation",
+            "Contraintes de temps",
+            "Intimidation de la salle de sport",
+            "Courbatures et fatigue"
+          ],
+          "motivationalQuotes": [
+            "Le seul mauvais entraînement est celui qui n'a pas eu lieu.",
+            "Prenez soin de votre corps. C'est le seul endroit où vous devez vivre."
+          ]
+        }
+      },
+      "de-DE": {
+        "title": "Tägliche Bewegung",
+        "description": "Bleiben Sie aktiv und gesund mit regelmäßiger körperlicher Aktivität",
+        "content": {
+          "category": "fitness",
+          "icon": "exercise",
+          "defaultFrequency": "daily",
+          "defaultGoal": 30,
+          "unit": "Minuten",
+          "tips": [
+            "Wählen Sie Aktivitäten, die Ihnen Spaß machen",
+            "Beginnen Sie langsam und steigern Sie die Intensität allmählich",
+            "Kombinieren Sie Cardio und Krafttraining",
+            "Hören Sie auf Ihren Körper und ruhen Sie sich bei Bedarf aus"
+          ],
+          "commonChallenges": [
+            "Mangelnde Motivation",
+            "Zeitliche Einschränkungen",
+            "Einschüchterung im Fitnessstudio",
+            "Muskelkater und Müdigkeit"
+          ],
+          "motivationalQuotes": [
+            "Das einzige schlechte Training ist das, das nicht stattgefunden hat.",
+            "Kümmern Sie sich um Ihren Körper. Es ist der einzige Ort, an dem Sie leben müssen."
+          ]
+        }
+      },
+      "ja-JP": {
+        "title": "毎日の運動",
+        "description": "定期的な身体活動で活動的で健康を維持しましょう",
+        "content": {
+          "category": "fitness",
+          "icon": "exercise",
+          "defaultFrequency": "daily",
+          "defaultGoal": 30,
+          "unit": "分",
+          "tips": [
+            "楽しめる活動を選んでください",
+            "ゆっくり始めて徐々に強度を上げていきましょう",
+            "有酸素運動と筋力トレーニングを組み合わせましょう",
+            "体の声を聞き、必要なときは休んでください"
+          ],
+          "commonChallenges": [
+            "モチベーションの欠如",
+            "時間の制約",
+            "ジムでの不安",
+            "筋肉痛と疲労"
+          ],
+          "motivationalQuotes": [
+            "悪いトレーニングとは、実行しなかったトレーニングだけです。",
+            "体を大切にしてください。それはあなたが住む唯一の場所です。"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "referenceId": "habit-003-reading",
+    "type": "habit_template",
+    "defaultLocale": "en-US",
+    "translations": {
+      "en-US": {
+        "title": "Daily Reading",
+        "description": "Expand your knowledge and improve focus through regular reading",
+        "content": {
+          "category": "learning",
+          "icon": "book",
+          "defaultFrequency": "daily",
+          "defaultGoal": 20,
+          "unit": "pages",
+          "tips": [
+            "Set aside a specific time for reading",
+            "Choose books that interest you",
+            "Eliminate distractions",
+            "Take notes on key insights"
+          ],
+          "commonChallenges": [
+            "Finding time to read",
+            "Choosing what to read",
+            "Staying focused",
+            "Reading comprehension"
+          ],
+          "motivationalQuotes": [
+            "Reading is to the mind what exercise is to the body.",
+            "A reader lives a thousand lives before he dies."
+          ]
+        }
+      },
+      "es-ES": {
+        "title": "Lectura Diaria",
+        "description": "Amplía tus conocimientos y mejora la concentración a través de la lectura regular",
+        "content": {
+          "category": "learning",
+          "icon": "book",
+          "defaultFrequency": "daily",
+          "defaultGoal": 20,
+          "unit": "páginas",
+          "tips": [
+            "Reserva un tiempo específico para leer",
+            "Elige libros que te interesen",
+            "Elimina las distracciones",
+            "Toma notas sobre ideas clave"
+          ],
+          "commonChallenges": [
+            "Encontrar tiempo para leer",
+            "Elegir qué leer",
+            "Mantener la concentración",
+            "Comprensión lectora"
+          ],
+          "motivationalQuotes": [
+            "La lectura es para la mente lo que el ejercicio es para el cuerpo.",
+            "Un lector vive mil vidas antes de morir."
+          ]
+        }
+      },
+      "pt-BR": {
+        "title": "Leitura Diária",
+        "description": "Expanda seu conhecimento e melhore o foco através da leitura regular",
+        "content": {
+          "category": "learning",
+          "icon": "book",
+          "defaultFrequency": "daily",
+          "defaultGoal": 20,
+          "unit": "páginas",
+          "tips": [
+            "Reserve um horário específico para ler",
+            "Escolha livros que lhe interessam",
+            "Elimine distrações",
+            "Faça anotações sobre insights importantes"
+          ],
+          "commonChallenges": [
+            "Encontrar tempo para ler",
+            "Escolher o que ler",
+            "Manter o foco",
+            "Compreensão de leitura"
+          ],
+          "motivationalQuotes": [
+            "A leitura é para a mente o que o exercício é para o corpo.",
+            "Um leitor vive mil vidas antes de morrer."
+          ]
+        }
+      },
+      "fr-FR": {
+        "title": "Lecture Quotidienne",
+        "description": "Élargissez vos connaissances et améliorez votre concentration grâce à la lecture régulière",
+        "content": {
+          "category": "learning",
+          "icon": "book",
+          "defaultFrequency": "daily",
+          "defaultGoal": 20,
+          "unit": "pages",
+          "tips": [
+            "Réservez un moment spécifique pour la lecture",
+            "Choisissez des livres qui vous intéressent",
+            "Éliminez les distractions",
+            "Prenez des notes sur les points clés"
+          ],
+          "commonChallenges": [
+            "Trouver du temps pour lire",
+            "Choisir quoi lire",
+            "Rester concentré",
+            "Compréhension de lecture"
+          ],
+          "motivationalQuotes": [
+            "La lecture est à l'esprit ce que l'exercice est au corps.",
+            "Un lecteur vit mille vies avant de mourir."
+          ]
+        }
+      },
+      "de-DE": {
+        "title": "Tägliches Lesen",
+        "description": "Erweitern Sie Ihr Wissen und verbessern Sie die Konzentration durch regelmäßiges Lesen",
+        "content": {
+          "category": "learning",
+          "icon": "book",
+          "defaultFrequency": "daily",
+          "defaultGoal": 20,
+          "unit": "Seiten",
+          "tips": [
+            "Legen Sie eine bestimmte Zeit zum Lesen fest",
+            "Wählen Sie Bücher, die Sie interessieren",
+            "Beseitigen Sie Ablenkungen",
+            "Machen Sie sich Notizen zu wichtigen Erkenntnissen"
+          ],
+          "commonChallenges": [
+            "Zeit zum Lesen finden",
+            "Auswählen, was zu lesen ist",
+            "Konzentriert bleiben",
+            "Leseverständnis"
+          ],
+          "motivationalQuotes": [
+            "Lesen ist für den Geist, was Bewegung für den Körper ist.",
+            "Ein Leser lebt tausend Leben, bevor er stirbt."
+          ]
+        }
+      },
+      "ja-JP": {
+        "title": "毎日の読書",
+        "description": "定期的な読書を通じて知識を広げ、集中力を向上させましょう",
+        "content": {
+          "category": "learning",
+          "icon": "book",
+          "defaultFrequency": "daily",
+          "defaultGoal": 20,
+          "unit": "ページ",
+          "tips": [
+            "読書のための特定の時間を設けてください",
+            "興味のある本を選んでください",
+            "気を散らすものを排除してください",
+            "重要な洞察についてメモを取ってください"
+          ],
+          "commonChallenges": [
+            "読書の時間を見つけること",
+            "何を読むか選ぶこと",
+            "集中を保つこと",
+            "読解力"
+          ],
+          "motivationalQuotes": [
+            "読書は心にとって、運動が体にとってのものです。",
+            "読者は死ぬ前に千の人生を生きます。"
+          ]
+        }
+      }
+    }
+  }
+]
