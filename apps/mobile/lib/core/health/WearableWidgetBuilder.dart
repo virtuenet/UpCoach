@@ -1,81 +1,45 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-/// Wearable widget types
+/// Widget type for wearables
 enum WearableWidgetType {
-  compact,
-  detailed,
-  progress,
-  stats,
+  habitTracker,
+  goalProgress,
+  streakCounter,
+  quickAction,
+  statistics,
+  timer,
 }
 
-/// Wearable platform
-enum WearablePlatform {
-  appleWatch,
-  wearOS,
-  unknown,
+/// Widget size category
+enum WidgetSize {
+  small,
+  medium,
+  large,
+  extraLarge,
 }
 
 /// Widget data model
 class WearableWidgetData {
+  final String id;
+  final WearableWidgetType type;
   final String title;
-  final String? subtitle;
-  final int? value;
-  final int? maxValue;
-  final String? unit;
-  final IconData? icon;
-  final Color? color;
+  final dynamic value;
+  final Map<String, dynamic>? metadata;
   final DateTime lastUpdated;
 
   const WearableWidgetData({
+    required this.id,
+    required this.type,
     required this.title,
-    this.subtitle,
-    this.value,
-    this.maxValue,
-    this.unit,
-    this.icon,
-    this.color,
-    DateTime? lastUpdated,
-  }) : lastUpdated = lastUpdated ?? const DateTime(2025);
-
-  factory WearableWidgetData.streak({required int days}) {
-    return WearableWidgetData(
-      title: 'Streak',
-      value: days,
-      unit: 'days',
-      icon: Icons.local_fire_department,
-      color: Colors.orange,
-    );
-  }
-
-  factory WearableWidgetData.habitProgress({
-    required int completed,
-    required int total,
-  }) {
-    return WearableWidgetData(
-      title: 'Today',
-      value: completed,
-      maxValue: total,
-      unit: 'habits',
-      icon: Icons.check_circle,
-      color: Colors.green,
-    );
-  }
-
-  factory WearableWidgetData.steps({required int steps, int goal = 10000}) {
-    return WearableWidgetData(
-      title: 'Steps',
-      value: steps,
-      maxValue: goal,
-      unit: 'steps',
-      icon: Icons.directions_walk,
-      color: Colors.blue,
-    );
-  }
+    required this.value,
+    this.metadata,
+    required this.lastUpdated,
+  });
 }
 
-/// Gesture types for wearable interaction
-enum WearableGesture {
+/// Gesture type for interactions
+enum WidgetGesture {
   tap,
   doubleTap,
   longPress,
@@ -85,417 +49,444 @@ enum WearableGesture {
   swipeDown,
 }
 
-/// Wearable widget builder for creating optimized widgets for smartwatches
-class WearableWidgetBuilder {
-  final WearablePlatform platform;
-  final double screenSize;
-  final bool isRound;
+/// Widget configuration
+class WidgetConfig {
+  final WidgetSize size;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
+  final bool showLabels;
+  final bool showIcons;
+  final Duration refreshInterval;
+  final Map<WidgetGesture, VoidCallback>? gestures;
 
-  const WearableWidgetBuilder({
-    this.platform = WearablePlatform.unknown,
-    this.screenSize = 44.0, // Default Apple Watch 44mm
-    this.isRound = false,
+  const WidgetConfig({
+    this.size = WidgetSize.medium,
+    this.backgroundColor,
+    this.foregroundColor,
+    this.showLabels = true,
+    this.showIcons = true,
+    this.refreshInterval = const Duration(minutes: 5),
+    this.gestures,
   });
+}
 
-  // ============================================================================
-  // Widget Builders
-  // ============================================================================
+/// Builder for creating wearable widgets
+class WearableWidgetBuilder {
+  final WidgetConfig config;
+  final StreamController<WearableWidgetData> _dataController =
+      StreamController<WearableWidgetData>.broadcast();
+  
+  Timer? _refreshTimer;
 
-  Widget buildCompactWidget(WearableWidgetData data) {
-    return Container(
-      constraints: BoxConstraints(
-        maxWidth: screenSize,
-        maxHeight: screenSize,
-      ),
-      decoration: BoxDecoration(
-        color: data.color?.withOpacity(0.1),
-        borderRadius: isRound ? null : BorderRadius.circular(8),
-        shape: isRound ? BoxShape.circle : BoxShape.rectangle,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (data.icon != null)
-            Icon(
-              data.icon,
-              size: _getIconSize(WearableWidgetType.compact),
-              color: data.color,
-            ),
-          const SizedBox(height: 4),
-          Text(
-            '${data.value ?? 0}',
-            style: TextStyle(
-              fontSize: _getFontSize(WearableWidgetType.compact, large: true),
-              fontWeight: FontWeight.bold,
-              color: data.color,
-            ),
-          ),
-          if (data.unit != null)
-            Text(
-              data.unit!,
-              style: TextStyle(
-                fontSize: _getFontSize(WearableWidgetType.compact, large: false),
-                color: Colors.grey,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildDetailedWidget(WearableWidgetData data) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            data.color?.withOpacity(0.2) ?? Colors.grey.withOpacity(0.2),
-            data.color?.withOpacity(0.05) ?? Colors.grey.withOpacity(0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: isRound ? null : BorderRadius.circular(12),
-        shape: isRound ? BoxShape.circle : BoxShape.rectangle,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (data.icon != null)
-            Icon(
-              data.icon,
-              size: _getIconSize(WearableWidgetType.detailed),
-              color: data.color,
-            ),
-          const SizedBox(height: 8),
-          Text(
-            data.title,
-            style: TextStyle(
-              fontSize: _getFontSize(WearableWidgetType.detailed, large: false),
-              fontWeight: FontWeight.w600,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                '${data.value ?? 0}',
-                style: TextStyle(
-                  fontSize: _getFontSize(WearableWidgetType.detailed, large: true),
-                  fontWeight: FontWeight.bold,
-                  color: data.color,
-                ),
-              ),
-              if (data.maxValue != null) ...[
-                Text(
-                  ' / ${data.maxValue}',
-                  style: TextStyle(
-                    fontSize: _getFontSize(WearableWidgetType.detailed, large: false),
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-              if (data.unit != null)
-                Text(
-                  ' ${data.unit}',
-                  style: TextStyle(
-                    fontSize: _getFontSize(WearableWidgetType.detailed, large: false),
-                    color: Colors.grey,
-                  ),
-                ),
-            ],
-          ),
-          if (data.subtitle != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              data.subtitle!,
-              style: TextStyle(
-                fontSize: _getFontSize(WearableWidgetType.detailed, large: false) - 2,
-                color: Colors.grey,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget buildProgressWidget(WearableWidgetData data) {
-    final progress = data.maxValue != null && data.maxValue! > 0
-        ? (data.value ?? 0) / data.maxValue!
-        : 0.0;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            data.title,
-            style: TextStyle(
-              fontSize: _getFontSize(WearableWidgetType.progress, large: false),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              SizedBox(
-                width: screenSize * 0.6,
-                height: screenSize * 0.6,
-                child: CircularProgressIndicator(
-                  value: progress.clamp(0.0, 1.0),
-                  strokeWidth: 8,
-                  backgroundColor: Colors.grey.withOpacity(0.2),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    data.color ?? Colors.blue,
-                  ),
-                ),
-              ),
-              Column(
-                children: [
-                  Text(
-                    '${data.value ?? 0}',
-                    style: TextStyle(
-                      fontSize: _getFontSize(WearableWidgetType.progress, large: true),
-                      fontWeight: FontWeight.bold,
-                      color: data.color,
-                    ),
-                  ),
-                  if (data.maxValue != null)
-                    Text(
-                      'of ${data.maxValue}',
-                      style: TextStyle(
-                        fontSize: _getFontSize(WearableWidgetType.progress, large: false),
-                        color: Colors.grey,
-                      ),
-                    ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${(progress * 100).toInt()}% Complete',
-            style: TextStyle(
-              fontSize: _getFontSize(WearableWidgetType.progress, large: false),
-              color: Colors.grey,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget buildStatsWidget(List<WearableWidgetData> stats) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Today\'s Stats',
-            style: TextStyle(
-              fontSize: _getFontSize(WearableWidgetType.stats, large: false),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...stats.map((stat) => _buildStatRow(stat)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatRow(WearableWidgetData data) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              if (data.icon != null) ...[
-                Icon(
-                  data.icon,
-                  size: 16,
-                  color: data.color,
-                ),
-                const SizedBox(width: 8),
-              ],
-              Text(
-                data.title,
-                style: const TextStyle(fontSize: 12),
-              ),
-            ],
-          ),
-          Text(
-            '${data.value ?? 0}${data.unit != null ? ' ${data.unit}' : ''}',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: data.color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ============================================================================
-  // Gesture Controls
-  // ============================================================================
-
-  Widget withGesture({
-    required Widget child,
-    VoidCallback? onTap,
-    VoidCallback? onDoubleTap,
-    VoidCallback? onLongPress,
-    VoidCallback? onSwipeLeft,
-    VoidCallback? onSwipeRight,
-    VoidCallback? onSwipeUp,
-    VoidCallback? onSwipeDown,
+  WearableWidgetBuilder({
+    this.config = const WidgetConfig(),
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      onDoubleTap: onDoubleTap,
-      onLongPress: onLongPress,
-      onHorizontalDragEnd: (details) {
-        if (details.primaryVelocity! > 0) {
-          onSwipeRight?.call();
-        } else if (details.primaryVelocity! < 0) {
-          onSwipeLeft?.call();
-        }
-      },
-      onVerticalDragEnd: (details) {
-        if (details.primaryVelocity! > 0) {
-          onSwipeDown?.call();
-        } else if (details.primaryVelocity! < 0) {
-          onSwipeUp?.call();
-        }
-      },
-      child: child,
-    );
+    _startAutoRefresh();
   }
 
   // ============================================================================
-  // Real-time Data Updates
+  // Widget Factory Methods
   // ============================================================================
 
-  Widget withRealTimeUpdates({
-    required Widget Function(WearableWidgetData data) builder,
-    required Stream<WearableWidgetData> dataStream,
-    required WearableWidgetData initialData,
-  }) {
-    return StreamBuilder<WearableWidgetData>(
-      stream: dataStream,
-      initialData: initialData,
-      builder: (context, snapshot) {
-        return builder(snapshot.data ?? initialData);
-      },
-    );
-  }
-
-  // ============================================================================
-  // Customizable Layouts
-  // ============================================================================
-
-  Widget buildCustomLayout({
-    required List<Widget> widgets,
-    WearableLayoutType layout = WearableLayoutType.column,
-  }) {
-    switch (layout) {
-      case WearableLayoutType.column:
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: widgets,
-        );
-      case WearableLayoutType.row:
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: widgets,
-        );
-      case WearableLayoutType.grid:
-        return GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          children: widgets,
-        );
-      case WearableLayoutType.stack:
-        return Stack(
-          alignment: Alignment.center,
-          children: widgets,
-        );
+  Widget buildWidget(WearableWidgetData data) {
+    switch (data.type) {
+      case WearableWidgetType.habitTracker:
+        return _buildHabitTrackerWidget(data);
+      case WearableWidgetType.goalProgress:
+        return _buildGoalProgressWidget(data);
+      case WearableWidgetType.streakCounter:
+        return _buildStreakCounterWidget(data);
+      case WearableWidgetType.quickAction:
+        return _buildQuickActionWidget(data);
+      case WearableWidgetType.statistics:
+        return _buildStatisticsWidget(data);
+      case WearableWidgetType.timer:
+        return _buildTimerWidget(data);
     }
   }
 
   // ============================================================================
-  // Helper Methods
+  // Habit Tracker Widget
   // ============================================================================
 
-  double _getIconSize(WearableWidgetType type) {
-    switch (type) {
-      case WearableWidgetType.compact:
-        return screenSize * 0.25;
-      case WearableWidgetType.detailed:
-        return screenSize * 0.3;
-      case WearableWidgetType.progress:
-        return screenSize * 0.2;
-      case WearableWidgetType.stats:
+  Widget _buildHabitTrackerWidget(WearableWidgetData data) {
+    final habits = data.value as List<Map<String, dynamic>>? ?? [];
+    final completedCount = habits.where((h) => h['completed'] == true).length;
+
+    return _WearableCard(
+      config: config,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (config.showIcons)
+            Icon(
+              Icons.check_circle_outline,
+              size: _getIconSize(),
+              color: config.foregroundColor ?? Colors.green,
+            ),
+          const SizedBox(height: 8),
+          Text(
+            '$completedCount/${habits.length}',
+            style: TextStyle(
+              fontSize: _getTitleFontSize(),
+              fontWeight: FontWeight.bold,
+              color: config.foregroundColor,
+            ),
+          ),
+          if (config.showLabels)
+            Text(
+              'Habits',
+              style: TextStyle(
+                fontSize: _getLabelFontSize(),
+                color: config.foregroundColor?.withOpacity(0.7),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================================
+  // Goal Progress Widget
+  // ============================================================================
+
+  Widget _buildGoalProgressWidget(WearableWidgetData data) {
+    final progress = (data.value as num?)?.toDouble() ?? 0.0;
+    final target = (data.metadata?['target'] as num?)?.toDouble() ?? 100.0;
+    final percentage = (progress / target * 100).clamp(0, 100);
+
+    return _WearableCard(
+      config: config,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: _getProgressSize(),
+            height: _getProgressSize(),
+            child: CircularProgressIndicator(
+              value: percentage / 100,
+              strokeWidth: 8,
+              backgroundColor: Colors.grey.withOpacity(0.2),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                config.foregroundColor ?? Colors.blue,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${percentage.toInt()}%',
+            style: TextStyle(
+              fontSize: _getTitleFontSize(),
+              fontWeight: FontWeight.bold,
+              color: config.foregroundColor,
+            ),
+          ),
+          if (config.showLabels)
+            Text(
+              data.title,
+              style: TextStyle(
+                fontSize: _getLabelFontSize(),
+                color: config.foregroundColor?.withOpacity(0.7),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================================
+  // Streak Counter Widget
+  // ============================================================================
+
+  Widget _buildStreakCounterWidget(WearableWidgetData data) {
+    final streak = (data.value as int?) ?? 0;
+    final icon = data.metadata?['icon'] as String? ?? '🔥';
+
+    return _WearableCard(
+      config: config,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            icon,
+            style: TextStyle(fontSize: _getIconSize()),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$streak',
+            style: TextStyle(
+              fontSize: _getTitleFontSize(),
+              fontWeight: FontWeight.bold,
+              color: config.foregroundColor,
+            ),
+          ),
+          if (config.showLabels)
+            Text(
+              'Day Streak',
+              style: TextStyle(
+                fontSize: _getLabelFontSize(),
+                color: config.foregroundColor?.withOpacity(0.7),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================================
+  // Quick Action Widget
+  // ============================================================================
+
+  Widget _buildQuickActionWidget(WearableWidgetData data) {
+    final action = data.metadata?['action'] as String? ?? 'Tap';
+    final icon = data.metadata?['icon'] as IconData? ?? Icons.touch_app;
+
+    return _WearableCard(
+      config: config,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: _getIconSize(),
+            color: config.foregroundColor,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            data.title,
+            style: TextStyle(
+              fontSize: _getTitleFontSize(),
+              fontWeight: FontWeight.bold,
+              color: config.foregroundColor,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          if (config.showLabels)
+            Text(
+              action,
+              style: TextStyle(
+                fontSize: _getLabelFontSize(),
+                color: config.foregroundColor?.withOpacity(0.7),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================================
+  // Statistics Widget
+  // ============================================================================
+
+  Widget _buildStatisticsWidget(WearableWidgetData data) {
+    final stats = data.value as Map<String, dynamic>? ?? {};
+
+    return _WearableCard(
+      config: config,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            data.title,
+            style: TextStyle(
+              fontSize: _getLabelFontSize(),
+              fontWeight: FontWeight.bold,
+              color: config.foregroundColor,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ...stats.entries.take(3).map((entry) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      entry.key,
+                      style: TextStyle(
+                        fontSize: _getLabelFontSize() * 0.8,
+                        color: config.foregroundColor?.withOpacity(0.7),
+                      ),
+                    ),
+                    Text(
+                      '${entry.value}',
+                      style: TextStyle(
+                        fontSize: _getLabelFontSize() * 0.8,
+                        fontWeight: FontWeight.bold,
+                        color: config.foregroundColor,
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================================
+  // Timer Widget
+  // ============================================================================
+
+  Widget _buildTimerWidget(WearableWidgetData data) {
+    final seconds = (data.value as int?) ?? 0;
+    final minutes = seconds ~/ 60;
+    final remainingSeconds = seconds % 60;
+    final isRunning = data.metadata?['running'] as bool? ?? false;
+
+    return _WearableCard(
+      config: config,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            isRunning ? Icons.timer : Icons.timer_off,
+            size: _getIconSize(),
+            color: config.foregroundColor,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}',
+            style: TextStyle(
+              fontSize: _getTitleFontSize(),
+              fontWeight: FontWeight.bold,
+              color: config.foregroundColor,
+              fontFeatures: [const FontFeature.tabularFigures()],
+            ),
+          ),
+          if (config.showLabels)
+            Text(
+              isRunning ? 'Running' : 'Paused',
+              style: TextStyle(
+                fontSize: _getLabelFontSize(),
+                color: config.foregroundColor?.withOpacity(0.7),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================================
+  // Size Calculations
+  // ============================================================================
+
+  double _getIconSize() {
+    switch (config.size) {
+      case WidgetSize.small:
+        return 24;
+      case WidgetSize.medium:
+        return 32;
+      case WidgetSize.large:
+        return 40;
+      case WidgetSize.extraLarge:
+        return 48;
+    }
+  }
+
+  double _getTitleFontSize() {
+    switch (config.size) {
+      case WidgetSize.small:
+        return 16;
+      case WidgetSize.medium:
+        return 20;
+      case WidgetSize.large:
+        return 24;
+      case WidgetSize.extraLarge:
+        return 28;
+    }
+  }
+
+  double _getLabelFontSize() {
+    switch (config.size) {
+      case WidgetSize.small:
+        return 10;
+      case WidgetSize.medium:
+        return 12;
+      case WidgetSize.large:
+        return 14;
+      case WidgetSize.extraLarge:
         return 16;
     }
   }
 
-  double _getFontSize(WearableWidgetType type, {required bool large}) {
-    final base = screenSize * 0.2;
-    switch (type) {
-      case WearableWidgetType.compact:
-        return large ? base * 0.8 : base * 0.4;
-      case WearableWidgetType.detailed:
-        return large ? base * 1.0 : base * 0.5;
-      case WearableWidgetType.progress:
-        return large ? base * 0.9 : base * 0.45;
-      case WearableWidgetType.stats:
-        return large ? 14 : 12;
+  double _getProgressSize() {
+    switch (config.size) {
+      case WidgetSize.small:
+        return 40;
+      case WidgetSize.medium:
+        return 60;
+      case WidgetSize.large:
+        return 80;
+      case WidgetSize.extraLarge:
+        return 100;
     }
   }
 
   // ============================================================================
-  // Platform-specific Optimizations
+  // Data Management
   // ============================================================================
 
-  Widget optimizeForPlatform(Widget child) {
-    switch (platform) {
-      case WearablePlatform.appleWatch:
-        return _appleWatchOptimizations(child);
-      case WearablePlatform.wearOS:
-        return _wearOSOptimizations(child);
-      case WearablePlatform.unknown:
-        return child;
-    }
+  void updateData(WearableWidgetData data) {
+    _dataController.add(data);
   }
 
-  Widget _appleWatchOptimizations(Widget child) {
-    // Add Apple Watch specific optimizations
-    return child;
+  Stream<WearableWidgetData> get dataStream => _dataController.stream;
+
+  // ============================================================================
+  // Auto Refresh
+  // ============================================================================
+
+  void _startAutoRefresh() {
+    _refreshTimer?.cancel();
+    _refreshTimer = Timer.periodic(config.refreshInterval, (_) {
+      // Trigger refresh callback if provided
+    });
   }
 
-  Widget _wearOSOptimizations(Widget child) {
-    // Add Wear OS specific optimizations
-    return child;
+  void stopAutoRefresh() {
+    _refreshTimer?.cancel();
+    _refreshTimer = null;
+  }
+
+  // ============================================================================
+  // Cleanup
+  // ============================================================================
+
+  void dispose() {
+    _refreshTimer?.cancel();
+    _dataController.close();
   }
 }
 
-/// Layout types for wearable widgets
-enum WearableLayoutType {
-  column,
-  row,
-  grid,
-  stack,
+// ============================================================================
+// Wearable Card Wrapper
+// ============================================================================
+
+class _WearableCard extends StatelessWidget {
+  final WidgetConfig config;
+  final Widget child;
+
+  const _WearableCard({
+    required this.config,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => config.gestures?[WidgetGesture.tap]?.call(),
+      onDoubleTap: () => config.gestures?[WidgetGesture.doubleTap]?.call(),
+      onLongPress: () => config.gestures?[WidgetGesture.longPress]?.call(),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: config.backgroundColor ?? Colors.grey[900],
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: child,
+      ),
+    );
+  }
 }

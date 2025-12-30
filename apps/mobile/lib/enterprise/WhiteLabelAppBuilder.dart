@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,207 +7,321 @@ import 'dart:convert';
 
 /// Brand configuration
 class BrandConfig {
+  final String organizationId;
   final String appName;
-  final String companyName;
-  final Color primaryColor;
-  final Color secondaryColor;
-  final Color accentColor;
-  final String logoPath;
-  final String? splashLogoPath;
-  final Map<String, dynamic> customTheme;
-  final Map<String, bool> featureFlags;
+  final String logoUrl;
+  final String iconUrl;
+  final ColorScheme colorScheme;
+  final Typography? typography;
+  final Map<String, String>? customAssets;
+  final Map<String, dynamic>? features;
+  final Map<String, String>? translations;
 
   const BrandConfig({
+    required this.organizationId,
     required this.appName,
-    required this.companyName,
-    required this.primaryColor,
-    required this.secondaryColor,
-    required this.accentColor,
-    required this.logoPath,
-    this.splashLogoPath,
-    this.customTheme = const {},
-    this.featureFlags = const {},
+    required this.logoUrl,
+    required this.iconUrl,
+    required this.colorScheme,
+    this.typography,
+    this.customAssets,
+    this.features,
+    this.translations,
   });
 
-  Map<String, dynamic> toJson() => {
-        'appName': appName,
-        'companyName': companyName,
-        'primaryColor': primaryColor.value,
-        'secondaryColor': secondaryColor.value,
-        'accentColor': accentColor.value,
-        'logoPath': logoPath,
-        'splashLogoPath': splashLogoPath,
-        'customTheme': customTheme,
-        'featureFlags': featureFlags,
-      };
-
-  factory BrandConfig.fromJson(Map<String, dynamic> json) => BrandConfig(
-        appName: json['appName'],
-        companyName: json['companyName'],
-        primaryColor: Color(json['primaryColor']),
-        secondaryColor: Color(json['secondaryColor']),
-        accentColor: Color(json['accentColor']),
-        logoPath: json['logoPath'],
-        splashLogoPath: json['splashLogoPath'],
-        customTheme: json['customTheme'] ?? {},
-        featureFlags: Map<String, bool>.from(json['featureFlags'] ?? {}),
-      );
-}
-
-/// Asset management
-class BrandAsset {
-  final String key;
-  final String path;
-  final AssetType type;
-
-  const BrandAsset({
-    required this.key,
-    required this.path,
-    required this.type,
-  });
-}
-
-enum AssetType { image, font, icon, splash }
-
-/// White-label app builder service
-class WhiteLabelAppBuilder extends ChangeNotifier {
-  static const String _configKey = 'whitelabel_config';
-  static const String _assetsKey = 'whitelabel_assets';
-
-  final SharedPreferences _prefs;
-  BrandConfig? _currentConfig;
-  Map<String, BrandAsset> _assets = {};
-  bool _isLoaded = false;
-
-  WhiteLabelAppBuilder({required SharedPreferences prefs}) : _prefs = prefs {
-    loadConfiguration();
+  factory BrandConfig.fromJson(Map<String, dynamic> json) {
+    return BrandConfig(
+      organizationId: json['organizationId'] as String,
+      appName: json['appName'] as String,
+      logoUrl: json['logoUrl'] as String,
+      iconUrl: json['iconUrl'] as String,
+      colorScheme: _parseColorScheme(json['colorScheme']),
+      typography: json['typography'] != null ? _parseTypography(json['typography']) : null,
+      customAssets: json['customAssets'] != null
+          ? Map<String, String>.from(json['customAssets'])
+          : null,
+      features: json['features'] != null
+          ? Map<String, dynamic>.from(json['features'])
+          : null,
+      translations: json['translations'] != null
+          ? Map<String, String>.from(json['translations'])
+          : null,
+    );
   }
 
-  BrandConfig? get currentConfig => _currentConfig;
-  bool get isLoaded => _isLoaded;
-  Map<String, BrandAsset> get assets => _assets;
+  Map<String, dynamic> toJson() {
+    return {
+      'organizationId': organizationId,
+      'appName': appName,
+      'logoUrl': logoUrl,
+      'iconUrl': iconUrl,
+      'colorScheme': _colorSchemeToJson(colorScheme),
+      'typography': typography != null ? _typographyToJson(typography!) : null,
+      'customAssets': customAssets,
+      'features': features,
+      'translations': translations,
+    };
+  }
+
+  static ColorScheme _parseColorScheme(dynamic json) {
+    if (json is! Map) return const ColorScheme.light();
+    
+    return ColorScheme(
+      brightness: json['brightness'] == 'dark' ? Brightness.dark : Brightness.light,
+      primary: Color(int.parse(json['primary'] as String, radix: 16)),
+      onPrimary: Color(int.parse(json['onPrimary'] as String, radix: 16)),
+      secondary: Color(int.parse(json['secondary'] as String, radix: 16)),
+      onSecondary: Color(int.parse(json['onSecondary'] as String, radix: 16)),
+      error: Color(int.parse(json['error'] as String, radix: 16)),
+      onError: Color(int.parse(json['onError'] as String, radix: 16)),
+      surface: Color(int.parse(json['surface'] as String, radix: 16)),
+      onSurface: Color(int.parse(json['onSurface'] as String, radix: 16)),
+    );
+  }
+
+  static Map<String, dynamic> _colorSchemeToJson(ColorScheme scheme) {
+    return {
+      'brightness': scheme.brightness == Brightness.dark ? 'dark' : 'light',
+      'primary': scheme.primary.value.toRadixString(16),
+      'onPrimary': scheme.onPrimary.value.toRadixString(16),
+      'secondary': scheme.secondary.value.toRadixString(16),
+      'onSecondary': scheme.onSecondary.value.toRadixString(16),
+      'error': scheme.error.value.toRadixString(16),
+      'onError': scheme.onError.value.toRadixString(16),
+      'surface': scheme.surface.value.toRadixString(16),
+      'onSurface': scheme.onSurface.value.toRadixString(16),
+    };
+  }
+
+  static Typography _parseTypography(dynamic json) {
+    // Simplified typography parsing
+    return Typography.material2021();
+  }
+
+  static Map<String, dynamic> _typographyToJson(Typography typography) {
+    return {'type': 'material2021'};
+  }
+}
+
+/// Tenant configuration for multi-tenancy
+class TenantConfig {
+  final String tenantId;
+  final String name;
+  final BrandConfig brandConfig;
+  final Map<String, dynamic> settings;
+  final bool isActive;
+
+  const TenantConfig({
+    required this.tenantId,
+    required this.name,
+    required this.brandConfig,
+    required this.settings,
+    this.isActive = true,
+  });
+
+  factory TenantConfig.fromJson(Map<String, dynamic> json) {
+    return TenantConfig(
+      tenantId: json['tenantId'] as String,
+      name: json['name'] as String,
+      brandConfig: BrandConfig.fromJson(json['brandConfig']),
+      settings: Map<String, dynamic>.from(json['settings']),
+      isActive: json['isActive'] as bool? ?? true,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'tenantId': tenantId,
+      'name': name,
+      'brandConfig': brandConfig.toJson(),
+      'settings': settings,
+      'isActive': isActive,
+    };
+  }
+}
+
+/// Service for building white-labeled applications
+class WhiteLabelAppBuilder extends ChangeNotifier {
+  static const String _configKey = 'white_label_config';
+  static const String _tenantKey = 'current_tenant';
+  
+  final SharedPreferences _prefs;
+  
+  BrandConfig? _currentBrand;
+  TenantConfig? _currentTenant;
+  ThemeData? _cachedTheme;
+  bool _initialized = false;
+
+  WhiteLabelAppBuilder({
+    required SharedPreferences prefs,
+  }) : _prefs = prefs;
+
+  // ============================================================================
+  // Initialization
+  // ============================================================================
+
+  Future<void> initialize() async {
+    if (_initialized) return;
+
+    try {
+      await _loadConfiguration();
+      _initialized = true;
+    } catch (e) {
+      debugPrint('Error initializing white label: $e');
+    }
+  }
+
+  Future<void> _loadConfiguration() async {
+    final configJson = _prefs.getString(_configKey);
+    final tenantJson = _prefs.getString(_tenantKey);
+
+    if (configJson != null) {
+      final config = jsonDecode(configJson);
+      _currentBrand = BrandConfig.fromJson(config);
+    }
+
+    if (tenantJson != null) {
+      final tenant = jsonDecode(tenantJson);
+      _currentTenant = TenantConfig.fromJson(tenant);
+      _currentBrand = _currentTenant!.brandConfig;
+    }
+
+    if (_currentBrand != null) {
+      _buildTheme();
+    }
+  }
 
   // ============================================================================
   // Configuration Management
   // ============================================================================
 
-  /// Load brand configuration
-  Future<void> loadConfiguration() async {
-    try {
-      final configJson = _prefs.getString(_configKey);
-      if (configJson != null) {
-        final config = BrandConfig.fromJson(jsonDecode(configJson));
-        _currentConfig = config;
-      }
-
-      final assetsJson = _prefs.getString(_assetsKey);
-      if (assetsJson != null) {
-        // Load assets
-      }
-
-      _isLoaded = true;
-      notifyListeners();
-    } catch (e) {
-      debugPrint('Error loading white-label config: $e');
-    }
+  Future<void> setBrandConfig(BrandConfig config) async {
+    _currentBrand = config;
+    await _prefs.setString(_configKey, jsonEncode(config.toJson()));
+    _buildTheme();
+    notifyListeners();
   }
 
-  /// Save brand configuration
-  Future<void> saveConfiguration(BrandConfig config) async {
-    try {
-      await _prefs.setString(_configKey, jsonEncode(config.toJson()));
-      _currentConfig = config;
-      notifyListeners();
-    } catch (e) {
-      debugPrint('Error saving white-label config: $e');
-    }
+  Future<void> setTenantConfig(TenantConfig config) async {
+    _currentTenant = config;
+    _currentBrand = config.brandConfig;
+    await _prefs.setString(_tenantKey, jsonEncode(config.toJson()));
+    _buildTheme();
+    notifyListeners();
   }
 
-  /// Hot reload configuration
-  Future<void> reloadConfiguration() async {
-    await loadConfiguration();
-  }
+  BrandConfig? get currentBrand => _currentBrand;
+  TenantConfig? get currentTenant => _currentTenant;
 
   // ============================================================================
-  // Theme Customization
+  // Theme Building
   // ============================================================================
 
-  /// Build themed app
-  ThemeData buildTheme({Brightness brightness = Brightness.light}) {
-    if (_currentConfig == null) {
-      return brightness == Brightness.light ? ThemeData.light() : ThemeData.dark();
-    }
+  void _buildTheme() {
+    if (_currentBrand == null) return;
 
-    final config = _currentConfig!;
+    final brand = _currentBrand!;
+    final colorScheme = brand.colorScheme;
 
-    return ThemeData(
-      brightness: brightness,
-      primaryColor: config.primaryColor,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: config.primaryColor,
-        secondary: config.secondaryColor,
-        brightness: brightness,
-      ),
+    _cachedTheme = ThemeData(
+      useMaterial3: true,
+      colorScheme: colorScheme,
+      typography: brand.typography,
       appBarTheme: AppBarTheme(
-        backgroundColor: config.primaryColor,
-        foregroundColor: Colors.white,
-        elevation: 2,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+        elevation: 0,
       ),
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: config.accentColor,
-      ),
-      cardTheme: CardTheme(
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: config.primaryColor, width: 2),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
       ),
     );
   }
 
-  /// Get branded color scheme
-  ColorScheme getColorScheme() {
-    if (_currentConfig == null) {
-      return ColorScheme.light();
+  ThemeData? getTheme() => _cachedTheme;
+
+  ThemeData getThemeOrDefault() {
+    return _cachedTheme ?? ThemeData.light();
+  }
+
+  // ============================================================================
+  // Dynamic Asset Management
+  // ============================================================================
+
+  Future<void> loadAssets() async {
+    if (_currentBrand == null) return;
+
+    // Load logo
+    if (_currentBrand!.logoUrl.isNotEmpty) {
+      await _preloadImage(_currentBrand!.logoUrl);
     }
 
-    return ColorScheme.fromSeed(
-      seedColor: _currentConfig!.primaryColor,
-      secondary: _currentConfig!.secondaryColor,
+    // Load icon
+    if (_currentBrand!.iconUrl.isNotEmpty) {
+      await _preloadImage(_currentBrand!.iconUrl);
+    }
+
+    // Load custom assets
+    final customAssets = _currentBrand!.customAssets;
+    if (customAssets != null) {
+      for (final assetUrl in customAssets.values) {
+        await _preloadImage(assetUrl);
+      }
+    }
+  }
+
+  Future<void> _preloadImage(String url) async {
+    try {
+      // In production, implement proper image caching
+      debugPrint('Preloading image: $url');
+    } catch (e) {
+      debugPrint('Error preloading image: $e');
+    }
+  }
+
+  Widget getLogo({double? width, double? height}) {
+    if (_currentBrand?.logoUrl == null) {
+      return const Placeholder(fallbackWidth: 100, fallbackHeight: 100);
+    }
+
+    return Image.network(
+      _currentBrand!.logoUrl,
+      width: width,
+      height: height,
+      errorBuilder: (context, error, stackTrace) {
+        return const Icon(Icons.business, size: 100);
+      },
     );
   }
 
-  // ============================================================================
-  // Asset Management
-  // ============================================================================
-
-  /// Register brand asset
-  void registerAsset(BrandAsset asset) {
-    _assets[asset.key] = asset;
-    notifyListeners();
-  }
-
-  /// Get asset path
-  String? getAssetPath(String key) {
-    return _assets[key]?.path;
-  }
-
-  /// Load logo widget
-  Widget getLogo({double? width, double? height}) {
-    final logoPath = _currentConfig?.logoPath;
-    if (logoPath == null) {
-      return const Placeholder();
+  Widget getIcon({double? size}) {
+    if (_currentBrand?.iconUrl == null) {
+      return Icon(Icons.apps, size: size);
     }
 
-    return Image.asset(
-      logoPath,
-      width: width,
-      height: height,
+    return Image.network(
+      _currentBrand!.iconUrl,
+      width: size,
+      height: size,
+      errorBuilder: (context, error, stackTrace) {
+        return Icon(Icons.apps, size: size);
+      },
     );
   }
 
@@ -214,92 +329,111 @@ class WhiteLabelAppBuilder extends ChangeNotifier {
   // Feature Flags
   // ============================================================================
 
-  /// Check feature flag
-  bool isFeatureEnabled(String featureKey) {
-    return _currentConfig?.featureFlags[featureKey] ?? false;
+  bool isFeatureEnabled(String featureName) {
+    final features = _currentBrand?.features;
+    if (features == null) return true;
+
+    return features[featureName] as bool? ?? true;
   }
 
-  /// Update feature flag
-  Future<void> updateFeatureFlag(String key, bool enabled) async {
-    if (_currentConfig == null) return;
+  dynamic getFeatureConfig(String featureName) {
+    final features = _currentBrand?.features;
+    return features?[featureName];
+  }
 
-    final updatedFlags = Map<String, bool>.from(_currentConfig!.featureFlags);
-    updatedFlags[key] = enabled;
+  // ============================================================================
+  // Localization
+  // ============================================================================
 
-    final updatedConfig = BrandConfig(
-      appName: _currentConfig!.appName,
-      companyName: _currentConfig!.companyName,
-      primaryColor: _currentConfig!.primaryColor,
-      secondaryColor: _currentConfig!.secondaryColor,
-      accentColor: _currentConfig!.accentColor,
-      logoPath: _currentConfig!.logoPath,
-      splashLogoPath: _currentConfig!.splashLogoPath,
-      customTheme: _currentConfig!.customTheme,
-      featureFlags: updatedFlags,
-    );
+  String translate(String key, {String? defaultValue}) {
+    final translations = _currentBrand?.translations;
+    if (translations == null) return defaultValue ?? key;
 
-    await saveConfiguration(updatedConfig);
+    return translations[key] ?? defaultValue ?? key;
+  }
+
+  // ============================================================================
+  // Build-time Customization
+  // ============================================================================
+
+  Future<void> generateBuildConfig() async {
+    if (_currentBrand == null) return;
+
+    final config = {
+      'APP_NAME': _currentBrand!.appName,
+      'ORGANIZATION_ID': _currentBrand!.organizationId,
+      'PRIMARY_COLOR': _currentBrand!.colorScheme.primary.value.toRadixString(16),
+    };
+
+    // Write to build configuration file
+    await _writeBuildConfig(config);
+  }
+
+  Future<void> _writeBuildConfig(Map<String, dynamic> config) async {
+    try {
+      // In production, write to appropriate config files
+      debugPrint('Build config: $config');
+    } catch (e) {
+      debugPrint('Error writing build config: $e');
+    }
   }
 
   // ============================================================================
   // App Information
   // ============================================================================
 
-  String getAppName() => _currentConfig?.appName ?? 'UpCoach';
-  String getCompanyName() => _currentConfig?.companyName ?? 'UpCoach Inc.';
+  String getAppName() {
+    return _currentBrand?.appName ?? 'UpCoach';
+  }
 
-  /// Update app title
-  Future<void> updateAppTitle() async {
-    if (_currentConfig != null) {
-      await SystemChrome.setApplicationSwitcherDescription(
-        ApplicationSwitcherDescription(
-          label: _currentConfig!.appName,
-          primaryColor: _currentConfig!.primaryColor.value,
-        ),
-      );
-    }
+  String getOrganizationId() {
+    return _currentBrand?.organizationId ?? 'default';
   }
 
   // ============================================================================
-  // Configuration Validation
+  // Reset
   // ============================================================================
 
-  bool validateConfiguration(BrandConfig config) {
-    if (config.appName.isEmpty || config.companyName.isEmpty) {
-      return false;
-    }
+  Future<void> reset() async {
+    _currentBrand = null;
+    _currentTenant = null;
+    _cachedTheme = null;
+    
+    await _prefs.remove(_configKey);
+    await _prefs.remove(_tenantKey);
+    
+    notifyListeners();
+  }
 
-    if (config.logoPath.isEmpty) {
-      return false;
-    }
+  // ============================================================================
+  // Validation
+  // ============================================================================
 
+  bool validateConfig(BrandConfig config) {
+    if (config.organizationId.isEmpty) return false;
+    if (config.appName.isEmpty) return false;
+    if (config.logoUrl.isEmpty) return false;
+    
     return true;
   }
+}
 
-  // ============================================================================
-  // Remote Configuration
-  // ============================================================================
+/// Widget for applying white label theme
+class WhiteLabelTheme extends StatelessWidget {
+  final Widget child;
+  final WhiteLabelAppBuilder builder;
 
-  /// Fetch configuration from remote
-  Future<void> fetchRemoteConfiguration(String configUrl) async {
-    try {
-      // In production, implement actual HTTP request
-      debugPrint('Fetching remote configuration from: $configUrl');
+  const WhiteLabelTheme({
+    super.key,
+    required this.child,
+    required this.builder,
+  });
 
-      // Parse and save configuration
-      // final config = BrandConfig.fromJson(response);
-      // await saveConfiguration(config);
-    } catch (e) {
-      debugPrint('Error fetching remote configuration: $e');
-    }
-  }
-
-  /// Reset to default configuration
-  Future<void> resetToDefault() async {
-    await _prefs.remove(_configKey);
-    await _prefs.remove(_assetsKey);
-    _currentConfig = null;
-    _assets = {};
-    notifyListeners();
+  @override
+  Widget build(BuildContext context) {
+    return Theme(
+      data: builder.getThemeOrDefault(),
+      child: child,
+    );
   }
 }
