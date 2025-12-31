@@ -1,447 +1,1000 @@
-import React, { useState, useEffect } from 'react';
+/**
+ * AI Coaching Dashboard - Live AI conversation monitoring and management
+ *
+ * Features:
+ * - Live AI conversation monitoring
+ * - Coaching session management
+ * - AI performance metrics with Recharts
+ * - Token usage tracking and cost management
+ * - Model selection and configuration
+ * - Safety and moderation controls
+ * - Conversation transcripts viewer
+ * - Session analytics and insights
+ */
 
-// AI Coaching Dashboard - Admin dashboard for AI coaching management (~500 LOC)
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  TextField,
+  Chip,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Tabs,
+  Tab,
+  Alert,
+  CircularProgress,
+  LinearProgress,
+  Switch,
+  FormControlLabel,
+  Tooltip,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+} from '@mui/material';
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  Legend,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+} from 'recharts';
+import {
+  Refresh as RefreshIcon,
+  Download as DownloadIcon,
+  Settings as SettingsIcon,
+  Chat as ChatIcon,
+  TrendingUp as TrendingUpIcon,
+  AttachMoney as MoneyIcon,
+  Speed as SpeedIcon,
+  Psychology as AIIcon,
+  CheckCircle as CheckIcon,
+  Warning as WarningIcon,
+  Delete as DeleteIcon,
+  Visibility as ViewIcon,
+} from '@mui/icons-material';
 
-interface ConversationMetrics {
-  totalConversations: number;
-  totalMessages: number;
-  activeUsers: number;
-  avgMessagesPerConversation: number;
-  avgSatisfactionScore: number;
-  totalCost: number;
-  avgCostPerConversation: number;
-}
-
-interface ModelPerformance {
+// Types
+interface ConversationSession {
+  id: string;
+  userId: string;
+  userName: string;
+  startTime: Date;
+  endTime?: Date;
+  messageCount: number;
+  totalTokens: number;
   model: string;
-  usage: number;
-  avgResponseTime: number;
-  avgTokens: number;
+  style: string;
+  status: 'active' | 'completed' | 'ended';
+  emotionalStates: string[];
+  actionItems: number;
+}
+
+interface AIMetrics {
+  totalSessions: number;
+  activeSessions: number;
+  totalMessages: number;
+  totalTokens: number;
   totalCost: number;
-  satisfactionScore: number;
+  averageResponseTime: number;
+  userSatisfaction: number;
+  modelDistribution: Record<string, number>;
+  styleDistribution: Record<string, number>;
 }
 
-interface IntentDistribution {
-  intent: string;
-  count: number;
-  percentage: number;
+interface TokenUsage {
+  timestamp: Date;
+  model: string;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  cost: number;
 }
 
+interface Message {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: Date;
+  tokens?: number;
+  emotionalTone?: string;
+}
+
+interface ConversationTranscript {
+  sessionId: string;
+  messages: Message[];
+  summary?: string;
+  actionItems: Array<{
+    id: string;
+    content: string;
+    category: string;
+    priority: string;
+  }>;
+}
+
+interface ModelConfig {
+  model: 'gpt-4-turbo' | 'gpt-4' | 'claude-3-opus' | 'claude-3-sonnet';
+  temperature: number;
+  maxTokens: number;
+  topP: number;
+  frequencyPenalty: number;
+  presencePenalty: number;
+}
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+
+const TOKEN_COSTS = {
+  'gpt-4-turbo': { prompt: 0.01, completion: 0.03 },
+  'gpt-4': { prompt: 0.03, completion: 0.06 },
+  'claude-3-opus': { prompt: 0.015, completion: 0.075 },
+  'claude-3-sonnet': { prompt: 0.003, completion: 0.015 },
+};
+
+/**
+ * AI Coaching Dashboard Component
+ */
 const AICoachingDashboard: React.FC = () => {
-  const [metrics, setMetrics] = useState<ConversationMetrics>({
-    totalConversations: 1248,
-    totalMessages: 5892,
-    activeUsers: 487,
-    avgMessagesPerConversation: 4.7,
-    avgSatisfactionScore: 4.6,
-    totalCost: 324.56,
-    avgCostPerConversation: 0.26,
+  // State management
+  const [activeTab, setActiveTab] = useState(0);
+  const [sessions, setSessions] = useState<ConversationSession[]>([]);
+  const [metrics, setMetrics] = useState<AIMetrics>({
+    totalSessions: 0,
+    activeSessions: 0,
+    totalMessages: 0,
+    totalTokens: 0,
+    totalCost: 0,
+    averageResponseTime: 0,
+    userSatisfaction: 0,
+    modelDistribution: {},
+    styleDistribution: {},
   });
+  const [tokenUsageHistory, setTokenUsageHistory] = useState<TokenUsage[]>([]);
+  const [selectedSession, setSelectedSession] = useState<string | null>(null);
+  const [transcript, setTranscript] = useState<ConversationTranscript | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [wsConnected, setWsConnected] = useState(false);
+  const [modelConfig, setModelConfig] = useState<ModelConfig>({
+    model: 'gpt-4-turbo',
+    temperature: 0.7,
+    maxTokens: 2000,
+    topP: 1.0,
+    frequencyPenalty: 0,
+    presencePenalty: 0,
+  });
+  const [safetyEnabled, setSafetyEnabled] = useState(true);
+  const [streamingEnabled, setStreamingEnabled] = useState(true);
+  const [configDialogOpen, setConfigDialogOpen] = useState(false);
+  const [transcriptDialogOpen, setTranscriptDialogOpen] = useState(false);
+  const [timeRange, setTimeRange] = useState<'1h' | '24h' | '7d' | '30d'>('24h');
 
-  const [modelPerformance, setModelPerformance] = useState<ModelPerformance[]>([
-    {
-      model: 'GPT-4',
-      usage: 45,
-      avgResponseTime: 2.3,
-      avgTokens: 856,
-      totalCost: 245.32,
-      satisfactionScore: 4.8,
-    },
-    {
-      model: 'GPT-3.5 Turbo',
-      usage: 35,
-      avgResponseTime: 1.1,
-      avgTokens: 432,
-      totalCost: 42.18,
-      satisfactionScore: 4.4,
-    },
-    {
-      model: 'Claude Sonnet',
-      usage: 20,
-      avgResponseTime: 1.8,
-      avgTokens: 678,
-      totalCost: 37.06,
-      satisfactionScore: 4.7,
-    },
-  ]);
-
-  const [intentDistribution, setIntentDistribution] = useState<
-    IntentDistribution[]
-  >([
-    { intent: 'Goal Setting', count: 342, percentage: 27 },
-    { intent: 'Progress Tracking', count: 298, percentage: 24 },
-    { intent: 'Motivation', count: 245, percentage: 20 },
-    { intent: 'Problem Solving', count: 187, percentage: 15 },
-    { intent: 'Reflection', count: 176, percentage: 14 },
-  ]);
-
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
-
+  // WebSocket connection for real-time updates
   useEffect(() => {
-    // In production, fetch real metrics from API
-    fetchMetrics();
+    const ws = new WebSocket(process.env.REACT_APP_WS_URL || 'ws://localhost:3000/ai');
+
+    ws.onopen = () => {
+      setWsConnected(true);
+      console.log('WebSocket connected');
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      handleWebSocketMessage(data);
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      setWsConnected(false);
+    };
+
+    ws.onclose = () => {
+      setWsConnected(false);
+      console.log('WebSocket disconnected');
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, []);
+
+  // Load initial data
+  useEffect(() => {
+    loadDashboardData();
+    const interval = setInterval(loadDashboardData, 30000); // Refresh every 30s
+    return () => clearInterval(interval);
   }, [timeRange]);
 
-  const fetchMetrics = async () => {
-    // Simulate API call
-    console.log(`Fetching metrics for ${timeRange}`);
+  // Handlers
+  const handleWebSocketMessage = (data: any) => {
+    switch (data.type) {
+      case 'session:started':
+        handleNewSession(data.payload);
+        break;
+      case 'message:sent':
+        handleNewMessage(data.payload);
+        break;
+      case 'session:ended':
+        handleSessionEnded(data.payload);
+        break;
+      case 'metrics:update':
+        setMetrics((prev) => ({ ...prev, ...data.payload }));
+        break;
+    }
   };
 
-  return (
-    <div className="ai-coaching-dashboard">
-      <header className="dashboard-header">
-        <h1>AI Coaching Analytics</h1>
-        <div className="time-range-selector">
-          <button
-            className={timeRange === '7d' ? 'active' : ''}
-            onClick={() => setTimeRange('7d')}
-          >
-            Last 7 Days
-          </button>
-          <button
-            className={timeRange === '30d' ? 'active' : ''}
-            onClick={() => setTimeRange('30d')}
-          >
-            Last 30 Days
-          </button>
-          <button
-            className={timeRange === '90d' ? 'active' : ''}
-            onClick={() => setTimeRange('90d')}
-          >
-            Last 90 Days
-          </button>
-        </div>
-      </header>
+  const handleNewSession = (sessionData: any) => {
+    const newSession: ConversationSession = {
+      id: sessionData.sessionId,
+      userId: sessionData.userId,
+      userName: sessionData.userName || 'Unknown User',
+      startTime: new Date(sessionData.startTime),
+      messageCount: 0,
+      totalTokens: 0,
+      model: sessionData.model || 'gpt-4-turbo',
+      style: sessionData.style || 'supportive',
+      status: 'active',
+      emotionalStates: [],
+      actionItems: 0,
+    };
 
+    setSessions((prev) => [newSession, ...prev]);
+    setMetrics((prev) => ({
+      ...prev,
+      activeSessions: prev.activeSessions + 1,
+      totalSessions: prev.totalSessions + 1,
+    }));
+  };
+
+  const handleNewMessage = (messageData: any) => {
+    setSessions((prev) =>
+      prev.map((session) =>
+        session.id === messageData.sessionId
+          ? {
+              ...session,
+              messageCount: session.messageCount + 1,
+              totalTokens: session.totalTokens + (messageData.tokens?.total || 0),
+            }
+          : session
+      )
+    );
+
+    const usage: TokenUsage = {
+      timestamp: new Date(),
+      model: messageData.model,
+      promptTokens: messageData.tokens?.prompt || 0,
+      completionTokens: messageData.tokens?.completion || 0,
+      totalTokens: messageData.tokens?.total || 0,
+      cost: calculateCost(messageData.model, messageData.tokens),
+    };
+
+    setTokenUsageHistory((prev) => [...prev, usage].slice(-100));
+  };
+
+  const handleSessionEnded = (sessionData: any) => {
+    setSessions((prev) =>
+      prev.map((session) =>
+        session.id === sessionData.sessionId
+          ? {
+              ...session,
+              status: 'completed',
+              endTime: new Date(sessionData.endTime),
+            }
+          : session
+      )
+    );
+
+    setMetrics((prev) => ({
+      ...prev,
+      activeSessions: Math.max(0, prev.activeSessions - 1),
+    }));
+  };
+
+  const loadDashboardData = async () => {
+    setLoading(true);
+    try {
+      const [sessionsRes, metricsRes, tokenUsageRes] = await Promise.all([
+        fetch(`/api/ai/sessions?range=${timeRange}`),
+        fetch(`/api/ai/metrics?range=${timeRange}`),
+        fetch(`/api/ai/token-usage?range=${timeRange}`),
+      ]);
+
+      const sessionsData = await sessionsRes.json();
+      const metricsData = await metricsRes.json();
+      const tokenUsageData = await tokenUsageRes.json();
+
+      setSessions(
+        sessionsData.map((s: any) => ({
+          ...s,
+          startTime: new Date(s.startTime),
+          endTime: s.endTime ? new Date(s.endTime) : undefined,
+        }))
+      );
+      setMetrics(metricsData);
+      setTokenUsageHistory(
+        tokenUsageData.map((t: any) => ({
+          ...t,
+          timestamp: new Date(t.timestamp),
+        }))
+      );
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const viewTranscript = async (sessionId: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/ai/sessions/${sessionId}/transcript`);
+      const data = await response.json();
+      setTranscript(data);
+      setSelectedSession(sessionId);
+      setTranscriptDialogOpen(true);
+    } catch (error) {
+      console.error('Failed to load transcript:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const endSession = async (sessionId: string) => {
+    try {
+      await fetch(`/api/ai/sessions/${sessionId}/end`, { method: 'POST' });
+      setSessions((prev) =>
+        prev.map((s) => (s.id === sessionId ? { ...s, status: 'ended' } : s))
+      );
+    } catch (error) {
+      console.error('Failed to end session:', error);
+    }
+  };
+
+  const updateModelConfig = async () => {
+    try {
+      await fetch('/api/ai/config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(modelConfig),
+      });
+      setConfigDialogOpen(false);
+    } catch (error) {
+      console.error('Failed to update config:', error);
+    }
+  };
+
+  const exportData = async (format: 'csv' | 'json') => {
+    try {
+      const response = await fetch(`/api/ai/export?format=${format}&range=${timeRange}`);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ai-coaching-data-${new Date().toISOString()}.${format}`;
+      a.click();
+    } catch (error) {
+      console.error('Failed to export data:', error);
+    }
+  };
+
+  const calculateCost = (model: string, tokens: any): number => {
+    const costs = TOKEN_COSTS[model as keyof typeof TOKEN_COSTS] || { prompt: 0, completion: 0 };
+    const promptCost = ((tokens?.prompt || 0) / 1000) * costs.prompt;
+    const completionCost = ((tokens?.completion || 0) / 1000) * costs.completion;
+    return promptCost + completionCost;
+  };
+
+  // Computed data
+  const tokenUsageChartData = useMemo(() => {
+    const grouped = tokenUsageHistory.reduce((acc, usage) => {
+      const hour = new Date(usage.timestamp).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+      if (!acc[hour]) {
+        acc[hour] = { hour, tokens: 0, cost: 0 };
+      }
+      acc[hour].tokens += usage.totalTokens;
+      acc[hour].cost += usage.cost;
+      return acc;
+    }, {} as Record<string, any>);
+
+    return Object.values(grouped);
+  }, [tokenUsageHistory]);
+
+  const modelDistributionData = useMemo(() => {
+    return Object.entries(metrics.modelDistribution).map(([name, value]) => ({
+      name,
+      value,
+    }));
+  }, [metrics.modelDistribution]);
+
+  const styleDistributionData = useMemo(() => {
+    return Object.entries(metrics.styleDistribution).map(([name, value]) => ({
+      name,
+      value,
+    }));
+  }, [metrics.styleDistribution]);
+
+  const averageCostPerSession = useMemo(() => {
+    return metrics.totalSessions > 0 ? metrics.totalCost / metrics.totalSessions : 0;
+  }, [metrics]);
+
+  // Render functions
+  const renderOverviewTab = () => (
+    <Grid container spacing={3}>
       {/* Key Metrics */}
-      <section className="metrics-grid">
-        <div className="metric-card">
-          <h3>Total Conversations</h3>
-          <div className="metric-value">{metrics.totalConversations.toLocaleString()}</div>
-          <div className="metric-change positive">+12.5% vs last period</div>
-        </div>
+      <Grid item xs={12} md={3}>
+        <Card>
+          <CardContent>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box>
+                <Typography color="textSecondary" gutterBottom>
+                  Total Sessions
+                </Typography>
+                <Typography variant="h4">{metrics.totalSessions}</Typography>
+              </Box>
+              <ChatIcon color="primary" sx={{ fontSize: 40 }} />
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
 
-        <div className="metric-card">
-          <h3>Active Users</h3>
-          <div className="metric-value">{metrics.activeUsers}</div>
-          <div className="metric-change positive">+8.3% vs last period</div>
-        </div>
+      <Grid item xs={12} md={3}>
+        <Card>
+          <CardContent>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box>
+                <Typography color="textSecondary" gutterBottom>
+                  Active Sessions
+                </Typography>
+                <Typography variant="h4" color="success.main">
+                  {metrics.activeSessions}
+                </Typography>
+              </Box>
+              <TrendingUpIcon color="success" sx={{ fontSize: 40 }} />
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
 
-        <div className="metric-card">
-          <h3>Satisfaction Score</h3>
-          <div className="metric-value">{metrics.avgSatisfactionScore.toFixed(1)}/5.0</div>
-          <div className="metric-change positive">+0.2 vs last period</div>
-        </div>
+      <Grid item xs={12} md={3}>
+        <Card>
+          <CardContent>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box>
+                <Typography color="textSecondary" gutterBottom>
+                  Total Cost
+                </Typography>
+                <Typography variant="h4">${metrics.totalCost.toFixed(2)}</Typography>
+              </Box>
+              <MoneyIcon color="warning" sx={{ fontSize: 40 }} />
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
 
-        <div className="metric-card">
-          <h3>Total Cost</h3>
-          <div className="metric-value">${metrics.totalCost.toFixed(2)}</div>
-          <div className="metric-change">${metrics.avgCostPerConversation.toFixed(3)}/conv</div>
-        </div>
-      </section>
+      <Grid item xs={12} md={3}>
+        <Card>
+          <CardContent>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box>
+                <Typography color="textSecondary" gutterBottom>
+                  Avg Response Time
+                </Typography>
+                <Typography variant="h4">{metrics.averageResponseTime.toFixed(1)}s</Typography>
+              </Box>
+              <SpeedIcon color="info" sx={{ fontSize: 40 }} />
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
 
-      {/* Model Performance */}
-      <section className="model-performance">
-        <h2>Model Performance Comparison</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Model</th>
-              <th>Usage %</th>
-              <th>Avg Response Time</th>
-              <th>Avg Tokens</th>
-              <th>Total Cost</th>
-              <th>Satisfaction</th>
-            </tr>
-          </thead>
-          <tbody>
-            {modelPerformance.map((model) => (
-              <tr key={model.model}>
-                <td>{model.model}</td>
-                <td>{model.usage}%</td>
-                <td>{model.avgResponseTime}s</td>
-                <td>{model.avgTokens.toLocaleString()}</td>
-                <td>${model.totalCost.toFixed(2)}</td>
-                <td>
-                  <span className="satisfaction-badge">
-                    {model.satisfactionScore.toFixed(1)}/5.0
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-
-      {/* Intent Distribution */}
-      <section className="intent-distribution">
-        <h2>Intent Classification Distribution</h2>
-        <div className="intent-chart">
-          {intentDistribution.map((intent) => (
-            <div key={intent.intent} className="intent-bar">
-              <div className="intent-label">
-                <span>{intent.intent}</span>
-                <span>{intent.count} ({intent.percentage}%)</span>
-              </div>
-              <div className="intent-progress">
-                <div
-                  className="intent-fill"
-                  style={{ width: `${intent.percentage}%` }}
+      {/* Token Usage Chart */}
+      <Grid item xs={12} md={8}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Token Usage Over Time
+            </Typography>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={tokenUsageChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="hour" />
+                <YAxis yAxisId="left" />
+                <YAxis yAxisId="right" orientation="right" />
+                <RechartsTooltip />
+                <Legend />
+                <Area
+                  yAxisId="left"
+                  type="monotone"
+                  dataKey="tokens"
+                  stroke="#8884d8"
+                  fill="#8884d8"
+                  name="Tokens"
                 />
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+                <Area
+                  yAxisId="right"
+                  type="monotone"
+                  dataKey="cost"
+                  stroke="#82ca9d"
+                  fill="#82ca9d"
+                  name="Cost ($)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </Grid>
 
-      {/* Cost Analysis */}
-      <section className="cost-analysis">
-        <h2>Cost Per Conversation Trend</h2>
-        <div className="cost-chart">
-          <svg width="100%" height="200" viewBox="0 0 800 200">
-            {/* Simplified line chart */}
-            <polyline
-              points="0,150 100,140 200,145 300,135 400,130 500,125 600,120 700,115 800,110"
-              fill="none"
-              stroke="#4CAF50"
-              strokeWidth="2"
+      {/* Model Distribution */}
+      <Grid item xs={12} md={4}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Model Distribution
+            </Typography>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={modelDistributionData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={(entry) => entry.name}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {modelDistributionData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <RechartsTooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </Grid>
+
+      {/* Style Distribution */}
+      <Grid item xs={12} md={6}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Coaching Style Distribution
+            </Typography>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={styleDistributionData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <RechartsTooltip />
+                <Bar dataKey="value" fill="#8884d8">
+                  {styleDistributionData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </Grid>
+
+      {/* Performance Metrics */}
+      <Grid item xs={12} md={6}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Performance Metrics
+            </Typography>
+            <Box mt={2}>
+              <Typography variant="body2" color="textSecondary">
+                User Satisfaction
+              </Typography>
+              <Box display="flex" alignItems="center" mt={1}>
+                <LinearProgress
+                  variant="determinate"
+                  value={metrics.userSatisfaction * 20}
+                  sx={{ flexGrow: 1, mr: 2, height: 8, borderRadius: 4 }}
+                />
+                <Typography variant="body2">{metrics.userSatisfaction.toFixed(1)}/5</Typography>
+              </Box>
+            </Box>
+
+            <Box mt={3}>
+              <Typography variant="body2" color="textSecondary">
+                Average Cost per Session
+              </Typography>
+              <Typography variant="h5" mt={1}>
+                ${averageCostPerSession.toFixed(3)}
+              </Typography>
+            </Box>
+
+            <Box mt={3}>
+              <Typography variant="body2" color="textSecondary">
+                Messages per Session
+              </Typography>
+              <Typography variant="h5" mt={1}>
+                {metrics.totalSessions > 0
+                  ? (metrics.totalMessages / metrics.totalSessions).toFixed(1)
+                  : 0}
+              </Typography>
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
+    </Grid>
+  );
+
+  const renderSessionsTab = () => (
+    <Card>
+      <CardContent>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h6">Active & Recent Sessions</Typography>
+          <Box>
+            <Chip
+              label={wsConnected ? 'Live' : 'Disconnected'}
+              color={wsConnected ? 'success' : 'error'}
+              size="small"
+              sx={{ mr: 2 }}
             />
-            <text x="10" y="20" fontSize="12" fill="#666">
-              Cost decreasing over time (optimization working!)
-            </text>
-          </svg>
-        </div>
-      </section>
+            <Button startIcon={<RefreshIcon />} onClick={loadDashboardData}>
+              Refresh
+            </Button>
+          </Box>
+        </Box>
 
-      {/* User Satisfaction Heatmap */}
-      <section className="satisfaction-heatmap">
-        <h2>User Satisfaction by Time of Day</h2>
-        <div className="heatmap-grid">
-          {Array.from({ length: 24 }, (_, hour) => {
-            const satisfaction = 3.5 + Math.random() * 1.5;
-            const color = satisfaction > 4.5 ? '#4CAF50' : satisfaction > 4 ? '#FFC107' : '#FF5722';
-            return (
-              <div
-                key={hour}
-                className="heatmap-cell"
-                style={{ backgroundColor: color }}
-                title={`${hour}:00 - ${satisfaction.toFixed(1)}/5.0`}
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>User</TableCell>
+                <TableCell>Started</TableCell>
+                <TableCell>Model</TableCell>
+                <TableCell>Style</TableCell>
+                <TableCell>Messages</TableCell>
+                <TableCell>Tokens</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {sessions.map((session) => (
+                <TableRow key={session.id}>
+                  <TableCell>{session.userName}</TableCell>
+                  <TableCell>{session.startTime.toLocaleTimeString()}</TableCell>
+                  <TableCell>
+                    <Chip label={session.model} size="small" />
+                  </TableCell>
+                  <TableCell>
+                    <Chip label={session.style} size="small" color="primary" />
+                  </TableCell>
+                  <TableCell>{session.messageCount}</TableCell>
+                  <TableCell>{session.totalTokens.toLocaleString()}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={session.status}
+                      size="small"
+                      color={
+                        session.status === 'active'
+                          ? 'success'
+                          : session.status === 'completed'
+                          ? 'default'
+                          : 'warning'
+                      }
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <IconButton size="small" onClick={() => viewTranscript(session.id)}>
+                      <ViewIcon />
+                    </IconButton>
+                    {session.status === 'active' && (
+                      <IconButton size="small" onClick={() => endSession(session.id)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </CardContent>
+    </Card>
+  );
+
+  const renderConfigTab = () => (
+    <Grid container spacing={3}>
+      <Grid item xs={12} md={6}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Model Configuration
+            </Typography>
+
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Default Model</InputLabel>
+              <Select
+                value={modelConfig.model}
+                onChange={(e) =>
+                  setModelConfig({ ...modelConfig, model: e.target.value as any })
+                }
               >
-                {hour}
-              </div>
-            );
-          })}
-        </div>
-      </section>
+                <MenuItem value="gpt-4-turbo">GPT-4 Turbo</MenuItem>
+                <MenuItem value="gpt-4">GPT-4</MenuItem>
+                <MenuItem value="claude-3-opus">Claude 3 Opus</MenuItem>
+                <MenuItem value="claude-3-sonnet">Claude 3 Sonnet</MenuItem>
+              </Select>
+            </FormControl>
 
-      {/* Real-time Activity */}
-      <section className="realtime-activity">
-        <h2>Real-time Conversations</h2>
-        <div className="activity-list">
-          <div className="activity-item">
-            <div className="activity-user">User #487</div>
-            <div className="activity-intent">Goal Setting</div>
-            <div className="activity-model">GPT-4</div>
-            <div className="activity-time">2 min ago</div>
-            <div className="activity-status active">Active</div>
-          </div>
-          <div className="activity-item">
-            <div className="activity-user">User #322</div>
-            <div className="activity-intent">Motivation</div>
-            <div className="activity-model">GPT-3.5</div>
-            <div className="activity-time">5 min ago</div>
-            <div className="activity-status active">Active</div>
-          </div>
-          <div className="activity-item">
-            <div className="activity-user">User #156</div>
-            <div className="activity-intent">Progress Tracking</div>
-            <div className="activity-model">Claude</div>
-            <div className="activity-time">8 min ago</div>
-            <div className="activity-status completed">Completed</div>
-          </div>
-        </div>
-      </section>
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Temperature"
+              type="number"
+              value={modelConfig.temperature}
+              onChange={(e) =>
+                setModelConfig({ ...modelConfig, temperature: parseFloat(e.target.value) })
+              }
+              inputProps={{ min: 0, max: 2, step: 0.1 }}
+            />
 
-      <style jsx>{`
-        .ai-coaching-dashboard {
-          padding: 24px;
-          background: #f5f5f5;
-          min-height: 100vh;
-        }
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Max Tokens"
+              type="number"
+              value={modelConfig.maxTokens}
+              onChange={(e) =>
+                setModelConfig({ ...modelConfig, maxTokens: parseInt(e.target.value) })
+              }
+              inputProps={{ min: 100, max: 4000, step: 100 }}
+            />
 
-        .dashboard-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 32px;
-        }
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Top P"
+              type="number"
+              value={modelConfig.topP}
+              onChange={(e) =>
+                setModelConfig({ ...modelConfig, topP: parseFloat(e.target.value) })
+              }
+              inputProps={{ min: 0, max: 1, step: 0.1 }}
+            />
 
-        .dashboard-header h1 {
-          font-size: 28px;
-          font-weight: 600;
-          color: #333;
-        }
+            <Box mt={2}>
+              <Button variant="contained" onClick={updateModelConfig}>
+                Save Configuration
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
 
-        .time-range-selector button {
-          margin-left: 8px;
-          padding: 8px 16px;
-          border: 1px solid #ddd;
-          background: white;
-          border-radius: 4px;
-          cursor: pointer;
-        }
+      <Grid item xs={12} md={6}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Safety & Features
+            </Typography>
 
-        .time-range-selector button.active {
-          background: #2196F3;
-          color: white;
-          border-color: #2196F3;
-        }
+            <FormControlLabel
+              control={
+                <Switch checked={safetyEnabled} onChange={(e) => setSafetyEnabled(e.target.checked)} />
+              }
+              label="Enable Safety Filters"
+            />
 
-        .metrics-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 16px;
-          margin-bottom: 32px;
-        }
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={streamingEnabled}
+                  onChange={(e) => setStreamingEnabled(e.target.checked)}
+                />
+              }
+              label="Enable Response Streaming"
+            />
 
-        .metric-card {
-          background: white;
-          padding: 20px;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
+            <Divider sx={{ my: 2 }} />
 
-        .metric-card h3 {
-          font-size: 14px;
-          color: #666;
-          margin-bottom: 8px;
-        }
+            <Typography variant="subtitle1" gutterBottom>
+              Coaching Style Presets
+            </Typography>
 
-        .metric-value {
-          font-size: 32px;
-          font-weight: 700;
-          color: #333;
-          margin-bottom: 4px;
-        }
+            <List dense>
+              {['Supportive', 'Challenging', 'Analytical', 'Motivational'].map((style) => (
+                <ListItem key={style}>
+                  <ListItemText
+                    primary={style}
+                    secondary={`Default ${style.toLowerCase()} coaching approach`}
+                  />
+                  <ListItemSecondaryAction>
+                    <IconButton edge="end">
+                      <SettingsIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              ))}
+            </List>
+          </CardContent>
+        </Card>
+      </Grid>
 
-        .metric-change {
-          font-size: 12px;
-          color: #666;
-        }
+      <Grid item xs={12}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Export Data
+            </Typography>
+            <Box display="flex" gap={2}>
+              <Button variant="outlined" startIcon={<DownloadIcon />} onClick={() => exportData('csv')}>
+                Export as CSV
+              </Button>
+              <Button variant="outlined" startIcon={<DownloadIcon />} onClick={() => exportData('json')}>
+                Export as JSON
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
+    </Grid>
+  );
 
-        .metric-change.positive {
-          color: #4CAF50;
-        }
+  return (
+    <Box p={3}>
+      {/* Header */}
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Box>
+          <Typography variant="h4" gutterBottom>
+            AI Coaching Dashboard
+          </Typography>
+          <Typography variant="body2" color="textSecondary">
+            Monitor and manage AI coaching sessions in real-time
+          </Typography>
+        </Box>
 
-        section {
-          background: white;
-          padding: 24px;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-          margin-bottom: 24px;
-        }
+        <FormControl sx={{ minWidth: 120 }}>
+          <InputLabel>Time Range</InputLabel>
+          <Select value={timeRange} onChange={(e) => setTimeRange(e.target.value as any)}>
+            <MenuItem value="1h">Last Hour</MenuItem>
+            <MenuItem value="24h">Last 24 Hours</MenuItem>
+            <MenuItem value="7d">Last 7 Days</MenuItem>
+            <MenuItem value="30d">Last 30 Days</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
 
-        section h2 {
-          font-size: 18px;
-          font-weight: 600;
-          margin-bottom: 16px;
-          color: #333;
-        }
+      {loading && <LinearProgress sx={{ mb: 2 }} />}
 
-        table {
-          width: 100%;
-          border-collapse: collapse;
-        }
+      {/* Tabs */}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+        <Tabs value={activeTab} onChange={(e, val) => setActiveTab(val)}>
+          <Tab label="Overview" />
+          <Tab label="Sessions" />
+          <Tab label="Configuration" />
+        </Tabs>
+      </Box>
 
-        th,
-        td {
-          text-align: left;
-          padding: 12px;
-          border-bottom: 1px solid #eee;
-        }
+      {/* Tab Content */}
+      {activeTab === 0 && renderOverviewTab()}
+      {activeTab === 1 && renderSessionsTab()}
+      {activeTab === 2 && renderConfigTab()}
 
-        th {
-          font-weight: 600;
-          color: #666;
-          font-size: 14px;
-        }
+      {/* Transcript Dialog */}
+      <Dialog
+        open={transcriptDialogOpen}
+        onClose={() => setTranscriptDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          Conversation Transcript
+          {transcript && (
+            <Typography variant="caption" display="block" color="textSecondary">
+              Session ID: {transcript.sessionId}
+            </Typography>
+          )}
+        </DialogTitle>
+        <DialogContent dividers>
+          {transcript && (
+            <>
+              {/* Messages */}
+              <Box mb={3}>
+                {transcript.messages.map((msg) => (
+                  <Box
+                    key={msg.id}
+                    mb={2}
+                    p={2}
+                    bgcolor={msg.role === 'user' ? 'action.hover' : 'background.paper'}
+                    borderLeft={4}
+                    borderColor={msg.role === 'user' ? 'primary.main' : 'secondary.main'}
+                  >
+                    <Typography variant="caption" color="textSecondary">
+                      {msg.role.toUpperCase()} - {msg.timestamp.toLocaleTimeString()}
+                    </Typography>
+                    <Typography variant="body2" mt={1}>
+                      {msg.content}
+                    </Typography>
+                    {msg.tokens && (
+                      <Typography variant="caption" color="textSecondary" mt={1}>
+                        {msg.tokens} tokens
+                      </Typography>
+                    )}
+                  </Box>
+                ))}
+              </Box>
 
-        .satisfaction-badge {
-          background: #4CAF50;
-          color: white;
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-size: 12px;
-        }
+              {/* Action Items */}
+              {transcript.actionItems.length > 0 && (
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="h6" gutterBottom>
+                    Extracted Action Items
+                  </Typography>
+                  <List>
+                    {transcript.actionItems.map((item) => (
+                      <ListItem key={item.id}>
+                        <ListItemText
+                          primary={item.content}
+                          secondary={`${item.category} - ${item.priority} priority`}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </>
+              )}
 
-        .intent-bar {
-          margin-bottom: 16px;
-        }
-
-        .intent-label {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 4px;
-          font-size: 14px;
-        }
-
-        .intent-progress {
-          height: 24px;
-          background: #eee;
-          border-radius: 4px;
-          overflow: hidden;
-        }
-
-        .intent-fill {
-          height: 100%;
-          background: #2196F3;
-          transition: width 0.3s ease;
-        }
-
-        .heatmap-grid {
-          display: grid;
-          grid-template-columns: repeat(12, 1fr);
-          gap: 8px;
-        }
-
-        .heatmap-cell {
-          aspect-ratio: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 4px;
-          color: white;
-          font-size: 12px;
-          font-weight: 600;
-        }
-
-        .activity-item {
-          display: grid;
-          grid-template-columns: 1fr 1fr 1fr 1fr auto;
-          gap: 16px;
-          padding: 12px;
-          border-bottom: 1px solid #eee;
-          align-items: center;
-        }
-
-        .activity-status {
-          padding: 4px 12px;
-          border-radius: 12px;
-          font-size: 12px;
-          font-weight: 600;
-        }
-
-        .activity-status.active {
-          background: #4CAF50;
-          color: white;
-        }
-
-        .activity-status.completed {
-          background: #ddd;
-          color: #666;
-        }
-      `}</style>
-    </div>
+              {/* Summary */}
+              {transcript.summary && (
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="h6" gutterBottom>
+                    Session Summary
+                  </Typography>
+                  <Typography variant="body2">{transcript.summary}</Typography>
+                </>
+              )}
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setTranscriptDialogOpen(false)}>Close</Button>
+          <Button variant="contained" startIcon={<DownloadIcon />}>
+            Export Transcript
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 };
 
